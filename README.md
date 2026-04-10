@@ -51,3 +51,12 @@ Future steps include:
 - object loading and normalization
 - drag and placement interaction
 - camera presets and UI overlay
+
+## 🛋️ Assets
+
+Model: Leather Couch
+Source: <https://sketchfab.com/3d-models/leather-couch-c2ac7a44144e4b80ab51f21b59c827f8>
+Author: <https://sketchfab.com/YouSaveTime>
+License: CC Attribution
+Modifications: none
+More Info: `/assets-source/leather-couch/`
