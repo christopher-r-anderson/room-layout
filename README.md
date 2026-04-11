@@ -28,18 +28,21 @@ This project demonstrates core web 3D concepts relevant to retail and product ex
 ## 🚀 Development
 
 ```bash
-pnpm dev         # start dev server
-pnpm build       # typecheck + production build
-pnpm preview     # preview production build
+pnpm dev          # start dev server
+pnpm build        # typecheck + production build
+pnpm preview      # preview production build
 
-pnpm typecheck   # run TypeScript checks
+pnpm typecheck    # run TypeScript checks
 
-pnpm lint        # run ESLint
-pnpm lint:fix    # fix lint issues
+pnpm lint         # run ESLint
+pnpm lint:fix     # fix lint issues
 
-pnpm format      # check formatting
+pnpm format       # check formatting
 pnpm format:write # apply formatting
-pnpm fix         # lint + format fixes
+pnpm fix          # lint + format fixes
+
+pnpm test         # watch unit tests
+pnpm test:run     # run unit tests
 ```
 
 ## 📝 Notes
