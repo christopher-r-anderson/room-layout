@@ -6,4 +6,9 @@ License: CC Attribution
 Notes:
 Downloaded as GLB from Sketchfab.
 Original format was FBX.
-No modifications applied.
+
+Modifications:
+Imported to blend
+Removed extra nodes and renamed groups
+Scaled to real world sizes in meters (couch width 2.2m)
+Added collection export settings w/ copyright info
