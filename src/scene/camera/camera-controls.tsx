@@ -1,9 +1,10 @@
 import { OrbitControls } from '@react-three/drei'
 
-export function CameraControls() {
+export function CameraControls({ enabled = true }: { enabled?: boolean }) {
   return (
     <OrbitControls
       makeDefault
+      enabled={enabled}
       enablePan={false}
       minDistance={2}
       maxDistance={12}
