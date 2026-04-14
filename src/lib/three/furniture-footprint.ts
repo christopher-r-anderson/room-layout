@@ -26,6 +26,38 @@ export interface EdgeSnapDelta {
   z: number
 }
 
+interface ProjectionRange {
+  min: number
+  max: number
+}
+
+interface EdgeSnapScratch {
+  translatedMovingCorners: [
+    FootprintPoint,
+    FootprintPoint,
+    FootprintPoint,
+    FootprintPoint,
+  ]
+  movingRanges: [
+    ProjectionRange,
+    ProjectionRange,
+    ProjectionRange,
+    ProjectionRange,
+  ]
+  targetRanges: [
+    ProjectionRange,
+    ProjectionRange,
+    ProjectionRange,
+    ProjectionRange,
+  ]
+  translatedRanges: [
+    ProjectionRange,
+    ProjectionRange,
+    ProjectionRange,
+    ProjectionRange,
+  ]
+}
+
 function getHalfExtents(size: FootprintSize) {
   return {
     halfWidth: size.width / 2,
@@ -70,13 +102,6 @@ function dot(a: FootprintPoint, b: FootprintPoint) {
   return a.x * b.x + a.z * b.z
 }
 
-function addPoint(a: FootprintPoint, b: FootprintPoint): FootprintPoint {
-  return {
-    x: a.x + b.x,
-    z: a.z + b.z,
-  }
-}
-
 function scalePoint(point: FootprintPoint, scalar: number): FootprintPoint {
   return {
     x: point.x * scalar,
@@ -84,17 +109,64 @@ function scalePoint(point: FootprintPoint, scalar: number): FootprintPoint {
   }
 }
 
+function createProjectionRange(): ProjectionRange {
+  return {
+    min: Number.POSITIVE_INFINITY,
+    max: Number.NEGATIVE_INFINITY,
+  }
+}
+
+function createEdgeSnapScratch(): EdgeSnapScratch {
+  return {
+    translatedMovingCorners: [
+      { x: 0, z: 0 },
+      { x: 0, z: 0 },
+      { x: 0, z: 0 },
+      { x: 0, z: 0 },
+    ],
+    movingRanges: [
+      createProjectionRange(),
+      createProjectionRange(),
+      createProjectionRange(),
+      createProjectionRange(),
+    ],
+    targetRanges: [
+      createProjectionRange(),
+      createProjectionRange(),
+      createProjectionRange(),
+      createProjectionRange(),
+    ],
+    translatedRanges: [
+      createProjectionRange(),
+      createProjectionRange(),
+      createProjectionRange(),
+      createProjectionRange(),
+    ],
+  }
+}
+
+const edgeSnapScratch = createEdgeSnapScratch()
+
 function getProjectionRange(points: FootprintPoint[], axis: FootprintPoint) {
-  let min = Number.POSITIVE_INFINITY
-  let max = Number.NEGATIVE_INFINITY
+  const range = createProjectionRange()
+  fillProjectionRange(points, axis, range)
+
+  return range
+}
+
+function fillProjectionRange(
+  points: FootprintPoint[],
+  axis: FootprintPoint,
+  range: ProjectionRange,
+) {
+  range.min = Number.POSITIVE_INFINITY
+  range.max = Number.NEGATIVE_INFINITY
 
   for (const point of points) {
     const projection = dot(point, axis)
-    min = Math.min(min, projection)
-    max = Math.max(max, projection)
+    range.min = Math.min(range.min, projection)
+    range.max = Math.max(range.max, projection)
   }
-
-  return { min, max }
 }
 
 function rangesOverlap(
@@ -112,10 +184,7 @@ function getRectAxes(corners: FootprintPoint[]) {
   ]
 }
 
-function getRangeGap(
-  a: { min: number; max: number },
-  b: { min: number; max: number },
-) {
+function getRangeGap(a: ProjectionRange, b: ProjectionRange) {
   if (a.max < b.min) {
     return b.min - a.max
   }
@@ -128,11 +197,24 @@ function getRangeGap(
 }
 
 function rangesTouchOrOverlap(
-  a: { min: number; max: number },
-  b: { min: number; max: number },
+  a: ProjectionRange,
+  b: ProjectionRange,
   epsilon: number,
 ) {
   return a.max >= b.min - epsilon && b.max >= a.min - epsilon
+}
+
+function fillTranslatedCorners(
+  corners: [FootprintPoint, FootprintPoint, FootprintPoint, FootprintPoint],
+  delta: FootprintPoint,
+  target: [FootprintPoint, FootprintPoint, FootprintPoint, FootprintPoint],
+) {
+  for (let index = 0; index < corners.length; index += 1) {
+    const corner = corners[index]
+    const translatedCorner = target[index]
+    translatedCorner.x = corner.x + delta.x
+    translatedCorner.z = corner.z + delta.z
+  }
 }
 
 export function getFootprintCorners(
@@ -209,13 +291,26 @@ export function getEdgeSnapDelta(
   const movingCorners = getFootprintCorners(moving)
   const targetCorners = getFootprintCorners(target)
   const axes = [...getRectAxes(movingCorners), ...getRectAxes(targetCorners)]
+  const {
+    translatedMovingCorners,
+    movingRanges,
+    targetRanges,
+    translatedRanges,
+  } = edgeSnapScratch
+
+  for (let index = 0; index < axes.length; index += 1) {
+    const axis = axes[index]
+    fillProjectionRange(movingCorners, axis, movingRanges[index])
+    fillProjectionRange(targetCorners, axis, targetRanges[index])
+  }
 
   let bestDelta: EdgeSnapDelta | null = null
   let bestDistance = Number.POSITIVE_INFINITY
 
-  for (const axis of axes) {
-    const movingRange = getProjectionRange(movingCorners, axis)
-    const targetRange = getProjectionRange(targetCorners, axis)
+  for (let axisIndex = 0; axisIndex < axes.length; axisIndex += 1) {
+    const axis = axes[axisIndex]
+    const movingRange = movingRanges[axisIndex]
+    const targetRange = targetRanges[axisIndex]
 
     const axisCandidates = [
       targetRange.min - movingRange.max,
@@ -232,20 +327,23 @@ export function getEdgeSnapDelta(
       }
 
       const deltaVector = scalePoint(axis, candidateScalar)
-      const translatedMovingCorners = movingCorners.map((corner) =>
-        addPoint(corner, deltaVector),
-      )
+      fillTranslatedCorners(movingCorners, deltaVector, translatedMovingCorners)
 
       let alignsOnAllAxes = true
 
-      for (const validationAxis of axes) {
-        const translatedRange = getProjectionRange(
+      for (
+        let validationIndex = 0;
+        validationIndex < axes.length;
+        validationIndex += 1
+      ) {
+        const validationAxis = axes[validationIndex]
+        const translatedRange = translatedRanges[validationIndex]
+        const stationaryRange = targetRanges[validationIndex]
+
+        fillProjectionRange(
           translatedMovingCorners,
           validationAxis,
-        )
-        const stationaryRange = getProjectionRange(
-          targetCorners,
-          validationAxis,
+          translatedRange,
         )
 
         if (
