@@ -49,11 +49,9 @@ pnpm test:run     # run unit tests
 
 This project is intentionally focused on spatial interaction and rendering fundamentals rather than backend integration or full product features.
 
-Future steps include:
+## 🗺️ Project Plan
 
-- object loading and normalization
-- drag and placement interaction
-- camera presets and UI overlay
+Current roadmap and progress checklist are tracked in [PLAN.md](./PLAN.md).
 
 ## 🛋️ Assets
 

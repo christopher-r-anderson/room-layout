@@ -43,6 +43,7 @@
 ## Docs
 
 - For project overview, stack, and basic scripts, see `README.md`.
+- For roadmap, completion status, and next steps, see `PLAN.md`.
 
 ## Commit Hygiene
 
