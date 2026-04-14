@@ -60,3 +60,9 @@ Current roadmap and progress checklist are tracked in [PLAN.md](./PLAN.md).
 - **Author**: <https://sketchfab.com/YouSaveTime>
 - **License**: CC Attribution
 - **Modifications and Info**: [./assets-source/leather-couch/leather-couch-source.txt](./assets-source/leather-couch/leather-couch-source.txt)
+
+## 📄 License
+
+This project source code is licensed under the MIT License. See [LICENSE](./LICENSE).
+
+Third-party assets may use different licenses. In this repository, the leather couch model listed above remains under its original CC Attribution license.
