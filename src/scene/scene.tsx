@@ -18,6 +18,10 @@ import {
   getFloorIntersection,
   getDraggedFurniturePosition,
 } from '@/lib/three/furniture-drag'
+import {
+  resolveMovedFurniturePosition,
+  resolveRotatedFurnitureTransform,
+} from '@/lib/three/furniture-layout'
 import type { FurnitureItem } from './objects/furniture.types'
 import {
   FURNITURE_CATALOG,
@@ -28,6 +32,7 @@ import {
 const ROOM_HALF_SIZE = 3
 const FLOOR_PLANE_Y = 0
 const SNAP_SIZE = 0.5
+const EDGE_SNAP_THRESHOLD = 0.12
 
 interface DragState {
   id: string
@@ -191,18 +196,45 @@ export function Scene({
         return
       }
 
-      setFurniture((currentFurniture) =>
-        currentFurniture.map((item) => {
+      setFurniture((currentFurniture) => {
+        const rotatingItem = currentFurniture.find(
+          (item) => item.id === selectedId,
+        )
+
+        if (!rotatingItem) {
+          return currentFurniture
+        }
+
+        const resolvedTransform = resolveRotatedFurnitureTransform({
+          rotatingId: selectedId,
+          proposedRotationY: normalizeAngleRadians(
+            rotatingItem.rotationY + deltaRadians,
+          ),
+          items: currentFurniture,
+          bounds: {
+            minX: -ROOM_HALF_SIZE,
+            maxX: ROOM_HALF_SIZE,
+            minZ: -ROOM_HALF_SIZE,
+            maxZ: ROOM_HALF_SIZE,
+          },
+        })
+
+        if (!resolvedTransform) {
+          return currentFurniture
+        }
+
+        return currentFurniture.map((item) => {
           if (item.id !== selectedId) {
             return item
           }
 
           return {
             ...item,
-            rotationY: normalizeAngleRadians(item.rotationY + deltaRadians),
+            position: resolvedTransform.position,
+            rotationY: resolvedTransform.rotationY,
           }
-        }),
-      )
+        })
+      })
     },
     [selectedId],
   )
@@ -265,7 +297,24 @@ export function Scene({
         return
       }
 
-      updateFurniturePosition(id, nextPosition)
+      const resolvedPosition = resolveMovedFurniturePosition({
+        movingId: id,
+        proposedPosition: nextPosition,
+        items: furniture,
+        edgeSnapThreshold: EDGE_SNAP_THRESHOLD,
+        bounds: {
+          minX: -ROOM_HALF_SIZE,
+          maxX: ROOM_HALF_SIZE,
+          minZ: -ROOM_HALF_SIZE,
+          maxZ: ROOM_HALF_SIZE,
+        },
+      })
+
+      if (!resolvedPosition) {
+        return
+      }
+
+      updateFurniturePosition(id, resolvedPosition)
     },
     [dragState, furniture, updateFurniturePosition],
   )
