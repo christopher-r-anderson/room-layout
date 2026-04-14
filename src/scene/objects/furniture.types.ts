@@ -3,12 +3,18 @@ import type { ThreeEvent } from '@react-three/fiber'
 
 export type FurnitureKind = 'armchair' | 'couch'
 
+export interface FootprintSize {
+  width: number
+  depth: number
+}
+
 export interface FurnitureItem {
   id: string
   kind: FurnitureKind
   collectionId: string
   nodeName: string
   sourcePath: string
+  footprintSize: FootprintSize
   position: Vector3Tuple
   rotationY: number
 }

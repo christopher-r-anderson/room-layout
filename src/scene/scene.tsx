@@ -57,30 +57,35 @@ function normalizeAngleRadians(angleRadians: number) {
 function getInitialFurnitureItems(
   sourceScenesByPath: Map<string, Object3D>,
 ): FurnitureItem[] {
-  return FURNITURE_CATALOG.map(({ id, kind, collectionId, nodeName }) => {
-    const sourcePath = getCollectionPath(collectionId)
-    const sourceScene = sourceScenesByPath.get(sourcePath)
+  return FURNITURE_CATALOG.map(
+    ({ id, kind, collectionId, nodeName, footprintSize }) => {
+      const sourcePath = getCollectionPath(collectionId)
+      const sourceScene = sourceScenesByPath.get(sourcePath)
 
-    if (!sourceScene) {
-      throw new Error(`source scene not loaded for collection: ${collectionId}`)
-    }
+      if (!sourceScene) {
+        throw new Error(
+          `source scene not loaded for collection: ${collectionId}`,
+        )
+      }
 
-    const node = sourceScene.getObjectByName(nodeName)
+      const node = sourceScene.getObjectByName(nodeName)
 
-    if (!node) {
-      throw new Error(`${nodeName} node not found in GLTF scene`)
-    }
+      if (!node) {
+        throw new Error(`${nodeName} node not found in GLTF scene`)
+      }
 
-    return {
-      id,
-      kind,
-      collectionId,
-      nodeName,
-      sourcePath,
-      position: [node.position.x, node.position.y, node.position.z],
-      rotationY: normalizeAngleRadians(node.rotation.y),
-    }
-  })
+      return {
+        id,
+        kind,
+        collectionId,
+        nodeName,
+        sourcePath,
+        footprintSize,
+        position: [node.position.x, node.position.y, node.position.z],
+        rotationY: normalizeAngleRadians(node.rotation.y),
+      }
+    },
+  )
 }
 
 export function Scene({

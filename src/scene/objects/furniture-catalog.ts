@@ -1,4 +1,4 @@
-import type { FurnitureKind } from './furniture.types'
+import type { FurnitureKind, FootprintSize } from './furniture.types'
 
 export interface FurnitureCollection {
   id: string
@@ -10,6 +10,7 @@ export interface FurnitureCatalogEntry {
   kind: FurnitureKind
   collectionId: FurnitureCollection['id']
   nodeName: string
+  footprintSize: FootprintSize
 }
 
 export const FURNITURE_COLLECTIONS: FurnitureCollection[] = [
@@ -25,12 +26,20 @@ export const FURNITURE_CATALOG: FurnitureCatalogEntry[] = [
     kind: 'couch',
     collectionId: 'leather-collection',
     nodeName: 'couch',
+    footprintSize: {
+      width: 2.2,
+      depth: 0.95,
+    },
   },
   {
     id: 'armchair-1',
     kind: 'armchair',
     collectionId: 'leather-collection',
     nodeName: 'armchair',
+    footprintSize: {
+      width: 1.15,
+      depth: 0.95,
+    },
   },
 ]
 
