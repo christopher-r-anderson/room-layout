@@ -9,6 +9,7 @@ function createInput(
     altKey: false,
     ctrlKey: false,
     metaKey: false,
+    isModalOpen: false,
     targetTagName: undefined,
     targetIsContentEditable: false,
     ...overrides,
@@ -54,6 +55,15 @@ describe('getRotationHotkeyDirection', () => {
       getRotationHotkeyDirection(
         createInput({ targetIsContentEditable: true }),
       ),
+    ).toBeNull()
+  })
+
+  it('ignores hotkeys while a modal is open', () => {
+    expect(
+      getRotationHotkeyDirection(createInput({ key: 'q', isModalOpen: true })),
+    ).toBeNull()
+    expect(
+      getRotationHotkeyDirection(createInput({ key: 'e', isModalOpen: true })),
     ).toBeNull()
   })
 })

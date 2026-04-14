@@ -5,6 +5,7 @@ interface RotationHotkeyInput {
   altKey: boolean
   ctrlKey: boolean
   metaKey: boolean
+  isModalOpen?: boolean
   targetTagName?: string
   targetIsContentEditable?: boolean
 }
@@ -39,9 +40,14 @@ export function getRotationHotkeyDirection({
   altKey,
   ctrlKey,
   metaKey,
+  isModalOpen,
   targetTagName,
   targetIsContentEditable,
 }: RotationHotkeyInput): RotationDirection | null {
+  if (isModalOpen) {
+    return null
+  }
+
   if (altKey || ctrlKey || metaKey) {
     return null
   }

@@ -11,6 +11,8 @@ function App() {
     clearSelection: () => void
     rotateSelection: (deltaRadians: number) => void
   } | null>(null)
+  const infoDialogRef = useRef<HTMLDialogElement | null>(null)
+  const infoButtonRef = useRef<HTMLButtonElement | null>(null)
   const [selectedId, setSelectedId] = useState<string | null>(null)
 
   useEffect(() => {
@@ -21,6 +23,7 @@ function App() {
         altKey: event.altKey,
         ctrlKey: event.ctrlKey,
         metaKey: event.metaKey,
+        isModalOpen: infoDialogRef.current?.open,
         targetTagName:
           target instanceof HTMLElement ? target.tagName : undefined,
         targetIsContentEditable:
@@ -46,6 +49,30 @@ function App() {
     sceneRef.current?.rotateSelection(direction * ROTATION_STEP_RADIANS)
   }
 
+  const openInfoDialog = () => {
+    infoDialogRef.current?.showModal()
+  }
+
+  const closeInfoDialog = () => {
+    infoDialogRef.current?.close()
+    infoButtonRef.current?.focus()
+  }
+
+  const handleInfoDialogCancel = (
+    event: React.SyntheticEvent<HTMLDialogElement>,
+  ) => {
+    event.preventDefault()
+    closeInfoDialog()
+  }
+
+  const handleInfoDialogClick = (
+    event: React.MouseEvent<HTMLDialogElement>,
+  ) => {
+    if (event.target === event.currentTarget) {
+      closeInfoDialog()
+    }
+  }
+
   return (
     <div className="app">
       <Canvas
@@ -64,6 +91,17 @@ function App() {
       </Canvas>
 
       <div className="ui-overlay">
+        <button
+          ref={infoButtonRef}
+          type="button"
+          className="info-button"
+          aria-haspopup="dialog"
+          aria-controls="project-info-dialog"
+          aria-label="Open project and asset info"
+          onClick={openInfoDialog}
+        >
+          <span aria-hidden>ℹ</span>
+        </button>
         <div
           className="rotation-controls"
           role="toolbar"
@@ -96,6 +134,73 @@ function App() {
           Select furniture, then use <kbd>Q</kbd>/<kbd>E</kbd> or the rotate
           buttons.
         </p>
+
+        <dialog
+          ref={infoDialogRef}
+          id="project-info-dialog"
+          className="info-dialog"
+          aria-labelledby="project-info-title"
+          onCancel={handleInfoDialogCancel}
+          onClick={handleInfoDialogClick}
+        >
+          <div className="info-dialog-content">
+            <h2 id="project-info-title">Project Info</h2>
+
+            <section aria-labelledby="project-links-heading">
+              <h3 id="project-links-heading">Repository</h3>
+              <p>
+                Source code:{' '}
+                <a
+                  href="https://github.com/christopher-r-anderson/room-layout"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  github.com/christopher-r-anderson/room-layout{' '}
+                  <span aria-hidden>↗</span>
+                </a>
+              </p>
+            </section>
+
+            <section aria-labelledby="asset-attribution-heading">
+              <h3 id="asset-attribution-heading">Asset Attribution</h3>
+              <p>
+                Leather Couch model by{' '}
+                <a
+                  href="https://sketchfab.com/YouSaveTime"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  YouSaveTime <span aria-hidden>↗</span>
+                </a>
+                , from{' '}
+                <a
+                  href="https://sketchfab.com/3d-models/leather-couch-c2ac7a44144e4b80ab51f21b59c827f8"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Sketchfab <span aria-hidden>↗</span>
+                </a>
+                , licensed under CC BY 4.0.
+              </p>
+              <p>
+                Local source details:{' '}
+                <code>
+                  assets-source/leather-couch/leather-couch-source.txt
+                </code>
+              </p>
+            </section>
+
+            <form method="dialog" className="info-dialog-actions">
+              <button
+                type="button"
+                className="close-button"
+                onClick={closeInfoDialog}
+              >
+                Close
+              </button>
+            </form>
+          </div>
+        </dialog>
       </div>
     </div>
   )
