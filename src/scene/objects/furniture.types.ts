@@ -13,7 +13,7 @@ export interface FurnitureItem {
   rotationY: number
 }
 
-export interface DraggableFurnitureProps {
+export interface InteractiveFurnitureProps {
   id: string
   position: Vector3Tuple
   rotationY: number
@@ -21,7 +21,7 @@ export interface DraggableFurnitureProps {
   selected: boolean
   onObjectReady: (id: string, object: Object3D | null) => void
   onSelect: (id: string) => void
-  onDragStart: (id: string, event: ThreeEvent<PointerEvent>) => void
-  onDrag: (id: string, event: ThreeEvent<PointerEvent>) => void
-  onDragEnd: (id: string, event: ThreeEvent<PointerEvent>) => void
+  onMoveStart: (id: string, event: ThreeEvent<PointerEvent>) => void
+  onMove: (id: string, event: ThreeEvent<PointerEvent>) => void
+  onMoveEnd: (id: string, event: ThreeEvent<PointerEvent>) => void
 }

@@ -2,7 +2,7 @@ import { getClonedNode } from '@/lib/three/get-cloned-node'
 import type { ThreeEvent } from '@react-three/fiber'
 import { useEffect, useRef, useState } from 'react'
 import type { Group, Object3D } from 'three'
-import type { DraggableFurnitureProps } from './furniture.types'
+import type { InteractiveFurnitureProps } from './furniture.types'
 
 interface PointerCaptureTarget extends EventTarget {
   setPointerCapture: (pointerId: number) => void
@@ -32,7 +32,7 @@ function releasePointerCapture(event: ThreeEvent<PointerEvent>) {
   }
 }
 
-export function DraggableFurniture({
+export function InteractiveFurniture({
   id,
   position,
   rotationY,
@@ -40,11 +40,11 @@ export function DraggableFurniture({
   selected,
   onObjectReady,
   onSelect,
-  onDragStart,
-  onDrag,
-  onDragEnd,
+  onMoveStart,
+  onMove,
+  onMoveEnd,
   nodeName,
-}: DraggableFurnitureProps & { nodeName: string }) {
+}: InteractiveFurnitureProps & { nodeName: string }) {
   const groupRef = useRef<Group>(null)
   const [model] = useState<Object3D>(() => {
     const node = getClonedNode(sourceScene, nodeName)
@@ -69,7 +69,7 @@ export function DraggableFurniture({
         event.stopPropagation()
         getPointerCaptureTarget(event)?.setPointerCapture(event.pointerId)
         onSelect(id)
-        onDragStart(id, event)
+        onMoveStart(id, event)
       }}
       onPointerMove={(event) => {
         if (!selected) {
@@ -77,15 +77,15 @@ export function DraggableFurniture({
         }
 
         event.stopPropagation()
-        onDrag(id, event)
+        onMove(id, event)
       }}
       onPointerUp={(event) => {
         releasePointerCapture(event)
-        onDragEnd(id, event)
+        onMoveEnd(id, event)
       }}
       onPointerCancel={(event) => {
         releasePointerCapture(event)
-        onDragEnd(id, event)
+        onMoveEnd(id, event)
       }}
     >
       <primitive object={model} />

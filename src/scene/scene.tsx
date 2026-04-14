@@ -1,7 +1,7 @@
 import { Room } from './environment/room'
 import { Lighting } from './environment/lighting'
 import { CameraControls } from './camera/camera-controls'
-import { DraggableFurniture } from './objects/draggable-furniture'
+import { InteractiveFurniture } from './objects/interactive-furniture'
 import { useGLTF } from '@react-three/drei'
 import {
   useCallback,
@@ -230,7 +230,7 @@ export function Scene({
     [furniture],
   )
 
-  const handleDrag = useCallback(
+  const handleMove = useCallback(
     (id: string, event: ThreeEvent<PointerEvent>) => {
       if (dragState?.id !== id || dragState.pointerId !== event.pointerId) {
         return
@@ -290,7 +290,7 @@ export function Scene({
     [dragState, rotateSelectedFurniture, selectFurniture],
   )
 
-  const draggableFurniture = useMemo(
+  const sceneFurniture = useMemo(
     () =>
       furniture.flatMap((item) => {
         const sourceScene = sourceScenesByPath.get(item.sourcePath)
@@ -318,8 +318,8 @@ export function Scene({
       <CameraControls enabled={!dragState} />
       <Lighting />
       <Room />
-      {draggableFurniture.map(({ item, sourceScene }) => (
-        <DraggableFurniture
+      {sceneFurniture.map(({ item, sourceScene }) => (
+        <InteractiveFurniture
           key={item.id}
           id={item.id}
           position={item.position}
@@ -328,9 +328,9 @@ export function Scene({
           selected={selectedId === item.id}
           onObjectReady={registerObject}
           onSelect={handleSelect}
-          onDragStart={handleDragStart}
-          onDrag={handleDrag}
-          onDragEnd={handleDragEnd}
+          onMoveStart={handleDragStart}
+          onMove={handleMove}
+          onMoveEnd={handleDragEnd}
           nodeName={item.nodeName}
         />
       ))}

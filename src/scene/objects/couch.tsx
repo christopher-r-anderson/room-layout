@@ -1,6 +1,6 @@
-import { DraggableFurniture } from './draggable-furniture'
-import type { DraggableFurnitureProps } from './furniture.types'
+import { InteractiveFurniture } from './interactive-furniture'
+import type { InteractiveFurnitureProps } from './furniture.types'
 
-export function Couch(props: DraggableFurnitureProps) {
-  return <DraggableFurniture {...props} nodeName="couch" />
+export function Couch(props: InteractiveFurnitureProps) {
+  return <InteractiveFurniture {...props} nodeName="couch" />
 }
