@@ -35,6 +35,7 @@ function releasePointerCapture(event: ThreeEvent<PointerEvent>) {
 export function DraggableFurniture({
   id,
   position,
+  rotationY,
   sourceScene,
   selected,
   onObjectReady,
@@ -63,6 +64,7 @@ export function DraggableFurniture({
     <group
       ref={groupRef}
       position={position}
+      rotation={[0, rotationY, 0]}
       onPointerDown={(event) => {
         event.stopPropagation()
         getPointerCaptureTarget(event)?.setPointerCapture(event.pointerId)

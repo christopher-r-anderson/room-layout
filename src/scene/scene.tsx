@@ -38,6 +38,22 @@ interface DragState {
   }
 }
 
+interface SceneRef {
+  clearSelection: () => void
+  rotateSelection: (deltaRadians: number) => void
+}
+
+function normalizeAngleRadians(angleRadians: number) {
+  const fullTurn = Math.PI * 2
+  const normalized = angleRadians % fullTurn
+
+  if (normalized < 0) {
+    return normalized + fullTurn
+  }
+
+  return normalized
+}
+
 function getInitialFurnitureItems(
   sourceScenesByPath: Map<string, Object3D>,
 ): FurnitureItem[] {
@@ -62,14 +78,17 @@ function getInitialFurnitureItems(
       nodeName,
       sourcePath,
       position: [node.position.x, node.position.y, node.position.z],
+      rotationY: normalizeAngleRadians(node.rotation.y),
     }
   })
 }
 
 export function Scene({
   ref,
+  onSelectionChange,
 }: {
-  ref: React.Ref<{ clearSelection: () => void }>
+  ref: React.Ref<SceneRef>
+  onSelectionChange?: (id: string | null) => void
 }) {
   const gltfResult = useGLTF(FURNITURE_COLLECTION_PATHS) as
     | { scene: Object3D }
@@ -99,10 +118,14 @@ export function Scene({
     [selectedObject],
   )
 
-  const selectFurniture = useCallback((id: string | null) => {
-    setSelectedId(id)
-    setSelectedObject(id ? (objectRefs.current.get(id) ?? null) : null)
-  }, [])
+  const selectFurniture = useCallback(
+    (id: string | null) => {
+      setSelectedId(id)
+      setSelectedObject(id ? (objectRefs.current.get(id) ?? null) : null)
+      onSelectionChange?.(id)
+    },
+    [onSelectionChange],
+  )
 
   const handleSelect = useCallback(
     (id: string) => {
@@ -155,6 +178,28 @@ export function Scene({
       )
     },
     [],
+  )
+
+  const rotateSelectedFurniture = useCallback(
+    (deltaRadians: number) => {
+      if (!selectedId) {
+        return
+      }
+
+      setFurniture((currentFurniture) =>
+        currentFurniture.map((item) => {
+          if (item.id !== selectedId) {
+            return item
+          }
+
+          return {
+            ...item,
+            rotationY: normalizeAngleRadians(item.rotationY + deltaRadians),
+          }
+        }),
+      )
+    },
+    [selectedId],
   )
 
   const handleDragStart = useCallback(
@@ -238,8 +283,11 @@ export function Scene({
           selectFurniture(null)
         }
       },
+      rotateSelection: (deltaRadians: number) => {
+        rotateSelectedFurniture(deltaRadians)
+      },
     }),
-    [dragState, selectFurniture],
+    [dragState, rotateSelectedFurniture, selectFurniture],
   )
 
   const draggableFurniture = useMemo(
@@ -275,6 +323,7 @@ export function Scene({
           key={item.id}
           id={item.id}
           position={item.position}
+          rotationY={item.rotationY}
           sourceScene={sourceScene}
           selected={selectedId === item.id}
           onObjectReady={registerObject}

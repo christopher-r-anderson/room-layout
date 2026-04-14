@@ -10,11 +10,13 @@ export interface FurnitureItem {
   nodeName: string
   sourcePath: string
   position: Vector3Tuple
+  rotationY: number
 }
 
 export interface DraggableFurnitureProps {
   id: string
   position: Vector3Tuple
+  rotationY: number
   sourceScene: Object3D
   selected: boolean
   onObjectReady: (id: string, object: Object3D | null) => void
