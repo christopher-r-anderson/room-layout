@@ -45,6 +45,27 @@ pnpm test         # watch unit tests
 pnpm test:run     # run unit tests
 ```
 
+## 🌐 Deployment
+
+This repository deploys automatically to GitHub Pages via GitHub Actions.
+
+- Trigger: push to `main` (or manual workflow dispatch)
+- Workflow: `.github/workflows/deploy-pages.yml`
+- Publish target: `dist/` output from `pnpm build`
+- Base path: set automatically in CI as `/${repository-name}/`
+
+Production builds in GitHub Actions derive the base path from the repository name, which keeps forks and renamed repositories portable.
+
+For local production builds, the default fallback remains `/room-layout/`. If needed, override it explicitly:
+
+```bash
+VITE_BASE_PATH=/your-repo-name/ pnpm build
+```
+
+Current deployment URL:
+
+<https://christopher-r-anderson.github.io/room-layout/>
+
 ## 📝 Notes
 
 This project is intentionally focused on spatial interaction and rendering fundamentals rather than backend integration or full product features.

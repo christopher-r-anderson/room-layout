@@ -2,8 +2,12 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { fileURLToPath, URL } from 'node:url'
 
+const defaultPagesBasePath = '/room-layout/'
+const productionBasePath = process.env.VITE_BASE_PATH ?? defaultPagesBasePath
+
 // https://vite.dev/config/
 export default defineConfig({
+  base: process.env.NODE_ENV === 'production' ? productionBasePath : '/',
   plugins: [react()],
   resolve: {
     alias: {
