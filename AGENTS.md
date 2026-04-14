@@ -22,6 +22,9 @@
 - Reuse Three.js scratch objects in hot paths (drag math) to avoid unnecessary allocations.
 - Use the `@/` path alias for source imports.
 - Use semantic interaction naming (for example, `InteractiveFurniture`, `onMoveStart`) over narrow gesture-specific names unless behavior is truly gesture-specific.
+- Prefer fixing asset/data contract issues at the source (pivot, footprint metadata, node naming) over app-side compensation logic.
+- Add app-side workarounds only when production constraints require them (for example: third-party assets, legacy interfaces, or external platform limits), and keep them explicit, minimal, and easy to remove.
+- If it is unclear whether a workaround is pipeline-appropriate, pause and ask the user before implementing it.
 
 ## Testing
 
