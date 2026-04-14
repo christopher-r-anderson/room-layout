@@ -31,6 +31,10 @@
 - Add or update Vitest tests for new behavior in pure utility modules.
 - Prefer behavior/contract-oriented assertions over implementation-detail assertions.
 - Avoid over-testing tunable constants unless they are intentional product contracts.
+- For pure utility hot paths, use Vitest benchmark files (`*.bench.ts`) and compare against saved baselines (`pnpm bench:json`, `pnpm bench:compare`).
+- For user-flow performance decisions (drag, rotate, collision, camera transitions), use Playwright-driven browser benchmarks with scripted interactions and trace capture.
+- Use browser benchmarks when implementation options affect frame-time-sensitive interactions or when microbench results are not sufficient to choose an approach.
+- Keep performance optimizations only when measured results justify the added complexity.
 
 ## Asset Pipeline
 

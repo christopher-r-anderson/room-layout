@@ -39,6 +39,8 @@ Deliver a small, polished 3D room-layout editor demo that demonstrates productio
 
 - [ ] Add collision prevention so furniture cannot overlap.
 - [ ] Add wall/edge snapping behavior that works with collisions.
+- [ ] Set up Playwright browser performance harness for scripted interaction scenarios.
+- [ ] Add baseline browser perf scenario for drag/rotate/collision interaction traces.
 - [ ] Expand furniture catalog to 4 total types (including coffee table and end table).
 - [ ] Add UI flow to insert furniture instances on demand.
 - [ ] Add remove-selected-item action.
