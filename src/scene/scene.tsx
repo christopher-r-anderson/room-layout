@@ -5,6 +5,7 @@ import { InteractiveFurniture } from './objects/interactive-furniture'
 import { useGLTF } from '@react-three/drei'
 import {
   useCallback,
+  useEffect,
   useImperativeHandle,
   useMemo,
   useRef,
@@ -24,12 +25,24 @@ import {
   resolveRotatedFurnitureTransform,
   type LayoutBounds,
 } from '@/lib/three/furniture-layout'
+import {
+  commitHistoryPresent,
+  createHistoryState,
+  finalizeHistoryPresent,
+  replaceHistoryPresent,
+} from '@/lib/ui/editor-history'
 import type { FurnitureItem } from './objects/furniture.types'
 import {
   FURNITURE_COLLECTION_PATHS,
   getFurnitureCatalogEntry,
   getCollectionPath,
 } from './objects/furniture-catalog'
+import {
+  getSceneHistoryAvailability,
+  redoSceneHistory,
+  type SceneHistoryAvailability,
+  undoSceneHistory,
+} from './scene-history-state'
 
 const ROOM_HALF_SIZE = 3
 const FLOOR_PLANE_Y = 0
@@ -60,6 +73,8 @@ export interface SceneRef {
     | { ok: true; id: string }
     | { ok: false; reason: 'unknown-catalog' | 'no-space' }
   removeSelection: () => boolean
+  undo: () => boolean
+  redo: () => boolean
 }
 
 function createFurnitureInstanceId(sequenceNumber: number) {
@@ -79,6 +94,37 @@ function normalizeAngleRadians(angleRadians: number) {
 
 function getInitialFurnitureItems(): FurnitureItem[] {
   return []
+}
+
+function areFurnitureItemsEqual(left: FurnitureItem, right: FurnitureItem) {
+  return (
+    left.id === right.id &&
+    left.catalogId === right.catalogId &&
+    left.name === right.name &&
+    left.kind === right.kind &&
+    left.collectionId === right.collectionId &&
+    left.nodeName === right.nodeName &&
+    left.sourcePath === right.sourcePath &&
+    left.footprintSize.width === right.footprintSize.width &&
+    left.footprintSize.depth === right.footprintSize.depth &&
+    left.position[0] === right.position[0] &&
+    left.position[1] === right.position[1] &&
+    left.position[2] === right.position[2] &&
+    left.rotationY === right.rotationY
+  )
+}
+
+function areFurnitureCollectionsEqual(
+  left: FurnitureItem[],
+  right: FurnitureItem[],
+) {
+  if (left.length !== right.length) {
+    return false
+  }
+
+  return left.every((item, index) => {
+    return areFurnitureItemsEqual(item, right[index])
+  })
 }
 
 function createFurnitureItem(
@@ -132,9 +178,11 @@ function createFurnitureItem(
 export function Scene({
   ref,
   onSelectionChange,
+  onHistoryChange,
 }: {
   ref: React.Ref<SceneRef>
   onSelectionChange?: (item: FurnitureItem | null) => void
+  onHistoryChange?: (availability: SceneHistoryAvailability) => void
 }) {
   const gltfResult = useGLTF(FURNITURE_COLLECTION_PATHS) as
     | { scene: Object3D }
@@ -152,10 +200,12 @@ export function Scene({
   }, [gltfResult])
 
   const objectRefs = useRef(new Map<string, Object3D>())
-  const [furniture, setFurniture] = useState<FurnitureItem[]>(() =>
-    getInitialFurnitureItems(),
+  const [history, setHistory] = useState(() =>
+    createHistoryState<FurnitureItem[]>(getInitialFurnitureItems()),
   )
+  const furniture = history.present
   const instanceIdRef = useRef(furniture.length)
+  const dragStartStateRef = useRef<FurnitureItem[] | null>(null)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [selectedObject, setSelectedObject] = useState<Object3D | null>(null)
   const [dragState, setDragState] = useState<DragState | null>(null)
@@ -163,20 +213,37 @@ export function Scene({
     () => furniture.find((item) => item.id === selectedId) ?? null,
     [furniture, selectedId],
   )
+  const historyAvailability = useMemo(
+    () =>
+      getSceneHistoryAvailability({
+        history,
+        selectedId,
+        isDragging: Boolean(dragState),
+      }),
+    [dragState, history, selectedId],
+  )
 
   const selection = useMemo(
     () => (selectedObject ? getMeshes(selectedObject) : []),
     [selectedObject],
   )
 
-  const setSelection = useCallback(
-    (item: FurnitureItem | null) => {
-      setSelectedId(item?.id ?? null)
-      setSelectedObject(item ? (objectRefs.current.get(item.id) ?? null) : null)
-      onSelectionChange?.(item)
-    },
-    [onSelectionChange],
-  )
+  useEffect(() => {
+    onSelectionChange?.(selectedFurniture)
+  }, [onSelectionChange, selectedFurniture])
+
+  useEffect(() => {
+    onHistoryChange?.(historyAvailability)
+  }, [historyAvailability, onHistoryChange])
+
+  const setSelection = useCallback((item: FurnitureItem | null) => {
+    const nextSelectedId = item?.id ?? null
+
+    setSelectedId(nextSelectedId)
+    setSelectedObject(
+      nextSelectedId ? (objectRefs.current.get(nextSelectedId) ?? null) : null,
+    )
+  }, [])
 
   const selectFurniture = useCallback(
     (id: string | null) => {
@@ -219,8 +286,8 @@ export function Scene({
 
   const updateFurniturePosition = useCallback(
     (id: string, nextPosition: [number, number, number]) => {
-      setFurniture((currentFurniture) =>
-        currentFurniture.map((item) => {
+      setHistory((currentHistory) => {
+        const nextFurniture = currentHistory.present.map((item) => {
           if (item.id !== id) {
             return item
           }
@@ -236,42 +303,50 @@ export function Scene({
             ...item,
             position: nextPosition,
           }
-        }),
-      )
+        })
+
+        return replaceHistoryPresent(
+          currentHistory,
+          nextFurniture,
+          areFurnitureCollectionsEqual,
+        )
+      })
     },
     [],
   )
 
   const rotateSelectedFurniture = useCallback(
     (deltaRadians: number) => {
-      if (!selectedId) {
-        return
-      }
+      setHistory((currentHistory) => {
+        const rotatingId = selectedId
 
-      setFurniture((currentFurniture) => {
-        const rotatingItem = currentFurniture.find(
-          (item) => item.id === selectedId,
+        if (!rotatingId) {
+          return currentHistory
+        }
+
+        const rotatingItem = currentHistory.present.find(
+          (item) => item.id === rotatingId,
         )
 
         if (!rotatingItem) {
-          return currentFurniture
+          return currentHistory
         }
 
         const resolvedTransform = resolveRotatedFurnitureTransform({
-          rotatingId: selectedId,
+          rotatingId,
           proposedRotationY: normalizeAngleRadians(
             rotatingItem.rotationY + deltaRadians,
           ),
-          items: currentFurniture,
+          items: currentHistory.present,
           bounds: ROOM_BOUNDS,
         })
 
         if (!resolvedTransform) {
-          return currentFurniture
+          return currentHistory
         }
 
-        return currentFurniture.map((item) => {
-          if (item.id !== selectedId) {
+        const nextFurniture = currentHistory.present.map((item) => {
+          if (item.id !== rotatingId) {
             return item
           }
 
@@ -281,6 +356,12 @@ export function Scene({
             rotationY: resolvedTransform.rotationY,
           }
         })
+
+        return commitHistoryPresent(
+          currentHistory,
+          nextFurniture,
+          areFurnitureCollectionsEqual,
+        )
       })
     },
     [selectedId],
@@ -301,6 +382,7 @@ export function Scene({
       }
 
       selectFurniture(id)
+      dragStartStateRef.current = furniture
       setDragState({
         id,
         pointerId: event.pointerId,
@@ -355,15 +437,31 @@ export function Scene({
     [dragState, furniture, updateFurniturePosition],
   )
 
-  const handleDragEnd = useCallback((id: string) => {
-    setDragState((currentDragState) => {
-      if (currentDragState?.id !== id) {
-        return currentDragState
+  const handleDragEnd = useCallback(
+    (id: string) => {
+      if (dragState?.id !== id) {
+        return
       }
 
-      return null
-    })
-  }, [])
+      setDragState(null)
+
+      const dragStartState = dragStartStateRef.current
+      dragStartStateRef.current = null
+
+      if (!dragStartState) {
+        return
+      }
+
+      setHistory((currentHistory) =>
+        finalizeHistoryPresent(
+          currentHistory,
+          dragStartState,
+          areFurnitureCollectionsEqual,
+        ),
+      )
+    },
+    [dragState],
+  )
 
   useImperativeHandle(
     ref,
@@ -386,69 +484,162 @@ export function Scene({
           }
         }
 
-        const nextId = createFurnitureInstanceId(instanceIdRef.current + 1)
-        const nextItem = createFurnitureItem(
-          sourceScenesByPath,
-          nextId,
-          entry.id,
-        )
-        const spawnPosition = findFurnitureSpawnPosition({
-          item: nextItem,
-          items: furniture,
-          bounds: ROOM_BOUNDS,
-          edgeSnapThreshold: EDGE_SNAP_THRESHOLD,
-          snapSize: SNAP_SIZE,
+        const addOutcome: {
+          result:
+            | { ok: true; id: string }
+            | { ok: false; reason: 'unknown-catalog' | 'no-space' }
+          incrementInstanceId: boolean
+        } = {
+          result: {
+            ok: false,
+            reason: 'no-space',
+          },
+          incrementInstanceId: false,
+        }
+
+        setHistory((currentHistory) => {
+          const nextId = createFurnitureInstanceId(instanceIdRef.current + 1)
+          const nextItem = createFurnitureItem(
+            sourceScenesByPath,
+            nextId,
+            entry.id,
+          )
+          const spawnPosition = findFurnitureSpawnPosition({
+            item: nextItem,
+            items: currentHistory.present,
+            bounds: ROOM_BOUNDS,
+            edgeSnapThreshold: EDGE_SNAP_THRESHOLD,
+            snapSize: SNAP_SIZE,
+          })
+
+          if (!spawnPosition) {
+            return currentHistory
+          }
+
+          const spawnedItem = {
+            ...nextItem,
+            position: spawnPosition,
+          }
+
+          addOutcome.result = {
+            ok: true,
+            id: spawnedItem.id,
+          }
+          addOutcome.incrementInstanceId = true
+
+          return commitHistoryPresent(
+            currentHistory,
+            [...currentHistory.present, spawnedItem],
+            areFurnitureCollectionsEqual,
+          )
         })
 
-        if (!spawnPosition) {
-          return {
-            ok: false,
-            reason: 'no-space' as const,
-          }
+        if (addOutcome.incrementInstanceId) {
+          instanceIdRef.current += 1
+          setSelectedId(addOutcome.result.ok ? addOutcome.result.id : null)
+          setSelectedObject(null)
         }
 
-        const spawnedItem = {
-          ...nextItem,
-          position: spawnPosition,
-        }
-
-        instanceIdRef.current += 1
-        setFurniture((currentFurniture) => [...currentFurniture, spawnedItem])
-        setSelection(spawnedItem)
-
-        return {
-          ok: true,
-          id: spawnedItem.id,
-        }
+        return addOutcome.result
       },
       removeSelection: () => {
-        if (!selectedFurniture) {
+        const removeOutcome = {
+          removed: false,
+          removedId: null as string | null,
+        }
+
+        setHistory((currentHistory) => {
+          const currentSelection = selectedId
+
+          if (!currentSelection) {
+            return currentHistory
+          }
+
+          const nextFurniture = currentHistory.present.filter(
+            (item) => item.id !== currentSelection,
+          )
+
+          if (nextFurniture.length === currentHistory.present.length) {
+            return currentHistory
+          }
+
+          removeOutcome.removed = true
+          removeOutcome.removedId = currentSelection
+
+          return commitHistoryPresent(
+            currentHistory,
+            nextFurniture,
+            areFurnitureCollectionsEqual,
+          )
+        })
+
+        if (!removeOutcome.removed) {
           return false
         }
 
-        setFurniture((currentFurniture) =>
-          currentFurniture.filter((item) => item.id !== selectedFurniture.id),
-        )
-        setDragState((currentDragState) => {
-          if (currentDragState?.id !== selectedFurniture.id) {
-            return currentDragState
-          }
+        if (
+          removeOutcome.removedId &&
+          dragState?.id === removeOutcome.removedId
+        ) {
+          setDragState(null)
+          dragStartStateRef.current = null
+        }
 
-          return null
+        setSelectedId(null)
+        setSelectedObject(null)
+
+        return true
+      },
+      undo: () => {
+        const undoResult = undoSceneHistory({
+          history,
+          selectedId,
+          isDragging: Boolean(dragState),
         })
-        selectFurniture(null)
+
+        if (!undoResult.didChange) {
+          return false
+        }
+
+        setHistory(undoResult.history)
+        setSelectedId(undoResult.selectedId)
+        setSelectedObject(
+          undoResult.selectedId
+            ? (objectRefs.current.get(undoResult.selectedId) ?? null)
+            : null,
+        )
+
+        return true
+      },
+      redo: () => {
+        const redoResult = redoSceneHistory({
+          history,
+          selectedId,
+          isDragging: Boolean(dragState),
+        })
+
+        if (!redoResult.didChange) {
+          return false
+        }
+
+        setHistory(redoResult.history)
+        setSelectedId(redoResult.selectedId)
+        setSelectedObject(
+          redoResult.selectedId
+            ? (objectRefs.current.get(redoResult.selectedId) ?? null)
+            : null,
+        )
 
         return true
       },
     }),
     [
       dragState,
-      furniture,
+      history,
       rotateSelectedFurniture,
       selectFurniture,
-      selectedFurniture,
+      selectedId,
       sourceScenesByPath,
-      setSelection,
     ],
   )
 

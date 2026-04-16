@@ -26,7 +26,7 @@
   top: 16px;
   left: 16px;
   display: grid;
-  gap: 10px;
+  gap: 12px;
   width: min(320px, calc(100vw - 32px));
   padding: 14px;
   border: 1px solid rgba(199, 199, 199, 0.95);
@@ -35,10 +35,37 @@
   box-shadow: 0 12px 28px rgba(17, 24, 39, 0.12);
 }
 
-.catalog-label {
+.control-group {
+  display: grid;
+  gap: 8px;
+}
+
+.control-group + .control-group {
+  padding-top: 12px;
+  border-top: 1px solid rgba(199, 199, 199, 0.7);
+}
+
+.control-group-history {
+  gap: 6px;
+}
+
+.control-heading {
+  margin: 0;
   font-size: 14px;
   font-weight: 600;
   color: #1f1f1f;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .catalog-row {
@@ -49,7 +76,9 @@
 
 .catalog-select,
 .add-button,
-.remove-button {
+.remove-button,
+.history-button,
+.rotation-button {
   border: 1px solid #c7c7c7;
   border-radius: 8px;
   font: inherit;
@@ -63,7 +92,9 @@
 }
 
 .add-button,
-.remove-button {
+.remove-button,
+.history-button,
+.rotation-button {
   background: rgba(255, 255, 255, 0.95);
   color: #1f1f1f;
   cursor: pointer;
@@ -72,15 +103,31 @@
 
 .add-button:focus-visible,
 .remove-button:focus-visible,
+.history-button:focus-visible,
+.rotation-button:focus-visible,
 .catalog-select:focus-visible {
   outline: 2px solid #0f62fe;
   outline-offset: 2px;
 }
 
 .remove-button:disabled,
-.add-button:disabled {
+.add-button:disabled,
+.history-button:disabled,
+.rotation-button:disabled {
   opacity: 0.55;
   cursor: not-allowed;
+}
+
+.history-controls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.rotation-controls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
 }
 
 .selection-summary,
@@ -89,6 +136,12 @@
   font-size: 13px;
   line-height: 1.35;
   color: #2d2d2d;
+}
+
+.selection-summary {
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgba(15, 98, 254, 0.06);
 }
 
 .editor-message {
@@ -184,34 +237,6 @@
   outline-offset: 2px;
 }
 
-.rotation-controls {
-  position: absolute;
-  right: 16px;
-  bottom: 16px;
-  display: flex;
-  gap: 8px;
-}
-
-.rotation-button {
-  border: 1px solid #c7c7c7;
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.95);
-  color: #1f1f1f;
-  font: inherit;
-  padding: 8px 10px;
-  cursor: pointer;
-}
-
-.rotation-button:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
-}
-
-.rotation-button:focus-visible {
-  outline: 2px solid #0f62fe;
-  outline-offset: 2px;
-}
-
 .rotation-help {
   position: absolute;
   left: 16px;
@@ -223,6 +248,14 @@
   padding: 8px 10px;
   font-size: 14px;
   line-height: 1.2;
+}
+
+.rotation-help-line {
+  display: block;
+}
+
+.rotation-help-line + .rotation-help-line {
+  margin-top: 4px;
 }
 
 .rotation-help kbd {
@@ -296,15 +329,7 @@
     grid-template-columns: 1fr;
   }
 
-  .rotation-controls {
-    right: 16px;
-    left: 16px;
-    justify-content: flex-end;
-    flex-wrap: wrap;
-  }
-
   .rotation-help {
     max-width: calc(100vw - 32px);
-    bottom: 64px;
   }
 }

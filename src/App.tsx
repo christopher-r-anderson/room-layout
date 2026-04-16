@@ -4,6 +4,7 @@ import { Scene, type SceneRef } from './scene/scene'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { getRotationHotkeyDirection } from './lib/ui/rotation-hotkeys'
 import { getDeleteHotkeyIntent } from './lib/ui/delete-hotkeys'
+import { getHistoryHotkeyIntent } from './lib/ui/history-hotkeys'
 import { FURNITURE_CATALOG } from './scene/objects/furniture-catalog'
 import type { FurnitureItem } from './scene/objects/furniture.types'
 
@@ -23,6 +24,10 @@ function App() {
   const [pendingDeleteFurniture, setPendingDeleteFurniture] =
     useState<FurnitureItem | null>(null)
   const [editorMessage, setEditorMessage] = useState<string | null>(null)
+  const [historyAvailability, setHistoryAvailability] = useState({
+    canUndo: false,
+    canRedo: false,
+  })
 
   const closeDeleteDialog = useCallback(() => {
     confirmDeleteDialogRef.current?.close()
@@ -46,16 +51,28 @@ function App() {
       const isModalOpen =
         Boolean(infoDialogRef.current?.open) ||
         Boolean(confirmDeleteDialogRef.current?.open)
+      const targetTagName =
+        target instanceof HTMLElement ? target.tagName : undefined
+      const targetIsContentEditable =
+        target instanceof HTMLElement ? target.isContentEditable : false
+      const historyIntent = getHistoryHotkeyIntent({
+        key: event.key,
+        altKey: event.altKey,
+        ctrlKey: event.ctrlKey,
+        metaKey: event.metaKey,
+        shiftKey: event.shiftKey,
+        isModalOpen,
+        targetTagName,
+        targetIsContentEditable,
+      })
       const deleteIntent = getDeleteHotkeyIntent({
         key: event.key,
         altKey: event.altKey,
         ctrlKey: event.ctrlKey,
         metaKey: event.metaKey,
         isModalOpen,
-        targetTagName:
-          target instanceof HTMLElement ? target.tagName : undefined,
-        targetIsContentEditable:
-          target instanceof HTMLElement ? target.isContentEditable : false,
+        targetTagName,
+        targetIsContentEditable,
       })
       const direction = getRotationHotkeyDirection({
         key: event.key,
@@ -63,11 +80,21 @@ function App() {
         ctrlKey: event.ctrlKey,
         metaKey: event.metaKey,
         isModalOpen,
-        targetTagName:
-          target instanceof HTMLElement ? target.tagName : undefined,
-        targetIsContentEditable:
-          target instanceof HTMLElement ? target.isContentEditable : false,
+        targetTagName,
+        targetIsContentEditable,
       })
+
+      if (historyIntent === 'undo' && historyAvailability.canUndo) {
+        event.preventDefault()
+        sceneRef.current?.undo()
+        return
+      }
+
+      if (historyIntent === 'redo' && historyAvailability.canRedo) {
+        event.preventDefault()
+        sceneRef.current?.redo()
+        return
+      }
 
       if (selectedFurniture && deleteIntent) {
         event.preventDefault()
@@ -88,10 +115,18 @@ function App() {
     return () => {
       window.removeEventListener('keydown', onKeyDown)
     }
-  }, [openDeleteDialog, selectedFurniture])
+  }, [historyAvailability, openDeleteDialog, selectedFurniture])
 
   const rotateSelection = (direction: -1 | 1) => {
     sceneRef.current?.rotateSelection(direction * ROTATION_STEP_RADIANS)
+  }
+
+  const undo = () => {
+    sceneRef.current?.undo()
+  }
+
+  const redo = () => {
+    sceneRef.current?.redo()
   }
 
   const addFurniture = () => {
@@ -183,56 +218,134 @@ function App() {
         shadows
       >
         <color attach="background" args={['#f0f0f0']} />
-        <Scene ref={sceneRef} onSelectionChange={setSelectedFurniture} />
+        <Scene
+          ref={sceneRef}
+          onSelectionChange={setSelectedFurniture}
+          onHistoryChange={setHistoryAvailability}
+        />
       </Canvas>
 
       <div className="ui-overlay">
         <section className="catalog-controls" aria-label="Furniture controls">
-          <label className="catalog-label" htmlFor="add-furniture-select">
-            Add Furniture
-          </label>
-          <div className="catalog-row">
-            <select
-              id="add-furniture-select"
-              className="catalog-select"
-              value={catalogIdToAdd}
-              onChange={(event) => {
-                setCatalogIdToAdd(event.target.value)
-              }}
+          <div className="control-group control-group-history">
+            <h2 className="control-heading">History</h2>
+            <div
+              className="history-controls"
+              role="toolbar"
+              aria-label="History controls"
             >
-              {FURNITURE_CATALOG.map((entry) => (
-                <option key={entry.id} value={entry.id}>
-                  {entry.name}
-                </option>
-              ))}
-            </select>
+              <button
+                type="button"
+                className="history-button"
+                disabled={!historyAvailability.canUndo}
+                onClick={undo}
+                aria-keyshortcuts="Control+Z Meta+Z"
+              >
+                Undo
+              </button>
+              <button
+                type="button"
+                className="history-button"
+                disabled={!historyAvailability.canRedo}
+                onClick={redo}
+                aria-keyshortcuts="Control+Y Control+Shift+Z Meta+Shift+Z"
+              >
+                Redo
+              </button>
+            </div>
+          </div>
+
+          <div
+            className="control-group"
+            aria-labelledby="add-furniture-heading"
+          >
+            <h2 id="add-furniture-heading" className="control-heading">
+              Add Furniture
+            </h2>
+            <label className="sr-only" htmlFor="add-furniture-select">
+              Furniture type to add
+            </label>
+            <div className="catalog-row">
+              <select
+                id="add-furniture-select"
+                className="catalog-select"
+                value={catalogIdToAdd}
+                onChange={(event) => {
+                  setCatalogIdToAdd(event.target.value)
+                }}
+              >
+                {FURNITURE_CATALOG.map((entry) => (
+                  <option key={entry.id} value={entry.id}>
+                    {entry.name}
+                  </option>
+                ))}
+              </select>
+              <button
+                type="button"
+                className="add-button"
+                disabled={!catalogIdToAdd}
+                onClick={addFurniture}
+              >
+                Add Item
+              </button>
+            </div>
+          </div>
+
+          <div
+            className="control-group"
+            aria-labelledby="selection-actions-heading"
+          >
+            <h2 id="selection-actions-heading" className="control-heading">
+              Selection Actions
+            </h2>
+            <p className="selection-summary" aria-live="polite">
+              {selectedFurniture ? (
+                <>Selected: {selectedFurniture.name}</>
+              ) : (
+                'Selected: none'
+              )}
+            </p>
+            <div
+              className="rotation-controls"
+              role="toolbar"
+              aria-label="Rotation controls"
+            >
+              <button
+                type="button"
+                className="rotation-button"
+                disabled={!selectedFurniture}
+                onClick={() => {
+                  rotateSelection(-1)
+                }}
+                aria-keyshortcuts="Q"
+              >
+                Rotate Left
+              </button>
+              <button
+                type="button"
+                className="rotation-button"
+                disabled={!selectedFurniture}
+                onClick={() => {
+                  rotateSelection(1)
+                }}
+                aria-keyshortcuts="E"
+              >
+                Rotate Right
+              </button>
+            </div>
             <button
+              ref={removeButtonRef}
               type="button"
-              className="add-button"
-              disabled={!catalogIdToAdd}
-              onClick={addFurniture}
+              className="remove-button"
+              disabled={!selectedFurniture}
+              aria-haspopup="dialog"
+              aria-controls="confirm-delete-dialog"
+              onClick={openDeleteDialog}
             >
-              Add Item
+              Remove Selected
             </button>
           </div>
-          <button
-            ref={removeButtonRef}
-            type="button"
-            className="remove-button"
-            disabled={!selectedFurniture}
-            aria-haspopup="dialog"
-            aria-controls="confirm-delete-dialog"
-            onClick={openDeleteDialog}
-          >
-            Remove Selected
-          </button>
-          <p className="selection-summary" aria-live="polite">
-            {selectedFurniture ? (
-              <>Selected: {selectedFurniture.name}</>
-            ) : (
-              'Selected: none'
-            )}
-          </p>
+
           {editorMessage ? (
             <p className="editor-message" role="status">
               {editorMessage}
@@ -250,37 +363,15 @@ function App() {
         >
           <span aria-hidden>ℹ</span>
         </button>
-        <div
-          className="rotation-controls"
-          role="toolbar"
-          aria-label="Rotation controls"
-        >
-          <button
-            type="button"
-            className="rotation-button"
-            disabled={!selectedFurniture}
-            onClick={() => {
-              rotateSelection(-1)
-            }}
-            aria-keyshortcuts="Q"
-          >
-            Rotate Left
-          </button>
-          <button
-            type="button"
-            className="rotation-button"
-            disabled={!selectedFurniture}
-            onClick={() => {
-              rotateSelection(1)
-            }}
-            aria-keyshortcuts="E"
-          >
-            Rotate Right
-          </button>
-        </div>
         <p className="rotation-help">
-          Select furniture, then use <kbd>Q</kbd>/<kbd>E</kbd> to rotate and{' '}
-          <kbd>Delete</kbd>/<kbd>Backspace</kbd> to remove.
+          <span className="rotation-help-line">
+            Select furniture, then use <kbd>Q</kbd>/<kbd>E</kbd> to rotate and{' '}
+            <kbd>Delete</kbd>/<kbd>Backspace</kbd> to remove.
+          </span>
+          <span className="rotation-help-line">
+            Use <kbd>Ctrl</kbd>+<kbd>Z</kbd> to undo and <kbd>Ctrl</kbd>+
+            <kbd>Y</kbd> to redo.
+          </span>
         </p>
 
         <dialog
@@ -301,7 +392,7 @@ function App() {
               from the room layout?
             </p>
             <p className="confirm-delete-note">
-              This action is destructive and cannot be undone yet.
+              You can undo this from the history controls after removing it.
             </p>
             <div className="confirm-dialog-actions">
               <button
