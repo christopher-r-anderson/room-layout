@@ -1,5 +1,16 @@
 import type { FurnitureKind, FootprintSize } from './furniture.types'
 
+function resolvePublicAssetPath(assetPath: string) {
+  const normalizedBasePath = import.meta.env.BASE_URL.endsWith('/')
+    ? import.meta.env.BASE_URL
+    : `${import.meta.env.BASE_URL}/`
+  const normalizedAssetPath = assetPath.startsWith('/')
+    ? assetPath.slice(1)
+    : assetPath
+
+  return `${normalizedBasePath}${normalizedAssetPath}`
+}
+
 export interface FurnitureCollection {
   id: string
   sourcePath: string
@@ -17,7 +28,7 @@ export interface FurnitureCatalogEntry {
 export const FURNITURE_COLLECTIONS: FurnitureCollection[] = [
   {
     id: 'leather-collection',
-    sourcePath: '/models/leather-collection.glb',
+    sourcePath: resolvePublicAssetPath('models/leather-collection.glb'),
   },
 ]
 
@@ -69,3 +80,5 @@ export function getFurnitureCatalogEntry(catalogId: string) {
 export function getFurnitureCatalogEntryByKind(kind: FurnitureKind) {
   return FURNITURE_CATALOG.find((entry) => entry.kind === kind) ?? null
 }
+
+export { resolvePublicAssetPath }
