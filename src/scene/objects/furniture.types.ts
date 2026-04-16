@@ -8,15 +8,20 @@ export interface FootprintSize {
   depth: number
 }
 
-export interface FurnitureItem {
+export interface FurnitureInstance {
   id: string
+  catalogId: string
+  position: Vector3Tuple
+  rotationY: number
+}
+
+export interface FurnitureItem extends FurnitureInstance {
+  name: string
   kind: FurnitureKind
   collectionId: string
   nodeName: string
   sourcePath: string
   footprintSize: FootprintSize
-  position: Vector3Tuple
-  rotationY: number
 }
 
 export interface InteractiveFurnitureProps {

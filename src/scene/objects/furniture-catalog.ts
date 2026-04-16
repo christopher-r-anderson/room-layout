@@ -7,6 +7,7 @@ export interface FurnitureCollection {
 
 export interface FurnitureCatalogEntry {
   id: string
+  name: string
   kind: FurnitureKind
   collectionId: FurnitureCollection['id']
   nodeName: string
@@ -23,6 +24,7 @@ export const FURNITURE_COLLECTIONS: FurnitureCollection[] = [
 export const FURNITURE_CATALOG: FurnitureCatalogEntry[] = [
   {
     id: 'couch-1',
+    name: 'Leather Couch',
     kind: 'couch',
     collectionId: 'leather-collection',
     nodeName: 'couch',
@@ -33,6 +35,7 @@ export const FURNITURE_CATALOG: FurnitureCatalogEntry[] = [
   },
   {
     id: 'armchair-1',
+    name: 'Leather Armchair',
     kind: 'armchair',
     collectionId: 'leather-collection',
     nodeName: 'armchair',
@@ -57,4 +60,12 @@ export function getCollectionPath(collectionId: string) {
   }
 
   return collection.sourcePath
+}
+
+export function getFurnitureCatalogEntry(catalogId: string) {
+  return FURNITURE_CATALOG.find((entry) => entry.id === catalogId) ?? null
+}
+
+export function getFurnitureCatalogEntryByKind(kind: FurnitureKind) {
+  return FURNITURE_CATALOG.find((entry) => entry.kind === kind) ?? null
 }

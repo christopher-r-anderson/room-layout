@@ -4,7 +4,7 @@ A minimal interactive 3D room layout built with React Three Fiber.
 
 <https://christopher-r-anderson.github.io/room-layout/>
 
-This project demonstrates core web 3D concepts relevant to retail and product experiences, including scene composition, camera controls, and object placement foundations.
+This project demonstrates core web 3D concepts relevant to retail and product experiences, including scene composition, camera controls, collision-aware object placement, and catalog-driven editor workflows.
 
 ---
 
@@ -72,7 +72,15 @@ Current deployment URL:
 
 This project is intentionally focused on spatial interaction and rendering fundamentals rather than backend integration or full product features.
 
-The editor UI includes an info dialog (ℹ) with a repository link and asset attribution details.
+The editor UI includes a catalog-driven add/remove panel, keyboard rotation shortcuts, and an info dialog (ℹ) with a repository link and asset attribution details.
+
+## 🎮 Usage
+
+- Click a furniture item to select it.
+- Drag selected furniture along the floor; movement stays within room bounds and avoids collisions.
+- Rotate the selected item with `Q` / `E` or the rotate buttons.
+- Add another furniture instance from the catalog panel in the top-left corner.
+- Remove the selected item from the panel or with `Delete` / `Backspace`, then confirm the dialog.
 
 ## 🗺️ Project Plan
 

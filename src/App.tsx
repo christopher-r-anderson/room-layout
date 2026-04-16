@@ -1,36 +1,81 @@
 import { Canvas } from '@react-three/fiber'
 import './App.css'
-import { Scene } from './scene/scene'
-import { useEffect, useRef, useState } from 'react'
+import { Scene, type SceneRef } from './scene/scene'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { getRotationHotkeyDirection } from './lib/ui/rotation-hotkeys'
+import { getDeleteHotkeyIntent } from './lib/ui/delete-hotkeys'
+import { FURNITURE_CATALOG } from './scene/objects/furniture-catalog'
+import type { FurnitureItem } from './scene/objects/furniture.types'
 
 const ROTATION_STEP_RADIANS = Math.PI / 12
 
 function App() {
-  const sceneRef = useRef<{
-    clearSelection: () => void
-    rotateSelection: (deltaRadians: number) => void
-  } | null>(null)
+  const sceneRef = useRef<SceneRef | null>(null)
   const infoDialogRef = useRef<HTMLDialogElement | null>(null)
+  const confirmDeleteDialogRef = useRef<HTMLDialogElement | null>(null)
   const infoButtonRef = useRef<HTMLButtonElement | null>(null)
-  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const removeButtonRef = useRef<HTMLButtonElement | null>(null)
+  const [selectedFurniture, setSelectedFurniture] =
+    useState<FurnitureItem | null>(null)
+  const [catalogIdToAdd, setCatalogIdToAdd] = useState(
+    FURNITURE_CATALOG[0]?.id ?? '',
+  )
+  const [pendingDeleteFurniture, setPendingDeleteFurniture] =
+    useState<FurnitureItem | null>(null)
+  const [editorMessage, setEditorMessage] = useState<string | null>(null)
+
+  const closeDeleteDialog = useCallback(() => {
+    confirmDeleteDialogRef.current?.close()
+    setPendingDeleteFurniture(null)
+    removeButtonRef.current?.focus()
+  }, [])
+
+  const openDeleteDialog = useCallback(() => {
+    if (!selectedFurniture || confirmDeleteDialogRef.current?.open) {
+      return
+    }
+
+    setPendingDeleteFurniture(selectedFurniture)
+    setEditorMessage(null)
+    confirmDeleteDialogRef.current?.showModal()
+  }, [selectedFurniture])
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       const target = event.target
+      const isModalOpen =
+        Boolean(infoDialogRef.current?.open) ||
+        Boolean(confirmDeleteDialogRef.current?.open)
+      const deleteIntent = getDeleteHotkeyIntent({
+        key: event.key,
+        altKey: event.altKey,
+        ctrlKey: event.ctrlKey,
+        metaKey: event.metaKey,
+        isModalOpen,
+        targetTagName:
+          target instanceof HTMLElement ? target.tagName : undefined,
+        targetIsContentEditable:
+          target instanceof HTMLElement ? target.isContentEditable : false,
+      })
       const direction = getRotationHotkeyDirection({
         key: event.key,
         altKey: event.altKey,
         ctrlKey: event.ctrlKey,
         metaKey: event.metaKey,
-        isModalOpen: infoDialogRef.current?.open,
+        isModalOpen,
         targetTagName:
           target instanceof HTMLElement ? target.tagName : undefined,
         targetIsContentEditable:
           target instanceof HTMLElement ? target.isContentEditable : false,
       })
 
-      if (!selectedId || !direction) {
+      if (selectedFurniture && deleteIntent) {
+        event.preventDefault()
+        openDeleteDialog()
+        return
+      }
+
+      if (!selectedFurniture || !direction) {
         return
       }
 
@@ -43,10 +88,33 @@ function App() {
     return () => {
       window.removeEventListener('keydown', onKeyDown)
     }
-  }, [selectedId])
+  }, [openDeleteDialog, selectedFurniture])
 
   const rotateSelection = (direction: -1 | 1) => {
     sceneRef.current?.rotateSelection(direction * ROTATION_STEP_RADIANS)
+  }
+
+  const addFurniture = () => {
+    if (!catalogIdToAdd) {
+      return
+    }
+
+    const result = sceneRef.current?.addFurniture(catalogIdToAdd)
+
+    if (!result) {
+      return
+    }
+
+    if (!result.ok) {
+      setEditorMessage(
+        result.reason === 'no-space'
+          ? 'No safe placement slot is available for that furniture item.'
+          : 'The selected furniture entry is no longer available.',
+      )
+      return
+    }
+
+    setEditorMessage(null)
   }
 
   const openInfoDialog = () => {
@@ -73,6 +141,34 @@ function App() {
     }
   }
 
+  const handleDeleteDialogCancel = (
+    event: React.SyntheticEvent<HTMLDialogElement>,
+  ) => {
+    event.preventDefault()
+    closeDeleteDialog()
+  }
+
+  const handleDeleteDialogClick = (
+    event: React.MouseEvent<HTMLDialogElement>,
+  ) => {
+    if (event.target === event.currentTarget) {
+      closeDeleteDialog()
+    }
+  }
+
+  const confirmRemoveSelection = () => {
+    const removed = sceneRef.current?.removeSelection() ?? false
+
+    closeDeleteDialog()
+
+    if (!removed) {
+      setEditorMessage('No selected furniture item was available to remove.')
+      return
+    }
+
+    setEditorMessage(null)
+  }
+
   return (
     <div className="app">
       <Canvas
@@ -87,10 +183,62 @@ function App() {
         shadows
       >
         <color attach="background" args={['#f0f0f0']} />
-        <Scene ref={sceneRef} onSelectionChange={setSelectedId} />
+        <Scene ref={sceneRef} onSelectionChange={setSelectedFurniture} />
       </Canvas>
 
       <div className="ui-overlay">
+        <section className="catalog-controls" aria-label="Furniture controls">
+          <label className="catalog-label" htmlFor="add-furniture-select">
+            Add Furniture
+          </label>
+          <div className="catalog-row">
+            <select
+              id="add-furniture-select"
+              className="catalog-select"
+              value={catalogIdToAdd}
+              onChange={(event) => {
+                setCatalogIdToAdd(event.target.value)
+              }}
+            >
+              {FURNITURE_CATALOG.map((entry) => (
+                <option key={entry.id} value={entry.id}>
+                  {entry.name}
+                </option>
+              ))}
+            </select>
+            <button
+              type="button"
+              className="add-button"
+              disabled={!catalogIdToAdd}
+              onClick={addFurniture}
+            >
+              Add Item
+            </button>
+          </div>
+          <button
+            ref={removeButtonRef}
+            type="button"
+            className="remove-button"
+            disabled={!selectedFurniture}
+            aria-haspopup="dialog"
+            aria-controls="confirm-delete-dialog"
+            onClick={openDeleteDialog}
+          >
+            Remove Selected
+          </button>
+          <p className="selection-summary" aria-live="polite">
+            {selectedFurniture ? (
+              <>Selected: {selectedFurniture.name}</>
+            ) : (
+              'Selected: none'
+            )}
+          </p>
+          {editorMessage ? (
+            <p className="editor-message" role="status">
+              {editorMessage}
+            </p>
+          ) : null}
+        </section>
         <button
           ref={infoButtonRef}
           type="button"
@@ -110,7 +258,7 @@ function App() {
           <button
             type="button"
             className="rotation-button"
-            disabled={!selectedId}
+            disabled={!selectedFurniture}
             onClick={() => {
               rotateSelection(-1)
             }}
@@ -121,7 +269,7 @@ function App() {
           <button
             type="button"
             className="rotation-button"
-            disabled={!selectedId}
+            disabled={!selectedFurniture}
             onClick={() => {
               rotateSelection(1)
             }}
@@ -131,9 +279,48 @@ function App() {
           </button>
         </div>
         <p className="rotation-help">
-          Select furniture, then use <kbd>Q</kbd>/<kbd>E</kbd> or the rotate
-          buttons.
+          Select furniture, then use <kbd>Q</kbd>/<kbd>E</kbd> to rotate and{' '}
+          <kbd>Delete</kbd>/<kbd>Backspace</kbd> to remove.
         </p>
+
+        <dialog
+          ref={confirmDeleteDialogRef}
+          id="confirm-delete-dialog"
+          className="confirm-dialog"
+          aria-labelledby="confirm-delete-title"
+          onCancel={handleDeleteDialogCancel}
+          onClick={handleDeleteDialogClick}
+        >
+          <div className="confirm-dialog-content">
+            <h2 id="confirm-delete-title">Remove furniture?</h2>
+            <p>
+              Remove{' '}
+              <strong>
+                {pendingDeleteFurniture?.name ?? 'the selected item'}
+              </strong>{' '}
+              from the room layout?
+            </p>
+            <p className="confirm-delete-note">
+              This action is destructive and cannot be undone yet.
+            </p>
+            <div className="confirm-dialog-actions">
+              <button
+                type="button"
+                className="close-button"
+                onClick={closeDeleteDialog}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="danger-button"
+                onClick={confirmRemoveSelection}
+              >
+                Remove
+              </button>
+            </div>
+          </div>
+        </dialog>
 
         <dialog
           ref={infoDialogRef}

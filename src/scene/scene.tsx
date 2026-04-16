@@ -18,14 +18,16 @@ import {
   getFloorIntersection,
   getDraggedFurniturePosition,
 } from '@/lib/three/furniture-drag'
+import { findFurnitureSpawnPosition } from '@/lib/three/furniture-spawn'
 import {
   resolveMovedFurniturePosition,
   resolveRotatedFurnitureTransform,
+  type LayoutBounds,
 } from '@/lib/three/furniture-layout'
 import type { FurnitureItem } from './objects/furniture.types'
 import {
-  FURNITURE_CATALOG,
   FURNITURE_COLLECTION_PATHS,
+  getFurnitureCatalogEntry,
   getCollectionPath,
 } from './objects/furniture-catalog'
 
@@ -33,6 +35,12 @@ const ROOM_HALF_SIZE = 3
 const FLOOR_PLANE_Y = 0
 const SNAP_SIZE = 0.5
 const EDGE_SNAP_THRESHOLD = 0.12
+const ROOM_BOUNDS: LayoutBounds = {
+  minX: -ROOM_HALF_SIZE,
+  maxX: ROOM_HALF_SIZE,
+  minZ: -ROOM_HALF_SIZE,
+  maxZ: ROOM_HALF_SIZE,
+}
 
 interface DragState {
   id: string
@@ -43,9 +51,19 @@ interface DragState {
   }
 }
 
-interface SceneRef {
+export interface SceneRef {
   clearSelection: () => void
   rotateSelection: (deltaRadians: number) => void
+  addFurniture: (
+    catalogId: string,
+  ) =>
+    | { ok: true; id: string }
+    | { ok: false; reason: 'unknown-catalog' | 'no-space' }
+  removeSelection: () => boolean
+}
+
+function createFurnitureInstanceId(sequenceNumber: number) {
+  return `furniture-instance-${String(sequenceNumber)}`
 }
 
 function normalizeAngleRadians(angleRadians: number) {
@@ -59,38 +77,56 @@ function normalizeAngleRadians(angleRadians: number) {
   return normalized
 }
 
-function getInitialFurnitureItems(
+function getInitialFurnitureItems(): FurnitureItem[] {
+  return []
+}
+
+function createFurnitureItem(
   sourceScenesByPath: Map<string, Object3D>,
-): FurnitureItem[] {
-  return FURNITURE_CATALOG.map(
-    ({ id, kind, collectionId, nodeName, footprintSize }) => {
-      const sourcePath = getCollectionPath(collectionId)
-      const sourceScene = sourceScenesByPath.get(sourcePath)
+  id: string,
+  catalogId: string,
+  overrides?: {
+    position?: [number, number, number]
+    rotationY?: number
+  },
+): FurnitureItem {
+  const entry = getFurnitureCatalogEntry(catalogId)
 
-      if (!sourceScene) {
-        throw new Error(
-          `source scene not loaded for collection: ${collectionId}`,
-        )
-      }
+  if (!entry) {
+    throw new Error(`unknown furniture catalog entry: ${catalogId}`)
+  }
 
-      const node = sourceScene.getObjectByName(nodeName)
+  const sourcePath = getCollectionPath(entry.collectionId)
+  const sourceScene = sourceScenesByPath.get(sourcePath)
 
-      if (!node) {
-        throw new Error(`${nodeName} node not found in GLTF scene`)
-      }
+  if (!sourceScene) {
+    throw new Error(
+      `source scene not loaded for collection: ${entry.collectionId}`,
+    )
+  }
 
-      return {
-        id,
-        kind,
-        collectionId,
-        nodeName,
-        sourcePath,
-        footprintSize,
-        position: [node.position.x, node.position.y, node.position.z],
-        rotationY: normalizeAngleRadians(node.rotation.y),
-      }
-    },
-  )
+  const node = sourceScene.getObjectByName(entry.nodeName)
+
+  if (!node) {
+    throw new Error(`${entry.nodeName} node not found in GLTF scene`)
+  }
+
+  return {
+    id,
+    catalogId: entry.id,
+    name: entry.name,
+    kind: entry.kind,
+    collectionId: entry.collectionId,
+    nodeName: entry.nodeName,
+    sourcePath,
+    footprintSize: entry.footprintSize,
+    position: overrides?.position ?? [
+      node.position.x,
+      node.position.y,
+      node.position.z,
+    ],
+    rotationY: overrides?.rotationY ?? normalizeAngleRadians(node.rotation.y),
+  }
 }
 
 export function Scene({
@@ -98,7 +134,7 @@ export function Scene({
   onSelectionChange,
 }: {
   ref: React.Ref<SceneRef>
-  onSelectionChange?: (id: string | null) => void
+  onSelectionChange?: (item: FurnitureItem | null) => void
 }) {
   const gltfResult = useGLTF(FURNITURE_COLLECTION_PATHS) as
     | { scene: Object3D }
@@ -117,24 +153,40 @@ export function Scene({
 
   const objectRefs = useRef(new Map<string, Object3D>())
   const [furniture, setFurniture] = useState<FurnitureItem[]>(() =>
-    getInitialFurnitureItems(sourceScenesByPath),
+    getInitialFurnitureItems(),
   )
+  const instanceIdRef = useRef(furniture.length)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [selectedObject, setSelectedObject] = useState<Object3D | null>(null)
   const [dragState, setDragState] = useState<DragState | null>(null)
+  const selectedFurniture = useMemo(
+    () => furniture.find((item) => item.id === selectedId) ?? null,
+    [furniture, selectedId],
+  )
 
   const selection = useMemo(
     () => (selectedObject ? getMeshes(selectedObject) : []),
     [selectedObject],
   )
 
-  const selectFurniture = useCallback(
-    (id: string | null) => {
-      setSelectedId(id)
-      setSelectedObject(id ? (objectRefs.current.get(id) ?? null) : null)
-      onSelectionChange?.(id)
+  const setSelection = useCallback(
+    (item: FurnitureItem | null) => {
+      setSelectedId(item?.id ?? null)
+      setSelectedObject(item ? (objectRefs.current.get(item.id) ?? null) : null)
+      onSelectionChange?.(item)
     },
     [onSelectionChange],
+  )
+
+  const selectFurniture = useCallback(
+    (id: string | null) => {
+      const nextSelection = id
+        ? (furniture.find((item) => item.id === id) ?? null)
+        : null
+
+      setSelection(nextSelection)
+    },
+    [furniture, setSelection],
   )
 
   const handleSelect = useCallback(
@@ -211,12 +263,7 @@ export function Scene({
             rotatingItem.rotationY + deltaRadians,
           ),
           items: currentFurniture,
-          bounds: {
-            minX: -ROOM_HALF_SIZE,
-            maxX: ROOM_HALF_SIZE,
-            minZ: -ROOM_HALF_SIZE,
-            maxZ: ROOM_HALF_SIZE,
-          },
+          bounds: ROOM_BOUNDS,
         })
 
         if (!resolvedTransform) {
@@ -253,8 +300,7 @@ export function Scene({
         return
       }
 
-      setSelectedId(id)
-      setSelectedObject(objectRefs.current.get(id) ?? null)
+      selectFurniture(id)
       setDragState({
         id,
         pointerId: event.pointerId,
@@ -264,7 +310,7 @@ export function Scene({
         },
       })
     },
-    [furniture],
+    [furniture, selectFurniture],
   )
 
   const handleMove = useCallback(
@@ -283,12 +329,7 @@ export function Scene({
         ray: event.ray,
         currentY: activeFurniture.position[1],
         dragOffset: dragState.offset,
-        bounds: {
-          minX: -ROOM_HALF_SIZE,
-          maxX: ROOM_HALF_SIZE,
-          minZ: -ROOM_HALF_SIZE,
-          maxZ: ROOM_HALF_SIZE,
-        },
+        bounds: ROOM_BOUNDS,
         snapSize: SNAP_SIZE,
         planeY: FLOOR_PLANE_Y,
       })
@@ -302,12 +343,7 @@ export function Scene({
         proposedPosition: nextPosition,
         items: furniture,
         edgeSnapThreshold: EDGE_SNAP_THRESHOLD,
-        bounds: {
-          minX: -ROOM_HALF_SIZE,
-          maxX: ROOM_HALF_SIZE,
-          minZ: -ROOM_HALF_SIZE,
-          maxZ: ROOM_HALF_SIZE,
-        },
+        bounds: ROOM_BOUNDS,
       })
 
       if (!resolvedPosition) {
@@ -340,8 +376,80 @@ export function Scene({
       rotateSelection: (deltaRadians: number) => {
         rotateSelectedFurniture(deltaRadians)
       },
+      addFurniture: (catalogId: string) => {
+        const entry = getFurnitureCatalogEntry(catalogId)
+
+        if (!entry) {
+          return {
+            ok: false,
+            reason: 'unknown-catalog' as const,
+          }
+        }
+
+        const nextId = createFurnitureInstanceId(instanceIdRef.current + 1)
+        const nextItem = createFurnitureItem(
+          sourceScenesByPath,
+          nextId,
+          entry.id,
+        )
+        const spawnPosition = findFurnitureSpawnPosition({
+          item: nextItem,
+          items: furniture,
+          bounds: ROOM_BOUNDS,
+          edgeSnapThreshold: EDGE_SNAP_THRESHOLD,
+          snapSize: SNAP_SIZE,
+        })
+
+        if (!spawnPosition) {
+          return {
+            ok: false,
+            reason: 'no-space' as const,
+          }
+        }
+
+        const spawnedItem = {
+          ...nextItem,
+          position: spawnPosition,
+        }
+
+        instanceIdRef.current += 1
+        setFurniture((currentFurniture) => [...currentFurniture, spawnedItem])
+        setSelection(spawnedItem)
+
+        return {
+          ok: true,
+          id: spawnedItem.id,
+        }
+      },
+      removeSelection: () => {
+        if (!selectedFurniture) {
+          return false
+        }
+
+        setFurniture((currentFurniture) =>
+          currentFurniture.filter((item) => item.id !== selectedFurniture.id),
+        )
+        setDragState((currentDragState) => {
+          if (currentDragState?.id !== selectedFurniture.id) {
+            return currentDragState
+          }
+
+          return null
+        })
+        selectFurniture(null)
+
+        return true
+      },
     }),
-    [dragState, rotateSelectedFurniture, selectFurniture],
+    [
+      dragState,
+      furniture,
+      rotateSelectedFurniture,
+      selectFurniture,
+      selectedFurniture,
+      sourceScenesByPath,
+      setSelection,
+    ],
   )
 
   const sceneFurniture = useMemo(

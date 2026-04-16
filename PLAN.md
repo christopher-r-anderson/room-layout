@@ -42,8 +42,8 @@ Deliver a small, polished 3D room-layout editor demo that demonstrates productio
 - [ ] Set up Playwright browser performance harness for scripted interaction scenarios.
 - [ ] Add baseline browser perf scenario for drag/rotate/collision interaction traces.
 - [ ] Expand furniture catalog to 4 total types (including coffee table and end table).
-- [ ] Add UI flow to insert furniture instances on demand.
-- [ ] Add remove-selected-item action.
+- [x] Add UI flow to insert furniture instances on demand.
+- [x] Add remove-selected-item action.
 - [ ] Add undo/redo for move, rotate, add, and remove actions.
 - [ ] Add hover affordance (subtle outline/highlight) for discoverability.
 - [ ] Ensure all primary interactions are keyboard reachable.
@@ -76,16 +76,16 @@ Deliver a small, polished 3D room-layout editor demo that demonstrates productio
 
 ### Demo Polish and Delivery
 
-- [ ] Refresh README product section and include current feature list.
-- [ ] Add short usage guide (select, move, rotate, add, remove, share).
+- [x] Refresh README product section and include current feature list.
+- [x] Add short usage guide (select, move, rotate, add, remove, share).
 - [ ] Run final validation pass (`pnpm fix`, `pnpm typecheck`, `pnpm test:run`, `pnpm build`).
 - [ ] Capture demo media for README.
 
 ## Current Focus
 
-1. Collision prevention and edge snapping.
-2. Undo/redo history for editor actions.
-3. Furniture add/remove workflows.
-4. Startup loading/error experience.
-5. Basic URL share/load.
-6. Camera presets and visual polish.
+1. Undo/redo history for editor actions.
+2. Startup loading/error experience.
+3. Basic URL share/load.
+4. Camera presets and visual polish.
+5. Expanded furniture catalog coverage.
+6. Browser performance harness.

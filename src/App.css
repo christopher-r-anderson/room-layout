@@ -21,6 +21,80 @@
   pointer-events: auto;
 }
 
+.catalog-controls {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  display: grid;
+  gap: 10px;
+  width: min(320px, calc(100vw - 32px));
+  padding: 14px;
+  border: 1px solid rgba(199, 199, 199, 0.95);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 12px 28px rgba(17, 24, 39, 0.12);
+}
+
+.catalog-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f1f1f;
+}
+
+.catalog-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.catalog-select,
+.add-button,
+.remove-button {
+  border: 1px solid #c7c7c7;
+  border-radius: 8px;
+  font: inherit;
+}
+
+.catalog-select {
+  min-width: 0;
+  background: #fff;
+  color: #1f1f1f;
+  padding: 8px 10px;
+}
+
+.add-button,
+.remove-button {
+  background: rgba(255, 255, 255, 0.95);
+  color: #1f1f1f;
+  cursor: pointer;
+  padding: 8px 12px;
+}
+
+.add-button:focus-visible,
+.remove-button:focus-visible,
+.catalog-select:focus-visible {
+  outline: 2px solid #0f62fe;
+  outline-offset: 2px;
+}
+
+.remove-button:disabled,
+.add-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.selection-summary,
+.editor-message {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.35;
+  color: #2d2d2d;
+}
+
+.editor-message {
+  color: #8a1f11;
+}
+
 .info-button {
   position: absolute;
   top: 16px;
@@ -158,4 +232,79 @@
   background: #fafafa;
   padding: 0 4px;
   font-size: 12px;
+}
+
+.confirm-dialog {
+  border: 1px solid #d0d0d0;
+  border-radius: 10px;
+  max-width: min(420px, calc(100vw - 32px));
+  width: 100%;
+  padding: 0;
+  color: #171717;
+}
+
+.confirm-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.confirm-dialog-content {
+  padding: 16px;
+}
+
+.confirm-dialog h2 {
+  margin: 0 0 12px;
+  font-size: 20px;
+}
+
+.confirm-dialog p {
+  margin: 0 0 10px;
+  line-height: 1.35;
+}
+
+.confirm-delete-note {
+  color: #7a2e1a;
+}
+
+.confirm-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.danger-button {
+  border: 1px solid #b3261e;
+  border-radius: 6px;
+  background: #b3261e;
+  color: #fff;
+  font: inherit;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.danger-button:focus-visible {
+  outline: 2px solid #0f62fe;
+  outline-offset: 2px;
+}
+
+@media (max-width: 720px) {
+  .catalog-controls {
+    width: min(100vw - 32px, 360px);
+  }
+
+  .catalog-row {
+    grid-template-columns: 1fr;
+  }
+
+  .rotation-controls {
+    right: 16px;
+    left: 16px;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+
+  .rotation-help {
+    max-width: calc(100vw - 32px);
+    bottom: 64px;
+  }
 }
