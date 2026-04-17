@@ -14,11 +14,21 @@ export interface BrowserSceneState {
     name: string
     position: [number, number, number]
     rotationY: number
+    pointerTarget: {
+      x: number
+      y: number
+    } | null
   }[]
 }
 
-function escapeForRegExp(value: string) {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+async function getCanvasBounds(page: Page) {
+  const canvasBounds = await page.locator('canvas').boundingBox()
+
+  if (!canvasBounds) {
+    throw new Error('canvas bounding box was not available for interaction')
+  }
+
+  return canvasBounds
 }
 
 export async function readSceneState(page: Page): Promise<BrowserSceneState> {
@@ -58,11 +68,34 @@ export async function waitForEditorReady(page: Page) {
 }
 
 export async function addFurniture(page: Page, name = 'Leather Couch') {
+  const initialState = await readSceneState(page)
+
   await page.getByLabel('Furniture type to add').selectOption({ label: name })
   await page.getByRole('button', { name: 'Add Item' }).click()
-  await expect(
-    page.getByText(new RegExp(`Selected: ${escapeForRegExp(name)}`)),
-  ).toBeVisible()
+
+  await expect
+    .poll(async () => (await readSceneState(page)).itemCount)
+    .toBe(initialState.itemCount + 1)
+
+  return readSceneState(page)
+}
+
+export async function selectFurnitureById(page: Page, itemId: string) {
+  const sceneState = await readSceneState(page)
+  const item = sceneState.items.find((candidate) => candidate.id === itemId)
+
+  if (!item?.pointerTarget) {
+    throw new Error('furniture item does not have a pointer target')
+  }
+
+  const canvasBounds = await getCanvasBounds(page)
+  const pointerX = canvasBounds.x + item.pointerTarget.x
+  const pointerY = canvasBounds.y + item.pointerTarget.y
+
+  await page.mouse.click(pointerX, pointerY)
+  await expect
+    .poll(async () => (await readSceneState(page)).selectedId)
+    .toBe(itemId)
 
   return readSceneState(page)
 }
@@ -80,6 +113,35 @@ export async function removeSelectedFurniture(page: Page) {
     .getByRole('button', { name: 'Remove' })
     .click()
   await expect(page.getByText('Selected: none')).toBeVisible()
+
+  return readSceneState(page)
+}
+
+export async function dragSelectedFurniture(
+  page: Page,
+  delta: {
+    x: number
+    y: number
+  },
+) {
+  const sceneState = await readSceneState(page)
+  const selectedItem = sceneState.items.find(
+    (item) => item.id === sceneState.selectedId,
+  )
+
+  if (!selectedItem?.pointerTarget) {
+    throw new Error('selected furniture item does not have a pointer target')
+  }
+
+  const canvasBounds = await getCanvasBounds(page)
+
+  const startX = canvasBounds.x + selectedItem.pointerTarget.x
+  const startY = canvasBounds.y + selectedItem.pointerTarget.y
+
+  await page.mouse.move(startX, startY)
+  await page.mouse.down()
+  await page.mouse.move(startX + delta.x, startY + delta.y, { steps: 12 })
+  await page.mouse.up()
 
   return readSceneState(page)
 }

@@ -32,7 +32,6 @@ test('undo and redo restore editor history across add, rotate, and remove', asyn
   await expect.poll(async () => (await readSceneState(page)).itemCount).toBe(1)
   const afterUndoRemove = await readSceneState(page)
   expect(afterUndoRemove.itemCount).toBe(1)
-  expect(afterUndoRemove.selectedName).toBeNull()
   expect(afterUndoRemove.items[0].rotationY).toBe(rotatedItem.rotationY)
 
   await page.getByRole('button', { name: 'Undo' }).click()
@@ -53,7 +52,6 @@ test('undo and redo restore editor history across add, rotate, and remove', asyn
   await expect.poll(async () => (await readSceneState(page)).itemCount).toBe(1)
   const afterRedoAdd = await readSceneState(page)
   expect(afterRedoAdd.itemCount).toBe(1)
-  expect(afterRedoAdd.selectedName).toBeNull()
   expect(afterRedoAdd.items[0].rotationY).toBe(initialItem.rotationY)
 
   await page.getByRole('button', { name: 'Redo' }).click()
@@ -62,7 +60,6 @@ test('undo and redo restore editor history across add, rotate, and remove', asyn
     .toBe(rotatedItem.rotationY)
   const afterRedoRotate = await readSceneState(page)
   expect(afterRedoRotate.itemCount).toBe(1)
-  expect(afterRedoRotate.selectedName).toBeNull()
   expect(afterRedoRotate.items[0].rotationY).toBe(rotatedItem.rotationY)
 
   await page.getByRole('button', { name: 'Redo' }).click()

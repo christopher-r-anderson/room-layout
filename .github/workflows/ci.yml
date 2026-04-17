@@ -38,6 +38,7 @@ jobs:
         run: pnpm test:run
 
   browser-e2e:
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

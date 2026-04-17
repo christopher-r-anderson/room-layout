@@ -11,8 +11,8 @@ import {
   useRef,
   useState,
 } from 'react'
-import type { ThreeEvent } from '@react-three/fiber'
-import type { Object3D } from 'three'
+import { useThree, type ThreeEvent } from '@react-three/fiber'
+import { Box3, type Object3D, Vector3 } from 'three'
 import { EffectComposer, Outline } from '@react-three/postprocessing'
 import { getMeshes } from '@/lib/three/get-meshes'
 import {
@@ -70,6 +70,10 @@ interface SceneSnapshotItem {
   name: string
   position: [number, number, number]
   rotationY: number
+  pointerTarget: {
+    x: number
+    y: number
+  } | null
 }
 
 interface SceneSnapshot {
@@ -102,6 +106,9 @@ function roundToPrecision(value: number, precision: number) {
 function createSceneSnapshot(
   furniture: FurnitureItem[],
   selectedId: string | null,
+  objectRefs: Map<string, Object3D>,
+  camera: Parameters<Vector3['project']>[0],
+  canvasSize: { width: number; height: number },
 ): SceneSnapshot {
   const selectedFurniture = selectedId
     ? (furniture.find((item) => item.id === selectedId) ?? null)
@@ -119,7 +126,52 @@ function createSceneSnapshot(
         return roundToPrecision(coordinate, 3)
       }) as [number, number, number],
       rotationY: roundToPrecision(item.rotationY, 6),
+      pointerTarget: getPointerTargetForObject({
+        object: objectRefs.get(item.id) ?? null,
+        camera,
+        canvasSize,
+      }),
     })),
+  }
+}
+
+function getPointerTargetForObject({
+  object,
+  camera,
+  canvasSize,
+}: {
+  object: Object3D | null
+  camera: Parameters<Vector3['project']>[0]
+  canvasSize: { width: number; height: number }
+}) {
+  if (!object) {
+    return null
+  }
+
+  object.updateWorldMatrix(true, true)
+
+  const projectedPoint = new Vector3()
+  const bounds = new Box3().setFromObject(object)
+
+  if (bounds.isEmpty()) {
+    projectedPoint.setFromMatrixPosition(object.matrixWorld)
+  } else {
+    bounds.getCenter(projectedPoint)
+  }
+
+  projectedPoint.project(camera)
+
+  if (
+    !Number.isFinite(projectedPoint.x) ||
+    !Number.isFinite(projectedPoint.y) ||
+    !Number.isFinite(projectedPoint.z)
+  ) {
+    return null
+  }
+
+  return {
+    x: roundToPrecision((projectedPoint.x * 0.5 + 0.5) * canvasSize.width, 3),
+    y: roundToPrecision((-projectedPoint.y * 0.5 + 0.5) * canvasSize.height, 3),
   }
 }
 
@@ -232,6 +284,8 @@ export function Scene({
   onHistoryChange?: (availability: SceneHistoryAvailability) => void
   onAssetsReady?: () => void
 }) {
+  const camera = useThree((state) => state.camera)
+  const canvasSize = useThree((state) => state.size)
   const gltfResult = useGLTF(FURNITURE_COLLECTION_PATHS) as
     | { scene: Object3D }
     | { scene: Object3D }[]
@@ -690,9 +744,18 @@ export function Scene({
 
         return true
       },
-      getSnapshot: () => createSceneSnapshot(furniture, selectedId),
+      getSnapshot: () =>
+        createSceneSnapshot(
+          furniture,
+          selectedId,
+          objectRefs.current,
+          camera,
+          canvasSize,
+        ),
     }),
     [
+      camera,
+      canvasSize,
       dragState,
       furniture,
       history,

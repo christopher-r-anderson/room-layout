@@ -34,6 +34,10 @@ interface BrowserSceneState {
     name: string
     position: [number, number, number]
     rotationY: number
+    pointerTarget: {
+      x: number
+      y: number
+    } | null
   }[]
 }
 
