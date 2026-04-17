@@ -7,13 +7,19 @@ import {
   type ReactNode,
   useCallback,
   useEffect,
-  useMemo,
   useRef,
   useState,
 } from 'react'
-import { useProgress } from '@react-three/drei'
 import { FURNITURE_CATALOG } from './scene/objects/furniture-catalog'
 import type { FurnitureItem } from './scene/objects/furniture.types'
+import {
+  DeleteConfirmationDialog,
+  ProjectInfoDialog,
+} from './app/editor-dialogs'
+import {
+  StartupErrorOverlay,
+  StartupLoadingOverlay,
+} from './app/startup-overlays'
 import { useEditorKeyboardShortcuts } from './app/use-editor-keyboard-shortcuts'
 import { useSceneStartupState } from './app/use-scene-startup-state'
 
@@ -45,133 +51,6 @@ declare global {
 }
 
 const ROTATION_STEP_RADIANS = Math.PI / 12
-
-function formatAssetLabel(item: string) {
-  if (!item) {
-    return 'Preparing furniture assets...'
-  }
-
-  const normalizedItem = item.split('?')[0]
-  const filename = normalizedItem.split('/').pop()
-
-  return filename ?? normalizedItem
-}
-
-function StartupLoadingOverlay({ visible }: { visible: boolean }) {
-  const { active, item, loaded, progress, total } = useProgress()
-  const panelRef = useRef<HTMLDivElement | null>(null)
-  const roundedProgress = useMemo(() => {
-    if (Number.isNaN(progress)) {
-      return 0
-    }
-
-    return Math.max(0, Math.min(100, Math.round(progress)))
-  }, [progress])
-
-  useEffect(() => {
-    if (!visible) {
-      return
-    }
-
-    panelRef.current?.focus()
-  }, [visible])
-
-  if (!visible) {
-    return null
-  }
-
-  return (
-    <section className="startup-overlay" aria-live="polite">
-      <div
-        ref={panelRef}
-        className="startup-overlay-panel"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="startup-loading-title"
-        aria-describedby="startup-loading-description startup-loading-progress-label"
-        tabIndex={-1}
-      >
-        <p className="startup-overlay-eyebrow">Loading scene assets</p>
-        <h2 id="startup-loading-title" className="startup-overlay-title">
-          Preparing the room editor
-        </h2>
-        <p id="startup-loading-description" className="startup-overlay-copy">
-          The editor will unlock after the required furniture models finish
-          loading.
-        </p>
-        <div
-          className="startup-progress"
-          role="progressbar"
-          aria-label="Furniture asset loading progress"
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-valuenow={roundedProgress}
-        >
-          <div
-            className="startup-progress-bar"
-            style={{ width: `${String(roundedProgress)}%` }}
-          />
-        </div>
-        <div className="startup-progress-summary">
-          <strong>{String(roundedProgress)}%</strong>
-          <span>
-            {active && total > 0
-              ? `Asset ${String(Math.min(loaded + 1, total))} of ${String(total)}`
-              : 'Starting asset requests'}
-          </span>
-        </div>
-        <p
-          id="startup-loading-progress-label"
-          className="startup-progress-label"
-        >
-          Current item: {formatAssetLabel(item)}
-        </p>
-      </div>
-    </section>
-  )
-}
-
-function StartupErrorOverlay({ onRetry }: { onRetry: () => void }) {
-  const retryButtonRef = useRef<HTMLButtonElement | null>(null)
-
-  useEffect(() => {
-    retryButtonRef.current?.focus()
-  }, [])
-
-  return (
-    <section className="startup-overlay" aria-live="assertive">
-      <div
-        className="startup-overlay-panel startup-overlay-panel-error"
-        role="alertdialog"
-        aria-modal="true"
-        aria-labelledby="startup-error-title"
-        aria-describedby="startup-error-description startup-error-note"
-      >
-        <p className="startup-overlay-eyebrow">Asset loading failed</p>
-        <h2 id="startup-error-title" className="startup-overlay-title">
-          The room editor could not start
-        </h2>
-        <p id="startup-error-description" className="startup-overlay-copy">
-          A required furniture model did not load correctly, so editor
-          interactions are temporarily unavailable.
-        </p>
-        <p id="startup-error-note" className="startup-overlay-note">
-          Retry to request the essential assets again.
-        </p>
-        <div className="startup-overlay-actions">
-          <button
-            ref={retryButtonRef}
-            type="button"
-            className="history-button"
-            onClick={onRetry}
-          >
-            Retry Loading
-          </button>
-        </div>
-      </div>
-    </section>
-  )
-}
 
 class SceneAssetErrorBoundary extends Component<
   {
@@ -611,111 +490,21 @@ function App() {
             </span>
           </p>
 
-          <dialog
-            ref={confirmDeleteDialogRef}
-            id="confirm-delete-dialog"
-            className="confirm-dialog"
-            aria-labelledby="confirm-delete-title"
+          <DeleteConfirmationDialog
+            dialogRef={confirmDeleteDialogRef}
+            pendingDeleteFurniture={pendingDeleteFurniture}
             onCancel={handleDeleteDialogCancel}
-            onClick={handleDeleteDialogClick}
-          >
-            <div className="confirm-dialog-content">
-              <h2 id="confirm-delete-title">Remove furniture?</h2>
-              <p>
-                Remove{' '}
-                <strong>
-                  {pendingDeleteFurniture?.name ?? 'the selected item'}
-                </strong>{' '}
-                from the room layout?
-              </p>
-              <p className="confirm-delete-note">
-                You can undo this from the history controls after removing it.
-              </p>
-              <div className="confirm-dialog-actions">
-                <button
-                  type="button"
-                  className="close-button"
-                  onClick={closeDeleteDialog}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  className="danger-button"
-                  onClick={confirmRemoveSelection}
-                >
-                  Remove
-                </button>
-              </div>
-            </div>
-          </dialog>
+            onBackdropClick={handleDeleteDialogClick}
+            onClose={closeDeleteDialog}
+            onConfirm={confirmRemoveSelection}
+          />
 
-          <dialog
-            ref={infoDialogRef}
-            id="project-info-dialog"
-            className="info-dialog"
-            aria-labelledby="project-info-title"
+          <ProjectInfoDialog
+            dialogRef={infoDialogRef}
             onCancel={handleInfoDialogCancel}
-            onClick={handleInfoDialogClick}
-          >
-            <div className="info-dialog-content">
-              <h2 id="project-info-title">Project Info</h2>
-
-              <section aria-labelledby="project-links-heading">
-                <h3 id="project-links-heading">Repository</h3>
-                <p>
-                  Source code:{' '}
-                  <a
-                    href="https://github.com/christopher-r-anderson/room-layout"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    github.com/christopher-r-anderson/room-layout{' '}
-                    <span aria-hidden>↗</span>
-                  </a>
-                </p>
-              </section>
-
-              <section aria-labelledby="asset-attribution-heading">
-                <h3 id="asset-attribution-heading">Asset Attribution</h3>
-                <p>
-                  Leather Couch model by{' '}
-                  <a
-                    href="https://sketchfab.com/YouSaveTime"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    YouSaveTime <span aria-hidden>↗</span>
-                  </a>
-                  , from{' '}
-                  <a
-                    href="https://sketchfab.com/3d-models/leather-couch-c2ac7a44144e4b80ab51f21b59c827f8"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Sketchfab <span aria-hidden>↗</span>
-                  </a>
-                  , licensed under CC BY 4.0.
-                </p>
-                <p>
-                  Local source details:{' '}
-                  <code>
-                    assets-source/leather-couch/leather-couch-source.txt
-                  </code>
-                </p>
-              </section>
-
-              <form method="dialog" className="info-dialog-actions">
-                <button
-                  type="button"
-                  className="close-button"
-                  onClick={closeInfoDialog}
-                >
-                  Close
-                </button>
-              </form>
-            </div>
-          </dialog>
+            onBackdropClick={handleInfoDialogClick}
+            onClose={closeInfoDialog}
+          />
         </div>
 
         <StartupLoadingOverlay visible={startupLoadingActive} />
