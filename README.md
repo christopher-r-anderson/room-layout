@@ -45,7 +45,34 @@ pnpm fix          # lint + format fixes
 
 pnpm test         # watch unit tests
 pnpm test:run     # run unit tests
+
+pnpm test:e2e:install # install the Chromium browser for Playwright
+pnpm test:e2e         # run browser integration tests
+pnpm test:e2e:headed  # run browser integration tests in headed mode
+pnpm test:e2e:ui      # open the Playwright UI runner
+pnpm test:browser:perf # run browser perf scenarios and collect artifacts
 ```
+
+## Browser Tests
+
+The repository now uses Playwright for real-browser editor coverage and scripted browser perf scenarios.
+
+- Use Vitest for pure utility, scene-state, and microbenchmark work.
+- Use `pnpm test:e2e` for browser-accurate UI and canvas-adjacent workflows like startup loading, retry flows, and editor history.
+- Use `pnpm test:browser:perf` for scripted Chromium interaction measurements that reuse the same harness helpers without acting as a strict correctness gate.
+
+First-time local setup:
+
+```bash
+pnpm test:e2e:install
+```
+
+Artifacts:
+
+- HTML report: `playwright-report/`
+- Raw traces, screenshots, and videos: `test-results/`
+
+The Playwright config starts a local Vite server automatically, so browser tests do not require a separate manual `pnpm dev` session.
 
 ## 🌐 Deployment
 

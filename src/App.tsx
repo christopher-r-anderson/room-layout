@@ -22,6 +22,29 @@ import {
 } from './scene/objects/furniture-catalog'
 import type { FurnitureItem } from './scene/objects/furniture.types'
 
+interface BrowserSceneState {
+  assetsReady: boolean
+  assetError: boolean
+  selectedId: string | null
+  selectedName: string | null
+  itemCount: number
+  items: {
+    id: string
+    catalogId: string
+    name: string
+    position: [number, number, number]
+    rotationY: number
+  }[]
+}
+
+declare global {
+  interface Window {
+    __ROOM_LAYOUT_TEST__?: {
+      getState: () => BrowserSceneState
+    }
+  }
+}
+
 const ROTATION_STEP_RADIANS = Math.PI / 12
 
 function formatAssetLabel(item: string) {
@@ -198,6 +221,8 @@ function App() {
   const [assetsReady, setAssetsReady] = useState(false)
   const [assetError, setAssetError] = useState<Error | null>(null)
   const [sceneVersion, setSceneVersion] = useState(0)
+  const assetsReadyRef = useRef(assetsReady)
+  const assetErrorRef = useRef(assetError)
 
   const resetEditorShellState = useCallback(() => {
     sceneRef.current = null
@@ -216,6 +241,39 @@ function App() {
 
   useEffect(() => {
     preloadFurnitureCollections()
+  }, [])
+
+  useEffect(() => {
+    assetsReadyRef.current = assetsReady
+  }, [assetsReady])
+
+  useEffect(() => {
+    assetErrorRef.current = assetError
+  }, [assetError])
+
+  useEffect(() => {
+    if (!import.meta.env.DEV) {
+      return
+    }
+
+    window.__ROOM_LAYOUT_TEST__ = {
+      getState: () => {
+        const sceneState = sceneRef.current?.getSnapshot()
+
+        return {
+          assetsReady: assetsReadyRef.current,
+          assetError: assetErrorRef.current !== null,
+          selectedId: sceneState?.selectedId ?? null,
+          selectedName: sceneState?.selectedName ?? null,
+          itemCount: sceneState?.itemCount ?? 0,
+          items: sceneState?.items ?? [],
+        }
+      },
+    }
+
+    return () => {
+      delete window.__ROOM_LAYOUT_TEST__
+    }
   }, [])
 
   const handleAssetsReady = useCallback(() => {

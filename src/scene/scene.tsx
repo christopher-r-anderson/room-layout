@@ -64,6 +64,21 @@ interface DragState {
   }
 }
 
+interface SceneSnapshotItem {
+  id: string
+  catalogId: string
+  name: string
+  position: [number, number, number]
+  rotationY: number
+}
+
+interface SceneSnapshot {
+  selectedId: string | null
+  selectedName: string | null
+  itemCount: number
+  items: SceneSnapshotItem[]
+}
+
 export interface SceneRef {
   clearSelection: () => void
   rotateSelection: (deltaRadians: number) => void
@@ -75,6 +90,37 @@ export interface SceneRef {
   removeSelection: () => boolean
   undo: () => boolean
   redo: () => boolean
+  getSnapshot: () => SceneSnapshot
+}
+
+function roundToPrecision(value: number, precision: number) {
+  const factor = 10 ** precision
+
+  return Math.round(value * factor) / factor
+}
+
+function createSceneSnapshot(
+  furniture: FurnitureItem[],
+  selectedId: string | null,
+): SceneSnapshot {
+  const selectedFurniture = selectedId
+    ? (furniture.find((item) => item.id === selectedId) ?? null)
+    : null
+
+  return {
+    selectedId,
+    selectedName: selectedFurniture?.name ?? null,
+    itemCount: furniture.length,
+    items: furniture.map((item) => ({
+      id: item.id,
+      catalogId: item.catalogId,
+      name: item.name,
+      position: item.position.map((coordinate) => {
+        return roundToPrecision(coordinate, 3)
+      }) as [number, number, number],
+      rotationY: roundToPrecision(item.rotationY, 6),
+    })),
+  }
 }
 
 function createFurnitureInstanceId(sequenceNumber: number) {
@@ -644,9 +690,11 @@ export function Scene({
 
         return true
       },
+      getSnapshot: () => createSceneSnapshot(furniture, selectedId),
     }),
     [
       dragState,
+      furniture,
       history,
       rotateSelectedFurniture,
       selectFurniture,

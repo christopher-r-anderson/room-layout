@@ -39,8 +39,9 @@ Deliver a small, polished 3D room-layout editor demo that demonstrates productio
 
 - [x] Add collision prevention so furniture cannot overlap.
 - [x] Add wall/edge snapping behavior that works with collisions.
-- [ ] Set up Playwright browser performance harness for scripted interaction scenarios.
-- [ ] Add baseline browser perf scenario for drag/rotate/collision interaction traces.
+- [x] Establish a Playwright browser harness for real canvas interaction coverage.
+- [x] Add first browser integration scenarios for undo/redo and startup loading/error flows.
+- [x] Add baseline browser perf scenarios for drag/rotate/collision traces using the same harness.
 - [ ] Expand furniture catalog to 4 total types (including coffee table and end table).
 - [x] Add UI flow to insert furniture instances on demand.
 - [x] Add remove-selected-item action.
@@ -60,6 +61,16 @@ Deliver a small, polished 3D room-layout editor demo that demonstrates productio
 - [x] Disable editor interactions until essential scene assets are ready.
 - [x] Add graceful asset-load error state with retry action.
 - [x] Preload current core furniture assets on app startup.
+
+### Browser Quality Harness (Completed)
+
+- Playwright now covers browser-realistic startup loading, startup failure/retry, and undo/redo user flows.
+- Browser perf traces run through the same harness with a separate non-gating lane.
+- Repo scripts, CI coverage, and README guidance are in place for the browser test workflows.
+
+### Future Quality Work
+
+- [ ] Add a browser-side metrics lane for interaction timing comparisons once the trace-based perf lane and drag scenarios are stable.
 
 ### Shareable State
 
@@ -86,5 +97,5 @@ Deliver a small, polished 3D room-layout editor demo that demonstrates productio
 1. Basic URL share/load.
 2. Camera presets and visual polish.
 3. Expanded furniture catalog coverage.
-4. Browser performance harness.
-5. Keyboard reachability polish.
+4. Keyboard reachability polish.
+5. Hover affordance and broader browser interaction coverage.
