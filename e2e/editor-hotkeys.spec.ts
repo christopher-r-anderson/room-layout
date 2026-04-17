@@ -6,6 +6,7 @@ import {
 } from './support/editor-harness'
 
 const ROTATION_STEP_RADIANS = Math.PI / 12
+const NORMALIZED_RIGHT_ROTATION_RADIANS = Math.PI * 2 - ROTATION_STEP_RADIANS
 
 test('applies keyboard shortcuts for rotate, history, and delete confirmation', async ({
   page,
@@ -19,7 +20,7 @@ test('applies keyboard shortcuts for rotate, history, and delete confirmation', 
   await page.locator('body').press('e')
   await expect
     .poll(async () => (await readSceneState(page)).items[0].rotationY)
-    .toBeCloseTo(ROTATION_STEP_RADIANS, 6)
+    .toBeCloseTo(NORMALIZED_RIGHT_ROTATION_RADIANS, 6)
 
   const afterRotate = await readSceneState(page)
   expect(afterRotate.selectedName).toBe('Leather Couch')
@@ -36,7 +37,7 @@ test('applies keyboard shortcuts for rotate, history, and delete confirmation', 
   await page.locator('body').press('Control+y')
   await expect
     .poll(async () => (await readSceneState(page)).items[0].rotationY)
-    .toBeCloseTo(ROTATION_STEP_RADIANS, 6)
+    .toBeCloseTo(NORMALIZED_RIGHT_ROTATION_RADIANS, 6)
 
   await page.locator('body').press('Delete')
   const deleteDialog = page.getByRole('dialog', { name: /remove furniture\?/i })
@@ -45,7 +46,7 @@ test('applies keyboard shortcuts for rotate, history, and delete confirmation', 
   await page.locator('body').press('Control+z')
   await expect
     .poll(async () => (await readSceneState(page)).items[0].rotationY)
-    .toBeCloseTo(ROTATION_STEP_RADIANS, 6)
+    .toBeCloseTo(NORMALIZED_RIGHT_ROTATION_RADIANS, 6)
   await expect(deleteDialog).toBeVisible()
 
   await deleteDialog.getByRole('button', { name: 'Remove' }).click()
@@ -56,5 +57,8 @@ test('applies keyboard shortcuts for rotate, history, and delete confirmation', 
 
   const afterRestore = await readSceneState(page)
   expect(afterRestore.selectedName).toBe('Leather Couch')
-  expect(afterRestore.items[0].rotationY).toBeCloseTo(ROTATION_STEP_RADIANS, 6)
+  expect(afterRestore.items[0].rotationY).toBeCloseTo(
+    NORMALIZED_RIGHT_ROTATION_RADIANS,
+    6,
+  )
 })

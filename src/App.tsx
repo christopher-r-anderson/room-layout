@@ -644,7 +644,7 @@ function App() {
                   className="rotation-button"
                   disabled={!editorInteractionsEnabled || !selectedFurniture}
                   onClick={() => {
-                    rotateSelection(-1)
+                    rotateSelection(1)
                   }}
                   aria-keyshortcuts="Q"
                 >
@@ -655,7 +655,7 @@ function App() {
                   className="rotation-button"
                   disabled={!editorInteractionsEnabled || !selectedFurniture}
                   onClick={() => {
-                    rotateSelection(1)
+                    rotateSelection(-1)
                   }}
                   aria-keyshortcuts="E"
                 >
