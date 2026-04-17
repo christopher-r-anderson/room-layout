@@ -12,15 +12,10 @@ import {
   useState,
 } from 'react'
 import { useProgress } from '@react-three/drei'
-import { getRotationHotkeyDirection } from './lib/ui/rotation-hotkeys'
-import { getDeleteHotkeyIntent } from './lib/ui/delete-hotkeys'
-import { getHistoryHotkeyIntent } from './lib/ui/history-hotkeys'
-import {
-  clearFurnitureCollectionCache,
-  FURNITURE_CATALOG,
-  preloadFurnitureCollections,
-} from './scene/objects/furniture-catalog'
+import { FURNITURE_CATALOG } from './scene/objects/furniture-catalog'
 import type { FurnitureItem } from './scene/objects/furniture.types'
+import { useEditorKeyboardShortcuts } from './app/use-editor-keyboard-shortcuts'
+import { useSceneStartupState } from './app/use-scene-startup-state'
 
 interface BrowserSceneState {
   assetsReady: boolean
@@ -222,11 +217,6 @@ function App() {
     canUndo: false,
     canRedo: false,
   })
-  const [assetsReady, setAssetsReady] = useState(false)
-  const [assetError, setAssetError] = useState<Error | null>(null)
-  const [sceneVersion, setSceneVersion] = useState(0)
-  const assetsReadyRef = useRef(assetsReady)
-  const assetErrorRef = useRef(assetError)
 
   const resetEditorShellState = useCallback(() => {
     sceneRef.current = null
@@ -239,21 +229,26 @@ function App() {
     })
   }, [])
 
-  const editorInteractionsEnabled = assetsReady && assetError === null
-  const startupLoadingActive = !assetsReady && assetError === null
-  const startupOverlayActive = startupLoadingActive || assetError !== null
-
-  useEffect(() => {
-    preloadFurnitureCollections()
+  const closeOpenDialogs = useCallback(() => {
+    confirmDeleteDialogRef.current?.close()
+    infoDialogRef.current?.close()
   }, [])
 
-  useEffect(() => {
-    assetsReadyRef.current = assetsReady
-  }, [assetsReady])
-
-  useEffect(() => {
-    assetErrorRef.current = assetError
-  }, [assetError])
+  const {
+    assetError,
+    assetErrorRef,
+    assetsReadyRef,
+    editorInteractionsEnabled,
+    handleAssetError,
+    handleAssetsReady,
+    retryAssetLoading,
+    sceneVersion,
+    startupLoadingActive,
+    startupOverlayActive,
+  } = useSceneStartupState({
+    closeOpenDialogs,
+    resetEditorShellState,
+  })
 
   useEffect(() => {
     if (!import.meta.env.DEV) {
@@ -278,33 +273,7 @@ function App() {
     return () => {
       delete window.__ROOM_LAYOUT_TEST__
     }
-  }, [])
-
-  const handleAssetsReady = useCallback(() => {
-    setAssetsReady(true)
-    setAssetError(null)
-  }, [])
-
-  const handleAssetError = useCallback(
-    (error: Error) => {
-      setAssetsReady(false)
-      setAssetError(error)
-      confirmDeleteDialogRef.current?.close()
-      infoDialogRef.current?.close()
-      resetEditorShellState()
-    },
-    [resetEditorShellState],
-  )
-
-  const retryAssetLoading = useCallback(() => {
-    clearFurnitureCollectionCache()
-    setAssetsReady(false)
-    setAssetError(null)
-    confirmDeleteDialogRef.current?.close()
-    infoDialogRef.current?.close()
-    resetEditorShellState()
-    setSceneVersion((currentVersion) => currentVersion + 1)
-  }, [resetEditorShellState])
+  }, [assetErrorRef, assetsReadyRef])
 
   const closeDeleteDialog = useCallback(() => {
     confirmDeleteDialogRef.current?.close()
@@ -326,110 +295,49 @@ function App() {
     confirmDeleteDialogRef.current?.showModal()
   }, [editorInteractionsEnabled, selectedFurniture])
 
-  useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent) => {
+  const rotateSelection = useCallback(
+    (direction: -1 | 1) => {
       if (!editorInteractionsEnabled) {
         return
       }
 
-      const target = event.target
-      const isModalOpen =
-        Boolean(infoDialogRef.current?.open) ||
-        Boolean(confirmDeleteDialogRef.current?.open)
-      const targetTagName =
-        target instanceof HTMLElement ? target.tagName : undefined
-      const targetIsContentEditable =
-        target instanceof HTMLElement ? target.isContentEditable : false
-      const historyIntent = getHistoryHotkeyIntent({
-        key: event.key,
-        altKey: event.altKey,
-        ctrlKey: event.ctrlKey,
-        metaKey: event.metaKey,
-        shiftKey: event.shiftKey,
-        isModalOpen,
-        targetTagName,
-        targetIsContentEditable,
-      })
-      const deleteIntent = getDeleteHotkeyIntent({
-        key: event.key,
-        altKey: event.altKey,
-        ctrlKey: event.ctrlKey,
-        metaKey: event.metaKey,
-        isModalOpen,
-        targetTagName,
-        targetIsContentEditable,
-      })
-      const direction = getRotationHotkeyDirection({
-        key: event.key,
-        altKey: event.altKey,
-        ctrlKey: event.ctrlKey,
-        metaKey: event.metaKey,
-        isModalOpen,
-        targetTagName,
-        targetIsContentEditable,
-      })
-
-      if (historyIntent === 'undo' && historyAvailability.canUndo) {
-        event.preventDefault()
-        sceneRef.current?.undo()
-        return
-      }
-
-      if (historyIntent === 'redo' && historyAvailability.canRedo) {
-        event.preventDefault()
-        sceneRef.current?.redo()
-        return
-      }
-
-      if (selectedFurniture && deleteIntent) {
-        event.preventDefault()
-        openDeleteDialog()
-        return
-      }
-
-      if (!selectedFurniture || !direction) {
-        return
-      }
-
-      event.preventDefault()
       sceneRef.current?.rotateSelection(direction * ROTATION_STEP_RADIANS)
-    }
+    },
+    [editorInteractionsEnabled],
+  )
 
-    window.addEventListener('keydown', onKeyDown)
-
-    return () => {
-      window.removeEventListener('keydown', onKeyDown)
-    }
-  }, [
-    editorInteractionsEnabled,
-    historyAvailability,
-    openDeleteDialog,
-    selectedFurniture,
-  ])
-
-  const rotateSelection = (direction: -1 | 1) => {
-    if (!editorInteractionsEnabled) {
-      return
-    }
-
-    sceneRef.current?.rotateSelection(direction * ROTATION_STEP_RADIANS)
-  }
-
-  const undo = () => {
+  const undo = useCallback(() => {
     if (!editorInteractionsEnabled) {
       return
     }
 
     sceneRef.current?.undo()
-  }
+  }, [editorInteractionsEnabled])
 
-  const redo = () => {
+  const redo = useCallback(() => {
     if (!editorInteractionsEnabled) {
       return
     }
 
     sceneRef.current?.redo()
-  }
+  }, [editorInteractionsEnabled])
+
+  useEditorKeyboardShortcuts({
+    enabled: editorInteractionsEnabled,
+    canUndo: historyAvailability.canUndo,
+    canRedo: historyAvailability.canRedo,
+    hasSelection: selectedFurniture !== null,
+    getIsModalOpen: () => {
+      return (
+        Boolean(infoDialogRef.current?.open) ||
+        Boolean(confirmDeleteDialogRef.current?.open)
+      )
+    },
+    onUndo: undo,
+    onRedo: redo,
+    onOpenDeleteDialog: openDeleteDialog,
+    onRotate: rotateSelection,
+  })
 
   const addFurniture = () => {
     if (!editorInteractionsEnabled || !catalogIdToAdd) {
