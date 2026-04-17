@@ -179,10 +179,12 @@ export function Scene({
   ref,
   onSelectionChange,
   onHistoryChange,
+  onAssetsReady,
 }: {
   ref: React.Ref<SceneRef>
   onSelectionChange?: (item: FurnitureItem | null) => void
   onHistoryChange?: (availability: SceneHistoryAvailability) => void
+  onAssetsReady?: () => void
 }) {
   const gltfResult = useGLTF(FURNITURE_COLLECTION_PATHS) as
     | { scene: Object3D }
@@ -200,6 +202,7 @@ export function Scene({
   }, [gltfResult])
 
   const objectRefs = useRef(new Map<string, Object3D>())
+  const hasReportedAssetsReadyRef = useRef(false)
   const [history, setHistory] = useState(() =>
     createHistoryState<FurnitureItem[]>(getInitialFurnitureItems()),
   )
@@ -235,6 +238,15 @@ export function Scene({
   useEffect(() => {
     onHistoryChange?.(historyAvailability)
   }, [historyAvailability, onHistoryChange])
+
+  useEffect(() => {
+    if (hasReportedAssetsReadyRef.current) {
+      return
+    }
+
+    hasReportedAssetsReadyRef.current = true
+    onAssetsReady?.()
+  }, [onAssetsReady, sourceScenesByPath])
 
   const setSelection = useCallback((item: FurnitureItem | null) => {
     const nextSelectedId = item?.id ?? null

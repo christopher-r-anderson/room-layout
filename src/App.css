@@ -91,6 +91,11 @@
   padding: 8px 10px;
 }
 
+.catalog-select:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 .add-button,
 .remove-button,
 .history-button,
@@ -320,6 +325,88 @@
   outline-offset: 2px;
 }
 
+.startup-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(240, 240, 240, 0.74);
+}
+
+.startup-overlay-panel {
+  width: min(420px, calc(100vw - 32px));
+  display: grid;
+  gap: 12px;
+  padding: 20px;
+  border: 1px solid rgba(199, 199, 199, 0.95);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.97);
+  box-shadow: 0 16px 38px rgba(17, 24, 39, 0.16);
+  color: #171717;
+}
+
+.startup-overlay-panel-error {
+  border-color: rgba(179, 38, 30, 0.28);
+}
+
+.startup-overlay-eyebrow {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #5d5d5d;
+}
+
+.startup-overlay-title {
+  margin: 0;
+  font-size: 24px;
+  line-height: 1.15;
+}
+
+.startup-overlay-copy,
+.startup-overlay-note,
+.startup-progress-label {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.4;
+  color: #2d2d2d;
+}
+
+.startup-overlay-note {
+  color: #7a2e1a;
+}
+
+.startup-progress {
+  overflow: hidden;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(15, 98, 254, 0.12);
+}
+
+.startup-progress-bar {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #0f62fe 0%, #5a8cff 100%);
+  transition: width 160ms ease-out;
+}
+
+.startup-progress-summary {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+  color: #2d2d2d;
+}
+
+.startup-overlay-actions {
+  display: flex;
+  justify-content: flex-start;
+}
+
 @media (max-width: 720px) {
   .catalog-controls {
     width: min(100vw - 32px, 360px);
@@ -331,5 +418,18 @@
 
   .rotation-help {
     max-width: calc(100vw - 32px);
+  }
+
+  .startup-overlay {
+    padding: 16px;
+  }
+
+  .startup-overlay-title {
+    font-size: 22px;
+  }
+
+  .startup-progress-summary {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }

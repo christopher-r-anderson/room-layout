@@ -56,10 +56,10 @@ Deliver a small, polished 3D room-layout editor demo that demonstrates productio
 
 ### Loading and Resilience (Core)
 
-- [ ] Add startup loading overlay with clear progress feedback.
-- [ ] Disable editor interactions until essential scene assets are ready.
-- [ ] Add graceful asset-load error state with retry action.
-- [ ] Preload current core furniture assets on app startup.
+- [x] Add startup loading overlay with clear progress feedback.
+- [x] Disable editor interactions until essential scene assets are ready.
+- [x] Add graceful asset-load error state with retry action.
+- [x] Preload current core furniture assets on app startup.
 
 ### Shareable State
 
@@ -78,13 +78,13 @@ Deliver a small, polished 3D room-layout editor demo that demonstrates productio
 
 - [x] Refresh README product section and include current feature list.
 - [x] Add short usage guide (select, move, rotate, add, remove, share).
-- [ ] Run final validation pass (`pnpm fix`, `pnpm typecheck`, `pnpm test:run`, `pnpm build`).
+- [x] Run final validation pass (`pnpm fix`, `pnpm typecheck`, `pnpm test:run`, `pnpm build`).
 - [ ] Capture demo media for README.
 
 ## Current Focus
 
-1. Startup loading/error experience.
-2. Basic URL share/load.
-3. Camera presets and visual polish.
-4. Expanded furniture catalog coverage.
-5. Browser performance harness.
+1. Basic URL share/load.
+2. Camera presets and visual polish.
+3. Expanded furniture catalog coverage.
+4. Browser performance harness.
+5. Keyboard reachability polish.

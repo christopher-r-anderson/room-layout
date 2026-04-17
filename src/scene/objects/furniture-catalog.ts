@@ -1,3 +1,4 @@
+import { useGLTF } from '@react-three/drei'
 import type { FurnitureKind, FootprintSize } from './furniture.types'
 
 function resolvePublicAssetPath(assetPath: string) {
@@ -60,6 +61,18 @@ export const FURNITURE_CATALOG: FurnitureCatalogEntry[] = [
 export const FURNITURE_COLLECTION_PATHS = FURNITURE_COLLECTIONS.map(
   ({ sourcePath }) => sourcePath,
 )
+
+export function preloadFurnitureCollections() {
+  useGLTF.preload(FURNITURE_COLLECTION_PATHS)
+}
+
+export function clearFurnitureCollectionCache() {
+  useGLTF.clear(FURNITURE_COLLECTION_PATHS)
+
+  FURNITURE_COLLECTION_PATHS.forEach((sourcePath) => {
+    useGLTF.clear(sourcePath)
+  })
+}
 
 export function getCollectionPath(collectionId: string) {
   const collection = FURNITURE_COLLECTIONS.find(
