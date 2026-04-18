@@ -14,7 +14,6 @@ import {
 import { useThree, type ThreeEvent } from '@react-three/fiber'
 import { type Object3D } from 'three'
 import { EffectComposer, Outline } from '@react-three/postprocessing'
-import { getMeshes } from '@/lib/three/get-meshes'
 import {
   getFloorIntersection,
   getDraggedFurniturePosition,
@@ -45,6 +44,7 @@ import {
   undoSceneHistory,
 } from './scene-history-state'
 import { createSceneSnapshot, type SceneSnapshot } from './scene-snapshot'
+import { useSceneSelection } from './use-scene-selection'
 
 const ROOM_HALF_SIZE = 3
 const FLOOR_PLANE_Y = 0
@@ -112,7 +112,6 @@ export function Scene({
     )
   }, [gltfResult])
 
-  const objectRefs = useRef(new Map<string, Object3D>())
   const hasReportedAssetsReadyRef = useRef(false)
   const [history, setHistory] = useState(() =>
     createHistoryState<FurnitureItem[]>(getInitialFurnitureItems()),
@@ -120,13 +119,18 @@ export function Scene({
   const furniture = history.present
   const instanceIdRef = useRef(furniture.length)
   const dragStartStateRef = useRef<FurnitureItem[] | null>(null)
-  const [selectedId, setSelectedId] = useState<string | null>(null)
-  const [selectedObject, setSelectedObject] = useState<Object3D | null>(null)
   const [dragState, setDragState] = useState<DragState | null>(null)
-  const selectedFurniture = useMemo(
-    () => furniture.find((item) => item.id === selectedId) ?? null,
-    [furniture, selectedId],
-  )
+  const {
+    objectRefs,
+    registerObject,
+    selectFurniture,
+    selectedId,
+    selection,
+    setSelectedIdAndResolveObject,
+  } = useSceneSelection({
+    furniture,
+    onSelectionChange,
+  })
   const historyAvailability = useMemo(
     () =>
       getSceneHistoryAvailability({
@@ -136,15 +140,6 @@ export function Scene({
       }),
     [dragState, history, selectedId],
   )
-
-  const selection = useMemo(
-    () => (selectedObject ? getMeshes(selectedObject) : []),
-    [selectedObject],
-  )
-
-  useEffect(() => {
-    onSelectionChange?.(selectedFurniture)
-  }, [onSelectionChange, selectedFurniture])
 
   useEffect(() => {
     onHistoryChange?.(historyAvailability)
@@ -159,52 +154,11 @@ export function Scene({
     onAssetsReady?.()
   }, [onAssetsReady, sourceScenesByPath])
 
-  const setSelection = useCallback((item: FurnitureItem | null) => {
-    const nextSelectedId = item?.id ?? null
-
-    setSelectedId(nextSelectedId)
-    setSelectedObject(
-      nextSelectedId ? (objectRefs.current.get(nextSelectedId) ?? null) : null,
-    )
-  }, [])
-
-  const selectFurniture = useCallback(
-    (id: string | null) => {
-      const nextSelection = id
-        ? (furniture.find((item) => item.id === id) ?? null)
-        : null
-
-      setSelection(nextSelection)
-    },
-    [furniture, setSelection],
-  )
-
   const handleSelect = useCallback(
     (id: string) => {
       selectFurniture(id)
     },
     [selectFurniture],
-  )
-
-  const registerObject = useCallback(
-    (id: string, object: Object3D | null) => {
-      if (object) {
-        objectRefs.current.set(id, object)
-
-        if (selectedId === id) {
-          setSelectedObject(object)
-        }
-
-        return
-      }
-
-      objectRefs.current.delete(id)
-
-      if (selectedId === id) {
-        setSelectedObject(null)
-      }
-    },
-    [selectedId],
   )
 
   const updateFurniturePosition = useCallback(
@@ -372,8 +326,9 @@ export function Scene({
 
         if (addOutcome.incrementInstanceId) {
           instanceIdRef.current += 1
-          setSelectedId(addOutcome.result.ok ? addOutcome.result.id : null)
-          setSelectedObject(null)
+          setSelectedIdAndResolveObject(
+            addOutcome.result.ok ? addOutcome.result.id : null,
+          )
         }
 
         return addOutcome.result
@@ -408,8 +363,7 @@ export function Scene({
           dragStartStateRef.current = null
         }
 
-        setSelectedId(null)
-        setSelectedObject(null)
+        setSelectedIdAndResolveObject(null)
 
         return true
       },
@@ -425,12 +379,7 @@ export function Scene({
         }
 
         setHistory(undoResult.history)
-        setSelectedId(undoResult.selectedId)
-        setSelectedObject(
-          undoResult.selectedId
-            ? (objectRefs.current.get(undoResult.selectedId) ?? null)
-            : null,
-        )
+        setSelectedIdAndResolveObject(undoResult.selectedId)
 
         return true
       },
@@ -446,12 +395,7 @@ export function Scene({
         }
 
         setHistory(redoResult.history)
-        setSelectedId(redoResult.selectedId)
-        setSelectedObject(
-          redoResult.selectedId
-            ? (objectRefs.current.get(redoResult.selectedId) ?? null)
-            : null,
-        )
+        setSelectedIdAndResolveObject(redoResult.selectedId)
 
         return true
       },
@@ -470,9 +414,11 @@ export function Scene({
       dragState,
       furniture,
       history,
+      objectRefs,
       rotateSelectedFurniture,
       selectFurniture,
       selectedId,
+      setSelectedIdAndResolveObject,
       sourceScenesByPath,
     ],
   )
