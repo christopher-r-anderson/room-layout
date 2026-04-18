@@ -3,14 +3,7 @@ import { Lighting } from './environment/lighting'
 import { CameraControls } from './camera/camera-controls'
 import { InteractiveFurniture } from './objects/interactive-furniture'
 import { useGLTF } from '@react-three/drei'
-import {
-  useCallback,
-  useEffect,
-  useImperativeHandle,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useThree } from '@react-three/fiber'
 import { type Object3D } from 'three'
 import { EffectComposer, Outline } from '@react-three/postprocessing'
@@ -19,22 +12,17 @@ import { createHistoryState } from '@/lib/ui/editor-history'
 import type { FurnitureItem } from './objects/furniture.types'
 import { FURNITURE_COLLECTION_PATHS } from './objects/furniture-catalog'
 import {
-  addFurnitureToHistory,
   areFurnitureCollectionsEqual,
-  createFurnitureInstanceId,
-  removeSelectionFromHistory,
   rotateSelectedFurnitureInHistory,
   updateFurniturePositionInHistory,
-  type AddFurnitureResult,
 } from './furniture-operations'
 import {
   getSceneHistoryAvailability,
-  redoSceneHistory,
   type SceneHistoryAvailability,
-  undoSceneHistory,
 } from './scene-history-state'
-import { createSceneSnapshot, type SceneSnapshot } from './scene-snapshot'
+import type { SceneRef } from './scene.types'
 import { useSceneDrag } from './use-scene-drag'
+import { useSceneImperativeApi } from './use-scene-imperative-api'
 import { useSceneSelection } from './use-scene-selection'
 
 const ROOM_HALF_SIZE = 3
@@ -46,20 +34,6 @@ const ROOM_BOUNDS: LayoutBounds = {
   maxX: ROOM_HALF_SIZE,
   minZ: -ROOM_HALF_SIZE,
   maxZ: ROOM_HALF_SIZE,
-}
-
-export interface SceneRef {
-  clearSelection: () => void
-  rotateSelection: (deltaRadians: number) => void
-  addFurniture: (
-    catalogId: string,
-  ) =>
-    | { ok: true; id: string }
-    | { ok: false; reason: 'unknown-catalog' | 'no-space' }
-  removeSelection: () => boolean
-  undo: () => boolean
-  redo: () => boolean
-  getSnapshot: () => SceneSnapshot
 }
 
 function getInitialFurnitureItems(): FurnitureItem[] {
@@ -186,144 +160,26 @@ export function Scene({
     onAssetsReady?.()
   }, [onAssetsReady, sourceScenesByPath])
 
-  useImperativeHandle(
+  useSceneImperativeApi({
     ref,
-    () => ({
-      clearSelection: () => {
-        if (!dragState) {
-          selectFurniture(null)
-        }
-      },
-      rotateSelection: (deltaRadians: number) => {
-        rotateSelectedFurniture(deltaRadians)
-      },
-      addFurniture: (catalogId: string) => {
-        const addOutcome: {
-          result: AddFurnitureResult
-          incrementInstanceId: boolean
-        } = {
-          result: {
-            ok: false,
-            reason: 'no-space',
-          },
-          incrementInstanceId: false,
-        }
-
-        setHistory((currentHistory) => {
-          const operationResult = addFurnitureToHistory({
-            history: currentHistory,
-            sourceScenesByPath,
-            catalogId,
-            nextId: createFurnitureInstanceId(instanceIdRef.current + 1),
-            bounds: ROOM_BOUNDS,
-            edgeSnapThreshold: EDGE_SNAP_THRESHOLD,
-            snapSize: SNAP_SIZE,
-          })
-
-          addOutcome.result = operationResult.result
-          addOutcome.incrementInstanceId = operationResult.incrementInstanceId
-
-          return operationResult.history
-        })
-
-        if (addOutcome.incrementInstanceId) {
-          instanceIdRef.current += 1
-          setSelectedIdAndResolveObject(
-            addOutcome.result.ok ? addOutcome.result.id : null,
-          )
-        }
-
-        return addOutcome.result
-      },
-      removeSelection: () => {
-        const removeOutcome = {
-          removed: false,
-          removedId: null as string | null,
-        }
-
-        setHistory((currentHistory) => {
-          const operationResult = removeSelectionFromHistory(
-            currentHistory,
-            selectedId,
-          )
-
-          removeOutcome.removed = operationResult.removed
-          removeOutcome.removedId = operationResult.removedId
-
-          return operationResult.history
-        })
-
-        if (!removeOutcome.removed) {
-          return false
-        }
-
-        if (
-          removeOutcome.removedId &&
-          dragState?.id === removeOutcome.removedId
-        ) {
-          clearDragState()
-        }
-
-        setSelectedIdAndResolveObject(null)
-
-        return true
-      },
-      undo: () => {
-        const undoResult = undoSceneHistory({
-          history,
-          selectedId,
-          isDragging: Boolean(dragState),
-        })
-
-        if (!undoResult.didChange) {
-          return false
-        }
-
-        setHistory(undoResult.history)
-        setSelectedIdAndResolveObject(undoResult.selectedId)
-
-        return true
-      },
-      redo: () => {
-        const redoResult = redoSceneHistory({
-          history,
-          selectedId,
-          isDragging: Boolean(dragState),
-        })
-
-        if (!redoResult.didChange) {
-          return false
-        }
-
-        setHistory(redoResult.history)
-        setSelectedIdAndResolveObject(redoResult.selectedId)
-
-        return true
-      },
-      getSnapshot: (): SceneSnapshot =>
-        createSceneSnapshot(
-          furniture,
-          selectedId,
-          objectRefs.current,
-          camera,
-          canvasSize,
-        ),
-    }),
-    [
-      camera,
-      canvasSize,
-      dragState,
-      furniture,
-      history,
-      objectRefs,
-      rotateSelectedFurniture,
-      clearDragState,
-      selectFurniture,
-      selectedId,
-      setSelectedIdAndResolveObject,
-      sourceScenesByPath,
-    ],
-  )
+    bounds: ROOM_BOUNDS,
+    camera,
+    canvasSize,
+    clearDragState,
+    dragState,
+    edgeSnapThreshold: EDGE_SNAP_THRESHOLD,
+    furniture,
+    history,
+    instanceIdRef,
+    objectRefs,
+    rotateSelectedFurniture,
+    selectFurniture,
+    selectedId,
+    setHistory,
+    setSelectedIdAndResolveObject,
+    snapSize: SNAP_SIZE,
+    sourceScenesByPath,
+  })
 
   const sceneFurniture = useMemo(
     () =>

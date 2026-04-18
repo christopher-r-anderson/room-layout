@@ -1,6 +1,6 @@
 import { Canvas } from '@react-three/fiber'
 import './App.css'
-import { Scene, type SceneRef } from './scene/scene'
+import { Scene } from './scene/scene'
 import {
   Component,
   Suspense,
@@ -10,6 +10,7 @@ import {
   useRef,
   useState,
 } from 'react'
+import type { SceneRef } from './scene/scene.types'
 import { FURNITURE_CATALOG } from './scene/objects/furniture-catalog'
 import type { FurnitureItem } from './scene/objects/furniture.types'
 import {
