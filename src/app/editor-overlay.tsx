@@ -10,6 +10,7 @@ import {
   SelectionPanel,
   type HistoryAvailability,
 } from './editor-overlay-panels'
+import { OverlayControlPanel } from './editor-ui-primitives'
 import { StartupErrorOverlay, StartupLoadingOverlay } from './startup-overlays'
 
 interface EditorOverlayProps {
@@ -84,7 +85,7 @@ export function EditorOverlay({
         inert={startupOverlayActive}
         aria-hidden={startupOverlayActive}
       >
-        <section className="catalog-controls" aria-label="Furniture controls">
+        <OverlayControlPanel ariaLabel="Furniture controls">
           <HistoryPanel
             canRedo={historyAvailability.canRedo}
             canUndo={historyAvailability.canUndo}
@@ -106,7 +107,7 @@ export function EditorOverlay({
             selectedFurniture={selectedFurniture}
           />
           <EditorStatusMessage message={editorMessage} />
-        </section>
+        </OverlayControlPanel>
         <OverlayInfoButton
           infoButtonRef={infoButtonRef}
           onOpenInfoDialog={onOpenInfoDialog}

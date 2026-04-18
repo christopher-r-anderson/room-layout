@@ -1,6 +1,12 @@
 import type { RefObject } from 'react'
 import { FURNITURE_CATALOG } from '@/scene/objects/furniture-catalog'
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
+import {
+  OverlayControlSection,
+  OverlayIconButton,
+  OverlayStatusMessage,
+  OverlayToolbar,
+} from './editor-ui-primitives'
 
 interface HistoryAvailability {
   canUndo: boolean
@@ -21,13 +27,8 @@ export function HistoryPanel({
   onUndo: () => void
 }) {
   return (
-    <div className="control-group control-group-history">
-      <h2 className="control-heading">History</h2>
-      <div
-        className="history-controls"
-        role="toolbar"
-        aria-label="History controls"
-      >
+    <OverlayControlSection className="control-group-history" heading="History">
+      <OverlayToolbar ariaLabel="History controls" className="history-controls">
         <button
           type="button"
           className="history-button"
@@ -46,8 +47,8 @@ export function HistoryPanel({
         >
           Redo
         </button>
-      </div>
-    </div>
+      </OverlayToolbar>
+    </OverlayControlSection>
   )
 }
 
@@ -63,10 +64,10 @@ export function CatalogPanel({
   onCatalogIdToAddChange: (catalogId: string) => void
 }) {
   return (
-    <div className="control-group" aria-labelledby="add-furniture-heading">
-      <h2 id="add-furniture-heading" className="control-heading">
-        Add Furniture
-      </h2>
+    <OverlayControlSection
+      heading="Add Furniture"
+      headingId="add-furniture-heading"
+    >
       <label className="sr-only" htmlFor="add-furniture-select">
         Furniture type to add
       </label>
@@ -95,7 +96,7 @@ export function CatalogPanel({
           Add Item
         </button>
       </div>
-    </div>
+    </OverlayControlSection>
   )
 }
 
@@ -113,10 +114,10 @@ export function SelectionPanel({
   selectedFurniture: FurnitureItem | null
 }) {
   return (
-    <div className="control-group" aria-labelledby="selection-actions-heading">
-      <h2 id="selection-actions-heading" className="control-heading">
-        Selection Actions
-      </h2>
+    <OverlayControlSection
+      heading="Selection Actions"
+      headingId="selection-actions-heading"
+    >
       <p className="selection-summary" aria-live="polite">
         {selectedFurniture ? (
           <>Selected: {selectedFurniture.name}</>
@@ -124,10 +125,9 @@ export function SelectionPanel({
           'Selected: none'
         )}
       </p>
-      <div
+      <OverlayToolbar
+        ariaLabel="Rotation controls"
         className="rotation-controls"
-        role="toolbar"
-        aria-label="Rotation controls"
       >
         <button
           type="button"
@@ -151,7 +151,7 @@ export function SelectionPanel({
         >
           Rotate Right
         </button>
-      </div>
+      </OverlayToolbar>
       <button
         ref={removeButtonRef}
         type="button"
@@ -163,20 +163,12 @@ export function SelectionPanel({
       >
         Remove Selected
       </button>
-    </div>
+    </OverlayControlSection>
   )
 }
 
 export function EditorStatusMessage({ message }: { message: string | null }) {
-  if (!message) {
-    return null
-  }
-
-  return (
-    <p className="editor-message" role="status">
-      {message}
-    </p>
-  )
+  return <OverlayStatusMessage message={message} />
 }
 
 export function OverlayInfoButton({
@@ -187,17 +179,15 @@ export function OverlayInfoButton({
   onOpenInfoDialog: () => void
 }) {
   return (
-    <button
-      ref={infoButtonRef}
-      type="button"
-      className="info-button"
+    <OverlayIconButton
+      buttonRef={infoButtonRef}
       aria-haspopup="dialog"
       aria-controls="project-info-dialog"
       aria-label="Open project and asset info"
       onClick={onOpenInfoDialog}
     >
       <span aria-hidden>ℹ</span>
-    </button>
+    </OverlayIconButton>
   )
 }
 
