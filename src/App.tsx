@@ -1,20 +1,11 @@
 import { Canvas } from '@react-three/fiber'
 import './App.css'
 import { Scene } from './scene/scene'
-import {
-  Component,
-  Suspense,
-  type ReactNode,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react'
+import { Component, Suspense, type ReactNode, useEffect, useRef } from 'react'
 import type { SceneRef } from './scene/scene.types'
-import { FURNITURE_CATALOG } from './scene/objects/furniture-catalog'
-import type { FurnitureItem } from './scene/objects/furniture.types'
 import { EditorOverlay } from './app/editor-overlay'
 import { useEditorKeyboardShortcuts } from './app/use-editor-keyboard-shortcuts'
+import { useEditorOverlayState } from './app/use-editor-overlay-state'
 import { useSceneStartupState } from './app/use-scene-startup-state'
 
 interface BrowserSceneState {
@@ -74,38 +65,47 @@ class SceneAssetErrorBoundary extends Component<
 
 function App() {
   const sceneRef = useRef<SceneRef | null>(null)
+  const editorInteractionsEnabledRef = useRef(false)
+  const startupOverlayActiveRef = useRef(false)
   const infoDialogRef = useRef<HTMLDialogElement | null>(null)
   const confirmDeleteDialogRef = useRef<HTMLDialogElement | null>(null)
   const infoButtonRef = useRef<HTMLButtonElement | null>(null)
   const removeButtonRef = useRef<HTMLButtonElement | null>(null)
-  const [selectedFurniture, setSelectedFurniture] =
-    useState<FurnitureItem | null>(null)
-  const [catalogIdToAdd, setCatalogIdToAdd] = useState(
-    FURNITURE_CATALOG[0]?.id ?? '',
-  )
-  const [pendingDeleteFurniture, setPendingDeleteFurniture] =
-    useState<FurnitureItem | null>(null)
-  const [editorMessage, setEditorMessage] = useState<string | null>(null)
-  const [historyAvailability, setHistoryAvailability] = useState({
-    canUndo: false,
-    canRedo: false,
+  const {
+    addFurniture,
+    catalogIdToAdd,
+    closeDeleteDialog,
+    closeInfoDialog,
+    closeOpenDialogs,
+    confirmRemoveSelection,
+    editorMessage,
+    getIsModalOpen,
+    handleDeleteDialogCancel,
+    handleDeleteDialogClick,
+    handleHistoryChange,
+    handleInfoDialogCancel,
+    handleInfoDialogClick,
+    handleSelectionChange,
+    historyAvailability,
+    openDeleteDialog,
+    openInfoDialog: openInfoDialogBase,
+    pendingDeleteFurniture,
+    redo,
+    resetEditorShellState,
+    rotateSelection,
+    selectedFurniture,
+    setCatalogIdToAdd,
+    undo,
+  } = useEditorOverlayState({
+    confirmDeleteDialogRef,
+    editorInteractionsEnabledRef,
+    infoButtonRef,
+    infoDialogRef,
+    removeButtonRef,
+    rotationStepRadians: ROTATION_STEP_RADIANS,
+    sceneRef,
+    startupOverlayActiveRef,
   })
-
-  const resetEditorShellState = useCallback(() => {
-    sceneRef.current = null
-    setSelectedFurniture(null)
-    setPendingDeleteFurniture(null)
-    setEditorMessage(null)
-    setHistoryAvailability({
-      canUndo: false,
-      canRedo: false,
-    })
-  }, [])
-
-  const closeOpenDialogs = useCallback(() => {
-    confirmDeleteDialogRef.current?.close()
-    infoDialogRef.current?.close()
-  }, [])
 
   const {
     assetError,
@@ -122,6 +122,14 @@ function App() {
     closeOpenDialogs,
     resetEditorShellState,
   })
+
+  useEffect(() => {
+    editorInteractionsEnabledRef.current = editorInteractionsEnabled
+  }, [editorInteractionsEnabled])
+
+  useEffect(() => {
+    startupOverlayActiveRef.current = startupOverlayActive
+  }, [startupOverlayActive])
 
   useEffect(() => {
     if (!import.meta.env.DEV) {
@@ -148,152 +156,17 @@ function App() {
     }
   }, [assetErrorRef, assetsReadyRef])
 
-  const closeDeleteDialog = useCallback(() => {
-    confirmDeleteDialogRef.current?.close()
-    setPendingDeleteFurniture(null)
-    removeButtonRef.current?.focus()
-  }, [])
-
-  const openDeleteDialog = useCallback(() => {
-    if (
-      !editorInteractionsEnabled ||
-      !selectedFurniture ||
-      confirmDeleteDialogRef.current?.open
-    ) {
-      return
-    }
-
-    setPendingDeleteFurniture(selectedFurniture)
-    setEditorMessage(null)
-    confirmDeleteDialogRef.current?.showModal()
-  }, [editorInteractionsEnabled, selectedFurniture])
-
-  const rotateSelection = useCallback(
-    (direction: -1 | 1) => {
-      if (!editorInteractionsEnabled) {
-        return
-      }
-
-      sceneRef.current?.rotateSelection(direction * ROTATION_STEP_RADIANS)
-    },
-    [editorInteractionsEnabled],
-  )
-
-  const undo = useCallback(() => {
-    if (!editorInteractionsEnabled) {
-      return
-    }
-
-    sceneRef.current?.undo()
-  }, [editorInteractionsEnabled])
-
-  const redo = useCallback(() => {
-    if (!editorInteractionsEnabled) {
-      return
-    }
-
-    sceneRef.current?.redo()
-  }, [editorInteractionsEnabled])
-
   useEditorKeyboardShortcuts({
     enabled: editorInteractionsEnabled,
     canUndo: historyAvailability.canUndo,
     canRedo: historyAvailability.canRedo,
     hasSelection: selectedFurniture !== null,
-    getIsModalOpen: () => {
-      return (
-        Boolean(infoDialogRef.current?.open) ||
-        Boolean(confirmDeleteDialogRef.current?.open)
-      )
-    },
+    getIsModalOpen,
     onUndo: undo,
     onRedo: redo,
     onOpenDeleteDialog: openDeleteDialog,
     onRotate: rotateSelection,
   })
-
-  const addFurniture = () => {
-    if (!editorInteractionsEnabled || !catalogIdToAdd) {
-      return
-    }
-
-    const result = sceneRef.current?.addFurniture(catalogIdToAdd)
-
-    if (!result) {
-      return
-    }
-
-    if (!result.ok) {
-      setEditorMessage(
-        result.reason === 'no-space'
-          ? 'No safe placement slot is available for that furniture item.'
-          : 'The selected furniture entry is no longer available.',
-      )
-      return
-    }
-
-    setEditorMessage(null)
-  }
-
-  const openInfoDialog = () => {
-    if (startupOverlayActive) {
-      return
-    }
-
-    infoDialogRef.current?.showModal()
-  }
-
-  const closeInfoDialog = () => {
-    infoDialogRef.current?.close()
-    infoButtonRef.current?.focus()
-  }
-
-  const handleInfoDialogCancel = (
-    event: React.SyntheticEvent<HTMLDialogElement>,
-  ) => {
-    event.preventDefault()
-    closeInfoDialog()
-  }
-
-  const handleInfoDialogClick = (
-    event: React.MouseEvent<HTMLDialogElement>,
-  ) => {
-    if (event.target === event.currentTarget) {
-      closeInfoDialog()
-    }
-  }
-
-  const handleDeleteDialogCancel = (
-    event: React.SyntheticEvent<HTMLDialogElement>,
-  ) => {
-    event.preventDefault()
-    closeDeleteDialog()
-  }
-
-  const handleDeleteDialogClick = (
-    event: React.MouseEvent<HTMLDialogElement>,
-  ) => {
-    if (event.target === event.currentTarget) {
-      closeDeleteDialog()
-    }
-  }
-
-  const confirmRemoveSelection = () => {
-    if (!editorInteractionsEnabled) {
-      return
-    }
-
-    const removed = sceneRef.current?.removeSelection() ?? false
-
-    closeDeleteDialog()
-
-    if (!removed) {
-      setEditorMessage('No selected furniture item was available to remove.')
-      return
-    }
-
-    setEditorMessage(null)
-  }
 
   return (
     <div className="app" aria-busy={startupLoadingActive}>
@@ -317,8 +190,8 @@ function App() {
           <Suspense fallback={null}>
             <Scene
               ref={sceneRef}
-              onSelectionChange={setSelectedFurniture}
-              onHistoryChange={setHistoryAvailability}
+              onSelectionChange={handleSelectionChange}
+              onHistoryChange={handleHistoryChange}
               onAssetsReady={handleAssetsReady}
             />
           </Suspense>
@@ -344,7 +217,7 @@ function App() {
         onCloseInfoDialog={closeInfoDialog}
         onConfirmRemoveSelection={confirmRemoveSelection}
         onOpenDeleteDialog={openDeleteDialog}
-        onOpenInfoDialog={openInfoDialog}
+        onOpenInfoDialog={openInfoDialogBase}
         onRedo={redo}
         onRetryAssetLoading={retryAssetLoading}
         onRotateSelection={rotateSelection}
