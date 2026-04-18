@@ -43,6 +43,7 @@ Deliver a small, polished 3D room-layout editor demo that demonstrates productio
 - [x] Add first browser integration scenarios for undo/redo and startup loading/error flows.
 - [x] Add baseline browser perf scenarios for drag/rotate/collision traces using the same harness.
 - [ ] Expand furniture catalog to 4 total types (including coffee table and end table).
+- [ ] Replace the text-only add-furniture dropdown with a visual catalog picker once the expanded catalog is in place.
 - [x] Add UI flow to insert furniture instances on demand.
 - [x] Add remove-selected-item action.
 - [x] Add undo/redo for move, rotate, add, and remove actions.
@@ -95,7 +96,7 @@ Deliver a small, polished 3D room-layout editor demo that demonstrates productio
 ## Current Focus
 
 1. Basic URL share/load.
-2. Camera presets and visual polish.
-3. Expanded furniture catalog coverage.
+2. Expanded furniture catalog coverage and a visual add-item picker.
+3. Camera presets and visual polish.
 4. Keyboard reachability polish.
 5. Hover affordance and broader browser interaction coverage.
