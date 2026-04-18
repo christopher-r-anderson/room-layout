@@ -1,7 +1,24 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type RefObject,
+} from 'react'
 import { type Object3D } from 'three'
 import { getMeshes } from '@/lib/three/get-meshes'
 import type { FurnitureItem } from './objects/furniture.types'
+
+interface SceneSelectionState {
+  objectRefs: RefObject<Map<string, Object3D>>
+  registerObject: (id: string, object: Object3D | null) => void
+  selectFurniture: (id: string | null) => void
+  selectedFurniture: FurnitureItem | null
+  selectedId: string | null
+  selection: ReturnType<typeof getMeshes>
+  setSelectedIdAndResolveObject: (id: string | null) => void
+}
 
 export function useSceneSelection({
   furniture,
@@ -9,7 +26,7 @@ export function useSceneSelection({
 }: {
   furniture: FurnitureItem[]
   onSelectionChange?: (item: FurnitureItem | null) => void
-}) {
+}): SceneSelectionState {
   const objectRefs = useRef(new Map<string, Object3D>())
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [selectedObject, setSelectedObject] = useState<Object3D | null>(null)

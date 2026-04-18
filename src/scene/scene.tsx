@@ -11,21 +11,11 @@ import {
   useRef,
   useState,
 } from 'react'
-import { useThree, type ThreeEvent } from '@react-three/fiber'
+import { useThree } from '@react-three/fiber'
 import { type Object3D } from 'three'
 import { EffectComposer, Outline } from '@react-three/postprocessing'
-import {
-  getFloorIntersection,
-  getDraggedFurniturePosition,
-} from '@/lib/three/furniture-drag'
-import {
-  resolveMovedFurniturePosition,
-  type LayoutBounds,
-} from '@/lib/three/furniture-layout'
-import {
-  createHistoryState,
-  finalizeHistoryPresent,
-} from '@/lib/ui/editor-history'
+import { type LayoutBounds } from '@/lib/three/furniture-layout'
+import { createHistoryState } from '@/lib/ui/editor-history'
 import type { FurnitureItem } from './objects/furniture.types'
 import { FURNITURE_COLLECTION_PATHS } from './objects/furniture-catalog'
 import {
@@ -44,6 +34,7 @@ import {
   undoSceneHistory,
 } from './scene-history-state'
 import { createSceneSnapshot, type SceneSnapshot } from './scene-snapshot'
+import { useSceneDrag } from './use-scene-drag'
 import { useSceneSelection } from './use-scene-selection'
 
 const ROOM_HALF_SIZE = 3
@@ -55,15 +46,6 @@ const ROOM_BOUNDS: LayoutBounds = {
   maxX: ROOM_HALF_SIZE,
   minZ: -ROOM_HALF_SIZE,
   maxZ: ROOM_HALF_SIZE,
-}
-
-interface DragState {
-  id: string
-  pointerId: number
-  offset: {
-    x: number
-    z: number
-  }
 }
 
 export interface SceneRef {
@@ -118,8 +100,6 @@ export function Scene({
   )
   const furniture = history.present
   const instanceIdRef = useRef(furniture.length)
-  const dragStartStateRef = useRef<FurnitureItem[] | null>(null)
-  const [dragState, setDragState] = useState<DragState | null>(null)
   const {
     objectRefs,
     registerObject,
@@ -131,28 +111,6 @@ export function Scene({
     furniture,
     onSelectionChange,
   })
-  const historyAvailability = useMemo(
-    () =>
-      getSceneHistoryAvailability({
-        history,
-        selectedId,
-        isDragging: Boolean(dragState),
-      }),
-    [dragState, history, selectedId],
-  )
-
-  useEffect(() => {
-    onHistoryChange?.(historyAvailability)
-  }, [historyAvailability, onHistoryChange])
-
-  useEffect(() => {
-    if (hasReportedAssetsReadyRef.current) {
-      return
-    }
-
-    hasReportedAssetsReadyRef.current = true
-    onAssetsReady?.()
-  }, [onAssetsReady, sourceScenesByPath])
 
   const handleSelect = useCallback(
     (id: string) => {
@@ -187,102 +145,46 @@ export function Scene({
     },
     [selectedId],
   )
+  const {
+    clearDragState,
+    dragState,
+    handleDragEnd,
+    handleDragStart,
+    handleMove,
+  } = useSceneDrag({
+    furniture,
+    selectFurniture,
+    updateFurniturePosition,
+    setHistory,
+    bounds: ROOM_BOUNDS,
+    floorPlaneY: FLOOR_PLANE_Y,
+    snapSize: SNAP_SIZE,
+    edgeSnapThreshold: EDGE_SNAP_THRESHOLD,
+    areFurnitureCollectionsEqual,
+  })
 
-  const handleDragStart = useCallback(
-    (id: string, event: ThreeEvent<PointerEvent>) => {
-      const activeFurniture = furniture.find((item) => item.id === id)
-
-      if (!activeFurniture) {
-        return
-      }
-
-      const floorIntersection = getFloorIntersection(event.ray, FLOOR_PLANE_Y)
-
-      if (!floorIntersection) {
-        return
-      }
-
-      selectFurniture(id)
-      dragStartStateRef.current = furniture
-      setDragState({
-        id,
-        pointerId: event.pointerId,
-        offset: {
-          x: activeFurniture.position[0] - floorIntersection.x,
-          z: activeFurniture.position[2] - floorIntersection.z,
-        },
-      })
-    },
-    [furniture, selectFurniture],
+  const historyAvailability = useMemo(
+    () =>
+      getSceneHistoryAvailability({
+        history,
+        selectedId,
+        isDragging: Boolean(dragState),
+      }),
+    [dragState, history, selectedId],
   )
 
-  const handleMove = useCallback(
-    (id: string, event: ThreeEvent<PointerEvent>) => {
-      if (dragState?.id !== id || dragState.pointerId !== event.pointerId) {
-        return
-      }
+  useEffect(() => {
+    onHistoryChange?.(historyAvailability)
+  }, [historyAvailability, onHistoryChange])
 
-      const activeFurniture = furniture.find((item) => item.id === id)
+  useEffect(() => {
+    if (hasReportedAssetsReadyRef.current) {
+      return
+    }
 
-      if (!activeFurniture) {
-        return
-      }
-
-      const nextPosition = getDraggedFurniturePosition({
-        ray: event.ray,
-        currentY: activeFurniture.position[1],
-        dragOffset: dragState.offset,
-        bounds: ROOM_BOUNDS,
-        snapSize: SNAP_SIZE,
-        planeY: FLOOR_PLANE_Y,
-      })
-
-      if (!nextPosition) {
-        return
-      }
-
-      const resolvedPosition = resolveMovedFurniturePosition({
-        movingId: id,
-        proposedPosition: nextPosition,
-        items: furniture,
-        edgeSnapThreshold: EDGE_SNAP_THRESHOLD,
-        bounds: ROOM_BOUNDS,
-      })
-
-      if (!resolvedPosition) {
-        return
-      }
-
-      updateFurniturePosition(id, resolvedPosition)
-    },
-    [dragState, furniture, updateFurniturePosition],
-  )
-
-  const handleDragEnd = useCallback(
-    (id: string) => {
-      if (dragState?.id !== id) {
-        return
-      }
-
-      setDragState(null)
-
-      const dragStartState = dragStartStateRef.current
-      dragStartStateRef.current = null
-
-      if (!dragStartState) {
-        return
-      }
-
-      setHistory((currentHistory) =>
-        finalizeHistoryPresent(
-          currentHistory,
-          dragStartState,
-          areFurnitureCollectionsEqual,
-        ),
-      )
-    },
-    [dragState],
-  )
+    hasReportedAssetsReadyRef.current = true
+    onAssetsReady?.()
+  }, [onAssetsReady, sourceScenesByPath])
 
   useImperativeHandle(
     ref,
@@ -359,8 +261,7 @@ export function Scene({
           removeOutcome.removedId &&
           dragState?.id === removeOutcome.removedId
         ) {
-          setDragState(null)
-          dragStartStateRef.current = null
+          clearDragState()
         }
 
         setSelectedIdAndResolveObject(null)
@@ -416,6 +317,7 @@ export function Scene({
       history,
       objectRefs,
       rotateSelectedFurniture,
+      clearDragState,
       selectFurniture,
       selectedId,
       setSelectedIdAndResolveObject,
