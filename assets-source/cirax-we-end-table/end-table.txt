@@ -1,0 +1,14 @@
+Model: End Table
+Source: https://sketchfab.com/3d-models/end-table-d0032d49ca214200929d4151d733f828
+Author: https://sketchfab.com/cirax-we (cirax we)
+License: CC Attribution
+
+Notes:
+Downloaded as GLB from Sketchfab.
+Original format was FBX.
+
+Modifications:
+Imported to blend
+Removed extra nodes
+scaled x 4
+Added collection export settings w/ copyright info

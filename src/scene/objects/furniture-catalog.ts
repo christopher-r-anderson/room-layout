@@ -31,6 +31,18 @@ export const FURNITURE_COLLECTIONS: FurnitureCollection[] = [
     id: 'leather-collection',
     sourcePath: resolvePublicAssetPath('models/leather-collection.glb'),
   },
+  {
+    id: 'end-table',
+    sourcePath: resolvePublicAssetPath('models/end-table.glb'),
+  },
+  {
+    id: 'coffee-table',
+    sourcePath: resolvePublicAssetPath('models/coffee-table.glb'),
+  },
+  {
+    id: 'coffee-table-living-room',
+    sourcePath: resolvePublicAssetPath('models/coffee-table-living-room.glb'),
+  },
 ]
 
 export const FURNITURE_CATALOG: FurnitureCatalogEntry[] = [
@@ -54,6 +66,39 @@ export const FURNITURE_CATALOG: FurnitureCatalogEntry[] = [
     footprintSize: {
       width: 1.15,
       depth: 0.95,
+    },
+  },
+  {
+    id: 'end-table-1',
+    name: 'End Table',
+    kind: 'end-table',
+    collectionId: 'end-table',
+    nodeName: 'end-table',
+    footprintSize: {
+      width: 0.96,
+      depth: 0.96,
+    },
+  },
+  {
+    id: 'coffee-table-1',
+    name: 'Coffee Table',
+    kind: 'coffee-table',
+    collectionId: 'coffee-table',
+    nodeName: 'coffee-table',
+    footprintSize: {
+      width: 1.38,
+      depth: 0.855,
+    },
+  },
+  {
+    id: 'coffee-table-living-room-1',
+    name: 'Living Room Coffee Table',
+    kind: 'coffee-table',
+    collectionId: 'coffee-table-living-room',
+    nodeName: 'Mesita',
+    footprintSize: {
+      width: 1.91,
+      depth: 1.03,
     },
   },
 ]

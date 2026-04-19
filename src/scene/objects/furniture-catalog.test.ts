@@ -14,7 +14,10 @@ vi.mock('@react-three/drei', () => ({
 
 import {
   clearFurnitureCollectionCache,
+  FURNITURE_CATALOG,
   FURNITURE_COLLECTION_PATHS,
+  getCollectionPath,
+  getFurnitureCatalogEntry,
   preloadFurnitureCollections,
   resolvePublicAssetPath,
 } from './furniture-catalog'
@@ -35,6 +38,15 @@ describe('resolvePublicAssetPath', () => {
   it('uses the resolved public path for collection loading', () => {
     expect(FURNITURE_COLLECTION_PATHS).toContain(
       `${import.meta.env.BASE_URL}models/leather-collection.glb`,
+    )
+    expect(FURNITURE_COLLECTION_PATHS).toContain(
+      `${import.meta.env.BASE_URL}models/end-table.glb`,
+    )
+    expect(FURNITURE_COLLECTION_PATHS).toContain(
+      `${import.meta.env.BASE_URL}models/coffee-table.glb`,
+    )
+    expect(FURNITURE_COLLECTION_PATHS).toContain(
+      `${import.meta.env.BASE_URL}models/coffee-table-living-room.glb`,
     )
   })
 
@@ -58,6 +70,60 @@ describe('resolvePublicAssetPath', () => {
     expect(clearSpy.mock.calls[0]).toEqual([FURNITURE_COLLECTION_PATHS])
     expect(clearSpy.mock.calls.slice(1)).toEqual(
       FURNITURE_COLLECTION_PATHS.map((sourcePath) => [sourcePath]),
+    )
+  })
+
+  it('exposes the new table assets in the furniture catalog', () => {
+    expect(FURNITURE_CATALOG.map((entry) => entry.id)).toEqual([
+      'couch-1',
+      'armchair-1',
+      'end-table-1',
+      'coffee-table-1',
+      'coffee-table-living-room-1',
+    ])
+
+    expect(getFurnitureCatalogEntry('end-table-1')).toMatchObject({
+      kind: 'end-table',
+      collectionId: 'end-table',
+      nodeName: 'end-table',
+      footprintSize: {
+        width: 0.96,
+        depth: 0.96,
+      },
+    })
+
+    expect(getFurnitureCatalogEntry('coffee-table-1')).toMatchObject({
+      kind: 'coffee-table',
+      collectionId: 'coffee-table',
+      nodeName: 'coffee-table',
+      footprintSize: {
+        width: 1.38,
+        depth: 0.855,
+      },
+    })
+
+    expect(
+      getFurnitureCatalogEntry('coffee-table-living-room-1'),
+    ).toMatchObject({
+      kind: 'coffee-table',
+      collectionId: 'coffee-table-living-room',
+      nodeName: 'Mesita',
+      footprintSize: {
+        width: 1.91,
+        depth: 1.03,
+      },
+    })
+  })
+
+  it('resolves collection paths for the new standalone models', () => {
+    expect(getCollectionPath('end-table')).toBe(
+      `${import.meta.env.BASE_URL}models/end-table.glb`,
+    )
+    expect(getCollectionPath('coffee-table')).toBe(
+      `${import.meta.env.BASE_URL}models/coffee-table.glb`,
+    )
+    expect(getCollectionPath('coffee-table-living-room')).toBe(
+      `${import.meta.env.BASE_URL}models/coffee-table-living-room.glb`,
     )
   })
 })

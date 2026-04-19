@@ -1,0 +1,13 @@
+Model: Coffee Table - Living Room
+Source: https://sketchfab.com/3d-models/coffee-table-living-room-aa5b9a41c90245e8992ba93de6dde8c8
+Author: https://sketchfab.com/maurib98 (Machine Meza)
+License: CC Attribution
+
+Notes:
+Downloaded as GLB from Sketchfab.
+Original format was FBX.
+
+Modifications:
+Imported to blend
+Removed extra nodes
+Added collection export settings w/ copyright info

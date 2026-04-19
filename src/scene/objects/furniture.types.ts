@@ -1,7 +1,7 @@
 import type { Object3D, Vector3Tuple } from 'three'
 import type { ThreeEvent } from '@react-three/fiber'
 
-export type FurnitureKind = 'armchair' | 'couch'
+export type FurnitureKind = 'armchair' | 'couch' | 'coffee-table' | 'end-table'
 
 export interface FootprintSize {
   width: number
