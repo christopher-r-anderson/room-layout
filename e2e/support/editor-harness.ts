@@ -31,6 +31,23 @@ async function getCanvasBounds(page: Page) {
   return canvasBounds
 }
 
+async function didSelectFurniture(page: Page, itemId: string) {
+  return page
+    .waitForFunction(
+      (expectedId) => {
+        const testWindow = globalThis as typeof globalThis & {
+          __ROOM_LAYOUT_TEST__?: { getState: () => BrowserSceneState }
+        }
+
+        return testWindow.__ROOM_LAYOUT_TEST__?.getState().selectedId === expectedId
+      },
+      itemId,
+      { timeout: 750 },
+    )
+    .then(() => true)
+    .catch(() => false)
+}
+
 export async function readSceneState(page: Page): Promise<BrowserSceneState> {
   await page.waitForFunction(() => {
     return '__ROOM_LAYOUT_TEST__' in globalThis
@@ -92,7 +109,38 @@ export async function selectFurnitureById(page: Page, itemId: string) {
   const pointerX = canvasBounds.x + item.pointerTarget.x
   const pointerY = canvasBounds.y + item.pointerTarget.y
 
-  await page.mouse.click(pointerX, pointerY)
+  const clickOffsets = [
+    { x: 0, y: 0 },
+    { x: 40, y: 0 },
+    { x: 80, y: 0 },
+    { x: 120, y: 0 },
+    { x: 40, y: -30 },
+    { x: 40, y: 30 },
+    { x: -40, y: 0 },
+    { x: 0, y: -30 },
+    { x: 0, y: 30 },
+  ]
+
+  for (const offset of clickOffsets) {
+    const clickX = pointerX + offset.x
+    const clickY = pointerY + offset.y
+
+    if (
+      clickX < canvasBounds.x ||
+      clickX > canvasBounds.x + canvasBounds.width ||
+      clickY < canvasBounds.y ||
+      clickY > canvasBounds.y + canvasBounds.height
+    ) {
+      continue
+    }
+
+    await page.mouse.click(clickX, clickY)
+
+    if (await didSelectFurniture(page, itemId)) {
+      return readSceneState(page)
+    }
+  }
+
   await expect
     .poll(async () => (await readSceneState(page)).selectedId)
     .toBe(itemId)
@@ -123,6 +171,10 @@ export async function dragSelectedFurniture(
     x: number
     y: number
   },
+  startOffset?: {
+    x: number
+    y: number
+  },
 ) {
   const sceneState = await readSceneState(page)
   const selectedItem = sceneState.items.find(
@@ -135,8 +187,10 @@ export async function dragSelectedFurniture(
 
   const canvasBounds = await getCanvasBounds(page)
 
-  const startX = canvasBounds.x + selectedItem.pointerTarget.x
-  const startY = canvasBounds.y + selectedItem.pointerTarget.y
+  const startX =
+    canvasBounds.x + selectedItem.pointerTarget.x + (startOffset?.x ?? 0)
+  const startY =
+    canvasBounds.y + selectedItem.pointerTarget.y + (startOffset?.y ?? 0)
 
   await page.mouse.move(startX, startY)
   await page.mouse.down()

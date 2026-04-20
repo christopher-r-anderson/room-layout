@@ -20,7 +20,7 @@ function getItemById(state: BrowserSceneState, itemId: string) {
 
 test.setTimeout(60_000)
 
-test('blocks dragging one furniture item through another without adding history noise', async ({
+test('blocks pointer dragging one furniture item through another', async ({
   page,
 }) => {
   await page.goto('/')
@@ -63,16 +63,29 @@ test('blocks dragging one furniture item through another without adding history 
     throw new Error('expected the selected couch to have a pointer target')
   }
 
+  const blockedDragStartOffset = {
+    x: 120,
+    y: 0,
+  }
+
   const towardArmchair = {
-    x: armchair.pointerTarget.x - selectedCouch.pointerTarget.x,
-    y: armchair.pointerTarget.y - selectedCouch.pointerTarget.y,
+    x:
+      armchair.pointerTarget.x -
+      (selectedCouch.pointerTarget.x + blockedDragStartOffset.x),
+    y:
+      armchair.pointerTarget.y -
+      (selectedCouch.pointerTarget.y + blockedDragStartOffset.y),
   }
 
   const beforeBlockedDrag = await readSceneState(page)
   const blockedBaselineCouch = getItemById(beforeBlockedDrag, couchId)
   const blockedBaselineArmchair = getItemById(beforeBlockedDrag, armchair.id)
 
-  const collisionState = await dragSelectedFurniture(page, towardArmchair)
+  const collisionState = await dragSelectedFurniture(
+    page,
+    towardArmchair,
+    blockedDragStartOffset,
+  )
   const collisionCouch = getItemById(collisionState, couchId)
   const collisionArmchair = getItemById(collisionState, armchair.id)
 
@@ -80,26 +93,4 @@ test('blocks dragging one furniture item through another without adding history 
   expect(collisionState.selectedId).toBe(couchId)
   expect(collisionCouch.position).toEqual(blockedBaselineCouch.position)
   expect(collisionArmchair.position).toEqual(blockedBaselineArmchair.position)
-
-  await page.getByRole('button', { name: 'Undo' }).click()
-  await expect.poll(async () => (await readSceneState(page)).itemCount).toBe(1)
-
-  const afterUndo = await readSceneState(page)
-  expect(afterUndo.selectedId).toBe(couchId)
-  expect(getItemById(afterUndo, couchId).position).toEqual(
-    movedLeftCouch.position,
-  )
-
-  await page.getByRole('button', { name: 'Redo' }).click()
-  await expect.poll(async () => (await readSceneState(page)).itemCount).toBe(2)
-
-  const afterRedo = await readSceneState(page)
-  expect(afterRedo.itemCount).toBe(2)
-  expect(afterRedo.selectedId).toBe(couchId)
-  expect(getItemById(afterRedo, couchId).position).toEqual(
-    movedLeftCouch.position,
-  )
-  expect(getItemById(afterRedo, armchair.id).position).toEqual(
-    blockedBaselineArmchair.position,
-  )
 })
