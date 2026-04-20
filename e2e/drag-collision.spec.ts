@@ -33,13 +33,13 @@ test('blocks pointer dragging one furniture item through another', async ({
     throw new Error('expected the added couch to exist')
   }
 
-  const movedLeftState = await dragSelectedFurniture(page, {
-    x: -1200,
+  const movedRightState = await dragSelectedFurniture(page, {
+    x: 850,
     y: 0,
   })
-  const movedLeftCouch = getItemById(movedLeftState, couchId)
+  const movedRightCouch = getItemById(movedRightState, couchId)
 
-  expect(movedLeftCouch.position).not.toEqual(
+  expect(movedRightCouch.position).not.toEqual(
     getItemById(addedCouchState, couchId).position,
   )
 
@@ -54,43 +54,63 @@ test('blocks pointer dragging one furniture item through another', async ({
     )
   }
 
-  await selectFurnitureById(page, couchId)
+  await selectFurnitureById(page, armchair.id)
 
-  const selectedCouchState = await readSceneState(page)
-  const selectedCouch = getItemById(selectedCouchState, couchId)
+  const selectedArmchairState = await readSceneState(page)
+  const selectedCouch = getItemById(selectedArmchairState, couchId)
+  const selectedArmchair = getItemById(selectedArmchairState, armchair.id)
 
   if (!selectedCouch.pointerTarget) {
-    throw new Error('expected the selected couch to have a pointer target')
+    throw new Error('expected the couch to have a pointer target')
   }
 
-  const blockedDragStartOffset = {
-    x: 120,
-    y: 0,
+  if (!selectedArmchair.pointerTarget) {
+    throw new Error('expected the selected armchair to have a pointer target')
   }
 
-  const towardArmchair = {
-    x:
-      armchair.pointerTarget.x -
-      (selectedCouch.pointerTarget.x + blockedDragStartOffset.x),
-    y:
-      armchair.pointerTarget.y -
-      (selectedCouch.pointerTarget.y + blockedDragStartOffset.y),
+  const towardCouch = {
+    x: selectedCouch.pointerTarget.x - selectedArmchair.pointerTarget.x,
+    y: selectedCouch.pointerTarget.y - selectedArmchair.pointerTarget.y,
+  }
+
+  const beforeApproachDrag = await readSceneState(page)
+  const approachBaselineCouch = getItemById(beforeApproachDrag, couchId)
+  const approachBaselineArmchair = getItemById(beforeApproachDrag, armchair.id)
+
+  const approachState = await dragSelectedFurniture(page, towardCouch)
+  const approachCouch = getItemById(approachState, couchId)
+  const approachArmchair = getItemById(approachState, armchair.id)
+
+  expect(approachState.itemCount).toBe(2)
+  expect(approachState.selectedId).toBe(armchair.id)
+  expect(approachCouch.position).toEqual(approachBaselineCouch.position)
+  expect(approachArmchair.position).not.toEqual(
+    approachBaselineArmchair.position,
+  )
+
+  if (!approachArmchair.pointerTarget) {
+    throw new Error('expected the approached armchair to have a pointer target')
+  }
+
+  if (!approachCouch.pointerTarget) {
+    throw new Error('expected the couch to keep a pointer target')
+  }
+
+  const secondTowardCouch = {
+    x: approachCouch.pointerTarget.x - approachArmchair.pointerTarget.x,
+    y: approachCouch.pointerTarget.y - approachArmchair.pointerTarget.y,
   }
 
   const beforeBlockedDrag = await readSceneState(page)
   const blockedBaselineCouch = getItemById(beforeBlockedDrag, couchId)
   const blockedBaselineArmchair = getItemById(beforeBlockedDrag, armchair.id)
 
-  const collisionState = await dragSelectedFurniture(
-    page,
-    towardArmchair,
-    blockedDragStartOffset,
-  )
+  const collisionState = await dragSelectedFurniture(page, secondTowardCouch)
   const collisionCouch = getItemById(collisionState, couchId)
   const collisionArmchair = getItemById(collisionState, armchair.id)
 
   expect(collisionState.itemCount).toBe(2)
-  expect(collisionState.selectedId).toBe(couchId)
+  expect(collisionState.selectedId).toBe(armchair.id)
   expect(collisionCouch.position).toEqual(blockedBaselineCouch.position)
   expect(collisionArmchair.position).toEqual(blockedBaselineArmchair.position)
 })

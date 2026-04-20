@@ -77,6 +77,41 @@ describe('resolveMovedFurniturePosition', () => {
     expect(resolved).toBeNull()
   })
 
+  it('resolves a near-collision drag to the last safe edge contact', () => {
+    const resolved = resolveMovedFurniturePosition({
+      movingId: 'moving',
+      proposedPosition: [0.05, 0, 0],
+      items: baseItems,
+      edgeSnapThreshold: 0.1,
+      bounds: roomBounds,
+    })
+
+    expect(resolved).not.toBeNull()
+    expect(resolved?.[0]).toBeCloseTo(0.1)
+    expect(resolved?.[1]).toBeCloseTo(0)
+    expect(resolved?.[2]).toBeCloseTo(0)
+  })
+
+  it('blocks the next drag step after reaching the last safe edge contact', () => {
+    const contactItems = [
+      {
+        ...baseItems[0],
+        position: [0.1, 0, 0] as [number, number, number],
+      },
+      baseItems[1],
+    ]
+
+    const resolved = resolveMovedFurniturePosition({
+      movingId: 'moving',
+      proposedPosition: [0.2, 0, 0],
+      items: contactItems,
+      edgeSnapThreshold: 0.1,
+      bounds: roomBounds,
+    })
+
+    expect(resolved).toBeNull()
+  })
+
   it('snaps to nearest edge when candidate is near and valid', () => {
     const resolved = resolveMovedFurniturePosition({
       movingId: 'moving',

@@ -32,6 +32,7 @@
 
 - Add or update Vitest tests for new behavior in pure utility modules.
 - Prefer behavior/contract-oriented assertions over implementation-detail assertions.
+- For geometry, transform, and other floating-point-derived values, prefer tolerant assertions like `toBeCloseTo` over exact equality unless exact integers are the product contract.
 - Avoid over-testing tunable constants unless they are intentional product contracts.
 - Use Playwright browser tests for startup/loading flows, retry/error handling, editor history flows, and other browser-realistic interaction coverage.
 - Keep browser perf trace scenarios in Playwright separate from correctness-oriented browser tests.

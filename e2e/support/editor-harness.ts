@@ -39,7 +39,9 @@ async function didSelectFurniture(page: Page, itemId: string) {
           __ROOM_LAYOUT_TEST__?: { getState: () => BrowserSceneState }
         }
 
-        return testWindow.__ROOM_LAYOUT_TEST__?.getState().selectedId === expectedId
+        return (
+          testWindow.__ROOM_LAYOUT_TEST__?.getState().selectedId === expectedId
+        )
       },
       itemId,
       { timeout: 750 },
@@ -114,8 +116,15 @@ export async function selectFurnitureById(page: Page, itemId: string) {
     { x: 40, y: 0 },
     { x: 80, y: 0 },
     { x: 120, y: 0 },
+    { x: 160, y: 0 },
+    { x: 200, y: 0 },
+    { x: 240, y: 0 },
     { x: 40, y: -30 },
     { x: 40, y: 30 },
+    { x: 120, y: -30 },
+    { x: 120, y: 30 },
+    { x: 200, y: -30 },
+    { x: 200, y: 30 },
     { x: -40, y: 0 },
     { x: 0, y: -30 },
     { x: 0, y: 30 },
