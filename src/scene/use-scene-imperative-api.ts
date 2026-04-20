@@ -1,5 +1,7 @@
 import {
+  useEffect,
   useImperativeHandle,
+  useRef,
   type Dispatch,
   type RefObject,
   type SetStateAction,
@@ -11,7 +13,6 @@ import {
   addFurnitureToHistory,
   createFurnitureInstanceId,
   removeSelectionFromHistory,
-  type AddFurnitureResult,
 } from './furniture-operations'
 import { redoSceneHistory, undoSceneHistory } from './scene-history-state'
 import { createSceneSnapshot } from './scene-snapshot'
@@ -59,11 +60,33 @@ export function useSceneImperativeApi({
   snapSize,
   sourceScenesByPath,
 }: UseSceneImperativeApiOptions): void {
+  const historyRef = useRef(history)
+  const selectedIdRef = useRef(selectedId)
+  const furnitureRef = useRef(furniture)
+  const dragStateRef = useRef(dragState)
+
+  useEffect(() => {
+    historyRef.current = history
+  }, [history])
+
+  useEffect(() => {
+    selectedIdRef.current = selectedId
+  }, [selectedId])
+
+  useEffect(() => {
+    furnitureRef.current = furniture
+  }, [furniture])
+
+  useEffect(() => {
+    dragStateRef.current = dragState
+  }, [dragState])
+
   useImperativeHandle(
     ref,
     () => ({
       clearSelection: () => {
-        if (!dragState) {
+        if (!dragStateRef.current) {
+          selectedIdRef.current = null
           selectFurniture(null)
         }
       },
@@ -71,87 +94,69 @@ export function useSceneImperativeApi({
         rotateSelectedFurniture(deltaRadians)
       },
       addFurniture: (catalogId: string) => {
-        const addOutcome: {
-          result: AddFurnitureResult
-          incrementInstanceId: boolean
-        } = {
-          result: {
-            ok: false,
-            reason: 'no-space',
-          },
-          incrementInstanceId: false,
-        }
-
-        setHistory((currentHistory) => {
-          const operationResult = addFurnitureToHistory({
-            history: currentHistory,
-            sourceScenesByPath,
-            catalogId,
-            nextId: createFurnitureInstanceId(instanceIdRef.current + 1),
-            bounds,
-            edgeSnapThreshold,
-            snapSize,
-          })
-
-          addOutcome.result = operationResult.result
-          addOutcome.incrementInstanceId = operationResult.incrementInstanceId
-
-          return operationResult.history
+        const operationResult = addFurnitureToHistory({
+          history: historyRef.current,
+          sourceScenesByPath,
+          catalogId,
+          nextId: createFurnitureInstanceId(instanceIdRef.current + 1),
+          bounds,
+          edgeSnapThreshold,
+          snapSize,
         })
 
-        if (addOutcome.incrementInstanceId) {
+        historyRef.current = operationResult.history
+        setHistory(operationResult.history)
+
+        if (operationResult.incrementInstanceId) {
           instanceIdRef.current += 1
+          selectedIdRef.current = operationResult.result.ok
+            ? operationResult.result.id
+            : null
           setSelectedIdAndResolveObject(
-            addOutcome.result.ok ? addOutcome.result.id : null,
+            operationResult.result.ok ? operationResult.result.id : null,
           )
         }
 
-        return addOutcome.result
+        return operationResult.result
       },
       removeSelection: () => {
-        const removeOutcome = {
-          removed: false,
-          removedId: null as string | null,
-        }
+        const operationResult = removeSelectionFromHistory(
+          historyRef.current,
+          selectedIdRef.current,
+        )
 
-        setHistory((currentHistory) => {
-          const operationResult = removeSelectionFromHistory(
-            currentHistory,
-            selectedId,
-          )
-
-          removeOutcome.removed = operationResult.removed
-          removeOutcome.removedId = operationResult.removedId
-
-          return operationResult.history
-        })
-
-        if (!removeOutcome.removed) {
+        if (!operationResult.removed) {
           return false
         }
 
+        historyRef.current = operationResult.history
+        setHistory(operationResult.history)
+
         if (
-          removeOutcome.removedId &&
-          dragState?.id === removeOutcome.removedId
+          operationResult.removedId &&
+          dragStateRef.current?.id === operationResult.removedId
         ) {
           clearDragState()
         }
 
+        selectedIdRef.current = null
         setSelectedIdAndResolveObject(null)
 
         return true
       },
       undo: () => {
         const undoResult = undoSceneHistory({
-          history,
-          selectedId,
-          isDragging: Boolean(dragState),
+          history: historyRef.current,
+          selectedId: selectedIdRef.current,
+          isDragging: Boolean(dragStateRef.current),
         })
 
         if (!undoResult.didChange) {
           return false
         }
 
+        historyRef.current = undoResult.history
+        selectedIdRef.current = undoResult.selectedId
         setHistory(undoResult.history)
         setSelectedIdAndResolveObject(undoResult.selectedId)
 
@@ -159,15 +164,17 @@ export function useSceneImperativeApi({
       },
       redo: () => {
         const redoResult = redoSceneHistory({
-          history,
-          selectedId,
-          isDragging: Boolean(dragState),
+          history: historyRef.current,
+          selectedId: selectedIdRef.current,
+          isDragging: Boolean(dragStateRef.current),
         })
 
         if (!redoResult.didChange) {
           return false
         }
 
+        historyRef.current = redoResult.history
+        selectedIdRef.current = redoResult.selectedId
         setHistory(redoResult.history)
         setSelectedIdAndResolveObject(redoResult.selectedId)
 
@@ -187,10 +194,8 @@ export function useSceneImperativeApi({
       canvasSize,
       clearDragState,
       bounds,
-      dragState,
-      furniture,
-      history,
       objectRefs,
+      furniture,
       rotateSelectedFurniture,
       selectFurniture,
       selectedId,
