@@ -12,6 +12,7 @@
 
 ### Library Documentation
 
+- Use shadcn for ui and ui components. Add components from the default registry as needed.
 - Always use Context7 when I need library/API documentation, code generation, setup or configuration steps without me having to explicitly ask.
 - use the context7 /tailwindlabs/tailwindcss.com v4 for documentation when using tailwind
 
