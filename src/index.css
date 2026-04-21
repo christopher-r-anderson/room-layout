@@ -20,3 +20,5 @@ body {
 canvas {
   display: block;
 }
+
+@import 'tailwindcss';

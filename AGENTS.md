@@ -10,6 +10,11 @@
 - Before finalizing code changes, run `pnpm fix` to apply lint+format fixes.
 - For perf-sensitive utility changes, use `pnpm bench` (or `pnpm bench:json` / `pnpm bench:compare`).
 
+### Library Documentation
+
+- Always use Context7 when I need library/API documentation, code generation, setup or configuration steps without me having to explicitly ask.
+- use the context7 /tailwindlabs/tailwindcss.com v4 for documentation when using tailwind
+
 ## Architecture
 
 - Keep scene/domain behavior in `src/scene/` and keep pure math/Three helpers in `src/lib/three/`.
