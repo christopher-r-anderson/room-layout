@@ -17,11 +17,11 @@ function getRotationDirectionForKey(key: string): RotationDirection | null {
   const normalizedKey = key.toLowerCase()
 
   if (normalizedKey === ROTATE_LEFT_KEY) {
-    return -1
+    return 1
   }
 
   if (normalizedKey === ROTATE_RIGHT_KEY) {
-    return 1
+    return -1
   }
 
   return null

@@ -4,7 +4,7 @@ A minimal interactive 3D room layout built with React Three Fiber.
 
 <https://christopher-r-anderson.github.io/room-layout/>
 
-This project demonstrates core web 3D concepts relevant to retail and product experiences, including scene composition, camera controls, collision-aware object placement, and catalog-driven editor workflows.
+This project demonstrates core web 3D concepts relevant to retail and product experiences, including scene composition, camera controls, collision-aware object placement, catalog-driven editor workflows, and a guarded startup asset-loading flow.
 
 ---
 
@@ -45,7 +45,34 @@ pnpm fix          # lint + format fixes
 
 pnpm test         # watch unit tests
 pnpm test:run     # run unit tests
+
+pnpm test:e2e:install # install the Chromium browser for Playwright
+pnpm test:e2e         # run browser integration tests
+pnpm test:e2e:headed  # run browser integration tests in headed mode
+pnpm test:e2e:ui      # open the Playwright UI runner
+pnpm test:browser:perf # run browser perf scenarios and collect artifacts
 ```
+
+## Browser Tests
+
+The repository now uses Playwright for real-browser editor coverage and scripted browser perf scenarios.
+
+- Use Vitest for pure utility, scene-state, and microbenchmark work.
+- Use `pnpm test:e2e` for browser-accurate UI and canvas-adjacent workflows like startup loading, retry flows, and editor history.
+- Use `pnpm test:browser:perf` for scripted Chromium interaction measurements that reuse the same harness helpers without acting as a strict correctness gate.
+
+First-time local setup:
+
+```bash
+pnpm test:e2e:install
+```
+
+Artifacts:
+
+- HTML report: `playwright-report/`
+- Raw traces, screenshots, and videos: `test-results/`
+
+The Playwright config starts a local Vite server automatically, so browser tests do not require a separate manual `pnpm dev` session.
 
 ## 🌐 Deployment
 
@@ -72,15 +99,17 @@ Current deployment URL:
 
 This project is intentionally focused on spatial interaction and rendering fundamentals rather than backend integration or full product features.
 
-The editor UI includes a catalog-driven add/remove panel, keyboard rotation shortcuts, and an info dialog (ℹ) with a repository link and asset attribution details.
+The editor UI includes a bottom-centered Add Furniture trigger that opens a modal visual picker, top-left history and selection controls, keyboard rotation shortcuts, a blocking startup loading overlay with asset progress, retryable startup asset error handling, and an info dialog (ℹ) with a repository link and asset attribution details.
 
 ## 🎮 Usage
 
 - Click a furniture item to select it.
+- Wait for the startup loading overlay to finish before interacting with the room.
 - Drag selected furniture along the floor; movement stays within room bounds and avoids collisions.
 - Rotate the selected item with `Q` / `E` or the rotate buttons.
-- Add another furniture instance from the catalog panel in the top-left corner.
-- Remove the selected item from the panel or with `Delete` / `Backspace`, then confirm the dialog.
+- Add another furniture instance from the bottom-centered `Add Furniture` trigger and modal picker.
+- Remove the selected item from the selection controls or with `Delete` / `Backspace`, then confirm the dialog.
+- If a core furniture asset fails to load at startup, use the retry action from the startup error overlay.
 
 ## 🗺️ Project Plan
 

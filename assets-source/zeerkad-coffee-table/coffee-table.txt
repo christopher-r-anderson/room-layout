@@ -1,0 +1,13 @@
+Model: Coffee Table
+Source: https://sketchfab.com/3d-models/coffee-table-91872709bf054d8994be323599e23107
+Author: https://sketchfab.com/zeerkad (ZeeRKad)
+License: CC Attribution
+
+Notes:
+Downloaded as GLB from Sketchfab.
+Original format was FBX.
+
+Modifications:
+Imported to blend
+Removed extra nodes
+Added collection export settings w/ copyright info

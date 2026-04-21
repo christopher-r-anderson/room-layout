@@ -18,13 +18,13 @@ function createInput(
 
 describe('getRotationHotkeyDirection', () => {
   it('returns left direction for q key', () => {
-    expect(getRotationHotkeyDirection(createInput({ key: 'q' }))).toBe(-1)
-    expect(getRotationHotkeyDirection(createInput({ key: 'Q' }))).toBe(-1)
+    expect(getRotationHotkeyDirection(createInput({ key: 'q' }))).toBe(1)
+    expect(getRotationHotkeyDirection(createInput({ key: 'Q' }))).toBe(1)
   })
 
   it('returns right direction for e key', () => {
-    expect(getRotationHotkeyDirection(createInput({ key: 'e' }))).toBe(1)
-    expect(getRotationHotkeyDirection(createInput({ key: 'E' }))).toBe(1)
+    expect(getRotationHotkeyDirection(createInput({ key: 'e' }))).toBe(-1)
+    expect(getRotationHotkeyDirection(createInput({ key: 'E' }))).toBe(-1)
   })
 
   it('ignores unsupported keys', () => {

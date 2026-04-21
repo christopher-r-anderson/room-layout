@@ -1,211 +1,181 @@
 import { Canvas } from '@react-three/fiber'
 import './App.css'
-import { Scene, type SceneRef } from './scene/scene'
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { getRotationHotkeyDirection } from './lib/ui/rotation-hotkeys'
-import { getDeleteHotkeyIntent } from './lib/ui/delete-hotkeys'
-import { getHistoryHotkeyIntent } from './lib/ui/history-hotkeys'
-import { FURNITURE_CATALOG } from './scene/objects/furniture-catalog'
-import type { FurnitureItem } from './scene/objects/furniture.types'
+import { Scene } from './scene/scene'
+import { Component, Suspense, type ReactNode, useEffect, useRef } from 'react'
+import type { SceneRef } from './scene/scene.types'
+import { EditorOverlay } from './app/editor-overlay'
+import { useEditorKeyboardShortcuts } from './app/use-editor-keyboard-shortcuts'
+import { useEditorOverlayState } from './app/use-editor-overlay-state'
+import { useSceneStartupState } from './app/use-scene-startup-state'
+
+interface BrowserSceneState {
+  assetsReady: boolean
+  assetError: boolean
+  selectedId: string | null
+  selectedName: string | null
+  itemCount: number
+  items: {
+    id: string
+    catalogId: string
+    name: string
+    position: [number, number, number]
+    rotationY: number
+    pointerTarget: {
+      x: number
+      y: number
+    } | null
+  }[]
+}
+
+declare global {
+  interface Window {
+    __ROOM_LAYOUT_TEST__?: {
+      getState: () => BrowserSceneState
+    }
+  }
+}
 
 const ROTATION_STEP_RADIANS = Math.PI / 12
 
+class SceneAssetErrorBoundary extends Component<
+  {
+    children: ReactNode
+    onError: (error: Error) => void
+  },
+  { hasError: boolean }
+> {
+  state = { hasError: false }
+
+  static getDerivedStateFromError() {
+    return { hasError: true }
+  }
+
+  componentDidCatch(error: Error) {
+    this.props.onError(error)
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return null
+    }
+
+    return this.props.children
+  }
+}
+
 function App() {
   const sceneRef = useRef<SceneRef | null>(null)
+  const editorInteractionsEnabledRef = useRef(false)
+  const startupOverlayActiveRef = useRef(false)
+  const pickerDialogRef = useRef<HTMLDialogElement | null>(null)
   const infoDialogRef = useRef<HTMLDialogElement | null>(null)
   const confirmDeleteDialogRef = useRef<HTMLDialogElement | null>(null)
   const infoButtonRef = useRef<HTMLButtonElement | null>(null)
   const removeButtonRef = useRef<HTMLButtonElement | null>(null)
-  const [selectedFurniture, setSelectedFurniture] =
-    useState<FurnitureItem | null>(null)
-  const [catalogIdToAdd, setCatalogIdToAdd] = useState(
-    FURNITURE_CATALOG[0]?.id ?? '',
-  )
-  const [pendingDeleteFurniture, setPendingDeleteFurniture] =
-    useState<FurnitureItem | null>(null)
-  const [editorMessage, setEditorMessage] = useState<string | null>(null)
-  const [historyAvailability, setHistoryAvailability] = useState({
-    canUndo: false,
-    canRedo: false,
+  const editorOverlayState = useEditorOverlayState({
+    confirmDeleteDialogRef,
+    editorInteractionsEnabledRef,
+    infoButtonRef,
+    infoDialogRef,
+    pickerDialogRef,
+    removeButtonRef,
+    rotationStepRadians: ROTATION_STEP_RADIANS,
+    sceneRef,
+    startupOverlayActiveRef,
+  })
+  const {
+    addFurniture,
+    catalogIdToAdd,
+    closeDeleteDialog,
+    closeInfoDialog,
+    closePicker,
+    closeOpenDialogs,
+    confirmRemoveSelection,
+    editorMessage,
+    getIsModalOpen,
+    handleDeleteDialogCancel,
+    handleDeleteDialogClick,
+    handleHistoryChange,
+    handleInfoDialogCancel,
+    handleInfoDialogClick,
+    handleSelectionChange,
+    historyAvailability,
+    isPickerOpen,
+    openDeleteDialog,
+    openPicker,
+    openInfoDialog: openInfoDialogBase,
+    pendingDeleteFurniture,
+    redo,
+    resetEditorShellState,
+    rotateSelection,
+    selectedFurniture,
+    setCatalogIdToAdd,
+    undo,
+  } = editorOverlayState
+
+  const {
+    assetError,
+    assetErrorRef,
+    assetsReadyRef,
+    editorInteractionsEnabled,
+    handleAssetError,
+    handleAssetsReady,
+    retryAssetLoading,
+    sceneVersion,
+    startupLoadingActive,
+    startupOverlayActive,
+  } = useSceneStartupState({
+    closeOpenDialogs,
+    resetEditorShellState,
   })
 
-  const closeDeleteDialog = useCallback(() => {
-    confirmDeleteDialogRef.current?.close()
-    setPendingDeleteFurniture(null)
-    removeButtonRef.current?.focus()
-  }, [])
-
-  const openDeleteDialog = useCallback(() => {
-    if (!selectedFurniture || confirmDeleteDialogRef.current?.open) {
-      return
-    }
-
-    setPendingDeleteFurniture(selectedFurniture)
-    setEditorMessage(null)
-    confirmDeleteDialogRef.current?.showModal()
-  }, [selectedFurniture])
+  useEffect(() => {
+    editorInteractionsEnabledRef.current = editorInteractionsEnabled
+  }, [editorInteractionsEnabled])
 
   useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent) => {
-      const target = event.target
-      const isModalOpen =
-        Boolean(infoDialogRef.current?.open) ||
-        Boolean(confirmDeleteDialogRef.current?.open)
-      const targetTagName =
-        target instanceof HTMLElement ? target.tagName : undefined
-      const targetIsContentEditable =
-        target instanceof HTMLElement ? target.isContentEditable : false
-      const historyIntent = getHistoryHotkeyIntent({
-        key: event.key,
-        altKey: event.altKey,
-        ctrlKey: event.ctrlKey,
-        metaKey: event.metaKey,
-        shiftKey: event.shiftKey,
-        isModalOpen,
-        targetTagName,
-        targetIsContentEditable,
-      })
-      const deleteIntent = getDeleteHotkeyIntent({
-        key: event.key,
-        altKey: event.altKey,
-        ctrlKey: event.ctrlKey,
-        metaKey: event.metaKey,
-        isModalOpen,
-        targetTagName,
-        targetIsContentEditable,
-      })
-      const direction = getRotationHotkeyDirection({
-        key: event.key,
-        altKey: event.altKey,
-        ctrlKey: event.ctrlKey,
-        metaKey: event.metaKey,
-        isModalOpen,
-        targetTagName,
-        targetIsContentEditable,
-      })
+    startupOverlayActiveRef.current = startupOverlayActive
+  }, [startupOverlayActive])
 
-      if (historyIntent === 'undo' && historyAvailability.canUndo) {
-        event.preventDefault()
-        sceneRef.current?.undo()
-        return
-      }
-
-      if (historyIntent === 'redo' && historyAvailability.canRedo) {
-        event.preventDefault()
-        sceneRef.current?.redo()
-        return
-      }
-
-      if (selectedFurniture && deleteIntent) {
-        event.preventDefault()
-        openDeleteDialog()
-        return
-      }
-
-      if (!selectedFurniture || !direction) {
-        return
-      }
-
-      event.preventDefault()
-      sceneRef.current?.rotateSelection(direction * ROTATION_STEP_RADIANS)
+  useEffect(() => {
+    if (!import.meta.env.DEV) {
+      return
     }
 
-    window.addEventListener('keydown', onKeyDown)
+    window.__ROOM_LAYOUT_TEST__ = {
+      getState: () => {
+        const sceneState = sceneRef.current?.getSnapshot()
+
+        return {
+          assetsReady: assetsReadyRef.current,
+          assetError: assetErrorRef.current !== null,
+          selectedId: sceneState?.selectedId ?? null,
+          selectedName: sceneState?.selectedName ?? null,
+          itemCount: sceneState?.itemCount ?? 0,
+          items: sceneState?.items ?? [],
+        }
+      },
+    }
 
     return () => {
-      window.removeEventListener('keydown', onKeyDown)
+      delete window.__ROOM_LAYOUT_TEST__
     }
-  }, [historyAvailability, openDeleteDialog, selectedFurniture])
+  }, [assetErrorRef, assetsReadyRef])
 
-  const rotateSelection = (direction: -1 | 1) => {
-    sceneRef.current?.rotateSelection(direction * ROTATION_STEP_RADIANS)
-  }
-
-  const undo = () => {
-    sceneRef.current?.undo()
-  }
-
-  const redo = () => {
-    sceneRef.current?.redo()
-  }
-
-  const addFurniture = () => {
-    if (!catalogIdToAdd) {
-      return
-    }
-
-    const result = sceneRef.current?.addFurniture(catalogIdToAdd)
-
-    if (!result) {
-      return
-    }
-
-    if (!result.ok) {
-      setEditorMessage(
-        result.reason === 'no-space'
-          ? 'No safe placement slot is available for that furniture item.'
-          : 'The selected furniture entry is no longer available.',
-      )
-      return
-    }
-
-    setEditorMessage(null)
-  }
-
-  const openInfoDialog = () => {
-    infoDialogRef.current?.showModal()
-  }
-
-  const closeInfoDialog = () => {
-    infoDialogRef.current?.close()
-    infoButtonRef.current?.focus()
-  }
-
-  const handleInfoDialogCancel = (
-    event: React.SyntheticEvent<HTMLDialogElement>,
-  ) => {
-    event.preventDefault()
-    closeInfoDialog()
-  }
-
-  const handleInfoDialogClick = (
-    event: React.MouseEvent<HTMLDialogElement>,
-  ) => {
-    if (event.target === event.currentTarget) {
-      closeInfoDialog()
-    }
-  }
-
-  const handleDeleteDialogCancel = (
-    event: React.SyntheticEvent<HTMLDialogElement>,
-  ) => {
-    event.preventDefault()
-    closeDeleteDialog()
-  }
-
-  const handleDeleteDialogClick = (
-    event: React.MouseEvent<HTMLDialogElement>,
-  ) => {
-    if (event.target === event.currentTarget) {
-      closeDeleteDialog()
-    }
-  }
-
-  const confirmRemoveSelection = () => {
-    const removed = sceneRef.current?.removeSelection() ?? false
-
-    closeDeleteDialog()
-
-    if (!removed) {
-      setEditorMessage('No selected furniture item was available to remove.')
-      return
-    }
-
-    setEditorMessage(null)
-  }
+  useEditorKeyboardShortcuts({
+    enabled: editorInteractionsEnabled,
+    canUndo: historyAvailability.canUndo,
+    canRedo: historyAvailability.canRedo,
+    hasSelection: selectedFurniture !== null,
+    getIsModalOpen,
+    onUndo: undo,
+    onRedo: redo,
+    onOpenDeleteDialog: openDeleteDialog,
+    onRotate: rotateSelection,
+  })
 
   return (
-    <div className="app">
+    <div className="app" aria-busy={startupLoadingActive}>
       <Canvas
         className="canvas"
         camera={{
@@ -213,273 +183,61 @@ function App() {
           fov: 50,
         }}
         onPointerMissed={() => {
+          if (!editorInteractionsEnabled) {
+            return
+          }
+
           sceneRef.current?.clearSelection()
         }}
         shadows
       >
         <color attach="background" args={['#f0f0f0']} />
-        <Scene
-          ref={sceneRef}
-          onSelectionChange={setSelectedFurniture}
-          onHistoryChange={setHistoryAvailability}
-        />
+        <SceneAssetErrorBoundary key={sceneVersion} onError={handleAssetError}>
+          <Suspense fallback={null}>
+            <Scene
+              ref={sceneRef}
+              onSelectionChange={handleSelectionChange}
+              onHistoryChange={handleHistoryChange}
+              onAssetsReady={handleAssetsReady}
+            />
+          </Suspense>
+        </SceneAssetErrorBoundary>
       </Canvas>
 
-      <div className="ui-overlay">
-        <section className="catalog-controls" aria-label="Furniture controls">
-          <div className="control-group control-group-history">
-            <h2 className="control-heading">History</h2>
-            <div
-              className="history-controls"
-              role="toolbar"
-              aria-label="History controls"
-            >
-              <button
-                type="button"
-                className="history-button"
-                disabled={!historyAvailability.canUndo}
-                onClick={undo}
-                aria-keyshortcuts="Control+Z Meta+Z"
-              >
-                Undo
-              </button>
-              <button
-                type="button"
-                className="history-button"
-                disabled={!historyAvailability.canRedo}
-                onClick={redo}
-                aria-keyshortcuts="Control+Y Control+Shift+Z Meta+Shift+Z"
-              >
-                Redo
-              </button>
-            </div>
-          </div>
-
-          <div
-            className="control-group"
-            aria-labelledby="add-furniture-heading"
-          >
-            <h2 id="add-furniture-heading" className="control-heading">
-              Add Furniture
-            </h2>
-            <label className="sr-only" htmlFor="add-furniture-select">
-              Furniture type to add
-            </label>
-            <div className="catalog-row">
-              <select
-                id="add-furniture-select"
-                className="catalog-select"
-                value={catalogIdToAdd}
-                onChange={(event) => {
-                  setCatalogIdToAdd(event.target.value)
-                }}
-              >
-                {FURNITURE_CATALOG.map((entry) => (
-                  <option key={entry.id} value={entry.id}>
-                    {entry.name}
-                  </option>
-                ))}
-              </select>
-              <button
-                type="button"
-                className="add-button"
-                disabled={!catalogIdToAdd}
-                onClick={addFurniture}
-              >
-                Add Item
-              </button>
-            </div>
-          </div>
-
-          <div
-            className="control-group"
-            aria-labelledby="selection-actions-heading"
-          >
-            <h2 id="selection-actions-heading" className="control-heading">
-              Selection Actions
-            </h2>
-            <p className="selection-summary" aria-live="polite">
-              {selectedFurniture ? (
-                <>Selected: {selectedFurniture.name}</>
-              ) : (
-                'Selected: none'
-              )}
-            </p>
-            <div
-              className="rotation-controls"
-              role="toolbar"
-              aria-label="Rotation controls"
-            >
-              <button
-                type="button"
-                className="rotation-button"
-                disabled={!selectedFurniture}
-                onClick={() => {
-                  rotateSelection(-1)
-                }}
-                aria-keyshortcuts="Q"
-              >
-                Rotate Left
-              </button>
-              <button
-                type="button"
-                className="rotation-button"
-                disabled={!selectedFurniture}
-                onClick={() => {
-                  rotateSelection(1)
-                }}
-                aria-keyshortcuts="E"
-              >
-                Rotate Right
-              </button>
-            </div>
-            <button
-              ref={removeButtonRef}
-              type="button"
-              className="remove-button"
-              disabled={!selectedFurniture}
-              aria-haspopup="dialog"
-              aria-controls="confirm-delete-dialog"
-              onClick={openDeleteDialog}
-            >
-              Remove Selected
-            </button>
-          </div>
-
-          {editorMessage ? (
-            <p className="editor-message" role="status">
-              {editorMessage}
-            </p>
-          ) : null}
-        </section>
-        <button
-          ref={infoButtonRef}
-          type="button"
-          className="info-button"
-          aria-haspopup="dialog"
-          aria-controls="project-info-dialog"
-          aria-label="Open project and asset info"
-          onClick={openInfoDialog}
-        >
-          <span aria-hidden>ℹ</span>
-        </button>
-        <p className="rotation-help">
-          <span className="rotation-help-line">
-            Select furniture, then use <kbd>Q</kbd>/<kbd>E</kbd> to rotate and{' '}
-            <kbd>Delete</kbd>/<kbd>Backspace</kbd> to remove.
-          </span>
-          <span className="rotation-help-line">
-            Use <kbd>Ctrl</kbd>+<kbd>Z</kbd> to undo and <kbd>Ctrl</kbd>+
-            <kbd>Y</kbd> to redo.
-          </span>
-        </p>
-
-        <dialog
-          ref={confirmDeleteDialogRef}
-          id="confirm-delete-dialog"
-          className="confirm-dialog"
-          aria-labelledby="confirm-delete-title"
-          onCancel={handleDeleteDialogCancel}
-          onClick={handleDeleteDialogClick}
-        >
-          <div className="confirm-dialog-content">
-            <h2 id="confirm-delete-title">Remove furniture?</h2>
-            <p>
-              Remove{' '}
-              <strong>
-                {pendingDeleteFurniture?.name ?? 'the selected item'}
-              </strong>{' '}
-              from the room layout?
-            </p>
-            <p className="confirm-delete-note">
-              You can undo this from the history controls after removing it.
-            </p>
-            <div className="confirm-dialog-actions">
-              <button
-                type="button"
-                className="close-button"
-                onClick={closeDeleteDialog}
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                className="danger-button"
-                onClick={confirmRemoveSelection}
-              >
-                Remove
-              </button>
-            </div>
-          </div>
-        </dialog>
-
-        <dialog
-          ref={infoDialogRef}
-          id="project-info-dialog"
-          className="info-dialog"
-          aria-labelledby="project-info-title"
-          onCancel={handleInfoDialogCancel}
-          onClick={handleInfoDialogClick}
-        >
-          <div className="info-dialog-content">
-            <h2 id="project-info-title">Project Info</h2>
-
-            <section aria-labelledby="project-links-heading">
-              <h3 id="project-links-heading">Repository</h3>
-              <p>
-                Source code:{' '}
-                <a
-                  href="https://github.com/christopher-r-anderson/room-layout"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  github.com/christopher-r-anderson/room-layout{' '}
-                  <span aria-hidden>↗</span>
-                </a>
-              </p>
-            </section>
-
-            <section aria-labelledby="asset-attribution-heading">
-              <h3 id="asset-attribution-heading">Asset Attribution</h3>
-              <p>
-                Leather Couch model by{' '}
-                <a
-                  href="https://sketchfab.com/YouSaveTime"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  YouSaveTime <span aria-hidden>↗</span>
-                </a>
-                , from{' '}
-                <a
-                  href="https://sketchfab.com/3d-models/leather-couch-c2ac7a44144e4b80ab51f21b59c827f8"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Sketchfab <span aria-hidden>↗</span>
-                </a>
-                , licensed under CC BY 4.0.
-              </p>
-              <p>
-                Local source details:{' '}
-                <code>
-                  assets-source/leather-couch/leather-couch-source.txt
-                </code>
-              </p>
-            </section>
-
-            <form method="dialog" className="info-dialog-actions">
-              <button
-                type="button"
-                className="close-button"
-                onClick={closeInfoDialog}
-              >
-                Close
-              </button>
-            </form>
-          </div>
-        </dialog>
-      </div>
+      <EditorOverlay
+        assetError={Boolean(assetError)}
+        catalogIdToAdd={catalogIdToAdd}
+        confirmDeleteDialogRef={confirmDeleteDialogRef}
+        editorInteractionsEnabled={editorInteractionsEnabled}
+        editorMessage={editorMessage}
+        handleDeleteDialogCancel={handleDeleteDialogCancel}
+        handleDeleteDialogClick={handleDeleteDialogClick}
+        handleInfoDialogCancel={handleInfoDialogCancel}
+        handleInfoDialogClick={handleInfoDialogClick}
+        historyAvailability={historyAvailability}
+        infoButtonRef={infoButtonRef}
+        infoDialogRef={infoDialogRef}
+        isPickerOpen={isPickerOpen}
+        onAddFurniture={addFurniture}
+        onCatalogIdToAddChange={setCatalogIdToAdd}
+        onCloseDeleteDialog={closeDeleteDialog}
+        onCloseInfoDialog={closeInfoDialog}
+        onClosePicker={closePicker}
+        onConfirmRemoveSelection={confirmRemoveSelection}
+        onOpenDeleteDialog={openDeleteDialog}
+        onOpenPicker={openPicker}
+        onOpenInfoDialog={openInfoDialogBase}
+        onRedo={redo}
+        onRetryAssetLoading={retryAssetLoading}
+        onRotateSelection={rotateSelection}
+        onUndo={undo}
+        pendingDeleteFurniture={pendingDeleteFurniture}
+        pickerDialogRef={pickerDialogRef}
+        removeButtonRef={removeButtonRef}
+        selectedFurniture={selectedFurniture}
+        startupLoadingActive={startupLoadingActive}
+        startupOverlayActive={startupOverlayActive}
+      />
     </div>
   )
 }

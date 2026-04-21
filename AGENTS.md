@@ -5,6 +5,8 @@
 - Install deps with `pnpm install`.
 - Run dev server with `pnpm dev`.
 - Validate code with `pnpm lint`, `pnpm typecheck`, and `pnpm test:run`.
+- Run browser integration coverage with `pnpm test:e2e` when changing browser-facing editor flows, startup/loading behavior, or scene interaction wiring.
+- Run browser perf trace scenarios with `pnpm test:browser:perf` when changing frame-sensitive user flows.
 - Before finalizing code changes, run `pnpm fix` to apply lint+format fixes.
 - For perf-sensitive utility changes, use `pnpm bench` (or `pnpm bench:json` / `pnpm bench:compare`).
 
@@ -30,7 +32,11 @@
 
 - Add or update Vitest tests for new behavior in pure utility modules.
 - Prefer behavior/contract-oriented assertions over implementation-detail assertions.
+- For geometry, transform, and other floating-point-derived values, prefer tolerant assertions like `toBeCloseTo` over exact equality unless exact integers are the product contract.
 - Avoid over-testing tunable constants unless they are intentional product contracts.
+- Use Playwright browser tests for startup/loading flows, retry/error handling, editor history flows, and other browser-realistic interaction coverage.
+- Keep browser perf trace scenarios in Playwright separate from correctness-oriented browser tests.
+- Prefer trace capture and scripted browser scenarios over Playwright runner timing output when evaluating real interaction flows.
 - For pure utility hot paths, use Vitest benchmark files (`*.bench.ts`) and compare against saved baselines (`pnpm bench:json`, `pnpm bench:compare`).
 - For user-flow performance decisions (drag, rotate, collision, camera transitions), use Playwright-driven browser benchmarks with scripted interactions and trace capture.
 - Use browser benchmarks when implementation options affect frame-time-sensitive interactions or when microbench results are not sufficient to choose an approach.

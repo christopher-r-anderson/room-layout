@@ -39,14 +39,16 @@ Deliver a small, polished 3D room-layout editor demo that demonstrates productio
 
 - [x] Add collision prevention so furniture cannot overlap.
 - [x] Add wall/edge snapping behavior that works with collisions.
-- [ ] Set up Playwright browser performance harness for scripted interaction scenarios.
-- [ ] Add baseline browser perf scenario for drag/rotate/collision interaction traces.
-- [ ] Expand furniture catalog to 4 total types (including coffee table and end table).
+- [x] Establish a Playwright browser harness for real canvas interaction coverage.
+- [x] Add first browser integration scenarios for undo/redo and startup loading/error flows.
+- [x] Add baseline browser perf scenarios for drag/rotate/collision traces using the same harness.
+- [x] Expand furniture catalog to 4 total types (including coffee table and end table).
+- [x] Replace the text-only add-furniture dropdown with a visual catalog picker once the expanded catalog is in place.
 - [x] Add UI flow to insert furniture instances on demand.
 - [x] Add remove-selected-item action.
 - [x] Add undo/redo for move, rotate, add, and remove actions.
 - [ ] Add hover affordance (subtle outline/highlight) for discoverability.
-- [ ] Ensure all primary interactions are keyboard reachable.
+- [x] Ensure all primary interactions are keyboard reachable.
 
 ### Camera and Visual Polish (Core)
 
@@ -56,10 +58,20 @@ Deliver a small, polished 3D room-layout editor demo that demonstrates productio
 
 ### Loading and Resilience (Core)
 
-- [ ] Add startup loading overlay with clear progress feedback.
-- [ ] Disable editor interactions until essential scene assets are ready.
-- [ ] Add graceful asset-load error state with retry action.
-- [ ] Preload current core furniture assets on app startup.
+- [x] Add startup loading overlay with clear progress feedback.
+- [x] Disable editor interactions until essential scene assets are ready.
+- [x] Add graceful asset-load error state with retry action.
+- [x] Preload current core furniture assets on app startup.
+
+### Browser Quality Harness (Completed)
+
+- Playwright now covers browser-realistic startup loading, startup failure/retry, and undo/redo user flows.
+- Browser perf traces run through the same harness with a separate non-gating lane.
+- Repo scripts, CI coverage, and README guidance are in place for the browser test workflows.
+
+### Future Quality Work
+
+- [ ] Add a browser-side metrics lane for interaction timing comparisons once the trace-based perf lane and drag scenarios are stable.
 
 ### Shareable State
 
@@ -78,13 +90,11 @@ Deliver a small, polished 3D room-layout editor demo that demonstrates productio
 
 - [x] Refresh README product section and include current feature list.
 - [x] Add short usage guide (select, move, rotate, add, remove, share).
-- [ ] Run final validation pass (`pnpm fix`, `pnpm typecheck`, `pnpm test:run`, `pnpm build`).
+- [x] Run final validation pass (`pnpm fix`, `pnpm typecheck`, `pnpm test:run`, `pnpm build`).
 - [ ] Capture demo media for README.
 
 ## Current Focus
 
-1. Startup loading/error experience.
-2. Basic URL share/load.
-3. Camera presets and visual polish.
-4. Expanded furniture catalog coverage.
-5. Browser performance harness.
+1. Basic URL share/load.
+2. Camera presets and visual polish.
+3. Hover affordance and broader browser interaction coverage.

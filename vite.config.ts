@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite'
+import { configDefaults, defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 import { fileURLToPath, URL } from 'node:url'
 
@@ -9,6 +9,9 @@ const productionBasePath = process.env.VITE_BASE_PATH ?? defaultPagesBasePath
 export default defineConfig({
   base: process.env.NODE_ENV === 'production' ? productionBasePath : '/',
   plugins: [react()],
+  test: {
+    exclude: [...configDefaults.exclude, 'e2e/**'],
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
