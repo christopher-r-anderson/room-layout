@@ -1,4 +1,10 @@
-import type { RefObject } from 'react'
+import {
+  useEffect,
+  useRef,
+  type MouseEvent as ReactMouseEvent,
+  type SyntheticEvent,
+  type RefObject,
+} from 'react'
 import { FURNITURE_CATALOG } from '@/scene/objects/furniture-catalog'
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
 import {
@@ -7,6 +13,14 @@ import {
   OverlayStatusMessage,
   OverlayToolbar,
 } from './editor-ui-primitives'
+
+function formatMeasurement(value: number) {
+  return Number(value.toFixed(2)).toString()
+}
+
+function formatFootprintLabel(width: number, depth: number) {
+  return `${formatMeasurement(width)}m x ${formatMeasurement(depth)}m footprint`
+}
 
 interface HistoryAvailability {
   canUndo: boolean
@@ -55,48 +69,171 @@ export function HistoryPanel({
 export function CatalogPanel({
   catalogIdToAdd,
   editorInteractionsEnabled,
+  isOpen,
   onAddFurniture,
   onCatalogIdToAddChange,
+  onClose,
+  onOpen,
+  pickerDialogRef,
 }: {
   catalogIdToAdd: string
   editorInteractionsEnabled: boolean
+  isOpen: boolean
   onAddFurniture: () => void
   onCatalogIdToAddChange: (catalogId: string) => void
+  onClose: () => void
+  onOpen: () => void
+  pickerDialogRef: RefObject<HTMLDialogElement | null>
 }) {
+  const triggerRef = useRef<HTMLButtonElement | null>(null)
+  const selectedRadioRef = useRef<HTMLInputElement | null>(null)
+
+  useEffect(() => {
+    const dialog = pickerDialogRef.current
+
+    if (!dialog) {
+      return
+    }
+
+    if (isOpen) {
+      if (!dialog.open) {
+        dialog.showModal()
+      }
+
+      selectedRadioRef.current?.focus()
+      return
+    }
+
+    if (dialog.open) {
+      dialog.close()
+    }
+
+    if (triggerRef.current) {
+      triggerRef.current.focus()
+    }
+  }, [isOpen, pickerDialogRef])
+
+  function handleSheetCancel(event: SyntheticEvent<HTMLDialogElement>) {
+    event.preventDefault()
+    onClose()
+  }
+
+  function handleSheetBackdropClick(event: ReactMouseEvent<HTMLDialogElement>) {
+    if (event.target === event.currentTarget) {
+      onClose()
+    }
+  }
+
   return (
-    <OverlayControlSection
-      heading="Add Furniture"
-      headingId="add-furniture-heading"
-    >
-      <label className="sr-only" htmlFor="add-furniture-select">
-        Furniture type to add
-      </label>
-      <div className="catalog-row">
-        <select
-          id="add-furniture-select"
-          className="catalog-select"
-          disabled={!editorInteractionsEnabled}
-          value={catalogIdToAdd}
-          onChange={(event) => {
-            onCatalogIdToAddChange(event.target.value)
-          }}
-        >
-          {FURNITURE_CATALOG.map((entry) => (
-            <option key={entry.id} value={entry.id}>
-              {entry.name}
-            </option>
-          ))}
-        </select>
+    <>
+      {isOpen ? null : (
         <button
+          ref={triggerRef}
           type="button"
-          className="add-button"
-          disabled={!editorInteractionsEnabled || !catalogIdToAdd}
-          onClick={onAddFurniture}
+          className="picker-trigger"
+          disabled={!editorInteractionsEnabled}
+          onClick={onOpen}
         >
-          Add Item
+          <span className="picker-trigger-plus" aria-hidden>
+            +
+          </span>
+          <span className="picker-trigger-copy">
+            <span className="picker-trigger-title">Add Furniture</span>
+            <span className="picker-trigger-subtitle">
+              Open the visual item picker
+            </span>
+          </span>
         </button>
-      </div>
-    </OverlayControlSection>
+      )}
+
+      <dialog
+        ref={pickerDialogRef}
+        id="add-furniture-sheet"
+        className="catalog-sheet"
+        aria-labelledby="add-furniture-heading"
+        aria-describedby="add-furniture-description"
+        onCancel={handleSheetCancel}
+        onClick={handleSheetBackdropClick}
+      >
+        <div className="catalog-sheet-header">
+          <div>
+            <p className="catalog-sheet-eyebrow">Catalog</p>
+            <h2 id="add-furniture-heading" className="catalog-sheet-title">
+              Add furniture
+            </h2>
+          </div>
+          <button
+            type="button"
+            className="catalog-sheet-close"
+            aria-label="Close picker"
+            onClick={onClose}
+          >
+            <span aria-hidden>×</span>
+          </button>
+        </div>
+        <p id="add-furniture-description" className="catalog-sheet-description">
+          Choose a piece, then place it into the room.
+        </p>
+        <fieldset className="catalog-grid">
+          <legend className="sr-only">Furniture type to add</legend>
+          {FURNITURE_CATALOG.map((entry) => {
+            const isSelected = catalogIdToAdd === entry.id
+
+            return (
+              <label key={entry.id} className="catalog-card">
+                <input
+                  ref={isSelected ? selectedRadioRef : undefined}
+                  className="catalog-card-input sr-only"
+                  type="radio"
+                  name="furniture-catalog"
+                  value={entry.id}
+                  checked={isSelected}
+                  disabled={!editorInteractionsEnabled}
+                  onChange={(event) => {
+                    onCatalogIdToAddChange(event.target.value)
+                  }}
+                />
+                <span
+                  className="catalog-card-surface"
+                  data-selected={isSelected}
+                  aria-hidden="true"
+                >
+                  <span className="catalog-card-preview">
+                    <img
+                      className="catalog-card-image"
+                      src={entry.previewPath}
+                      alt=""
+                    />
+                  </span>
+                  <span className="catalog-card-copy">
+                    <span className="catalog-card-name">{entry.name}</span>
+                    <span className="catalog-card-meta">
+                      {formatFootprintLabel(
+                        entry.footprintSize.width,
+                        entry.footprintSize.depth,
+                      )}
+                    </span>
+                  </span>
+                </span>
+              </label>
+            )
+          })}
+        </fieldset>
+        <div className="catalog-sheet-actions">
+          <button type="button" className="close-button" onClick={onClose}>
+            Close
+          </button>
+          <button
+            type="button"
+            className="add-button catalog-add-button"
+            disabled={!editorInteractionsEnabled || !catalogIdToAdd}
+            onClick={onAddFurniture}
+          >
+            Add Item
+          </button>
+        </div>
+      </dialog>
+    </>
   )
 }
 

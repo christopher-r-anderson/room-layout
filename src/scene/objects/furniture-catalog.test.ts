@@ -86,6 +86,7 @@ describe('resolvePublicAssetPath', () => {
       kind: 'end-table',
       collectionId: 'end-table',
       nodeName: 'end-table',
+      previewPath: `${import.meta.env.BASE_URL}catalog-previews/end-table.webp`,
       footprintSize: {
         width: 0.96,
         depth: 0.96,
@@ -96,6 +97,7 @@ describe('resolvePublicAssetPath', () => {
       kind: 'coffee-table',
       collectionId: 'coffee-table',
       nodeName: 'coffee-table',
+      previewPath: `${import.meta.env.BASE_URL}catalog-previews/coffee-table.webp`,
       footprintSize: {
         width: 1.38,
         depth: 0.855,
@@ -108,11 +110,39 @@ describe('resolvePublicAssetPath', () => {
       kind: 'coffee-table',
       collectionId: 'coffee-table-living-room',
       nodeName: 'Mesita',
+      previewPath: `${import.meta.env.BASE_URL}catalog-previews/living-room-coffee-table.webp`,
       footprintSize: {
         width: 1.91,
         depth: 1.03,
       },
     })
+  })
+
+  it('provides preview assets for every catalog entry', () => {
+    expect(
+      FURNITURE_CATALOG.map((entry) => [entry.id, entry.previewPath]),
+    ).toEqual([
+      [
+        'couch-1',
+        `${import.meta.env.BASE_URL}catalog-previews/leather-couch.webp`,
+      ],
+      [
+        'armchair-1',
+        `${import.meta.env.BASE_URL}catalog-previews/leather-armchair.webp`,
+      ],
+      [
+        'end-table-1',
+        `${import.meta.env.BASE_URL}catalog-previews/end-table.webp`,
+      ],
+      [
+        'coffee-table-1',
+        `${import.meta.env.BASE_URL}catalog-previews/coffee-table.webp`,
+      ],
+      [
+        'coffee-table-living-room-1',
+        `${import.meta.env.BASE_URL}catalog-previews/living-room-coffee-table.webp`,
+      ],
+    ])
   })
 
   it('resolves collection paths for the new standalone models', () => {

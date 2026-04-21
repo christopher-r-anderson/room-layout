@@ -71,9 +71,9 @@ export async function readSceneState(page: Page): Promise<BrowserSceneState> {
 }
 
 export async function waitForEditorReady(page: Page) {
-  await expect(page.getByRole('button', { name: 'Add Item' })).toBeEnabled({
-    timeout: 30_000,
-  })
+  await expect(page.getByRole('button', { name: 'Add Furniture' })).toBeEnabled(
+    { timeout: 30_000 },
+  )
   await expect(
     page.getByRole('dialog', { name: /preparing the room editor/i }),
   ).toBeHidden()
@@ -88,15 +88,24 @@ export async function waitForEditorReady(page: Page) {
 
 export async function addFurniture(page: Page, name = 'Leather Couch') {
   const initialState = await readSceneState(page)
+  const pickerTrigger = page.getByRole('button', { name: 'Add Furniture' })
+  const pickerSheet = page.locator('#add-furniture-sheet')
 
-  await page.getByLabel('Furniture type to add').selectOption({ label: name })
-  await page.getByRole('button', { name: 'Add Item' }).click()
+  if (!(await pickerSheet.isVisible())) {
+    await pickerTrigger.click()
+  }
 
-  await expect
-    .poll(async () => (await readSceneState(page)).itemCount)
-    .toBe(initialState.itemCount + 1)
+  await expect(pickerSheet).toBeVisible()
 
-  return readSceneState(page)
+  await pickerSheet.locator('.catalog-card').filter({ hasText: name }).click()
+  await pickerSheet.getByRole('button', { name: 'Add Item' }).click()
+  await expect(pickerSheet).toBeHidden()
+
+  const nextState = await readSceneState(page)
+
+  expect(nextState.itemCount).toBe(initialState.itemCount + 1)
+
+  return nextState
 }
 
 export async function selectFurnitureById(page: Page, itemId: string) {

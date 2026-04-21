@@ -24,6 +24,7 @@ export interface FurnitureCatalogEntry {
   collectionId: FurnitureCollection['id']
   nodeName: string
   footprintSize: FootprintSize
+  previewPath: string
 }
 
 export const FURNITURE_COLLECTIONS: FurnitureCollection[] = [
@@ -56,6 +57,7 @@ export const FURNITURE_CATALOG: FurnitureCatalogEntry[] = [
       width: 2.2,
       depth: 0.95,
     },
+    previewPath: resolvePublicAssetPath('catalog-previews/leather-couch.webp'),
   },
   {
     id: 'armchair-1',
@@ -67,6 +69,9 @@ export const FURNITURE_CATALOG: FurnitureCatalogEntry[] = [
       width: 1.15,
       depth: 0.95,
     },
+    previewPath: resolvePublicAssetPath(
+      'catalog-previews/leather-armchair.webp',
+    ),
   },
   {
     id: 'end-table-1',
@@ -78,10 +83,11 @@ export const FURNITURE_CATALOG: FurnitureCatalogEntry[] = [
       width: 0.96,
       depth: 0.96,
     },
+    previewPath: resolvePublicAssetPath('catalog-previews/end-table.webp'),
   },
   {
     id: 'coffee-table-1',
-    name: 'Coffee Table',
+    name: 'Modern Coffee Table',
     kind: 'coffee-table',
     collectionId: 'coffee-table',
     nodeName: 'coffee-table',
@@ -89,10 +95,11 @@ export const FURNITURE_CATALOG: FurnitureCatalogEntry[] = [
       width: 1.38,
       depth: 0.855,
     },
+    previewPath: resolvePublicAssetPath('catalog-previews/coffee-table.webp'),
   },
   {
     id: 'coffee-table-living-room-1',
-    name: 'Living Room Coffee Table',
+    name: 'Classic Coffee Table',
     kind: 'coffee-table',
     collectionId: 'coffee-table-living-room',
     nodeName: 'Mesita',
@@ -100,6 +107,9 @@ export const FURNITURE_CATALOG: FurnitureCatalogEntry[] = [
       width: 1.91,
       depth: 1.03,
     },
+    previewPath: resolvePublicAssetPath(
+      'catalog-previews/living-room-coffee-table.webp',
+    ),
   },
 ]
 

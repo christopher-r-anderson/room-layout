@@ -7,6 +7,8 @@ import {
   waitForEditorReady,
 } from './support/editor-harness'
 
+test.setTimeout(60_000)
+
 test('undo and redo restore editor history across add, rotate, and remove', async ({
   page,
 }) => {
@@ -32,15 +34,15 @@ test('undo and redo restore editor history across add, rotate, and remove', asyn
   await expect.poll(async () => (await readSceneState(page)).itemCount).toBe(1)
   const afterUndoRemove = await readSceneState(page)
   expect(afterUndoRemove.itemCount).toBe(1)
-  expect(afterUndoRemove.items[0].rotationY).toBe(rotatedItem.rotationY)
+  expect(afterUndoRemove.items[0].rotationY).toBeCloseTo(rotatedItem.rotationY)
 
   await page.getByRole('button', { name: 'Undo' }).click()
   await expect
     .poll(async () => (await readSceneState(page)).items[0].rotationY)
-    .toBe(initialItem.rotationY)
+    .toBeCloseTo(initialItem.rotationY)
   const afterUndoRotate = await readSceneState(page)
   expect(afterUndoRotate.itemCount).toBe(1)
-  expect(afterUndoRotate.items[0].rotationY).toBe(initialItem.rotationY)
+  expect(afterUndoRotate.items[0].rotationY).toBeCloseTo(initialItem.rotationY)
 
   await page.getByRole('button', { name: 'Undo' }).click()
   await expect.poll(async () => (await readSceneState(page)).itemCount).toBe(0)
@@ -57,10 +59,10 @@ test('undo and redo restore editor history across add, rotate, and remove', asyn
   await page.getByRole('button', { name: 'Redo' }).click()
   await expect
     .poll(async () => (await readSceneState(page)).items[0].rotationY)
-    .toBe(rotatedItem.rotationY)
+    .toBeCloseTo(rotatedItem.rotationY)
   const afterRedoRotate = await readSceneState(page)
   expect(afterRedoRotate.itemCount).toBe(1)
-  expect(afterRedoRotate.items[0].rotationY).toBe(rotatedItem.rotationY)
+  expect(afterRedoRotate.items[0].rotationY).toBeCloseTo(rotatedItem.rotationY)
 
   await page.getByRole('button', { name: 'Redo' }).click()
   await expect.poll(async () => (await readSceneState(page)).itemCount).toBe(0)

@@ -1,4 +1,8 @@
-import type { RefObject } from 'react'
+import type {
+  MouseEvent as ReactMouseEvent,
+  RefObject,
+  SyntheticEvent,
+} from 'react'
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
 import { DeleteConfirmationDialog, ProjectInfoDialog } from './editor-dialogs'
 import {
@@ -19,29 +23,29 @@ interface EditorOverlayProps {
   confirmDeleteDialogRef: RefObject<HTMLDialogElement | null>
   editorInteractionsEnabled: boolean
   editorMessage: string | null
-  handleDeleteDialogCancel: (
-    event: React.SyntheticEvent<HTMLDialogElement>,
-  ) => void
-  handleDeleteDialogClick: (event: React.MouseEvent<HTMLDialogElement>) => void
-  handleInfoDialogCancel: (
-    event: React.SyntheticEvent<HTMLDialogElement>,
-  ) => void
-  handleInfoDialogClick: (event: React.MouseEvent<HTMLDialogElement>) => void
+  handleDeleteDialogCancel: (event: SyntheticEvent<HTMLDialogElement>) => void
+  handleDeleteDialogClick: (event: ReactMouseEvent<HTMLDialogElement>) => void
+  handleInfoDialogCancel: (event: SyntheticEvent<HTMLDialogElement>) => void
+  handleInfoDialogClick: (event: ReactMouseEvent<HTMLDialogElement>) => void
   historyAvailability: HistoryAvailability
   infoButtonRef: RefObject<HTMLButtonElement | null>
   infoDialogRef: RefObject<HTMLDialogElement | null>
+  isPickerOpen: boolean
   onAddFurniture: () => void
   onCatalogIdToAddChange: (catalogId: string) => void
   onCloseDeleteDialog: () => void
   onCloseInfoDialog: () => void
+  onClosePicker: () => void
   onConfirmRemoveSelection: () => void
   onOpenDeleteDialog: () => void
+  onOpenPicker: () => void
   onOpenInfoDialog: () => void
   onRedo: () => void
   onRetryAssetLoading: () => void
   onRotateSelection: (direction: -1 | 1) => void
   onUndo: () => void
   pendingDeleteFurniture: FurnitureItem | null
+  pickerDialogRef: RefObject<HTMLDialogElement | null>
   removeButtonRef: RefObject<HTMLButtonElement | null>
   selectedFurniture: FurnitureItem | null
   startupLoadingActive: boolean
@@ -52,6 +56,7 @@ export function EditorOverlay({
   assetError,
   catalogIdToAdd,
   confirmDeleteDialogRef,
+  isPickerOpen,
   editorInteractionsEnabled,
   editorMessage,
   handleDeleteDialogCancel,
@@ -65,14 +70,17 @@ export function EditorOverlay({
   onCatalogIdToAddChange,
   onCloseDeleteDialog,
   onCloseInfoDialog,
+  onClosePicker,
   onConfirmRemoveSelection,
   onOpenDeleteDialog,
+  onOpenPicker,
   onOpenInfoDialog,
   onRedo,
   onRetryAssetLoading,
   onRotateSelection,
   onUndo,
   pendingDeleteFurniture,
+  pickerDialogRef,
   removeButtonRef,
   selectedFurniture,
   startupLoadingActive,
@@ -93,12 +101,6 @@ export function EditorOverlay({
             onRedo={onRedo}
             onUndo={onUndo}
           />
-          <CatalogPanel
-            catalogIdToAdd={catalogIdToAdd}
-            editorInteractionsEnabled={editorInteractionsEnabled}
-            onAddFurniture={onAddFurniture}
-            onCatalogIdToAddChange={onCatalogIdToAddChange}
-          />
           <SelectionPanel
             editorInteractionsEnabled={editorInteractionsEnabled}
             onOpenDeleteDialog={onOpenDeleteDialog}
@@ -108,11 +110,21 @@ export function EditorOverlay({
           />
           <EditorStatusMessage message={editorMessage} />
         </OverlayControlPanel>
+        <CatalogPanel
+          catalogIdToAdd={catalogIdToAdd}
+          editorInteractionsEnabled={editorInteractionsEnabled}
+          isOpen={isPickerOpen}
+          onAddFurniture={onAddFurniture}
+          onCatalogIdToAddChange={onCatalogIdToAddChange}
+          onClose={onClosePicker}
+          onOpen={onOpenPicker}
+          pickerDialogRef={pickerDialogRef}
+        />
         <OverlayInfoButton
           infoButtonRef={infoButtonRef}
           onOpenInfoDialog={onOpenInfoDialog}
         />
-        <RotationHelp />
+        {isPickerOpen ? null : <RotationHelp />}
 
         <DeleteConfirmationDialog
           dialogRef={confirmDeleteDialogRef}

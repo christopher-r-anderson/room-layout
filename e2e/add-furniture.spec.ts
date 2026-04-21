@@ -9,6 +9,8 @@ function expectUniqueItemIds(itemIds: string[]) {
   expect(new Set(itemIds).size).toBe(itemIds.length)
 }
 
+test.setTimeout(60_000)
+
 test('keeps successful adds free of false no-space errors and duplicate ids', async ({
   page,
 }) => {

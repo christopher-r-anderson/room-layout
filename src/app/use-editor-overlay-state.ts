@@ -13,6 +13,7 @@ interface UseEditorOverlayStateOptions {
   editorInteractionsEnabledRef: RefObject<boolean>
   infoButtonRef: RefObject<HTMLButtonElement | null>
   infoDialogRef: RefObject<HTMLDialogElement | null>
+  pickerDialogRef: RefObject<HTMLDialogElement | null>
   removeButtonRef: RefObject<HTMLButtonElement | null>
   rotationStepRadians: number
   sceneRef: RefObject<SceneRef | null>
@@ -24,6 +25,7 @@ interface EditorOverlayState {
   catalogIdToAdd: string
   closeDeleteDialog: () => void
   closeInfoDialog: () => void
+  closePicker: () => void
   closeOpenDialogs: () => void
   confirmRemoveSelection: () => void
   editorMessage: string | null
@@ -39,7 +41,9 @@ interface EditorOverlayState {
   handleInfoDialogClick: (event: React.MouseEvent<HTMLDialogElement>) => void
   handleSelectionChange: (item: FurnitureItem | null) => void
   historyAvailability: HistoryAvailability
+  isPickerOpen: boolean
   openDeleteDialog: () => void
+  openPicker: () => void
   openInfoDialog: () => void
   pendingDeleteFurniture: FurnitureItem | null
   redo: () => void
@@ -60,6 +64,7 @@ export function useEditorOverlayState({
   editorInteractionsEnabledRef,
   infoButtonRef,
   infoDialogRef,
+  pickerDialogRef,
   removeButtonRef,
   rotationStepRadians,
   sceneRef,
@@ -73,6 +78,7 @@ export function useEditorOverlayState({
   const [pendingDeleteFurniture, setPendingDeleteFurniture] =
     useState<FurnitureItem | null>(null)
   const [editorMessage, setEditorMessage] = useState<string | null>(null)
+  const [isPickerOpen, setIsPickerOpen] = useState(false)
   const [historyAvailability, setHistoryAvailability] = useState(
     INITIAL_HISTORY_AVAILABILITY,
   )
@@ -93,19 +99,45 @@ export function useEditorOverlayState({
     setSelectedFurniture(null)
     setPendingDeleteFurniture(null)
     setEditorMessage(null)
+    setIsPickerOpen(false)
     setHistoryAvailability(INITIAL_HISTORY_AVAILABILITY)
   }, [sceneRef])
 
   const closeOpenDialogs = useCallback(() => {
     confirmDeleteDialogRef.current?.close()
     infoDialogRef.current?.close()
-  }, [confirmDeleteDialogRef, infoDialogRef])
+    pickerDialogRef.current?.close()
+    setIsPickerOpen(false)
+  }, [confirmDeleteDialogRef, infoDialogRef, pickerDialogRef])
 
   const closeDeleteDialog = useCallback(() => {
     confirmDeleteDialogRef.current?.close()
     setPendingDeleteFurniture(null)
     removeButtonRef.current?.focus()
   }, [confirmDeleteDialogRef, removeButtonRef])
+
+  const openPicker = useCallback(() => {
+    if (
+      !editorInteractionsEnabledRef.current ||
+      pickerDialogRef.current?.open ||
+      confirmDeleteDialogRef.current?.open ||
+      infoDialogRef.current?.open
+    ) {
+      return
+    }
+
+    setEditorMessage(null)
+    setIsPickerOpen(true)
+  }, [
+    confirmDeleteDialogRef,
+    editorInteractionsEnabledRef,
+    infoDialogRef,
+    pickerDialogRef,
+  ])
+
+  const closePicker = useCallback(() => {
+    setIsPickerOpen(false)
+  }, [])
 
   const openDeleteDialog = useCallback(() => {
     if (
@@ -150,10 +182,12 @@ export function useEditorOverlayState({
 
   const getIsModalOpen = useCallback(() => {
     return (
+      isPickerOpen ||
       Boolean(infoDialogRef.current?.open) ||
-      Boolean(confirmDeleteDialogRef.current?.open)
+      Boolean(confirmDeleteDialogRef.current?.open) ||
+      Boolean(pickerDialogRef.current?.open)
     )
-  }, [confirmDeleteDialogRef, infoDialogRef])
+  }, [confirmDeleteDialogRef, infoDialogRef, isPickerOpen, pickerDialogRef])
 
   const addFurniture = useCallback(() => {
     if (!editorInteractionsEnabledRef.current || !catalogIdToAdd) {
@@ -176,6 +210,7 @@ export function useEditorOverlayState({
     }
 
     setEditorMessage(null)
+    setIsPickerOpen(false)
   }, [catalogIdToAdd, editorInteractionsEnabledRef, sceneRef])
 
   const openInfoDialog = useCallback(() => {
@@ -247,6 +282,7 @@ export function useEditorOverlayState({
     catalogIdToAdd,
     closeDeleteDialog,
     closeInfoDialog,
+    closePicker,
     closeOpenDialogs,
     confirmRemoveSelection,
     editorMessage,
@@ -258,7 +294,9 @@ export function useEditorOverlayState({
     handleInfoDialogClick,
     handleSelectionChange,
     historyAvailability,
+    isPickerOpen,
     openDeleteDialog,
+    openPicker,
     openInfoDialog,
     pendingDeleteFurniture,
     redo,

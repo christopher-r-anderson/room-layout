@@ -67,15 +67,28 @@ function App() {
   const sceneRef = useRef<SceneRef | null>(null)
   const editorInteractionsEnabledRef = useRef(false)
   const startupOverlayActiveRef = useRef(false)
+  const pickerDialogRef = useRef<HTMLDialogElement | null>(null)
   const infoDialogRef = useRef<HTMLDialogElement | null>(null)
   const confirmDeleteDialogRef = useRef<HTMLDialogElement | null>(null)
   const infoButtonRef = useRef<HTMLButtonElement | null>(null)
   const removeButtonRef = useRef<HTMLButtonElement | null>(null)
+  const editorOverlayState = useEditorOverlayState({
+    confirmDeleteDialogRef,
+    editorInteractionsEnabledRef,
+    infoButtonRef,
+    infoDialogRef,
+    pickerDialogRef,
+    removeButtonRef,
+    rotationStepRadians: ROTATION_STEP_RADIANS,
+    sceneRef,
+    startupOverlayActiveRef,
+  })
   const {
     addFurniture,
     catalogIdToAdd,
     closeDeleteDialog,
     closeInfoDialog,
+    closePicker,
     closeOpenDialogs,
     confirmRemoveSelection,
     editorMessage,
@@ -87,7 +100,9 @@ function App() {
     handleInfoDialogClick,
     handleSelectionChange,
     historyAvailability,
+    isPickerOpen,
     openDeleteDialog,
+    openPicker,
     openInfoDialog: openInfoDialogBase,
     pendingDeleteFurniture,
     redo,
@@ -96,16 +111,7 @@ function App() {
     selectedFurniture,
     setCatalogIdToAdd,
     undo,
-  } = useEditorOverlayState({
-    confirmDeleteDialogRef,
-    editorInteractionsEnabledRef,
-    infoButtonRef,
-    infoDialogRef,
-    removeButtonRef,
-    rotationStepRadians: ROTATION_STEP_RADIANS,
-    sceneRef,
-    startupOverlayActiveRef,
-  })
+  } = editorOverlayState
 
   const {
     assetError,
@@ -211,18 +217,22 @@ function App() {
         historyAvailability={historyAvailability}
         infoButtonRef={infoButtonRef}
         infoDialogRef={infoDialogRef}
+        isPickerOpen={isPickerOpen}
         onAddFurniture={addFurniture}
         onCatalogIdToAddChange={setCatalogIdToAdd}
         onCloseDeleteDialog={closeDeleteDialog}
         onCloseInfoDialog={closeInfoDialog}
+        onClosePicker={closePicker}
         onConfirmRemoveSelection={confirmRemoveSelection}
         onOpenDeleteDialog={openDeleteDialog}
+        onOpenPicker={openPicker}
         onOpenInfoDialog={openInfoDialogBase}
         onRedo={redo}
         onRetryAssetLoading={retryAssetLoading}
         onRotateSelection={rotateSelection}
         onUndo={undo}
         pendingDeleteFurniture={pendingDeleteFurniture}
+        pickerDialogRef={pickerDialogRef}
         removeButtonRef={removeButtonRef}
         selectedFurniture={selectedFurniture}
         startupLoadingActive={startupLoadingActive}

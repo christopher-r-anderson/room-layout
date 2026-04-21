@@ -17,7 +17,7 @@ test('keeps editor interactions blocked until required assets finish loading', a
   })
   await expect(loadingDialog).toBeVisible()
   await expect(
-    page.getByRole('button', { name: 'Add Item', includeHidden: true }),
+    page.getByRole('button', { name: 'Add Furniture', includeHidden: true }),
   ).toBeDisabled()
   await expect(
     page.getByRole('button', { name: 'Undo', includeHidden: true }),

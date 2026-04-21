@@ -17,7 +17,7 @@ test('shows a retry path when essential furniture assets fail to load', async ({
   })
   await expect(errorDialog).toBeVisible({ timeout: 30_000 })
   await expect(
-    page.getByRole('button', { name: 'Add Item', includeHidden: true }),
+    page.getByRole('button', { name: 'Add Furniture', includeHidden: true }),
   ).toBeDisabled()
 
   const failedState = await readSceneState(page)
