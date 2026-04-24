@@ -119,6 +119,10 @@ test('renders mesh with correct geometry', async () => {
     </mesh>
   )
 
+  // renderer.scene is the root test instance.
+  // For raw elements (<mesh>, <group>), the element IS renderer.scene.
+  // For React function components (<MyComponent />), the rendered output is at
+  // renderer.scene.children[0], and Three.js properties are on .instance.
   const mesh = renderer.scene
   expect(mesh.type).toBe('Mesh')
   expect(mesh.children[0]?.geometry.type).toBe('BoxGeometry')
@@ -170,6 +174,7 @@ test('rotates mesh over frames', async () => {
 - Don't use testing-library's `fireEvent()` for RTTR tests; use `firePointerEvent()` from pointer-helpers
 - Don't snapshot 3D scenes; assert on specific properties instead
 - Don't forget `advanceFrames()` when testing `useFrame` effects
+- `renderer.scene` is the root test instance for raw elements; for React function components, the rendered output is at `renderer.scene.children[0]` and Three.js properties are on `.instance`
 
 ## Asset Pipeline
 
