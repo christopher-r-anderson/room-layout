@@ -1,5 +1,10 @@
 import { expect, test, type Locator, type Page } from '@playwright/test'
-import { addFurniture, openEditor } from './support/editor-harness'
+import {
+  addFurniture,
+  openEditor,
+  readSceneState,
+  selectFurnitureById,
+} from './support/editor-harness'
 
 async function closeWithEscapeAndRestoreFocus(
   page: Page,
@@ -69,4 +74,57 @@ test('sheet and delete confirmation keep accessible contracts and return focus',
   await deleteDialog.getByRole('button', { name: 'Cancel' }).click()
   await expect(deleteDialog).toBeHidden()
   await expect(deleteButton).toBeFocused()
+})
+
+test('catalog, delete, and info dialogs stay mutually exclusive', async ({
+  page,
+}) => {
+  await openEditor(page)
+  await addFurniture(page, 'Leather Couch')
+
+  const sceneState = await readSceneState(page)
+  const firstItemId = sceneState.items[0]?.id
+
+  if (!firstItemId) {
+    throw new Error('expected a furniture item to exist after adding it')
+  }
+
+  await selectFurnitureById(page, firstItemId)
+
+  const catalogButton = page.getByRole('button', { name: 'Add Furniture' })
+  const deleteButton = page.getByRole('button', { name: 'Delete' })
+  const infoButton = page.getByRole('button', {
+    name: 'Open project and asset info',
+  })
+  const catalogDialog = page.getByRole('dialog', { name: 'Add furniture' })
+  const deleteDialog = page.getByRole('alertdialog', {
+    name: /delete furniture/i,
+  })
+  const infoDialog = page.getByRole('dialog', { name: /project & asset info/i })
+
+  await catalogButton.click()
+  await expect(catalogDialog).toBeVisible()
+
+  await page.keyboard.press('Delete')
+  await expect(deleteDialog).toBeHidden()
+
+  await page.keyboard.press('Escape')
+  await expect(catalogDialog).toBeHidden()
+
+  await deleteButton.click()
+  await expect(deleteDialog).toBeVisible()
+
+  await expect(infoButton).toBeHidden()
+  await expect(infoDialog).toBeHidden()
+
+  await deleteDialog.getByRole('button', { name: 'Cancel' }).click()
+  await expect(deleteDialog).toBeHidden()
+
+  await infoButton.click()
+  await expect(infoDialog).toBeVisible()
+
+  await page.keyboard.press('Delete')
+  await expect(deleteDialog).toBeHidden()
+
+  await closeWithEscapeAndRestoreFocus(page, infoDialog, infoButton)
 })

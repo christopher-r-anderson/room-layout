@@ -10,8 +10,8 @@ describe('startup transition sequencing', () => {
     const error = new Error('asset load failed')
 
     runStartupAssetErrorTransition(error, {
-      closeOpenDialogs: () => {
-        steps.push('closeOpenDialogs')
+      closeAllDialogs: () => {
+        steps.push('closeAllDialogs')
       },
       recordAssetError: () => {
         steps.push('recordAssetError')
@@ -23,7 +23,7 @@ describe('startup transition sequencing', () => {
 
     expect(steps).toEqual([
       'recordAssetError',
-      'closeOpenDialogs',
+      'closeAllDialogs',
       'resetEditorShellState',
     ])
   })
@@ -32,8 +32,8 @@ describe('startup transition sequencing', () => {
     const steps: string[] = []
 
     runStartupRetryTransition({
-      closeOpenDialogs: () => {
-        steps.push('closeOpenDialogs')
+      closeAllDialogs: () => {
+        steps.push('closeAllDialogs')
       },
       resetEditorShellState: () => {
         steps.push('resetEditorShellState')
@@ -44,7 +44,7 @@ describe('startup transition sequencing', () => {
     })
 
     expect(steps).toEqual([
-      'closeOpenDialogs',
+      'closeAllDialogs',
       'resetEditorShellState',
       'retryAssetLoading',
     ])

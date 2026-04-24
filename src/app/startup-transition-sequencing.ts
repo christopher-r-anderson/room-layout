@@ -1,22 +1,22 @@
 export function runStartupAssetErrorTransition(
   error: Error,
   options: {
-    closeOpenDialogs: () => void
+    closeAllDialogs: () => void
     recordAssetError: (error: Error) => void
     resetEditorShellState: () => void
   },
 ) {
   options.recordAssetError(error)
-  options.closeOpenDialogs()
+  options.closeAllDialogs()
   options.resetEditorShellState()
 }
 
 export function runStartupRetryTransition(options: {
-  closeOpenDialogs: () => void
+  closeAllDialogs: () => void
   resetEditorShellState: () => void
   retryAssetLoading: () => void
 }) {
-  options.closeOpenDialogs()
+  options.closeAllDialogs()
   options.resetEditorShellState()
   options.retryAssetLoading()
 }

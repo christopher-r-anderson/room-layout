@@ -12,6 +12,7 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   test: {
     exclude: [...configDefaults.exclude, 'e2e/**'],
+    setupFiles: ['./src/test/vitest.setup.ts'],
   },
   resolve: {
     alias: {

@@ -14,6 +14,7 @@ import {
   runStartupAssetErrorTransition,
   runStartupRetryTransition,
 } from './app/startup-transition-sequencing'
+import { useEditorDialogState } from './app/use-editor-dialog-state'
 import { useEditorKeyboardShortcuts } from './app/use-editor-keyboard-shortcuts'
 import { useEditorOverlayState } from './app/use-editor-overlay-state'
 import { useSceneStartupState } from './app/use-scene-startup-state'
@@ -92,52 +93,83 @@ function App() {
     editorInteractionsEnabled,
     rotationStepRadians: ROTATION_STEP_RADIANS,
     sceneRef,
-    startupOverlayActive,
   })
   const {
     addFurniture,
     catalogIdToAdd,
-    isCatalogDrawerOpen,
-    closeDeleteDialog,
-    closeOpenDialogs,
+    clearEditorMessage,
     confirmDeleteSelection,
     editorMessage,
-    getIsModalOpen,
     handleHistoryChange,
     handleSelectionChange,
     historyAvailability,
-    isDeleteDialogOpen,
-    isInfoDialogOpen,
-    openDeleteDialog,
-    pendingDeleteFurniture,
     redo,
     resetEditorShellState,
     rotateSelection,
     selectedFurniture,
-    setCatalogDrawerOpen,
-    setInfoDialogOpen,
     setCatalogIdToAdd,
     undo,
   } = editorOverlayState
+  const dialogState = useEditorDialogState({
+    editorInteractionsEnabled,
+    startupOverlayActive,
+    selectedFurniture,
+  })
+  const {
+    closeAllDialogs,
+    closeDialog,
+    isCatalogDrawerOpen,
+    isDeleteDialogOpen,
+    isInfoDialogOpen,
+    isModalOpen,
+    openDelete,
+    pendingDeleteFurniture,
+    setCatalogOpen,
+    setInfoOpen,
+  } = dialogState
+
+  const handleCatalogDrawerOpenChange = useCallback(
+    (open: boolean) => {
+      const changed = setCatalogOpen(open)
+
+      if (open && changed) {
+        clearEditorMessage()
+      }
+    },
+    [clearEditorMessage, setCatalogOpen],
+  )
+
+  const handleOpenDeleteDialog = useCallback(() => {
+    const opened = openDelete()
+
+    if (opened) {
+      clearEditorMessage()
+    }
+  }, [clearEditorMessage, openDelete])
+
+  const handleConfirmDeleteSelection = useCallback(() => {
+    closeDialog()
+    confirmDeleteSelection()
+  }, [closeDialog, confirmDeleteSelection])
 
   const handleSceneAssetError = useCallback(
     (error: Error) => {
       runStartupAssetErrorTransition(error, {
-        closeOpenDialogs,
+        closeAllDialogs,
         recordAssetError: handleAssetError,
         resetEditorShellState,
       })
     },
-    [closeOpenDialogs, handleAssetError, resetEditorShellState],
+    [closeAllDialogs, handleAssetError, resetEditorShellState],
   )
 
   const handleRetryAssetLoading = useCallback(() => {
     runStartupRetryTransition({
-      closeOpenDialogs,
+      closeAllDialogs,
       resetEditorShellState,
       retryAssetLoading,
     })
-  }, [closeOpenDialogs, resetEditorShellState, retryAssetLoading])
+  }, [closeAllDialogs, resetEditorShellState, retryAssetLoading])
 
   useEffect(() => {
     if (!import.meta.env.DEV) {
@@ -169,10 +201,10 @@ function App() {
     canUndo: historyAvailability.canUndo,
     canRedo: historyAvailability.canRedo,
     hasSelection: selectedFurniture !== null,
-    getIsModalOpen,
+    isModalOpen,
     onUndo: undo,
     onRedo: redo,
-    onOpenDeleteDialog: openDeleteDialog,
+    onOpenDeleteDialog: handleOpenDeleteDialog,
     onRotate: rotateSelection,
   })
 
@@ -221,11 +253,11 @@ function App() {
           isInfoDialogOpen={isInfoDialogOpen}
           onAddFurniture={addFurniture}
           onCatalogIdToAddChange={setCatalogIdToAdd}
-          onCatalogDrawerOpenChange={setCatalogDrawerOpen}
-          onCloseDeleteDialog={closeDeleteDialog}
-          onConfirmDeleteSelection={confirmDeleteSelection}
-          onInfoDialogOpenChange={setInfoDialogOpen}
-          onOpenDeleteDialog={openDeleteDialog}
+          onCatalogDrawerOpenChange={handleCatalogDrawerOpenChange}
+          onCloseDeleteDialog={closeDialog}
+          onConfirmDeleteSelection={handleConfirmDeleteSelection}
+          onInfoDialogOpenChange={setInfoOpen}
+          onOpenDeleteDialog={handleOpenDeleteDialog}
           onRedo={redo}
           onRetryAssetLoading={handleRetryAssetLoading}
           onRotateSelection={rotateSelection}
