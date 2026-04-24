@@ -1,18 +1,14 @@
 import { useCallback, useState, type RefObject } from 'react'
+import type { HistoryAvailability } from './components/history/history.types'
 import { FURNITURE_CATALOG } from '@/scene/objects/furniture-catalog'
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
 import type { SceneRef } from '@/scene/scene.types'
 
-interface HistoryAvailability {
-  canUndo: boolean
-  canRedo: boolean
-}
-
 interface UseEditorOverlayStateOptions {
-  editorInteractionsEnabledRef: RefObject<boolean>
+  editorInteractionsEnabled: boolean
   rotationStepRadians: number
   sceneRef: RefObject<SceneRef | null>
-  startupOverlayActiveRef: RefObject<boolean>
+  startupOverlayActive: boolean
 }
 
 interface EditorOverlayState {
@@ -47,10 +43,10 @@ const INITIAL_HISTORY_AVAILABILITY: HistoryAvailability = {
 }
 
 export function useEditorOverlayState({
-  editorInteractionsEnabledRef,
+  editorInteractionsEnabled,
   rotationStepRadians,
   sceneRef,
-  startupOverlayActiveRef,
+  startupOverlayActive,
 }: UseEditorOverlayStateOptions): EditorOverlayState {
   const [selectedFurniture, setSelectedFurniture] =
     useState<FurnitureItem | null>(null)
@@ -108,7 +104,7 @@ export function useEditorOverlayState({
       }
 
       if (
-        !editorInteractionsEnabledRef.current ||
+        !editorInteractionsEnabled ||
         isDeleteDialogOpen ||
         isInfoDialogOpen
       ) {
@@ -118,7 +114,7 @@ export function useEditorOverlayState({
       setEditorMessage(null)
       setIsCatalogDrawerOpen(true)
     },
-    [editorInteractionsEnabledRef, isDeleteDialogOpen, isInfoDialogOpen],
+    [editorInteractionsEnabled, isDeleteDialogOpen, isInfoDialogOpen],
   )
 
   const setInfoDialogOpen = useCallback(
@@ -128,22 +124,18 @@ export function useEditorOverlayState({
         return
       }
 
-      if (
-        startupOverlayActiveRef.current ||
-        isDeleteDialogOpen ||
-        isCatalogDrawerOpen
-      ) {
+      if (startupOverlayActive || isDeleteDialogOpen || isCatalogDrawerOpen) {
         return
       }
 
       setIsInfoDialogOpen(true)
     },
-    [isCatalogDrawerOpen, isDeleteDialogOpen, startupOverlayActiveRef],
+    [isCatalogDrawerOpen, isDeleteDialogOpen, startupOverlayActive],
   )
 
   const openDeleteDialog = useCallback(() => {
     if (
-      !editorInteractionsEnabledRef.current ||
+      !editorInteractionsEnabled ||
       !selectedFurniture ||
       isDeleteDialogOpen ||
       isCatalogDrawerOpen ||
@@ -156,7 +148,7 @@ export function useEditorOverlayState({
     setEditorMessage(null)
     setIsDeleteDialogOpen(true)
   }, [
-    editorInteractionsEnabledRef,
+    editorInteractionsEnabled,
     isCatalogDrawerOpen,
     isDeleteDialogOpen,
     isInfoDialogOpen,
@@ -165,37 +157,37 @@ export function useEditorOverlayState({
 
   const rotateSelection = useCallback(
     (direction: -1 | 1) => {
-      if (!editorInteractionsEnabledRef.current) {
+      if (!editorInteractionsEnabled) {
         return
       }
 
       sceneRef.current?.rotateSelection(direction * rotationStepRadians)
     },
-    [editorInteractionsEnabledRef, rotationStepRadians, sceneRef],
+    [editorInteractionsEnabled, rotationStepRadians, sceneRef],
   )
 
   const undo = useCallback(() => {
-    if (!editorInteractionsEnabledRef.current) {
+    if (!editorInteractionsEnabled) {
       return
     }
 
     sceneRef.current?.undo()
-  }, [editorInteractionsEnabledRef, sceneRef])
+  }, [editorInteractionsEnabled, sceneRef])
 
   const redo = useCallback(() => {
-    if (!editorInteractionsEnabledRef.current) {
+    if (!editorInteractionsEnabled) {
       return
     }
 
     sceneRef.current?.redo()
-  }, [editorInteractionsEnabledRef, sceneRef])
+  }, [editorInteractionsEnabled, sceneRef])
 
   const getIsModalOpen = useCallback(() => {
     return isCatalogDrawerOpen || isDeleteDialogOpen || isInfoDialogOpen
   }, [isCatalogDrawerOpen, isDeleteDialogOpen, isInfoDialogOpen])
 
   const addFurniture = useCallback(() => {
-    if (!editorInteractionsEnabledRef.current || !catalogIdToAdd) {
+    if (!editorInteractionsEnabled || !catalogIdToAdd) {
       return false
     }
 
@@ -216,10 +208,10 @@ export function useEditorOverlayState({
 
     setEditorMessage(null)
     return true
-  }, [catalogIdToAdd, editorInteractionsEnabledRef, sceneRef])
+  }, [catalogIdToAdd, editorInteractionsEnabled, sceneRef])
 
   const confirmDeleteSelection = useCallback(() => {
-    if (!editorInteractionsEnabledRef.current) {
+    if (!editorInteractionsEnabled) {
       return
     }
 
@@ -233,7 +225,7 @@ export function useEditorOverlayState({
     }
 
     setEditorMessage(null)
-  }, [closeDeleteDialog, editorInteractionsEnabledRef, sceneRef])
+  }, [closeDeleteDialog, editorInteractionsEnabled, sceneRef])
 
   return {
     addFurniture,

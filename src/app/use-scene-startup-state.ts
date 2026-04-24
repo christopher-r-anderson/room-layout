@@ -4,11 +4,6 @@ import {
   preloadFurnitureCollections,
 } from '@/scene/objects/furniture-catalog'
 
-interface UseSceneStartupStateOptions {
-  closeOpenDialogs: () => void
-  resetEditorShellState: () => void
-}
-
 interface SceneStartupState {
   assetError: Error | null
   assetErrorRef: RefObject<Error | null>
@@ -23,10 +18,7 @@ interface SceneStartupState {
   startupOverlayActive: boolean
 }
 
-export function useSceneStartupState({
-  closeOpenDialogs,
-  resetEditorShellState,
-}: UseSceneStartupStateOptions): SceneStartupState {
+export function useSceneStartupState(): SceneStartupState {
   const [assetsReady, setAssetsReady] = useState(false)
   const [assetError, setAssetError] = useState<Error | null>(null)
   const [sceneVersion, setSceneVersion] = useState(0)
@@ -54,24 +46,17 @@ export function useSceneStartupState({
     setAssetError(null)
   }, [])
 
-  const handleAssetError = useCallback(
-    (error: Error) => {
-      setAssetsReady(false)
-      setAssetError(error)
-      closeOpenDialogs()
-      resetEditorShellState()
-    },
-    [closeOpenDialogs, resetEditorShellState],
-  )
+  const handleAssetError = useCallback((error: Error) => {
+    setAssetsReady(false)
+    setAssetError(error)
+  }, [])
 
   const retryAssetLoading = useCallback(() => {
     clearFurnitureCollectionCache()
     setAssetsReady(false)
     setAssetError(null)
-    closeOpenDialogs()
-    resetEditorShellState()
     setSceneVersion((currentVersion) => currentVersion + 1)
-  }, [closeOpenDialogs, resetEditorShellState])
+  }, [])
 
   return {
     assetError,

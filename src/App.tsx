@@ -1,8 +1,19 @@
 import { Canvas } from '@react-three/fiber'
 import { Scene } from './scene/scene'
-import { Component, Suspense, type ReactNode, useEffect, useRef } from 'react'
+import {
+  Component,
+  Suspense,
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useRef,
+} from 'react'
 import type { SceneRef } from './scene/scene.types'
 import { EditorOverlay } from './app/editor-overlay'
+import {
+  runStartupAssetErrorTransition,
+  runStartupRetryTransition,
+} from './app/startup-transition-sequencing'
 import { useEditorKeyboardShortcuts } from './app/use-editor-keyboard-shortcuts'
 import { useEditorOverlayState } from './app/use-editor-overlay-state'
 import { useSceneStartupState } from './app/use-scene-startup-state'
@@ -65,13 +76,23 @@ class SceneAssetErrorBoundary extends Component<
 
 function App() {
   const sceneRef = useRef<SceneRef | null>(null)
-  const editorInteractionsEnabledRef = useRef(false)
-  const startupOverlayActiveRef = useRef(false)
+  const {
+    assetError,
+    assetErrorRef,
+    assetsReadyRef,
+    editorInteractionsEnabled,
+    handleAssetError,
+    handleAssetsReady,
+    retryAssetLoading,
+    sceneVersion,
+    startupLoadingActive,
+    startupOverlayActive,
+  } = useSceneStartupState()
   const editorOverlayState = useEditorOverlayState({
-    editorInteractionsEnabledRef,
+    editorInteractionsEnabled,
     rotationStepRadians: ROTATION_STEP_RADIANS,
     sceneRef,
-    startupOverlayActiveRef,
+    startupOverlayActive,
   })
   const {
     addFurniture,
@@ -99,29 +120,24 @@ function App() {
     undo,
   } = editorOverlayState
 
-  const {
-    assetError,
-    assetErrorRef,
-    assetsReadyRef,
-    editorInteractionsEnabled,
-    handleAssetError,
-    handleAssetsReady,
-    retryAssetLoading,
-    sceneVersion,
-    startupLoadingActive,
-    startupOverlayActive,
-  } = useSceneStartupState({
-    closeOpenDialogs,
-    resetEditorShellState,
-  })
+  const handleSceneAssetError = useCallback(
+    (error: Error) => {
+      runStartupAssetErrorTransition(error, {
+        closeOpenDialogs,
+        recordAssetError: handleAssetError,
+        resetEditorShellState,
+      })
+    },
+    [closeOpenDialogs, handleAssetError, resetEditorShellState],
+  )
 
-  useEffect(() => {
-    editorInteractionsEnabledRef.current = editorInteractionsEnabled
-  }, [editorInteractionsEnabled])
-
-  useEffect(() => {
-    startupOverlayActiveRef.current = startupOverlayActive
-  }, [startupOverlayActive])
+  const handleRetryAssetLoading = useCallback(() => {
+    runStartupRetryTransition({
+      closeOpenDialogs,
+      resetEditorShellState,
+      retryAssetLoading,
+    })
+  }, [closeOpenDialogs, resetEditorShellState, retryAssetLoading])
 
   useEffect(() => {
     if (!import.meta.env.DEV) {
@@ -181,7 +197,7 @@ function App() {
           <color attach="background" args={['#f0f0f0']} />
           <SceneAssetErrorBoundary
             key={sceneVersion}
-            onError={handleAssetError}
+            onError={handleSceneAssetError}
           >
             <Suspense fallback={null}>
               <Scene
@@ -211,7 +227,7 @@ function App() {
           onInfoDialogOpenChange={setInfoDialogOpen}
           onOpenDeleteDialog={openDeleteDialog}
           onRedo={redo}
-          onRetryAssetLoading={retryAssetLoading}
+          onRetryAssetLoading={handleRetryAssetLoading}
           onRotateSelection={rotateSelection}
           onUndo={undo}
           pendingDeleteFurniture={pendingDeleteFurniture}
