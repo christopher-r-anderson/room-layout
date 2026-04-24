@@ -11,7 +11,7 @@ interface UseEditorKeyboardShortcutsOptions {
   canUndo: boolean
   canRedo: boolean
   hasSelection: boolean
-  getIsModalOpen: () => boolean
+  isModalOpen: boolean
   onUndo: () => void
   onRedo: () => void
   onOpenDeleteDialog: () => void
@@ -23,7 +23,7 @@ export function useEditorKeyboardShortcuts({
   canUndo,
   canRedo,
   hasSelection,
-  getIsModalOpen,
+  isModalOpen,
   onUndo,
   onRedo,
   onOpenDeleteDialog,
@@ -35,7 +35,6 @@ export function useEditorKeyboardShortcuts({
     }
 
     const target = event.target
-    const isModalOpen = getIsModalOpen()
     const targetTagName =
       target instanceof HTMLElement ? target.tagName : undefined
     const targetIsContentEditable =

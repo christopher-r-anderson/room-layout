@@ -1,19 +1,17 @@
 import { expect, test } from '@playwright/test'
 import {
   addFurniture,
-  readSceneState,
-  removeSelectedFurniture,
+  deleteSelectedFurniture,
+  openEditor,
   rotateSelectionRight,
-  waitForEditorReady,
+  waitForFirstItemRotationY,
+  waitForItemCount,
 } from './support/editor-harness'
 
-test.setTimeout(60_000)
-
-test('undo and redo restore editor history across add, rotate, and remove', async ({
+test('undo and redo restore editor history across add, rotate, and delete', async ({
   page,
 }) => {
-  await page.goto('/')
-  await waitForEditorReady(page)
+  await openEditor(page)
 
   const addedState = await addFurniture(page, 'Leather Couch')
   expect(addedState.itemCount).toBe(1)
@@ -26,47 +24,45 @@ test('undo and redo restore editor history across add, rotate, and remove', asyn
   expect(rotatedItem.id).toBe(initialItem.id)
   expect(rotatedItem.rotationY).not.toBe(initialItem.rotationY)
 
-  const removedState = await removeSelectedFurniture(page)
-  expect(removedState.itemCount).toBe(0)
-  expect(removedState.selectedName).toBeNull()
+  const deletedState = await deleteSelectedFurniture(page)
+  expect(deletedState.itemCount).toBe(0)
+  expect(deletedState.selectedName).toBeNull()
 
   await page.keyboard.press('Control+Z')
-  await expect.poll(async () => (await readSceneState(page)).itemCount).toBe(1)
-  const afterUndoRemove = await readSceneState(page)
-  expect(afterUndoRemove.itemCount).toBe(1)
-  expect(afterUndoRemove.items[0].rotationY).toBeCloseTo(rotatedItem.rotationY)
+  const afterUndoDelete = await waitForItemCount(page, 1)
+  expect(afterUndoDelete.itemCount).toBe(1)
+  expect(afterUndoDelete.items[0].rotationY).toBeCloseTo(rotatedItem.rotationY)
 
   await page.getByRole('button', { name: 'Undo' }).click()
-  await expect
-    .poll(async () => (await readSceneState(page)).items[0].rotationY)
-    .toBeCloseTo(initialItem.rotationY)
-  const afterUndoRotate = await readSceneState(page)
+  const afterUndoRotate = await waitForFirstItemRotationY(
+    page,
+    initialItem.rotationY,
+    6,
+  )
   expect(afterUndoRotate.itemCount).toBe(1)
   expect(afterUndoRotate.items[0].rotationY).toBeCloseTo(initialItem.rotationY)
 
   await page.getByRole('button', { name: 'Undo' }).click()
-  await expect.poll(async () => (await readSceneState(page)).itemCount).toBe(0)
-  const afterUndoAdd = await readSceneState(page)
+  const afterUndoAdd = await waitForItemCount(page, 0)
   expect(afterUndoAdd.itemCount).toBe(0)
   expect(afterUndoAdd.selectedName).toBeNull()
 
   await page.getByRole('button', { name: 'Redo' }).click()
-  await expect.poll(async () => (await readSceneState(page)).itemCount).toBe(1)
-  const afterRedoAdd = await readSceneState(page)
+  const afterRedoAdd = await waitForItemCount(page, 1)
   expect(afterRedoAdd.itemCount).toBe(1)
   expect(afterRedoAdd.items[0].rotationY).toBe(initialItem.rotationY)
 
   await page.getByRole('button', { name: 'Redo' }).click()
-  await expect
-    .poll(async () => (await readSceneState(page)).items[0].rotationY)
-    .toBeCloseTo(rotatedItem.rotationY)
-  const afterRedoRotate = await readSceneState(page)
+  const afterRedoRotate = await waitForFirstItemRotationY(
+    page,
+    rotatedItem.rotationY,
+    6,
+  )
   expect(afterRedoRotate.itemCount).toBe(1)
   expect(afterRedoRotate.items[0].rotationY).toBeCloseTo(rotatedItem.rotationY)
 
   await page.getByRole('button', { name: 'Redo' }).click()
-  await expect.poll(async () => (await readSceneState(page)).itemCount).toBe(0)
-  const afterRedoRemove = await readSceneState(page)
-  expect(afterRedoRemove.itemCount).toBe(0)
-  expect(afterRedoRemove.selectedName).toBeNull()
+  const afterRedoDelete = await waitForItemCount(page, 0)
+  expect(afterRedoDelete.itemCount).toBe(0)
+  expect(afterRedoDelete.selectedName).toBeNull()
 })

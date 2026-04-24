@@ -1,6 +1,8 @@
 import { expect, type Page } from '@playwright/test'
 
-const FURNITURE_ASSET_ROUTE = /\/models\/leather-collection\.glb(?:\?.*)?$/
+const FURNITURE_ASSET_ROUTE = /\/models\/.+\.glb(?:\?.*)?$/
+export const EDITOR_READY_TIMEOUT_MS = 30_000
+const POINTER_SELECTION_TIMEOUT_MS = 750
 
 export interface BrowserSceneState {
   assetsReady: boolean
@@ -44,7 +46,7 @@ async function didSelectFurniture(page: Page, itemId: string) {
         )
       },
       itemId,
-      { timeout: 750 },
+      { timeout: POINTER_SELECTION_TIMEOUT_MS },
     )
     .then(() => true)
     .catch(() => false)
@@ -72,7 +74,7 @@ export async function readSceneState(page: Page): Promise<BrowserSceneState> {
 
 export async function waitForEditorReady(page: Page) {
   await expect(page.getByRole('button', { name: 'Add Furniture' })).toBeEnabled(
-    { timeout: 30_000 },
+    { timeout: EDITOR_READY_TIMEOUT_MS },
   )
   await expect(
     page.getByRole('dialog', { name: /preparing the room editor/i }),
@@ -86,10 +88,79 @@ export async function waitForEditorReady(page: Page) {
   return sceneState
 }
 
+export async function openEditor(page: Page) {
+  await page.goto('/')
+
+  return waitForEditorReady(page)
+}
+
+export async function waitForItemCount(page: Page, expectedCount: number) {
+  await expect
+    .poll(async () => (await readSceneState(page)).itemCount)
+    .toBe(expectedCount)
+
+  return readSceneState(page)
+}
+
+export async function waitForFirstItemRotationY(
+  page: Page,
+  expectedRotationY: number,
+  precision?: number,
+) {
+  if (precision === undefined) {
+    await expect
+      .poll(async () => (await readSceneState(page)).items[0]?.rotationY)
+      .toBe(expectedRotationY)
+  } else {
+    await expect
+      .poll(async () => (await readSceneState(page)).items[0]?.rotationY)
+      .toBeCloseTo(expectedRotationY, precision)
+  }
+
+  return readSceneState(page)
+}
+
+export async function waitForFirstItemPosition(
+  page: Page,
+  expectedPosition: [number, number, number],
+) {
+  await expect
+    .poll(async () => (await readSceneState(page)).items[0]?.position)
+    .toEqual(expectedPosition)
+
+  return readSceneState(page)
+}
+
+export async function waitForFirstItemX(
+  page: Page,
+  expectedX: number,
+  precision: number,
+) {
+  await expect
+    .poll(async () => (await readSceneState(page)).items[0]?.position[0])
+    .toBeCloseTo(expectedX, precision)
+
+  return readSceneState(page)
+}
+
+export async function expectSceneFlags(
+  page: Page,
+  expected: {
+    assetsReady: boolean
+    assetError: boolean
+  },
+) {
+  const state = await readSceneState(page)
+
+  expect(state).toMatchObject(expected)
+
+  return state
+}
+
 export async function addFurniture(page: Page, name = 'Leather Couch') {
   const initialState = await readSceneState(page)
   const pickerTrigger = page.getByRole('button', { name: 'Add Furniture' })
-  const pickerSheet = page.locator('#add-furniture-sheet')
+  const pickerSheet = page.getByRole('dialog', { name: 'Add furniture' })
 
   if (!(await pickerSheet.isVisible())) {
     await pickerTrigger.click()
@@ -97,7 +168,8 @@ export async function addFurniture(page: Page, name = 'Leather Couch') {
 
   await expect(pickerSheet).toBeVisible()
 
-  await pickerSheet.locator('.catalog-card').filter({ hasText: name }).click()
+  await pickerSheet.getByText(name, { exact: true }).click()
+  await expect(pickerSheet.getByRole('radio', { name })).toBeChecked()
   await pickerSheet.getByRole('button', { name: 'Add Item' }).click()
   await expect(pickerSheet).toBeHidden()
 
@@ -117,51 +189,14 @@ export async function selectFurnitureById(page: Page, itemId: string) {
   }
 
   const canvasBounds = await getCanvasBounds(page)
-  const pointerX = canvasBounds.x + item.pointerTarget.x
-  const pointerY = canvasBounds.y + item.pointerTarget.y
+  const clickX = canvasBounds.x + item.pointerTarget.x
+  const clickY = canvasBounds.y + item.pointerTarget.y
 
-  const clickOffsets = [
-    { x: 0, y: 0 },
-    { x: 40, y: 0 },
-    { x: 80, y: 0 },
-    { x: 120, y: 0 },
-    { x: 160, y: 0 },
-    { x: 200, y: 0 },
-    { x: 240, y: 0 },
-    { x: 40, y: -30 },
-    { x: 40, y: 30 },
-    { x: 120, y: -30 },
-    { x: 120, y: 30 },
-    { x: 200, y: -30 },
-    { x: 200, y: 30 },
-    { x: -40, y: 0 },
-    { x: 0, y: -30 },
-    { x: 0, y: 30 },
-  ]
+  await page.mouse.click(clickX, clickY)
 
-  for (const offset of clickOffsets) {
-    const clickX = pointerX + offset.x
-    const clickY = pointerY + offset.y
-
-    if (
-      clickX < canvasBounds.x ||
-      clickX > canvasBounds.x + canvasBounds.width ||
-      clickY < canvasBounds.y ||
-      clickY > canvasBounds.y + canvasBounds.height
-    ) {
-      continue
-    }
-
-    await page.mouse.click(clickX, clickY)
-
-    if (await didSelectFurniture(page, itemId)) {
-      return readSceneState(page)
-    }
+  if (!(await didSelectFurniture(page, itemId))) {
+    throw new Error(`click at pointerTarget did not select furniture ${itemId}`)
   }
-
-  await expect
-    .poll(async () => (await readSceneState(page)).selectedId)
-    .toBe(itemId)
 
   return readSceneState(page)
 }
@@ -172,11 +207,11 @@ export async function rotateSelectionRight(page: Page) {
   return readSceneState(page)
 }
 
-export async function removeSelectedFurniture(page: Page) {
-  await page.getByRole('button', { name: 'Remove Selected' }).click()
+export async function deleteSelectedFurniture(page: Page) {
+  await page.getByRole('button', { name: 'Delete' }).click()
   await page
-    .getByRole('dialog', { name: /remove furniture\?/i })
-    .getByRole('button', { name: 'Remove' })
+    .getByRole('alertdialog', { name: /delete furniture/i })
+    .getByRole('button', { name: 'Delete' })
     .click()
   await expect(page.getByText('Selected: none')).toBeVisible()
 
@@ -212,7 +247,7 @@ export async function dragSelectedFurniture(
 
   await page.mouse.move(startX, startY)
   await page.mouse.down()
-  await page.mouse.move(startX + delta.x, startY + delta.y, { steps: 12 })
+  await page.mouse.move(startX + delta.x, startY + delta.y, { steps: 8 })
   await page.mouse.up()
 
   return readSceneState(page)

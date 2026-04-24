@@ -2,27 +2,27 @@ import { expect, test } from '@playwright/test'
 import {
   addFurniture,
   dragSelectedFurniture,
-  selectFurnitureById,
-  waitForEditorReady,
+  openEditor,
+  readSceneState,
+  waitForFirstItemX,
 } from './support/editor-harness'
 
 test('keeps dragged furniture inside room bounds near the wall', async ({
   page,
 }) => {
-  await page.goto('/')
-  await waitForEditorReady(page)
+  await openEditor(page)
 
   const addedState = await addFurniture(page, 'Leather Armchair')
   const initialItem = addedState.items[0]
 
-  if (addedState.selectedId !== initialItem.id) {
-    await selectFurnitureById(page, initialItem.id)
-  }
-
-  const draggedState = await dragSelectedFurniture(page, {
-    x: 1200,
+  await dragSelectedFurniture(page, {
+    x: 1_600,
     y: 0,
   })
+
+  await waitForFirstItemX(page, 2.425, 2)
+
+  const draggedState = await readSceneState(page)
   const draggedItem = draggedState.items[0]
 
   expect(draggedState.itemCount).toBe(1)

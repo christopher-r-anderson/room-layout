@@ -269,19 +269,19 @@ export function addFurnitureToHistory({
   }
 }
 
-export function removeSelectionFromHistory(
+export function deleteSelectionFromHistory(
   history: HistoryState<FurnitureItem[]>,
   selectedId: string | null,
 ): {
   history: HistoryState<FurnitureItem[]>
-  removed: boolean
-  removedId: string | null
+  deleted: boolean
+  deletedId: string | null
 } {
   if (!selectedId) {
     return {
       history,
-      removed: false,
-      removedId: null,
+      deleted: false,
+      deletedId: null,
     }
   }
 
@@ -290,8 +290,8 @@ export function removeSelectionFromHistory(
   if (nextFurniture.length === history.present.length) {
     return {
       history,
-      removed: false,
-      removedId: null,
+      deleted: false,
+      deletedId: null,
     }
   }
 
@@ -301,7 +301,7 @@ export function removeSelectionFromHistory(
       nextFurniture,
       areFurnitureCollectionsEqual,
     ),
-    removed: true,
-    removedId: selectedId,
+    deleted: true,
+    deletedId: selectedId,
   }
 }

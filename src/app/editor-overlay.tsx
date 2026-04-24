@@ -1,152 +1,146 @@
-import type {
-  MouseEvent as ReactMouseEvent,
-  RefObject,
-  SyntheticEvent,
-} from 'react'
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
-import { DeleteConfirmationDialog, ProjectInfoDialog } from './editor-dialogs'
-import {
-  CatalogPanel,
-  EditorStatusMessage,
-  HistoryPanel,
-  OverlayInfoButton,
-  RotationHelp,
-  SelectionPanel,
-  type HistoryAvailability,
-} from './editor-overlay-panels'
-import { OverlayControlPanel } from './editor-ui-primitives'
-import { StartupErrorOverlay, StartupLoadingOverlay } from './startup-overlays'
+import { DeleteConfirmationDialog } from './components/selection/delete-confirmation-dialog'
+import type { HistoryAvailability } from './components/history/history.types'
+import { StatusMessage } from './components/status-message'
+import { InitializationError } from './components/initialization/initialization-error'
+import { CatalogDrawer } from './components/catalog/catalog-drawer'
+import { ProjectInfoDialog } from './components/project-info/project-info-dialog'
+import { InitializationProgress } from './components/initialization/initialization-progress'
+import { ProjectInfoButton } from './components/project-info/project-info-button'
+import { CatalogAddButton } from './components/catalog/catalog-add-button'
+import { CurrentSelectionStatus } from './components/selection/current-selection-status'
+import { ButtonGroup } from '@/components/ui/button-group'
+import { HistoryTools } from './components/history/history-tools'
+import { SelectionTools } from './components/selection/selection-tools'
 
-interface EditorOverlayProps {
+export interface EditorStartupProps {
   assetError: boolean
-  catalogIdToAdd: string
-  confirmDeleteDialogRef: RefObject<HTMLDialogElement | null>
-  editorInteractionsEnabled: boolean
-  editorMessage: string | null
-  handleDeleteDialogCancel: (event: SyntheticEvent<HTMLDialogElement>) => void
-  handleDeleteDialogClick: (event: ReactMouseEvent<HTMLDialogElement>) => void
-  handleInfoDialogCancel: (event: SyntheticEvent<HTMLDialogElement>) => void
-  handleInfoDialogClick: (event: ReactMouseEvent<HTMLDialogElement>) => void
-  historyAvailability: HistoryAvailability
-  infoButtonRef: RefObject<HTMLButtonElement | null>
-  infoDialogRef: RefObject<HTMLDialogElement | null>
-  isPickerOpen: boolean
-  onAddFurniture: () => void
-  onCatalogIdToAddChange: (catalogId: string) => void
-  onCloseDeleteDialog: () => void
-  onCloseInfoDialog: () => void
-  onClosePicker: () => void
-  onConfirmRemoveSelection: () => void
-  onOpenDeleteDialog: () => void
-  onOpenPicker: () => void
-  onOpenInfoDialog: () => void
-  onRedo: () => void
-  onRetryAssetLoading: () => void
-  onRotateSelection: (direction: -1 | 1) => void
-  onUndo: () => void
-  pendingDeleteFurniture: FurnitureItem | null
-  pickerDialogRef: RefObject<HTMLDialogElement | null>
-  removeButtonRef: RefObject<HTMLButtonElement | null>
-  selectedFurniture: FurnitureItem | null
   startupLoadingActive: boolean
   startupOverlayActive: boolean
+  onRetryAssetLoading: () => void
+}
+
+export interface EditorHistoryProps {
+  historyAvailability: HistoryAvailability
+  onUndo: () => void
+  onRedo: () => void
+}
+
+export interface EditorSelectionProps {
+  selectedFurniture: FurnitureItem | null
+  onOpenDeleteDialog: () => void
+  onRotateSelection: (direction: -1 | 1) => void
+}
+
+export interface EditorCatalogProps {
+  catalogIdToAdd: string
+  isCatalogDrawerOpen: boolean
+  onAddFurniture: () => boolean
+  onCatalogIdToAddChange: (catalogId: string) => void
+  onCatalogDrawerOpenChange: (open: boolean) => void
+}
+
+export interface EditorDialogsProps {
+  isDeleteDialogOpen: boolean
+  pendingDeleteFurniture: FurnitureItem | null
+  onCloseDeleteDialog: () => void
+  onConfirmDeleteSelection: () => void
+  isInfoDialogOpen: boolean
+  onInfoDialogOpenChange: (open: boolean) => void
+}
+
+interface EditorOverlayProps {
+  editorInteractionsEnabled: boolean
+  statusMessage: string | null
+  startup: EditorStartupProps
+  history: EditorHistoryProps
+  selection: EditorSelectionProps
+  catalog: EditorCatalogProps
+  dialogs: EditorDialogsProps
 }
 
 export function EditorOverlay({
-  assetError,
-  catalogIdToAdd,
-  confirmDeleteDialogRef,
-  isPickerOpen,
   editorInteractionsEnabled,
-  editorMessage,
-  handleDeleteDialogCancel,
-  handleDeleteDialogClick,
-  handleInfoDialogCancel,
-  handleInfoDialogClick,
-  historyAvailability,
-  infoButtonRef,
-  infoDialogRef,
-  onAddFurniture,
-  onCatalogIdToAddChange,
-  onCloseDeleteDialog,
-  onCloseInfoDialog,
-  onClosePicker,
-  onConfirmRemoveSelection,
-  onOpenDeleteDialog,
-  onOpenPicker,
-  onOpenInfoDialog,
-  onRedo,
-  onRetryAssetLoading,
-  onRotateSelection,
-  onUndo,
-  pendingDeleteFurniture,
-  pickerDialogRef,
-  removeButtonRef,
-  selectedFurniture,
-  startupLoadingActive,
-  startupOverlayActive,
+  statusMessage,
+  startup,
+  history,
+  selection,
+  catalog,
+  dialogs,
 }: EditorOverlayProps) {
   return (
-    <div className="ui-overlay">
+    <>
       <div
-        className="ui-shell"
-        inert={startupOverlayActive}
-        aria-hidden={startupOverlayActive}
+        className="pointer-events-none absolute inset-2 gap-2 grid grid-cols-2 grid-rows-[min-content_min-content_1fr] sm:grid-rows-[min-content_1fr]"
+        inert={startup.startupOverlayActive}
+        aria-hidden={startup.startupOverlayActive}
       >
-        <OverlayControlPanel ariaLabel="Furniture controls">
-          <HistoryPanel
-            canRedo={historyAvailability.canRedo}
-            canUndo={historyAvailability.canUndo}
-            editorInteractionsEnabled={editorInteractionsEnabled}
-            onRedo={onRedo}
-            onUndo={onUndo}
-          />
-          <SelectionPanel
-            editorInteractionsEnabled={editorInteractionsEnabled}
-            onOpenDeleteDialog={onOpenDeleteDialog}
-            onRotateSelection={onRotateSelection}
-            removeButtonRef={removeButtonRef}
-            selectedFurniture={selectedFurniture}
-          />
-          <EditorStatusMessage message={editorMessage} />
-        </OverlayControlPanel>
-        <CatalogPanel
-          catalogIdToAdd={catalogIdToAdd}
-          editorInteractionsEnabled={editorInteractionsEnabled}
-          isOpen={isPickerOpen}
-          onAddFurniture={onAddFurniture}
-          onCatalogIdToAddChange={onCatalogIdToAddChange}
-          onClose={onClosePicker}
-          onOpen={onOpenPicker}
-          pickerDialogRef={pickerDialogRef}
-        />
-        <OverlayInfoButton
-          infoButtonRef={infoButtonRef}
-          onOpenInfoDialog={onOpenInfoDialog}
-        />
-        {isPickerOpen ? null : <RotationHelp />}
+        <div className="col-span-2 sm:col-span-1">
+          <ButtonGroup aria-label="Toolbar" className="pointer-events-auto">
+            <HistoryTools
+              canRedo={history.historyAvailability.canRedo}
+              canUndo={history.historyAvailability.canUndo}
+              editorInteractionsEnabled={editorInteractionsEnabled}
+              onRedo={history.onRedo}
+              onUndo={history.onUndo}
+            />
+            <SelectionTools
+              editorInteractionsEnabled={editorInteractionsEnabled}
+              onOpenDeleteDialog={selection.onOpenDeleteDialog}
+              onRotateSelection={selection.onRotateSelection}
+              selectedFurniture={selection.selectedFurniture}
+            />
+          </ButtonGroup>
+          <StatusMessage message={statusMessage} />
+        </div>
 
-        <DeleteConfirmationDialog
-          dialogRef={confirmDeleteDialogRef}
-          pendingDeleteFurniture={pendingDeleteFurniture}
-          onCancel={handleDeleteDialogCancel}
-          onBackdropClick={handleDeleteDialogClick}
-          onClose={onCloseDeleteDialog}
-          onConfirm={onConfirmRemoveSelection}
-        />
+        <div className="col-span-2 sm:col-span-1 justify-self-end flex gap-4">
+          <h1 className="text-lg font-semibold">Room Layout</h1>
+          <ProjectInfoDialog
+            open={dialogs.isInfoDialogOpen}
+            onOpenChange={dialogs.onInfoDialogOpenChange}
+            triggerButton={
+              <ProjectInfoButton className="pointer-events-auto" />
+            }
+          />
+        </div>
 
-        <ProjectInfoDialog
-          dialogRef={infoDialogRef}
-          onCancel={handleInfoDialogCancel}
-          onBackdropClick={handleInfoDialogClick}
-          onClose={onCloseInfoDialog}
-        />
+        <div className="self-end">
+          <CurrentSelectionStatus
+            selectedFurniture={selection.selectedFurniture}
+            className="pointer-events-auto"
+          />
+        </div>
+
+        <div className="justify-self-end self-end">
+          <CatalogDrawer
+            open={catalog.isCatalogDrawerOpen}
+            onOpenChange={catalog.onCatalogDrawerOpenChange}
+            triggerButton={<CatalogAddButton className="pointer-events-auto" />}
+            catalogIdToAdd={catalog.catalogIdToAdd}
+            editorInteractionsEnabled={editorInteractionsEnabled}
+            onAddFurniture={catalog.onAddFurniture}
+            onCatalogIdToAddChange={catalog.onCatalogIdToAddChange}
+          />
+        </div>
       </div>
 
-      <StartupLoadingOverlay visible={startupLoadingActive} />
-      {assetError ? (
-        <StartupErrorOverlay onRetry={onRetryAssetLoading} />
+      {/*
+        Currently need to manage the open state of the DeleteConfirmationDialog because close on action is currently broken with BaseUI
+        https://github.com/shadcn-ui/ui/issues/9340
+        https://github.com/shadcn-ui/ui/pull/9347
+      */}
+      <DeleteConfirmationDialog
+        open={dialogs.isDeleteDialogOpen}
+        pendingDeleteFurniture={dialogs.pendingDeleteFurniture}
+        onClose={dialogs.onCloseDeleteDialog}
+        onConfirm={dialogs.onConfirmDeleteSelection}
+      />
+
+      <InitializationProgress visible={startup.startupLoadingActive} />
+      {startup.assetError ? (
+        <InitializationError onRetry={startup.onRetryAssetLoading} />
       ) : null}
-    </div>
+    </>
   )
 }

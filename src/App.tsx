@@ -1,12 +1,34 @@
 import { Canvas } from '@react-three/fiber'
-import './App.css'
 import { Scene } from './scene/scene'
-import { Component, Suspense, type ReactNode, useEffect, useRef } from 'react'
+import {
+  Component,
+  Suspense,
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+} from 'react'
 import type { SceneRef } from './scene/scene.types'
+import type {
+  EditorCatalogProps,
+  EditorDialogsProps,
+  EditorHistoryProps,
+  EditorSelectionProps,
+  EditorStartupProps,
+} from './app/editor-overlay'
 import { EditorOverlay } from './app/editor-overlay'
+import { runEditorShellReset } from './app/editor-shell-reset'
+import {
+  runStartupAssetErrorTransition,
+  runStartupRetryTransition,
+} from './app/startup-transition-sequencing'
+import { useEditorDialogState } from './app/use-editor-dialog-state'
 import { useEditorKeyboardShortcuts } from './app/use-editor-keyboard-shortcuts'
 import { useEditorOverlayState } from './app/use-editor-overlay-state'
+import { useEditorSceneCommands } from './app/use-editor-scene-commands'
 import { useSceneStartupState } from './app/use-scene-startup-state'
+import { TooltipProvider } from './components/ui/tooltip'
 
 interface BrowserSceneState {
   assetsReady: boolean
@@ -65,54 +87,6 @@ class SceneAssetErrorBoundary extends Component<
 
 function App() {
   const sceneRef = useRef<SceneRef | null>(null)
-  const editorInteractionsEnabledRef = useRef(false)
-  const startupOverlayActiveRef = useRef(false)
-  const pickerDialogRef = useRef<HTMLDialogElement | null>(null)
-  const infoDialogRef = useRef<HTMLDialogElement | null>(null)
-  const confirmDeleteDialogRef = useRef<HTMLDialogElement | null>(null)
-  const infoButtonRef = useRef<HTMLButtonElement | null>(null)
-  const removeButtonRef = useRef<HTMLButtonElement | null>(null)
-  const editorOverlayState = useEditorOverlayState({
-    confirmDeleteDialogRef,
-    editorInteractionsEnabledRef,
-    infoButtonRef,
-    infoDialogRef,
-    pickerDialogRef,
-    removeButtonRef,
-    rotationStepRadians: ROTATION_STEP_RADIANS,
-    sceneRef,
-    startupOverlayActiveRef,
-  })
-  const {
-    addFurniture,
-    catalogIdToAdd,
-    closeDeleteDialog,
-    closeInfoDialog,
-    closePicker,
-    closeOpenDialogs,
-    confirmRemoveSelection,
-    editorMessage,
-    getIsModalOpen,
-    handleDeleteDialogCancel,
-    handleDeleteDialogClick,
-    handleHistoryChange,
-    handleInfoDialogCancel,
-    handleInfoDialogClick,
-    handleSelectionChange,
-    historyAvailability,
-    isPickerOpen,
-    openDeleteDialog,
-    openPicker,
-    openInfoDialog: openInfoDialogBase,
-    pendingDeleteFurniture,
-    redo,
-    resetEditorShellState,
-    rotateSelection,
-    selectedFurniture,
-    setCatalogIdToAdd,
-    undo,
-  } = editorOverlayState
-
   const {
     assetError,
     assetErrorRef,
@@ -124,18 +98,161 @@ function App() {
     sceneVersion,
     startupLoadingActive,
     startupOverlayActive,
-  } = useSceneStartupState({
-    closeOpenDialogs,
-    resetEditorShellState,
+  } = useSceneStartupState()
+  const editorOverlayState = useEditorOverlayState()
+  const {
+    catalogIdToAdd,
+    clearEditorMessage,
+    editorMessage,
+    handleHistoryChange,
+    handleSelectionChange,
+    historyAvailability,
+    resetOverlayState,
+    selectedFurniture,
+    setCatalogIdToAdd,
+    setEditorMessage,
+  } = editorOverlayState
+  const { addFurniture, confirmDeleteSelection, redo, rotateSelection, undo } =
+    useEditorSceneCommands({
+      catalogIdToAdd,
+      clearEditorMessage,
+      editorInteractionsEnabled,
+      rotationStepRadians: ROTATION_STEP_RADIANS,
+      sceneRef,
+      setEditorMessage,
+    })
+  const dialogState = useEditorDialogState({
+    editorInteractionsEnabled,
+    startupOverlayActive,
+    selectedFurniture,
   })
+  const {
+    closeAllDialogs,
+    closeDialog,
+    isCatalogDrawerOpen,
+    isDeleteDialogOpen,
+    isInfoDialogOpen,
+    isModalOpen,
+    openDelete,
+    pendingDeleteFurniture,
+    setCatalogOpen,
+    setInfoOpen,
+  } = dialogState
 
-  useEffect(() => {
-    editorInteractionsEnabledRef.current = editorInteractionsEnabled
-  }, [editorInteractionsEnabled])
+  const resetEditorShellState = useCallback(() => {
+    runEditorShellReset({
+      resetOverlayState,
+      sceneRef,
+    })
+  }, [resetOverlayState])
 
-  useEffect(() => {
-    startupOverlayActiveRef.current = startupOverlayActive
-  }, [startupOverlayActive])
+  const handleCatalogDrawerOpenChange = useCallback(
+    (open: boolean) => {
+      const changed = setCatalogOpen(open)
+
+      if (open && changed) {
+        clearEditorMessage()
+      }
+    },
+    [clearEditorMessage, setCatalogOpen],
+  )
+
+  const handleOpenDeleteDialog = useCallback(() => {
+    const opened = openDelete()
+
+    if (opened) {
+      clearEditorMessage()
+    }
+  }, [clearEditorMessage, openDelete])
+
+  const handleConfirmDeleteSelection = useCallback(() => {
+    closeDialog()
+    confirmDeleteSelection()
+  }, [closeDialog, confirmDeleteSelection])
+
+  const handleSceneAssetError = useCallback(
+    (error: Error) => {
+      runStartupAssetErrorTransition(error, {
+        closeAllDialogs,
+        recordAssetError: handleAssetError,
+        resetEditorShellState,
+      })
+    },
+    [closeAllDialogs, handleAssetError, resetEditorShellState],
+  )
+
+  const handleRetryAssetLoading = useCallback(() => {
+    runStartupRetryTransition({
+      closeAllDialogs,
+      resetEditorShellState,
+      retryAssetLoading,
+    })
+  }, [closeAllDialogs, resetEditorShellState, retryAssetLoading])
+
+  const startupProps = useMemo<EditorStartupProps>(
+    () => ({
+      assetError: Boolean(assetError),
+      startupLoadingActive,
+      startupOverlayActive,
+      onRetryAssetLoading: handleRetryAssetLoading,
+    }),
+    [
+      assetError,
+      startupLoadingActive,
+      startupOverlayActive,
+      handleRetryAssetLoading,
+    ],
+  )
+
+  const historyProps = useMemo<EditorHistoryProps>(
+    () => ({ historyAvailability, onUndo: undo, onRedo: redo }),
+    [historyAvailability, undo, redo],
+  )
+
+  const selectionProps = useMemo<EditorSelectionProps>(
+    () => ({
+      selectedFurniture,
+      onOpenDeleteDialog: handleOpenDeleteDialog,
+      onRotateSelection: rotateSelection,
+    }),
+    [selectedFurniture, handleOpenDeleteDialog, rotateSelection],
+  )
+
+  const catalogProps = useMemo<EditorCatalogProps>(
+    () => ({
+      catalogIdToAdd,
+      isCatalogDrawerOpen,
+      onAddFurniture: addFurniture,
+      onCatalogIdToAddChange: setCatalogIdToAdd,
+      onCatalogDrawerOpenChange: handleCatalogDrawerOpenChange,
+    }),
+    [
+      catalogIdToAdd,
+      isCatalogDrawerOpen,
+      addFurniture,
+      setCatalogIdToAdd,
+      handleCatalogDrawerOpenChange,
+    ],
+  )
+
+  const dialogsProps = useMemo<EditorDialogsProps>(
+    () => ({
+      isDeleteDialogOpen,
+      pendingDeleteFurniture,
+      onCloseDeleteDialog: closeDialog,
+      onConfirmDeleteSelection: handleConfirmDeleteSelection,
+      isInfoDialogOpen,
+      onInfoDialogOpenChange: setInfoOpen,
+    }),
+    [
+      isDeleteDialogOpen,
+      pendingDeleteFurniture,
+      closeDialog,
+      handleConfirmDeleteSelection,
+      isInfoDialogOpen,
+      setInfoOpen,
+    ],
+  )
 
   useEffect(() => {
     if (!import.meta.env.DEV) {
@@ -167,78 +284,58 @@ function App() {
     canUndo: historyAvailability.canUndo,
     canRedo: historyAvailability.canRedo,
     hasSelection: selectedFurniture !== null,
-    getIsModalOpen,
+    isModalOpen,
     onUndo: undo,
     onRedo: redo,
-    onOpenDeleteDialog: openDeleteDialog,
+    onOpenDeleteDialog: handleOpenDeleteDialog,
     onRotate: rotateSelection,
   })
 
   return (
-    <div className="app" aria-busy={startupLoadingActive}>
-      <Canvas
-        className="canvas"
-        camera={{
-          position: [3, 2.5, 3],
-          fov: 50,
-        }}
-        onPointerMissed={() => {
-          if (!editorInteractionsEnabled) {
-            return
-          }
+    <TooltipProvider>
+      <div className="relative size-full" aria-busy={startupLoadingActive}>
+        <Canvas
+          className="absolute inset-0 z-0"
+          camera={{
+            position: [3, 2.5, 3],
+            fov: 50,
+          }}
+          onPointerMissed={() => {
+            if (!editorInteractionsEnabled) {
+              return
+            }
 
-          sceneRef.current?.clearSelection()
-        }}
-        shadows
-      >
-        <color attach="background" args={['#f0f0f0']} />
-        <SceneAssetErrorBoundary key={sceneVersion} onError={handleAssetError}>
-          <Suspense fallback={null}>
-            <Scene
-              ref={sceneRef}
-              onSelectionChange={handleSelectionChange}
-              onHistoryChange={handleHistoryChange}
-              onAssetsReady={handleAssetsReady}
-            />
-          </Suspense>
-        </SceneAssetErrorBoundary>
-      </Canvas>
+            sceneRef.current?.clearSelection()
+          }}
+          shadows
+        >
+          <color attach="background" args={['#f0f0f0']} />
+          <SceneAssetErrorBoundary
+            key={sceneVersion}
+            onError={handleSceneAssetError}
+          >
+            <Suspense fallback={null}>
+              <Scene
+                ref={sceneRef}
+                onSelectionChange={handleSelectionChange}
+                onHistoryChange={handleHistoryChange}
+                onAssetsReady={handleAssetsReady}
+              />
+            </Suspense>
+          </SceneAssetErrorBoundary>
+        </Canvas>
 
-      <EditorOverlay
-        assetError={Boolean(assetError)}
-        catalogIdToAdd={catalogIdToAdd}
-        confirmDeleteDialogRef={confirmDeleteDialogRef}
-        editorInteractionsEnabled={editorInteractionsEnabled}
-        editorMessage={editorMessage}
-        handleDeleteDialogCancel={handleDeleteDialogCancel}
-        handleDeleteDialogClick={handleDeleteDialogClick}
-        handleInfoDialogCancel={handleInfoDialogCancel}
-        handleInfoDialogClick={handleInfoDialogClick}
-        historyAvailability={historyAvailability}
-        infoButtonRef={infoButtonRef}
-        infoDialogRef={infoDialogRef}
-        isPickerOpen={isPickerOpen}
-        onAddFurniture={addFurniture}
-        onCatalogIdToAddChange={setCatalogIdToAdd}
-        onCloseDeleteDialog={closeDeleteDialog}
-        onCloseInfoDialog={closeInfoDialog}
-        onClosePicker={closePicker}
-        onConfirmRemoveSelection={confirmRemoveSelection}
-        onOpenDeleteDialog={openDeleteDialog}
-        onOpenPicker={openPicker}
-        onOpenInfoDialog={openInfoDialogBase}
-        onRedo={redo}
-        onRetryAssetLoading={retryAssetLoading}
-        onRotateSelection={rotateSelection}
-        onUndo={undo}
-        pendingDeleteFurniture={pendingDeleteFurniture}
-        pickerDialogRef={pickerDialogRef}
-        removeButtonRef={removeButtonRef}
-        selectedFurniture={selectedFurniture}
-        startupLoadingActive={startupLoadingActive}
-        startupOverlayActive={startupOverlayActive}
-      />
-    </div>
+        <EditorOverlay
+          editorInteractionsEnabled={editorInteractionsEnabled}
+          statusMessage={editorMessage}
+          startup={startupProps}
+          history={historyProps}
+          selection={selectionProps}
+          catalog={catalogProps}
+          dialogs={dialogsProps}
+        />
+      </div>
+    </TooltipProvider>
   )
 }
 

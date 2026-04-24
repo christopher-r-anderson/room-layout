@@ -4,3 +4,5 @@ dist/
 
 assets-source/
 public/models/
+
+.agents

@@ -1,0 +1,37 @@
+[
+  {
+    "assetName": "Leather Couch",
+    "authorName": "YouSaveTime",
+    "authorHref": "https://sketchfab.com/YouSaveTime",
+    "sourceHref": "https://sketchfab.com/3d-models/leather-couch-c2ac7a44144e4b80ab51f21b59c827f8",
+    "localSourcePath": "assets-source/leather-couch/leather-couch-source.txt"
+  },
+  {
+    "assetName": "Leather Armchair",
+    "authorName": "YouSaveTime",
+    "authorHref": "https://sketchfab.com/YouSaveTime",
+    "sourceHref": "https://sketchfab.com/3d-models/leather-couch-c2ac7a44144e4b80ab51f21b59c827f8",
+    "localSourcePath": "assets-source/leather-couch/leather-couch-source.txt"
+  },
+  {
+    "assetName": "End Table",
+    "authorName": "cirax we",
+    "authorHref": "https://sketchfab.com/cirax-we",
+    "sourceHref": "https://sketchfab.com/3d-models/end-table-d0032d49ca214200929d4151d733f828",
+    "localSourcePath": "assets-source/cirax-we-end-table/end-table.txt"
+  },
+  {
+    "assetName": "Modern Coffee Table",
+    "authorName": "ZeeRKad",
+    "authorHref": "https://sketchfab.com/zeerkad",
+    "sourceHref": "https://sketchfab.com/3d-models/coffee-table-91872709bf054d8994be323599e23107",
+    "localSourcePath": "assets-source/zeerkad-coffee-table/coffee-table.txt"
+  },
+  {
+    "assetName": "Classic Coffee Table",
+    "authorName": "Machine Meza",
+    "authorHref": "https://sketchfab.com/maurib98",
+    "sourceHref": "https://sketchfab.com/3d-models/coffee-table-living-room-aa5b9a41c90245e8992ba93de6dde8c8",
+    "localSourcePath": "assets-source/machine-meza-coffee-table-living-room/coffee-table-living-room.txt"
+  }
+]

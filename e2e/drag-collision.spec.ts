@@ -2,9 +2,9 @@ import { expect, test } from '@playwright/test'
 import {
   addFurniture,
   dragSelectedFurniture,
+  openEditor,
   readSceneState,
   selectFurnitureById,
-  waitForEditorReady,
   type BrowserSceneState,
 } from './support/editor-harness'
 
@@ -18,13 +18,10 @@ function getItemById(state: BrowserSceneState, itemId: string) {
   return item
 }
 
-test.setTimeout(60_000)
-
 test('blocks pointer dragging one furniture item through another', async ({
   page,
 }) => {
-  await page.goto('/')
-  await waitForEditorReady(page)
+  await openEditor(page)
 
   const addedCouchState = await addFurniture(page, 'Leather Couch')
   const couchId = addedCouchState.items[0]?.id
@@ -34,7 +31,7 @@ test('blocks pointer dragging one furniture item through another', async ({
   }
 
   const movedRightState = await dragSelectedFurniture(page, {
-    x: 850,
+    x: 320,
     y: 0,
   })
   const movedRightCouch = getItemById(movedRightState, couchId)
@@ -56,9 +53,9 @@ test('blocks pointer dragging one furniture item through another', async ({
 
   await selectFurnitureById(page, armchair.id)
 
-  const selectedArmchairState = await readSceneState(page)
-  const selectedCouch = getItemById(selectedArmchairState, couchId)
-  const selectedArmchair = getItemById(selectedArmchairState, armchair.id)
+  const selectedState = await readSceneState(page)
+  const selectedCouch = getItemById(selectedState, couchId)
+  const selectedArmchair = getItemById(selectedState, armchair.id)
 
   if (!selectedCouch.pointerTarget) {
     throw new Error('expected the couch to have a pointer target')
@@ -68,16 +65,15 @@ test('blocks pointer dragging one furniture item through another', async ({
     throw new Error('expected the selected armchair to have a pointer target')
   }
 
-  const towardCouch = {
-    x: selectedCouch.pointerTarget.x - selectedArmchair.pointerTarget.x,
-    y: selectedCouch.pointerTarget.y - selectedArmchair.pointerTarget.y,
+  const firstTowardCouch = {
+    x: (selectedCouch.pointerTarget.x - selectedArmchair.pointerTarget.x) * 0.6,
+    y: (selectedCouch.pointerTarget.y - selectedArmchair.pointerTarget.y) * 0.6,
   }
 
-  const beforeApproachDrag = await readSceneState(page)
-  const approachBaselineCouch = getItemById(beforeApproachDrag, couchId)
-  const approachBaselineArmchair = getItemById(beforeApproachDrag, armchair.id)
+  const approachBaselineCouch = getItemById(selectedState, couchId)
+  const approachBaselineArmchair = getItemById(selectedState, armchair.id)
 
-  const approachState = await dragSelectedFurniture(page, towardCouch)
+  const approachState = await dragSelectedFurniture(page, firstTowardCouch)
   const approachCouch = getItemById(approachState, couchId)
   const approachArmchair = getItemById(approachState, armchair.id)
 
@@ -97,13 +93,9 @@ test('blocks pointer dragging one furniture item through another', async ({
   }
 
   const secondTowardCouch = {
-    x: approachCouch.pointerTarget.x - approachArmchair.pointerTarget.x,
-    y: approachCouch.pointerTarget.y - approachArmchair.pointerTarget.y,
+    x: (approachCouch.pointerTarget.x - approachArmchair.pointerTarget.x) * 0.9,
+    y: (approachCouch.pointerTarget.y - approachArmchair.pointerTarget.y) * 0.9,
   }
-
-  const beforeBlockedDrag = await readSceneState(page)
-  const blockedBaselineCouch = getItemById(beforeBlockedDrag, couchId)
-  const blockedBaselineArmchair = getItemById(beforeBlockedDrag, armchair.id)
 
   const collisionState = await dragSelectedFurniture(page, secondTowardCouch)
   const collisionCouch = getItemById(collisionState, couchId)
@@ -111,6 +103,6 @@ test('blocks pointer dragging one furniture item through another', async ({
 
   expect(collisionState.itemCount).toBe(2)
   expect(collisionState.selectedId).toBe(armchair.id)
-  expect(collisionCouch.position).toEqual(blockedBaselineCouch.position)
-  expect(collisionArmchair.position).toEqual(blockedBaselineArmchair.position)
+  expect(collisionCouch.position).toEqual(approachCouch.position)
+  expect(collisionArmchair.position).toEqual(approachArmchair.position)
 })

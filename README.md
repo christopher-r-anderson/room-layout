@@ -117,14 +117,14 @@ Current roadmap and progress checklist are tracked in [PLAN.md](./PLAN.md).
 
 ## 🛋️ Assets
 
-- **Model**: Leather Couch
-- **Source**: <https://sketchfab.com/3d-models/leather-couch-c2ac7a44144e4b80ab51f21b59c827f8>
-- **Author**: <https://sketchfab.com/YouSaveTime>
-- **License**: CC Attribution
-- **Modifications and Info**: [./assets-source/leather-couch/leather-couch-source.txt](./assets-source/leather-couch/leather-couch-source.txt)
+- **Leather Couch / Leather Armchair**: Source <https://sketchfab.com/3d-models/leather-couch-c2ac7a44144e4b80ab51f21b59c827f8>, author <https://sketchfab.com/YouSaveTime>, license CC Attribution 4.0, local details in [./assets-source/leather-couch/leather-couch-source.txt](./assets-source/leather-couch/leather-couch-source.txt)
+- **End Table**: Source <https://sketchfab.com/3d-models/end-table-d0032d49ca214200929d4151d733f828>, author <https://sketchfab.com/cirax-we>, license CC Attribution 4.0, local details in [./assets-source/cirax-we-end-table/end-table.txt](./assets-source/cirax-we-end-table/end-table.txt)
+- **Modern Coffee Table**: Source <https://sketchfab.com/3d-models/coffee-table-91872709bf054d8994be323599e23107>, author <https://sketchfab.com/zeerkad>, license CC Attribution 4.0, local details in [./assets-source/zeerkad-coffee-table/coffee-table.txt](./assets-source/zeerkad-coffee-table/coffee-table.txt)
+- **Classic Coffee Table**: Source <https://sketchfab.com/3d-models/coffee-table-living-room-aa5b9a41c90245e8992ba93de6dde8c8>, author <https://sketchfab.com/maurib98>, license CC Attribution 4.0, local details in [./assets-source/machine-meza-coffee-table-living-room/coffee-table-living-room.txt](./assets-source/machine-meza-coffee-table-living-room/coffee-table-living-room.txt)
 
 ## 📄 License
 
 This project source code is licensed under the MIT License. See [LICENSE](./LICENSE).
 
-Third-party assets may use different licenses. In this repository, the leather couch model listed above remains under its original CC Attribution license.
+Third-party furniture assets in this repository remain under their
+original CC Attribution 4.0 licenses.

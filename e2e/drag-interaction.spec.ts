@@ -2,15 +2,14 @@ import { expect, test } from '@playwright/test'
 import {
   addFurniture,
   dragSelectedFurniture,
-  readSceneState,
-  waitForEditorReady,
+  openEditor,
+  waitForFirstItemPosition,
 } from './support/editor-harness'
 
 test('drags selected furniture through the canvas and preserves history undo', async ({
   page,
 }) => {
-  await page.goto('/')
-  await waitForEditorReady(page)
+  await openEditor(page)
 
   const addedState = await addFurniture(page, 'Leather Couch')
   const initialItem = addedState.items[0]
@@ -27,22 +26,18 @@ test('drags selected furniture through the canvas and preserves history undo', a
   expect(draggedItem.position).not.toEqual(initialItem.position)
 
   await page.getByRole('button', { name: 'Undo' }).click()
-  await expect
-    .poll(async () => (await readSceneState(page)).items[0].position)
-    .toEqual(initialItem.position)
-
-  const afterUndo = await readSceneState(page)
-  expect(afterUndo.itemCount).toBe(1)
-  expect(afterUndo.selectedName).toBe('Leather Couch')
-  expect(afterUndo.items[0].position).toEqual(initialItem.position)
+  const afterUndo = await waitForFirstItemPosition(page, initialItem.position)
+  expect(afterUndo).toMatchObject({
+    itemCount: 1,
+    selectedName: 'Leather Couch',
+  })
+  expect(afterUndo.items[0]?.position).toEqual(initialItem.position)
 
   await page.getByRole('button', { name: 'Redo' }).click()
-  await expect
-    .poll(async () => (await readSceneState(page)).items[0].position)
-    .toEqual(draggedItem.position)
-
-  const afterRedo = await readSceneState(page)
-  expect(afterRedo.itemCount).toBe(1)
-  expect(afterRedo.selectedName).toBe('Leather Couch')
-  expect(afterRedo.items[0].position).toEqual(draggedItem.position)
+  const afterRedo = await waitForFirstItemPosition(page, draggedItem.position)
+  expect(afterRedo).toMatchObject({
+    itemCount: 1,
+    selectedName: 'Leather Couch',
+  })
+  expect(afterRedo.items[0]?.position).toEqual(draggedItem.position)
 })
