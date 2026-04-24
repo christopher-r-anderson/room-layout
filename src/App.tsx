@@ -10,6 +10,7 @@ import {
 } from 'react'
 import type { SceneRef } from './scene/scene.types'
 import { EditorOverlay } from './app/editor-overlay'
+import { runEditorShellReset } from './app/editor-shell-reset'
 import {
   runStartupAssetErrorTransition,
   runStartupRetryTransition,
@@ -17,6 +18,7 @@ import {
 import { useEditorDialogState } from './app/use-editor-dialog-state'
 import { useEditorKeyboardShortcuts } from './app/use-editor-keyboard-shortcuts'
 import { useEditorOverlayState } from './app/use-editor-overlay-state'
+import { useEditorSceneCommands } from './app/use-editor-scene-commands'
 import { useSceneStartupState } from './app/use-scene-startup-state'
 import { TooltipProvider } from './components/ui/tooltip'
 
@@ -89,27 +91,28 @@ function App() {
     startupLoadingActive,
     startupOverlayActive,
   } = useSceneStartupState()
-  const editorOverlayState = useEditorOverlayState({
-    editorInteractionsEnabled,
-    rotationStepRadians: ROTATION_STEP_RADIANS,
-    sceneRef,
-  })
+  const editorOverlayState = useEditorOverlayState()
   const {
-    addFurniture,
     catalogIdToAdd,
     clearEditorMessage,
-    confirmDeleteSelection,
     editorMessage,
     handleHistoryChange,
     handleSelectionChange,
     historyAvailability,
-    redo,
-    resetEditorShellState,
-    rotateSelection,
+    resetOverlayState,
     selectedFurniture,
     setCatalogIdToAdd,
-    undo,
+    setEditorMessage,
   } = editorOverlayState
+  const { addFurniture, confirmDeleteSelection, redo, rotateSelection, undo } =
+    useEditorSceneCommands({
+      catalogIdToAdd,
+      clearEditorMessage,
+      editorInteractionsEnabled,
+      rotationStepRadians: ROTATION_STEP_RADIANS,
+      sceneRef,
+      setEditorMessage,
+    })
   const dialogState = useEditorDialogState({
     editorInteractionsEnabled,
     startupOverlayActive,
@@ -127,6 +130,13 @@ function App() {
     setCatalogOpen,
     setInfoOpen,
   } = dialogState
+
+  const resetEditorShellState = useCallback(() => {
+    runEditorShellReset({
+      resetOverlayState,
+      sceneRef,
+    })
+  }, [resetOverlayState])
 
   const handleCatalogDrawerOpenChange = useCallback(
     (open: boolean) => {
