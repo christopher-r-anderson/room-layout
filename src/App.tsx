@@ -1,5 +1,4 @@
 import { Canvas } from '@react-three/fiber'
-import './App.css'
 import { Scene } from './scene/scene'
 import { Component, Suspense, type ReactNode, useEffect, useRef } from 'react'
 import type { SceneRef } from './scene/scene.types'
@@ -7,6 +6,7 @@ import { EditorOverlay } from './app/editor-overlay'
 import { useEditorKeyboardShortcuts } from './app/use-editor-keyboard-shortcuts'
 import { useEditorOverlayState } from './app/use-editor-overlay-state'
 import { useSceneStartupState } from './app/use-scene-startup-state'
+import { TooltipProvider } from './components/ui/tooltip'
 
 interface BrowserSceneState {
   assetsReady: boolean
@@ -67,18 +67,8 @@ function App() {
   const sceneRef = useRef<SceneRef | null>(null)
   const editorInteractionsEnabledRef = useRef(false)
   const startupOverlayActiveRef = useRef(false)
-  const pickerDialogRef = useRef<HTMLDialogElement | null>(null)
-  const infoDialogRef = useRef<HTMLDialogElement | null>(null)
-  const confirmDeleteDialogRef = useRef<HTMLDialogElement | null>(null)
-  const infoButtonRef = useRef<HTMLButtonElement | null>(null)
-  const removeButtonRef = useRef<HTMLButtonElement | null>(null)
   const editorOverlayState = useEditorOverlayState({
-    confirmDeleteDialogRef,
     editorInteractionsEnabledRef,
-    infoButtonRef,
-    infoDialogRef,
-    pickerDialogRef,
-    removeButtonRef,
     rotationStepRadians: ROTATION_STEP_RADIANS,
     sceneRef,
     startupOverlayActiveRef,
@@ -86,29 +76,25 @@ function App() {
   const {
     addFurniture,
     catalogIdToAdd,
+    isCatalogDrawerOpen,
     closeDeleteDialog,
-    closeInfoDialog,
-    closePicker,
     closeOpenDialogs,
-    confirmRemoveSelection,
+    confirmDeleteSelection,
     editorMessage,
     getIsModalOpen,
-    handleDeleteDialogCancel,
-    handleDeleteDialogClick,
     handleHistoryChange,
-    handleInfoDialogCancel,
-    handleInfoDialogClick,
     handleSelectionChange,
     historyAvailability,
-    isPickerOpen,
+    isDeleteDialogOpen,
+    isInfoDialogOpen,
     openDeleteDialog,
-    openPicker,
-    openInfoDialog: openInfoDialogBase,
     pendingDeleteFurniture,
     redo,
     resetEditorShellState,
     rotateSelection,
     selectedFurniture,
+    setCatalogDrawerOpen,
+    setInfoDialogOpen,
     setCatalogIdToAdd,
     undo,
   } = editorOverlayState
@@ -175,70 +161,66 @@ function App() {
   })
 
   return (
-    <div className="app" aria-busy={startupLoadingActive}>
-      <Canvas
-        className="canvas"
-        camera={{
-          position: [3, 2.5, 3],
-          fov: 50,
-        }}
-        onPointerMissed={() => {
-          if (!editorInteractionsEnabled) {
-            return
-          }
+    <TooltipProvider>
+      <div className="relative size-full" aria-busy={startupLoadingActive}>
+        <Canvas
+          className="absolute inset-0 z-0"
+          camera={{
+            position: [3, 2.5, 3],
+            fov: 50,
+          }}
+          onPointerMissed={() => {
+            if (!editorInteractionsEnabled) {
+              return
+            }
 
-          sceneRef.current?.clearSelection()
-        }}
-        shadows
-      >
-        <color attach="background" args={['#f0f0f0']} />
-        <SceneAssetErrorBoundary key={sceneVersion} onError={handleAssetError}>
-          <Suspense fallback={null}>
-            <Scene
-              ref={sceneRef}
-              onSelectionChange={handleSelectionChange}
-              onHistoryChange={handleHistoryChange}
-              onAssetsReady={handleAssetsReady}
-            />
-          </Suspense>
-        </SceneAssetErrorBoundary>
-      </Canvas>
+            sceneRef.current?.clearSelection()
+          }}
+          shadows
+        >
+          <color attach="background" args={['#f0f0f0']} />
+          <SceneAssetErrorBoundary
+            key={sceneVersion}
+            onError={handleAssetError}
+          >
+            <Suspense fallback={null}>
+              <Scene
+                ref={sceneRef}
+                onSelectionChange={handleSelectionChange}
+                onHistoryChange={handleHistoryChange}
+                onAssetsReady={handleAssetsReady}
+              />
+            </Suspense>
+          </SceneAssetErrorBoundary>
+        </Canvas>
 
-      <EditorOverlay
-        assetError={Boolean(assetError)}
-        catalogIdToAdd={catalogIdToAdd}
-        confirmDeleteDialogRef={confirmDeleteDialogRef}
-        editorInteractionsEnabled={editorInteractionsEnabled}
-        editorMessage={editorMessage}
-        handleDeleteDialogCancel={handleDeleteDialogCancel}
-        handleDeleteDialogClick={handleDeleteDialogClick}
-        handleInfoDialogCancel={handleInfoDialogCancel}
-        handleInfoDialogClick={handleInfoDialogClick}
-        historyAvailability={historyAvailability}
-        infoButtonRef={infoButtonRef}
-        infoDialogRef={infoDialogRef}
-        isPickerOpen={isPickerOpen}
-        onAddFurniture={addFurniture}
-        onCatalogIdToAddChange={setCatalogIdToAdd}
-        onCloseDeleteDialog={closeDeleteDialog}
-        onCloseInfoDialog={closeInfoDialog}
-        onClosePicker={closePicker}
-        onConfirmRemoveSelection={confirmRemoveSelection}
-        onOpenDeleteDialog={openDeleteDialog}
-        onOpenPicker={openPicker}
-        onOpenInfoDialog={openInfoDialogBase}
-        onRedo={redo}
-        onRetryAssetLoading={retryAssetLoading}
-        onRotateSelection={rotateSelection}
-        onUndo={undo}
-        pendingDeleteFurniture={pendingDeleteFurniture}
-        pickerDialogRef={pickerDialogRef}
-        removeButtonRef={removeButtonRef}
-        selectedFurniture={selectedFurniture}
-        startupLoadingActive={startupLoadingActive}
-        startupOverlayActive={startupOverlayActive}
-      />
-    </div>
+        <EditorOverlay
+          assetError={Boolean(assetError)}
+          catalogIdToAdd={catalogIdToAdd}
+          editorInteractionsEnabled={editorInteractionsEnabled}
+          editorMessage={editorMessage}
+          historyAvailability={historyAvailability}
+          isCatalogDrawerOpen={isCatalogDrawerOpen}
+          isDeleteDialogOpen={isDeleteDialogOpen}
+          isInfoDialogOpen={isInfoDialogOpen}
+          onAddFurniture={addFurniture}
+          onCatalogIdToAddChange={setCatalogIdToAdd}
+          onCatalogDrawerOpenChange={setCatalogDrawerOpen}
+          onCloseDeleteDialog={closeDeleteDialog}
+          onConfirmDeleteSelection={confirmDeleteSelection}
+          onInfoDialogOpenChange={setInfoDialogOpen}
+          onOpenDeleteDialog={openDeleteDialog}
+          onRedo={redo}
+          onRetryAssetLoading={retryAssetLoading}
+          onRotateSelection={rotateSelection}
+          onUndo={undo}
+          pendingDeleteFurniture={pendingDeleteFurniture}
+          selectedFurniture={selectedFurniture}
+          startupLoadingActive={startupLoadingActive}
+          startupOverlayActive={startupOverlayActive}
+        />
+      </div>
+    </TooltipProvider>
   )
 }
 

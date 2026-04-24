@@ -8,7 +8,7 @@ export interface SceneRef {
   ) =>
     | { ok: true; id: string }
     | { ok: false; reason: 'unknown-catalog' | 'no-space' }
-  removeSelection: () => boolean
+  deleteSelection: () => boolean
   undo: () => boolean
   redo: () => boolean
   getSnapshot: () => SceneSnapshot

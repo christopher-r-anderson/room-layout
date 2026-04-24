@@ -1,7 +1,8 @@
 import { expect, test } from '@playwright/test'
 import {
+  EDITOR_READY_TIMEOUT_MS,
+  expectSceneFlags,
   failFurnitureAssetRequestsUntilRetry,
-  readSceneState,
   waitForEditorReady,
 } from './support/editor-harness'
 
@@ -12,25 +13,27 @@ test('shows a retry path when essential furniture assets fail to load', async ({
 
   await page.goto('/')
 
-  const errorDialog = page.getByRole('alertdialog', {
-    name: /the room editor could not start/i,
-  })
-  await expect(errorDialog).toBeVisible({ timeout: 30_000 })
-  await expect(
-    page.getByRole('button', { name: 'Add Furniture', includeHidden: true }),
-  ).toBeDisabled()
+  const errorHeading = page.getByText('The room editor could not start')
+  await expect(errorHeading).toBeVisible({ timeout: EDITOR_READY_TIMEOUT_MS })
+  const inertShell = page.locator('[inert][aria-hidden="true"]')
+  await expect(inertShell).toBeVisible()
 
-  const failedState = await readSceneState(page)
-  expect(failedState.assetsReady).toBe(false)
-  expect(failedState.assetError).toBe(true)
+  await expectSceneFlags(page, {
+    assetsReady: false,
+    assetError: true,
+  })
+
+  const retryButton = page.getByRole('button', { name: 'Retry Loading' })
+  await expect(retryButton).toBeVisible()
 
   assetFailure.allowRequests()
-  await errorDialog.getByRole('button', { name: 'Retry Loading' }).click()
+  await retryButton.click()
 
   await waitForEditorReady(page)
 
-  const recoveredState = await readSceneState(page)
-  expect(recoveredState.assetsReady).toBe(true)
-  expect(recoveredState.assetError).toBe(false)
+  const recoveredState = await expectSceneFlags(page, {
+    assetsReady: true,
+    assetError: false,
+  })
   expect(recoveredState.itemCount).toBe(0)
 })

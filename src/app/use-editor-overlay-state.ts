@@ -9,47 +9,34 @@ interface HistoryAvailability {
 }
 
 interface UseEditorOverlayStateOptions {
-  confirmDeleteDialogRef: RefObject<HTMLDialogElement | null>
   editorInteractionsEnabledRef: RefObject<boolean>
-  infoButtonRef: RefObject<HTMLButtonElement | null>
-  infoDialogRef: RefObject<HTMLDialogElement | null>
-  pickerDialogRef: RefObject<HTMLDialogElement | null>
-  removeButtonRef: RefObject<HTMLButtonElement | null>
   rotationStepRadians: number
   sceneRef: RefObject<SceneRef | null>
   startupOverlayActiveRef: RefObject<boolean>
 }
 
 interface EditorOverlayState {
-  addFurniture: () => void
+  addFurniture: () => boolean
   catalogIdToAdd: string
   closeDeleteDialog: () => void
-  closeInfoDialog: () => void
-  closePicker: () => void
   closeOpenDialogs: () => void
-  confirmRemoveSelection: () => void
+  confirmDeleteSelection: () => void
   editorMessage: string | null
   getIsModalOpen: () => boolean
-  handleDeleteDialogCancel: (
-    event: React.SyntheticEvent<HTMLDialogElement>,
-  ) => void
-  handleDeleteDialogClick: (event: React.MouseEvent<HTMLDialogElement>) => void
   handleHistoryChange: (availability: HistoryAvailability) => void
-  handleInfoDialogCancel: (
-    event: React.SyntheticEvent<HTMLDialogElement>,
-  ) => void
-  handleInfoDialogClick: (event: React.MouseEvent<HTMLDialogElement>) => void
   handleSelectionChange: (item: FurnitureItem | null) => void
+  isCatalogDrawerOpen: boolean
   historyAvailability: HistoryAvailability
-  isPickerOpen: boolean
+  isDeleteDialogOpen: boolean
+  isInfoDialogOpen: boolean
   openDeleteDialog: () => void
-  openPicker: () => void
-  openInfoDialog: () => void
   pendingDeleteFurniture: FurnitureItem | null
   redo: () => void
   resetEditorShellState: () => void
   rotateSelection: (direction: -1 | 1) => void
   selectedFurniture: FurnitureItem | null
+  setCatalogDrawerOpen: (open: boolean) => void
+  setInfoDialogOpen: (open: boolean) => void
   setCatalogIdToAdd: (catalogId: string) => void
   undo: () => void
 }
@@ -60,12 +47,7 @@ const INITIAL_HISTORY_AVAILABILITY: HistoryAvailability = {
 }
 
 export function useEditorOverlayState({
-  confirmDeleteDialogRef,
   editorInteractionsEnabledRef,
-  infoButtonRef,
-  infoDialogRef,
-  pickerDialogRef,
-  removeButtonRef,
   rotationStepRadians,
   sceneRef,
   startupOverlayActiveRef,
@@ -78,7 +60,9 @@ export function useEditorOverlayState({
   const [pendingDeleteFurniture, setPendingDeleteFurniture] =
     useState<FurnitureItem | null>(null)
   const [editorMessage, setEditorMessage] = useState<string | null>(null)
-  const [isPickerOpen, setIsPickerOpen] = useState(false)
+  const [isCatalogDrawerOpen, setIsCatalogDrawerOpen] = useState(false)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [isInfoDialogOpen, setIsInfoDialogOpen] = useState(false)
   const [historyAvailability, setHistoryAvailability] = useState(
     INITIAL_HISTORY_AVAILABILITY,
   )
@@ -99,59 +83,85 @@ export function useEditorOverlayState({
     setSelectedFurniture(null)
     setPendingDeleteFurniture(null)
     setEditorMessage(null)
-    setIsPickerOpen(false)
+    setIsCatalogDrawerOpen(false)
+    setIsDeleteDialogOpen(false)
+    setIsInfoDialogOpen(false)
     setHistoryAvailability(INITIAL_HISTORY_AVAILABILITY)
   }, [sceneRef])
 
   const closeOpenDialogs = useCallback(() => {
-    confirmDeleteDialogRef.current?.close()
-    infoDialogRef.current?.close()
-    pickerDialogRef.current?.close()
-    setIsPickerOpen(false)
-  }, [confirmDeleteDialogRef, infoDialogRef, pickerDialogRef])
+    setIsCatalogDrawerOpen(false)
+    setIsDeleteDialogOpen(false)
+    setIsInfoDialogOpen(false)
+  }, [])
 
   const closeDeleteDialog = useCallback(() => {
-    confirmDeleteDialogRef.current?.close()
+    setIsDeleteDialogOpen(false)
     setPendingDeleteFurniture(null)
-    removeButtonRef.current?.focus()
-  }, [confirmDeleteDialogRef, removeButtonRef])
-
-  const openPicker = useCallback(() => {
-    if (
-      !editorInteractionsEnabledRef.current ||
-      pickerDialogRef.current?.open ||
-      confirmDeleteDialogRef.current?.open ||
-      infoDialogRef.current?.open
-    ) {
-      return
-    }
-
-    setEditorMessage(null)
-    setIsPickerOpen(true)
-  }, [
-    confirmDeleteDialogRef,
-    editorInteractionsEnabledRef,
-    infoDialogRef,
-    pickerDialogRef,
-  ])
-
-  const closePicker = useCallback(() => {
-    setIsPickerOpen(false)
   }, [])
+
+  const setCatalogDrawerOpen = useCallback(
+    (open: boolean) => {
+      if (!open) {
+        setIsCatalogDrawerOpen(false)
+        return
+      }
+
+      if (
+        !editorInteractionsEnabledRef.current ||
+        isDeleteDialogOpen ||
+        isInfoDialogOpen
+      ) {
+        return
+      }
+
+      setEditorMessage(null)
+      setIsCatalogDrawerOpen(true)
+    },
+    [editorInteractionsEnabledRef, isDeleteDialogOpen, isInfoDialogOpen],
+  )
+
+  const setInfoDialogOpen = useCallback(
+    (open: boolean) => {
+      if (!open) {
+        setIsInfoDialogOpen(false)
+        return
+      }
+
+      if (
+        startupOverlayActiveRef.current ||
+        isDeleteDialogOpen ||
+        isCatalogDrawerOpen
+      ) {
+        return
+      }
+
+      setIsInfoDialogOpen(true)
+    },
+    [isCatalogDrawerOpen, isDeleteDialogOpen, startupOverlayActiveRef],
+  )
 
   const openDeleteDialog = useCallback(() => {
     if (
       !editorInteractionsEnabledRef.current ||
       !selectedFurniture ||
-      confirmDeleteDialogRef.current?.open
+      isDeleteDialogOpen ||
+      isCatalogDrawerOpen ||
+      isInfoDialogOpen
     ) {
       return
     }
 
     setPendingDeleteFurniture(selectedFurniture)
     setEditorMessage(null)
-    confirmDeleteDialogRef.current?.showModal()
-  }, [confirmDeleteDialogRef, editorInteractionsEnabledRef, selectedFurniture])
+    setIsDeleteDialogOpen(true)
+  }, [
+    editorInteractionsEnabledRef,
+    isCatalogDrawerOpen,
+    isDeleteDialogOpen,
+    isInfoDialogOpen,
+    selectedFurniture,
+  ])
 
   const rotateSelection = useCallback(
     (direction: -1 | 1) => {
@@ -181,23 +191,18 @@ export function useEditorOverlayState({
   }, [editorInteractionsEnabledRef, sceneRef])
 
   const getIsModalOpen = useCallback(() => {
-    return (
-      isPickerOpen ||
-      Boolean(infoDialogRef.current?.open) ||
-      Boolean(confirmDeleteDialogRef.current?.open) ||
-      Boolean(pickerDialogRef.current?.open)
-    )
-  }, [confirmDeleteDialogRef, infoDialogRef, isPickerOpen, pickerDialogRef])
+    return isCatalogDrawerOpen || isDeleteDialogOpen || isInfoDialogOpen
+  }, [isCatalogDrawerOpen, isDeleteDialogOpen, isInfoDialogOpen])
 
   const addFurniture = useCallback(() => {
     if (!editorInteractionsEnabledRef.current || !catalogIdToAdd) {
-      return
+      return false
     }
 
     const result = sceneRef.current?.addFurniture(catalogIdToAdd)
 
     if (!result) {
-      return
+      return false
     }
 
     if (!result.ok) {
@@ -206,71 +211,24 @@ export function useEditorOverlayState({
           ? 'No safe placement slot is available for that furniture item.'
           : 'The selected furniture entry is no longer available.',
       )
-      return
+      return false
     }
 
     setEditorMessage(null)
-    setIsPickerOpen(false)
+    return true
   }, [catalogIdToAdd, editorInteractionsEnabledRef, sceneRef])
 
-  const openInfoDialog = useCallback(() => {
-    if (startupOverlayActiveRef.current) {
-      return
-    }
-
-    infoDialogRef.current?.showModal()
-  }, [infoDialogRef, startupOverlayActiveRef])
-
-  const closeInfoDialog = useCallback(() => {
-    infoDialogRef.current?.close()
-    infoButtonRef.current?.focus()
-  }, [infoButtonRef, infoDialogRef])
-
-  const handleInfoDialogCancel = useCallback(
-    (event: React.SyntheticEvent<HTMLDialogElement>) => {
-      event.preventDefault()
-      closeInfoDialog()
-    },
-    [closeInfoDialog],
-  )
-
-  const handleInfoDialogClick = useCallback(
-    (event: React.MouseEvent<HTMLDialogElement>) => {
-      if (event.target === event.currentTarget) {
-        closeInfoDialog()
-      }
-    },
-    [closeInfoDialog],
-  )
-
-  const handleDeleteDialogCancel = useCallback(
-    (event: React.SyntheticEvent<HTMLDialogElement>) => {
-      event.preventDefault()
-      closeDeleteDialog()
-    },
-    [closeDeleteDialog],
-  )
-
-  const handleDeleteDialogClick = useCallback(
-    (event: React.MouseEvent<HTMLDialogElement>) => {
-      if (event.target === event.currentTarget) {
-        closeDeleteDialog()
-      }
-    },
-    [closeDeleteDialog],
-  )
-
-  const confirmRemoveSelection = useCallback(() => {
+  const confirmDeleteSelection = useCallback(() => {
     if (!editorInteractionsEnabledRef.current) {
       return
     }
 
-    const removed = sceneRef.current?.removeSelection() ?? false
+    const deleted = sceneRef.current?.deleteSelection() ?? false
 
     closeDeleteDialog()
 
-    if (!removed) {
-      setEditorMessage('No selected furniture item was available to remove.')
+    if (!deleted) {
+      setEditorMessage('No selected furniture item was available to delete.')
       return
     }
 
@@ -281,28 +239,24 @@ export function useEditorOverlayState({
     addFurniture,
     catalogIdToAdd,
     closeDeleteDialog,
-    closeInfoDialog,
-    closePicker,
     closeOpenDialogs,
-    confirmRemoveSelection,
+    confirmDeleteSelection,
     editorMessage,
     getIsModalOpen,
-    handleDeleteDialogCancel,
-    handleDeleteDialogClick,
     handleHistoryChange,
-    handleInfoDialogCancel,
-    handleInfoDialogClick,
     handleSelectionChange,
+    isCatalogDrawerOpen,
     historyAvailability,
-    isPickerOpen,
+    isDeleteDialogOpen,
+    isInfoDialogOpen,
     openDeleteDialog,
-    openPicker,
-    openInfoDialog,
     pendingDeleteFurniture,
     redo,
     resetEditorShellState,
     rotateSelection,
     selectedFurniture,
+    setCatalogDrawerOpen,
+    setInfoDialogOpen,
     setCatalogIdToAdd,
     undo,
   }

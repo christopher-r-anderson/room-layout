@@ -1,33 +1,10 @@
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
-
-html,
-body,
-#root {
-  height: 100%;
-  margin: 0;
-}
-
-body {
-  height: 100dvh;
-  width: 100%;
-  overflow: hidden;
-}
-
-canvas {
-  display: block;
-}
-
 @import 'tailwindcss';
 
-@import "tw-animate-css";
+@import 'tw-animate-css';
 
-@import "shadcn/tailwind.css";
+@import 'shadcn/tailwind.css';
 
-@import "@fontsource-variable/inter";
+@import '@fontsource-variable/inter';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -146,11 +123,24 @@ canvas {
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    box-sizing: border-box;
+  }
+  html,
+  body,
+  #root {
+    height: 100%;
+    margin: 0;
   }
   body {
     @apply bg-background text-foreground;
+    height: 100dvh;
+    width: 100%;
+    overflow: hidden;
   }
   html {
     @apply font-sans;
+  }
+  canvas {
+    display: block;
   }
 }

@@ -12,7 +12,7 @@ import type { HistoryState } from '@/lib/ui/editor-history'
 import {
   addFurnitureToHistory,
   createFurnitureInstanceId,
-  removeSelectionFromHistory,
+  deleteSelectionFromHistory,
 } from './furniture-operations'
 import { redoSceneHistory, undoSceneHistory } from './scene-history-state'
 import { createSceneSnapshot } from './scene-snapshot'
@@ -119,13 +119,13 @@ export function useSceneImperativeApi({
 
         return operationResult.result
       },
-      removeSelection: () => {
-        const operationResult = removeSelectionFromHistory(
+      deleteSelection: () => {
+        const operationResult = deleteSelectionFromHistory(
           historyRef.current,
           selectedIdRef.current,
         )
 
-        if (!operationResult.removed) {
+        if (!operationResult.deleted) {
           return false
         }
 
@@ -133,8 +133,8 @@ export function useSceneImperativeApi({
         setHistory(operationResult.history)
 
         if (
-          operationResult.removedId &&
-          dragStateRef.current?.id === operationResult.removedId
+          operationResult.deletedId &&
+          dragStateRef.current?.id === operationResult.deletedId
         ) {
           clearDragState()
         }
