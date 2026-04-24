@@ -13,88 +13,92 @@ import { ButtonGroup } from '@/components/ui/button-group'
 import { HistoryTools } from './components/history/history-tools'
 import { SelectionTools } from './components/selection/selection-tools'
 
-interface EditorOverlayProps {
+export interface EditorStartupProps {
   assetError: boolean
-  catalogIdToAdd: string
-  editorInteractionsEnabled: boolean
-  editorMessage: string | null
+  startupLoadingActive: boolean
+  startupOverlayActive: boolean
+  onRetryAssetLoading: () => void
+}
+
+export interface EditorHistoryProps {
   historyAvailability: HistoryAvailability
+  onUndo: () => void
+  onRedo: () => void
+}
+
+export interface EditorSelectionProps {
+  selectedFurniture: FurnitureItem | null
+  onOpenDeleteDialog: () => void
+  onRotateSelection: (direction: -1 | 1) => void
+}
+
+export interface EditorCatalogProps {
+  catalogIdToAdd: string
   isCatalogDrawerOpen: boolean
-  isDeleteDialogOpen: boolean
-  isInfoDialogOpen: boolean
   onAddFurniture: () => boolean
   onCatalogIdToAddChange: (catalogId: string) => void
   onCatalogDrawerOpenChange: (open: boolean) => void
+}
+
+export interface EditorDialogsProps {
+  isDeleteDialogOpen: boolean
+  pendingDeleteFurniture: FurnitureItem | null
   onCloseDeleteDialog: () => void
   onConfirmDeleteSelection: () => void
-  onOpenDeleteDialog: () => void
+  isInfoDialogOpen: boolean
   onInfoDialogOpenChange: (open: boolean) => void
-  onRedo: () => void
-  onRetryAssetLoading: () => void
-  onRotateSelection: (direction: -1 | 1) => void
-  onUndo: () => void
-  pendingDeleteFurniture: FurnitureItem | null
-  selectedFurniture: FurnitureItem | null
-  startupLoadingActive: boolean
-  startupOverlayActive: boolean
+}
+
+interface EditorOverlayProps {
+  editorInteractionsEnabled: boolean
+  statusMessage: string | null
+  startup: EditorStartupProps
+  history: EditorHistoryProps
+  selection: EditorSelectionProps
+  catalog: EditorCatalogProps
+  dialogs: EditorDialogsProps
 }
 
 export function EditorOverlay({
-  assetError,
-  catalogIdToAdd,
-  isCatalogDrawerOpen,
-  isDeleteDialogOpen,
-  isInfoDialogOpen,
   editorInteractionsEnabled,
-  editorMessage,
-  historyAvailability,
-  onAddFurniture,
-  onCatalogIdToAddChange,
-  onCatalogDrawerOpenChange,
-  onCloseDeleteDialog,
-  onConfirmDeleteSelection,
-  onInfoDialogOpenChange,
-  onOpenDeleteDialog,
-  onRedo,
-  onRetryAssetLoading,
-  onRotateSelection,
-  onUndo,
-  pendingDeleteFurniture,
-  selectedFurniture,
-  startupLoadingActive,
-  startupOverlayActive,
+  statusMessage,
+  startup,
+  history,
+  selection,
+  catalog,
+  dialogs,
 }: EditorOverlayProps) {
   return (
     <>
       <div
         className="pointer-events-none absolute inset-2 gap-2 grid grid-cols-2 grid-rows-[min-content_min-content_1fr] sm:grid-rows-[min-content_1fr]"
-        inert={startupOverlayActive}
-        aria-hidden={startupOverlayActive}
+        inert={startup.startupOverlayActive}
+        aria-hidden={startup.startupOverlayActive}
       >
         <div className="col-span-2 sm:col-span-1">
           <ButtonGroup aria-label="Toolbar" className="pointer-events-auto">
             <HistoryTools
-              canRedo={historyAvailability.canRedo}
-              canUndo={historyAvailability.canUndo}
+              canRedo={history.historyAvailability.canRedo}
+              canUndo={history.historyAvailability.canUndo}
               editorInteractionsEnabled={editorInteractionsEnabled}
-              onRedo={onRedo}
-              onUndo={onUndo}
+              onRedo={history.onRedo}
+              onUndo={history.onUndo}
             />
             <SelectionTools
               editorInteractionsEnabled={editorInteractionsEnabled}
-              onOpenDeleteDialog={onOpenDeleteDialog}
-              onRotateSelection={onRotateSelection}
-              selectedFurniture={selectedFurniture}
+              onOpenDeleteDialog={selection.onOpenDeleteDialog}
+              onRotateSelection={selection.onRotateSelection}
+              selectedFurniture={selection.selectedFurniture}
             />
           </ButtonGroup>
-          <StatusMessage message={editorMessage} />
+          <StatusMessage message={statusMessage} />
         </div>
 
         <div className="col-span-2 sm:col-span-1 justify-self-end flex gap-4">
           <h1 className="text-lg font-semibold">Room Layout</h1>
           <ProjectInfoDialog
-            open={isInfoDialogOpen}
-            onOpenChange={onInfoDialogOpenChange}
+            open={dialogs.isInfoDialogOpen}
+            onOpenChange={dialogs.onInfoDialogOpenChange}
             triggerButton={
               <ProjectInfoButton className="pointer-events-auto" />
             }
@@ -103,20 +107,20 @@ export function EditorOverlay({
 
         <div className="self-end">
           <CurrentSelectionStatus
-            selectedFurniture={selectedFurniture}
+            selectedFurniture={selection.selectedFurniture}
             className="pointer-events-auto"
           />
         </div>
 
         <div className="justify-self-end self-end">
           <CatalogDrawer
-            open={isCatalogDrawerOpen}
-            onOpenChange={onCatalogDrawerOpenChange}
+            open={catalog.isCatalogDrawerOpen}
+            onOpenChange={catalog.onCatalogDrawerOpenChange}
             triggerButton={<CatalogAddButton className="pointer-events-auto" />}
-            catalogIdToAdd={catalogIdToAdd}
+            catalogIdToAdd={catalog.catalogIdToAdd}
             editorInteractionsEnabled={editorInteractionsEnabled}
-            onAddFurniture={onAddFurniture}
-            onCatalogIdToAddChange={onCatalogIdToAddChange}
+            onAddFurniture={catalog.onAddFurniture}
+            onCatalogIdToAddChange={catalog.onCatalogIdToAddChange}
           />
         </div>
       </div>
@@ -127,15 +131,15 @@ export function EditorOverlay({
         https://github.com/shadcn-ui/ui/pull/9347
       */}
       <DeleteConfirmationDialog
-        open={isDeleteDialogOpen}
-        pendingDeleteFurniture={pendingDeleteFurniture}
-        onClose={onCloseDeleteDialog}
-        onConfirm={onConfirmDeleteSelection}
+        open={dialogs.isDeleteDialogOpen}
+        pendingDeleteFurniture={dialogs.pendingDeleteFurniture}
+        onClose={dialogs.onCloseDeleteDialog}
+        onConfirm={dialogs.onConfirmDeleteSelection}
       />
 
-      <InitializationProgress visible={startupLoadingActive} />
-      {assetError ? (
-        <InitializationError onRetry={onRetryAssetLoading} />
+      <InitializationProgress visible={startup.startupLoadingActive} />
+      {startup.assetError ? (
+        <InitializationError onRetry={startup.onRetryAssetLoading} />
       ) : null}
     </>
   )

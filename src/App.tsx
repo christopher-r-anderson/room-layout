@@ -6,9 +6,17 @@ import {
   type ReactNode,
   useCallback,
   useEffect,
+  useMemo,
   useRef,
 } from 'react'
 import type { SceneRef } from './scene/scene.types'
+import type {
+  EditorCatalogProps,
+  EditorDialogsProps,
+  EditorHistoryProps,
+  EditorSelectionProps,
+  EditorStartupProps,
+} from './app/editor-overlay'
 import { EditorOverlay } from './app/editor-overlay'
 import { runEditorShellReset } from './app/editor-shell-reset'
 import {
@@ -181,6 +189,71 @@ function App() {
     })
   }, [closeAllDialogs, resetEditorShellState, retryAssetLoading])
 
+  const startupProps = useMemo<EditorStartupProps>(
+    () => ({
+      assetError: Boolean(assetError),
+      startupLoadingActive,
+      startupOverlayActive,
+      onRetryAssetLoading: handleRetryAssetLoading,
+    }),
+    [
+      assetError,
+      startupLoadingActive,
+      startupOverlayActive,
+      handleRetryAssetLoading,
+    ],
+  )
+
+  const historyProps = useMemo<EditorHistoryProps>(
+    () => ({ historyAvailability, onUndo: undo, onRedo: redo }),
+    [historyAvailability, undo, redo],
+  )
+
+  const selectionProps = useMemo<EditorSelectionProps>(
+    () => ({
+      selectedFurniture,
+      onOpenDeleteDialog: handleOpenDeleteDialog,
+      onRotateSelection: rotateSelection,
+    }),
+    [selectedFurniture, handleOpenDeleteDialog, rotateSelection],
+  )
+
+  const catalogProps = useMemo<EditorCatalogProps>(
+    () => ({
+      catalogIdToAdd,
+      isCatalogDrawerOpen,
+      onAddFurniture: addFurniture,
+      onCatalogIdToAddChange: setCatalogIdToAdd,
+      onCatalogDrawerOpenChange: handleCatalogDrawerOpenChange,
+    }),
+    [
+      catalogIdToAdd,
+      isCatalogDrawerOpen,
+      addFurniture,
+      setCatalogIdToAdd,
+      handleCatalogDrawerOpenChange,
+    ],
+  )
+
+  const dialogsProps = useMemo<EditorDialogsProps>(
+    () => ({
+      isDeleteDialogOpen,
+      pendingDeleteFurniture,
+      onCloseDeleteDialog: closeDialog,
+      onConfirmDeleteSelection: handleConfirmDeleteSelection,
+      isInfoDialogOpen,
+      onInfoDialogOpenChange: setInfoOpen,
+    }),
+    [
+      isDeleteDialogOpen,
+      pendingDeleteFurniture,
+      closeDialog,
+      handleConfirmDeleteSelection,
+      isInfoDialogOpen,
+      setInfoOpen,
+    ],
+  )
+
   useEffect(() => {
     if (!import.meta.env.DEV) {
       return
@@ -253,29 +326,13 @@ function App() {
         </Canvas>
 
         <EditorOverlay
-          assetError={Boolean(assetError)}
-          catalogIdToAdd={catalogIdToAdd}
           editorInteractionsEnabled={editorInteractionsEnabled}
-          editorMessage={editorMessage}
-          historyAvailability={historyAvailability}
-          isCatalogDrawerOpen={isCatalogDrawerOpen}
-          isDeleteDialogOpen={isDeleteDialogOpen}
-          isInfoDialogOpen={isInfoDialogOpen}
-          onAddFurniture={addFurniture}
-          onCatalogIdToAddChange={setCatalogIdToAdd}
-          onCatalogDrawerOpenChange={handleCatalogDrawerOpenChange}
-          onCloseDeleteDialog={closeDialog}
-          onConfirmDeleteSelection={handleConfirmDeleteSelection}
-          onInfoDialogOpenChange={setInfoOpen}
-          onOpenDeleteDialog={handleOpenDeleteDialog}
-          onRedo={redo}
-          onRetryAssetLoading={handleRetryAssetLoading}
-          onRotateSelection={rotateSelection}
-          onUndo={undo}
-          pendingDeleteFurniture={pendingDeleteFurniture}
-          selectedFurniture={selectedFurniture}
-          startupLoadingActive={startupLoadingActive}
-          startupOverlayActive={startupOverlayActive}
+          statusMessage={editorMessage}
+          startup={startupProps}
+          history={historyProps}
+          selection={selectionProps}
+          catalog={catalogProps}
+          dialogs={dialogsProps}
         />
       </div>
     </TooltipProvider>
