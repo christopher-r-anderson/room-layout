@@ -8,7 +8,7 @@ export default defineConfig({
   forbidOnly: isCI,
   retries: isCI ? 1 : 0,
   workers: isCI ? 2 : undefined,
-  timeout: 60_000,
+  timeout: isCI ? 120_000 : 60_000,
   expect: {
     timeout: 10_000,
   },
