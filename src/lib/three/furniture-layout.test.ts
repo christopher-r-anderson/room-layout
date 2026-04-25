@@ -198,4 +198,29 @@ describe('resolveRotatedFurnitureTransform', () => {
     expect(resolved?.rotationY).toBeCloseTo(Math.PI / 2)
     expect(resolved?.position).toEqual([2, 0, 0])
   })
+
+  it('returns the proposed transform unchanged when no overlap and no clamping needed', () => {
+    const items = [
+      {
+        id: 'moving',
+        position: [0, 0, 0] as [number, number, number],
+        rotationY: 0,
+        footprintSize: {
+          width: 1,
+          depth: 1,
+        },
+      },
+    ]
+
+    const resolved = resolveRotatedFurnitureTransform({
+      rotatingId: 'moving',
+      proposedRotationY: Math.PI / 4,
+      items,
+      bounds: roomBounds,
+    })
+
+    expect(resolved).not.toBeNull()
+    expect(resolved?.rotationY).toBeCloseTo(Math.PI / 4)
+    expect(resolved?.position).toEqual([0, 0, 0])
+  })
 })

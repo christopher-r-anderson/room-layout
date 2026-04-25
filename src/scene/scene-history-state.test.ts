@@ -91,4 +91,47 @@ describe('scene history state', () => {
     expect(undone.selectedId).toBeNull()
     expect(undone.history.present).toEqual([firstItem])
   })
+
+  it('preserves selection on undo when the previously-selected item exists in the restored state', () => {
+    const item1 = createFurnitureItem('item-1')
+    const item2 = createFurnitureItem('item-2')
+    const history = commitHistoryPresent(
+      createHistoryState<FurnitureItem[]>([item1]),
+      [item1, item2],
+    )
+
+    const undoResult = undoSceneHistory({
+      history,
+      selectedId: item1.id,
+      isDragging: false,
+    })
+
+    expect(undoResult.didChange).toBe(true)
+    expect(undoResult.selectedId).toBe(item1.id)
+    expect(undoResult.history.present).toEqual([item1])
+  })
+
+  it('clears selection on redo when the redo state does not contain the selected item', () => {
+    const item1 = createFurnitureItem('item-1')
+    const item2 = createFurnitureItem('item-2')
+    const committed = commitHistoryPresent(
+      createHistoryState<FurnitureItem[]>([item1, item2]),
+      [item2],
+    )
+    const undone = undoSceneHistory({
+      history: committed,
+      selectedId: item1.id,
+      isDragging: false,
+    })
+
+    const redoResult = redoSceneHistory({
+      history: undone.history,
+      selectedId: item1.id,
+      isDragging: false,
+    })
+
+    expect(redoResult.didChange).toBe(true)
+    expect(redoResult.selectedId).toBeNull()
+    expect(redoResult.history.present).toEqual([item2])
+  })
 })
