@@ -103,7 +103,7 @@ describe('InteractiveFurniture', () => {
 
     it('calls onObjectReady with null on unmount', async () => {
       const onObjectReady = vi.fn()
-      let renderer: Awaited<ReturnType<typeof createR3FTestScene>>
+      let renderer!: Awaited<ReturnType<typeof createR3FTestScene>>
 
       await act(async () => {
         renderer = await createR3FTestScene(

@@ -331,11 +331,10 @@ describe('useSceneImperativeApi', () => {
       },
     )
 
-    const updatedOptions = {
-      ...options,
+    const updatedOptions = defaultOptions({
       furniture: [createFurnitureItem('item-2')],
       selectedId: 'item-2',
-    }
+    })
     const updatedRef = getSceneRef(updatedOptions)
 
     rerender({ currentOptions: updatedOptions })
