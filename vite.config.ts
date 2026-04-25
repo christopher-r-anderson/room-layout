@@ -15,6 +15,7 @@ export default defineConfig({
     setupFiles: ['./src/test/vitest.setup.ts'],
   },
   resolve: {
+    dedupe: ['react', 'react-dom', 'three'],
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },

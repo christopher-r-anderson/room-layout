@@ -48,6 +48,134 @@
 - Use browser benchmarks when implementation options affect frame-time-sensitive interactions or when microbench results are not sufficient to choose an approach.
 - Keep performance optimizations only when measured results justify the added complexity.
 
+## Testing Strategy for React Three Fiber
+
+This project uses a 3-tier testing architecture to balance test speed, coverage, and confidence:
+
+### Tier 1: Unit Tests (Vitest + Node.js)
+
+- **What:** Pure utilities, pure React hooks (no scene dependencies)
+- **Tools:** Vitest with `environment: 'node'`
+- **Examples:**
+  - Geometry math: `src/lib/three/furniture-drag.test.ts`
+  - Hotkey logic: `src/lib/ui/delete-hotkeys.test.ts`
+  - App state hooks: `src/app/use-editor-dialog-state.test.ts`
+- **Speed:** <50ms per test
+- **Coverage:** ~90% of codebase
+- **When to use:** "Is this pure logic with no 3D rendering or browser-specific behavior?"
+
+### Tier 1.5: Integration Tests (Vitest + RTTR + jsdom)
+
+- **What:** React Three Fiber components, scene composition, event dispatch sequencing
+- **Tools:** Vitest with `@vitest-environment jsdom` + `@react-three/test-renderer`
+- **Examples:**
+  - Component structure: `src/scene/objects/interactive-furniture.test.tsx`
+  - Event handler wiring: `src/scene/objects/interactive-furniture.event.test.tsx`
+  - Hook initialization: `src/scene/use-scene-imperative-api.test.ts`
+- **Speed:** <200ms per test
+- **Coverage:** ~5-10% of codebase (fills R3F component gaps)
+- **When to use:** "Does this test component render, event dispatch, or initialization?"
+- **Limitations:** RTTR cannot populate `event.ray` or pointer-capture-dependent geometry (drag, collision). Use Playwright E2E for those behaviors.
+- **Important:** Don't use RTTR for pointer event results (collision detection, ray casting); use Playwright for that.
+
+### Tier 2: E2E Tests (Playwright + Real Browser)
+
+- **What:** Multi-step user workflows, real WebGL rendering, asset loading, visual validation
+- **Tools:** Playwright with Chromium
+- **Examples:**
+  - Drag + collision detection: `e2e/drag-collision.spec.ts`
+  - Undo/redo with visual confirmation: `e2e/editor-history.spec.ts`
+  - Asset loading and error recovery: `e2e/startup-loading.spec.ts`
+- **Speed:** <5s per test
+- **Coverage:** ~5-10% of codebase (critical workflows only)
+- **When to use:** "Does this require real browser rendering, asset loading, or visual confirmation?"
+
+### Key Principles
+
+1. **Don't over-test:** If a behavior is tested in Tier 1 or 1.5, don't duplicate it in E2E.
+2. **Avoid jsdom for canvas:** Tier 1.5 uses jsdom for component structure and event dispatch, but real pointer event validation (raycasting, collision) happens in E2E.
+3. **Use tolerant assertions for geometry:** Floating-point values use `toBeCloseTo()`, not exact equality.
+4. **Test frame-dependent logic with `advanceFrames()`:** In Tier 1.5, use RTTR's frame advancement to test `useFrame` effects.
+
+### Test Commands
+
+- `pnpm test:run` - All Tier 1 + 1.5 tests (Vitest)
+- `pnpm test:e2e` - All Tier 2 tests (Playwright)
+- `pnpm test:browser:perf` - Performance traces (separate Playwright project)
+- `pnpm bench` - Hot-path benchmarks (utilities only)
+
+### RTTR Patterns (Tier 1.5)
+
+#### Rendering a component
+
+```typescript
+import { createR3FTestScene } from '@/test/r3f-renderer'
+
+test('renders mesh with correct geometry', async () => {
+  const renderer = await createR3FTestScene(
+    <mesh>
+      <boxGeometry args={[2, 2, 2]} />
+      <meshStandardMaterial color={0xff0000} />
+    </mesh>
+  )
+
+  // renderer.scene is the root test instance.
+  // For raw elements (<mesh>, <group>), the element IS renderer.scene.
+  // For React function components (<MyComponent />), the rendered output is at
+  // renderer.scene.children[0], and Three.js properties are on .instance.
+  const mesh = renderer.scene
+  expect(mesh.type).toBe('Mesh')
+  expect(mesh.children[0]?.geometry.type).toBe('BoxGeometry')
+})
+```
+
+#### Testing event handler invocation
+
+```typescript
+import { firePointerEvent } from '@/test/pointer-helpers'
+import { vi } from 'vitest'
+
+test('calls event handler on pointer down', async () => {
+  const renderer = await createR3FTestScene(<YourComponent />)
+  const component = renderer.scene
+
+  // Test that event handler fires (without validating actual browser capture)
+  await firePointerEvent(renderer, component, 'pointerDown', { pointerId: 1 })
+  // Assert via component state or spy that handler was called
+})
+```
+
+**Important:** RTTR tests validate _event dispatch sequencing_ (did the handler run?) but cannot validate actual DOM pointer capture behavior or geometry interactions (drag, collision detection, raycasting). For those, use Playwright E2E tests where the real browser enforces the behavior.
+
+#### Testing frame-dependent logic
+
+```typescript
+test('rotates mesh over frames', async () => {
+  const renderer = await createR3FTestScene(<YourRotatingComponent />)
+  const mesh = renderer.scene
+
+  expect(mesh.rotation.z).toBe(0)
+
+  await renderer.advanceFrames(10)
+
+  expect(mesh.rotation.z).toBeCloseTo(Math.PI / 4, 2)
+})
+```
+
+### Debugging RTTR Tests
+
+- **Inspect scene tree:** Use `renderer.toGraph()` to print the scene structure
+- **Find a specific object:** `renderer.scene.getObjectByName('furniture-id')`
+- **Check geometry/material:** `mesh.geometry.parameters`, `mesh.material.color`
+
+### Gotchas to Avoid
+
+- Don't test pointer-geometry behaviors (drag, ray casting, collision) in jsdom; use Playwright E2E instead
+- Don't use testing-library's `fireEvent()` for RTTR tests; use `firePointerEvent()` from pointer-helpers
+- Don't snapshot 3D scenes; assert on specific properties instead
+- Don't forget `advanceFrames()` when testing `useFrame` effects
+- `renderer.scene` is the root test instance for raw elements; for React function components, the rendered output is at `renderer.scene.children[0]` and Three.js properties are on `.instance`
+
 ## Asset Pipeline
 
 - Keep runtime models under `public/models/` and source assets under `assets-source/`.
