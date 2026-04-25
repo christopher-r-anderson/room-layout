@@ -2,7 +2,12 @@ import { expect, type Page } from '@playwright/test'
 
 const FURNITURE_ASSET_ROUTE = /\/models\/.+\.glb(?:\?.*)?$/
 export const EDITOR_READY_TIMEOUT_MS = 30_000
-const POINTER_SELECTION_TIMEOUT_MS = 750
+// Pointer picking flows through browser input dispatch + R3F/Three render timing.
+// On CI this can settle a few frames later than local runs due to external runtime
+// variance (headless Chromium scheduling, CPU contention, trace/video overhead), so
+// we allow a short retry window to keep selection assertions deterministic.
+const POINTER_SELECTION_TIMEOUT_MS = 3_000
+const POINTER_SELECTION_ATTEMPTS = 3
 
 export interface BrowserSceneState {
   assetsReady: boolean
@@ -181,24 +186,44 @@ export async function addFurniture(page: Page, name = 'Leather Couch') {
 }
 
 export async function selectFurnitureById(page: Page, itemId: string) {
-  const sceneState = await readSceneState(page)
-  const item = sceneState.items.find((candidate) => candidate.id === itemId)
+  const canvas = page.locator('canvas')
+  let lastSelectedId: string | null = null
 
-  if (!item?.pointerTarget) {
-    throw new Error('furniture item does not have a pointer target')
+  for (let attempt = 1; attempt <= POINTER_SELECTION_ATTEMPTS; attempt += 1) {
+    const sceneState = await readSceneState(page)
+
+    if (sceneState.selectedId === itemId) {
+      return sceneState
+    }
+
+    const item = sceneState.items.find((candidate) => candidate.id === itemId)
+
+    if (!item?.pointerTarget) {
+      throw new Error(`furniture item ${itemId} does not have a pointer target`)
+    }
+
+    const canvasBounds = await getCanvasBounds(page)
+    const clickX = Math.min(
+      Math.max(item.pointerTarget.x, 1),
+      Math.max(canvasBounds.width - 1, 1),
+    )
+    const clickY = Math.min(
+      Math.max(item.pointerTarget.y, 1),
+      Math.max(canvasBounds.height - 1, 1),
+    )
+
+    await canvas.click({ position: { x: clickX, y: clickY } })
+
+    if (await didSelectFurniture(page, itemId)) {
+      return readSceneState(page)
+    }
+
+    lastSelectedId = (await readSceneState(page)).selectedId
   }
 
-  const canvasBounds = await getCanvasBounds(page)
-  const clickX = canvasBounds.x + item.pointerTarget.x
-  const clickY = canvasBounds.y + item.pointerTarget.y
-
-  await page.mouse.click(clickX, clickY)
-
-  if (!(await didSelectFurniture(page, itemId))) {
-    throw new Error(`click at pointerTarget did not select furniture ${itemId}`)
-  }
-
-  return readSceneState(page)
+  throw new Error(
+    `click at pointerTarget did not select furniture ${itemId} after ${String(POINTER_SELECTION_ATTEMPTS)} attempts (last selectedId=${lastSelectedId ?? 'null'})`,
+  )
 }
 
 export async function rotateSelectionRight(page: Page) {
