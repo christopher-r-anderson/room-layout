@@ -51,7 +51,7 @@ export function Scene({
   onSelectionChange?: (item: FurnitureItem | null) => void
   onHistoryChange?: (availability: SceneHistoryAvailability) => void
   onAssetsReady?: () => void
-  onFurnitureChange?: (items: FurnitureItem[]) => void
+  onFurnitureChange?: (items: SceneOutlinerItem[]) => void
 }) {
   const camera = useThree((state) => state.camera)
   const canvasSize = useThree((state) => state.size)
@@ -153,9 +153,14 @@ export function Scene({
     onHistoryChange?.(historyAvailability)
   }, [historyAvailability, onHistoryChange])
 
+  const outlinerItems = useMemo(
+    () => furniture.map(({ id, name }) => ({ id, name })),
+    [furniture],
+  )
+
   useEffect(() => {
-    onFurnitureChange?.(furniture)
-  }, [furniture, onFurnitureChange])
+    onFurnitureChange?.(outlinerItems)
+  }, [outlinerItems, onFurnitureChange])
 
   useEffect(() => {
     if (hasReportedAssetsReadyRef.current) {
@@ -233,4 +238,8 @@ export function Scene({
       ))}
     </>
   )
+}
+export interface SceneOutlinerItem {
+  id: string
+  name: string
 }
