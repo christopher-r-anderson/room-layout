@@ -17,8 +17,17 @@ function createSceneRef(overrides?: Partial<SceneRef>) {
       clearSelection: vi.fn(),
       deleteSelection: vi.fn(() => true),
       getSnapshot: vi.fn(),
+      moveSelection: vi.fn(() => ({
+        ok: false as const,
+        reason: 'none-selected' as const,
+      })),
       redo: vi.fn(() => true),
       rotateSelection: vi.fn(),
+      selectById: vi.fn((id: string | null) => ({ ok: true as const, id })),
+      setSelectionPosition: vi.fn(() => ({
+        ok: false as const,
+        reason: 'none-selected' as const,
+      })),
       undo: vi.fn(() => true),
       ...overrides,
     } satisfies SceneRef,

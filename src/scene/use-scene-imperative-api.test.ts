@@ -448,6 +448,7 @@ describe('useSceneImperativeApi', () => {
       | HistoryState<FurnitureItem[]>
       | undefined
     expect(nextHistory).toBeDefined()
+    if (!nextHistory) return
     expect(nextHistory.past).toHaveLength(1)
   })
 
@@ -487,6 +488,7 @@ describe('useSceneImperativeApi', () => {
       | HistoryState<FurnitureItem[]>
       | undefined
     expect(nextHistory).toBeDefined()
+    if (!nextHistory) return
     expect(nextHistory.past).toHaveLength(0)
   })
 })
