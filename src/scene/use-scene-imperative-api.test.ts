@@ -8,6 +8,7 @@ import {
   createHistoryState,
   commitHistoryPresent,
   undoHistoryState,
+  type HistoryState,
 } from '@/lib/ui/editor-history'
 import { useSceneImperativeApi } from './use-scene-imperative-api'
 import { redoSceneHistory, undoSceneHistory } from './scene-history-state'
@@ -30,6 +31,10 @@ vi.mock('./furniture-operations', () => ({
   createFurnitureInstanceId: (sequenceNumber: number) =>
     `furniture-instance-${String(sequenceNumber)}`,
   deleteSelectionFromHistory: mockDeleteSelectionFromHistory,
+  areFurnitureCollectionsEqual: (
+    left: FurnitureItem[],
+    right: FurnitureItem[],
+  ) => JSON.stringify(left) === JSON.stringify(right),
 }))
 
 vi.mock('./scene-snapshot', () => ({
@@ -350,5 +355,138 @@ describe('useSceneImperativeApi', () => {
       updatedOptions.camera,
       updatedOptions.canvasSize,
     )
+  })
+
+  it('selectById returns invalid-id when furniture id is missing', () => {
+    const options = defaultOptions({
+      furniture: [createFurnitureItem('item-1')],
+    })
+    const sceneRef = getSceneRef(options)
+    renderHook(() => {
+      useSceneImperativeApi(options)
+    })
+
+    let result
+    act(() => {
+      result = sceneRef.current?.selectById('missing')
+    })
+
+    expect(result).toEqual({ ok: false, reason: 'invalid-id' })
+    expect(options.setSelectedIdAndResolveObject).not.toHaveBeenCalled()
+  })
+
+  it('selectById sets selection when id exists', () => {
+    const options = defaultOptions({
+      furniture: [createFurnitureItem('item-1')],
+    })
+    const sceneRef = getSceneRef(options)
+    renderHook(() => {
+      useSceneImperativeApi(options)
+    })
+
+    let result
+    act(() => {
+      result = sceneRef.current?.selectById('item-1')
+    })
+
+    expect(result).toEqual({ ok: true, id: 'item-1' })
+    expect(options.setSelectedIdAndResolveObject).toHaveBeenCalledWith('item-1')
+  })
+
+  it('moveSelection returns none-selected with null selection', () => {
+    const options = defaultOptions({
+      furniture: [createFurnitureItem('item-1')],
+      selectedId: null,
+    })
+    const sceneRef = getSceneRef(options)
+    renderHook(() => {
+      useSceneImperativeApi(options)
+    })
+
+    let result
+    act(() => {
+      result = sceneRef.current?.moveSelection({ x: 1, z: 1 })
+    })
+
+    expect(result).toEqual({ ok: false, reason: 'none-selected' })
+  })
+
+  it('moveSelection applies immediate move as committed history', () => {
+    const item = createFurnitureItem('item-1')
+    const setHistory =
+      vi.fn<
+        (
+          next:
+            | HistoryState<FurnitureItem[]>
+            | ((
+                history: HistoryState<FurnitureItem[]>,
+              ) => HistoryState<FurnitureItem[]>),
+        ) => void
+      >()
+    const options = defaultOptions({
+      furniture: [item],
+      history: createHistoryState([item]),
+      selectedId: 'item-1',
+      setHistory,
+    })
+    const sceneRef = getSceneRef(options)
+    renderHook(() => {
+      useSceneImperativeApi(options)
+    })
+
+    let result
+    act(() => {
+      result = sceneRef.current?.moveSelection(
+        { x: 1, z: 0 },
+        { commit: 'immediate' },
+      )
+    })
+
+    expect(result).toEqual({ ok: true, id: 'item-1', position: [1, 0, 0] })
+    expect(options.setHistory).toHaveBeenCalledTimes(1)
+    const nextHistory = setHistory.mock.calls[0]?.[0] as
+      | HistoryState<FurnitureItem[]>
+      | undefined
+    expect(nextHistory).toBeDefined()
+    expect(nextHistory.past).toHaveLength(1)
+  })
+
+  it('setSelectionPosition applies deferred move without history commit', () => {
+    const item = createFurnitureItem('item-1')
+    const setHistory =
+      vi.fn<
+        (
+          next:
+            | HistoryState<FurnitureItem[]>
+            | ((
+                history: HistoryState<FurnitureItem[]>,
+              ) => HistoryState<FurnitureItem[]>),
+        ) => void
+      >()
+    const options = defaultOptions({
+      furniture: [item],
+      history: createHistoryState([item]),
+      selectedId: 'item-1',
+      setHistory,
+    })
+    const sceneRef = getSceneRef(options)
+    renderHook(() => {
+      useSceneImperativeApi(options)
+    })
+
+    let result
+    act(() => {
+      result = sceneRef.current?.setSelectionPosition(
+        { x: 2, z: 0 },
+        { commit: 'defer' },
+      )
+    })
+
+    expect(result).toEqual({ ok: true, id: 'item-1', position: [2, 0, 0] })
+    const nextHistory = setHistory.mock.calls[0]?.[0] as
+      | HistoryState<FurnitureItem[]>
+      | undefined
+    expect(nextHistory).toBeDefined()
+    expect(nextHistory.past).toHaveLength(0)
   })
 })

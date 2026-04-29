@@ -18,6 +18,10 @@ import { redoSceneHistory, undoSceneHistory } from './scene-history-state'
 import { createSceneSnapshot } from './scene-snapshot'
 import type { SceneRef } from './scene.types'
 import type { FurnitureItem } from './objects/furniture.types'
+import {
+  applyMoveSelectionResultToHistory,
+  moveSelectionToPosition,
+} from './scene-move-command'
 
 interface UseSceneImperativeApiOptions {
   ref: React.Ref<SceneRef>
@@ -89,6 +93,88 @@ export function useSceneImperativeApi({
           selectedIdRef.current = null
           selectFurniture(null)
         }
+      },
+      selectById: (id: string | null) => {
+        if (
+          id !== null &&
+          !furnitureRef.current.some((item) => item.id === id)
+        ) {
+          return { ok: false as const, reason: 'invalid-id' as const }
+        }
+
+        selectedIdRef.current = id
+        setSelectedIdAndResolveObject(id)
+
+        return { ok: true as const, id }
+      },
+      moveSelection: (delta, options) => {
+        const commit = options?.commit ?? 'immediate'
+        const currentSelectedId = selectedIdRef.current
+        const selectedItem = currentSelectedId
+          ? furnitureRef.current.find((item) => item.id === currentSelectedId)
+          : null
+
+        if (!selectedItem && !currentSelectedId) {
+          return { ok: false as const, reason: 'none-selected' as const }
+        }
+
+        if (!selectedItem) {
+          return { ok: false as const, reason: 'invalid-selection' as const }
+        }
+
+        const result = moveSelectionToPosition({
+          furniture: furnitureRef.current,
+          selectedId: currentSelectedId,
+          nextPosition: {
+            x: selectedItem.position[0] + delta.x,
+            z: selectedItem.position[2] + delta.z,
+          },
+          bounds,
+          edgeSnapThreshold,
+        })
+
+        if (!result.ok) {
+          return result
+        }
+
+        const nextHistory = applyMoveSelectionResultToHistory({
+          history: historyRef.current,
+          result,
+          commit,
+        })
+
+        historyRef.current = nextHistory
+        setHistory(nextHistory)
+
+        return result
+      },
+      setSelectionPosition: (position, options) => {
+        const commit = options?.commit ?? 'immediate'
+        const result = moveSelectionToPosition({
+          furniture: furnitureRef.current,
+          selectedId: selectedIdRef.current,
+          nextPosition: {
+            x: position.x,
+            z: position.z,
+          },
+          bounds,
+          edgeSnapThreshold,
+        })
+
+        if (!result.ok) {
+          return result
+        }
+
+        const nextHistory = applyMoveSelectionResultToHistory({
+          history: historyRef.current,
+          result,
+          commit,
+        })
+
+        historyRef.current = nextHistory
+        setHistory(nextHistory)
+
+        return result
       },
       rotateSelection: (deltaRadians: number) => {
         rotateSelectedFurniture(deltaRadians)
