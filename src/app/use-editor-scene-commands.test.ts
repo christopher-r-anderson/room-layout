@@ -111,6 +111,33 @@ describe('useEditorSceneCommands', () => {
     expect(clearEditorMessage).toHaveBeenCalledTimes(1)
   })
 
+  it('forwards selectById when interactions are enabled', () => {
+    const setEditorMessage = vi.fn()
+    const clearEditorMessage = vi.fn()
+    const selectById = vi.fn<SceneRef['selectById']>((id) => ({
+      ok: true,
+      id,
+    }))
+    const sceneRef = createSceneRef({ selectById })
+
+    const { result } = renderHook(() =>
+      useEditorSceneCommands({
+        catalogIdToAdd: 'leather-couch',
+        clearEditorMessage,
+        editorInteractionsEnabled: true,
+        rotationStepRadians: Math.PI / 12,
+        sceneRef,
+        setEditorMessage,
+      }),
+    )
+
+    act(() => {
+      result.current.selectById('item-1')
+    })
+
+    expect(selectById).toHaveBeenCalledWith('item-1')
+  })
+
   it('does not invoke scene commands while interactions are disabled', () => {
     const setEditorMessage = vi.fn()
     const clearEditorMessage = vi.fn()
@@ -131,6 +158,7 @@ describe('useEditorSceneCommands', () => {
       expect(result.current.addFurniture()).toBe(false)
       result.current.confirmDeleteSelection()
       result.current.rotateSelection(1)
+      result.current.selectById('item-1')
       result.current.undo()
       result.current.redo()
     })
@@ -138,6 +166,7 @@ describe('useEditorSceneCommands', () => {
     expect(sceneRef.current.addFurniture).not.toHaveBeenCalled()
     expect(sceneRef.current.deleteSelection).not.toHaveBeenCalled()
     expect(sceneRef.current.rotateSelection).not.toHaveBeenCalled()
+    expect(sceneRef.current.selectById).not.toHaveBeenCalled()
     expect(sceneRef.current.undo).not.toHaveBeenCalled()
     expect(sceneRef.current.redo).not.toHaveBeenCalled()
   })
@@ -162,6 +191,7 @@ describe('useEditorSceneCommands', () => {
       expect(result.current.addFurniture()).toBe(false)
       result.current.confirmDeleteSelection()
       result.current.rotateSelection(1)
+      result.current.selectById('item-1')
       result.current.undo()
       result.current.redo()
     })

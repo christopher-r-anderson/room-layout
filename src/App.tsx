@@ -106,21 +106,29 @@ function App() {
     editorMessage,
     handleHistoryChange,
     handleSelectionChange,
+    handleSceneItemsChange,
     historyAvailability,
+    outlinerItems,
     resetOverlayState,
     selectedFurniture,
     setCatalogIdToAdd,
     setEditorMessage,
   } = editorOverlayState
-  const { addFurniture, confirmDeleteSelection, redo, rotateSelection, undo } =
-    useEditorSceneCommands({
-      catalogIdToAdd,
-      clearEditorMessage,
-      editorInteractionsEnabled,
-      rotationStepRadians: ROTATION_STEP_RADIANS,
-      sceneRef,
-      setEditorMessage,
-    })
+  const {
+    addFurniture,
+    confirmDeleteSelection,
+    redo,
+    rotateSelection,
+    selectById,
+    undo,
+  } = useEditorSceneCommands({
+    catalogIdToAdd,
+    clearEditorMessage,
+    editorInteractionsEnabled,
+    rotationStepRadians: ROTATION_STEP_RADIANS,
+    sceneRef,
+    setEditorMessage,
+  })
   const dialogState = useEditorDialogState({
     editorInteractionsEnabled,
     startupOverlayActive,
@@ -212,10 +220,18 @@ function App() {
   const selectionProps = useMemo<EditorSelectionProps>(
     () => ({
       selectedFurniture,
+      outlinerItems,
       onOpenDeleteDialog: handleOpenDeleteDialog,
       onRotateSelection: rotateSelection,
+      onSelectFurniture: selectById,
     }),
-    [selectedFurniture, handleOpenDeleteDialog, rotateSelection],
+    [
+      selectedFurniture,
+      outlinerItems,
+      handleOpenDeleteDialog,
+      rotateSelection,
+      selectById,
+    ],
   )
 
   const catalogProps = useMemo<EditorCatalogProps>(
@@ -293,7 +309,12 @@ function App() {
 
   return (
     <TooltipProvider>
-      <div className="relative size-full" aria-busy={startupLoadingActive}>
+      <div
+        className="relative size-full"
+        aria-busy={startupLoadingActive}
+        aria-label="3D room canvas"
+        aria-describedby="editor-accessibility-help"
+      >
         <Canvas
           className="absolute inset-0 z-0"
           camera={{
@@ -320,6 +341,7 @@ function App() {
                 onSelectionChange={handleSelectionChange}
                 onHistoryChange={handleHistoryChange}
                 onAssetsReady={handleAssetsReady}
+                onFurnitureChange={handleSceneItemsChange}
               />
             </Suspense>
           </SceneAssetErrorBoundary>

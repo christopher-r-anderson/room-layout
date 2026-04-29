@@ -12,6 +12,10 @@ import { CurrentSelectionStatus } from './components/selection/current-selection
 import { ButtonGroup } from '@/components/ui/button-group'
 import { HistoryTools } from './components/history/history-tools'
 import { SelectionTools } from './components/selection/selection-tools'
+import {
+  FurnitureOutliner,
+  type FurnitureOutlinerItem,
+} from './components/selection/furniture-outliner'
 
 export interface EditorStartupProps {
   assetError: boolean
@@ -28,8 +32,10 @@ export interface EditorHistoryProps {
 
 export interface EditorSelectionProps {
   selectedFurniture: FurnitureItem | null
+  outlinerItems: FurnitureOutlinerItem[]
   onOpenDeleteDialog: () => void
   onRotateSelection: (direction: -1 | 1) => void
+  onSelectFurniture: (id: string) => void
 }
 
 export interface EditorCatalogProps {
@@ -48,6 +54,8 @@ export interface EditorDialogsProps {
   isInfoDialogOpen: boolean
   onInfoDialogOpenChange: (open: boolean) => void
 }
+
+const ACCESSIBILITY_HELP_ID = 'editor-accessibility-help'
 
 interface EditorOverlayProps {
   editorInteractionsEnabled: boolean
@@ -109,6 +117,22 @@ export function EditorOverlay({
           <CurrentSelectionStatus
             selectedFurniture={selection.selectedFurniture}
             className="pointer-events-auto"
+          />
+          <p
+            id={ACCESSIBILITY_HELP_ID}
+            className="mt-2 max-w-sm rounded-md bg-muted/70 px-2 py-1 text-xs/relaxed text-muted-foreground pointer-events-auto"
+          >
+            Use the furniture list to select items without using the canvas.
+            Editing controls are available in the toolbar; movement controls
+            will be added later.
+          </p>
+        </div>
+
+        <div className="self-end pointer-events-auto">
+          <FurnitureOutliner
+            descriptionId={ACCESSIBILITY_HELP_ID}
+            items={selection.outlinerItems}
+            onSelect={selection.onSelectFurniture}
           />
         </div>
 

@@ -45,11 +45,13 @@ export function Scene({
   onSelectionChange,
   onHistoryChange,
   onAssetsReady,
+  onFurnitureChange,
 }: {
   ref: React.Ref<SceneRef>
   onSelectionChange?: (item: FurnitureItem | null) => void
   onHistoryChange?: (availability: SceneHistoryAvailability) => void
   onAssetsReady?: () => void
+  onFurnitureChange?: (items: FurnitureItem[]) => void
 }) {
   const camera = useThree((state) => state.camera)
   const canvasSize = useThree((state) => state.size)
@@ -150,6 +152,10 @@ export function Scene({
   useEffect(() => {
     onHistoryChange?.(historyAvailability)
   }, [historyAvailability, onHistoryChange])
+
+  useEffect(() => {
+    onFurnitureChange?.(furniture)
+  }, [furniture, onFurnitureChange])
 
   useEffect(() => {
     if (hasReportedAssetsReadyRef.current) {

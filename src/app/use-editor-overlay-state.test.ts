@@ -33,6 +33,7 @@ describe('useEditorOverlayState', () => {
       canRedo: false,
     })
     expect(result.current.catalogIdToAdd).toBe(FURNITURE_CATALOG[0]?.id ?? '')
+    expect(result.current.outlinerItems).toEqual([])
   })
 
   it('handleSelectionChange sets and clears selected furniture', () => {
@@ -84,6 +85,26 @@ describe('useEditorOverlayState', () => {
     })
 
     expect(result.current.catalogIdToAdd).toBe('end-table-1')
+  })
+
+  it('maps scene items into minimal outliner item state', () => {
+    const { result } = renderHook(() => useEditorOverlayState())
+
+    act(() => {
+      result.current.handleSceneItemsChange([FURNITURE_ITEM])
+    })
+
+    expect(result.current.outlinerItems).toEqual([
+      { id: 'item-1', label: 'Leather Couch', selected: false },
+    ])
+
+    act(() => {
+      result.current.handleSelectionChange(FURNITURE_ITEM)
+    })
+
+    expect(result.current.outlinerItems).toEqual([
+      { id: 'item-1', label: 'Leather Couch', selected: true },
+    ])
   })
 
   it('resetOverlayState clears selection, message, and history availability', () => {

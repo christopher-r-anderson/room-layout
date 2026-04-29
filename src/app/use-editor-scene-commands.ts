@@ -20,6 +20,7 @@ interface EditorSceneCommands {
   confirmDeleteSelection: () => void
   redo: () => void
   rotateSelection: (direction: -1 | 1) => void
+  selectById: (id: string | null) => void
   undo: () => void
 }
 
@@ -40,6 +41,17 @@ export function useEditorSceneCommands({
       sceneRef.current?.rotateSelection(direction * rotationStepRadians)
     },
     [editorInteractionsEnabled, rotationStepRadians, sceneRef],
+  )
+
+  const selectById = useCallback(
+    (id: string | null) => {
+      if (!editorInteractionsEnabled) {
+        return
+      }
+
+      sceneRef.current?.selectById(id)
+    },
+    [editorInteractionsEnabled, sceneRef],
   )
 
   const undo = useCallback(() => {
@@ -121,6 +133,7 @@ export function useEditorSceneCommands({
     confirmDeleteSelection,
     redo,
     rotateSelection,
+    selectById,
     undo,
   }
 }
