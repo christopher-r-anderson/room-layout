@@ -25,6 +25,11 @@ import { useSceneDrag } from './use-scene-drag'
 import { useSceneImperativeApi } from './use-scene-imperative-api'
 import { useSceneSelection } from './use-scene-selection'
 
+interface SceneOutlinerItem {
+  id: string
+  name: string
+}
+
 const ROOM_HALF_SIZE = 3
 const FLOOR_PLANE_Y = 0
 const SNAP_SIZE = 0.5
@@ -51,7 +56,7 @@ export function Scene({
   onSelectionChange?: (item: FurnitureItem | null) => void
   onHistoryChange?: (availability: SceneHistoryAvailability) => void
   onAssetsReady?: () => void
-  onFurnitureChange?: (items: FurnitureItem[]) => void
+  onFurnitureChange?: (items: SceneOutlinerItem[]) => void
 }) {
   const camera = useThree((state) => state.camera)
   const canvasSize = useThree((state) => state.size)
@@ -153,9 +158,14 @@ export function Scene({
     onHistoryChange?.(historyAvailability)
   }, [historyAvailability, onHistoryChange])
 
+  const outlinerItems = useMemo<SceneOutlinerItem[]>(
+    () => furniture.map(({ id, name }) => ({ id, name })),
+    [furniture],
+  )
+
   useEffect(() => {
-    onFurnitureChange?.(furniture)
-  }, [furniture, onFurnitureChange])
+    onFurnitureChange?.(outlinerItems)
+  }, [onFurnitureChange, outlinerItems])
 
   useEffect(() => {
     if (hasReportedAssetsReadyRef.current) {

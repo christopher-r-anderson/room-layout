@@ -4,13 +4,18 @@ import { FURNITURE_CATALOG } from '@/scene/objects/furniture-catalog'
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
 import type { FurnitureOutlinerItem } from './components/selection/furniture-outliner'
 
+interface SceneItemSummary {
+  id: string
+  name: string
+}
+
 interface EditorOverlayState {
   catalogIdToAdd: string
   clearEditorMessage: () => void
   editorMessage: string | null
   handleHistoryChange: (availability: HistoryAvailability) => void
   handleSelectionChange: (item: FurnitureItem | null) => void
-  handleSceneItemsChange: (items: FurnitureItem[]) => void
+  handleSceneItemsChange: (items: SceneItemSummary[]) => void
   historyAvailability: HistoryAvailability
   outlinerItems: FurnitureOutlinerItem[]
   resetOverlayState: () => void
@@ -27,7 +32,7 @@ const INITIAL_HISTORY_AVAILABILITY: HistoryAvailability = {
 export function useEditorOverlayState(): EditorOverlayState {
   const [selectedFurniture, setSelectedFurniture] =
     useState<FurnitureItem | null>(null)
-  const [sceneItems, setSceneItems] = useState<FurnitureItem[]>([])
+  const [sceneItems, setSceneItems] = useState<SceneItemSummary[]>([])
   const [catalogIdToAdd, setCatalogIdToAdd] = useState(
     FURNITURE_CATALOG[0]?.id ?? '',
   )
@@ -40,7 +45,7 @@ export function useEditorOverlayState(): EditorOverlayState {
     setSelectedFurniture(item)
   }, [])
 
-  const handleSceneItemsChange = useCallback((items: FurnitureItem[]) => {
+  const handleSceneItemsChange = useCallback((items: SceneItemSummary[]) => {
     setSceneItems(items)
   }, [])
 

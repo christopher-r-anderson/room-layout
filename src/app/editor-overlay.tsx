@@ -113,7 +113,7 @@ export function EditorOverlay({
           />
         </div>
 
-        <div className="self-end">
+        <div className="col-start-1 row-start-3 sm:row-start-2 self-end">
           <CurrentSelectionStatus
             selectedFurniture={selection.selectedFurniture}
             className="pointer-events-auto"
@@ -128,15 +128,14 @@ export function EditorOverlay({
           </p>
         </div>
 
-        <div className="self-end pointer-events-auto">
-          <FurnitureOutliner
-            descriptionId={ACCESSIBILITY_HELP_ID}
-            items={selection.outlinerItems}
-            onSelect={selection.onSelectFurniture}
-          />
-        </div>
-
-        <div className="justify-self-end self-end">
+        <div className="col-start-2 row-start-3 sm:row-start-2 self-end justify-self-end flex flex-col items-end gap-2">
+          <div className="pointer-events-auto">
+            <FurnitureOutliner
+              descriptionId={ACCESSIBILITY_HELP_ID}
+              items={selection.outlinerItems}
+              onSelect={selection.onSelectFurniture}
+            />
+          </div>
           <CatalogDrawer
             open={catalog.isCatalogDrawerOpen}
             onOpenChange={catalog.onCatalogDrawerOpenChange}
