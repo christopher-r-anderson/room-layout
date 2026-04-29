@@ -61,10 +61,12 @@ export function applyMoveSelectionResultToHistory({
   history,
   result,
   commit,
+  baseline,
 }: {
   history: HistoryState<FurnitureItem[]>
   result: MoveSelectionResult
   commit: MoveCommitMode
+  baseline?: FurnitureItem[]
 }): HistoryState<FurnitureItem[]> {
   if (!result.ok) {
     return history
@@ -84,6 +86,17 @@ export function applyMoveSelectionResultToHistory({
   if (commit === 'defer') {
     return replaceHistoryPresent(
       history,
+      nextFurniture,
+      areFurnitureCollectionsEqual,
+    )
+  }
+
+  if (baseline) {
+    return commitHistoryPresent(
+      {
+        ...history,
+        present: baseline,
+      },
       nextFurniture,
       areFurnitureCollectionsEqual,
     )

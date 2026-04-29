@@ -68,6 +68,7 @@ export function useSceneImperativeApi({
   const selectedIdRef = useRef(selectedId)
   const furnitureRef = useRef(furniture)
   const dragStateRef = useRef(dragState)
+  const deferredMoveBaselineRef = useRef<FurnitureItem[] | null>(null)
 
   useEffect(() => {
     historyRef.current = history
@@ -110,8 +111,9 @@ export function useSceneImperativeApi({
       moveSelection: (delta, options) => {
         const commit = options?.commit ?? 'immediate'
         const currentSelectedId = selectedIdRef.current
+        const currentFurniture = historyRef.current.present
         const selectedItem = currentSelectedId
-          ? furnitureRef.current.find((item) => item.id === currentSelectedId)
+          ? currentFurniture.find((item) => item.id === currentSelectedId)
           : null
 
         if (!selectedItem && !currentSelectedId) {
@@ -123,7 +125,7 @@ export function useSceneImperativeApi({
         }
 
         const result = moveSelectionToPosition({
-          furniture: furnitureRef.current,
+          furniture: currentFurniture,
           selectedId: currentSelectedId,
           nextPosition: {
             x: selectedItem.position[0] + delta.x,
@@ -141,7 +143,18 @@ export function useSceneImperativeApi({
           history: historyRef.current,
           result,
           commit,
+          baseline:
+            commit === 'immediate'
+              ? (deferredMoveBaselineRef.current ?? undefined)
+              : undefined,
         })
+
+        if (commit === 'defer' && !deferredMoveBaselineRef.current) {
+          deferredMoveBaselineRef.current = historyRef.current.present
+        }
+        if (commit === 'immediate') {
+          deferredMoveBaselineRef.current = null
+        }
 
         historyRef.current = nextHistory
         setHistory(nextHistory)
@@ -150,8 +163,9 @@ export function useSceneImperativeApi({
       },
       setSelectionPosition: (position, options) => {
         const commit = options?.commit ?? 'immediate'
+        const currentFurniture = historyRef.current.present
         const result = moveSelectionToPosition({
-          furniture: furnitureRef.current,
+          furniture: currentFurniture,
           selectedId: selectedIdRef.current,
           nextPosition: {
             x: position.x,
@@ -169,7 +183,18 @@ export function useSceneImperativeApi({
           history: historyRef.current,
           result,
           commit,
+          baseline:
+            commit === 'immediate'
+              ? (deferredMoveBaselineRef.current ?? undefined)
+              : undefined,
         })
+
+        if (commit === 'defer' && !deferredMoveBaselineRef.current) {
+          deferredMoveBaselineRef.current = historyRef.current.present
+        }
+        if (commit === 'immediate') {
+          deferredMoveBaselineRef.current = null
+        }
 
         historyRef.current = nextHistory
         setHistory(nextHistory)
@@ -191,6 +216,7 @@ export function useSceneImperativeApi({
         })
 
         historyRef.current = operationResult.history
+        deferredMoveBaselineRef.current = null
         setHistory(operationResult.history)
 
         if (operationResult.incrementInstanceId) {
@@ -216,6 +242,7 @@ export function useSceneImperativeApi({
         }
 
         historyRef.current = operationResult.history
+        deferredMoveBaselineRef.current = null
         setHistory(operationResult.history)
 
         if (
@@ -242,6 +269,7 @@ export function useSceneImperativeApi({
         }
 
         historyRef.current = undoResult.history
+        deferredMoveBaselineRef.current = null
         selectedIdRef.current = undoResult.selectedId
         setHistory(undoResult.history)
         setSelectedIdAndResolveObject(undoResult.selectedId)
@@ -260,6 +288,7 @@ export function useSceneImperativeApi({
         }
 
         historyRef.current = redoResult.history
+        deferredMoveBaselineRef.current = null
         selectedIdRef.current = redoResult.selectedId
         setHistory(redoResult.history)
         setSelectedIdAndResolveObject(redoResult.selectedId)
