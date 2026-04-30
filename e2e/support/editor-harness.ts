@@ -77,6 +77,22 @@ export async function readSceneState(page: Page): Promise<BrowserSceneState> {
   return rawState
 }
 
+export async function readPoliteAnnouncement(page: Page) {
+  const text = await page.locator('[aria-live="polite"]').textContent()
+
+  return text?.trim() ?? ''
+}
+
+export async function readAssertiveAnnouncement(page: Page) {
+  const text = await page.locator('[aria-live="assertive"]').textContent()
+
+  return text?.trim() ?? ''
+}
+
+export async function waitForPoliteAnnouncement(page: Page, expected: string) {
+  await expect.poll(async () => readPoliteAnnouncement(page)).toBe(expected)
+}
+
 export async function waitForEditorReady(page: Page) {
   await expect(page.getByRole('button', { name: 'Add Furniture' })).toBeEnabled(
     { timeout: EDITOR_READY_TIMEOUT_MS },

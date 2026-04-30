@@ -645,44 +645,48 @@ function App() {
 
   return (
     <TooltipProvider>
-      <div className="relative size-full" aria-busy={startupLoadingActive}>
+      <main className="relative size-full" aria-busy={startupLoadingActive}>
         <p id="scene-instructions" className="sr-only">
           Interactive 3D room editor. Use the furniture list to select items and
           the selected item panel to move, rotate, or delete them without
           dragging.
         </p>
-        <Canvas
+        <section
           aria-describedby="scene-instructions"
           aria-label="Interactive 3D room editor"
           className="absolute inset-0 z-0"
-          camera={{
-            position: [3, 2.5, 3],
-            fov: 50,
-          }}
-          onPointerMissed={() => {
-            if (!editorInteractionsEnabled) {
-              return
-            }
-
-            handleClearSelection()
-          }}
-          shadows
         >
-          <color attach="background" args={['#f0f0f0']} />
-          <SceneAssetErrorBoundary
-            key={sceneVersion}
-            onError={handleSceneAssetError}
+          <Canvas
+            className="absolute inset-0 z-0"
+            camera={{
+              position: [3, 2.5, 3],
+              fov: 50,
+            }}
+            onPointerMissed={() => {
+              if (!editorInteractionsEnabled) {
+                return
+              }
+
+              handleClearSelection()
+            }}
+            shadows
           >
-            <Suspense fallback={null}>
-              <Scene
-                ref={sceneRef}
-                onSelectionChange={handleSceneSelectionChange}
-                onHistoryChange={handleSceneHistoryChange}
-                onAssetsReady={handleSceneAssetsReady}
-              />
-            </Suspense>
-          </SceneAssetErrorBoundary>
-        </Canvas>
+            <color attach="background" args={['#f0f0f0']} />
+            <SceneAssetErrorBoundary
+              key={sceneVersion}
+              onError={handleSceneAssetError}
+            >
+              <Suspense fallback={null}>
+                <Scene
+                  ref={sceneRef}
+                  onSelectionChange={handleSceneSelectionChange}
+                  onHistoryChange={handleSceneHistoryChange}
+                  onAssetsReady={handleSceneAssetsReady}
+                />
+              </Suspense>
+            </SceneAssetErrorBoundary>
+          </Canvas>
+        </section>
 
         <EditorOverlay
           editorInteractionsEnabled={editorInteractionsEnabled}
@@ -698,7 +702,7 @@ function App() {
           politeMessage={politeAnnouncement}
           assertiveMessage={assertiveAnnouncement}
         />
-      </div>
+      </main>
     </TooltipProvider>
   )
 }

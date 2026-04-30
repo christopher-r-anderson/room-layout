@@ -50,6 +50,15 @@ Deliver a small, polished 3D room-layout editor demo that demonstrates productio
 - [ ] Add hover affordance (subtle outline/highlight) for discoverability.
 - [x] Ensure all primary interactions are keyboard reachable.
 
+### Accessibility and No-Mouse Editing (Completed)
+
+- [x] Add deterministic scene command/read-model contracts (`selectById`, `moveSelection`, `getReadModel`) with explicit movement result reasons.
+- [x] Add outliner-based selection and selected-item inspector controls for no-mouse editing flows.
+- [x] Route keyboard and inspector movement through shared scene commands with deterministic outcomes.
+- [x] Add centralized screen-reader announcements for selection, movement outcomes, add/delete, and undo/redo events.
+- [x] Add deterministic outliner focus reconciliation after delete and external selection replacement/loss.
+- [x] Add Playwright + axe accessibility audits for baseline shell/dialog states and outliner/inspector states.
+
 ### Camera and Visual Polish (Core)
 
 - [ ] Add camera presets with smooth transitions (for example: isometric, top, doorway).
@@ -68,6 +77,7 @@ Deliver a small, polished 3D room-layout editor demo that demonstrates productio
 - Playwright now covers browser-realistic startup loading, startup failure/retry, and undo/redo user flows.
 - Browser perf traces run through the same harness with a separate non-gating lane.
 - Repo scripts, CI coverage, and README guidance are in place for the browser test workflows.
+- Chromium accessibility audits now run through Playwright + axe for baseline shell/dialog states plus outliner and inspector surfaces.
 
 ### Future Quality Work
 

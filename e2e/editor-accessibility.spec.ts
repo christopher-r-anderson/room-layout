@@ -3,6 +3,7 @@ import {
   addFurniture,
   openEditor,
   readSceneState,
+  waitForPoliteAnnouncement,
   waitForItemCount,
 } from './support/editor-harness'
 
@@ -46,6 +47,7 @@ test('supports outliner selection and inspector movement without the canvas', as
     .click()
 
   await waitForItemCount(page, 1)
+  await waitForPoliteAnnouncement(page, 'Leather Couch removed from room.')
   await expect(page.getByRole('button', { name: /^End Table/i })).toBeFocused()
   await expect(
     page.getByRole('button', { name: /^Leather Couch/i }),
