@@ -158,14 +158,14 @@ export function Scene({
     onHistoryChange?.(historyAvailability)
   }, [historyAvailability, onHistoryChange])
 
-  const outlinerItems = useMemo<SceneOutlinerItem[]>(
-    () => furniture.map(({ id, name }) => ({ id, name })),
-    [furniture],
-  )
+  const prevOutlinerKeyRef = useRef<string>('')
 
   useEffect(() => {
-    onFurnitureChange?.(outlinerItems)
-  }, [onFurnitureChange, outlinerItems])
+    const key = furniture.map(({ id, name }) => `${id}:${name}`).join(',')
+    if (key === prevOutlinerKeyRef.current) return
+    prevOutlinerKeyRef.current = key
+    onFurnitureChange?.(furniture.map(({ id, name }) => ({ id, name })))
+  }, [furniture, onFurnitureChange])
 
   useEffect(() => {
     if (hasReportedAssetsReadyRef.current) {
