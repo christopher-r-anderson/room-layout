@@ -4,6 +4,7 @@ import { act, renderHook } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { FURNITURE_CATALOG } from '@/scene/objects/furniture-catalog'
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
+import type { SceneReadModel } from '@/scene/scene.types'
 import { useEditorOverlayState } from './use-editor-overlay-state'
 
 const FURNITURE_ITEM: FurnitureItem = {
@@ -22,10 +23,19 @@ const FURNITURE_ITEM: FurnitureItem = {
   rotationY: 0,
 }
 
+const SCENE_READ_MODEL: SceneReadModel = {
+  selectedId: 'item-1',
+  items: [FURNITURE_ITEM],
+}
+
 describe('useEditorOverlayState', () => {
   it('starts with the expected initial state', () => {
     const { result } = renderHook(() => useEditorOverlayState())
 
+    expect(result.current.sceneReadModel).toEqual({
+      selectedId: null,
+      items: [],
+    })
     expect(result.current.selectedFurniture).toBeNull()
     expect(result.current.editorMessage).toBeNull()
     expect(result.current.historyAvailability).toEqual({
@@ -62,6 +72,16 @@ describe('useEditorOverlayState', () => {
     })
   })
 
+  it('handleSceneReadModelChange stores the latest scene list and selected id', () => {
+    const { result } = renderHook(() => useEditorOverlayState())
+
+    act(() => {
+      result.current.handleSceneReadModelChange(SCENE_READ_MODEL)
+    })
+
+    expect(result.current.sceneReadModel).toEqual(SCENE_READ_MODEL)
+  })
+
   it('setEditorMessage and clearEditorMessage update editor message state', () => {
     const { result } = renderHook(() => useEditorOverlayState())
 
@@ -91,6 +111,7 @@ describe('useEditorOverlayState', () => {
 
     act(() => {
       result.current.handleSelectionChange(FURNITURE_ITEM)
+      result.current.handleSceneReadModelChange(SCENE_READ_MODEL)
       result.current.setEditorMessage('temporary')
       result.current.handleHistoryChange({ canUndo: true, canRedo: true })
       result.current.setCatalogIdToAdd('end-table-1')
@@ -100,6 +121,10 @@ describe('useEditorOverlayState', () => {
       result.current.resetOverlayState()
     })
 
+    expect(result.current.sceneReadModel).toEqual({
+      selectedId: null,
+      items: [],
+    })
     expect(result.current.selectedFurniture).toBeNull()
     expect(result.current.editorMessage).toBeNull()
     expect(result.current.historyAvailability).toEqual({

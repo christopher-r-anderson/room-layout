@@ -8,12 +8,19 @@ import {
   useEffect,
   useMemo,
   useRef,
+  useState,
 } from 'react'
-import type { SceneRef } from './scene/scene.types'
+import type {
+  MoveSelectionResult,
+  MoveSource,
+  SceneReadModel,
+  SceneRef,
+} from './scene/scene.types'
 import type {
   EditorCatalogProps,
   EditorDialogsProps,
   EditorHistoryProps,
+  EditorSceneProps,
   EditorSelectionProps,
   EditorStartupProps,
 } from './app/editor-overlay'
@@ -28,6 +35,8 @@ import { useEditorKeyboardShortcuts } from './app/use-editor-keyboard-shortcuts'
 import { useEditorOverlayState } from './app/use-editor-overlay-state'
 import { useEditorSceneCommands } from './app/use-editor-scene-commands'
 import { useSceneStartupState } from './app/use-scene-startup-state'
+import { ScreenReaderAnnouncer } from './app/components/scene/screen-reader-announcer'
+import type { SceneOutlinerFocusRequest } from './app/components/scene/scene-outliner'
 import { TooltipProvider } from './components/ui/tooltip'
 
 interface BrowserSceneState {
@@ -58,6 +67,28 @@ declare global {
 }
 
 const ROTATION_STEP_RADIANS = Math.PI / 12
+const MOVEMENT_ANNOUNCEMENT_DELAY_MS = 180
+
+function formatCoordinate(value: number) {
+  return `${value.toFixed(1)} meters`
+}
+
+function formatMoveBlockedMessage(
+  reason: Exclude<MoveSelectionResult, { ok: true }>['reason'],
+) {
+  switch (reason) {
+    case 'blocked-bounds':
+      return 'Movement blocked by room bounds.'
+    case 'blocked-collision':
+      return 'Movement blocked by another furniture item.'
+    case 'dragging':
+      return 'Finish dragging before using movement controls.'
+    case 'no-selection':
+      return 'Select a furniture item first.'
+    case 'no-op':
+      return ''
+  }
+}
 
 class SceneAssetErrorBoundary extends Component<
   {
@@ -105,9 +136,11 @@ function App() {
     clearEditorMessage,
     editorMessage,
     handleHistoryChange,
+    handleSceneReadModelChange,
     handleSelectionChange,
     historyAvailability,
     resetOverlayState,
+    sceneReadModel,
     selectedFurniture,
     setCatalogIdToAdd,
     setEditorMessage,
@@ -145,6 +178,21 @@ function App() {
     setCatalogOpen,
     setInfoOpen,
   } = dialogState
+  const [politeAnnouncement, setPoliteAnnouncement] = useState('')
+  const [assertiveAnnouncement, setAssertiveAnnouncement] = useState('')
+  const [outlinerFocusRequest, setOutlinerFocusRequest] =
+    useState<SceneOutlinerFocusRequest | null>(null)
+  const movementAnnouncementTimeoutRef = useRef<number | null>(null)
+  const previousSelectedIdRef = useRef<string | null>(null)
+
+  const clearQueuedMovementAnnouncement = useCallback(() => {
+    if (movementAnnouncementTimeoutRef.current === null) {
+      return
+    }
+
+    window.clearTimeout(movementAnnouncementTimeoutRef.current)
+    movementAnnouncementTimeoutRef.current = null
+  }, [])
 
   const resetEditorShellState = useCallback(() => {
     runEditorShellReset({
@@ -152,6 +200,94 @@ function App() {
       sceneRef,
     })
   }, [resetOverlayState])
+
+  const announcePolite = useCallback(
+    (message: string) => {
+      if (!message) {
+        return
+      }
+
+      clearQueuedMovementAnnouncement()
+      setPoliteAnnouncement(message)
+    },
+    [clearQueuedMovementAnnouncement],
+  )
+
+  const queueMovementAnnouncement = useCallback(
+    (message: string) => {
+      if (!message) {
+        return
+      }
+
+      clearQueuedMovementAnnouncement()
+
+      movementAnnouncementTimeoutRef.current = window.setTimeout(() => {
+        setPoliteAnnouncement(message)
+        movementAnnouncementTimeoutRef.current = null
+      }, MOVEMENT_ANNOUNCEMENT_DELAY_MS)
+    },
+    [clearQueuedMovementAnnouncement],
+  )
+
+  const syncSceneReadModel = useCallback(
+    (options?: {
+      announceSelectionChange?: boolean
+      requestOutlinerFocus?: boolean
+    }): SceneReadModel | null => {
+      const nextReadModel = sceneRef.current?.getReadModel() ?? null
+
+      if (!nextReadModel) {
+        return null
+      }
+
+      const previousSelectedId = previousSelectedIdRef.current
+      const selectionChanged = previousSelectedId !== nextReadModel.selectedId
+
+      handleSceneReadModelChange(nextReadModel)
+
+      if (selectionChanged && options?.announceSelectionChange !== false) {
+        if (nextReadModel.selectedId) {
+          const selectedItem = nextReadModel.items.find(
+            (item) => item.id === nextReadModel.selectedId,
+          )
+
+          if (selectedItem) {
+            announcePolite(`${selectedItem.name} selected.`)
+          }
+        } else if (previousSelectedId) {
+          announcePolite('Selection cleared.')
+        }
+      }
+
+      if (
+        selectionChanged &&
+        options?.requestOutlinerFocus !== false &&
+        !isModalOpen &&
+        outlinerFocusRequest === null
+      ) {
+        if (nextReadModel.selectedId) {
+          setOutlinerFocusRequest({
+            token: Date.now(),
+            targetSelectedId: nextReadModel.selectedId,
+          })
+        } else if (previousSelectedId) {
+          setOutlinerFocusRequest({
+            token: Date.now(),
+            focusContainer: true,
+          })
+        }
+      }
+
+      previousSelectedIdRef.current = nextReadModel.selectedId
+      return nextReadModel
+    },
+    [
+      announcePolite,
+      handleSceneReadModelChange,
+      isModalOpen,
+      outlinerFocusRequest,
+    ],
+  )
 
   const handleCatalogDrawerOpenChange = useCallback(
     (open: boolean) => {
@@ -172,10 +308,164 @@ function App() {
     }
   }, [clearEditorMessage, openDelete])
 
+  const handleAddFurniture = useCallback(() => {
+    const added = addFurniture()
+    const nextReadModel = syncSceneReadModel({
+      announceSelectionChange: false,
+      requestOutlinerFocus: false,
+    })
+
+    if (added) {
+      const addedItem = nextReadModel?.items.find(
+        (item) => item.id === nextReadModel.selectedId,
+      )
+
+      if (addedItem) {
+        announcePolite(`${addedItem.name} added to room.`)
+      }
+    }
+
+    return added
+  }, [addFurniture, announcePolite, syncSceneReadModel])
+
+  const handleSelectById = useCallback(
+    (id: string | null) => {
+      const result = sceneRef.current?.selectById(id) ?? {
+        ok: false as const,
+        status: 'not-found' as const,
+      }
+      syncSceneReadModel({
+        requestOutlinerFocus: false,
+      })
+
+      return result
+    },
+    [syncSceneReadModel],
+  )
+
+  const handleMoveSelection = useCallback(
+    (delta: { x: number; z: number }, options?: { source?: MoveSource }) => {
+      const result = moveSelection(delta, options)
+
+      if (result.ok) {
+        const nextReadModel = syncSceneReadModel()
+        const movedItem = nextReadModel?.items.find(
+          (item) => item.id === nextReadModel.selectedId,
+        )
+
+        if (movedItem) {
+          queueMovementAnnouncement(
+            `${movedItem.name} moved to X ${formatCoordinate(movedItem.position[0])} and Z ${formatCoordinate(movedItem.position[2])}.`,
+          )
+        }
+
+        return result
+      }
+
+      const blockedMessage = formatMoveBlockedMessage(result.reason)
+
+      if (blockedMessage) {
+        queueMovementAnnouncement(blockedMessage)
+      }
+
+      return result
+    },
+    [moveSelection, queueMovementAnnouncement, syncSceneReadModel],
+  )
+
+  const handleClearSelection = useCallback(() => {
+    clearSelection()
+    syncSceneReadModel({
+      requestOutlinerFocus: false,
+    })
+  }, [clearSelection, syncSceneReadModel])
+
   const handleConfirmDeleteSelection = useCallback(() => {
+    const deletedIndex = pendingDeleteFurniture
+      ? sceneReadModel.items.findIndex(
+          (item) => item.id === pendingDeleteFurniture.id,
+        )
+      : -1
+    const deletedName = pendingDeleteFurniture?.name ?? null
+
     closeDialog()
-    confirmDeleteSelection()
-  }, [closeDialog, confirmDeleteSelection])
+
+    const deleted = confirmDeleteSelection()
+    const nextReadModel = syncSceneReadModel()
+
+    if (deleted) {
+      setOutlinerFocusRequest({
+        token: Date.now(),
+        preferredIndex: deletedIndex >= 0 ? deletedIndex : 0,
+      })
+
+      if (deletedName) {
+        announcePolite(`${deletedName} removed from room.`)
+      }
+    }
+
+    return nextReadModel
+  }, [
+    announcePolite,
+    closeDialog,
+    confirmDeleteSelection,
+    pendingDeleteFurniture,
+    sceneReadModel.items,
+    syncSceneReadModel,
+  ])
+
+  const handleRotateSelection = useCallback(
+    (direction: -1 | 1) => {
+      const rotatingName = selectedFurniture?.name ?? null
+
+      rotateSelection(direction)
+      syncSceneReadModel()
+
+      if (rotatingName) {
+        announcePolite(`${rotatingName} rotated.`)
+      }
+    },
+    [
+      announcePolite,
+      rotateSelection,
+      selectedFurniture?.name,
+      syncSceneReadModel,
+    ],
+  )
+
+  const handleUndo = useCallback(() => {
+    undo()
+    syncSceneReadModel()
+    announcePolite('Undo complete.')
+  }, [announcePolite, syncSceneReadModel, undo])
+
+  const handleRedo = useCallback(() => {
+    redo()
+    syncSceneReadModel()
+    announcePolite('Redo complete.')
+  }, [announcePolite, redo, syncSceneReadModel])
+
+  const handleSceneSelectionChange = useCallback(
+    (item: EditorSelectionProps['selectedFurniture']) => {
+      handleSelectionChange(item)
+      syncSceneReadModel({
+        requestOutlinerFocus: false,
+      })
+    },
+    [handleSelectionChange, syncSceneReadModel],
+  )
+
+  const handleSceneHistoryChange = useCallback(
+    (availability: EditorHistoryProps['historyAvailability']) => {
+      handleHistoryChange(availability)
+      syncSceneReadModel()
+    },
+    [handleHistoryChange, syncSceneReadModel],
+  )
+
+  const handleOutlinerFocusHandled = useCallback(() => {
+    setOutlinerFocusRequest(null)
+  }, [])
 
   const handleSceneAssetError = useCallback(
     (error: Error) => {
@@ -184,9 +474,23 @@ function App() {
         recordAssetError: handleAssetError,
         resetEditorShellState,
       })
+      clearQueuedMovementAnnouncement()
+      setAssertiveAnnouncement(
+        'Unable to load room editor assets. Retry available.',
+      )
     },
-    [closeAllDialogs, handleAssetError, resetEditorShellState],
+    [
+      clearQueuedMovementAnnouncement,
+      closeAllDialogs,
+      handleAssetError,
+      resetEditorShellState,
+    ],
   )
+
+  const handleSceneAssetsReady = useCallback(() => {
+    handleAssetsReady()
+    syncSceneReadModel()
+  }, [handleAssetsReady, syncSceneReadModel])
 
   const handleRetryAssetLoading = useCallback(() => {
     runStartupRetryTransition({
@@ -194,7 +498,20 @@ function App() {
       resetEditorShellState,
       retryAssetLoading,
     })
-  }, [closeAllDialogs, resetEditorShellState, retryAssetLoading])
+    clearQueuedMovementAnnouncement()
+    setAssertiveAnnouncement('')
+  }, [
+    clearQueuedMovementAnnouncement,
+    closeAllDialogs,
+    resetEditorShellState,
+    retryAssetLoading,
+  ])
+
+  useEffect(() => {
+    return () => {
+      clearQueuedMovementAnnouncement()
+    }
+  }, [clearQueuedMovementAnnouncement])
 
   const startupProps = useMemo<EditorStartupProps>(
     () => ({
@@ -212,31 +529,55 @@ function App() {
   )
 
   const historyProps = useMemo<EditorHistoryProps>(
-    () => ({ historyAvailability, onUndo: undo, onRedo: redo }),
-    [historyAvailability, undo, redo],
+    () => ({ historyAvailability, onUndo: handleUndo, onRedo: handleRedo }),
+    [handleRedo, handleUndo, historyAvailability],
   )
 
   const selectionProps = useMemo<EditorSelectionProps>(
     () => ({
       selectedFurniture,
+      onMoveSelection: handleMoveSelection,
       onOpenDeleteDialog: handleOpenDeleteDialog,
-      onRotateSelection: rotateSelection,
+      onRotateSelection: handleRotateSelection,
     }),
-    [selectedFurniture, handleOpenDeleteDialog, rotateSelection],
+    [
+      handleMoveSelection,
+      handleOpenDeleteDialog,
+      handleRotateSelection,
+      selectedFurniture,
+    ],
+  )
+
+  const sceneProps = useMemo<EditorSceneProps>(
+    () => ({
+      focusRequest: outlinerFocusRequest,
+      onFocusHandled: handleOutlinerFocusHandled,
+      onSelectById: handleSelectById,
+      readModel: sceneReadModel,
+      sceneInteractionsDisabled: !editorInteractionsEnabled || isModalOpen,
+    }),
+    [
+      editorInteractionsEnabled,
+      handleOutlinerFocusHandled,
+      handleSelectById,
+      isModalOpen,
+      outlinerFocusRequest,
+      sceneReadModel,
+    ],
   )
 
   const catalogProps = useMemo<EditorCatalogProps>(
     () => ({
       catalogIdToAdd,
       isCatalogDrawerOpen,
-      onAddFurniture: addFurniture,
+      onAddFurniture: handleAddFurniture,
       onCatalogIdToAddChange: setCatalogIdToAdd,
       onCatalogDrawerOpenChange: handleCatalogDrawerOpenChange,
     }),
     [
       catalogIdToAdd,
+      handleAddFurniture,
       isCatalogDrawerOpen,
-      addFurniture,
       setCatalogIdToAdd,
       handleCatalogDrawerOpenChange,
     ],
@@ -292,18 +633,27 @@ function App() {
     canRedo: historyAvailability.canRedo,
     hasSelection: selectedFurniture !== null,
     isModalOpen,
-    onUndo: undo,
-    onRedo: redo,
+    onUndo: handleUndo,
+    onRedo: handleRedo,
     onOpenDeleteDialog: handleOpenDeleteDialog,
-    onMoveSelection: moveSelection,
-    onClearSelection: clearSelection,
-    onRotate: rotateSelection,
+    onMoveSelection: (delta) => {
+      handleMoveSelection(delta, { source: 'keyboard' })
+    },
+    onClearSelection: handleClearSelection,
+    onRotate: handleRotateSelection,
   })
 
   return (
     <TooltipProvider>
       <div className="relative size-full" aria-busy={startupLoadingActive}>
+        <p id="scene-instructions" className="sr-only">
+          Interactive 3D room editor. Use the furniture list to select items and
+          the selected item panel to move, rotate, or delete them without
+          dragging.
+        </p>
         <Canvas
+          aria-describedby="scene-instructions"
+          aria-label="Interactive 3D room editor"
           className="absolute inset-0 z-0"
           camera={{
             position: [3, 2.5, 3],
@@ -314,7 +664,7 @@ function App() {
               return
             }
 
-            sceneRef.current?.clearSelection()
+            handleClearSelection()
           }}
           shadows
         >
@@ -326,9 +676,9 @@ function App() {
             <Suspense fallback={null}>
               <Scene
                 ref={sceneRef}
-                onSelectionChange={handleSelectionChange}
-                onHistoryChange={handleHistoryChange}
-                onAssetsReady={handleAssetsReady}
+                onSelectionChange={handleSceneSelectionChange}
+                onHistoryChange={handleSceneHistoryChange}
+                onAssetsReady={handleSceneAssetsReady}
               />
             </Suspense>
           </SceneAssetErrorBoundary>
@@ -339,9 +689,14 @@ function App() {
           statusMessage={editorMessage}
           startup={startupProps}
           history={historyProps}
+          scene={sceneProps}
           selection={selectionProps}
           catalog={catalogProps}
           dialogs={dialogsProps}
+        />
+        <ScreenReaderAnnouncer
+          politeMessage={politeAnnouncement}
+          assertiveMessage={assertiveAnnouncement}
         />
       </div>
     </TooltipProvider>

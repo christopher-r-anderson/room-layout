@@ -525,6 +525,37 @@ describe('useSceneImperativeApi', () => {
     expect(options.setSelectedIdAndResolveObject).toHaveBeenCalledWith(null)
   })
 
+  it('deleteSelection updates the read model immediately after a successful delete', () => {
+    const item = createFurnitureItem('item-1')
+    const nextHistory = createHistoryState<FurnitureItem[]>([])
+    mockDeleteSelectionFromHistory.mockReturnValueOnce({
+      history: nextHistory,
+      deleted: true,
+      deletedId: 'item-1',
+    })
+    const options = defaultOptions({
+      furniture: [item],
+      history: createHistoryState([item]),
+      selectedId: 'item-1',
+    })
+    const sceneRef = getSceneRef(options)
+    renderHook(() => {
+      useSceneImperativeApi(options)
+    })
+
+    let readModel: ReturnType<SceneRef['getReadModel']> | null = null
+
+    act(() => {
+      sceneRef.current?.deleteSelection()
+      readModel = sceneRef.current?.getReadModel() ?? null
+    })
+
+    expect(readModel).toEqual({
+      selectedId: null,
+      items: [],
+    })
+  })
+
   it('deleteSelection clears drag state when deleting the dragged item', () => {
     const nextHistory = createHistoryState<FurnitureItem[]>([])
     mockDeleteSelectionFromHistory.mockReturnValueOnce({

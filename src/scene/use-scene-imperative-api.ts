@@ -213,6 +213,7 @@ export function useSceneImperativeApi({
         )
 
         historyRef.current = nextHistory
+        furnitureRef.current = nextHistory.present
         setHistory(nextHistory)
 
         return {
@@ -235,6 +236,7 @@ export function useSceneImperativeApi({
         })
 
         historyRef.current = operationResult.history
+        furnitureRef.current = operationResult.history.present
         setHistory(operationResult.history)
 
         if (operationResult.incrementInstanceId) {
@@ -260,6 +262,7 @@ export function useSceneImperativeApi({
         }
 
         historyRef.current = operationResult.history
+        furnitureRef.current = operationResult.history.present
         setHistory(operationResult.history)
 
         if (
@@ -286,6 +289,7 @@ export function useSceneImperativeApi({
         }
 
         historyRef.current = undoResult.history
+        furnitureRef.current = undoResult.history.present
         selectedIdRef.current = undoResult.selectedId
         setHistory(undoResult.history)
         setSelectedIdAndResolveObject(undoResult.selectedId)
@@ -304,6 +308,7 @@ export function useSceneImperativeApi({
         }
 
         historyRef.current = redoResult.history
+        furnitureRef.current = redoResult.history.present
         selectedIdRef.current = redoResult.selectedId
         setHistory(redoResult.history)
         setSelectedIdAndResolveObject(redoResult.selectedId)

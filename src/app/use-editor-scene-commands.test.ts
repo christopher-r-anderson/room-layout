@@ -114,7 +114,7 @@ describe('useEditorSceneCommands', () => {
 
     deleteSelection.mockReturnValueOnce(false)
     act(() => {
-      result.current.confirmDeleteSelection()
+      expect(result.current.confirmDeleteSelection()).toBe(false)
     })
     expect(setEditorMessage).toHaveBeenLastCalledWith(
       DELETE_SELECTION_MISSING_MESSAGE,
@@ -122,7 +122,7 @@ describe('useEditorSceneCommands', () => {
 
     deleteSelection.mockReturnValueOnce(true)
     act(() => {
-      result.current.confirmDeleteSelection()
+      expect(result.current.confirmDeleteSelection()).toBe(true)
     })
     expect(clearEditorMessage).toHaveBeenCalledTimes(1)
   })
@@ -145,7 +145,9 @@ describe('useEditorSceneCommands', () => {
 
     act(() => {
       expect(result.current.addFurniture()).toBe(false)
-      expect(result.current.moveSelection({ x: 0.5, z: 0 })).toEqual({
+      expect(
+        result.current.moveSelection({ x: 0.5, z: 0 }, { source: 'inspector' }),
+      ).toEqual({
         ok: false,
         reason: 'no-selection',
       })
@@ -188,7 +190,9 @@ describe('useEditorSceneCommands', () => {
 
     act(() => {
       expect(result.current.addFurniture()).toBe(false)
-      expect(result.current.moveSelection({ x: 0.5, z: 0 })).toEqual({
+      expect(
+        result.current.moveSelection({ x: 0.5, z: 0 }, { source: 'inspector' }),
+      ).toEqual({
         ok: false,
         reason: 'no-selection',
       })
@@ -237,7 +241,9 @@ describe('useEditorSceneCommands', () => {
     )
 
     act(() => {
-      expect(result.current.moveSelection({ x: 0.5, z: 0 })).toEqual({
+      expect(
+        result.current.moveSelection({ x: 0.5, z: 0 }, { source: 'inspector' }),
+      ).toEqual({
         ok: true,
         position: [1, 0, 0],
       })
@@ -254,7 +260,7 @@ describe('useEditorSceneCommands', () => {
 
     expect(moveSelection).toHaveBeenCalledWith(
       { x: 0.5, z: 0 },
-      { source: 'keyboard' },
+      { source: 'inspector' },
     )
     expect(selectById).toHaveBeenCalledWith('item-1')
     expect(getReadModel).toHaveBeenCalledTimes(1)

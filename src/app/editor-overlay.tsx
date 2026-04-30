@@ -1,4 +1,9 @@
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
+import type {
+  MoveSelectionResult,
+  MoveSource,
+  SceneReadModel,
+} from '@/scene/scene.types'
 import { DeleteConfirmationDialog } from './components/selection/delete-confirmation-dialog'
 import type { HistoryAvailability } from './components/history/history.types'
 import { StatusMessage } from './components/status-message'
@@ -12,6 +17,11 @@ import { CurrentSelectionStatus } from './components/selection/current-selection
 import { ButtonGroup } from '@/components/ui/button-group'
 import { HistoryTools } from './components/history/history-tools'
 import { SelectionTools } from './components/selection/selection-tools'
+import {
+  SceneOutliner,
+  type SceneOutlinerFocusRequest,
+} from './components/scene/scene-outliner'
+import { SceneInspector } from './components/scene/scene-inspector'
 
 export interface EditorStartupProps {
   assetError: boolean
@@ -28,8 +38,20 @@ export interface EditorHistoryProps {
 
 export interface EditorSelectionProps {
   selectedFurniture: FurnitureItem | null
+  onMoveSelection: (
+    delta: { x: number; z: number },
+    options?: { source?: MoveSource },
+  ) => MoveSelectionResult
   onOpenDeleteDialog: () => void
   onRotateSelection: (direction: -1 | 1) => void
+}
+
+export interface EditorSceneProps {
+  focusRequest: SceneOutlinerFocusRequest | null
+  onFocusHandled: () => void
+  onSelectById: (id: string | null) => void
+  readModel: SceneReadModel
+  sceneInteractionsDisabled: boolean
 }
 
 export interface EditorCatalogProps {
@@ -54,6 +76,7 @@ interface EditorOverlayProps {
   statusMessage: string | null
   startup: EditorStartupProps
   history: EditorHistoryProps
+  scene: EditorSceneProps
   selection: EditorSelectionProps
   catalog: EditorCatalogProps
   dialogs: EditorDialogsProps
@@ -64,6 +87,7 @@ export function EditorOverlay({
   statusMessage,
   startup,
   history,
+  scene,
   selection,
   catalog,
   dialogs,
@@ -105,14 +129,32 @@ export function EditorOverlay({
           />
         </div>
 
-        <div className="self-end">
+        <div className="self-end flex w-full max-w-sm flex-col gap-2">
           <CurrentSelectionStatus
             selectedFurniture={selection.selectedFurniture}
             className="pointer-events-auto"
           />
+          <SceneOutliner
+            readModel={scene.readModel}
+            disabled={scene.sceneInteractionsDisabled}
+            focusRequest={scene.focusRequest}
+            onFocusHandled={scene.onFocusHandled}
+            onSelectById={scene.onSelectById}
+          />
+          <SceneInspector
+            disabled={scene.sceneInteractionsDisabled}
+            onMoveSelection={selection.onMoveSelection}
+            onOpenDeleteDialog={selection.onOpenDeleteDialog}
+            onRotateSelection={selection.onRotateSelection}
+            selectedFurniture={selection.selectedFurniture}
+          />
         </div>
 
-        <div className="justify-self-end self-end">
+        <div className="justify-self-end self-end flex flex-col items-end gap-2">
+          <p className="pointer-events-auto max-w-xs rounded-md bg-background/90 px-2 py-1 text-xs/relaxed text-muted-foreground shadow-sm backdrop-blur-sm">
+            Keyboard: arrow keys move, Shift moves farther, Alt moves finely,
+            and Escape clears selection.
+          </p>
           <CatalogDrawer
             open={catalog.isCatalogDrawerOpen}
             onOpenChange={catalog.onCatalogDrawerOpenChange}

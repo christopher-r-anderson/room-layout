@@ -5,6 +5,7 @@ import {
   DELETE_SELECTION_MISSING_MESSAGE,
 } from './editor-command-messages'
 import type {
+  MoveSource,
   MoveSelectionResult,
   SceneReadModel,
   SceneRef,
@@ -23,9 +24,12 @@ interface UseEditorSceneCommandsOptions {
 interface EditorSceneCommands {
   addFurniture: () => boolean
   clearSelection: () => void
-  confirmDeleteSelection: () => void
+  confirmDeleteSelection: () => boolean
   getSceneReadModel: () => SceneReadModel | null
-  moveSelection: (delta: { x: number; z: number }) => MoveSelectionResult
+  moveSelection: (
+    delta: { x: number; z: number },
+    options?: { source?: MoveSource },
+  ) => MoveSelectionResult
   redo: () => void
   rotateSelection: (direction: -1 | 1) => void
   selectById: (id: string | null) => SelectByIdResult
@@ -76,7 +80,10 @@ export function useEditorSceneCommands({
   }, [editorInteractionsEnabled, sceneRef])
 
   const moveSelection = useCallback(
-    (delta: { x: number; z: number }): MoveSelectionResult => {
+    (
+      delta: { x: number; z: number },
+      options?: { source?: MoveSource },
+    ): MoveSelectionResult => {
       if (!editorInteractionsEnabled) {
         return {
           ok: false,
@@ -94,7 +101,7 @@ export function useEditorSceneCommands({
       }
 
       return scene.moveSelection(delta, {
-        source: 'keyboard',
+        source: options?.source ?? 'keyboard',
       })
     },
     [editorInteractionsEnabled, sceneRef],
@@ -165,23 +172,24 @@ export function useEditorSceneCommands({
 
   const confirmDeleteSelection = useCallback(() => {
     if (!editorInteractionsEnabled) {
-      return
+      return false
     }
 
     const scene = sceneRef.current
 
     if (!scene) {
-      return
+      return false
     }
 
     const deleted = scene.deleteSelection()
 
     if (!deleted) {
       setEditorMessage(DELETE_SELECTION_MISSING_MESSAGE)
-      return
+      return false
     }
 
     clearEditorMessage()
+    return true
   }, [
     clearEditorMessage,
     editorInteractionsEnabled,

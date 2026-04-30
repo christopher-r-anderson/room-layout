@@ -10,7 +10,6 @@ export function CurrentSelectionStatus({
 }) {
   return (
     <p
-      role="status"
       className={cn(
         'rounded-md bg-muted px-2 py-1 inline',
         !selectedFurniture && 'text-muted-foreground',
