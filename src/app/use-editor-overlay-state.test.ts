@@ -45,20 +45,6 @@ describe('useEditorOverlayState', () => {
     expect(result.current.catalogIdToAdd).toBe(FURNITURE_CATALOG[0]?.id ?? '')
   })
 
-  it('handleSelectionChange sets and clears selected furniture', () => {
-    const { result } = renderHook(() => useEditorOverlayState())
-
-    act(() => {
-      result.current.handleSelectionChange(FURNITURE_ITEM)
-    })
-    expect(result.current.selectedFurniture).toEqual(FURNITURE_ITEM)
-
-    act(() => {
-      result.current.handleSelectionChange(null)
-    })
-    expect(result.current.selectedFurniture).toBeNull()
-  })
-
   it('handleHistoryChange updates availability', () => {
     const { result } = renderHook(() => useEditorOverlayState())
 
@@ -80,6 +66,7 @@ describe('useEditorOverlayState', () => {
     })
 
     expect(result.current.sceneReadModel).toEqual(SCENE_READ_MODEL)
+    expect(result.current.selectedFurniture).toEqual(FURNITURE_ITEM)
   })
 
   it('setEditorMessage and clearEditorMessage update editor message state', () => {
@@ -110,7 +97,6 @@ describe('useEditorOverlayState', () => {
     const { result } = renderHook(() => useEditorOverlayState())
 
     act(() => {
-      result.current.handleSelectionChange(FURNITURE_ITEM)
       result.current.handleSceneReadModelChange(SCENE_READ_MODEL)
       result.current.setEditorMessage('temporary')
       result.current.handleHistoryChange({ canUndo: true, canRedo: true })

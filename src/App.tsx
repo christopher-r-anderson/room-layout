@@ -6,24 +6,13 @@ import {
   type ReactNode,
   useCallback,
   useEffect,
-  useMemo,
   useRef,
-  useState,
 } from 'react'
 import type {
   MoveSelectionResult,
   MoveSource,
-  SceneReadModel,
   SceneRef,
 } from './scene/scene.types'
-import type {
-  EditorCatalogProps,
-  EditorDialogsProps,
-  EditorHistoryProps,
-  EditorSceneProps,
-  EditorSelectionProps,
-  EditorStartupProps,
-} from './app/editor-overlay'
 import { EditorOverlay } from './app/editor-overlay'
 import { runEditorShellReset } from './app/editor-shell-reset'
 import {
@@ -33,10 +22,12 @@ import {
 import { useEditorDialogState } from './app/use-editor-dialog-state'
 import { useEditorKeyboardShortcuts } from './app/use-editor-keyboard-shortcuts'
 import { useEditorOverlayState } from './app/use-editor-overlay-state'
+import { useEditorOverlayProps } from './app/use-editor-overlay-props'
 import { useEditorSceneCommands } from './app/use-editor-scene-commands'
+import { useEditorAnnouncements } from './app/use-editor-announcements'
+import { useSceneReadModelSync } from './app/use-scene-read-model-sync'
 import { useSceneStartupState } from './app/use-scene-startup-state'
 import { ScreenReaderAnnouncer } from './app/components/scene/screen-reader-announcer'
-import type { SceneOutlinerFocusRequest } from './app/components/scene/scene-outliner'
 import { TooltipProvider } from './components/ui/tooltip'
 
 interface BrowserSceneState {
@@ -67,7 +58,6 @@ declare global {
 }
 
 const ROTATION_STEP_RADIANS = Math.PI / 12
-const MOVEMENT_ANNOUNCEMENT_DELAY_MS = 180
 
 function formatCoordinate(value: number) {
   return `${value.toFixed(1)} meters`
@@ -137,7 +127,6 @@ function App() {
     editorMessage,
     handleHistoryChange,
     handleSceneReadModelChange,
-    handleSelectionChange,
     historyAvailability,
     resetOverlayState,
     sceneReadModel,
@@ -178,21 +167,26 @@ function App() {
     setCatalogOpen,
     setInfoOpen,
   } = dialogState
-  const [politeAnnouncement, setPoliteAnnouncement] = useState('')
-  const [assertiveAnnouncement, setAssertiveAnnouncement] = useState('')
-  const [outlinerFocusRequest, setOutlinerFocusRequest] =
-    useState<SceneOutlinerFocusRequest | null>(null)
-  const movementAnnouncementTimeoutRef = useRef<number | null>(null)
-  const previousSelectedIdRef = useRef<string | null>(null)
-
-  const clearQueuedMovementAnnouncement = useCallback(() => {
-    if (movementAnnouncementTimeoutRef.current === null) {
-      return
-    }
-
-    window.clearTimeout(movementAnnouncementTimeoutRef.current)
-    movementAnnouncementTimeoutRef.current = null
-  }, [])
+  const {
+    politeAnnouncement,
+    assertiveAnnouncement,
+    announcePolite,
+    announceAssertive,
+    clearAssertiveAnnouncement,
+    queueMovementAnnouncement,
+    clearQueuedMovementAnnouncement,
+  } = useEditorAnnouncements()
+  const {
+    syncSceneReadModel,
+    outlinerFocusRequest,
+    handleOutlinerFocusHandled,
+    requestOutlinerFocusByIndex,
+  } = useSceneReadModelSync({
+    sceneRef,
+    isModalOpen,
+    handleSceneReadModelChange,
+    announcePolite,
+  })
 
   const resetEditorShellState = useCallback(() => {
     runEditorShellReset({
@@ -200,94 +194,6 @@ function App() {
       sceneRef,
     })
   }, [resetOverlayState])
-
-  const announcePolite = useCallback(
-    (message: string) => {
-      if (!message) {
-        return
-      }
-
-      clearQueuedMovementAnnouncement()
-      setPoliteAnnouncement(message)
-    },
-    [clearQueuedMovementAnnouncement],
-  )
-
-  const queueMovementAnnouncement = useCallback(
-    (message: string) => {
-      if (!message) {
-        return
-      }
-
-      clearQueuedMovementAnnouncement()
-
-      movementAnnouncementTimeoutRef.current = window.setTimeout(() => {
-        setPoliteAnnouncement(message)
-        movementAnnouncementTimeoutRef.current = null
-      }, MOVEMENT_ANNOUNCEMENT_DELAY_MS)
-    },
-    [clearQueuedMovementAnnouncement],
-  )
-
-  const syncSceneReadModel = useCallback(
-    (options?: {
-      announceSelectionChange?: boolean
-      requestOutlinerFocus?: boolean
-    }): SceneReadModel | null => {
-      const nextReadModel = sceneRef.current?.getReadModel() ?? null
-
-      if (!nextReadModel) {
-        return null
-      }
-
-      const previousSelectedId = previousSelectedIdRef.current
-      const selectionChanged = previousSelectedId !== nextReadModel.selectedId
-
-      handleSceneReadModelChange(nextReadModel)
-
-      if (selectionChanged && options?.announceSelectionChange !== false) {
-        if (nextReadModel.selectedId) {
-          const selectedItem = nextReadModel.items.find(
-            (item) => item.id === nextReadModel.selectedId,
-          )
-
-          if (selectedItem) {
-            announcePolite(`${selectedItem.name} selected.`)
-          }
-        } else if (previousSelectedId) {
-          announcePolite('Selection cleared.')
-        }
-      }
-
-      if (
-        selectionChanged &&
-        options?.requestOutlinerFocus !== false &&
-        !isModalOpen &&
-        outlinerFocusRequest === null
-      ) {
-        if (nextReadModel.selectedId) {
-          setOutlinerFocusRequest({
-            token: Date.now(),
-            targetSelectedId: nextReadModel.selectedId,
-          })
-        } else if (previousSelectedId) {
-          setOutlinerFocusRequest({
-            token: Date.now(),
-            focusContainer: true,
-          })
-        }
-      }
-
-      previousSelectedIdRef.current = nextReadModel.selectedId
-      return nextReadModel
-    },
-    [
-      announcePolite,
-      handleSceneReadModelChange,
-      isModalOpen,
-      outlinerFocusRequest,
-    ],
-  )
 
   const handleCatalogDrawerOpenChange = useCallback(
     (open: boolean) => {
@@ -394,10 +300,7 @@ function App() {
     const nextReadModel = syncSceneReadModel()
 
     if (deleted) {
-      setOutlinerFocusRequest({
-        token: Date.now(),
-        preferredIndex: deletedIndex >= 0 ? deletedIndex : 0,
-      })
+      requestOutlinerFocusByIndex(deletedIndex >= 0 ? deletedIndex : 0)
 
       if (deletedName) {
         announcePolite(`${deletedName} removed from room.`)
@@ -410,6 +313,7 @@ function App() {
     closeDialog,
     confirmDeleteSelection,
     pendingDeleteFurniture,
+    requestOutlinerFocusByIndex,
     sceneReadModel.items,
     syncSceneReadModel,
   ])
@@ -445,27 +349,19 @@ function App() {
     announcePolite('Redo complete.')
   }, [announcePolite, redo, syncSceneReadModel])
 
-  const handleSceneSelectionChange = useCallback(
-    (item: EditorSelectionProps['selectedFurniture']) => {
-      handleSelectionChange(item)
-      syncSceneReadModel({
-        requestOutlinerFocus: false,
-      })
-    },
-    [handleSelectionChange, syncSceneReadModel],
-  )
+  const handleSceneSelectionChange = useCallback(() => {
+    syncSceneReadModel({
+      requestOutlinerFocus: false,
+    })
+  }, [syncSceneReadModel])
 
   const handleSceneHistoryChange = useCallback(
-    (availability: EditorHistoryProps['historyAvailability']) => {
+    (availability: Parameters<typeof handleHistoryChange>[0]) => {
       handleHistoryChange(availability)
       syncSceneReadModel()
     },
     [handleHistoryChange, syncSceneReadModel],
   )
-
-  const handleOutlinerFocusHandled = useCallback(() => {
-    setOutlinerFocusRequest(null)
-  }, [])
 
   const handleSceneAssetError = useCallback(
     (error: Error) => {
@@ -474,13 +370,10 @@ function App() {
         recordAssetError: handleAssetError,
         resetEditorShellState,
       })
-      clearQueuedMovementAnnouncement()
-      setAssertiveAnnouncement(
-        'Unable to load room editor assets. Retry available.',
-      )
+      announceAssertive('Unable to load room editor assets. Retry available.')
     },
     [
-      clearQueuedMovementAnnouncement,
+      announceAssertive,
       closeAllDialogs,
       handleAssetError,
       resetEditorShellState,
@@ -498,10 +391,9 @@ function App() {
       resetEditorShellState,
       retryAssetLoading,
     })
-    clearQueuedMovementAnnouncement()
-    setAssertiveAnnouncement('')
+    clearAssertiveAnnouncement()
   }, [
-    clearQueuedMovementAnnouncement,
+    clearAssertiveAnnouncement,
     closeAllDialogs,
     resetEditorShellState,
     retryAssetLoading,
@@ -512,95 +404,42 @@ function App() {
       clearQueuedMovementAnnouncement()
     }
   }, [clearQueuedMovementAnnouncement])
-
-  const startupProps = useMemo<EditorStartupProps>(
-    () => ({
-      assetError: Boolean(assetError),
-      startupLoadingActive,
-      startupOverlayActive,
-      onRetryAssetLoading: handleRetryAssetLoading,
-    }),
-    [
-      assetError,
-      startupLoadingActive,
-      startupOverlayActive,
-      handleRetryAssetLoading,
-    ],
-  )
-
-  const historyProps = useMemo<EditorHistoryProps>(
-    () => ({ historyAvailability, onUndo: handleUndo, onRedo: handleRedo }),
-    [handleRedo, handleUndo, historyAvailability],
-  )
-
-  const selectionProps = useMemo<EditorSelectionProps>(
-    () => ({
-      selectedFurniture,
-      onMoveSelection: handleMoveSelection,
-      onOpenDeleteDialog: handleOpenDeleteDialog,
-      onRotateSelection: handleRotateSelection,
-    }),
-    [
-      handleMoveSelection,
-      handleOpenDeleteDialog,
-      handleRotateSelection,
-      selectedFurniture,
-    ],
-  )
-
-  const sceneProps = useMemo<EditorSceneProps>(
-    () => ({
-      focusRequest: outlinerFocusRequest,
-      onFocusHandled: handleOutlinerFocusHandled,
-      onSelectById: handleSelectById,
-      readModel: sceneReadModel,
-      sceneInteractionsDisabled: !editorInteractionsEnabled || isModalOpen,
-    }),
-    [
-      editorInteractionsEnabled,
-      handleOutlinerFocusHandled,
-      handleSelectById,
-      isModalOpen,
-      outlinerFocusRequest,
-      sceneReadModel,
-    ],
-  )
-
-  const catalogProps = useMemo<EditorCatalogProps>(
-    () => ({
-      catalogIdToAdd,
-      isCatalogDrawerOpen,
-      onAddFurniture: handleAddFurniture,
-      onCatalogIdToAddChange: setCatalogIdToAdd,
-      onCatalogDrawerOpenChange: handleCatalogDrawerOpenChange,
-    }),
-    [
-      catalogIdToAdd,
-      handleAddFurniture,
-      isCatalogDrawerOpen,
-      setCatalogIdToAdd,
-      handleCatalogDrawerOpenChange,
-    ],
-  )
-
-  const dialogsProps = useMemo<EditorDialogsProps>(
-    () => ({
-      isDeleteDialogOpen,
-      pendingDeleteFurniture,
-      onCloseDeleteDialog: closeDialog,
-      onConfirmDeleteSelection: handleConfirmDeleteSelection,
-      isInfoDialogOpen,
-      onInfoDialogOpenChange: setInfoOpen,
-    }),
-    [
-      isDeleteDialogOpen,
-      pendingDeleteFurniture,
-      closeDialog,
-      handleConfirmDeleteSelection,
-      isInfoDialogOpen,
-      setInfoOpen,
-    ],
-  )
+  const {
+    startupProps,
+    historyProps,
+    sceneProps,
+    selectionProps,
+    catalogProps,
+    dialogsProps,
+  } = useEditorOverlayProps({
+    assetError: Boolean(assetError),
+    startupLoadingActive,
+    startupOverlayActive,
+    onRetryAssetLoading: handleRetryAssetLoading,
+    historyAvailability,
+    onUndo: handleUndo,
+    onRedo: handleRedo,
+    focusRequest: outlinerFocusRequest,
+    onFocusHandled: handleOutlinerFocusHandled,
+    onSelectById: handleSelectById,
+    readModel: sceneReadModel,
+    sceneInteractionsDisabled: !editorInteractionsEnabled || isModalOpen,
+    selectedFurniture,
+    onMoveSelection: handleMoveSelection,
+    onOpenDeleteDialog: handleOpenDeleteDialog,
+    onRotateSelection: handleRotateSelection,
+    catalogIdToAdd,
+    isCatalogDrawerOpen,
+    onAddFurniture: handleAddFurniture,
+    onCatalogIdToAddChange: setCatalogIdToAdd,
+    onCatalogDrawerOpenChange: handleCatalogDrawerOpenChange,
+    isDeleteDialogOpen,
+    pendingDeleteFurniture,
+    onCloseDeleteDialog: closeDialog,
+    onConfirmDeleteSelection: handleConfirmDeleteSelection,
+    isInfoDialogOpen,
+    onInfoDialogOpenChange: setInfoOpen,
+  })
 
   useEffect(() => {
     if (!import.meta.env.DEV) {

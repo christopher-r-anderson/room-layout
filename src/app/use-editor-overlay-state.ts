@@ -10,7 +10,6 @@ interface EditorOverlayState {
   editorMessage: string | null
   handleHistoryChange: (availability: HistoryAvailability) => void
   handleSceneReadModelChange: (readModel: SceneReadModel) => void
-  handleSelectionChange: (item: FurnitureItem | null) => void
   historyAvailability: HistoryAvailability
   resetOverlayState: () => void
   sceneReadModel: SceneReadModel
@@ -42,10 +41,6 @@ export function useEditorOverlayState(): EditorOverlayState {
   const [historyAvailability, setHistoryAvailability] = useState(
     INITIAL_HISTORY_AVAILABILITY,
   )
-
-  const handleSelectionChange = useCallback((item: FurnitureItem | null) => {
-    setSelectedFurniture(item)
-  }, [])
 
   const handleHistoryChange = useCallback(
     (availability: HistoryAvailability) => {
@@ -89,7 +84,6 @@ export function useEditorOverlayState(): EditorOverlayState {
     editorMessage,
     handleHistoryChange,
     handleSceneReadModelChange,
-    handleSelectionChange,
     historyAvailability,
     resetOverlayState,
     sceneReadModel,

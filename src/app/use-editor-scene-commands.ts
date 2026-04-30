@@ -44,54 +44,43 @@ export function useEditorSceneCommands({
   sceneRef,
   setEditorMessage,
 }: UseEditorSceneCommandsOptions): EditorSceneCommands {
+  const getScene = useCallback(() => {
+    return sceneRef.current
+  }, [sceneRef])
+
+  const getEnabledScene = useCallback(() => {
+    if (!editorInteractionsEnabled) {
+      return null
+    }
+
+    return getScene()
+  }, [editorInteractionsEnabled, getScene])
+
   const rotateSelection = useCallback(
     (direction: -1 | 1) => {
-      if (!editorInteractionsEnabled) {
-        return
-      }
-
-      sceneRef.current?.rotateSelection(direction * rotationStepRadians)
+      getEnabledScene()?.rotateSelection(direction * rotationStepRadians)
     },
-    [editorInteractionsEnabled, rotationStepRadians, sceneRef],
+    [getEnabledScene, rotationStepRadians],
   )
 
   const undo = useCallback(() => {
-    if (!editorInteractionsEnabled) {
-      return
-    }
-
-    sceneRef.current?.undo()
-  }, [editorInteractionsEnabled, sceneRef])
+    getEnabledScene()?.undo()
+  }, [getEnabledScene])
 
   const redo = useCallback(() => {
-    if (!editorInteractionsEnabled) {
-      return
-    }
-
-    sceneRef.current?.redo()
-  }, [editorInteractionsEnabled, sceneRef])
+    getEnabledScene()?.redo()
+  }, [getEnabledScene])
 
   const clearSelection = useCallback(() => {
-    if (!editorInteractionsEnabled) {
-      return
-    }
-
-    sceneRef.current?.clearSelection()
-  }, [editorInteractionsEnabled, sceneRef])
+    getEnabledScene()?.clearSelection()
+  }, [getEnabledScene])
 
   const moveSelection = useCallback(
     (
       delta: { x: number; z: number },
       options?: { source?: MoveSource },
     ): MoveSelectionResult => {
-      if (!editorInteractionsEnabled) {
-        return {
-          ok: false,
-          reason: 'no-selection',
-        }
-      }
-
-      const scene = sceneRef.current
+      const scene = getEnabledScene()
 
       if (!scene) {
         return {
@@ -104,19 +93,12 @@ export function useEditorSceneCommands({
         source: options?.source ?? 'keyboard',
       })
     },
-    [editorInteractionsEnabled, sceneRef],
+    [getEnabledScene],
   )
 
   const selectById = useCallback(
     (id: string | null): SelectByIdResult => {
-      if (!editorInteractionsEnabled) {
-        return {
-          ok: false,
-          status: 'not-found',
-        }
-      }
-
-      const scene = sceneRef.current
+      const scene = getEnabledScene()
 
       if (!scene) {
         return {
@@ -127,23 +109,19 @@ export function useEditorSceneCommands({
 
       return scene.selectById(id)
     },
-    [editorInteractionsEnabled, sceneRef],
+    [getEnabledScene],
   )
 
   const getSceneReadModel = useCallback((): SceneReadModel | null => {
-    if (!editorInteractionsEnabled) {
-      return null
-    }
-
-    return sceneRef.current?.getReadModel() ?? null
-  }, [editorInteractionsEnabled, sceneRef])
+    return getEnabledScene()?.getReadModel() ?? null
+  }, [getEnabledScene])
 
   const addFurniture = useCallback(() => {
-    if (!editorInteractionsEnabled || !catalogIdToAdd) {
+    if (!catalogIdToAdd) {
       return false
     }
 
-    const scene = sceneRef.current
+    const scene = getEnabledScene()
 
     if (!scene) {
       return false
@@ -162,20 +140,10 @@ export function useEditorSceneCommands({
 
     clearEditorMessage()
     return true
-  }, [
-    catalogIdToAdd,
-    clearEditorMessage,
-    editorInteractionsEnabled,
-    sceneRef,
-    setEditorMessage,
-  ])
+  }, [catalogIdToAdd, clearEditorMessage, getEnabledScene, setEditorMessage])
 
   const confirmDeleteSelection = useCallback(() => {
-    if (!editorInteractionsEnabled) {
-      return false
-    }
-
-    const scene = sceneRef.current
+    const scene = getEnabledScene()
 
     if (!scene) {
       return false
@@ -190,12 +158,7 @@ export function useEditorSceneCommands({
 
     clearEditorMessage()
     return true
-  }, [
-    clearEditorMessage,
-    editorInteractionsEnabled,
-    sceneRef,
-    setEditorMessage,
-  ])
+  }, [clearEditorMessage, getEnabledScene, setEditorMessage])
 
   return {
     addFurniture,
