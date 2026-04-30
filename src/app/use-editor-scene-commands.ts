@@ -4,7 +4,12 @@ import {
   ADD_FURNITURE_UNKNOWN_CATALOG_MESSAGE,
   DELETE_SELECTION_MISSING_MESSAGE,
 } from './editor-command-messages'
-import type { SceneRef } from '@/scene/scene.types'
+import type {
+  MoveSelectionResult,
+  SceneReadModel,
+  SceneRef,
+  SelectByIdResult,
+} from '@/scene/scene.types'
 
 interface UseEditorSceneCommandsOptions {
   catalogIdToAdd: string
@@ -17,9 +22,13 @@ interface UseEditorSceneCommandsOptions {
 
 interface EditorSceneCommands {
   addFurniture: () => boolean
+  clearSelection: () => void
   confirmDeleteSelection: () => void
+  getSceneReadModel: () => SceneReadModel | null
+  moveSelection: (delta: { x: number; z: number }) => MoveSelectionResult
   redo: () => void
   rotateSelection: (direction: -1 | 1) => void
+  selectById: (id: string | null) => SelectByIdResult
   undo: () => void
 }
 
@@ -56,6 +65,70 @@ export function useEditorSceneCommands({
     }
 
     sceneRef.current?.redo()
+  }, [editorInteractionsEnabled, sceneRef])
+
+  const clearSelection = useCallback(() => {
+    if (!editorInteractionsEnabled) {
+      return
+    }
+
+    sceneRef.current?.clearSelection()
+  }, [editorInteractionsEnabled, sceneRef])
+
+  const moveSelection = useCallback(
+    (delta: { x: number; z: number }): MoveSelectionResult => {
+      if (!editorInteractionsEnabled) {
+        return {
+          ok: false,
+          reason: 'no-selection',
+        }
+      }
+
+      const scene = sceneRef.current
+
+      if (!scene) {
+        return {
+          ok: false,
+          reason: 'no-selection',
+        }
+      }
+
+      return scene.moveSelection(delta, {
+        source: 'keyboard',
+      })
+    },
+    [editorInteractionsEnabled, sceneRef],
+  )
+
+  const selectById = useCallback(
+    (id: string | null): SelectByIdResult => {
+      if (!editorInteractionsEnabled) {
+        return {
+          ok: false,
+          status: 'not-found',
+        }
+      }
+
+      const scene = sceneRef.current
+
+      if (!scene) {
+        return {
+          ok: false,
+          status: 'not-found',
+        }
+      }
+
+      return scene.selectById(id)
+    },
+    [editorInteractionsEnabled, sceneRef],
+  )
+
+  const getSceneReadModel = useCallback((): SceneReadModel | null => {
+    if (!editorInteractionsEnabled) {
+      return null
+    }
+
+    return sceneRef.current?.getReadModel() ?? null
   }, [editorInteractionsEnabled, sceneRef])
 
   const addFurniture = useCallback(() => {
@@ -118,9 +191,13 @@ export function useEditorSceneCommands({
 
   return {
     addFurniture,
+    clearSelection,
     confirmDeleteSelection,
+    getSceneReadModel,
+    moveSelection,
     redo,
     rotateSelection,
+    selectById,
     undo,
   }
 }

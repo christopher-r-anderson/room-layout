@@ -112,15 +112,22 @@ function App() {
     setCatalogIdToAdd,
     setEditorMessage,
   } = editorOverlayState
-  const { addFurniture, confirmDeleteSelection, redo, rotateSelection, undo } =
-    useEditorSceneCommands({
-      catalogIdToAdd,
-      clearEditorMessage,
-      editorInteractionsEnabled,
-      rotationStepRadians: ROTATION_STEP_RADIANS,
-      sceneRef,
-      setEditorMessage,
-    })
+  const {
+    addFurniture,
+    clearSelection,
+    confirmDeleteSelection,
+    moveSelection,
+    redo,
+    rotateSelection,
+    undo,
+  } = useEditorSceneCommands({
+    catalogIdToAdd,
+    clearEditorMessage,
+    editorInteractionsEnabled,
+    rotationStepRadians: ROTATION_STEP_RADIANS,
+    sceneRef,
+    setEditorMessage,
+  })
   const dialogState = useEditorDialogState({
     editorInteractionsEnabled,
     startupOverlayActive,
@@ -288,6 +295,8 @@ function App() {
     onUndo: undo,
     onRedo: redo,
     onOpenDeleteDialog: handleOpenDeleteDialog,
+    onMoveSelection: moveSelection,
+    onClearSelection: clearSelection,
     onRotate: rotateSelection,
   })
 
