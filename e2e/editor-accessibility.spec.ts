@@ -40,7 +40,7 @@ test('supports outliner selection and inspector movement without the canvas', as
     })
     .toBeCloseTo(selectedBeforeMove.position[0] + 0.5, 6)
 
-  await page.getByRole('button', { name: 'Remove selected item' }).click()
+  await page.getByRole('button', { name: 'Delete' }).click()
   await page
     .getByRole('alertdialog', { name: /delete furniture/i })
     .getByRole('button', { name: 'Delete' })

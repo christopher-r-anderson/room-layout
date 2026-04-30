@@ -10,7 +10,7 @@ import {
 const ROTATION_STEP_RADIANS = Math.PI / 12
 const NORMALIZED_RIGHT_ROTATION_RADIANS = Math.PI * 2 - ROTATION_STEP_RADIANS
 
-async function tabTo(page: Page, target: Locator, maxTabs = 8) {
+async function tabTo(page: Page, target: Locator, maxTabs = 20) {
   for (let index = 0; index < maxTabs; index += 1) {
     try {
       await expect(target).toBeFocused({ timeout: 50 })

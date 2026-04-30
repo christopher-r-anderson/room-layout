@@ -1,4 +1,3 @@
-import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
@@ -6,9 +5,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { Separator } from '@/components/ui/separator'
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
-import type { MoveSelectionResult, MoveSource } from '@/scene/scene.types'
 
 function formatCoordinate(value: number) {
   return `${value.toFixed(1)} m`
@@ -19,23 +16,10 @@ function formatRotation(rotationY: number) {
 }
 
 export function SceneInspector({
-  disabled,
-  onMoveSelection,
-  onOpenDeleteDialog,
-  onRotateSelection,
   selectedFurniture,
 }: {
-  disabled: boolean
-  onMoveSelection: (
-    delta: { x: number; z: number },
-    options?: { source?: MoveSource },
-  ) => MoveSelectionResult
-  onOpenDeleteDialog: () => void
-  onRotateSelection: (direction: -1 | 1) => void
   selectedFurniture: FurnitureItem | null
 }) {
-  const controlsDisabled = disabled || !selectedFurniture
-
   return (
     <section className="pointer-events-auto">
       <Card
@@ -44,11 +28,9 @@ export function SceneInspector({
       >
         <CardHeader>
           <CardTitle>Selected item</CardTitle>
-          <CardDescription>
-            Move, rotate, or remove the selected furniture.
-          </CardDescription>
+          <CardDescription>View selection details.</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-2">
           {selectedFurniture ? (
             <>
               <div>
@@ -70,88 +52,9 @@ export function SceneInspector({
             </>
           ) : (
             <p className="text-muted-foreground">
-              Select an item from the list or canvas to edit it.
+              Select an item from the list or canvas to inspect it.
             </p>
           )}
-
-          <Separator />
-
-          <div className="grid grid-cols-2 gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              disabled={controlsDisabled}
-              onClick={() => {
-                onMoveSelection({ x: 0, z: -0.5 }, { source: 'inspector' })
-              }}
-            >
-              Move up
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              disabled={controlsDisabled}
-              onClick={() => {
-                onMoveSelection({ x: 0, z: 0.5 }, { source: 'inspector' })
-              }}
-            >
-              Move down
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              disabled={controlsDisabled}
-              onClick={() => {
-                onMoveSelection({ x: -0.5, z: 0 }, { source: 'inspector' })
-              }}
-            >
-              Move left
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              disabled={controlsDisabled}
-              onClick={() => {
-                onMoveSelection({ x: 0.5, z: 0 }, { source: 'inspector' })
-              }}
-            >
-              Move right
-            </Button>
-          </div>
-
-          <div className="grid grid-cols-2 gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              disabled={controlsDisabled}
-              onClick={() => {
-                onRotateSelection(1)
-              }}
-            >
-              Rotate selected left
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              disabled={controlsDisabled}
-              onClick={() => {
-                onRotateSelection(-1)
-              }}
-            >
-              Rotate selected right
-            </Button>
-          </div>
-
-          <Button
-            type="button"
-            variant="destructive"
-            disabled={controlsDisabled}
-            onClick={() => {
-              onOpenDeleteDialog()
-            }}
-          >
-            Remove selected item
-          </Button>
         </CardContent>
       </Card>
     </section>

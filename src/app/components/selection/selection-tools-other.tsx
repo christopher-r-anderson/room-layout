@@ -3,7 +3,7 @@ import { IconRotate3d, IconTrash } from '@tabler/icons-react'
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
 import { ToolButton } from '@/components/ui/tool-button'
 
-export function SelectionTools({
+export function SelectionToolsOther({
   editorInteractionsEnabled,
   onOpenDeleteDialog,
   onRotateSelection,
@@ -14,11 +14,13 @@ export function SelectionTools({
   onRotateSelection: (direction: -1 | 1) => void
   selectedFurniture: FurnitureItem | null
 }) {
+  const controlsDisabled = !editorInteractionsEnabled || !selectedFurniture
+
   return (
-    <ButtonGroup aria-label="Selection Actions">
+    <ButtonGroup aria-label="Selection Other Actions">
       <ToolButton
         action={onOpenDeleteDialog}
-        disabled={!editorInteractionsEnabled || !selectedFurniture}
+        disabled={controlsDisabled}
         disabledMessage="No item selected"
         shortcuts="Delete Backspace"
         label="Delete"
@@ -28,7 +30,7 @@ export function SelectionTools({
         action={() => {
           onRotateSelection(1)
         }}
-        disabled={!editorInteractionsEnabled || !selectedFurniture}
+        disabled={controlsDisabled}
         disabledMessage="No item selected"
         shortcuts="Q"
         label="Rotate Left"
@@ -38,7 +40,7 @@ export function SelectionTools({
         action={() => {
           onRotateSelection(-1)
         }}
-        disabled={!editorInteractionsEnabled || !selectedFurniture}
+        disabled={controlsDisabled}
         disabledMessage="No item selected"
         shortcuts="E"
         label="Rotate Right"

@@ -32,13 +32,11 @@ test('axe audit passes for baseline and outliner/inspector editor states', async
   await outlinerSelectionButton.click()
   await expectNoA11yViolations(page, 'outliner visible with selected item')
 
-  const removeSelectedButton = page.getByRole('button', {
-    name: 'Remove selected item',
+  const deleteButton = page.getByRole('button', {
+    name: 'Delete',
   })
-  await expect(removeSelectedButton).toBeEnabled()
-  await expect(
-    page.getByRole('button', { name: 'Rotate selected left' }),
-  ).toBeEnabled()
+  await expect(deleteButton).toBeEnabled()
+  await expect(page.getByRole('button', { name: 'Rotate Left' })).toBeEnabled()
   await expectNoA11yViolations(
     page,
     'inspector visible with actionable controls',

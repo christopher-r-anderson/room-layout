@@ -1,10 +1,8 @@
 // @vitest-environment jsdom
 
 import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
-import type { MoveSelectionResult } from '@/scene/scene.types'
 import { SceneInspector } from './scene-inspector'
 
 const FURNITURE_ITEM: FurnitureItem = {
@@ -25,61 +23,20 @@ const FURNITURE_ITEM: FurnitureItem = {
 
 describe('SceneInspector', () => {
   it('shows an empty hint when no furniture is selected', () => {
-    const onMoveSelection = vi.fn<
-      (delta: { x: number; z: number }) => MoveSelectionResult
-    >(() => ({
-      ok: false,
-      reason: 'no-selection',
-    }))
-
-    render(
-      <SceneInspector
-        disabled={false}
-        onMoveSelection={onMoveSelection}
-        onOpenDeleteDialog={vi.fn()}
-        onRotateSelection={vi.fn()}
-        selectedFurniture={null}
-      />,
-    )
+    render(<SceneInspector selectedFurniture={null} />)
 
     expect(
-      screen.getByText(/select an item from the list or canvas to edit it/i),
+      screen.getByText(/select an item from the list or canvas to inspect it/i),
     ).toBeVisible()
-    expect(screen.getByRole('button', { name: 'Move right' })).toBeDisabled()
+    expect(screen.getByText('Selected item')).toBeVisible()
   })
 
-  it('routes inspector actions through the provided handlers', async () => {
-    const user = userEvent.setup()
-    const onMoveSelection = vi.fn(() => ({
-      ok: true as const,
-      position: [0.5, 0, 0] as [number, number, number],
-    }))
-    const onRotateSelection = vi.fn()
-    const onOpenDeleteDialog = vi.fn()
+  it('shows name, rotation, and coordinates for selected furniture', () => {
+    render(<SceneInspector selectedFurniture={FURNITURE_ITEM} />)
 
-    render(
-      <SceneInspector
-        disabled={false}
-        onMoveSelection={onMoveSelection}
-        onOpenDeleteDialog={onOpenDeleteDialog}
-        onRotateSelection={onRotateSelection}
-        selectedFurniture={FURNITURE_ITEM}
-      />,
-    )
-
-    await user.click(screen.getByRole('button', { name: 'Move right' }))
-    await user.click(
-      screen.getByRole('button', { name: 'Rotate selected left' }),
-    )
-    await user.click(
-      screen.getByRole('button', { name: 'Remove selected item' }),
-    )
-
-    expect(onMoveSelection).toHaveBeenCalledWith(
-      { x: 0.5, z: 0 },
-      { source: 'inspector' },
-    )
-    expect(onRotateSelection).toHaveBeenCalledWith(1)
-    expect(onOpenDeleteDialog).toHaveBeenCalledTimes(1)
+    expect(screen.getByText('Leather Couch')).toBeVisible()
+    expect(screen.getByText('Rotation: 0 deg')).toBeVisible()
+    expect(screen.getByText('X: 0.0 m')).toBeVisible()
+    expect(screen.getByText('Z: 0.0 m')).toBeVisible()
   })
 })

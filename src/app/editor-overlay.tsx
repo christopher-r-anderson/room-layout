@@ -14,9 +14,9 @@ import { InitializationProgress } from './components/initialization/initializati
 import { ProjectInfoButton } from './components/project-info/project-info-button'
 import { CatalogAddButton } from './components/catalog/catalog-add-button'
 import { CurrentSelectionStatus } from './components/selection/current-selection-status'
-import { ButtonGroup } from '@/components/ui/button-group'
 import { HistoryTools } from './components/history/history-tools'
-import { SelectionTools } from './components/selection/selection-tools'
+import { SelectionToolsMovement } from './components/selection/selection-tools-movement'
+import { SelectionToolsOther } from './components/selection/selection-tools-other'
 import {
   SceneOutliner,
   type SceneOutlinerFocusRequest,
@@ -95,12 +95,16 @@ export function EditorOverlay({
   return (
     <>
       <div
-        className="pointer-events-none absolute inset-2 gap-2 grid grid-cols-2 grid-rows-[min-content_min-content_1fr] sm:grid-rows-[min-content_1fr]"
+        className="pointer-events-none absolute inset-2 flex flex-col justify-between"
         inert={startup.startupOverlayActive}
         aria-hidden={startup.startupOverlayActive}
       >
-        <div className="col-span-2 sm:col-span-1">
-          <ButtonGroup aria-label="Toolbar" className="pointer-events-auto">
+        <div className="flex justify-between gap-2">
+          <div
+            role="toolbar"
+            aria-label="Editor actions"
+            className="pointer-events-auto flex w-full flex-wrap gap-2"
+          >
             <HistoryTools
               canRedo={history.historyAvailability.canRedo}
               canUndo={history.historyAvailability.canUndo}
@@ -108,62 +112,65 @@ export function EditorOverlay({
               onRedo={history.onRedo}
               onUndo={history.onUndo}
             />
-            <SelectionTools
+            <SelectionToolsMovement
+              editorInteractionsEnabled={editorInteractionsEnabled}
+              onMoveSelection={selection.onMoveSelection}
+              selectedFurniture={selection.selectedFurniture}
+            />
+            <SelectionToolsOther
               editorInteractionsEnabled={editorInteractionsEnabled}
               onOpenDeleteDialog={selection.onOpenDeleteDialog}
               onRotateSelection={selection.onRotateSelection}
               selectedFurniture={selection.selectedFurniture}
             />
-          </ButtonGroup>
-          <StatusMessage message={statusMessage} />
+          </div>
+
+          <div className="justify-self-end shrink-0 flex items-start gap-4">
+            <h1 className="text-lg font-semibold">Room Layout</h1>
+            <ProjectInfoDialog
+              open={dialogs.isInfoDialogOpen}
+              onOpenChange={dialogs.onInfoDialogOpenChange}
+              triggerButton={
+                <ProjectInfoButton className="pointer-events-auto" />
+              }
+            />
+          </div>
         </div>
 
-        <div className="col-span-2 sm:col-span-1 justify-self-end flex gap-4">
-          <h1 className="text-lg font-semibold">Room Layout</h1>
-          <ProjectInfoDialog
-            open={dialogs.isInfoDialogOpen}
-            onOpenChange={dialogs.onInfoDialogOpenChange}
-            triggerButton={
-              <ProjectInfoButton className="pointer-events-auto" />
-            }
-          />
-        </div>
+        <div className="flex justify-between gap-2">
+          <div className="flex max-w-sm flex-col gap-2">
+            <StatusMessage message={statusMessage} />
+            <CurrentSelectionStatus
+              selectedFurniture={selection.selectedFurniture}
+              className="pointer-events-auto"
+            />
+            <SceneOutliner
+              readModel={scene.readModel}
+              disabled={scene.sceneInteractionsDisabled}
+              focusRequest={scene.focusRequest}
+              onFocusHandled={scene.onFocusHandled}
+              onSelectById={scene.onSelectById}
+            />
+            <SceneInspector selectedFurniture={selection.selectedFurniture} />
+          </div>
 
-        <div className="self-end flex w-full max-w-sm flex-col gap-2">
-          <CurrentSelectionStatus
-            selectedFurniture={selection.selectedFurniture}
-            className="pointer-events-auto"
-          />
-          <SceneOutliner
-            readModel={scene.readModel}
-            disabled={scene.sceneInteractionsDisabled}
-            focusRequest={scene.focusRequest}
-            onFocusHandled={scene.onFocusHandled}
-            onSelectById={scene.onSelectById}
-          />
-          <SceneInspector
-            disabled={scene.sceneInteractionsDisabled}
-            onMoveSelection={selection.onMoveSelection}
-            onOpenDeleteDialog={selection.onOpenDeleteDialog}
-            onRotateSelection={selection.onRotateSelection}
-            selectedFurniture={selection.selectedFurniture}
-          />
-        </div>
-
-        <div className="justify-self-end self-end flex flex-col items-end gap-2">
-          <p className="pointer-events-auto max-w-xs rounded-md bg-background/90 px-2 py-1 text-xs/relaxed text-muted-foreground shadow-sm backdrop-blur-sm">
-            Keyboard: arrow keys move, Shift moves farther, Alt moves finely,
-            and Escape clears selection.
-          </p>
-          <CatalogDrawer
-            open={catalog.isCatalogDrawerOpen}
-            onOpenChange={catalog.onCatalogDrawerOpenChange}
-            triggerButton={<CatalogAddButton className="pointer-events-auto" />}
-            catalogIdToAdd={catalog.catalogIdToAdd}
-            editorInteractionsEnabled={editorInteractionsEnabled}
-            onAddFurniture={catalog.onAddFurniture}
-            onCatalogIdToAddChange={catalog.onCatalogIdToAddChange}
-          />
+          <div className="justify-self-end self-end flex flex-col items-end gap-2">
+            <p className="pointer-events-auto max-w-xs rounded-md bg-background/90 px-2 py-1 text-xs/relaxed text-muted-foreground shadow-sm backdrop-blur-sm">
+              Keyboard: arrow keys move, Shift moves farther, Alt moves finely,
+              and Escape clears selection.
+            </p>
+            <CatalogDrawer
+              open={catalog.isCatalogDrawerOpen}
+              onOpenChange={catalog.onCatalogDrawerOpenChange}
+              triggerButton={
+                <CatalogAddButton className="pointer-events-auto" />
+              }
+              catalogIdToAdd={catalog.catalogIdToAdd}
+              editorInteractionsEnabled={editorInteractionsEnabled}
+              onAddFurniture={catalog.onAddFurniture}
+              onCatalogIdToAddChange={catalog.onCatalogIdToAddChange}
+            />
+          </div>
         </div>
       </div>
 

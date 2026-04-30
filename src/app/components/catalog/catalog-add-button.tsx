@@ -9,6 +9,7 @@ export function CatalogAddButton({
 }: ComponentProps<typeof Button>) {
   return (
     <Button
+      autoFocus
       className={cn(
         'group relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-full transition-all duration-300 ease-in-out hover:w-42 focus-visible:w-42',
         className,

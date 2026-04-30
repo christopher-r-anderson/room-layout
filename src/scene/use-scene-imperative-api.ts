@@ -18,7 +18,7 @@ import { resolveMovedFurniturePosition } from '@/lib/three/furniture-layout'
 import { commitHistoryPresent } from '@/lib/ui/editor-history'
 import { redoSceneHistory, undoSceneHistory } from './scene-history-state'
 import { createSceneSnapshot } from './scene-snapshot'
-import type { SceneRef } from './scene.types'
+import type { MoveSource, SceneRef } from './scene.types'
 import type { FurnitureItem } from './objects/furniture.types'
 
 interface UseSceneImperativeApiOptions {
@@ -128,7 +128,7 @@ export function useSceneImperativeApi({
       },
       moveSelection: (
         delta: { x: number; z: number },
-        _options?: { source?: 'keyboard' | 'inspector' | 'drag' },
+        _options?: { source?: MoveSource },
       ) => {
         void _options
 

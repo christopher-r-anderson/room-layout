@@ -1,7 +1,7 @@
 import type { SceneSnapshot } from './scene-snapshot'
 import type { FurnitureItem } from './objects/furniture.types'
 
-export type MoveSource = 'keyboard' | 'inspector' | 'drag'
+export type MoveSource = 'keyboard' | 'inspector' | 'toolbar' | 'drag'
 
 export type MoveSelectionResult =
   | { ok: true; position: [number, number, number] }
