@@ -126,7 +126,9 @@ export function EditorOverlay({
           </div>
 
           <div className="justify-self-end shrink-0 flex items-start gap-4">
-            <h1 className="text-lg font-semibold">Room Layout</h1>
+            <h1 className="text-lg text-background font-semibold">
+              Room Layout
+            </h1>
             <ProjectInfoDialog
               open={dialogs.isInfoDialogOpen}
               onOpenChange={dialogs.onInfoDialogOpenChange}
