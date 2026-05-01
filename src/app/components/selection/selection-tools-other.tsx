@@ -3,7 +3,7 @@ import { IconRotate3d, IconTrash } from '@tabler/icons-react'
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
 import { ToolButton } from '@/components/ui/tool-button'
 
-export function SelectionTools({
+export function SelectionToolsOther({
   editorInteractionsEnabled,
   onOpenDeleteDialog,
   onRotateSelection,
@@ -14,12 +14,17 @@ export function SelectionTools({
   onRotateSelection: (direction: -1 | 1) => void
   selectedFurniture: FurnitureItem | null
 }) {
+  const controlsDisabled = !editorInteractionsEnabled || !selectedFurniture
+  const disabledMessage = !editorInteractionsEnabled
+    ? 'Editor interactions are unavailable while loading'
+    : 'No item selected'
+
   return (
-    <ButtonGroup aria-label="Selection Actions">
+    <ButtonGroup aria-label="Selection Other Actions">
       <ToolButton
         action={onOpenDeleteDialog}
-        disabled={!editorInteractionsEnabled || !selectedFurniture}
-        disabledMessage="No item selected"
+        disabled={controlsDisabled}
+        disabledMessage={disabledMessage}
         shortcuts="Delete Backspace"
         label="Delete"
         icon={<IconTrash />}
@@ -28,8 +33,8 @@ export function SelectionTools({
         action={() => {
           onRotateSelection(1)
         }}
-        disabled={!editorInteractionsEnabled || !selectedFurniture}
-        disabledMessage="No item selected"
+        disabled={controlsDisabled}
+        disabledMessage={disabledMessage}
         shortcuts="Q"
         label="Rotate Left"
         icon={<IconRotate3d className="-x-scale-100" />}
@@ -38,8 +43,8 @@ export function SelectionTools({
         action={() => {
           onRotateSelection(-1)
         }}
-        disabled={!editorInteractionsEnabled || !selectedFurniture}
-        disabledMessage="No item selected"
+        disabled={controlsDisabled}
+        disabledMessage={disabledMessage}
         shortcuts="E"
         label="Rotate Right"
         icon={<IconRotate3d />}

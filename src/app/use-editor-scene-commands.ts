@@ -4,7 +4,13 @@ import {
   ADD_FURNITURE_UNKNOWN_CATALOG_MESSAGE,
   DELETE_SELECTION_MISSING_MESSAGE,
 } from './editor-command-messages'
-import type { SceneRef } from '@/scene/scene.types'
+import type {
+  MoveSource,
+  MoveSelectionResult,
+  SceneReadModel,
+  SceneRef,
+  SelectByIdResult,
+} from '@/scene/scene.types'
 
 interface UseEditorSceneCommandsOptions {
   catalogIdToAdd: string
@@ -17,9 +23,16 @@ interface UseEditorSceneCommandsOptions {
 
 interface EditorSceneCommands {
   addFurniture: () => boolean
-  confirmDeleteSelection: () => void
+  clearSelection: () => void
+  confirmDeleteSelection: () => boolean
+  getSceneReadModel: () => SceneReadModel | null
+  moveSelection: (
+    delta: { x: number; z: number },
+    options?: { source?: MoveSource },
+  ) => MoveSelectionResult
   redo: () => void
   rotateSelection: (direction: -1 | 1) => void
+  selectById: (id: string | null) => SelectByIdResult
   undo: () => void
 }
 
@@ -31,39 +44,84 @@ export function useEditorSceneCommands({
   sceneRef,
   setEditorMessage,
 }: UseEditorSceneCommandsOptions): EditorSceneCommands {
+  const getScene = useCallback(() => {
+    return sceneRef.current
+  }, [sceneRef])
+
+  const getEnabledScene = useCallback(() => {
+    if (!editorInteractionsEnabled) {
+      return null
+    }
+
+    return getScene()
+  }, [editorInteractionsEnabled, getScene])
+
   const rotateSelection = useCallback(
     (direction: -1 | 1) => {
-      if (!editorInteractionsEnabled) {
-        return
-      }
-
-      sceneRef.current?.rotateSelection(direction * rotationStepRadians)
+      getEnabledScene()?.rotateSelection(direction * rotationStepRadians)
     },
-    [editorInteractionsEnabled, rotationStepRadians, sceneRef],
+    [getEnabledScene, rotationStepRadians],
   )
 
   const undo = useCallback(() => {
-    if (!editorInteractionsEnabled) {
-      return
-    }
-
-    sceneRef.current?.undo()
-  }, [editorInteractionsEnabled, sceneRef])
+    getEnabledScene()?.undo()
+  }, [getEnabledScene])
 
   const redo = useCallback(() => {
-    if (!editorInteractionsEnabled) {
-      return
-    }
+    getEnabledScene()?.redo()
+  }, [getEnabledScene])
 
-    sceneRef.current?.redo()
-  }, [editorInteractionsEnabled, sceneRef])
+  const clearSelection = useCallback(() => {
+    getEnabledScene()?.clearSelection()
+  }, [getEnabledScene])
+
+  const moveSelection = useCallback(
+    (
+      delta: { x: number; z: number },
+      options?: { source?: MoveSource },
+    ): MoveSelectionResult => {
+      const scene = getEnabledScene()
+
+      if (!scene) {
+        return {
+          ok: false,
+          reason: 'no-selection',
+        }
+      }
+
+      return scene.moveSelection(delta, {
+        source: options?.source ?? 'keyboard',
+      })
+    },
+    [getEnabledScene],
+  )
+
+  const selectById = useCallback(
+    (id: string | null): SelectByIdResult => {
+      const scene = getEnabledScene()
+
+      if (!scene) {
+        return {
+          ok: false,
+          status: 'not-found',
+        }
+      }
+
+      return scene.selectById(id)
+    },
+    [getEnabledScene],
+  )
+
+  const getSceneReadModel = useCallback((): SceneReadModel | null => {
+    return getEnabledScene()?.getReadModel() ?? null
+  }, [getEnabledScene])
 
   const addFurniture = useCallback(() => {
-    if (!editorInteractionsEnabled || !catalogIdToAdd) {
+    if (!catalogIdToAdd) {
       return false
     }
 
-    const scene = sceneRef.current
+    const scene = getEnabledScene()
 
     if (!scene) {
       return false
@@ -82,45 +140,35 @@ export function useEditorSceneCommands({
 
     clearEditorMessage()
     return true
-  }, [
-    catalogIdToAdd,
-    clearEditorMessage,
-    editorInteractionsEnabled,
-    sceneRef,
-    setEditorMessage,
-  ])
+  }, [catalogIdToAdd, clearEditorMessage, getEnabledScene, setEditorMessage])
 
   const confirmDeleteSelection = useCallback(() => {
-    if (!editorInteractionsEnabled) {
-      return
-    }
-
-    const scene = sceneRef.current
+    const scene = getEnabledScene()
 
     if (!scene) {
-      return
+      return false
     }
 
     const deleted = scene.deleteSelection()
 
     if (!deleted) {
       setEditorMessage(DELETE_SELECTION_MISSING_MESSAGE)
-      return
+      return false
     }
 
     clearEditorMessage()
-  }, [
-    clearEditorMessage,
-    editorInteractionsEnabled,
-    sceneRef,
-    setEditorMessage,
-  ])
+    return true
+  }, [clearEditorMessage, getEnabledScene, setEditorMessage])
 
   return {
     addFurniture,
+    clearSelection,
     confirmDeleteSelection,
+    getSceneReadModel,
+    moveSelection,
     redo,
     rotateSelection,
+    selectById,
     undo,
   }
 }

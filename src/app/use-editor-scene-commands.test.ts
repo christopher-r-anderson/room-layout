@@ -9,6 +9,22 @@ import {
 } from './editor-command-messages'
 import { useEditorSceneCommands } from './use-editor-scene-commands'
 import type { SceneRef } from '@/scene/scene.types'
+import type { FurnitureItem } from '@/scene/objects/furniture.types'
+
+function createFurnitureItem(id: string): FurnitureItem {
+  return {
+    id,
+    catalogId: 'catalog-chair',
+    name: `Chair ${id}`,
+    kind: 'armchair',
+    collectionId: 'collection-1',
+    nodeName: 'ChairNode',
+    sourcePath: '/models/chair.glb',
+    footprintSize: { width: 1, depth: 1 },
+    position: [0, 0, 0],
+    rotationY: 0,
+  }
+}
 
 function createSceneRef(overrides?: Partial<SceneRef>) {
   return {
@@ -16,9 +32,18 @@ function createSceneRef(overrides?: Partial<SceneRef>) {
       addFurniture: vi.fn(() => ({ ok: true as const, id: 'new-item' })),
       clearSelection: vi.fn(),
       deleteSelection: vi.fn(() => true),
+      getReadModel: vi.fn(() => ({ selectedId: null, items: [] })),
       getSnapshot: vi.fn(),
+      moveSelection: vi.fn(() => ({
+        ok: true as const,
+        position: [0.5, 0, 0] as [number, number, number],
+      })),
       redo: vi.fn(() => true),
       rotateSelection: vi.fn(),
+      selectById: vi.fn(() => ({
+        ok: true as const,
+        status: 'selected' as const,
+      })),
       undo: vi.fn(() => true),
       ...overrides,
     } satisfies SceneRef,
@@ -89,7 +114,7 @@ describe('useEditorSceneCommands', () => {
 
     deleteSelection.mockReturnValueOnce(false)
     act(() => {
-      result.current.confirmDeleteSelection()
+      expect(result.current.confirmDeleteSelection()).toBe(false)
     })
     expect(setEditorMessage).toHaveBeenLastCalledWith(
       DELETE_SELECTION_MISSING_MESSAGE,
@@ -97,7 +122,7 @@ describe('useEditorSceneCommands', () => {
 
     deleteSelection.mockReturnValueOnce(true)
     act(() => {
-      result.current.confirmDeleteSelection()
+      expect(result.current.confirmDeleteSelection()).toBe(true)
     })
     expect(clearEditorMessage).toHaveBeenCalledTimes(1)
   })
@@ -120,6 +145,17 @@ describe('useEditorSceneCommands', () => {
 
     act(() => {
       expect(result.current.addFurniture()).toBe(false)
+      expect(
+        result.current.moveSelection({ x: 0.5, z: 0 }, { source: 'inspector' }),
+      ).toEqual({
+        ok: false,
+        reason: 'no-selection',
+      })
+      expect(result.current.selectById('item-1')).toEqual({
+        ok: false,
+        status: 'not-found',
+      })
+      result.current.clearSelection()
       result.current.confirmDeleteSelection()
       result.current.rotateSelection(1)
       result.current.undo()
@@ -128,6 +164,9 @@ describe('useEditorSceneCommands', () => {
 
     expect(sceneRef.current.addFurniture).not.toHaveBeenCalled()
     expect(sceneRef.current.deleteSelection).not.toHaveBeenCalled()
+    expect(sceneRef.current.moveSelection).not.toHaveBeenCalled()
+    expect(sceneRef.current.selectById).not.toHaveBeenCalled()
+    expect(sceneRef.current.clearSelection).not.toHaveBeenCalled()
     expect(sceneRef.current.rotateSelection).not.toHaveBeenCalled()
     expect(sceneRef.current.undo).not.toHaveBeenCalled()
     expect(sceneRef.current.redo).not.toHaveBeenCalled()
@@ -151,6 +190,18 @@ describe('useEditorSceneCommands', () => {
 
     act(() => {
       expect(result.current.addFurniture()).toBe(false)
+      expect(
+        result.current.moveSelection({ x: 0.5, z: 0 }, { source: 'inspector' }),
+      ).toEqual({
+        ok: false,
+        reason: 'no-selection',
+      })
+      expect(result.current.selectById('item-1')).toEqual({
+        ok: false,
+        status: 'not-found',
+      })
+      expect(result.current.getSceneReadModel()).toBeNull()
+      result.current.clearSelection()
       result.current.confirmDeleteSelection()
       result.current.rotateSelection(1)
       result.current.undo()
@@ -159,5 +210,60 @@ describe('useEditorSceneCommands', () => {
 
     expect(setEditorMessage).not.toHaveBeenCalled()
     expect(clearEditorMessage).not.toHaveBeenCalled()
+  })
+
+  it('forwards move/select/read model commands when scene is available', () => {
+    const setEditorMessage = vi.fn()
+    const clearEditorMessage = vi.fn()
+    const moveSelection = vi.fn<SceneRef['moveSelection']>(() => ({
+      ok: true,
+      position: [1, 0, 0] as [number, number, number],
+    }))
+    const selectById = vi.fn<SceneRef['selectById']>(() => ({
+      ok: true,
+      status: 'selected',
+    }))
+    const getReadModel = vi.fn<SceneRef['getReadModel']>(() => ({
+      selectedId: 'item-1',
+      items: [createFurnitureItem('item-1')],
+    }))
+    const sceneRef = createSceneRef({ moveSelection, selectById, getReadModel })
+
+    const { result } = renderHook(() =>
+      useEditorSceneCommands({
+        catalogIdToAdd: 'leather-couch',
+        clearEditorMessage,
+        editorInteractionsEnabled: true,
+        rotationStepRadians: Math.PI / 12,
+        sceneRef,
+        setEditorMessage,
+      }),
+    )
+
+    act(() => {
+      expect(
+        result.current.moveSelection({ x: 0.5, z: 0 }, { source: 'inspector' }),
+      ).toEqual({
+        ok: true,
+        position: [1, 0, 0],
+      })
+      expect(result.current.selectById('item-1')).toEqual({
+        ok: true,
+        status: 'selected',
+      })
+      expect(result.current.getSceneReadModel()).toEqual({
+        selectedId: 'item-1',
+        items: [createFurnitureItem('item-1')],
+      })
+      result.current.clearSelection()
+    })
+
+    expect(moveSelection).toHaveBeenCalledWith(
+      { x: 0.5, z: 0 },
+      { source: 'inspector' },
+    )
+    expect(selectById).toHaveBeenCalledWith('item-1')
+    expect(getReadModel).toHaveBeenCalledTimes(1)
+    expect(sceneRef.current.clearSelection).toHaveBeenCalledTimes(1)
   })
 })

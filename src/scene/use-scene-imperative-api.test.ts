@@ -149,6 +149,263 @@ describe('useSceneImperativeApi', () => {
     expect(options.rotateSelectedFurniture).toHaveBeenCalledWith(Math.PI / 4)
   })
 
+  it('selectById returns not-found for unknown ids and selected for known ids', () => {
+    const item = createFurnitureItem('item-1')
+    const options = defaultOptions({
+      furniture: [item],
+      history: createHistoryState([item]),
+    })
+    const sceneRef = getSceneRef(options)
+    renderHook(() => {
+      useSceneImperativeApi(options)
+    })
+
+    let missingResult: ReturnType<SceneRef['selectById']> | null = null
+    let selectedResult: ReturnType<SceneRef['selectById']> | null = null
+
+    act(() => {
+      missingResult = sceneRef.current?.selectById('missing-id') ?? null
+      selectedResult = sceneRef.current?.selectById('item-1') ?? null
+    })
+
+    expect(missingResult).toEqual({
+      ok: false,
+      status: 'not-found',
+    })
+    expect(selectedResult).toEqual({
+      ok: true,
+      status: 'selected',
+    })
+    expect(options.setSelectedIdAndResolveObject).toHaveBeenCalledWith('item-1')
+  })
+
+  it('selectById returns blocked-dragging while dragging', () => {
+    const item = createFurnitureItem('item-1')
+    const options = defaultOptions({
+      furniture: [item],
+      history: createHistoryState([item]),
+      dragState: { id: 'item-1' },
+    })
+    const sceneRef = getSceneRef(options)
+    renderHook(() => {
+      useSceneImperativeApi(options)
+    })
+
+    let result: ReturnType<SceneRef['selectById']> | null = null
+
+    act(() => {
+      result = sceneRef.current?.selectById('item-1') ?? null
+    })
+
+    expect(result).toEqual({
+      ok: false,
+      status: 'blocked-dragging',
+    })
+  })
+
+  it('getReadModel returns latest selected id and items', () => {
+    const initialItem = createFurnitureItem('item-1')
+    const options = defaultOptions({
+      furniture: [initialItem],
+      history: createHistoryState([initialItem]),
+      selectedId: null,
+    })
+
+    const { rerender } = renderHook(
+      ({ currentOptions }) => {
+        useSceneImperativeApi(currentOptions)
+      },
+      {
+        initialProps: {
+          currentOptions: options,
+        },
+      },
+    )
+
+    const updatedItem = createFurnitureItem('item-2')
+    const updatedOptions = defaultOptions({
+      furniture: [updatedItem],
+      history: createHistoryState([updatedItem]),
+      selectedId: 'item-2',
+    })
+    const updatedRef = getSceneRef(updatedOptions)
+
+    rerender({ currentOptions: updatedOptions })
+
+    let readModel: ReturnType<SceneRef['getReadModel']> | null = null
+
+    act(() => {
+      readModel = updatedRef.current?.getReadModel() ?? null
+    })
+
+    expect(readModel).toEqual({
+      selectedId: 'item-2',
+      items: [updatedItem],
+    })
+  })
+
+  it('moveSelection returns no-selection when there is no selected item', () => {
+    const options = defaultOptions()
+    const sceneRef = getSceneRef(options)
+    renderHook(() => {
+      useSceneImperativeApi(options)
+    })
+
+    let result: ReturnType<SceneRef['moveSelection']> | null = null
+
+    act(() => {
+      result = sceneRef.current?.moveSelection({ x: 0.5, z: 0 }) ?? null
+    })
+
+    expect(result).toEqual({
+      ok: false,
+      reason: 'no-selection',
+    })
+  })
+
+  it('moveSelection returns dragging while pointer drag is active', () => {
+    const item = createFurnitureItem('item-1')
+    const options = defaultOptions({
+      furniture: [item],
+      history: createHistoryState([item]),
+      selectedId: 'item-1',
+      dragState: { id: 'item-1' },
+    })
+    const sceneRef = getSceneRef(options)
+    renderHook(() => {
+      useSceneImperativeApi(options)
+    })
+
+    let result: ReturnType<SceneRef['moveSelection']> | null = null
+
+    act(() => {
+      result = sceneRef.current?.moveSelection({ x: 0.5, z: 0 }) ?? null
+    })
+
+    expect(result).toEqual({
+      ok: false,
+      reason: 'dragging',
+    })
+  })
+
+  it('moveSelection commits one undo step per successful movement action', () => {
+    const item = createFurnitureItem('item-1')
+    const options = defaultOptions({
+      furniture: [item],
+      history: createHistoryState([item]),
+      selectedId: 'item-1',
+    })
+    const sceneRef = getSceneRef(options)
+    renderHook(() => {
+      useSceneImperativeApi(options)
+    })
+
+    let firstMove: ReturnType<SceneRef['moveSelection']> | null = null
+
+    act(() => {
+      firstMove = sceneRef.current?.moveSelection({ x: 0.5, z: 0 }) ?? null
+    })
+
+    expect(firstMove).toEqual({
+      ok: true,
+      position: [0.5, 0, 0],
+    })
+    expect(options.setHistory).toHaveBeenCalledTimes(1)
+
+    const committedHistory = vi.mocked(options.setHistory).mock.calls[0][0]
+
+    if (typeof committedHistory === 'function') {
+      throw new Error('expected committed history object')
+    }
+
+    expect(committedHistory.past).toHaveLength(1)
+    expect(committedHistory.past[0][0].position).toEqual([0, 0, 0])
+    expect(committedHistory.present[0].position).toEqual([0.5, 0, 0])
+  })
+
+  it('moveSelection returns no-op for zero delta movement', () => {
+    const item = createFurnitureItem('item-1')
+    const options = defaultOptions({
+      furniture: [item],
+      history: createHistoryState([item]),
+      selectedId: 'item-1',
+    })
+    const sceneRef = getSceneRef(options)
+    renderHook(() => {
+      useSceneImperativeApi(options)
+    })
+
+    let result: ReturnType<SceneRef['moveSelection']> | null = null
+
+    act(() => {
+      result = sceneRef.current?.moveSelection({ x: 0, z: 0 }) ?? null
+    })
+
+    expect(result).toEqual({
+      ok: false,
+      reason: 'no-op',
+    })
+    expect(options.setHistory).not.toHaveBeenCalled()
+  })
+
+  it('moveSelection returns blocked-bounds when movement is clamped to current position', () => {
+    const item = createFurnitureItem('item-1')
+    item.position = [0.5, 0, 0]
+    const options = defaultOptions({
+      bounds: {
+        minX: -1,
+        maxX: 1,
+        minZ: -1,
+        maxZ: 1,
+      },
+      furniture: [item],
+      history: createHistoryState([item]),
+      selectedId: 'item-1',
+    })
+    const sceneRef = getSceneRef(options)
+    renderHook(() => {
+      useSceneImperativeApi(options)
+    })
+
+    let result: ReturnType<SceneRef['moveSelection']> | null = null
+
+    act(() => {
+      result = sceneRef.current?.moveSelection({ x: 1, z: 0 }) ?? null
+    })
+
+    expect(result).toEqual({
+      ok: false,
+      reason: 'blocked-bounds',
+    })
+  })
+
+  it('moveSelection returns blocked-collision when the proposed move overlaps another item', () => {
+    const movingItem = createFurnitureItem('item-1')
+    movingItem.position = [0, 0, 0]
+    const blockingItem = createFurnitureItem('item-2')
+    blockingItem.position = [0.5, 0, 0]
+    const options = defaultOptions({
+      furniture: [movingItem, blockingItem],
+      history: createHistoryState([movingItem, blockingItem]),
+      selectedId: 'item-1',
+    })
+    const sceneRef = getSceneRef(options)
+    renderHook(() => {
+      useSceneImperativeApi(options)
+    })
+
+    let result: ReturnType<SceneRef['moveSelection']> | null = null
+
+    act(() => {
+      result = sceneRef.current?.moveSelection({ x: 0.5, z: 0 }) ?? null
+    })
+
+    expect(result).toEqual({
+      ok: false,
+      reason: 'blocked-collision',
+    })
+  })
+
   it('undo returns false when no undo is available', () => {
     const options = defaultOptions({ history: createHistoryState([]) })
     const sceneRef = getSceneRef(options)
@@ -266,6 +523,37 @@ describe('useSceneImperativeApi', () => {
 
     expect(didDelete).toBe(true)
     expect(options.setSelectedIdAndResolveObject).toHaveBeenCalledWith(null)
+  })
+
+  it('deleteSelection updates the read model immediately after a successful delete', () => {
+    const item = createFurnitureItem('item-1')
+    const nextHistory = createHistoryState<FurnitureItem[]>([])
+    mockDeleteSelectionFromHistory.mockReturnValueOnce({
+      history: nextHistory,
+      deleted: true,
+      deletedId: 'item-1',
+    })
+    const options = defaultOptions({
+      furniture: [item],
+      history: createHistoryState([item]),
+      selectedId: 'item-1',
+    })
+    const sceneRef = getSceneRef(options)
+    renderHook(() => {
+      useSceneImperativeApi(options)
+    })
+
+    let readModel: ReturnType<SceneRef['getReadModel']> | null = null
+
+    act(() => {
+      sceneRef.current?.deleteSelection()
+      readModel = sceneRef.current?.getReadModel() ?? null
+    })
+
+    expect(readModel).toEqual({
+      selectedId: null,
+      items: [],
+    })
   })
 
   it('deleteSelection clears drag state when deleting the dragged item', () => {

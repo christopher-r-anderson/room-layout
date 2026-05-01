@@ -2,15 +2,17 @@ import { useCallback, useState } from 'react'
 import type { HistoryAvailability } from './components/history/history.types'
 import { FURNITURE_CATALOG } from '@/scene/objects/furniture-catalog'
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
+import type { SceneReadModel } from '@/scene/scene.types'
 
 interface EditorOverlayState {
   catalogIdToAdd: string
   clearEditorMessage: () => void
   editorMessage: string | null
   handleHistoryChange: (availability: HistoryAvailability) => void
-  handleSelectionChange: (item: FurnitureItem | null) => void
+  handleSceneReadModelChange: (readModel: SceneReadModel) => void
   historyAvailability: HistoryAvailability
   resetOverlayState: () => void
+  sceneReadModel: SceneReadModel
   selectedFurniture: FurnitureItem | null
   setCatalogIdToAdd: (catalogId: string) => void
   setEditorMessage: (message: string | null) => void
@@ -21,9 +23,17 @@ const INITIAL_HISTORY_AVAILABILITY: HistoryAvailability = {
   canRedo: false,
 }
 
+const INITIAL_SCENE_READ_MODEL: SceneReadModel = {
+  selectedId: null,
+  items: [],
+}
+
 export function useEditorOverlayState(): EditorOverlayState {
   const [selectedFurniture, setSelectedFurniture] =
     useState<FurnitureItem | null>(null)
+  const [sceneReadModel, setSceneReadModel] = useState<SceneReadModel>(
+    INITIAL_SCENE_READ_MODEL,
+  )
   const [catalogIdToAdd, setCatalogIdToAdd] = useState(
     FURNITURE_CATALOG[0]?.id ?? '',
   )
@@ -32,10 +42,6 @@ export function useEditorOverlayState(): EditorOverlayState {
     INITIAL_HISTORY_AVAILABILITY,
   )
 
-  const handleSelectionChange = useCallback((item: FurnitureItem | null) => {
-    setSelectedFurniture(item)
-  }, [])
-
   const handleHistoryChange = useCallback(
     (availability: HistoryAvailability) => {
       setHistoryAvailability(availability)
@@ -43,8 +49,23 @@ export function useEditorOverlayState(): EditorOverlayState {
     [],
   )
 
+  const handleSceneReadModelChange = useCallback(
+    (readModel: SceneReadModel) => {
+      setSceneReadModel(readModel)
+
+      const nextSelectedFurniture = readModel.selectedId
+        ? (readModel.items.find((item) => item.id === readModel.selectedId) ??
+          null)
+        : null
+
+      setSelectedFurniture(nextSelectedFurniture)
+    },
+    [],
+  )
+
   const resetOverlayState = useCallback(() => {
     setSelectedFurniture(null)
+    setSceneReadModel(INITIAL_SCENE_READ_MODEL)
     setEditorMessage(null)
     setHistoryAvailability(INITIAL_HISTORY_AVAILABILITY)
   }, [])
@@ -62,9 +83,10 @@ export function useEditorOverlayState(): EditorOverlayState {
     clearEditorMessage,
     editorMessage,
     handleHistoryChange,
-    handleSelectionChange,
+    handleSceneReadModelChange,
     historyAvailability,
     resetOverlayState,
+    sceneReadModel,
     selectedFurniture,
     setCatalogIdToAdd,
     setEditorMessage: updateEditorMessage,

@@ -3,7 +3,7 @@ export function StatusMessage({ message }: { message: string | null }) {
     return null
   }
   return (
-    <p className="text-xs/relaxed text-destructive" role="status">
+    <p className="bg-secondary text-destructive p-2 rounded border border-destructive">
       {message}
     </p>
   )

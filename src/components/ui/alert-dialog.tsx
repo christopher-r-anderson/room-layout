@@ -143,12 +143,19 @@ function AlertDialogDescription({
 
 function AlertDialogAction({
   className,
+  variant,
   ...props
 }: React.ComponentProps<typeof Button>) {
   return (
     <Button
       data-slot="alert-dialog-action"
-      className={cn(className)}
+      variant={variant}
+      className={cn(
+        variant === 'destructive'
+          ? 'bg-destructive text-white hover:bg-destructive/90'
+          : undefined,
+        className,
+      )}
       {...props}
     />
   )

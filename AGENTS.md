@@ -41,6 +41,7 @@
 - For geometry, transform, and other floating-point-derived values, prefer tolerant assertions like `toBeCloseTo` over exact equality unless exact integers are the product contract.
 - Avoid over-testing tunable constants unless they are intentional product contracts.
 - Use Playwright browser tests for startup/loading flows, retry/error handling, editor history flows, and other browser-realistic interaction coverage.
+- When changing accessibility semantics, focus management, or announcements, run `e2e/editor-a11y-audits.spec.ts` in Chromium and keep it out of the perf lane.
 - Keep browser perf trace scenarios in Playwright separate from correctness-oriented browser tests.
 - Prefer trace capture and scripted browser scenarios over Playwright runner timing output when evaluating real interaction flows.
 - For pure utility hot paths, use Vitest benchmark files (`*.bench.ts`) and compare against saved baselines (`pnpm bench:json`, `pnpm bench:compare`).
@@ -186,6 +187,8 @@ test('rotates mesh over frames', async () => {
 
 - `getClonedNode` throws when node names are wrong; treat these as hard failures, not optional behavior.
 - Drag math is floor-plane based (`Y` fixed, movement on `X/Z`), so keep that model in related features.
+- React Three Fiber canvas host semantics can trigger accessibility rule violations; keep landmark/label semantics on explicit DOM wrappers rather than relying on implicit canvas host attributes.
+- Keep selection announcements centralized in app-shell reconciliation; avoid duplicate announcement surfaces and avoid moving outliner focus for ordinary pointer/canvas selection.
 
 ## Docs
 

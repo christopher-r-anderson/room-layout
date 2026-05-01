@@ -13,6 +13,7 @@ This project demonstrates core web 3D concepts relevant to retail and product ex
 - Establish a clean 3D scene with real-world scale
 - Demonstrate camera interaction patterns
 - Provide a foundation for object placement and manipulation
+- Keep usage accessible for keyboard users
 - Keep scope intentionally small and focused
 
 ---
@@ -60,6 +61,16 @@ The repository now uses Playwright for real-browser editor coverage and scripted
 - Use Vitest for pure utility, scene-state, and microbenchmark work.
 - Use `pnpm test:e2e` for browser-accurate UI and canvas-adjacent workflows like startup loading, retry flows, and editor history.
 - Use `pnpm test:browser:perf` for scripted Chromium interaction measurements that reuse the same harness helpers without acting as a strict correctness gate.
+- Browser accessibility audits run through Playwright + axe in the chromium lane (baseline shell, catalog drawer, delete dialog, and outliner/inspector states).
+
+## Accessibility
+
+Accessibility is an explicit goal for this project, especially for no-mouse editor workflows.
+
+- The editor supports keyboard-first interaction through outliner selection, selected-item inspector controls, and global movement/rotation/history shortcuts.
+- Startup, dialog, and editor feedback flows include screen-reader announcement support and deterministic focus transitions for key operations like delete and selection reconciliation.
+- Automated accessibility checks run through Playwright + axe in Chromium and currently cover baseline shell/dialog states plus outliner/inspector states.
+- Automated checks are necessary but not sufficient; manual assistive-technology verification remains an ongoing task.
 
 First-time local setup:
 
@@ -99,7 +110,7 @@ Current deployment URL:
 
 This project is intentionally focused on spatial interaction and rendering fundamentals rather than backend integration or full product features.
 
-The editor UI includes a bottom-centered Add Furniture trigger that opens a modal visual picker, top-left history and selection controls, keyboard rotation shortcuts, a blocking startup loading overlay with asset progress, retryable startup asset error handling, and an info dialog (ℹ) with a repository link and asset attribution details.
+Current editor UI highlights include a visual furniture picker, history and selection tools, outliner and selected-item inspector surfaces, keyboard movement/rotation shortcuts, startup loading and retryable error overlays, and project/asset information dialogs.
 
 ## 🎮 Usage
 
@@ -109,6 +120,8 @@ The editor UI includes a bottom-centered Add Furniture trigger that opens a moda
 - Rotate the selected item with `Q` / `E` or the rotate buttons.
 - Add another furniture instance from the bottom-centered `Add Furniture` trigger and modal picker.
 - Remove the selected item from the selection controls or with `Delete` / `Backspace`, then confirm the dialog.
+- You can fully edit without canvas dragging via the outliner and selected-item inspector surfaces.
+- Keyboard movement supports `Arrow` (0.5m), `Shift+Arrow` (1.0m), and `Alt+Arrow` (0.1m).
 - If a core furniture asset fails to load at startup, use the retry action from the startup error overlay.
 
 ## 🗺️ Project Plan

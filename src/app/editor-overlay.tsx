@@ -1,4 +1,9 @@
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
+import type {
+  MoveSelectionResult,
+  MoveSource,
+  SceneReadModel,
+} from '@/scene/scene.types'
 import { DeleteConfirmationDialog } from './components/selection/delete-confirmation-dialog'
 import type { HistoryAvailability } from './components/history/history.types'
 import { StatusMessage } from './components/status-message'
@@ -8,10 +13,15 @@ import { ProjectInfoDialog } from './components/project-info/project-info-dialog
 import { InitializationProgress } from './components/initialization/initialization-progress'
 import { ProjectInfoButton } from './components/project-info/project-info-button'
 import { CatalogAddButton } from './components/catalog/catalog-add-button'
-import { CurrentSelectionStatus } from './components/selection/current-selection-status'
-import { ButtonGroup } from '@/components/ui/button-group'
+import { KeyboardShortcutsHelp } from './components/keyboard/keyboard-shortcuts-help'
 import { HistoryTools } from './components/history/history-tools'
-import { SelectionTools } from './components/selection/selection-tools'
+import { SelectionToolsMovement } from './components/selection/selection-tools-movement'
+import { SelectionToolsOther } from './components/selection/selection-tools-other'
+import {
+  SceneOutliner,
+  type SceneOutlinerFocusRequest,
+} from './components/scene/scene-outliner'
+import { SceneInspector } from './components/scene/scene-inspector'
 
 export interface EditorStartupProps {
   assetError: boolean
@@ -28,8 +38,20 @@ export interface EditorHistoryProps {
 
 export interface EditorSelectionProps {
   selectedFurniture: FurnitureItem | null
+  onMoveSelection: (
+    delta: { x: number; z: number },
+    options?: { source?: MoveSource },
+  ) => MoveSelectionResult
   onOpenDeleteDialog: () => void
   onRotateSelection: (direction: -1 | 1) => void
+}
+
+export interface EditorSceneProps {
+  focusRequest: SceneOutlinerFocusRequest | null
+  onFocusHandled: () => void
+  onSelectById: (id: string | null) => void
+  readModel: SceneReadModel
+  sceneInteractionsDisabled: boolean
 }
 
 export interface EditorCatalogProps {
@@ -54,6 +76,7 @@ interface EditorOverlayProps {
   statusMessage: string | null
   startup: EditorStartupProps
   history: EditorHistoryProps
+  scene: EditorSceneProps
   selection: EditorSelectionProps
   catalog: EditorCatalogProps
   dialogs: EditorDialogsProps
@@ -64,6 +87,7 @@ export function EditorOverlay({
   statusMessage,
   startup,
   history,
+  scene,
   selection,
   catalog,
   dialogs,
@@ -71,12 +95,16 @@ export function EditorOverlay({
   return (
     <>
       <div
-        className="pointer-events-none absolute inset-2 gap-2 grid grid-cols-2 grid-rows-[min-content_min-content_1fr] sm:grid-rows-[min-content_1fr]"
+        className="pointer-events-none absolute inset-2 flex flex-col justify-between"
         inert={startup.startupOverlayActive}
         aria-hidden={startup.startupOverlayActive}
       >
-        <div className="col-span-2 sm:col-span-1">
-          <ButtonGroup aria-label="Toolbar" className="pointer-events-auto">
+        <div className="flex justify-between gap-2">
+          <div
+            role="toolbar"
+            aria-label="Editor actions"
+            className="pointer-events-auto flex w-full flex-wrap gap-2"
+          >
             <HistoryTools
               canRedo={history.historyAvailability.canRedo}
               canUndo={history.historyAvailability.canUndo}
@@ -84,44 +112,67 @@ export function EditorOverlay({
               onRedo={history.onRedo}
               onUndo={history.onUndo}
             />
-            <SelectionTools
+            <SelectionToolsMovement
+              editorInteractionsEnabled={editorInteractionsEnabled}
+              onMoveSelection={selection.onMoveSelection}
+              selectedFurniture={selection.selectedFurniture}
+            />
+            <SelectionToolsOther
               editorInteractionsEnabled={editorInteractionsEnabled}
               onOpenDeleteDialog={selection.onOpenDeleteDialog}
               onRotateSelection={selection.onRotateSelection}
               selectedFurniture={selection.selectedFurniture}
             />
-          </ButtonGroup>
-          <StatusMessage message={statusMessage} />
+          </div>
+
+          <div className="justify-self-end shrink-0 flex items-start gap-4">
+            <h1 className="text-lg text-background font-semibold">
+              Room Layout
+            </h1>
+            <ProjectInfoDialog
+              open={dialogs.isInfoDialogOpen}
+              onOpenChange={dialogs.onInfoDialogOpenChange}
+              triggerButton={
+                <ProjectInfoButton className="pointer-events-auto" />
+              }
+            />
+          </div>
         </div>
 
-        <div className="col-span-2 sm:col-span-1 justify-self-end flex gap-4">
-          <h1 className="text-lg font-semibold">Room Layout</h1>
-          <ProjectInfoDialog
-            open={dialogs.isInfoDialogOpen}
-            onOpenChange={dialogs.onInfoDialogOpenChange}
-            triggerButton={
-              <ProjectInfoButton className="pointer-events-auto" />
-            }
-          />
-        </div>
+        {/*
+          flex-col-reverse here with flex-row-reverse on the inner drawer/shortcuts group
+          would give us a better small screen order, but without `reading-flow` being non-experimental/baseline
+          it is confusing with screen readers and keyboard tabbing
+        */}
+        <div className="flex flex-wrap sm:flex-row justify-between gap-2">
+          <div className="flex w-full sm:w-80 flex-col gap-2">
+            <StatusMessage message={statusMessage} />
+            <SceneOutliner
+              readModel={scene.readModel}
+              disabled={scene.sceneInteractionsDisabled}
+              focusRequest={scene.focusRequest}
+              onFocusHandled={scene.onFocusHandled}
+              onSelectById={scene.onSelectById}
+            />
+            <SceneInspector selectedFurniture={selection.selectedFurniture} />
+          </div>
 
-        <div className="self-end">
-          <CurrentSelectionStatus
-            selectedFurniture={selection.selectedFurniture}
-            className="pointer-events-auto"
-          />
-        </div>
-
-        <div className="justify-self-end self-end">
-          <CatalogDrawer
-            open={catalog.isCatalogDrawerOpen}
-            onOpenChange={catalog.onCatalogDrawerOpenChange}
-            triggerButton={<CatalogAddButton className="pointer-events-auto" />}
-            catalogIdToAdd={catalog.catalogIdToAdd}
-            editorInteractionsEnabled={editorInteractionsEnabled}
-            onAddFurniture={catalog.onAddFurniture}
-            onCatalogIdToAddChange={catalog.onCatalogIdToAddChange}
-          />
+          <div className="flex w-full sm:w-auto sm:flex-col justify-between sm:justify-end items-end gap-2">
+            <CatalogDrawer
+              open={catalog.isCatalogDrawerOpen}
+              onOpenChange={catalog.onCatalogDrawerOpenChange}
+              triggerButton={
+                <CatalogAddButton className="pointer-events-auto" />
+              }
+              catalogIdToAdd={catalog.catalogIdToAdd}
+              editorInteractionsEnabled={editorInteractionsEnabled}
+              onAddFurniture={catalog.onAddFurniture}
+              onCatalogIdToAddChange={catalog.onCatalogIdToAddChange}
+            />
+            <div inert={catalog.isCatalogDrawerOpen}>
+              <KeyboardShortcutsHelp />
+            </div>
+          </div>
         </div>
       </div>
 

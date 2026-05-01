@@ -5,6 +5,21 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>room-layout</title>
+    <script>
+      ;(() => {
+        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+
+        const syncDarkClass = (isDark) => {
+          document.documentElement.classList.toggle('dark', isDark)
+        }
+
+        syncDarkClass(mediaQuery.matches)
+
+        mediaQuery.addEventListener('change', (event) => {
+          syncDarkClass(event.matches)
+        })
+      })()
+    </script>
   </head>
   <body>
     <div id="root"></div>
