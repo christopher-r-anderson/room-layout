@@ -46,6 +46,15 @@ describe('SelectionToolsMovement', () => {
     await user.click(screen.getByRole('button', { name: 'Move Left' }))
     await user.click(screen.getByRole('button', { name: 'Move Right' }))
 
+    expect(screen.getByRole('button', { name: 'Move Up' })).toHaveAttribute(
+      'aria-keyshortcuts',
+      'ArrowUp Shift+ArrowUp Alt+ArrowUp',
+    )
+    expect(screen.getByRole('button', { name: 'Move Right' })).toHaveAttribute(
+      'aria-keyshortcuts',
+      'ArrowRight Shift+ArrowRight Alt+ArrowRight',
+    )
+
     expect(onMoveSelection).toHaveBeenNthCalledWith(
       1,
       { x: 0, z: -0.5 },

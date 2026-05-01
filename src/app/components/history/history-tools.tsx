@@ -15,20 +15,29 @@ export function HistoryTools({
   onRedo: () => void
   onUndo: () => void
 }) {
+  const undoDisabled = !canUndo || !editorInteractionsEnabled
+  const redoDisabled = !canRedo || !editorInteractionsEnabled
+  const undoDisabledMessage = !editorInteractionsEnabled
+    ? 'Editor interactions are unavailable while loading'
+    : 'No previous history'
+  const redoDisabledMessage = !editorInteractionsEnabled
+    ? 'Editor interactions are unavailable while loading'
+    : 'No next history'
+
   return (
     <ButtonGroup aria-label="History Actions">
       <ToolButton
         action={onUndo}
-        disabled={!canUndo || !editorInteractionsEnabled}
-        disabledMessage="No previous history"
+        disabled={undoDisabled}
+        disabledMessage={undoDisabledMessage}
         shortcuts="Control+Z"
         label="Undo"
         icon={<IconArrowBackUp />}
       />
       <ToolButton
         action={onRedo}
-        disabled={!canRedo || !editorInteractionsEnabled}
-        disabledMessage="No next history"
+        disabled={redoDisabled}
+        disabledMessage={redoDisabledMessage}
         shortcuts="Control+Shift+Z Control+Y"
         label="Redo"
         icon={<IconArrowForwardUp />}

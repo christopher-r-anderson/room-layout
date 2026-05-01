@@ -22,6 +22,9 @@ export function SelectionToolsMovement({
   selectedFurniture: FurnitureItem | null
 }) {
   const controlsDisabled = !editorInteractionsEnabled || !selectedFurniture
+  const disabledMessage = !editorInteractionsEnabled
+    ? 'Editor interactions are unavailable while loading'
+    : 'No item selected'
 
   return (
     <ButtonGroup aria-label="Selection Movement Actions">
@@ -31,7 +34,7 @@ export function SelectionToolsMovement({
           onMoveSelection({ x: 0, z: -0.5 }, { source: 'toolbar' })
         }}
         disabled={controlsDisabled}
-        disabledMessage="No item selected"
+        disabledMessage={disabledMessage}
         shortcuts="ArrowUp Shift+ArrowUp Alt+ArrowUp"
         label="Move Up"
         visibleLabel="Up"
@@ -43,7 +46,7 @@ export function SelectionToolsMovement({
           onMoveSelection({ x: 0, z: 0.5 }, { source: 'toolbar' })
         }}
         disabled={controlsDisabled}
-        disabledMessage="No item selected"
+        disabledMessage={disabledMessage}
         shortcuts="ArrowDown Shift+ArrowDown Alt+ArrowDown"
         label="Move Down"
         visibleLabel="Down"
@@ -55,7 +58,7 @@ export function SelectionToolsMovement({
           onMoveSelection({ x: -0.5, z: 0 }, { source: 'toolbar' })
         }}
         disabled={controlsDisabled}
-        disabledMessage="No item selected"
+        disabledMessage={disabledMessage}
         shortcuts="ArrowLeft Shift+ArrowLeft Alt+ArrowLeft"
         label="Move Left"
         visibleLabel="Left"
@@ -67,7 +70,7 @@ export function SelectionToolsMovement({
           onMoveSelection({ x: 0.5, z: 0 }, { source: 'toolbar' })
         }}
         disabled={controlsDisabled}
-        disabledMessage="No item selected"
+        disabledMessage={disabledMessage}
         shortcuts="ArrowRight Shift+ArrowRight Alt+ArrowRight"
         label="Move Right"
         visibleLabel="Right"

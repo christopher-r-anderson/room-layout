@@ -15,13 +15,16 @@ export function SelectionToolsOther({
   selectedFurniture: FurnitureItem | null
 }) {
   const controlsDisabled = !editorInteractionsEnabled || !selectedFurniture
+  const disabledMessage = !editorInteractionsEnabled
+    ? 'Editor interactions are unavailable while loading'
+    : 'No item selected'
 
   return (
     <ButtonGroup aria-label="Selection Other Actions">
       <ToolButton
         action={onOpenDeleteDialog}
         disabled={controlsDisabled}
-        disabledMessage="No item selected"
+        disabledMessage={disabledMessage}
         shortcuts="Delete Backspace"
         label="Delete"
         icon={<IconTrash />}
@@ -31,7 +34,7 @@ export function SelectionToolsOther({
           onRotateSelection(1)
         }}
         disabled={controlsDisabled}
-        disabledMessage="No item selected"
+        disabledMessage={disabledMessage}
         shortcuts="Q"
         label="Rotate Left"
         icon={<IconRotate3d className="-x-scale-100" />}
@@ -41,7 +44,7 @@ export function SelectionToolsOther({
           onRotateSelection(-1)
         }}
         disabled={controlsDisabled}
-        disabledMessage="No item selected"
+        disabledMessage={disabledMessage}
         shortcuts="E"
         label="Rotate Right"
         icon={<IconRotate3d />}

@@ -41,6 +41,18 @@ describe('SelectionToolsOther', () => {
     await user.click(screen.getByRole('button', { name: 'Rotate Right' }))
     await user.click(screen.getByRole('button', { name: 'Delete' }))
 
+    expect(screen.getByRole('button', { name: 'Rotate Left' })).toHaveAttribute(
+      'aria-keyshortcuts',
+      'Q',
+    )
+    expect(
+      screen.getByRole('button', { name: 'Rotate Right' }),
+    ).toHaveAttribute('aria-keyshortcuts', 'E')
+    expect(screen.getByRole('button', { name: 'Delete' })).toHaveAttribute(
+      'aria-keyshortcuts',
+      'Delete Backspace',
+    )
+
     expect(onRotateSelection).toHaveBeenNthCalledWith(1, 1)
     expect(onRotateSelection).toHaveBeenNthCalledWith(2, -1)
     expect(onOpenDeleteDialog).toHaveBeenCalledTimes(1)
