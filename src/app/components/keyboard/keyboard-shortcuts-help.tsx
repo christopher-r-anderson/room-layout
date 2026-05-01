@@ -149,7 +149,7 @@ export function KeyboardShortcutsHelp() {
                     <th
                       scope="rowgroup"
                       rowSpan={shortcutGroup.rows.length}
-                      className="w-18 pr-2 pb-1 text-left align-top text-muted-foreground font-medium "
+                      className="w-18 pr-2 pb-1 text-left align-top text-foreground font-semibold "
                     >
                       {shortcutGroup.groupLabel}
                     </th>
