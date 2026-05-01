@@ -13,7 +13,6 @@ import { ProjectInfoDialog } from './components/project-info/project-info-dialog
 import { InitializationProgress } from './components/initialization/initialization-progress'
 import { ProjectInfoButton } from './components/project-info/project-info-button'
 import { CatalogAddButton } from './components/catalog/catalog-add-button'
-import { CurrentSelectionStatus } from './components/selection/current-selection-status'
 import { HistoryTools } from './components/history/history-tools'
 import { SelectionToolsMovement } from './components/selection/selection-tools-movement'
 import { SelectionToolsOther } from './components/selection/selection-tools-other'
@@ -137,13 +136,9 @@ export function EditorOverlay({
           </div>
         </div>
 
-        <div className="flex justify-between gap-2">
-          <div className="flex max-w-sm flex-col gap-2">
+        <div className="flex justify-between gap-2 flex-wrap-reverse">
+          <div className="flex w-80 flex-col gap-2">
             <StatusMessage message={statusMessage} />
-            <CurrentSelectionStatus
-              selectedFurniture={selection.selectedFurniture}
-              className="pointer-events-auto"
-            />
             <SceneOutliner
               readModel={scene.readModel}
               disabled={scene.sceneInteractionsDisabled}
@@ -154,11 +149,7 @@ export function EditorOverlay({
             <SceneInspector selectedFurniture={selection.selectedFurniture} />
           </div>
 
-          <div className="justify-self-end self-end flex flex-col items-end gap-2">
-            <p className="pointer-events-auto max-w-xs rounded-md bg-background/90 px-2 py-1 text-xs/relaxed text-muted-foreground shadow-sm backdrop-blur-sm">
-              Keyboard: arrow keys move, Shift moves farther, Alt moves finely,
-              and Escape clears selection.
-            </p>
+          <div className="flex flex-col justify-end items-end gap-2">
             <CatalogDrawer
               open={catalog.isCatalogDrawerOpen}
               onOpenChange={catalog.onCatalogDrawerOpenChange}
@@ -170,6 +161,10 @@ export function EditorOverlay({
               onAddFurniture={catalog.onAddFurniture}
               onCatalogIdToAddChange={catalog.onCatalogIdToAddChange}
             />
+            <p className="pointer-events-auto max-w-80 rounded-md bg-background/90 px-2 py-1 text-xs/relaxed text-muted-foreground shadow-sm backdrop-blur-sm">
+              Keyboard: arrow keys move, Shift moves farther, Alt moves finely,
+              and Escape clears selection.
+            </p>
           </div>
         </div>
       </div>

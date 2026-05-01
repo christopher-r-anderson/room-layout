@@ -16,7 +16,7 @@ export function CatalogAddButton({
       )}
       {...props}
     >
-      <span className="whitespace-nowrap mx-4 opacity-0 transition-all duration-300 group-hover:opacity-100 group-focus:opacity-100">
+      <span className="whitespace-nowrap mx-4 opacity-0 transition-all duration-300 group-hover:opacity-100 group-focus-visible:opacity-100">
         Add Furniture
       </span>
       <div className="flex absolute right-4">

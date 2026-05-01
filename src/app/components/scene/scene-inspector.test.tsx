@@ -25,16 +25,14 @@ describe('SceneInspector', () => {
   it('shows an empty hint when no furniture is selected', () => {
     render(<SceneInspector selectedFurniture={null} />)
 
-    expect(
-      screen.getByText(/select an item from the list or canvas to inspect it/i),
-    ).toBeVisible()
-    expect(screen.getByText('Selected item')).toBeVisible()
+    expect(screen.getByText('Select an item.')).toBeVisible()
+    expect(screen.getByText('Details')).toBeVisible()
   })
 
   it('shows name, rotation, and coordinates for selected furniture', () => {
     render(<SceneInspector selectedFurniture={FURNITURE_ITEM} />)
 
-    expect(screen.getByText('Leather Couch')).toBeVisible()
+    expect(screen.getByText('Leather Couch details')).toBeVisible()
     expect(screen.getByText('Rotation: 0 deg')).toBeVisible()
     expect(screen.getByText('X: 0.0 m')).toBeVisible()
     expect(screen.getByText('Z: 0.0 m')).toBeVisible()

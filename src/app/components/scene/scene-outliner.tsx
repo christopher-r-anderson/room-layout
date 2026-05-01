@@ -1,15 +1,29 @@
-import { useEffect, useId, useRef } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import {
   Card,
+  CardAction,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { Button } from '@/components/ui/button'
 import { buttonVariants } from '@/components/ui/button-variants'
 import { cn } from '@/lib/utils'
 import type { SceneReadModel } from '@/scene/scene.types'
+import { IconChevronDown, IconChevronRight } from '@tabler/icons-react'
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible'
+import { loadBooleanPreference, saveBooleanPreference } from '@/lib/ui/storage'
+
+const OUTLINER_EXPANDED_PREFERENCE_KEY = 'outliner-expanded'
+
+function loadStoredExpandedState() {
+  return loadBooleanPreference(OUTLINER_EXPANDED_PREFERENCE_KEY, true)
+}
 
 export interface SceneOutlinerFocusRequest {
   token: number
@@ -32,11 +46,25 @@ export function SceneOutliner({
   onSelectById: (id: string | null) => void
 }) {
   const headingId = useId()
+  const contentId = useId()
   const containerRef = useRef<HTMLElement | null>(null)
+  const toggleButtonRef = useRef<HTMLButtonElement | null>(null)
   const buttonRefs = useRef(new Map<string, HTMLButtonElement>())
+  const [isExpanded, setIsExpanded] = useState(loadStoredExpandedState)
+
+  useEffect(() => {
+    saveBooleanPreference(OUTLINER_EXPANDED_PREFERENCE_KEY, isExpanded)
+  }, [isExpanded])
 
   useEffect(() => {
     if (!focusRequest || disabled) {
+      return
+    }
+
+    if (!isExpanded) {
+      // Keep focus on a visible control when collapsed instead of targeting hidden content.
+      toggleButtonRef.current?.focus()
+      onFocusHandled()
       return
     }
 
@@ -73,7 +101,7 @@ export function SceneOutliner({
     buttonRefs.current.get(nextItem.id)?.focus()
 
     onFocusHandled()
-  }, [disabled, focusRequest, onFocusHandled, readModel.items])
+  }, [disabled, focusRequest, isExpanded, onFocusHandled, readModel.items])
 
   return (
     <section
@@ -84,60 +112,86 @@ export function SceneOutliner({
     >
       <Card
         size="sm"
-        className="w-full max-w-sm bg-background/90 shadow-sm backdrop-blur-sm"
+        className="w-full bg-background/90 shadow-sm backdrop-blur-sm"
       >
-        <CardHeader>
-          <CardTitle id={headingId}>Furniture in room</CardTitle>
-          <CardDescription>
-            Use this list to select furniture without the canvas.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {readModel.items.length === 0 ? (
-            <p className="text-muted-foreground">No furniture in the room.</p>
-          ) : (
-            <ScrollArea className="max-h-40">
-              <ul className="space-y-2" aria-label="Furniture items">
-                {readModel.items.map((item) => {
-                  const isSelected = item.id === readModel.selectedId
+        <Collapsible
+          open={isExpanded}
+          onOpenChange={setIsExpanded}
+          className="w-full"
+        >
+          <CardHeader>
+            <CardTitle id={headingId}>Furniture List</CardTitle>
+            <CardAction>
+              <CollapsibleTrigger
+                render={
+                  <Button
+                    ref={toggleButtonRef}
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    aria-controls={contentId}
+                    aria-label="Toggle furniture list"
+                  />
+                }
+              >
+                {isExpanded ? <IconChevronDown /> : <IconChevronRight />}
+              </CollapsibleTrigger>
+            </CardAction>
+          </CardHeader>
 
-                  return (
-                    <li key={item.id}>
-                      <button
-                        ref={(element) => {
-                          if (element) {
-                            buttonRefs.current.set(item.id, element)
-                            return
-                          }
+          <CollapsibleContent render={<CardContent id={contentId} />}>
+            {readModel.items.length === 0 ? (
+              <p className="text-muted-foreground">No furniture in the room.</p>
+            ) : (
+              <ScrollArea className="max-h-40">
+                <ul className="space-y-2" aria-label="Furniture items">
+                  {readModel.items.map((item) => {
+                    const isSelected = item.id === readModel.selectedId
 
-                          buttonRefs.current.delete(item.id)
-                        }}
-                        type="button"
-                        aria-current={isSelected ? 'true' : undefined}
-                        disabled={disabled}
-                        className={cn(
-                          buttonVariants({
-                            variant: isSelected ? 'secondary' : 'outline',
-                            size: 'sm',
-                          }),
-                          'w-full justify-between text-left',
-                        )}
-                        onClick={() => {
-                          onSelectById(item.id)
-                        }}
-                      >
-                        <span>{item.name}</span>
-                        <span className="text-muted-foreground">
-                          {isSelected ? 'Selected' : 'Select'}
-                        </span>
-                      </button>
-                    </li>
-                  )
-                })}
-              </ul>
-            </ScrollArea>
-          )}
-        </CardContent>
+                    return (
+                      <li key={item.id}>
+                        <button
+                          ref={(element) => {
+                            if (element) {
+                              buttonRefs.current.set(item.id, element)
+                              return
+                            }
+
+                            buttonRefs.current.delete(item.id)
+                          }}
+                          type="button"
+                          aria-current={isSelected ? 'true' : undefined}
+                          disabled={disabled}
+                          className={cn(
+                            buttonVariants({
+                              variant: isSelected ? 'secondary' : 'outline',
+                              size: 'sm',
+                            }),
+                            'w-full justify-between text-left',
+                          )}
+                          onClick={() => {
+                            onSelectById(item.id)
+                          }}
+                        >
+                          <span>{item.name}</span>
+                          <span
+                            className={cn(
+                              isSelected
+                                ? 'font-medium text-foreground'
+                                : 'text-muted-foreground',
+                            )}
+                          >
+                            {isSelected ? 'Selected' : 'Select'}
+                          </span>
+                        </button>
+                      </li>
+                    )
+                  })}
+                </ul>
+              </ScrollArea>
+            )}
+          </CollapsibleContent>
+        </Collapsible>
       </Card>
     </section>
   )

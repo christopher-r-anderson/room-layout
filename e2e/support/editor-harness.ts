@@ -254,7 +254,6 @@ export async function deleteSelectedFurniture(page: Page) {
     .getByRole('alertdialog', { name: /delete furniture/i })
     .getByRole('button', { name: 'Delete' })
     .click()
-  await expect(page.getByText('Selected: none')).toBeVisible()
 
   return readSceneState(page)
 }

@@ -62,7 +62,7 @@ test('keeps announcements deterministic and reconciles focus on undo selection l
   await waitForItemCount(page, 0)
   await waitForPoliteAnnouncement(page, 'Undo complete.')
   await expect(
-    page.getByRole('region', { name: 'Furniture in room' }),
+    page.getByRole('region', { name: 'Furniture List' }),
   ).toBeFocused()
 })
 

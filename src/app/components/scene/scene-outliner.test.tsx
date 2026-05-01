@@ -2,9 +2,12 @@
 
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { SceneReadModel } from '@/scene/scene.types'
 import { SceneOutliner } from './scene-outliner'
+import { loadBooleanPreference, saveBooleanPreference } from '@/lib/ui/storage'
+
+const OUTLINER_EXPANDED_PREFERENCE_KEY = 'outliner-expanded'
 
 const READ_MODEL: SceneReadModel = {
   selectedId: 'item-1',
@@ -37,6 +40,10 @@ const READ_MODEL: SceneReadModel = {
 }
 
 describe('SceneOutliner', () => {
+  beforeEach(() => {
+    window.localStorage.clear()
+  })
+
   it('renders the empty state when there are no items', () => {
     render(
       <SceneOutliner
@@ -48,7 +55,37 @@ describe('SceneOutliner', () => {
       />,
     )
 
-    expect(screen.getByText('No furniture in the room.')).toBeVisible()
+    expect(screen.getByText('No furniture in the room.')).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Toggle furniture list' }),
+    ).toBeVisible()
+  })
+
+  it('starts expanded and collapses on toggle, saving the preference', async () => {
+    const user = userEvent.setup()
+
+    render(
+      <SceneOutliner
+        readModel={READ_MODEL}
+        disabled={false}
+        focusRequest={null}
+        onFocusHandled={vi.fn()}
+        onSelectById={vi.fn()}
+      />,
+    )
+
+    expect(screen.getByRole('button', { name: /leather couch/i })).toBeVisible()
+
+    await user.click(
+      screen.getByRole('button', { name: 'Toggle furniture list' }),
+    )
+
+    expect(
+      screen.queryByRole('button', { name: /leather couch/i }),
+    ).not.toBeInTheDocument()
+    expect(loadBooleanPreference(OUTLINER_EXPANDED_PREFERENCE_KEY, true)).toBe(
+      false,
+    )
   })
 
   it('forwards selection through item buttons', async () => {
@@ -70,7 +107,7 @@ describe('SceneOutliner', () => {
     expect(onSelectById).toHaveBeenCalledWith('item-2')
   })
 
-  it('applies focus requests to the preferred remaining item', async () => {
+  it('focuses the preferred item when expanded', async () => {
     const onFocusHandled = vi.fn()
 
     render(
@@ -85,6 +122,28 @@ describe('SceneOutliner', () => {
 
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /end table/i })).toHaveFocus()
+    })
+    expect(onFocusHandled).toHaveBeenCalledTimes(1)
+  })
+
+  it('falls back to toggle button when collapsed and focus is requested', async () => {
+    const onFocusHandled = vi.fn()
+    saveBooleanPreference(OUTLINER_EXPANDED_PREFERENCE_KEY, false)
+
+    render(
+      <SceneOutliner
+        readModel={READ_MODEL}
+        disabled={false}
+        focusRequest={{ token: 2, preferredIndex: 1 }}
+        onFocusHandled={onFocusHandled}
+        onSelectById={vi.fn()}
+      />,
+    )
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('button', { name: 'Toggle furniture list' }),
+      ).toHaveFocus()
     })
     expect(onFocusHandled).toHaveBeenCalledTimes(1)
   })
@@ -124,7 +183,7 @@ describe('SceneOutliner', () => {
       />,
     )
 
-    const outlinerRegion = screen.getByLabelText('Furniture in room')
+    const outlinerRegion = screen.getByLabelText('Furniture List')
 
     await waitFor(() => {
       expect(outlinerRegion).toHaveFocus()
