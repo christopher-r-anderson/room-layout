@@ -112,6 +112,24 @@ export async function expectPoliteAnnouncementUnchanged(
   }
 }
 
+export async function expectAssertiveAnnouncementUnchanged(
+  page: Page,
+  expected: string,
+  options?: {
+    durationMs?: number
+    intervalMs?: number
+  },
+) {
+  const durationMs = options?.durationMs ?? 600
+  const intervalMs = options?.intervalMs ?? 75
+  const deadline = Date.now() + durationMs
+
+  while (Date.now() < deadline) {
+    expect(await readAssertiveAnnouncement(page)).toBe(expected)
+    await page.waitForTimeout(intervalMs)
+  }
+}
+
 export async function waitForEditorReady(page: Page) {
   await expect(page.getByRole('button', { name: 'Add Furniture' })).toBeEnabled(
     { timeout: EDITOR_READY_TIMEOUT_MS },
