@@ -33,4 +33,42 @@ export default defineConfig([
       },
     },
   },
+
+  // scene/ must never import from app/. Dependency direction is one-way.
+  {
+    files: ['src/scene/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['@/app', '@/app/**'],
+              message:
+                'src/scene must not import from src/app. Dependency direction is app → scene only.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+
+  // App-side code may import only approved scene contract modules.
+  {
+    files: ['src/app/**/*.{ts,tsx}', 'src/App.tsx'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['@/scene/internal', '@/scene/internal/**'],
+              message:
+                'Scene internal utilities are not part of the public API. Import only from: @/scene/scene.types, @/scene/objects/furniture.types, or @/scene/objects/furniture-catalog.',
+            },
+          ],
+        },
+      ],
+    },
+  },
 ])
