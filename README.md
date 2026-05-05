@@ -124,7 +124,34 @@ Current editor UI highlights include a visual furniture picker, history and sele
 - Keyboard movement supports `Arrow` (0.5m), `Shift+Arrow` (1.0m), and `Alt+Arrow` (0.1m).
 - If a core furniture asset fails to load at startup, use the retry action from the startup error overlay.
 
-## 🗺️ Project Plan
+## �️ Catalog
+
+The editor loads its furniture catalog from a runtime manifest (`public/catalog-manifest.json`), allowing catalog updates without rebuilding the app.
+
+### Manifest Updates
+
+To add or modify furniture items:
+
+1. **Update the manifest**: Edit `public/catalog-manifest.json` to add collections and catalog entries
+2. **Prepare assets**:
+   - Place GLTF model files in `public/models/`
+   - Place preview images in `public/catalog-previews/`
+3. **Validate**:
+   - Node names in GLTF files must match the `nodeName` values in the catalog
+   - All paths in the manifest must be relative (e.g., `"models/foo.glb"`)
+   - Footprint dimensions must be positive numbers
+
+For detailed manifest format and validation rules, see [public/catalog-manifest-schema.md](./public/catalog-manifest-schema.md).
+
+### Fallback Behavior
+
+If the manifest fails to load, the editor automatically falls back to a static built-in catalog. This ensures the app remains usable even if the manifest file is missing or invalid.
+
+### Performance
+
+Asset preloading occurs in the background during startup. If an asset fails to preload, the app signals a recoverable error with a retry action—users can continue editing other items while the failed asset loads in the background.
+
+## �🗺️ Project Plan
 
 Current roadmap and progress checklist are tracked in [PLAN.md](./PLAN.md).
 

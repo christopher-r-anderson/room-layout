@@ -20,13 +20,19 @@ import { redoSceneHistory, undoSceneHistory } from './scene-history-state'
 import { createSceneSnapshot } from './scene-snapshot'
 import type { MoveSource, SceneRef } from '../scene.types'
 import type { FurnitureItem } from '../objects/furniture.types'
+import type {
+  FurnitureCatalogEntry,
+  FurnitureCollection,
+} from '../objects/furniture-catalog'
 
 interface UseSceneImperativeApiOptions {
   ref: React.Ref<SceneRef>
   bounds: LayoutBounds
   camera: Parameters<typeof createSceneSnapshot>[3]
   canvasSize: Parameters<typeof createSceneSnapshot>[4]
+  catalog: FurnitureCatalogEntry[]
   clearDragState: () => void
+  collections: FurnitureCollection[]
   dragState: { id: string } | null
   edgeSnapThreshold: number
   furniture: FurnitureItem[]
@@ -47,7 +53,9 @@ export function useSceneImperativeApi({
   bounds,
   camera,
   canvasSize,
+  catalog,
   clearDragState,
+  collections,
   dragState,
   edgeSnapThreshold,
   furniture,
@@ -230,6 +238,8 @@ export function useSceneImperativeApi({
           sourceScenesByPath,
           catalogId,
           nextId: createFurnitureInstanceId(instanceIdRef.current + 1),
+          catalog,
+          collections,
           bounds,
           edgeSnapThreshold,
           snapSize,
@@ -331,8 +341,10 @@ export function useSceneImperativeApi({
     [
       camera,
       canvasSize,
+      catalog,
       clearDragState,
       bounds,
+      collections,
       objectRefs,
       furniture,
       rotateSelectedFurniture,

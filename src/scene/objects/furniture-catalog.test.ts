@@ -53,7 +53,7 @@ describe('resolvePublicAssetPath', () => {
   it('preloads furniture collections with the same array shape used by scene loading', () => {
     preloadSpy.mockClear()
 
-    preloadFurnitureCollections()
+    preloadFurnitureCollections(FURNITURE_COLLECTION_PATHS)
 
     expect(preloadSpy).toHaveBeenCalledTimes(1)
     expect(preloadSpy.mock.calls).toEqual([[FURNITURE_COLLECTION_PATHS]])
@@ -62,7 +62,7 @@ describe('resolvePublicAssetPath', () => {
   it('clears cached furniture collections using the same source paths', () => {
     clearSpy.mockClear()
 
-    clearFurnitureCollectionCache()
+    clearFurnitureCollectionCache(FURNITURE_COLLECTION_PATHS)
 
     expect(clearSpy).toHaveBeenCalledTimes(
       FURNITURE_COLLECTION_PATHS.length + 1,

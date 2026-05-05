@@ -1,16 +1,6 @@
 import { useGLTF } from '@react-three/drei'
+import { resolvePublicAssetPath } from '@/lib/asset-path'
 import type { FurnitureKind, FootprintSize } from './furniture.types'
-
-function resolvePublicAssetPath(assetPath: string) {
-  const normalizedBasePath = import.meta.env.BASE_URL.endsWith('/')
-    ? import.meta.env.BASE_URL
-    : `${import.meta.env.BASE_URL}/`
-  const normalizedAssetPath = assetPath.startsWith('/')
-    ? assetPath.slice(1)
-    : assetPath
-
-  return `${normalizedBasePath}${normalizedAssetPath}`
-}
 
 export interface FurnitureCollection {
   id: string
@@ -117,36 +107,43 @@ export const FURNITURE_COLLECTION_PATHS = FURNITURE_COLLECTIONS.map(
   ({ sourcePath }) => sourcePath,
 )
 
-export function preloadFurnitureCollections() {
-  useGLTF.preload(FURNITURE_COLLECTION_PATHS)
+export function preloadFurnitureCollections(paths: string[]) {
+  useGLTF.preload(paths)
 }
 
-export function clearFurnitureCollectionCache() {
-  useGLTF.clear(FURNITURE_COLLECTION_PATHS)
+export function clearFurnitureCollectionCache(paths: string[]) {
+  useGLTF.clear(paths)
 
-  FURNITURE_COLLECTION_PATHS.forEach((sourcePath) => {
+  paths.forEach((sourcePath) => {
     useGLTF.clear(sourcePath)
   })
 }
 
-export function getCollectionPath(collectionId: string) {
-  const collection = FURNITURE_COLLECTIONS.find(
-    (item) => item.id === collectionId,
-  )
+export function getCollection(
+  collectionId: string,
+  collections: FurnitureCollection[] = FURNITURE_COLLECTIONS,
+) {
+  const collection = collections.find((item) => item.id === collectionId)
 
   if (!collection) {
     throw new Error(`unknown furniture collection: ${collectionId}`)
   }
 
-  return collection.sourcePath
+  return collection
 }
 
-export function getFurnitureCatalogEntry(catalogId: string) {
-  return FURNITURE_CATALOG.find((entry) => entry.id === catalogId) ?? null
+export function getCollectionPath(
+  collectionId: string,
+  collections: FurnitureCollection[] = FURNITURE_COLLECTIONS,
+) {
+  return getCollection(collectionId, collections).sourcePath
 }
 
-export function getFurnitureCatalogEntryByKind(kind: FurnitureKind) {
-  return FURNITURE_CATALOG.find((entry) => entry.kind === kind) ?? null
+export function getFurnitureCatalogEntry(
+  catalogId: string,
+  catalog: FurnitureCatalogEntry[] = FURNITURE_CATALOG,
+) {
+  return catalog.find((entry) => entry.id === catalogId) ?? null
 }
 
-export { resolvePublicAssetPath }
+export { resolvePublicAssetPath } from '@/lib/asset-path'

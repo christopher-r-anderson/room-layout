@@ -27,6 +27,7 @@ interface UseOverlayPropsOptions {
   onOpenDeleteDialog: EditorSelectionProps['onOpenDeleteDialog']
   onRotateSelection: EditorSelectionProps['onRotateSelection']
   catalogIdToAdd: EditorCatalogProps['catalogIdToAdd']
+  catalog: EditorCatalogProps['catalog']
   isCatalogDrawerOpen: EditorCatalogProps['isCatalogDrawerOpen']
   onAddFurniture: EditorCatalogProps['onAddFurniture']
   onCatalogIdToAddChange: EditorCatalogProps['onCatalogIdToAddChange']
@@ -68,6 +69,7 @@ export function useOverlayProps({
   onOpenDeleteDialog,
   onRotateSelection,
   catalogIdToAdd,
+  catalog,
   isCatalogDrawerOpen,
   onAddFurniture,
   onCatalogIdToAddChange,
@@ -133,6 +135,7 @@ export function useOverlayProps({
 
   const catalogProps = useMemo<EditorCatalogProps>(
     () => ({
+      catalog,
       catalogIdToAdd,
       isCatalogDrawerOpen,
       onAddFurniture,
@@ -140,6 +143,7 @@ export function useOverlayProps({
       onCatalogDrawerOpenChange,
     }),
     [
+      catalog,
       catalogIdToAdd,
       isCatalogDrawerOpen,
       onAddFurniture,

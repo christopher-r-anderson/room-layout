@@ -2,7 +2,6 @@
 
 import { act, renderHook } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
-import { FURNITURE_CATALOG } from '@/scene/objects/furniture-catalog'
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
 import type { SceneReadModel } from '@/scene/scene.types'
 import { useOverlayState } from './use-overlay-state'
@@ -42,7 +41,7 @@ describe('useOverlayState', () => {
       canUndo: false,
       canRedo: false,
     })
-    expect(result.current.catalogIdToAdd).toBe(FURNITURE_CATALOG[0]?.id ?? '')
+    expect(result.current.catalogIdToAdd).toBe('')
   })
 
   it('handleHistoryChange updates availability', () => {

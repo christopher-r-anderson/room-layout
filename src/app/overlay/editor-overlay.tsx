@@ -1,4 +1,5 @@
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
+import type { FurnitureCatalogEntry } from '@/scene/objects/furniture-catalog'
 import type {
   MoveSelectionResult,
   MoveSource,
@@ -53,6 +54,7 @@ export interface EditorSceneProps {
 }
 
 export interface EditorCatalogProps {
+  catalog: FurnitureCatalogEntry[]
   catalogIdToAdd: string
   isCatalogDrawerOpen: boolean
   onAddFurniture: () => boolean
@@ -172,6 +174,7 @@ export function EditorOverlay({
               triggerButton={
                 <CatalogAddButton className="pointer-events-auto" />
               }
+              catalog={catalog.catalog}
               catalogIdToAdd={catalog.catalogIdToAdd}
               editorInteractionsEnabled={editorInteractionsEnabled}
               onAddFurniture={catalog.onAddFurniture}

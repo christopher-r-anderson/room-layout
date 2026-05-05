@@ -3,6 +3,7 @@
 import { renderHook } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
+import type { FurnitureCatalogEntry } from '@/scene/objects/furniture-catalog'
 import type { SceneReadModel } from '@/scene/scene.types'
 import type { SceneOutlinerFocusRequest } from '../scene-panel.types'
 import { useOverlayProps } from './use-overlay-props'
@@ -39,6 +40,7 @@ interface OverlayOptions {
   onMoveSelection: () => { ok: true; position: [number, number, number] }
   onOpenDeleteDialog: () => void
   onRotateSelection: () => void
+  catalog: FurnitureCatalogEntry[]
   catalogIdToAdd: string
   isCatalogDrawerOpen: boolean
   onAddFurniture: () => boolean
@@ -83,6 +85,7 @@ function createOptions(overrides?: Partial<OverlayOptions>): OverlayOptions {
     onOpenDeleteDialog: vi.fn(),
     onRotateSelection: vi.fn(),
     catalogIdToAdd: 'chair-1',
+    catalog: [],
     isCatalogDrawerOpen: false,
     onAddFurniture: vi.fn(() => true),
     onCatalogIdToAddChange: vi.fn(),
@@ -139,6 +142,7 @@ describe('useOverlayProps', () => {
       onRotateSelection: options.onRotateSelection,
     })
     expect(result.current.catalogProps).toEqual({
+      catalog: [],
       catalogIdToAdd: 'table-1',
       isCatalogDrawerOpen: true,
       onAddFurniture: options.onAddFurniture,
