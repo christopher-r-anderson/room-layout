@@ -124,7 +124,7 @@ Current editor UI highlights include a visual furniture picker, history and sele
 - Keyboard movement supports `Arrow` (0.5m), `Shift+Arrow` (1.0m), and `Alt+Arrow` (0.1m).
 - If a core furniture asset fails to load at startup, use the retry action from the startup error overlay.
 
-## �️ Catalog
+## 🛋️ Catalog
 
 The editor loads its furniture catalog from a runtime manifest (`public/catalog-manifest.json`), allowing catalog updates without rebuilding the app.
 
@@ -149,9 +149,9 @@ If the manifest fails to load, the editor automatically falls back to a static b
 
 ### Performance
 
-Asset preloading occurs in the background during startup. If an asset fails to preload, the app signals a recoverable error with a retry action—users can continue editing other items while the failed asset loads in the background.
+Asset preloading occurs in the background during startup. If an asset fails to preload, the app surfaces a recoverable error overlay with a retry action. Editor interactions remain disabled until the error is cleared and all assets are successfully loaded.
 
-## �🗺️ Project Plan
+## 🗺️ Project Plan
 
 Current roadmap and progress checklist are tracked in [PLAN.md](./PLAN.md).
 

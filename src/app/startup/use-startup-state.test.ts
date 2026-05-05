@@ -95,29 +95,36 @@ describe('useStartupState', () => {
 
     renderHook(() => useStartupState())
 
-    const paths = MANIFEST_COLLECTIONS.map((c) => c.sourcePath)
+    // First call is fallback collections (immediate), second is manifest collections
+    const fallbackPaths = catalogMocks.FURNITURE_COLLECTIONS.map(
+      (c) => c.sourcePath,
+    )
+    const manifestPaths = MANIFEST_COLLECTIONS.map((c) => c.sourcePath)
+
     await waitFor(() => {
       expect(catalogMocks.preloadFurnitureCollections).toHaveBeenCalledWith(
-        paths,
+        fallbackPaths,
+      )
+      expect(catalogMocks.preloadFurnitureCollections).toHaveBeenCalledWith(
+        manifestPaths,
       )
     })
   })
 
-  it('falls back to static catalog and preloads static collections when manifest fails', async () => {
+  it('falls back to static catalog and preloads static collections when manifest fails', () => {
     manifestMocks.fetchCatalogManifest.mockRejectedValue(
       new Error('network error'),
     )
 
     renderHook(() => useStartupState())
 
+    // Fallback preload happens immediately on mount
     const fallbackPaths = catalogMocks.FURNITURE_COLLECTIONS.map(
       (c) => c.sourcePath,
     )
-    await waitFor(() => {
-      expect(catalogMocks.preloadFurnitureCollections).toHaveBeenCalledWith(
-        fallbackPaths,
-      )
-    })
+    expect(catalogMocks.preloadFurnitureCollections).toHaveBeenCalledWith(
+      fallbackPaths,
+    )
   })
 
   it('exposes manifest catalog after manifest loads', async () => {

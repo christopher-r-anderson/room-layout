@@ -279,5 +279,41 @@ describe('fetchCatalogManifest', () => {
         ManifestValidationError,
       )
     })
+
+    it('throws ManifestValidationError when modelPath contains path traversal', async () => {
+      const badManifest = {
+        ...VALID_MANIFEST,
+        collections: [{ id: 'col-1', modelPath: '../models/col-1.glb' }],
+      }
+      mockFetchOk(badManifest)
+
+      await expect(fetchCatalogManifest()).rejects.toBeInstanceOf(
+        ManifestValidationError,
+      )
+    })
+
+    it('throws ManifestValidationError when collections array is empty', async () => {
+      const badManifest = {
+        ...VALID_MANIFEST,
+        collections: [],
+      }
+      mockFetchOk(badManifest)
+
+      await expect(fetchCatalogManifest()).rejects.toBeInstanceOf(
+        ManifestValidationError,
+      )
+    })
+
+    it('throws ManifestValidationError when catalog array is empty', async () => {
+      const badManifest = {
+        ...VALID_MANIFEST,
+        catalog: [],
+      }
+      mockFetchOk(badManifest)
+
+      await expect(fetchCatalogManifest()).rejects.toBeInstanceOf(
+        ManifestValidationError,
+      )
+    })
   })
 })

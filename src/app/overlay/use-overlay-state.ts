@@ -71,7 +71,16 @@ export function useOverlayState(): OverlayState {
 
   const initializeCatalogSelection = useCallback(
     (catalog: FurnitureCatalogEntry[]) => {
-      setCatalogIdToAdd(catalog[0]?.id ?? '')
+      setCatalogIdToAdd((prevId) => {
+        // If already initialized, preserve the current selection if it exists in
+        // the new catalog, otherwise fall back to the first entry
+        if (prevId) {
+          const exists = catalog.some((entry) => entry.id === prevId)
+          return exists ? prevId : (catalog[0]?.id ?? '')
+        }
+        // Only initialize if empty
+        return catalog[0]?.id ?? ''
+      })
     },
     [],
   )

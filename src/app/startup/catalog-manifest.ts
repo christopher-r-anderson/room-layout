@@ -51,6 +51,8 @@ function isRelativePath(value: unknown): value is string {
   if (value.startsWith('http://') || value.startsWith('https://')) return false
   if (value.startsWith('//')) return false
   if (value.startsWith('/')) return false
+  // Reject path traversal attempts (e.g., "../models/x.glb")
+  if (value.includes('..')) return false
   return true
 }
 
@@ -223,9 +225,21 @@ export async function fetchCatalogManifest(
     )
   }
 
+  if (manifest.collections.length === 0) {
+    throw new ManifestValidationError(
+      'Catalog manifest "collections" array must not be empty',
+    )
+  }
+
   if (!Array.isArray(manifest.catalog)) {
     throw new ManifestValidationError(
       'Catalog manifest must have a "catalog" array',
+    )
+  }
+
+  if (manifest.catalog.length === 0) {
+    throw new ManifestValidationError(
+      'Catalog manifest "catalog" array must not be empty',
     )
   }
 

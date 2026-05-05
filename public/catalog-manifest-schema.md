@@ -12,9 +12,7 @@ The manifest is a JSON file with the following structure:
   "collections": [
     {
       "id": "string",
-      "name": "string",
-      "modelPath": "string",
-      "previewPath": "string"
+      "modelPath": "string"
     }
   ],
   "catalog": [
@@ -46,12 +44,10 @@ The manifest is a JSON file with the following structure:
 
 ### Collection Object
 
-| Field         | Type   | Description                                                                    |
-| ------------- | ------ | ------------------------------------------------------------------------------ |
-| `id`          | string | Unique identifier for the collection (referenced by catalog entries)           |
-| `name`        | string | Human-readable collection name                                                 |
-| `modelPath`   | string | Relative path to the GLTF model file (e.g., `"models/leather-collection.glb"`) |
-| `previewPath` | string | Relative path to a preview image (e.g., `"catalog-previews/couch.webp"`)       |
+| Field       | Type   | Description                                                                    |
+| ----------- | ------ | ------------------------------------------------------------------------------ |
+| `id`        | string | Unique identifier for the collection (referenced by catalog entries)           |
+| `modelPath` | string | Relative path to the GLTF model file (e.g., `"models/leather-collection.glb"`) |
 
 ### Catalog Entry Object
 
@@ -69,13 +65,13 @@ The manifest is a JSON file with the following structure:
 
 ## Validation Rules
 
-- All `modelPath` and `previewPath` values must be **relative paths**:
+- All `modelPath` and `previewPath` values must be **relative paths** that do not escape the public directory:
   - ✅ Allowed: `"models/foo.glb"`, `"catalog-previews/couch.webp"`
-  - ❌ Not allowed: `"/models/foo.glb"`, `"http://example.com/foo.glb"`, `"//cdn.example.com/foo.glb"`
+  - ❌ Not allowed: `"/models/foo.glb"`, `"http://example.com/foo.glb"`, `"//cdn.example.com/foo.glb"`, `"../models/foo.glb"`
 - All `kind` values must match one of the known furniture kinds
 - All `collectionId` references must point to an existing collection
 - All footprint dimensions must be positive numbers
-- All arrays must not be empty
+- Both `collections` and `catalog` arrays must not be empty
 
 ## Runtime Behavior
 
@@ -91,9 +87,7 @@ The manifest is a JSON file with the following structure:
   "collections": [
     {
       "id": "leather",
-      "name": "Leather Collection",
-      "modelPath": "models/leather-collection.glb",
-      "previewPath": "catalog-previews/leather.webp"
+      "modelPath": "models/leather-collection.glb"
     }
   ],
   "catalog": [

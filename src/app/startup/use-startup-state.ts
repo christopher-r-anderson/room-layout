@@ -60,17 +60,21 @@ const INITIAL_STATE: ReducerState = {
 
 function reducer(state: ReducerState, action: Action): ReducerState {
   switch (action.type) {
-    case 'MANIFEST_LOADED':
+    case 'MANIFEST_LOADED': {
       perfLog('Manifest loaded, starting asset preload', {
         collections: action.collections.length,
         catalog: action.catalog.length,
       })
+      // If assets have already arrived (cached GLTF), preserve the 'ready' phase
+      // rather than regressing back to 'loading-assets'
+      const nextPhase = state.phase === 'ready' ? 'ready' : 'loading-assets'
       return {
         ...state,
-        phase: 'loading-assets',
+        phase: nextPhase,
         manifestCatalog: action.catalog,
         manifestCollections: action.collections,
       }
+    }
     case 'MANIFEST_FAILED':
       perfLog('Manifest load failed, using fallback catalog')
       return {
@@ -157,18 +161,38 @@ export function useStartupState(): StartupState {
     assetErrorRef.current = assetError
   }, [assetError])
 
-  // On mount: fetch the runtime catalog manifest, then preload the resolved collections.
-  // Manifest failures are non-fatal — the app falls back to the static FURNITURE_CATALOG.
+  // On mount: fetch the runtime catalog manifest with a timeout, then preload the resolved collections.
+  // Manifest failures are non-fatal - the app falls back to the static FURNITURE_CATALOG.
+  // Asset preloading starts immediately with the fallback collections to prevent indefinite hangs.
   useEffect(() => {
     let cancelled = false
 
+    // Start preloading fallback collections immediately to prevent startup hang
+    preloadFurnitureCollections(FURNITURE_COLLECTIONS.map((c) => c.sourcePath))
+    perfLog('Asset preload started with fallback collections', {
+      collections: FURNITURE_COLLECTIONS.length,
+    })
+
     async function run() {
-      let resolvedCollections: FurnitureCollection[]
+      const timeoutMs = 5000 // 5 second timeout for manifest fetch
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => {
+          reject(new Error('Manifest fetch timeout'))
+        }, timeoutMs)
+      })
 
       try {
-        const result = await fetchCatalogManifest()
+        const result = await Promise.race([
+          fetchCatalogManifest(),
+          timeoutPromise,
+        ])
 
         if (cancelled) return
+
+        perfLog('Manifest loaded, switching to runtime catalog', {
+          collections: result.collections.length,
+          catalog: result.catalog.length,
+        })
 
         dispatch({
           type: 'MANIFEST_LOADED',
@@ -176,18 +200,23 @@ export function useStartupState(): StartupState {
           collections: result.collections,
         })
 
-        resolvedCollections = result.collections
-      } catch {
+        // Preload the manifest's collections
+        preloadFurnitureCollections(result.collections.map((c) => c.sourcePath))
+      } catch (error) {
         if (cancelled) return
 
-        dispatch({ type: 'MANIFEST_FAILED' })
-        resolvedCollections = FURNITURE_COLLECTIONS
-      }
+        const isTimeout =
+          error instanceof Error && error.message === 'Manifest fetch timeout'
+        if (isTimeout) {
+          perfLog('Manifest fetch timeout, using fallback collections')
+        } else {
+          perfLog('Manifest load failed, using fallback collections', {
+            error: error instanceof Error ? error.message : String(error),
+          })
+        }
 
-      preloadFurnitureCollections(resolvedCollections.map((c) => c.sourcePath))
-      perfLog('Asset preload started', {
-        collections: resolvedCollections.length,
-      })
+        dispatch({ type: 'MANIFEST_FAILED' })
+      }
     }
 
     void run()
