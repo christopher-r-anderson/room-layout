@@ -3,6 +3,7 @@ import type {
   EditorCatalogProps,
   EditorDialogsProps,
   EditorHistoryProps,
+  EditorPreviewProps,
   EditorSceneProps,
   EditorSelectionProps,
   EditorStartupProps,
@@ -36,6 +37,7 @@ interface UseOverlayPropsOptions {
   onConfirmDeleteSelection: EditorDialogsProps['onConfirmDeleteSelection']
   isInfoDialogOpen: EditorDialogsProps['isInfoDialogOpen']
   onInfoDialogOpenChange: EditorDialogsProps['onInfoDialogOpenChange']
+  onPreviewChange: EditorPreviewProps['onPreviewChange']
 }
 
 interface EditorOverlayPropsShape {
@@ -45,6 +47,7 @@ interface EditorOverlayPropsShape {
   selectionProps: EditorSelectionProps
   catalogProps: EditorCatalogProps
   dialogsProps: EditorDialogsProps
+  previewProps: EditorPreviewProps
 }
 
 export function useOverlayProps({
@@ -75,6 +78,7 @@ export function useOverlayProps({
   onConfirmDeleteSelection,
   isInfoDialogOpen,
   onInfoDialogOpenChange,
+  onPreviewChange,
 }: UseOverlayPropsOptions): EditorOverlayPropsShape {
   const startupProps = useMemo<EditorStartupProps>(
     () => ({
@@ -171,11 +175,13 @@ export function useOverlayProps({
       selectionProps,
       catalogProps,
       dialogsProps,
+      previewProps: { onPreviewChange },
     }),
     [
       catalogProps,
       dialogsProps,
       historyProps,
+      onPreviewChange,
       sceneProps,
       selectionProps,
       startupProps,

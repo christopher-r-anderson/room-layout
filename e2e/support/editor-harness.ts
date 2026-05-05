@@ -13,6 +13,7 @@ export interface BrowserSceneState {
   assetsReady: boolean
   assetError: boolean
   selectedId: string | null
+  previewedId: string | null
   selectedName: string | null
   itemCount: number
   items: {

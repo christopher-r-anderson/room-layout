@@ -52,6 +52,7 @@ describe('SceneOutliner', () => {
         focusRequest={null}
         onFocusHandled={vi.fn()}
         onSelectById={vi.fn()}
+        onPreviewChange={vi.fn()}
       />,
     )
 
@@ -71,6 +72,7 @@ describe('SceneOutliner', () => {
         focusRequest={null}
         onFocusHandled={vi.fn()}
         onSelectById={vi.fn()}
+        onPreviewChange={vi.fn()}
       />,
     )
 
@@ -99,6 +101,7 @@ describe('SceneOutliner', () => {
         focusRequest={null}
         onFocusHandled={vi.fn()}
         onSelectById={onSelectById}
+        onPreviewChange={vi.fn()}
       />,
     )
 
@@ -117,6 +120,7 @@ describe('SceneOutliner', () => {
         focusRequest={{ token: 1, preferredIndex: 1 }}
         onFocusHandled={onFocusHandled}
         onSelectById={vi.fn()}
+        onPreviewChange={vi.fn()}
       />,
     )
 
@@ -137,6 +141,7 @@ describe('SceneOutliner', () => {
         focusRequest={{ token: 2, preferredIndex: 1 }}
         onFocusHandled={onFocusHandled}
         onSelectById={vi.fn()}
+        onPreviewChange={vi.fn()}
       />,
     )
 
@@ -161,6 +166,7 @@ describe('SceneOutliner', () => {
         focusRequest={{ token: 2, targetSelectedId: 'item-2' }}
         onFocusHandled={onFocusHandled}
         onSelectById={vi.fn()}
+        onPreviewChange={vi.fn()}
       />,
     )
 
@@ -180,6 +186,7 @@ describe('SceneOutliner', () => {
         focusRequest={{ token: 3, focusContainer: true }}
         onFocusHandled={onFocusHandled}
         onSelectById={vi.fn()}
+        onPreviewChange={vi.fn()}
       />,
     )
 
@@ -189,5 +196,117 @@ describe('SceneOutliner', () => {
       expect(outlinerRegion).toHaveFocus()
     })
     expect(onFocusHandled).toHaveBeenCalledTimes(1)
+  })
+
+  describe('preview callbacks', () => {
+    it('calls onPreviewChange with id and source on pointer enter', async () => {
+      const user = userEvent.setup()
+      const onPreviewChange = vi.fn()
+
+      render(
+        <Outliner
+          readModel={READ_MODEL}
+          disabled={false}
+          focusRequest={null}
+          onFocusHandled={vi.fn()}
+          onSelectById={vi.fn()}
+          onPreviewChange={onPreviewChange}
+        />,
+      )
+
+      await user.hover(screen.getByRole('button', { name: /leather couch/i }))
+
+      expect(onPreviewChange).toHaveBeenCalledWith('item-1', 'outliner-hover')
+    })
+
+    it('calls onPreviewChange with null on pointer leave', async () => {
+      const user = userEvent.setup()
+      const onPreviewChange = vi.fn()
+
+      render(
+        <Outliner
+          readModel={READ_MODEL}
+          disabled={false}
+          focusRequest={null}
+          onFocusHandled={vi.fn()}
+          onSelectById={vi.fn()}
+          onPreviewChange={onPreviewChange}
+        />,
+      )
+
+      await user.hover(screen.getByRole('button', { name: /leather couch/i }))
+      await user.unhover(screen.getByRole('button', { name: /leather couch/i }))
+
+      expect(onPreviewChange).toHaveBeenLastCalledWith(null, 'outliner-hover')
+    })
+
+    it('calls onPreviewChange with id and source on focus', async () => {
+      const user = userEvent.setup()
+      const onPreviewChange = vi.fn()
+
+      render(
+        <Outliner
+          readModel={READ_MODEL}
+          disabled={false}
+          focusRequest={null}
+          onFocusHandled={vi.fn()}
+          onSelectById={vi.fn()}
+          onPreviewChange={onPreviewChange}
+        />,
+      )
+
+      await user.tab()
+      // tab to the toggle button, then tab again to enter items
+      await user.tab()
+
+      expect(onPreviewChange).toHaveBeenCalledWith(
+        expect.any(String),
+        'outliner-focus',
+      )
+    })
+
+    it('calls onPreviewChange with null on blur', async () => {
+      const user = userEvent.setup()
+      const onPreviewChange = vi.fn()
+
+      render(
+        <Outliner
+          readModel={READ_MODEL}
+          disabled={false}
+          focusRequest={null}
+          onFocusHandled={vi.fn()}
+          onSelectById={vi.fn()}
+          onPreviewChange={onPreviewChange}
+        />,
+      )
+
+      await user.tab()
+      await user.tab()
+      // Move focus away
+      await user.tab()
+
+      expect(onPreviewChange).toHaveBeenCalledWith(null, 'outliner-focus')
+    })
+
+    it('does not call onPreviewChange when disabled', async () => {
+      const user = userEvent.setup()
+      const onPreviewChange = vi.fn()
+
+      render(
+        <Outliner
+          readModel={READ_MODEL}
+          disabled={true}
+          focusRequest={null}
+          onFocusHandled={vi.fn()}
+          onSelectById={vi.fn()}
+          onPreviewChange={onPreviewChange}
+        />,
+      )
+
+      const button = screen.getByRole('button', { name: /leather couch/i })
+      await user.hover(button)
+
+      expect(onPreviewChange).not.toHaveBeenCalled()
+    })
   })
 })

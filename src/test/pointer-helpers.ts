@@ -36,7 +36,13 @@ interface PointerEventData {
 export async function firePointerEvent(
   renderer: R3FTestScene,
   target: R3FEventTarget,
-  eventType: 'pointerDown' | 'pointerMove' | 'pointerUp' | 'pointerCancel',
+  eventType:
+    | 'pointerDown'
+    | 'pointerMove'
+    | 'pointerUp'
+    | 'pointerCancel'
+    | 'pointerEnter'
+    | 'pointerLeave',
   data: PointerEventData = {},
 ): Promise<void> {
   const { pointerId = 1, clientX = 0, clientY = 0, buttons } = data

@@ -38,11 +38,14 @@ export function InteractiveFurniture({
   rotationY,
   sourceScene,
   selected,
+  isDragging,
   onObjectReady,
   onSelect,
   onMoveStart,
   onMove,
   onMoveEnd,
+  onPreviewStart,
+  onPreviewEnd,
   nodeName,
 }: InteractiveFurnitureProps & { nodeName: string }) {
   const groupRef = useRef<Group>(null)
@@ -86,6 +89,16 @@ export function InteractiveFurniture({
       onPointerCancel={(event) => {
         releasePointerCapture(event)
         onMoveEnd(id, event)
+      }}
+      onPointerEnter={(event) => {
+        if (isDragging) {
+          return
+        }
+        event.stopPropagation()
+        onPreviewStart(id)
+      }}
+      onPointerLeave={() => {
+        onPreviewEnd()
       }}
     >
       <primitive object={model} />

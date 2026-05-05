@@ -1,6 +1,13 @@
 import { Canvas } from '@react-three/fiber'
 import { Scene } from './scene/scene'
-import { Component, Suspense, type ReactNode, useEffect, useRef } from 'react'
+import {
+  Component,
+  Suspense,
+  type ReactNode,
+  useEffect,
+  useMemo,
+  useRef,
+} from 'react'
 import type { SceneRef } from './scene/scene.types'
 import { EditorOverlay } from './app/overlay/editor-overlay'
 import { useDialogState } from './app/overlay/use-dialog-state'
@@ -10,6 +17,7 @@ import { useOverlayProps } from './app/overlay/use-overlay-props'
 import { useSceneCommands } from './app/hooks/use-scene-commands'
 import { useAnnouncements } from './app/hooks/use-announcements'
 import { useSceneSync } from './app/hooks/use-scene-sync'
+import { usePreviewController } from './app/use-preview-controller'
 import { useStartupLifecycle } from './app/use-startup-lifecycle'
 import { useSceneHandlers } from './app/use-scene-handlers'
 import { Announcer } from './app/scene-panel/announcer'
@@ -19,6 +27,7 @@ interface BrowserSceneState {
   assetsReady: boolean
   assetError: boolean
   selectedId: string | null
+  previewedId: string | null
   selectedName: string | null
   itemCount: number
   items: {
@@ -96,6 +105,23 @@ function App() {
     setEditorMessage: overlayState.setEditorMessage,
   })
 
+  const itemIds = useMemo(
+    () => overlayState.sceneReadModel.items.map((item) => item.id),
+    [overlayState.sceneReadModel.items],
+  )
+
+  const {
+    previewedId,
+    handleScenePreviewChange,
+    handleOutlinerPreviewChange,
+    handleDragStateChange,
+    clearPreviewOnCanvasMiss,
+  } = usePreviewController({
+    isModalOpen: dialogState.isModalOpen,
+    editorInteractionsEnabled: startup.editorInteractionsEnabled,
+    itemIds,
+  })
+
   const sync = useSceneSync({
     sceneRef,
     isModalOpen: dialogState.isModalOpen,
@@ -126,6 +152,7 @@ function App() {
     selectionProps,
     catalogProps,
     dialogsProps,
+    previewProps,
   } = useOverlayProps({
     assetError: Boolean(startup.assetError),
     startupLoadingActive: startup.startupLoadingActive,
@@ -155,6 +182,7 @@ function App() {
     onConfirmDeleteSelection: handlers.handleConfirmDeleteSelection,
     isInfoDialogOpen: dialogState.isInfoDialogOpen,
     onInfoDialogOpenChange: dialogState.setInfoOpen,
+    onPreviewChange: handleOutlinerPreviewChange,
   })
 
   useEffect(() => {
@@ -170,6 +198,7 @@ function App() {
           assetsReady: startup.assetsReadyRef.current,
           assetError: startup.assetErrorRef.current !== null,
           selectedId: sceneState?.selectedId ?? null,
+          previewedId,
           selectedName: sceneState?.selectedName ?? null,
           itemCount: sceneState?.itemCount ?? 0,
           items: sceneState?.items ?? [],
@@ -180,7 +209,7 @@ function App() {
     return () => {
       delete window.__ROOM_LAYOUT_TEST__
     }
-  }, [startup.assetErrorRef, startup.assetsReadyRef])
+  }, [previewedId, startup.assetErrorRef, startup.assetsReadyRef])
 
   useKeyboardShortcuts({
     enabled: startup.editorInteractionsEnabled,
@@ -225,6 +254,7 @@ function App() {
                 return
               }
 
+              clearPreviewOnCanvasMiss()
               handlers.handleClearSelection()
             }}
             shadows
@@ -240,6 +270,9 @@ function App() {
                   onSelectionChange={handlers.handleSceneSelectionChange}
                   onHistoryChange={handlers.handleSceneHistoryChange}
                   onAssetsReady={handlers.handleSceneAssetsReady}
+                  previewedId={previewedId}
+                  onPreviewChange={handleScenePreviewChange}
+                  onDragStateChange={handleDragStateChange}
                 />
               </Suspense>
             </SceneAssetErrorBoundary>
@@ -255,6 +288,7 @@ function App() {
           selection={selectionProps}
           catalog={catalogProps}
           dialogs={dialogsProps}
+          preview={previewProps}
         />
         <Announcer
           politeMessage={announcements.politeAnnouncement}
