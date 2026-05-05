@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test'
 import {
   addFurniture,
   dragSelectedFurniture,
+  expectAssertiveAnnouncementUnchanged,
   expectPoliteAnnouncementUnchanged,
   openEditor,
   readAssertiveAnnouncement,
@@ -123,6 +124,9 @@ test('outliner keyboard focus preview does not emit live announcements', async (
   await expectPoliteAnnouncementUnchanged(page, politeBeforeFocus, {
     durationMs: 250,
   })
+  await expectAssertiveAnnouncementUnchanged(page, assertiveBeforeFocus, {
+    durationMs: 250,
+  })
 
   // Focus an unselected item in the outliner to trigger preview semantics.
   await page.getByRole('button', { name: /^Leather Couch/i }).focus()
@@ -134,12 +138,7 @@ test('outliner keyboard focus preview does not emit live announcements', async (
   // Check beyond delayed movement announcement window and assert that
   // preview focus changes do not produce accessibility announcements.
   await expectPoliteAnnouncementUnchanged(page, politeBeforeFocus)
-  await expect
-    .poll(async () => readAssertiveAnnouncement(page), {
-      timeout: 350,
-      intervals: [60, 80, 100],
-    })
-    .toBe(assertiveBeforeFocus)
+  await expectAssertiveAnnouncementUnchanged(page, assertiveBeforeFocus)
 })
 
 test('keyboard shortcuts help is reachable and dismissible by keyboard, and is excluded from tab order while the catalog drawer is open', async ({
