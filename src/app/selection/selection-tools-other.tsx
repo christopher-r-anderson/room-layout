@@ -37,7 +37,7 @@ export function SelectionToolsOther({
         disabledMessage={disabledMessage}
         shortcuts="Q"
         label="Rotate Left"
-        icon={<IconRotate3d className="-x-scale-100" />}
+        icon={<IconRotate3d className="-scale-x-100" />}
       />
       <ToolButton
         action={() => {
