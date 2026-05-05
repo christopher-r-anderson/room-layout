@@ -30,12 +30,15 @@ function defaultProps(
     rotationY: 0,
     sourceScene: new Object3D(),
     selected: false,
+    isDragging: false,
     nodeName: 'test-node',
     onObjectReady: vi.fn(),
     onSelect: vi.fn(),
     onMoveStart: vi.fn(),
     onMove: vi.fn(),
     onMoveEnd: vi.fn(),
+    onPreviewStart: vi.fn(),
+    onPreviewEnd: vi.fn(),
     ...overrides,
   }
 }
@@ -197,6 +200,42 @@ describe('InteractiveFurniture', () => {
         'chair-1',
         expect.any(Object),
       )
+    })
+
+    it('calls onPreviewStart on pointer enter when not dragging', async () => {
+      const props = defaultProps({ isDragging: false })
+      const renderer = await createR3FTestScene(
+        <InteractiveFurniture {...props} />,
+      )
+      const group = renderer.scene.children[0]
+
+      await firePointerEvent(renderer, group, 'pointerEnter', {})
+
+      expect(props.onPreviewStart).toHaveBeenCalledWith('chair-1')
+    })
+
+    it('does not call onPreviewStart on pointer enter when dragging', async () => {
+      const props = defaultProps({ isDragging: true })
+      const renderer = await createR3FTestScene(
+        <InteractiveFurniture {...props} />,
+      )
+      const group = renderer.scene.children[0]
+
+      await firePointerEvent(renderer, group, 'pointerEnter', {})
+
+      expect(props.onPreviewStart).not.toHaveBeenCalled()
+    })
+
+    it('calls onPreviewEnd on pointer leave', async () => {
+      const props = defaultProps()
+      const renderer = await createR3FTestScene(
+        <InteractiveFurniture {...props} />,
+      )
+      const group = renderer.scene.children[0]
+
+      await firePointerEvent(renderer, group, 'pointerLeave', {})
+
+      expect(props.onPreviewEnd).toHaveBeenCalled()
     })
   })
 })

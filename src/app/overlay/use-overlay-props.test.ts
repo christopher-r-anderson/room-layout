@@ -50,6 +50,10 @@ interface OverlayOptions {
   onConfirmDeleteSelection: () => void
   isInfoDialogOpen: boolean
   onInfoDialogOpenChange: (open: boolean) => void
+  onPreviewChange: (
+    id: string | null,
+    source: 'outliner-hover' | 'outliner-focus',
+  ) => void
 }
 
 function createOptions(overrides?: Partial<OverlayOptions>): OverlayOptions {
@@ -89,6 +93,7 @@ function createOptions(overrides?: Partial<OverlayOptions>): OverlayOptions {
     onConfirmDeleteSelection: vi.fn(),
     isInfoDialogOpen: false,
     onInfoDialogOpenChange: vi.fn(),
+    onPreviewChange: vi.fn(),
     ...overrides,
   }
 }

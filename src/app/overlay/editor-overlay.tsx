@@ -69,6 +69,13 @@ export interface EditorDialogsProps {
   onInfoDialogOpenChange: (open: boolean) => void
 }
 
+export interface EditorPreviewProps {
+  onPreviewChange: (
+    id: string | null,
+    source: 'outliner-hover' | 'outliner-focus',
+  ) => void
+}
+
 interface EditorOverlayProps {
   editorInteractionsEnabled: boolean
   statusMessage: string | null
@@ -78,6 +85,7 @@ interface EditorOverlayProps {
   selection: EditorSelectionProps
   catalog: EditorCatalogProps
   dialogs: EditorDialogsProps
+  preview: EditorPreviewProps
 }
 
 export function EditorOverlay({
@@ -89,6 +97,7 @@ export function EditorOverlay({
   selection,
   catalog,
   dialogs,
+  preview,
 }: EditorOverlayProps) {
   return (
     <>
@@ -151,6 +160,7 @@ export function EditorOverlay({
               focusRequest={scene.focusRequest}
               onFocusHandled={scene.onFocusHandled}
               onSelectById={scene.onSelectById}
+              onPreviewChange={preview.onPreviewChange}
             />
             <Inspector selectedFurniture={selection.selectedFurniture} />
           </div>

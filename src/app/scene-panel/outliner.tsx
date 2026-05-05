@@ -32,12 +32,17 @@ export function Outliner({
   focusRequest,
   onFocusHandled,
   onSelectById,
+  onPreviewChange,
 }: {
   readModel: SceneReadModel
   disabled: boolean
   focusRequest: SceneOutlinerFocusRequest | null
   onFocusHandled: () => void
   onSelectById: (id: string | null) => void
+  onPreviewChange: (
+    id: string | null,
+    source: 'outliner-hover' | 'outliner-focus',
+  ) => void
 }) {
   const headingId = useId()
   const contentId = useId()
@@ -165,6 +170,26 @@ export function Outliner({
                           )}
                           onClick={() => {
                             onSelectById(item.id)
+                          }}
+                          onFocus={() => {
+                            if (!disabled) {
+                              onPreviewChange(item.id, 'outliner-focus')
+                            }
+                          }}
+                          onBlur={() => {
+                            if (!disabled) {
+                              onPreviewChange(null, 'outliner-focus')
+                            }
+                          }}
+                          onPointerEnter={() => {
+                            if (!disabled) {
+                              onPreviewChange(item.id, 'outliner-hover')
+                            }
+                          }}
+                          onPointerLeave={() => {
+                            if (!disabled) {
+                              onPreviewChange(null, 'outliner-hover')
+                            }
                           }}
                         >
                           <span>{item.name}</span>
