@@ -23,6 +23,26 @@
 - Treat `src/scene/objects/furniture-catalog.ts` as the single source of truth for model paths and node names.
 - Keep `src/App.tsx` focused on app-shell concerns (overlay controls, keyboard wiring) and pass intent to `Scene` via a minimal API.
 
+### Structural invariants
+
+**One-way dependency direction.**
+`src/app` may import from `src/scene`; `src/scene` must never import from `src/app`. This is enforced as an ESLint error. Any import from `@/app` inside `src/scene` is a hard violation.
+
+**Scene contracts vs. scene internals.**
+Scene contracts are types and values that form the stable API between the scene domain and the app shell: `SceneRef`, `SceneReadModel`, `MoveSelectionResult`, `MoveSource`, `SelectByIdResult`, `FurnitureItem`, `FootprintSize`. App-side code must import scene contracts only from the three explicit approved modules — no barrel imports required:
+
+- `@/scene/scene.types` — `SceneRef`, `SceneReadModel`, `MoveSelectionResult`, `MoveSource`, `SelectByIdResult`
+- `@/scene/objects/furniture.types` — `FurnitureItem`, `FootprintSize`
+- `@/scene/objects/furniture-catalog` — `FURNITURE_CATALOG` and preload/cache helpers (implementation/data allowed by policy)
+
+Scene internals (utilities, state management, internal hooks) are organized in `src/scene/internal/` and must not be imported from app-side code. Attempting to import from `@/scene/internal/**` is enforced as an ESLint error. The one necessary exception is `src/App.tsx` importing the `Scene` component via relative path (`./scene/scene`) as the composition root — this is not caught by the `@/scene/` lint pattern and is intentional.
+
+**Hook locality.**
+Feature-local hooks belong in their feature folder (e.g. `src/app/overlay/use-overlay-state.ts`). Cross-cutting hooks that serve multiple features belong in `src/app/hooks/`. App-composition coordinator hooks (`use-startup-lifecycle.ts`, `use-scene-handlers.ts`) live flat in `src/app/` and are consumed only by `App.tsx`.
+
+**Shared type placement.**
+Types consumed by more than one layer (e.g. a feature folder and `hooks/`) belong at `src/app/` root as standalone `.types.ts` files (e.g. `scene-panel.types.ts`), not inside any single consumer folder.
+
 ## Conventions
 
 - Prefer object-level pointer event handling with pointer capture for object movement interactions.
@@ -70,9 +90,9 @@ This project uses a 3-tier testing architecture to balance test speed, coverage,
 - **What:** React Three Fiber components, scene composition, event dispatch sequencing
 - **Tools:** Vitest with `@vitest-environment jsdom` + `@react-three/test-renderer`
 - **Examples:**
-  - Component structure: `src/scene/objects/interactive-furniture.test.tsx`
-  - Event handler wiring: `src/scene/objects/interactive-furniture.event.test.tsx`
-  - Hook initialization: `src/scene/use-scene-imperative-api.test.ts`
+  - Component structure: `src/scene/internal/objects/interactive-furniture.test.tsx`
+  - Event handler wiring: `src/scene/internal/objects/interactive-furniture.event.test.tsx`
+  - Hook initialization: `src/scene/internal/use-scene-imperative-api.test.ts`
 - **Speed:** <200ms per test
 - **Coverage:** ~5-10% of codebase (fills R3F component gaps)
 - **When to use:** "Does this test component render, event dispatch, or initialization?"

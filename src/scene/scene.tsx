@@ -1,7 +1,7 @@
-import { Room } from './environment/room'
-import { Lighting } from './environment/lighting'
-import { CameraControls } from './camera/camera-controls'
-import { InteractiveFurniture } from './objects/interactive-furniture'
+import { Room } from './internal/environment/room'
+import { Lighting } from './internal/environment/lighting'
+import { CameraControls } from './internal/camera/camera-controls'
+import { InteractiveFurniture } from './internal/objects/interactive-furniture'
 import { useGLTF } from '@react-three/drei'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useThree } from '@react-three/fiber'
@@ -15,15 +15,15 @@ import {
   areFurnitureCollectionsEqual,
   rotateSelectedFurnitureInHistory,
   updateFurniturePositionInHistory,
-} from './furniture-operations'
+} from './internal/furniture-operations'
 import {
   getSceneHistoryAvailability,
   type SceneHistoryAvailability,
-} from './scene-history-state'
+} from './internal/scene-history-state'
 import type { SceneRef } from './scene.types'
-import { useSceneDrag } from './use-scene-drag'
-import { useSceneImperativeApi } from './use-scene-imperative-api'
-import { useSceneSelection } from './use-scene-selection'
+import { useSceneDrag } from './internal/use-scene-drag'
+import { useSceneImperativeApi } from './internal/use-scene-imperative-api'
+import { useSceneSelection } from './internal/use-scene-selection'
 
 const ROOM_HALF_SIZE = 3
 const FLOOR_PLANE_Y = 0

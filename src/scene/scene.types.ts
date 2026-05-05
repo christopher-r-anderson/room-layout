@@ -1,4 +1,4 @@
-import type { SceneSnapshot } from './scene-snapshot'
+import type { SceneSnapshot } from './internal/scene-snapshot'
 import type { FurnitureItem } from './objects/furniture.types'
 
 export type MoveSource = 'keyboard' | 'inspector' | 'toolbar' | 'drag'
