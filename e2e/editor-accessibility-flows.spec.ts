@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test'
 import {
   addFurniture,
   dragSelectedFurniture,
+  expectPoliteAnnouncementUnchanged,
   openEditor,
   readAssertiveAnnouncement,
   readPoliteAnnouncement,
@@ -53,14 +54,9 @@ test('keeps announcements deterministic and reconciles focus on undo selection l
 
   await waitForPoliteAnnouncement(page, 'Undo complete.')
 
-  // Keep polling beyond delayed movement announcement window and assert
+  // Keep checking beyond delayed movement announcement window and assert
   // no stale overwrite occurs.
-  await expect
-    .poll(async () => readPoliteAnnouncement(page), {
-      timeout: 350,
-      intervals: [60, 80, 100],
-    })
-    .toBe('Undo complete.')
+  await expectPoliteAnnouncementUnchanged(page, 'Undo complete.')
 
   await waitForFirstItemPosition(page, initialPosition)
 
@@ -122,6 +118,12 @@ test('outliner keyboard focus preview does not emit live announcements', async (
   const politeBeforeFocus = await readPoliteAnnouncement(page)
   const assertiveBeforeFocus = await readAssertiveAnnouncement(page)
 
+  // Stabilize on the current polite message before changing focus so that
+  // this assertion only covers focus-preview behavior.
+  await expectPoliteAnnouncementUnchanged(page, politeBeforeFocus, {
+    durationMs: 250,
+  })
+
   // Focus an unselected item in the outliner to trigger preview semantics.
   await page.getByRole('button', { name: /^Leather Couch/i }).focus()
 
@@ -129,14 +131,9 @@ test('outliner keyboard focus preview does not emit live announcements', async (
     .poll(async () => (await readSceneState(page)).previewedId)
     .not.toBeNull()
 
-  // Poll beyond delayed movement announcement window and assert that
+  // Check beyond delayed movement announcement window and assert that
   // preview focus changes do not produce accessibility announcements.
-  await expect
-    .poll(async () => readPoliteAnnouncement(page), {
-      timeout: 350,
-      intervals: [60, 80, 100],
-    })
-    .toBe(politeBeforeFocus)
+  await expectPoliteAnnouncementUnchanged(page, politeBeforeFocus)
   await expect
     .poll(async () => readAssertiveAnnouncement(page), {
       timeout: 350,
