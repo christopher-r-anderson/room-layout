@@ -1,3 +1,4 @@
+import { getMeshes } from '@/lib/three/get-meshes'
 import { Room } from './internal/environment/room'
 import { Lighting } from './internal/environment/lighting'
 import { CameraControls } from './internal/camera/camera-controls'
@@ -29,6 +30,9 @@ const ROOM_HALF_SIZE = 3
 const FLOOR_PLANE_Y = 0
 const SNAP_SIZE = 0.5
 const EDGE_SNAP_THRESHOLD = 0.12
+// These are Three.js render layers used by OutlineEffect selection, not z-order.
+const SELECTED_OUTLINE_LAYER = 10
+const PREVIEW_OUTLINE_LAYER = 11
 const ROOM_BOUNDS: LayoutBounds = {
   minX: -ROOM_HALF_SIZE,
   maxX: ROOM_HALF_SIZE,
@@ -45,11 +49,17 @@ export function Scene({
   onSelectionChange,
   onHistoryChange,
   onAssetsReady,
+  previewedId = null,
+  onPreviewChange,
+  onDragStateChange,
 }: {
   ref: React.Ref<SceneRef>
   onSelectionChange?: (item: FurnitureItem | null) => void
   onHistoryChange?: (availability: SceneHistoryAvailability) => void
   onAssetsReady?: () => void
+  previewedId?: string | null
+  onPreviewChange?: (id: string | null) => void
+  onDragStateChange?: (isDragging: boolean) => void
 }) {
   const camera = useThree((state) => state.camera)
   const canvasSize = useThree((state) => state.size)
@@ -147,6 +157,12 @@ export function Scene({
     [dragState, history, selectedId],
   )
 
+  const isDragging = Boolean(dragState)
+
+  useEffect(() => {
+    onDragStateChange?.(isDragging)
+  }, [isDragging, onDragStateChange])
+
   useEffect(() => {
     onHistoryChange?.(historyAvailability)
   }, [historyAvailability, onHistoryChange])
@@ -159,6 +175,21 @@ export function Scene({
     hasReportedAssetsReadyRef.current = true
     onAssetsReady?.()
   }, [onAssetsReady, sourceScenesByPath])
+
+  const handlePreviewStart = useCallback(
+    (id: string) => {
+      if (id === selectedId) {
+        return
+      }
+
+      onPreviewChange?.(id)
+    },
+    [onPreviewChange, selectedId],
+  )
+
+  const handlePreviewEnd = useCallback(() => {
+    onPreviewChange?.(null)
+  }, [onPreviewChange])
 
   useSceneImperativeApi({
     ref,
@@ -195,15 +226,44 @@ export function Scene({
     [furniture, sourceScenesByPath],
   )
 
+  const previewObject = useMemo(
+    () =>
+      previewedId !== null
+        ? (objectRefs.current.get(previewedId) ?? null)
+        : null,
+    // objectRefs.current is ref-backed and does not trigger memo updates;
+    // furniture identity changes whenever scene objects are re-registered.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [previewedId, furniture],
+  )
+
+  const previewMeshes = useMemo(
+    () => (previewObject ? getMeshes(previewObject) : []),
+    [previewObject],
+  )
+
+  const showPreviewOutline =
+    previewedId !== null &&
+    previewedId !== selectedId &&
+    previewMeshes.length > 0
+
   return (
     <>
       <EffectComposer autoClear={false}>
         {/* Note: do not use `Selection` is is broken in react 19: https://github.com/pmndrs/react-postprocessing/issues/330 */}
         <Outline
           selection={selection}
+          selectionLayer={SELECTED_OUTLINE_LAYER}
           visibleEdgeColor={0xffffff}
           hiddenEdgeColor={0xffffff}
           edgeStrength={3}
+        />
+        <Outline
+          selection={showPreviewOutline ? previewMeshes : []}
+          selectionLayer={PREVIEW_OUTLINE_LAYER}
+          visibleEdgeColor={0xaaaaaa}
+          hiddenEdgeColor={0xaaaaaa}
+          edgeStrength={1.5}
         />
       </EffectComposer>
       <CameraControls enabled={!dragState} />
@@ -217,11 +277,14 @@ export function Scene({
           rotationY={item.rotationY}
           sourceScene={sourceScene}
           selected={selectedId === item.id}
+          isDragging={isDragging}
           onObjectReady={registerObject}
           onSelect={handleSelect}
           onMoveStart={handleDragStart}
           onMove={handleMove}
           onMoveEnd={handleDragEnd}
+          onPreviewStart={handlePreviewStart}
+          onPreviewEnd={handlePreviewEnd}
           nodeName={item.nodeName}
         />
       ))}

@@ -30,9 +30,12 @@ export interface InteractiveFurnitureProps {
   rotationY: number
   sourceScene: Object3D
   selected: boolean
+  isDragging: boolean
   onObjectReady: (id: string, object: Object3D | null) => void
   onSelect: (id: string) => void
   onMoveStart: (id: string, event: ThreeEvent<PointerEvent>) => void
   onMove: (id: string, event: ThreeEvent<PointerEvent>) => void
   onMoveEnd: (id: string, event: ThreeEvent<PointerEvent>) => void
+  onPreviewStart: (id: string) => void
+  onPreviewEnd: () => void
 }

@@ -3,6 +3,7 @@ import {
   addFurniture,
   dragSelectedFurniture,
   openEditor,
+  readAssertiveAnnouncement,
   readPoliteAnnouncement,
   readSceneState,
   waitForFirstItemPosition,
@@ -52,9 +53,14 @@ test('keeps announcements deterministic and reconciles focus on undo selection l
 
   await waitForPoliteAnnouncement(page, 'Undo complete.')
 
-  // Wait beyond delayed movement announcement window and assert no stale overwrite.
-  await page.waitForTimeout(260)
-  expect(await readPoliteAnnouncement(page)).toBe('Undo complete.')
+  // Keep polling beyond delayed movement announcement window and assert
+  // no stale overwrite occurs.
+  await expect
+    .poll(async () => readPoliteAnnouncement(page), {
+      timeout: 350,
+      intervals: [60, 80, 100],
+    })
+    .toBe('Undo complete.')
 
   await waitForFirstItemPosition(page, initialPosition)
 
@@ -100,6 +106,43 @@ test('keeps undo and redo parity across command and drag movement paths', async 
 
   await page.locator('body').press('Control+y')
   await waitForFirstItemPosition(page, dragPosition)
+})
+
+test('outliner keyboard focus preview does not emit live announcements', async ({
+  page,
+}) => {
+  await openEditor(page)
+  await addFurniture(page, 'Leather Couch')
+  await addFurniture(page, 'End Table')
+
+  await expect
+    .poll(async () => (await readSceneState(page)).selectedName)
+    .toBe('End Table')
+
+  const politeBeforeFocus = await readPoliteAnnouncement(page)
+  const assertiveBeforeFocus = await readAssertiveAnnouncement(page)
+
+  // Focus an unselected item in the outliner to trigger preview semantics.
+  await page.getByRole('button', { name: /^Leather Couch/i }).focus()
+
+  await expect
+    .poll(async () => (await readSceneState(page)).previewedId)
+    .not.toBeNull()
+
+  // Poll beyond delayed movement announcement window and assert that
+  // preview focus changes do not produce accessibility announcements.
+  await expect
+    .poll(async () => readPoliteAnnouncement(page), {
+      timeout: 350,
+      intervals: [60, 80, 100],
+    })
+    .toBe(politeBeforeFocus)
+  await expect
+    .poll(async () => readAssertiveAnnouncement(page), {
+      timeout: 350,
+      intervals: [60, 80, 100],
+    })
+    .toBe(assertiveBeforeFocus)
 })
 
 test('keyboard shortcuts help is reachable and dismissible by keyboard, and is excluded from tab order while the catalog drawer is open', async ({
