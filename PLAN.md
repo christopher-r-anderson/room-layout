@@ -47,7 +47,7 @@ Deliver a small, polished 3D room-layout editor demo that demonstrates productio
 - [x] Add UI flow to insert furniture instances on demand.
 - [x] Add remove-selected-item action.
 - [x] Add undo/redo for move, rotate, add, and remove actions.
-- [ ] Add hover affordance (subtle outline/highlight) for discoverability.
+- [x] Add hover affordance (subtle outline/highlight) for discoverability.
 - [x] Ensure all primary interactions are keyboard reachable.
 
 ### Accessibility and No-Mouse Editing (Completed)
