@@ -21,6 +21,10 @@ export function usePreviewState({
 }: UsePreviewStateOptions): PreviewState {
   const [previewedId, setPreviewedId] = useState<string | null>(null)
 
+  if (previewedId !== null && !itemIds.includes(previewedId)) {
+    setPreviewedId(null)
+  }
+
   const setPreview = useCallback((id: string) => {
     setPreviewedId(id)
   }, [])
@@ -29,13 +33,8 @@ export function usePreviewState({
     setPreviewedId(null)
   }, [])
 
-  // Derive preview synchronously so gating does not require effect-driven writes.
-  let derivedPreviewedId = previewedId
-  if (isDragging || isModalOpen || !editorInteractionsEnabled) {
-    derivedPreviewedId = null
-  } else if (previewedId !== null && !itemIds.includes(previewedId)) {
-    derivedPreviewedId = null
-  }
+  const derivedPreviewedId =
+    isDragging || isModalOpen || !editorInteractionsEnabled ? null : previewedId
 
   return { previewedId: derivedPreviewedId, setPreview, clearPreview }
 }

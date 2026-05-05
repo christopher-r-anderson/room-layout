@@ -16,14 +16,23 @@ export function useAnnouncements(): Announcements {
   const [politeAnnouncement, setPoliteAnnouncement] = useState('')
   const [assertiveAnnouncement, setAssertiveAnnouncement] = useState('')
   const movementAnnouncementTimeoutRef = useRef<number | null>(null)
+  const pendingPoliteSetRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const pendingAssertiveSetRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  )
 
   const clearQueuedMovementAnnouncement = useCallback(() => {
-    if (movementAnnouncementTimeoutRef.current === null) {
-      return
+    if (movementAnnouncementTimeoutRef.current !== null) {
+      window.clearTimeout(movementAnnouncementTimeoutRef.current)
+      movementAnnouncementTimeoutRef.current = null
     }
 
-    window.clearTimeout(movementAnnouncementTimeoutRef.current)
-    movementAnnouncementTimeoutRef.current = null
+    // Also cancel the inner 0 ms set-timer that the movement callback may have
+    // already scheduled before this cancel arrived.
+    if (pendingPoliteSetRef.current !== null) {
+      clearTimeout(pendingPoliteSetRef.current)
+      pendingPoliteSetRef.current = null
+    }
   }, [])
 
   const announcePolite = useCallback(
@@ -33,7 +42,17 @@ export function useAnnouncements(): Announcements {
       }
 
       clearQueuedMovementAnnouncement()
-      setPoliteAnnouncement(message)
+      // Clear first so screen readers re-announce when the same message repeats.
+      // The '' update commits in the current task; the deferred callback runs in
+      // a separate task, guaranteeing two distinct DOM mutations.
+      if (pendingPoliteSetRef.current !== null) {
+        clearTimeout(pendingPoliteSetRef.current)
+      }
+      setPoliteAnnouncement('')
+      pendingPoliteSetRef.current = setTimeout(() => {
+        pendingPoliteSetRef.current = null
+        setPoliteAnnouncement(message)
+      }, 0)
     },
     [clearQueuedMovementAnnouncement],
   )
@@ -47,8 +66,16 @@ export function useAnnouncements(): Announcements {
       clearQueuedMovementAnnouncement()
 
       movementAnnouncementTimeoutRef.current = window.setTimeout(() => {
-        setPoliteAnnouncement(message)
         movementAnnouncementTimeoutRef.current = null
+        // Clear first so screen readers re-announce when the same message repeats.
+        if (pendingPoliteSetRef.current !== null) {
+          clearTimeout(pendingPoliteSetRef.current)
+        }
+        setPoliteAnnouncement('')
+        pendingPoliteSetRef.current = setTimeout(() => {
+          pendingPoliteSetRef.current = null
+          setPoliteAnnouncement(message)
+        }, 0)
       }, MOVEMENT_ANNOUNCEMENT_DELAY_MS)
     },
     [clearQueuedMovementAnnouncement],
@@ -57,13 +84,25 @@ export function useAnnouncements(): Announcements {
   const announceAssertive = useCallback(
     (message: string) => {
       clearQueuedMovementAnnouncement()
-      setAssertiveAnnouncement(message)
+      // Clear first so screen readers re-announce when the same message repeats.
+      if (pendingAssertiveSetRef.current !== null) {
+        clearTimeout(pendingAssertiveSetRef.current)
+      }
+      setAssertiveAnnouncement('')
+      pendingAssertiveSetRef.current = setTimeout(() => {
+        pendingAssertiveSetRef.current = null
+        setAssertiveAnnouncement(message)
+      }, 0)
     },
     [clearQueuedMovementAnnouncement],
   )
 
   const clearAssertiveAnnouncement = useCallback(() => {
     clearQueuedMovementAnnouncement()
+    if (pendingAssertiveSetRef.current !== null) {
+      clearTimeout(pendingAssertiveSetRef.current)
+      pendingAssertiveSetRef.current = null
+    }
     setAssertiveAnnouncement('')
   }, [clearQueuedMovementAnnouncement])
 

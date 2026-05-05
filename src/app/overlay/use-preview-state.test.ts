@@ -118,5 +118,24 @@ describe('usePreviewState', () => {
 
       expect(result.current.previewedId).toBe('item-1')
     })
+
+    it('does not resurrect preview when a removed item id is re-added (e.g. after undo)', () => {
+      const { result, rerender } = renderHook((opts) => usePreviewState(opts), {
+        initialProps: defaultOptions({ itemIds: ['item-1', 'item-2'] }),
+      })
+
+      act(() => {
+        result.current.setPreview('item-1')
+      })
+      expect(result.current.previewedId).toBe('item-1')
+
+      // Remove item-1 — clears preview
+      rerender(defaultOptions({ itemIds: ['item-2'] }))
+      expect(result.current.previewedId).toBeNull()
+
+      // item-1 comes back (undo) — preview must NOT reappear without a new interaction
+      rerender(defaultOptions({ itemIds: ['item-1', 'item-2'] }))
+      expect(result.current.previewedId).toBeNull()
+    })
   })
 })
