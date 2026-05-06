@@ -67,7 +67,8 @@ The manifest is a JSON file with the following structure:
 
 - All `modelPath` and `previewPath` values must be **relative paths** that do not escape the public directory:
   - ✅ Allowed: `"models/foo.glb"`, `"catalog-previews/couch.webp"`
-  - ❌ Not allowed: `"/models/foo.glb"`, `"http://example.com/foo.glb"`, `"//cdn.example.com/foo.glb"`, `"../models/foo.glb"`
+  - ❌ Not allowed: `"/models/foo.glb"`, `"http://example.com/foo.glb"`, `"//cdn.example.com/foo.glb"`, `"../models/foo.glb"`, `"%2e%2e/models/foo.glb"`, `"models\\foo.glb"`, `"models%2ffoo.glb"`
+  - Paths are percent-decoded for validation and then canonicalized before runtime resolution
 - All `kind` values must match one of the known furniture kinds
 - All `collectionId` references must point to an existing collection
 - All footprint dimensions must be positive numbers

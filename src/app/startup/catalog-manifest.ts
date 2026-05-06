@@ -46,14 +46,45 @@ export interface CatalogManifestResult {
   collections: FurnitureCollection[]
 }
 
-function isRelativePath(value: unknown): value is string {
-  if (typeof value !== 'string' || value.trim() === '') return false
-  if (value.startsWith('http://') || value.startsWith('https://')) return false
-  if (value.startsWith('//')) return false
-  if (value.startsWith('/')) return false
-  // Reject path traversal attempts (e.g., "../models/x.glb")
-  if (value.includes('..')) return false
-  return true
+function normalizeRelativeAssetPath(value: unknown): string | null {
+  if (typeof value !== 'string') return null
+
+  const trimmed = value.trim()
+  if (trimmed === '') return null
+
+  // Reject obvious non-relative forms before decoding.
+  if (/^[a-zA-Z][a-zA-Z\d+.-]*:/.test(trimmed)) return null
+  if (trimmed.startsWith('//') || trimmed.startsWith('/')) return null
+
+  // Reject Windows separators and dangerous encoded separator/traversal tokens.
+  if (trimmed.includes('\\')) return null
+  if (/%2e|%2f|%5c/i.test(trimmed)) return null
+
+  let decoded: string
+  try {
+    decoded = decodeURIComponent(trimmed)
+  } catch {
+    return null
+  }
+
+  if (decoded.includes('\\')) return null
+  if (/^[a-zA-Z][a-zA-Z\d+.-]*:/.test(decoded)) return null
+  if (decoded.startsWith('//') || decoded.startsWith('/')) return null
+  if (/%2e|%2f|%5c/i.test(decoded)) return null
+
+  const rawSegments = decoded.split('/')
+  if (rawSegments.length === 0) return null
+
+  if (
+    rawSegments.some(
+      (segment) => segment === '' || segment === '.' || segment === '..',
+    )
+  ) {
+    return null
+  }
+
+  // Canonicalize to a consistent URL path representation.
+  return rawSegments.map((segment) => encodeURIComponent(segment)).join('/')
 }
 
 function validateAndNormalizeCollection(
@@ -74,7 +105,8 @@ function validateAndNormalizeCollection(
     )
   }
 
-  if (!isRelativePath(entry.modelPath)) {
+  const normalizedModelPath = normalizeRelativeAssetPath(entry.modelPath)
+  if (normalizedModelPath === null) {
     throw new ManifestValidationError(
       `collections[${String(index)}] ("${entry.id}"): "modelPath" must be a relative path`,
     )
@@ -82,7 +114,7 @@ function validateAndNormalizeCollection(
 
   return {
     id: entry.id,
-    sourcePath: resolvePublicAssetPath(entry.modelPath),
+    sourcePath: resolvePublicAssetPath(normalizedModelPath),
   }
 }
 
@@ -157,7 +189,8 @@ function validateAndNormalizeCatalogEntry(
     )
   }
 
-  if (!isRelativePath(entry.previewPath)) {
+  const normalizedPreviewPath = normalizeRelativeAssetPath(entry.previewPath)
+  if (normalizedPreviewPath === null) {
     throw new ManifestValidationError(
       `catalog[${String(index)}] ("${id}"): "previewPath" must be a relative path`,
     )
@@ -173,7 +206,7 @@ function validateAndNormalizeCatalogEntry(
       width: footprint.width,
       depth: footprint.depth,
     },
-    previewPath: resolvePublicAssetPath(entry.previewPath),
+    previewPath: resolvePublicAssetPath(normalizedPreviewPath),
   }
 }
 

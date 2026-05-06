@@ -292,6 +292,77 @@ describe('fetchCatalogManifest', () => {
       )
     })
 
+    it('throws ManifestValidationError when modelPath contains encoded traversal tokens', async () => {
+      const badManifest = {
+        ...VALID_MANIFEST,
+        collections: [{ id: 'col-1', modelPath: '%2e%2e/models/col-1.glb' }],
+      }
+      mockFetchOk(badManifest)
+
+      await expect(fetchCatalogManifest()).rejects.toBeInstanceOf(
+        ManifestValidationError,
+      )
+    })
+
+    it('throws ManifestValidationError when previewPath contains encoded separator tokens', async () => {
+      const badManifest = {
+        ...VALID_MANIFEST,
+        catalog: [
+          {
+            ...VALID_MANIFEST.catalog[0],
+            previewPath: 'catalog-previews%2ftest-couch.webp',
+          },
+        ],
+      }
+      mockFetchOk(badManifest)
+
+      await expect(fetchCatalogManifest()).rejects.toBeInstanceOf(
+        ManifestValidationError,
+      )
+    })
+
+    it('throws ManifestValidationError when previewPath uses backslashes', async () => {
+      const badManifest = {
+        ...VALID_MANIFEST,
+        catalog: [
+          {
+            ...VALID_MANIFEST.catalog[0],
+            previewPath: 'catalog-previews\\test-couch.webp',
+          },
+        ],
+      }
+      mockFetchOk(badManifest)
+
+      await expect(fetchCatalogManifest()).rejects.toBeInstanceOf(
+        ManifestValidationError,
+      )
+    })
+
+    it('normalizes safe percent-encoded path characters before resolving paths', async () => {
+      const manifestWithEncodedSpaces = {
+        ...VALID_MANIFEST,
+        collections: [{ id: 'col-1', modelPath: 'models/col%201.glb' }],
+        catalog: [
+          {
+            ...VALID_MANIFEST.catalog[0],
+            collectionId: 'col-1',
+            previewPath: 'catalog-previews/test%20couch.webp',
+          },
+        ],
+      }
+
+      mockFetchOk(manifestWithEncodedSpaces)
+
+      await fetchCatalogManifest()
+
+      expect(assetPathMocks.resolvePublicAssetPath).toHaveBeenCalledWith(
+        'models/col%201.glb',
+      )
+      expect(assetPathMocks.resolvePublicAssetPath).toHaveBeenCalledWith(
+        'catalog-previews/test%20couch.webp',
+      )
+    })
+
     it('throws ManifestValidationError when collections array is empty', async () => {
       const badManifest = {
         ...VALID_MANIFEST,
