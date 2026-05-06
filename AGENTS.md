@@ -1,5 +1,9 @@
 # Project Guidelines
 
+## Skills
+
+- **Git Commits**: Always use the [git-commit skill](./.agents/skills/git-commit/SKILL.md) when the user asks to create commits.
+
 ## Build and Test
 
 - Install deps with `pnpm install`.
@@ -214,12 +218,3 @@ test('rotates mesh over frames', async () => {
 
 - For project overview, stack, and basic scripts, see `README.md`.
 - For roadmap, completion status, and next steps, see `PLAN.md`.
-
-## Commit Hygiene
-
-- Use Conventional Commits for all commits (for example: `feat(scene): add rotation controls`).
-- Keep subject lines concise: target ~50 chars, hard max 72 chars.
-- When a commit has multiple meaningful aspects, include a body with short bullet points.
-- Wrap commit body lines at ~72 chars and keep bullets concise.
-- Describe the final state represented by the commit diff, not interim session steps.
-- Never include literal `\n` sequences in commit messages; ensure real newlines.
