@@ -386,5 +386,127 @@ describe('fetchCatalogManifest', () => {
         ManifestValidationError,
       )
     })
+
+    it('throws ManifestValidationError when version is NaN', async () => {
+      mockFetchOk({ ...VALID_MANIFEST, version: NaN })
+
+      await expect(fetchCatalogManifest()).rejects.toBeInstanceOf(
+        ManifestValidationError,
+      )
+    })
+
+    it('throws ManifestValidationError when version is Infinity', async () => {
+      mockFetchOk({ ...VALID_MANIFEST, version: Infinity })
+
+      await expect(fetchCatalogManifest()).rejects.toBeInstanceOf(
+        ManifestValidationError,
+      )
+    })
+
+    it('throws ManifestValidationError when version is unsupported', async () => {
+      mockFetchOk({ ...VALID_MANIFEST, version: 2 })
+
+      await expect(fetchCatalogManifest()).rejects.toBeInstanceOf(
+        ManifestValidationError,
+      )
+    })
+
+    it('includes the version number in the error message for unsupported version', async () => {
+      mockFetchOk({ ...VALID_MANIFEST, version: 99 })
+
+      await expect(fetchCatalogManifest()).rejects.toThrow('99')
+    })
+
+    it('throws ManifestValidationError when footprintSize width is NaN', async () => {
+      const badManifest = {
+        ...VALID_MANIFEST,
+        catalog: [
+          {
+            ...VALID_MANIFEST.catalog[0],
+            footprintSize: { width: NaN, depth: 1 },
+          },
+        ],
+      }
+      mockFetchOk(badManifest)
+
+      await expect(fetchCatalogManifest()).rejects.toBeInstanceOf(
+        ManifestValidationError,
+      )
+    })
+
+    it('throws ManifestValidationError when footprintSize depth is Infinity', async () => {
+      const badManifest = {
+        ...VALID_MANIFEST,
+        catalog: [
+          {
+            ...VALID_MANIFEST.catalog[0],
+            footprintSize: { width: 1, depth: Infinity },
+          },
+        ],
+      }
+      mockFetchOk(badManifest)
+
+      await expect(fetchCatalogManifest()).rejects.toBeInstanceOf(
+        ManifestValidationError,
+      )
+    })
+
+    it('throws ManifestValidationError when collections contain duplicate ids', async () => {
+      const badManifest = {
+        ...VALID_MANIFEST,
+        collections: [
+          { id: 'col-1', modelPath: 'models/col-1.glb' },
+          { id: 'col-1', modelPath: 'models/col-1-alt.glb' },
+        ],
+        catalog: [VALID_MANIFEST.catalog[0]],
+      }
+      mockFetchOk(badManifest)
+
+      await expect(fetchCatalogManifest()).rejects.toBeInstanceOf(
+        ManifestValidationError,
+      )
+    })
+
+    it('includes the duplicate id in the error message for duplicate collection ids', async () => {
+      const badManifest = {
+        ...VALID_MANIFEST,
+        collections: [
+          { id: 'col-dup', modelPath: 'models/a.glb' },
+          { id: 'col-dup', modelPath: 'models/b.glb' },
+        ],
+        catalog: [{ ...VALID_MANIFEST.catalog[0], collectionId: 'col-dup' }],
+      }
+      mockFetchOk(badManifest)
+
+      await expect(fetchCatalogManifest()).rejects.toThrow('col-dup')
+    })
+
+    it('throws ManifestValidationError when catalog entries contain duplicate ids', async () => {
+      const badManifest = {
+        ...VALID_MANIFEST,
+        catalog: [
+          VALID_MANIFEST.catalog[0],
+          { ...VALID_MANIFEST.catalog[1], id: VALID_MANIFEST.catalog[0].id },
+        ],
+      }
+      mockFetchOk(badManifest)
+
+      await expect(fetchCatalogManifest()).rejects.toBeInstanceOf(
+        ManifestValidationError,
+      )
+    })
+
+    it('includes the duplicate id in the error message for duplicate catalog ids', async () => {
+      const badManifest = {
+        ...VALID_MANIFEST,
+        catalog: [
+          { ...VALID_MANIFEST.catalog[0], id: 'item-dup' },
+          { ...VALID_MANIFEST.catalog[1], id: 'item-dup' },
+        ],
+      }
+      mockFetchOk(badManifest)
+
+      await expect(fetchCatalogManifest()).rejects.toThrow('item-dup')
+    })
   })
 })

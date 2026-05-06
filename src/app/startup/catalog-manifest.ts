@@ -177,15 +177,26 @@ function validateAndNormalizeCatalogEntry(
 
   const footprint = entry.footprintSize as Record<string, unknown>
 
-  if (typeof footprint.width !== 'number' || footprint.width <= 0) {
+  const rawWidth = footprint.width
+  const rawDepth = footprint.depth
+
+  if (
+    typeof rawWidth !== 'number' ||
+    !Number.isFinite(rawWidth) ||
+    rawWidth <= 0
+  ) {
     throw new ManifestValidationError(
-      `catalog[${String(index)}] ("${id}"): "footprintSize.width" must be a positive number`,
+      `catalog[${String(index)}] ("${id}"): "footprintSize.width" must be a positive finite number`,
     )
   }
 
-  if (typeof footprint.depth !== 'number' || footprint.depth <= 0) {
+  if (
+    typeof rawDepth !== 'number' ||
+    !Number.isFinite(rawDepth) ||
+    rawDepth <= 0
+  ) {
     throw new ManifestValidationError(
-      `catalog[${String(index)}] ("${id}"): "footprintSize.depth" must be a positive number`,
+      `catalog[${String(index)}] ("${id}"): "footprintSize.depth" must be a positive finite number`,
     )
   }
 
@@ -203,8 +214,8 @@ function validateAndNormalizeCatalogEntry(
     collectionId: entry.collectionId,
     nodeName: entry.nodeName,
     footprintSize: {
-      width: footprint.width,
-      depth: footprint.depth,
+      width: rawWidth,
+      depth: rawDepth,
     },
     previewPath: resolvePublicAssetPath(normalizedPreviewPath),
   }
@@ -246,9 +257,18 @@ export async function fetchCatalogManifest(
 
   const manifest = data as Record<string, unknown>
 
-  if (typeof manifest.version !== 'number') {
+  if (
+    typeof manifest.version !== 'number' ||
+    !Number.isFinite(manifest.version)
+  ) {
     throw new ManifestValidationError(
       'Catalog manifest must have a numeric "version" field',
+    )
+  }
+
+  if (manifest.version !== 1) {
+    throw new ManifestValidationError(
+      `Catalog manifest version ${String(manifest.version)} is not supported; expected version 1`,
     )
   }
 
@@ -280,11 +300,27 @@ export async function fetchCatalogManifest(
     validateAndNormalizeCollection(raw, i),
   )
 
-  const collectionIds = new Set(collections.map((c) => c.id))
+  const collectionIds = new Set<string>()
+  for (const collection of collections) {
+    if (collectionIds.has(collection.id)) {
+      throw new ManifestValidationError(
+        `collections: duplicate id "${collection.id}"`,
+      )
+    }
+    collectionIds.add(collection.id)
+  }
 
   const catalog = manifest.catalog.map((raw, i) =>
     validateAndNormalizeCatalogEntry(raw, i, collectionIds),
   )
+
+  const catalogIds = new Set<string>()
+  for (const entry of catalog) {
+    if (catalogIds.has(entry.id)) {
+      throw new ManifestValidationError(`catalog: duplicate id "${entry.id}"`)
+    }
+    catalogIds.add(entry.id)
+  }
 
   const fetchEndTime = performance.now()
   const duration = (fetchEndTime - fetchStartTime).toFixed(2)
