@@ -58,6 +58,17 @@ const MANIFEST_COLLECTIONS: FurnitureCollection[] = [
   { id: 'manifest-col', sourcePath: '/models/manifest.glb' },
 ]
 
+function createDeferred<T>() {
+  let resolve!: (value: T | PromiseLike<T>) => void
+  let reject!: (reason?: unknown) => void
+  const promise = new Promise<T>((res, rej) => {
+    resolve = res
+    reject = rej
+  })
+
+  return { promise, resolve, reject }
+}
+
 describe('useStartupState', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -140,6 +151,72 @@ describe('useStartupState', () => {
     })
 
     expect(result.current.collections).toEqual(MANIFEST_COLLECTIONS)
+  })
+
+  it('re-enters loading and increments the scene key when manifest arrives after ready', async () => {
+    const deferredManifest = createDeferred<{
+      catalog: FurnitureCatalogEntry[]
+      collections: FurnitureCollection[]
+    }>()
+    manifestMocks.fetchCatalogManifest.mockReturnValue(deferredManifest.promise)
+
+    const { result } = renderHook(() => useStartupState())
+
+    act(() => {
+      result.current.handleAssetsReady()
+    })
+
+    expect(result.current.assetsReady).toBe(true)
+    expect(result.current.cacheInvalidationKey).toBe(0)
+
+    await act(async () => {
+      deferredManifest.resolve({
+        catalog: MANIFEST_CATALOG,
+        collections: MANIFEST_COLLECTIONS,
+      })
+      await deferredManifest.promise
+    })
+
+    expect(result.current.assetsReady).toBe(false)
+    expect(result.current.editorInteractionsEnabled).toBe(false)
+    expect(result.current.startupLoadingActive).toBe(true)
+    expect(result.current.cacheInvalidationKey).toBe(1)
+
+    act(() => {
+      result.current.handleAssetsReady()
+    })
+
+    expect(result.current.assetsReady).toBe(true)
+    expect(result.current.editorInteractionsEnabled).toBe(true)
+    expect(result.current.startupOverlayActive).toBe(false)
+  })
+
+  it('keeps ready state when the manifest fails after fallback assets are already ready', async () => {
+    const deferredManifest = createDeferred<{
+      catalog: FurnitureCatalogEntry[]
+      collections: FurnitureCollection[]
+    }>()
+    manifestMocks.fetchCatalogManifest.mockReturnValue(deferredManifest.promise)
+
+    const { result } = renderHook(() => useStartupState())
+
+    act(() => {
+      result.current.handleAssetsReady()
+    })
+
+    expect(result.current.assetsReady).toBe(true)
+    expect(result.current.startupOverlayActive).toBe(false)
+
+    await act(async () => {
+      deferredManifest.reject(new Error('network error'))
+      await Promise.resolve()
+    })
+
+    expect(result.current.assetsReady).toBe(true)
+    expect(result.current.editorInteractionsEnabled).toBe(true)
+    expect(result.current.startupLoadingActive).toBe(false)
+    expect(result.current.startupOverlayActive).toBe(false)
+    expect(result.current.cacheInvalidationKey).toBe(0)
   })
 
   it('handleAssetsReady enables editor interactions and clears errors', () => {

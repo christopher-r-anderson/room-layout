@@ -65,18 +65,22 @@ function reducer(state: ReducerState, action: Action): ReducerState {
         collections: action.collections.length,
         catalog: action.catalog.length,
       })
-      // If assets have already arrived (cached GLTF), preserve the 'ready' phase
-      // rather than regressing back to 'loading-assets'
-      const nextPhase = state.phase === 'ready' ? 'ready' : 'loading-assets'
+      // Always treat manifest arrival as a new asset-load cycle to ensure Scene remounts
+      // and loads new GLTFs. Bump cacheInvalidationKey to force Scene remount.
       return {
         ...state,
-        phase: nextPhase,
+        phase: 'loading-assets',
         manifestCatalog: action.catalog,
         manifestCollections: action.collections,
+        assetError: null,
+        cacheInvalidationKey: state.cacheInvalidationKey + 1,
       }
     }
     case 'MANIFEST_FAILED':
       perfLog('Manifest load failed, using fallback catalog')
+      if (state.phase === 'ready') {
+        return state
+      }
       return {
         ...state,
         phase: 'loading-assets',
@@ -116,6 +120,8 @@ function reducer(state: ReducerState, action: Action): ReducerState {
         assetError: null,
         cacheInvalidationKey: state.cacheInvalidationKey + 1,
       }
+    default:
+      return state
   }
 }
 
