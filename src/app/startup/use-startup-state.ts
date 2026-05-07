@@ -127,6 +127,8 @@ function reducer(state: ReducerState, action: Action): ReducerState {
       return {
         ...state,
         phase: 'error',
+        manifestCatalog: null,
+        manifestCollections: null,
         assetError: action.error,
         assetErrorKind: action.kind,
       }
