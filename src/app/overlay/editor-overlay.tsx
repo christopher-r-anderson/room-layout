@@ -1,4 +1,5 @@
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
+import type { FurnitureCatalogEntry } from '@/scene/objects/furniture-catalog'
 import type {
   MoveSelectionResult,
   MoveSource,
@@ -20,9 +21,12 @@ import { SelectionToolsOther } from '../selection/selection-tools-other'
 import { Outliner } from '../scene-panel/outliner'
 import type { SceneOutlinerFocusRequest } from '../scene-panel.types'
 import { Inspector } from '../scene-panel/inspector'
+import type { StartupErrorKind } from '../startup/use-startup-state'
 
 export interface EditorStartupProps {
   assetError: boolean
+  assetErrorKind: StartupErrorKind | null
+  assetErrorMessage: string | null
   startupLoadingActive: boolean
   startupOverlayActive: boolean
   onRetryAssetLoading: () => void
@@ -53,6 +57,7 @@ export interface EditorSceneProps {
 }
 
 export interface EditorCatalogProps {
+  catalog: FurnitureCatalogEntry[]
   catalogIdToAdd: string
   isCatalogDrawerOpen: boolean
   onAddFurniture: () => boolean
@@ -172,6 +177,7 @@ export function EditorOverlay({
               triggerButton={
                 <CatalogAddButton className="pointer-events-auto" />
               }
+              catalog={catalog.catalog}
               catalogIdToAdd={catalog.catalogIdToAdd}
               editorInteractionsEnabled={editorInteractionsEnabled}
               onAddFurniture={catalog.onAddFurniture}
@@ -198,7 +204,11 @@ export function EditorOverlay({
 
       <InitializationProgress visible={startup.startupLoadingActive} />
       {startup.assetError ? (
-        <InitializationError onRetry={startup.onRetryAssetLoading} />
+        <InitializationError
+          errorKind={startup.assetErrorKind}
+          errorMessage={startup.assetErrorMessage}
+          onRetry={startup.onRetryAssetLoading}
+        />
       ) : null}
     </>
   )

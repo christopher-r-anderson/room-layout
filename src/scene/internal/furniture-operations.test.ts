@@ -10,22 +10,12 @@ import {
   updateFurniturePositionInHistory,
 } from './furniture-operations'
 
-const catalogMocks = vi.hoisted(() => ({
-  getFurnitureCatalogEntry: vi.fn(),
-  getCollectionPath: vi.fn(),
-}))
-
 const spawnMocks = vi.hoisted(() => ({
   findFurnitureSpawnPosition: vi.fn(),
 }))
 
 const layoutMocks = vi.hoisted(() => ({
   resolveRotatedFurnitureTransform: vi.fn(),
-}))
-
-vi.mock('../objects/furniture-catalog', () => ({
-  getFurnitureCatalogEntry: catalogMocks.getFurnitureCatalogEntry,
-  getCollectionPath: catalogMocks.getCollectionPath,
 }))
 
 vi.mock('@/lib/three/furniture-spawn', () => ({
@@ -56,6 +46,7 @@ const CATALOG_ENTRY = {
     width: 2,
     depth: 1,
   },
+  previewPath: '/catalog-previews/couch.webp',
 }
 
 const ROTATE_BOUNDS = {
@@ -119,6 +110,8 @@ function defaultAddOptions(
     history: createHistoryState<FurnitureItem[]>([]),
     catalogId: CATALOG_ENTRY.id,
     nextId: 'furniture-instance-1',
+    catalog: [CATALOG_ENTRY],
+    collections: [{ id: CATALOG_ENTRY.collectionId, sourcePath: SOURCE_PATH }],
     bounds: {
       minX: -5,
       maxX: 5,
@@ -136,10 +129,6 @@ describe('furniture-operations', () => {
   beforeEach(() => {
     vi.clearAllMocks()
 
-    catalogMocks.getFurnitureCatalogEntry.mockImplementation((catalogId) => {
-      return catalogId === CATALOG_ENTRY.id ? CATALOG_ENTRY : null
-    })
-    catalogMocks.getCollectionPath.mockReturnValue(SOURCE_PATH)
     spawnMocks.findFurnitureSpawnPosition.mockReturnValue([1, 0, 1])
     layoutMocks.resolveRotatedFurnitureTransform.mockReturnValue({
       position: [2, 0, 2],

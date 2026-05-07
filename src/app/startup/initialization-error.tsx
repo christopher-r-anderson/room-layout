@@ -1,9 +1,70 @@
 import { useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import type { StartupErrorKind } from './use-startup-state'
 
-export function InitializationError({ onRetry }: { onRetry: () => void }) {
+interface InitializationErrorProps {
+  errorKind: StartupErrorKind | null
+  errorMessage: string | null
+  onRetry: () => void
+}
+
+function getErrorCopy(
+  errorKind: StartupErrorKind | null,
+  errorMessage: string | null,
+) {
+  if (errorKind === 'manifest-timeout') {
+    return {
+      label: 'Catalog request timed out',
+      description:
+        'The furniture catalog request timed out before startup completed.',
+      note: 'Check your connection and retry loading the catalog.',
+    }
+  }
+
+  if (errorKind === 'manifest-network') {
+    return {
+      label: 'Catalog request failed',
+      description:
+        'The editor could not download the furniture catalog required to start.',
+      note: 'Check your connection and retry loading the catalog.',
+    }
+  }
+
+  if (errorKind === 'manifest-validation') {
+    return {
+      label: 'Catalog data is invalid',
+      description:
+        'The furniture catalog was fetched but failed validation checks.',
+      note: 'Confirm the manifest schema and asset paths, then retry.',
+    }
+  }
+
+  if (errorKind === 'asset-load') {
+    return {
+      label: 'Asset loading failed',
+      description:
+        'A required furniture model did not load correctly, so editor interactions are temporarily unavailable.',
+      note: 'Retry to request the essential assets again.',
+    }
+  }
+
+  return {
+    label: 'Startup failed',
+    description:
+      errorMessage ??
+      'The room editor could not start due to an unexpected startup error.',
+    note: 'Retry to attempt startup again.',
+  }
+}
+
+export function InitializationError({
+  errorKind,
+  errorMessage,
+  onRetry,
+}: InitializationErrorProps) {
   const retryButtonRef = useRef<HTMLButtonElement | null>(null)
+  const copy = getErrorCopy(errorKind, errorMessage)
 
   useEffect(() => {
     retryButtonRef.current?.focus()
@@ -23,7 +84,7 @@ export function InitializationError({ onRetry }: { onRetry: () => void }) {
       >
         <CardContent className="grid gap-3 p-5">
           <p className="text-xs font-semibold uppercase tracking-[0.04em] text-muted-foreground">
-            Asset loading failed
+            {copy.label}
           </p>
           <h2
             id="startup-error-title"
@@ -35,14 +96,13 @@ export function InitializationError({ onRetry }: { onRetry: () => void }) {
             id="startup-error-description"
             className="text-sm leading-relaxed text-foreground"
           >
-            A required furniture model did not load correctly, so editor
-            interactions are temporarily unavailable.
+            {copy.description}
           </p>
           <p
             id="startup-error-note"
             className="text-sm leading-relaxed text-destructive"
           >
-            Retry to request the essential assets again.
+            {copy.note}
           </p>
           <div className="flex justify-start">
             <Button

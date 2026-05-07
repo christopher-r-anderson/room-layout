@@ -9,10 +9,11 @@ import {
   type HistoryState,
 } from '@/lib/ui/editor-history'
 import { type Object3D } from 'three'
-import {
-  getCollectionPath,
-  getFurnitureCatalogEntry,
+import type {
+  FurnitureCatalogEntry,
+  FurnitureCollection,
 } from '../objects/furniture-catalog'
+import { getCollection } from '../objects/furniture-catalog'
 import type { FurnitureItem } from '../objects/furniture.types'
 
 export type AddFurnitureResult =
@@ -69,18 +70,22 @@ function createFurnitureItem(
   sourceScenesByPath: Map<string, Object3D>,
   id: string,
   catalogId: string,
+  catalog: FurnitureCatalogEntry[],
+  collections: FurnitureCollection[],
   overrides?: {
     position?: [number, number, number]
     rotationY?: number
   },
 ): FurnitureItem {
-  const entry = getFurnitureCatalogEntry(catalogId)
+  const entry = catalog.find((e) => e.id === catalogId) ?? null
 
   if (!entry) {
     throw new Error(`unknown furniture catalog entry: ${catalogId}`)
   }
 
-  const sourcePath = getCollectionPath(entry.collectionId)
+  const collection = getCollection(entry.collectionId, collections)
+
+  const sourcePath = collection.sourcePath
   const sourceScene = sourceScenesByPath.get(sourcePath)
 
   if (!sourceScene) {
@@ -201,6 +206,8 @@ export function addFurnitureToHistory({
   sourceScenesByPath,
   catalogId,
   nextId,
+  catalog,
+  collections,
   bounds,
   edgeSnapThreshold,
   snapSize,
@@ -209,6 +216,8 @@ export function addFurnitureToHistory({
   sourceScenesByPath: Map<string, Object3D>
   catalogId: string
   nextId: string
+  catalog: FurnitureCatalogEntry[]
+  collections: FurnitureCollection[]
   bounds: LayoutBounds
   edgeSnapThreshold: number
   snapSize: number
@@ -217,7 +226,7 @@ export function addFurnitureToHistory({
   result: AddFurnitureResult
   incrementInstanceId: boolean
 } {
-  const entry = getFurnitureCatalogEntry(catalogId)
+  const entry = catalog.find((e) => e.id === catalogId) ?? null
 
   if (!entry) {
     return {
@@ -230,7 +239,13 @@ export function addFurnitureToHistory({
     }
   }
 
-  const nextItem = createFurnitureItem(sourceScenesByPath, nextId, entry.id)
+  const nextItem = createFurnitureItem(
+    sourceScenesByPath,
+    nextId,
+    entry.id,
+    catalog,
+    collections,
+  )
   const spawnPosition = findFurnitureSpawnPosition({
     item: nextItem,
     items: history.present,

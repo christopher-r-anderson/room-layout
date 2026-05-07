@@ -2,7 +2,6 @@
 
 import { act, renderHook } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
-import { FURNITURE_CATALOG } from '@/scene/objects/furniture-catalog'
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
 import type { SceneReadModel } from '@/scene/scene.types'
 import { useOverlayState } from './use-overlay-state'
@@ -42,7 +41,7 @@ describe('useOverlayState', () => {
       canUndo: false,
       canRedo: false,
     })
-    expect(result.current.catalogIdToAdd).toBe(FURNITURE_CATALOG[0]?.id ?? '')
+    expect(result.current.catalogIdToAdd).toBe('')
   })
 
   it('handleHistoryChange updates availability', () => {
@@ -91,6 +90,63 @@ describe('useOverlayState', () => {
     })
 
     expect(result.current.catalogIdToAdd).toBe('end-table-1')
+  })
+
+  describe('initializeCatalogSelection', () => {
+    const CATALOG = [
+      { id: 'chair-1', name: 'Chair' },
+      { id: 'table-1', name: 'Table' },
+    ] as Parameters<
+      ReturnType<typeof useOverlayState>['initializeCatalogSelection']
+    >[0]
+
+    it('sets the first entry when catalogIdToAdd is empty', () => {
+      const { result } = renderHook(() => useOverlayState())
+
+      act(() => {
+        result.current.initializeCatalogSelection(CATALOG)
+      })
+
+      expect(result.current.catalogIdToAdd).toBe('chair-1')
+    })
+
+    it('preserves the current id when it still exists in the new catalog', () => {
+      const { result } = renderHook(() => useOverlayState())
+
+      act(() => {
+        result.current.setCatalogIdToAdd('table-1')
+      })
+
+      act(() => {
+        result.current.initializeCatalogSelection(CATALOG)
+      })
+
+      expect(result.current.catalogIdToAdd).toBe('table-1')
+    })
+
+    it('falls back to the first entry when the current id is no longer in the catalog', () => {
+      const { result } = renderHook(() => useOverlayState())
+
+      act(() => {
+        result.current.setCatalogIdToAdd('old-sofa-1')
+      })
+
+      act(() => {
+        result.current.initializeCatalogSelection(CATALOG)
+      })
+
+      expect(result.current.catalogIdToAdd).toBe('chair-1')
+    })
+
+    it('sets empty string when called with an empty catalog', () => {
+      const { result } = renderHook(() => useOverlayState())
+
+      act(() => {
+        result.current.initializeCatalogSelection([])
+      })
+
+      expect(result.current.catalogIdToAdd).toBe('')
+    })
   })
 
   it('resetOverlayState clears selection, message, and history availability', () => {
