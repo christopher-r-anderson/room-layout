@@ -145,6 +145,11 @@ function App() {
     }
   }, [clearQueuedMovementAnnouncement])
 
+  const { initializeCatalogSelection } = overlayState
+  useEffect(() => {
+    initializeCatalogSelection(startup.catalog)
+  }, [startup.catalog, initializeCatalogSelection])
+
   const {
     startupProps,
     historyProps,
@@ -155,6 +160,8 @@ function App() {
     previewProps,
   } = useOverlayProps({
     assetError: Boolean(startup.assetError),
+    assetErrorKind: startup.assetErrorKind,
+    assetErrorMessage: startup.assetError?.message ?? null,
     startupLoadingActive: startup.startupLoadingActive,
     startupOverlayActive: startup.startupOverlayActive,
     onRetryAssetLoading: handlers.handleRetryAssetLoading,
@@ -172,6 +179,7 @@ function App() {
     onOpenDeleteDialog: handlers.handleOpenDeleteDialog,
     onRotateSelection: handlers.handleRotateSelection,
     catalogIdToAdd: overlayState.catalogIdToAdd,
+    catalog: startup.catalog,
     isCatalogDrawerOpen: dialogState.isCatalogDrawerOpen,
     onAddFurniture: handlers.handleAddFurniture,
     onCatalogIdToAddChange: overlayState.setCatalogIdToAdd,
@@ -261,12 +269,14 @@ function App() {
           >
             <color attach="background" args={['#f0f0f0']} />
             <SceneAssetErrorBoundary
-              key={startup.sceneVersion}
+              key={startup.cacheInvalidationKey}
               onError={handlers.handleSceneAssetError}
             >
               <Suspense fallback={null}>
                 <Scene
                   ref={sceneRef}
+                  catalog={startup.catalog}
+                  collections={startup.collections}
                   onSelectionChange={handlers.handleSceneSelectionChange}
                   onHistoryChange={handlers.handleSceneHistoryChange}
                   onAssetsReady={handlers.handleSceneAssetsReady}

@@ -11,7 +11,10 @@ import { EffectComposer, Outline } from '@react-three/postprocessing'
 import { type LayoutBounds } from '@/lib/three/furniture-layout'
 import { createHistoryState } from '@/lib/ui/editor-history'
 import type { FurnitureItem } from './objects/furniture.types'
-import { FURNITURE_COLLECTION_PATHS } from './objects/furniture-catalog'
+import type {
+  FurnitureCatalogEntry,
+  FurnitureCollection,
+} from './objects/furniture-catalog'
 import {
   areFurnitureCollectionsEqual,
   rotateSelectedFurnitureInHistory,
@@ -46,6 +49,8 @@ function getInitialFurnitureItems(): FurnitureItem[] {
 
 export function Scene({
   ref,
+  catalog,
+  collections,
   onSelectionChange,
   onHistoryChange,
   onAssetsReady,
@@ -54,6 +59,8 @@ export function Scene({
   onDragStateChange,
 }: {
   ref: React.Ref<SceneRef>
+  catalog: FurnitureCatalogEntry[]
+  collections: FurnitureCollection[]
   onSelectionChange?: (item: FurnitureItem | null) => void
   onHistoryChange?: (availability: SceneHistoryAvailability) => void
   onAssetsReady?: () => void
@@ -63,7 +70,11 @@ export function Scene({
 }) {
   const camera = useThree((state) => state.camera)
   const canvasSize = useThree((state) => state.size)
-  const gltfResult = useGLTF(FURNITURE_COLLECTION_PATHS) as
+  const collectionPaths = useMemo(
+    () => collections.map((c) => c.sourcePath),
+    [collections],
+  )
+  const gltfResult = useGLTF(collectionPaths) as
     | { scene: Object3D }
     | { scene: Object3D }[]
 
@@ -71,12 +82,12 @@ export function Scene({
     const gltfScenes = Array.isArray(gltfResult) ? gltfResult : [gltfResult]
 
     return new Map<string, Object3D>(
-      FURNITURE_COLLECTION_PATHS.map((sourcePath, index) => [
+      collectionPaths.map((sourcePath, index) => [
         sourcePath,
         gltfScenes[index].scene,
       ]),
     )
-  }, [gltfResult])
+  }, [gltfResult, collectionPaths])
 
   const hasReportedAssetsReadyRef = useRef(false)
   const [history, setHistory] = useState(() =>
@@ -168,13 +179,19 @@ export function Scene({
   }, [historyAvailability, onHistoryChange])
 
   useEffect(() => {
+    // Do not report ready if no collections have been passed yet — this happens
+    // during the loading-manifest phase when App renders Scene with [] initially.
+    if (collectionPaths.length === 0) {
+      return
+    }
+
     if (hasReportedAssetsReadyRef.current) {
       return
     }
 
     hasReportedAssetsReadyRef.current = true
     onAssetsReady?.()
-  }, [onAssetsReady, sourceScenesByPath])
+  }, [onAssetsReady, collectionPaths.length, sourceScenesByPath])
 
   const handlePreviewStart = useCallback(
     (id: string) => {
@@ -196,7 +213,9 @@ export function Scene({
     bounds: ROOM_BOUNDS,
     camera,
     canvasSize,
+    catalog,
     clearDragState,
+    collections,
     dragState,
     edgeSnapThreshold: EDGE_SNAP_THRESHOLD,
     furniture,

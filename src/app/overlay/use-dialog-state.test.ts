@@ -5,6 +5,16 @@ import { describe, expect, it } from 'vitest'
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
 import { useDialogState } from './use-dialog-state'
 
+interface DialogStateHookProps {
+  editorInteractionsEnabled: boolean
+  startupOverlayActive: boolean
+  selectedFurniture: FurnitureItem | null
+}
+
+interface DeleteSnapshotHookProps {
+  selectedFurniture: FurnitureItem | null
+}
+
 const LEATHER_COUCH: FurnitureItem = {
   id: 'leather-couch-1',
   catalogId: 'leather-couch',
@@ -33,17 +43,19 @@ const END_TABLE: FurnitureItem = {
 
 describe('useDialogState', () => {
   it('keeps the pending delete snapshot stable until the dialog closes', () => {
+    const initialProps: DeleteSnapshotHookProps = {
+      selectedFurniture: LEATHER_COUCH,
+    }
+
     const { result, rerender } = renderHook(
-      ({ selectedFurniture }) =>
+      ({ selectedFurniture }: DeleteSnapshotHookProps) =>
         useDialogState({
           editorInteractionsEnabled: true,
           startupOverlayActive: false,
           selectedFurniture,
         }),
       {
-        initialProps: {
-          selectedFurniture: LEATHER_COUCH as FurnitureItem | null,
-        },
+        initialProps,
       },
     )
 
@@ -68,23 +80,25 @@ describe('useDialogState', () => {
   })
 
   it('enforces the dialog mutual-exclusion matrix and delete guards', () => {
+    const initialProps: DialogStateHookProps = {
+      editorInteractionsEnabled: true,
+      startupOverlayActive: false,
+      selectedFurniture: LEATHER_COUCH,
+    }
+
     const { result, rerender } = renderHook(
       ({
         editorInteractionsEnabled,
         selectedFurniture,
         startupOverlayActive,
-      }) =>
+      }: DialogStateHookProps) =>
         useDialogState({
           editorInteractionsEnabled,
           startupOverlayActive,
           selectedFurniture,
         }),
       {
-        initialProps: {
-          editorInteractionsEnabled: true,
-          startupOverlayActive: false,
-          selectedFurniture: LEATHER_COUCH as FurnitureItem | null,
-        },
+        initialProps,
       },
     )
 

@@ -3,6 +3,7 @@
 import { renderHook } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
+import type { FurnitureCatalogEntry } from '@/scene/objects/furniture-catalog'
 import type { SceneReadModel } from '@/scene/scene.types'
 import type { SceneOutlinerFocusRequest } from '../scene-panel.types'
 import { useOverlayProps } from './use-overlay-props'
@@ -24,6 +25,13 @@ function createFurnitureItem(id: string): FurnitureItem {
 
 interface OverlayOptions {
   assetError: boolean
+  assetErrorKind:
+    | 'manifest-timeout'
+    | 'manifest-network'
+    | 'manifest-validation'
+    | 'asset-load'
+    | null
+  assetErrorMessage: string | null
   startupLoadingActive: boolean
   startupOverlayActive: boolean
   onRetryAssetLoading: () => void
@@ -39,6 +47,7 @@ interface OverlayOptions {
   onMoveSelection: () => { ok: true; position: [number, number, number] }
   onOpenDeleteDialog: () => void
   onRotateSelection: () => void
+  catalog: FurnitureCatalogEntry[]
   catalogIdToAdd: string
   isCatalogDrawerOpen: boolean
   onAddFurniture: () => boolean
@@ -61,6 +70,8 @@ function createOptions(overrides?: Partial<OverlayOptions>): OverlayOptions {
 
   return {
     assetError: false,
+    assetErrorKind: null,
+    assetErrorMessage: null,
     startupLoadingActive: false,
     startupOverlayActive: false,
     onRetryAssetLoading: vi.fn(),
@@ -83,6 +94,7 @@ function createOptions(overrides?: Partial<OverlayOptions>): OverlayOptions {
     onOpenDeleteDialog: vi.fn(),
     onRotateSelection: vi.fn(),
     catalogIdToAdd: 'chair-1',
+    catalog: [],
     isCatalogDrawerOpen: false,
     onAddFurniture: vi.fn(() => true),
     onCatalogIdToAddChange: vi.fn(),
@@ -102,6 +114,8 @@ describe('useOverlayProps', () => {
   it('maps granular inputs into the expected overlay prop groups', () => {
     const options = createOptions({
       assetError: true,
+      assetErrorKind: 'manifest-network',
+      assetErrorMessage: 'Unable to reach the furniture catalog.',
       startupLoadingActive: true,
       startupOverlayActive: true,
       historyAvailability: { canUndo: true, canRedo: false },
@@ -116,6 +130,8 @@ describe('useOverlayProps', () => {
 
     expect(result.current.startupProps).toEqual({
       assetError: true,
+      assetErrorKind: 'manifest-network',
+      assetErrorMessage: 'Unable to reach the furniture catalog.',
       startupLoadingActive: true,
       startupOverlayActive: true,
       onRetryAssetLoading: options.onRetryAssetLoading,
@@ -139,6 +155,7 @@ describe('useOverlayProps', () => {
       onRotateSelection: options.onRotateSelection,
     })
     expect(result.current.catalogProps).toEqual({
+      catalog: [],
       catalogIdToAdd: 'table-1',
       isCatalogDrawerOpen: true,
       onAddFurniture: options.onAddFurniture,

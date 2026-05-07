@@ -1,6 +1,8 @@
 import type { Object3D, Vector3Tuple } from 'three'
 import type { ThreeEvent } from '@react-three/fiber'
 
+// Adding a new kind requires updating both this union and the KNOWN_FURNITURE_KINDS
+// allowlist in src/app/startup/catalog-manifest.ts.
 export type FurnitureKind = 'armchair' | 'couch' | 'coffee-table' | 'end-table'
 
 export interface FootprintSize {

@@ -1,5 +1,9 @@
 # Project Guidelines
 
+## Skills
+
+- **Git Commits**: Always use the [git-commit skill](./.agents/skills/git-commit/SKILL.md) when the user asks to create commits.
+
 ## Build and Test
 
 - Install deps with `pnpm install`.
@@ -20,7 +24,7 @@
 
 - Keep scene/domain behavior in `src/scene/` and keep pure math/Three helpers in `src/lib/three/`.
 - Keep utility modules in `src/lib/three/` and `src/lib/ui/` framework-agnostic and testable.
-- Treat `src/scene/objects/furniture-catalog.ts` as the single source of truth for model paths and node names.
+- Treat `public/catalog-manifest.json` as the single source of truth for model paths and node names.
 - Keep `src/App.tsx` focused on app-shell concerns (overlay controls, keyboard wiring) and pass intent to `Scene` via a minimal API.
 
 ### Structural invariants
@@ -33,7 +37,7 @@ Scene contracts are types and values that form the stable API between the scene 
 
 - `@/scene/scene.types` — `SceneRef`, `SceneReadModel`, `MoveSelectionResult`, `MoveSource`, `SelectByIdResult`
 - `@/scene/objects/furniture.types` — `FurnitureItem`, `FootprintSize`
-- `@/scene/objects/furniture-catalog` — `FURNITURE_CATALOG` and preload/cache helpers (implementation/data allowed by policy)
+- `@/scene/objects/furniture-catalog` — preload/cache helpers and catalog/collection types (implementation/data allowed by policy)
 
 Scene internals (utilities, state management, internal hooks) are organized in `src/scene/internal/` and must not be imported from app-side code. Attempting to import from `@/scene/internal/**` is enforced as an ESLint error. The one necessary exception is `src/App.tsx` importing the `Scene` component via relative path (`./scene/scene`) as the composition root — this is not caught by the `@/scene/` lint pattern and is intentional.
 
@@ -201,7 +205,7 @@ test('rotates mesh over frames', async () => {
 
 - Keep runtime models under `public/models/` and source assets under `assets-source/`.
 - If rotation/placement feels wrong for a model, prefer fixing the asset pivot/origin in source files before adding runtime offsets.
-- Any renamed GLTF node must be updated in `src/scene/objects/furniture-catalog.ts`.
+- Any renamed GLTF node must be updated in `public/catalog-manifest.json`.
 
 ## Gotchas
 
@@ -214,12 +218,3 @@ test('rotates mesh over frames', async () => {
 
 - For project overview, stack, and basic scripts, see `README.md`.
 - For roadmap, completion status, and next steps, see `PLAN.md`.
-
-## Commit Hygiene
-
-- Use Conventional Commits for all commits (for example: `feat(scene): add rotation controls`).
-- Keep subject lines concise: target ~50 chars, hard max 72 chars.
-- When a commit has multiple meaningful aspects, include a body with short bullet points.
-- Wrap commit body lines at ~72 chars and keep bullets concise.
-- Describe the final state represented by the commit diff, not interim session steps.
-- Never include literal `\n` sequences in commit messages; ensure real newlines.

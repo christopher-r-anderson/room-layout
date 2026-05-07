@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 import type { HistoryAvailability } from '../history/history.types'
-import { FURNITURE_CATALOG } from '@/scene/objects/furniture-catalog'
+import type { FurnitureCatalogEntry } from '@/scene/objects/furniture-catalog'
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
 import type { SceneReadModel } from '@/scene/scene.types'
 
@@ -11,6 +11,7 @@ interface OverlayState {
   handleHistoryChange: (availability: HistoryAvailability) => void
   handleSceneReadModelChange: (readModel: SceneReadModel) => void
   historyAvailability: HistoryAvailability
+  initializeCatalogSelection: (catalog: FurnitureCatalogEntry[]) => void
   resetOverlayState: () => void
   sceneReadModel: SceneReadModel
   selectedFurniture: FurnitureItem | null
@@ -34,9 +35,7 @@ export function useOverlayState(): OverlayState {
   const [sceneReadModel, setSceneReadModel] = useState<SceneReadModel>(
     INITIAL_SCENE_READ_MODEL,
   )
-  const [catalogIdToAdd, setCatalogIdToAdd] = useState(
-    FURNITURE_CATALOG[0]?.id ?? '',
-  )
+  const [catalogIdToAdd, setCatalogIdToAdd] = useState('')
   const [editorMessage, setEditorMessage] = useState<string | null>(null)
   const [historyAvailability, setHistoryAvailability] = useState(
     INITIAL_HISTORY_AVAILABILITY,
@@ -70,6 +69,22 @@ export function useOverlayState(): OverlayState {
     setHistoryAvailability(INITIAL_HISTORY_AVAILABILITY)
   }, [])
 
+  const initializeCatalogSelection = useCallback(
+    (catalog: FurnitureCatalogEntry[]) => {
+      setCatalogIdToAdd((prevId) => {
+        // If already initialized, preserve the current selection if it exists in
+        // the new catalog, otherwise fall back to the first entry
+        if (prevId) {
+          const exists = catalog.some((entry) => entry.id === prevId)
+          return exists ? prevId : (catalog[0]?.id ?? '')
+        }
+        // Only initialize if empty
+        return catalog[0]?.id ?? ''
+      })
+    },
+    [],
+  )
+
   const updateEditorMessage = useCallback((message: string | null) => {
     setEditorMessage(message)
   }, [])
@@ -85,6 +100,7 @@ export function useOverlayState(): OverlayState {
     handleHistoryChange,
     handleSceneReadModelChange,
     historyAvailability,
+    initializeCatalogSelection,
     resetOverlayState,
     sceneReadModel,
     selectedFurniture,

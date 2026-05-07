@@ -11,7 +11,7 @@ import {
   DrawerTrigger,
 } from '@/components/ui/drawer'
 import { cn } from '@/lib/utils'
-import { FURNITURE_CATALOG } from '@/scene/objects/furniture-catalog'
+import type { FurnitureCatalogEntry } from '@/scene/objects/furniture-catalog'
 
 function formatMeasurement(value: number) {
   return Number(value.toFixed(2)).toString()
@@ -22,6 +22,7 @@ function formatFootprintLabel(width: number, depth: number) {
 }
 
 export function CatalogDrawer({
+  catalog,
   catalogIdToAdd,
   editorInteractionsEnabled,
   onOpenChange,
@@ -30,6 +31,7 @@ export function CatalogDrawer({
   open,
   triggerButton,
 }: {
+  catalog: FurnitureCatalogEntry[]
   catalogIdToAdd: string
   editorInteractionsEnabled: boolean
   onAddFurniture: () => boolean
@@ -52,7 +54,7 @@ export function CatalogDrawer({
         <div className="px-6 max-h-[90vh] sm:max-h-[30vh] overflow-y-auto">
           <fieldset className="grid grid-cols-5 gap-2 border-0 p-0 pb-2 max-[980px]:grid-cols-3 max-[760px]:grid-cols-2 max-[520px]:grid-cols-1">
             <legend className="sr-only">Furniture type to add</legend>
-            {FURNITURE_CATALOG.map((entry) => {
+            {catalog.map((entry) => {
               const isSelected = catalogIdToAdd === entry.id
 
               return (

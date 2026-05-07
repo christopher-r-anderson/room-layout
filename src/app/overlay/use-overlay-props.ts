@@ -11,6 +11,8 @@ import type {
 
 interface UseOverlayPropsOptions {
   assetError: boolean
+  assetErrorKind: EditorStartupProps['assetErrorKind']
+  assetErrorMessage: EditorStartupProps['assetErrorMessage']
   startupLoadingActive: boolean
   startupOverlayActive: boolean
   onRetryAssetLoading: () => void
@@ -27,6 +29,7 @@ interface UseOverlayPropsOptions {
   onOpenDeleteDialog: EditorSelectionProps['onOpenDeleteDialog']
   onRotateSelection: EditorSelectionProps['onRotateSelection']
   catalogIdToAdd: EditorCatalogProps['catalogIdToAdd']
+  catalog: EditorCatalogProps['catalog']
   isCatalogDrawerOpen: EditorCatalogProps['isCatalogDrawerOpen']
   onAddFurniture: EditorCatalogProps['onAddFurniture']
   onCatalogIdToAddChange: EditorCatalogProps['onCatalogIdToAddChange']
@@ -52,6 +55,8 @@ interface EditorOverlayPropsShape {
 
 export function useOverlayProps({
   assetError,
+  assetErrorKind,
+  assetErrorMessage,
   startupLoadingActive,
   startupOverlayActive,
   onRetryAssetLoading,
@@ -68,6 +73,7 @@ export function useOverlayProps({
   onOpenDeleteDialog,
   onRotateSelection,
   catalogIdToAdd,
+  catalog,
   isCatalogDrawerOpen,
   onAddFurniture,
   onCatalogIdToAddChange,
@@ -83,12 +89,16 @@ export function useOverlayProps({
   const startupProps = useMemo<EditorStartupProps>(
     () => ({
       assetError,
+      assetErrorKind,
+      assetErrorMessage,
       startupLoadingActive,
       startupOverlayActive,
       onRetryAssetLoading,
     }),
     [
       assetError,
+      assetErrorKind,
+      assetErrorMessage,
       onRetryAssetLoading,
       startupLoadingActive,
       startupOverlayActive,
@@ -133,6 +143,7 @@ export function useOverlayProps({
 
   const catalogProps = useMemo<EditorCatalogProps>(
     () => ({
+      catalog,
       catalogIdToAdd,
       isCatalogDrawerOpen,
       onAddFurniture,
@@ -140,6 +151,7 @@ export function useOverlayProps({
       onCatalogDrawerOpenChange,
     }),
     [
+      catalog,
       catalogIdToAdd,
       isCatalogDrawerOpen,
       onAddFurniture,

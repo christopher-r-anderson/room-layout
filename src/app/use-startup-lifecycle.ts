@@ -2,6 +2,11 @@ import { useCallback, type RefObject } from 'react'
 import type { SceneRef } from '@/scene/scene.types'
 import { useStartupState } from './startup/use-startup-state'
 import { runStartupReset } from './startup/reset-startup-state'
+import type {
+  FurnitureCatalogEntry,
+  FurnitureCollection,
+} from '@/scene/objects/furniture-catalog'
+import type { StartupErrorKind } from './startup/use-startup-state'
 
 interface UseStartupLifecycleOptions {
   sceneRef: RefObject<SceneRef | null>
@@ -10,10 +15,13 @@ interface UseStartupLifecycleOptions {
 
 interface StartupLifecycle {
   assetError: Error | null
+  assetErrorKind: StartupErrorKind | null
   assetErrorRef: RefObject<Error | null>
   assetsReadyRef: RefObject<boolean>
+  catalog: FurnitureCatalogEntry[]
+  collections: FurnitureCollection[]
   editorInteractionsEnabled: boolean
-  sceneVersion: number
+  cacheInvalidationKey: number
   startupLoadingActive: boolean
   startupOverlayActive: boolean
   handleAssetError: (error: Error) => void
@@ -35,13 +43,16 @@ export function useStartupLifecycle({
 }: UseStartupLifecycleOptions): StartupLifecycle {
   const {
     assetError,
+    assetErrorKind,
     assetErrorRef,
     assetsReadyRef,
+    catalog,
+    collections,
     editorInteractionsEnabled,
     handleAssetError,
     handleAssetsReady,
     retryAssetLoading,
-    sceneVersion,
+    cacheInvalidationKey,
     startupLoadingActive,
     startupOverlayActive,
   } = useStartupState()
@@ -52,10 +63,13 @@ export function useStartupLifecycle({
 
   return {
     assetError,
+    assetErrorKind,
     assetErrorRef,
     assetsReadyRef,
+    catalog,
+    collections,
     editorInteractionsEnabled,
-    sceneVersion,
+    cacheInvalidationKey,
     startupLoadingActive,
     startupOverlayActive,
     handleAssetError,

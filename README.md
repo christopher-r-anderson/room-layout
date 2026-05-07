@@ -8,7 +8,7 @@ This project demonstrates core web 3D concepts relevant to retail and product ex
 
 ---
 
-## ✨ Goals
+## 🏁 Goals
 
 - Establish a clean 3D scene with real-world scale
 - Demonstrate camera interaction patterns
@@ -18,7 +18,7 @@ This project demonstrates core web 3D concepts relevant to retail and product ex
 
 ---
 
-## 🧱 Tech Stack
+## 🔋 Tech Stack
 
 - React
 - Three.js via @react-three/fiber
@@ -28,7 +28,7 @@ This project demonstrates core web 3D concepts relevant to retail and product ex
 
 ---
 
-## 🚀 Development
+## 🧑‍💻 Development
 
 ```bash
 pnpm dev          # start dev server
@@ -54,7 +54,7 @@ pnpm test:e2e:ui      # open the Playwright UI runner
 pnpm test:browser:perf # run browser perf scenarios and collect artifacts
 ```
 
-## Browser Tests
+## 🤖 Browser Tests
 
 The repository now uses Playwright for real-browser editor coverage and scripted browser perf scenarios.
 
@@ -63,7 +63,7 @@ The repository now uses Playwright for real-browser editor coverage and scripted
 - Use `pnpm test:browser:perf` for scripted Chromium interaction measurements that reuse the same harness helpers without acting as a strict correctness gate.
 - Browser accessibility audits run through Playwright + axe in the chromium lane (baseline shell, catalog drawer, delete dialog, and outliner/inspector states).
 
-## Accessibility
+## ✨ Accessibility
 
 Accessibility is an explicit goal for this project, especially for no-mouse editor workflows.
 
@@ -112,7 +112,7 @@ This project is intentionally focused on spatial interaction and rendering funda
 
 Current editor UI highlights include a visual furniture picker, history and selection tools, outliner and selected-item inspector surfaces, keyboard movement/rotation shortcuts, startup loading and retryable error overlays, and project/asset information dialogs.
 
-## 🎮 Usage
+## 🖦 Usage
 
 - Click a furniture item to select it.
 - Wait for the startup loading overlay to finish before interacting with the room.
@@ -123,6 +123,35 @@ Current editor UI highlights include a visual furniture picker, history and sele
 - You can fully edit without canvas dragging via the outliner and selected-item inspector surfaces.
 - Keyboard movement supports `Arrow` (0.5m), `Shift+Arrow` (1.0m), and `Alt+Arrow` (0.1m).
 - If a core furniture asset fails to load at startup, use the retry action from the startup error overlay.
+
+## 📚 Catalog
+
+The editor loads its furniture catalog from a runtime manifest (`public/catalog-manifest.json`), allowing catalog updates without rebuilding the app.
+
+### Manifest Updates
+
+To add or modify furniture items:
+
+1. **Update the manifest**: Edit `public/catalog-manifest.json` to add collections and catalog entries
+2. **Prepare assets**:
+   - Place GLTF model files in `public/models/`
+   - Place preview images in `public/catalog-previews/`
+3. **Validate**:
+   - Node names in GLTF files must match the `nodeName` values in the catalog
+   - All paths in the manifest must be relative (e.g., `"models/foo.glb"`)
+   - Footprint dimensions must be positive numbers
+
+For detailed manifest format and validation rules, see [public/catalog-manifest-schema.md](./public/catalog-manifest-schema.md).
+
+### Manifest Requirement
+
+The editor requires a successfully loaded manifest to function. If the manifest fails to fetch (network error or timeout), a startup error overlay is shown and the editor remains disabled until the user retries.
+
+Because the manifest and all furniture assets are co-deployed as part of the same static build, a manifest fetch failure reflects a deployment problem rather than a recoverable data discrepancy. The editor intentionally has no built-in fallback catalog: silently substituting a different catalog would let users design against inventory that is unavailable or out of date.
+
+### Performance
+
+Asset preloading occurs in the background during startup. If an asset fails to preload, the app surfaces a recoverable error overlay with a retry action. Editor interactions remain disabled until the error is cleared and all assets are successfully loaded.
 
 ## 🗺️ Project Plan
 
