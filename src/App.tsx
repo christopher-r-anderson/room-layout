@@ -248,8 +248,6 @@ function App() {
 
   useKeyboardShortcuts({
     enabled: startup.editorInteractionsEnabled,
-    canUndo: overlayState.historyAvailability.canUndo,
-    canRedo: overlayState.historyAvailability.canRedo,
     hasSelection: overlayState.selectedFurniture !== null,
     isModalOpen: dialogState.isModalOpen,
     onUndo: handlers.handleUndo,

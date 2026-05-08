@@ -9,8 +9,6 @@ import {
 
 interface UseKeyboardShortcutsOptions {
   enabled: boolean
-  canUndo: boolean
-  canRedo: boolean
   hasSelection: boolean
   isModalOpen: boolean
   onUndo: () => void

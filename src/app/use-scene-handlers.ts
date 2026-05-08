@@ -458,6 +458,7 @@ export function useSceneHandlers({
 
     try {
       await navigator.clipboard.writeText(url)
+      clearEditorMessage()
       announcePolite('Scene URL copied to clipboard.')
     } catch {
       setEditorMessage('Could not copy URL to clipboard.')
@@ -465,6 +466,7 @@ export function useSceneHandlers({
     }
   }, [
     sceneReadModel.items,
+    clearEditorMessage,
     setEditorMessage,
     announcePolite,
     announceAssertive,

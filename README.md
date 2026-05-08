@@ -162,7 +162,7 @@ The editor supports sharing a room layout via URL. Use the **Copy Scene URL** bu
 The scene is encoded as a `?scene=` query parameter containing a URL-encoded JSON payload:
 
 ```text
-?scene={"v":1,"items":[{"id":"furniture-instance-1","catalogId":"armchair-1","position":[0,0,0],"rotationY":0}]}
+?scene=%7B%22v%22%3A1%2C%22items%22%3A%5B%7B%22id%22%3A%22furniture-instance-1%22%2C%22catalogId%22%3A%22armchair-1%22%2C%22position%22%3A%5B0%2C0%2C0%5D%2C%22rotationY%22%3A0%7D%5D%7D
 ```
 
 | Field               | Type        | Description                                             |

@@ -8,8 +8,6 @@ import { useKeyboardShortcuts } from './use-keyboard-shortcuts'
 
 function KeyboardShortcutHarness(props: {
   enabled: boolean
-  canUndo: boolean
-  canRedo: boolean
   hasSelection: boolean
   isModalOpen: boolean
   onUndo: () => void
@@ -34,8 +32,6 @@ function DialogEscapeHarness(props: {
 
   useKeyboardShortcuts({
     enabled: props.enabled,
-    canUndo: false,
-    canRedo: false,
     hasSelection: props.hasSelection,
     isModalOpen: false,
     onUndo: vi.fn(),
@@ -74,8 +70,6 @@ describe('useKeyboardShortcuts', () => {
     const view = render(
       <KeyboardShortcutHarness
         enabled
-        canUndo={false}
-        canRedo={false}
         hasSelection
         isModalOpen={false}
         onUndo={vi.fn()}
@@ -93,8 +87,6 @@ describe('useKeyboardShortcuts', () => {
     view.rerender(
       <KeyboardShortcutHarness
         enabled
-        canUndo={false}
-        canRedo={false}
         hasSelection
         isModalOpen
         onUndo={vi.fn()}
@@ -121,8 +113,6 @@ describe('useKeyboardShortcuts', () => {
     render(
       <KeyboardShortcutHarness
         enabled
-        canUndo
-        canRedo
         hasSelection
         isModalOpen={false}
         onUndo={onUndo}
@@ -155,8 +145,6 @@ describe('useKeyboardShortcuts', () => {
     render(
       <KeyboardShortcutHarness
         enabled
-        canUndo={false}
-        canRedo={false}
         hasSelection
         isModalOpen={false}
         onUndo={vi.fn()}
