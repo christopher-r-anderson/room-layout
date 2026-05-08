@@ -62,6 +62,32 @@ function DialogEscapeHarness(props: {
   )
 }
 
+function TextInputHarness(props: {
+  enabled: boolean
+  onUndo: () => void
+  onRedo: () => void
+}) {
+  const inputRef = useRef<HTMLInputElement | null>(null)
+
+  useKeyboardShortcuts({
+    enabled: props.enabled,
+    hasSelection: false,
+    isModalOpen: false,
+    onUndo: props.onUndo,
+    onRedo: props.onRedo,
+    onOpenDeleteDialog: vi.fn(),
+    onMoveSelection: vi.fn(),
+    onClearSelection: vi.fn(),
+    onRotate: vi.fn(),
+  })
+
+  useEffect(() => {
+    inputRef.current?.focus()
+  }, [])
+
+  return <input ref={inputRef} type="text" aria-label="editor text input" />
+}
+
 describe('useKeyboardShortcuts', () => {
   it('blocks delete shortcuts when a modal is open and uses the latest modal state on rerender', async () => {
     const user = userEvent.setup()
@@ -200,5 +226,40 @@ describe('useKeyboardShortcuts', () => {
     await user.keyboard('{Escape}')
 
     expect(onClearSelection).not.toHaveBeenCalled()
+  })
+
+  it('does not intercept undo/redo in text inputs', () => {
+    const onUndo = vi.fn()
+    const onRedo = vi.fn()
+
+    const view = render(
+      <TextInputHarness enabled onUndo={onUndo} onRedo={onRedo} />,
+    )
+
+    const input = view.getByRole('textbox', { name: 'editor text input' })
+
+    const undoEvent = new KeyboardEvent('keydown', {
+      bubbles: true,
+      cancelable: true,
+      key: 'z',
+      ctrlKey: true,
+    })
+    const undoNotCanceled = input.dispatchEvent(undoEvent)
+
+    const redoEvent = new KeyboardEvent('keydown', {
+      bubbles: true,
+      cancelable: true,
+      key: 'z',
+      ctrlKey: true,
+      shiftKey: true,
+    })
+    const redoNotCanceled = input.dispatchEvent(redoEvent)
+
+    expect(undoNotCanceled).toBe(true)
+    expect(redoNotCanceled).toBe(true)
+    expect(undoEvent.defaultPrevented).toBe(false)
+    expect(redoEvent.defaultPrevented).toBe(false)
+    expect(onUndo).not.toHaveBeenCalled()
+    expect(onRedo).not.toHaveBeenCalled()
   })
 })
