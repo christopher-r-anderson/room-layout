@@ -7,9 +7,12 @@
  *  - One-shot guard: restore only fires once across asset retry
  *  - Copy Scene URL button writes to clipboard and announces success
  *  - Selection is cleared after restore
+ *  - Full round-trip: copy URL in app → navigate to it → scene restored
  */
 import { expect, test } from '@playwright/test'
+import type { FurnitureInstance } from '../src/scene/objects/furniture.types'
 import {
+  addFurniture,
   openEditor,
   readSceneState,
   waitForEditorReady,
@@ -21,13 +24,12 @@ import {
 // Helpers
 // ---------------------------------------------------------------------------
 
-/** Build a minimal valid ?scene= URL for testing restore. */
-function makeSceneUrl(base: string, items: unknown[]): string {
-  const payload = { v: 1, items }
-  const json = JSON.stringify(payload)
-  const url = new URL(base)
-  url.searchParams.set('scene', json)
-  return url.toString()
+/** Build a minimal valid ?scene= route for testing restore. */
+function makeSceneRoute(items: FurnitureInstance[]): string {
+  const payload = { v: 1 as const, items }
+  const params = new URLSearchParams()
+  params.set('scene', JSON.stringify(payload))
+  return `/?${params.toString()}`
 }
 
 const VALID_ITEM = {
@@ -44,8 +46,7 @@ const VALID_ITEM = {
 test('restores furniture from a valid ?scene= param on startup', async ({
   page,
 }) => {
-  const url = makeSceneUrl('http://localhost:5173/', [VALID_ITEM])
-  await page.goto(url)
+  await page.goto(makeSceneRoute([VALID_ITEM]))
   const state = await waitForEditorReady(page)
 
   expect(state.itemCount).toBe(1)
@@ -54,15 +55,14 @@ test('restores furniture from a valid ?scene= param on startup', async ({
 })
 
 test('clears selection after restore', async ({ page }) => {
-  const url = makeSceneUrl('http://localhost:5173/', [VALID_ITEM])
-  await page.goto(url)
+  await page.goto(makeSceneRoute([VALID_ITEM]))
   const state = await waitForEditorReady(page)
 
   expect(state.selectedId).toBeNull()
 })
 
 test('restores multiple items from a valid ?scene= param', async ({ page }) => {
-  const items = [
+  const items: FurnitureInstance[] = [
     {
       id: 'furniture-instance-1',
       catalogId: 'armchair-1',
@@ -76,8 +76,7 @@ test('restores multiple items from a valid ?scene= param', async ({ page }) => {
       rotationY: 1.57,
     },
   ]
-  const url = makeSceneUrl('http://localhost:5173/', items)
-  await page.goto(url)
+  await page.goto(makeSceneRoute(items))
   const state = await waitForEditorReady(page)
 
   expect(state.itemCount).toBe(2)
@@ -109,8 +108,7 @@ test('marks outcome invalid when catalogId does not exist in catalog', async ({
   page,
 }) => {
   const invalidItem = { ...VALID_ITEM, catalogId: 'nonexistent-catalog-id-xyz' }
-  const url = makeSceneUrl('http://localhost:5173/', [invalidItem])
-  await page.goto(url)
+  await page.goto(makeSceneRoute([invalidItem]))
   const state = await waitForEditorReady(page)
 
   expect(state.itemCount).toBe(0)
@@ -122,8 +120,7 @@ test('one-shot guard: restore only fires once across asset-error retry', async (
 }) => {
   const assetFailure = await failFurnitureAssetRequestsUntilRetry(page)
 
-  const url = makeSceneUrl('http://localhost:5173/', [VALID_ITEM])
-  await page.goto(url)
+  await page.goto(makeSceneRoute([VALID_ITEM]))
 
   // Wait for the error state
   await expect(page.getByText('The room editor could not start')).toBeVisible({
@@ -210,4 +207,41 @@ test('error message clears on add furniture after restore-invalid', async ({
       })
       .toBe('')
   }
+})
+
+// ---------------------------------------------------------------------------
+// Round-trip bridge test
+// ---------------------------------------------------------------------------
+
+test('copy-URL-then-load round-trip: app serializer output is accepted by restore', async ({
+  page,
+  context,
+}) => {
+  // Grant clipboard permissions before any interaction
+  await context.grantPermissions(['clipboard-read', 'clipboard-write'])
+
+  await openEditor(page)
+
+  // Add one item via the real UI so the app owns the scene state
+  await addFurniture(page, 'Leather Armchair')
+
+  // Use the app's own Copy Scene URL button — this exercises the real serializer
+  const copyBtn = page.getByRole('button', {
+    name: 'Copy Scene URL to clipboard',
+  })
+  await copyBtn.click()
+  await waitForPoliteAnnouncement(page, 'Scene URL copied to clipboard.')
+
+  // Read the URL the app wrote to the clipboard
+  const copiedUrl = await page.evaluate(() => navigator.clipboard.readText())
+  expect(copiedUrl).toContain('scene=')
+
+  // Navigate to the copied URL in the same page — the restore path must accept
+  // what the serializer produced, confirming the round-trip contract
+  await page.goto(copiedUrl)
+  const restored = await waitForEditorReady(page)
+
+  expect(restored.itemCount).toBe(1)
+  expect(restored.restoreOutcome).toBe('restored')
+  expect(restored.items[0].catalogId).toBe('armchair-1')
 })
