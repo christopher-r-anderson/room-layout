@@ -115,7 +115,7 @@ export function EditorOverlay({
         inert={startup.startupOverlayActive}
         aria-hidden={startup.startupOverlayActive}
       >
-        <div className="flex justify-between gap-2">
+        <div className="flex items-start justify-between gap-2">
           <div
             role="toolbar"
             aria-label="Editor actions"
@@ -152,8 +152,8 @@ export function EditorOverlay({
             </Button>
           </div>
 
-          <div className="justify-self-end shrink-0 flex items-start gap-4">
-            <h1 className="text-lg text-background font-semibold">
+          <div className="justify-self-end shrink-0 flex items-center gap-2">
+            <h1 className="rounded-sm bg-background/65 px-2 py-0.5 text-base/6 font-semibold text-foreground backdrop-blur-[1px]">
               Room Layout
             </h1>
             <ProjectInfoDialog

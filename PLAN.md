@@ -61,9 +61,10 @@ Deliver a small, polished 3D room-layout editor demo that demonstrates productio
 
 ### Camera and Visual Polish (Core)
 
-- [ ] Add camera presets with smooth transitions (for example: isometric, top, doorway).
-- [ ] Add environment lighting polish (HDRI or equivalent image-based lighting).
-- [ ] Improve shadow quality and consistency without hurting responsiveness.
+- [x] Render baseline polish (lighting, shadows, background).
+- [ ] Camera UX baseline (reset, presets, focus selected).
+- [ ] Surface finish (floor/wall material pass).
+- [ ] Mood presets and URL-sync extensions.
 
 ### Loading and Resilience (Core)
 
@@ -90,21 +91,13 @@ Deliver a small, polished 3D room-layout editor demo that demonstrates productio
 - [x] Handle invalid or missing URL state safely.
 - [x] Add "Copy Scene URL" toolbar button with clipboard write and screen-reader announcement.
 
-### Stretch Goals (Deliver If Core Is Stable)
-
-- [ ] Add multi-object selection.
-- [ ] Add multi-object manipulation for move/rotate.
-- [ ] Add marquee or modifier-key multi-select affordance.
-- [ ] Add optional alignment/distribution helpers for multi-select.
-
 ### Demo Polish and Delivery
 
 - [x] Refresh README product section and include current feature list.
 - [x] Add short usage guide (select, move, rotate, add, remove, share).
-- [x] Run final validation pass (`pnpm fix`, `pnpm typecheck`, `pnpm test:run`, `pnpm build`).
 - [ ] Capture demo media for README.
 
 ## Current Focus
 
-1. Camera presets and visual polish.
+1. Camera UX baseline and surface finish.
 2. Capture demo media for README.

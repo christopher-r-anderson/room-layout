@@ -1,4 +1,5 @@
 import { getClonedNode } from '@/lib/three/get-cloned-node'
+import { getMeshes } from '@/lib/three/get-meshes'
 import type { ThreeEvent } from '@react-three/fiber'
 import { useEffect, useRef, useState } from 'react'
 import type { Group, Object3D } from 'three'
@@ -52,6 +53,10 @@ export function InteractiveFurniture({
   const [model] = useState<Object3D>(() => {
     const node = getClonedNode(sourceScene, nodeName)
     node.position.set(0, 0, 0)
+    for (const mesh of getMeshes(node)) {
+      mesh.castShadow = true
+      mesh.receiveShadow = true
+    }
     return node
   })
 

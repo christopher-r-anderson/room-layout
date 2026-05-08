@@ -11,14 +11,14 @@ export function ProjectInfoButton({
     <div className={cn('flex items-center gap-4', className)}>
       <Button
         variant="secondary"
-        size="icon-lg"
+        size="icon"
         aria-controls="project-info-dialog"
         aria-haspopup="dialog"
         aria-label="Open project and asset info"
         className="rounded-md"
         {...props}
       >
-        <IconInfoCircle size={48} />
+        <IconInfoCircle size={20} />
       </Button>
     </div>
   )

@@ -28,6 +28,7 @@ import type { SceneRef } from './scene.types'
 import { useSceneDrag } from './internal/use-scene-drag'
 import { useSceneImperativeApi } from './internal/use-scene-imperative-api'
 import { useSceneSelection } from './internal/use-scene-selection'
+import { BlendFunction } from 'postprocessing'
 
 const ROOM_HALF_SIZE = 3
 const FLOOR_PLANE_Y = 0
@@ -268,21 +269,25 @@ export function Scene({
 
   return (
     <>
-      <EffectComposer autoClear={false}>
+      <EffectComposer autoClear={false} multisampling={4}>
         {/* Note: do not use `Selection` is is broken in react 19: https://github.com/pmndrs/react-postprocessing/issues/330 */}
         <Outline
           selection={selection}
           selectionLayer={SELECTED_OUTLINE_LAYER}
-          visibleEdgeColor={0xffffff}
-          hiddenEdgeColor={0xffffff}
-          edgeStrength={3}
+          blendFunction={BlendFunction.ALPHA}
+          visibleEdgeColor={0xf59e0b}
+          hiddenEdgeColor={0xb45309}
+          edgeStrength={3.2}
+          blur={false}
         />
         <Outline
           selection={showPreviewOutline ? previewMeshes : []}
           selectionLayer={PREVIEW_OUTLINE_LAYER}
-          visibleEdgeColor={0xaaaaaa}
-          hiddenEdgeColor={0xaaaaaa}
-          edgeStrength={1.5}
+          blendFunction={BlendFunction.ALPHA}
+          visibleEdgeColor={0x60a5fa}
+          hiddenEdgeColor={0x2563eb}
+          edgeStrength={2.1}
+          blur={false}
         />
       </EffectComposer>
       <CameraControls enabled={!dragState} />

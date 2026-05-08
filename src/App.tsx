@@ -8,6 +8,7 @@ import {
   useMemo,
   useRef,
 } from 'react'
+import { NeutralToneMapping } from 'three'
 import type { SceneRef } from './scene/scene.types'
 import { EditorOverlay } from './app/overlay/editor-overlay'
 import { useDialogState } from './app/overlay/use-dialog-state'
@@ -282,6 +283,10 @@ function App() {
               position: [3, 2.5, 3],
               fov: 50,
             }}
+            onCreated={({ gl }) => {
+              gl.toneMapping = NeutralToneMapping
+              gl.toneMappingExposure = 1.05
+            }}
             onPointerMissed={() => {
               if (!startup.editorInteractionsEnabled) {
                 return
@@ -292,7 +297,6 @@ function App() {
             }}
             shadows
           >
-            <color attach="background" args={['#f0f0f0']} />
             <SceneAssetErrorBoundary
               key={startup.cacheInvalidationKey}
               onError={handlers.handleSceneAssetError}
