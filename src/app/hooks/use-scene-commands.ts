@@ -30,10 +30,10 @@ interface SceneCommands {
     delta: { x: number; z: number },
     options?: { source?: MoveSource },
   ) => MoveSelectionResult
-  redo: () => void
+  redo: () => boolean
   rotateSelection: (direction: -1 | 1) => void
   selectById: (id: string | null) => SelectByIdResult
-  undo: () => void
+  undo: () => boolean
 }
 
 export function useSceneCommands({
@@ -64,11 +64,11 @@ export function useSceneCommands({
   )
 
   const undo = useCallback(() => {
-    getEnabledScene()?.undo()
+    return getEnabledScene()?.undo() ?? false
   }, [getEnabledScene])
 
   const redo = useCallback(() => {
-    getEnabledScene()?.redo()
+    return getEnabledScene()?.redo() ?? false
   }, [getEnabledScene])
 
   const clearSelection = useCallback(() => {

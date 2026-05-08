@@ -85,9 +85,10 @@ Deliver a small, polished 3D room-layout editor demo that demonstrates productio
 
 ### Shareable State
 
-- [ ] Serialize scene state (item kind, position, rotation) into URL.
-- [ ] Load scene state from URL on initial app load.
-- [ ] Handle invalid or missing URL state safely.
+- [x] Serialize scene state (item kind, position, rotation) into URL.
+- [x] Load scene state from URL on initial app load.
+- [x] Handle invalid or missing URL state safely.
+- [x] Add "Copy Scene URL" toolbar button with clipboard write and screen-reader announcement.
 
 ### Stretch Goals (Deliver If Core Is Stable)
 
@@ -105,6 +106,5 @@ Deliver a small, polished 3D room-layout editor demo that demonstrates productio
 
 ## Current Focus
 
-1. Basic URL share/load.
-2. Camera presets and visual polish.
-3. Hover affordance and broader browser interaction coverage.
+1. Camera presets and visual polish.
+2. Capture demo media for README.

@@ -19,7 +19,7 @@ import { useAnnouncements } from './app/hooks/use-announcements'
 import { useSceneSync } from './app/hooks/use-scene-sync'
 import { usePreviewController } from './app/use-preview-controller'
 import { useStartupLifecycle } from './app/use-startup-lifecycle'
-import { useSceneHandlers } from './app/use-scene-handlers'
+import { useSceneHandlers, type RestoreOutcome } from './app/use-scene-handlers'
 import { Announcer } from './app/scene-panel/announcer'
 import { TooltipProvider } from './components/ui/tooltip'
 
@@ -41,6 +41,8 @@ interface BrowserSceneState {
       y: number
     } | null
   }[]
+  restoreOutcome: RestoreOutcome | null
+  restoreAttemptCount: number
 }
 
 declare global {
@@ -134,8 +136,25 @@ function App() {
     sync,
     announcements,
     dialogState,
-    overlayState,
-    startup,
+    overlayState: {
+      clearEditorMessage: overlayState.clearEditorMessage,
+      setEditorMessage: overlayState.setEditorMessage,
+      sceneReadModel: overlayState.sceneReadModel,
+      selectedFurniture: overlayState.selectedFurniture,
+      handleHistoryChange: overlayState.handleHistoryChange,
+    },
+    startup: {
+      catalog: startup.catalog,
+      handleAssetError: startup.handleAssetError,
+      handleAssetsReady: startup.handleAssetsReady,
+      retryAssetLoading: startup.retryAssetLoading,
+      resetEditorShellState: startup.resetEditorShellState,
+      restoreInitialLayout: (instances) => {
+        if (!sceneRef.current)
+          throw new Error('sceneRef not initialized at restore')
+        sceneRef.current.restoreInitialLayout(instances)
+      },
+    },
   })
 
   const { clearQueuedMovementAnnouncement } = announcements
@@ -210,6 +229,8 @@ function App() {
           selectedName: sceneState?.selectedName ?? null,
           itemCount: sceneState?.itemCount ?? 0,
           items: sceneState?.items ?? [],
+          restoreOutcome: handlers.restoreOutcomeRef.current,
+          restoreAttemptCount: handlers.restoreAttemptCountRef.current,
         }
       },
     }
@@ -217,12 +238,16 @@ function App() {
     return () => {
       delete window.__ROOM_LAYOUT_TEST__
     }
-  }, [previewedId, startup.assetErrorRef, startup.assetsReadyRef])
+  }, [
+    previewedId,
+    startup.assetErrorRef,
+    startup.assetsReadyRef,
+    handlers.restoreOutcomeRef,
+    handlers.restoreAttemptCountRef,
+  ])
 
   useKeyboardShortcuts({
     enabled: startup.editorInteractionsEnabled,
-    canUndo: overlayState.historyAvailability.canUndo,
-    canRedo: overlayState.historyAvailability.canRedo,
     hasSelection: overlayState.selectedFurniture !== null,
     isModalOpen: dialogState.isModalOpen,
     onUndo: handlers.handleUndo,
@@ -292,6 +317,7 @@ function App() {
         <EditorOverlay
           editorInteractionsEnabled={startup.editorInteractionsEnabled}
           statusMessage={overlayState.editorMessage}
+          onCopySceneUrl={() => void handlers.handleCopySceneUrl()}
           startup={startupProps}
           history={historyProps}
           scene={sceneProps}

@@ -9,8 +9,6 @@ import {
 
 interface UseKeyboardShortcutsOptions {
   enabled: boolean
-  canUndo: boolean
-  canRedo: boolean
   hasSelection: boolean
   isModalOpen: boolean
   onUndo: () => void
@@ -23,8 +21,6 @@ interface UseKeyboardShortcutsOptions {
 
 export function useKeyboardShortcuts({
   enabled,
-  canUndo,
-  canRedo,
   hasSelection,
   isModalOpen,
   onUndo,
@@ -102,13 +98,13 @@ export function useKeyboardShortcuts({
       targetTagName !== 'TEXTAREA' &&
       targetTagName !== 'SELECT'
 
-    if (historyIntent === 'undo' && canUndo) {
+    if (historyIntent === 'undo') {
       event.preventDefault()
       onUndo()
       return
     }
 
-    if (historyIntent === 'redo' && canRedo) {
+    if (historyIntent === 'redo') {
       event.preventDefault()
       onRedo()
       return

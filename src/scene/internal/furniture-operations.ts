@@ -14,7 +14,10 @@ import type {
   FurnitureCollection,
 } from '../objects/furniture-catalog'
 import { getCollection } from '../objects/furniture-catalog'
-import type { FurnitureItem } from '../objects/furniture.types'
+import type {
+  FurnitureInstance,
+  FurnitureItem,
+} from '../objects/furniture.types'
 
 export type AddFurnitureResult =
   | { ok: true; id: string }
@@ -116,6 +119,29 @@ function createFurnitureItem(
     ],
     rotationY: overrides?.rotationY ?? normalizeAngleRadians(node.rotation.y),
   }
+}
+
+/**
+ * Reconstructs full FurnitureItem objects from serialized FurnitureInstance
+ * records (id, catalogId, position, rotationY) using the loaded catalog and
+ * source scenes. Used by restoreInitialLayout to seed the scene from URL data.
+ */
+export function buildFurnitureItemsFromInstances(
+  instances: FurnitureInstance[],
+  catalog: FurnitureCatalogEntry[],
+  collections: FurnitureCollection[],
+  sourceScenesByPath: Map<string, Object3D>,
+): FurnitureItem[] {
+  return instances.map((instance) =>
+    createFurnitureItem(
+      sourceScenesByPath,
+      instance.id,
+      instance.catalogId,
+      catalog,
+      collections,
+      { position: instance.position, rotationY: instance.rotationY },
+    ),
+  )
 }
 
 export function updateFurniturePositionInHistory(

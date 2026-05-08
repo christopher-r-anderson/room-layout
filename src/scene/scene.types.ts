@@ -1,5 +1,8 @@
 import type { SceneSnapshot } from './internal/scene-snapshot'
-import type { FurnitureItem } from './objects/furniture.types'
+import type {
+  FurnitureInstance,
+  FurnitureItem,
+} from './objects/furniture.types'
 
 export type MoveSource = 'keyboard' | 'inspector' | 'toolbar' | 'drag'
 
@@ -42,4 +45,11 @@ export interface SceneRef {
   redo: () => boolean
   getSnapshot: () => SceneSnapshot
   getReadModel: () => SceneReadModel
+  /**
+   * Seeds the scene with the given furniture instances as the initial baseline,
+   * clearing selection and establishing an empty undo/redo stack. The instance-id
+   * counter is advanced past the highest restored suffix so future adds are unique.
+   * Intended for URL restore on startup only — not for interactive editing.
+   */
+  restoreInitialLayout: (instances: FurnitureInstance[]) => void
 }

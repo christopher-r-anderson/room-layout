@@ -1,16 +1,25 @@
-import { useCallback } from 'react'
+import { useCallback, useRef, type RefObject } from 'react'
 import type {
   MoveSelectionResult,
   MoveSource,
   SceneReadModel,
   SelectByIdResult,
 } from '@/scene/scene.types'
-import type { FurnitureItem } from '@/scene/objects/furniture.types'
+import type {
+  FurnitureInstance,
+  FurnitureItem,
+} from '@/scene/objects/furniture.types'
+import type { FurnitureCatalogEntry } from '@/scene/objects/furniture-catalog'
 import type { HistoryAvailability } from './history/history.types'
 import {
   runStartupAssetErrorTransition,
   runStartupRetryTransition,
 } from './startup/startup-transitions'
+import {
+  parseSceneUrl,
+  serializeSceneToUrl,
+  validateCatalogReferences,
+} from './url-scene/scene-url'
 
 // ---------------------------------------------------------------------------
 // Dependency slices accepted from outer hooks
@@ -24,10 +33,10 @@ interface Commands {
     delta: { x: number; z: number },
     options?: { source?: MoveSource },
   ) => MoveSelectionResult
-  redo: () => void
+  redo: () => boolean
   rotateSelection: (direction: -1 | 1) => void
   selectById: (id: string | null) => SelectByIdResult
-  undo: () => void
+  undo: () => boolean
 }
 
 interface Sync {
@@ -54,14 +63,17 @@ interface DialogState {
 }
 
 interface StartupSlice {
+  catalog: FurnitureCatalogEntry[]
   handleAssetError: (error: Error) => void
   handleAssetsReady: () => void
   retryAssetLoading: () => void
   resetEditorShellState: () => void
+  restoreInitialLayout: (instances: FurnitureInstance[]) => void
 }
 
 interface OverlayState {
   clearEditorMessage: () => void
+  setEditorMessage: (message: string | null) => void
   sceneReadModel: SceneReadModel
   selectedFurniture: FurnitureItem | null
   handleHistoryChange: (availability: HistoryAvailability) => void
@@ -99,7 +111,12 @@ interface SceneHandlers {
   handleSceneAssetError: (error: Error) => void
   handleSceneAssetsReady: () => void
   handleRetryAssetLoading: () => void
+  handleCopySceneUrl: () => Promise<void>
+  restoreOutcomeRef: RefObject<RestoreOutcome | null>
+  restoreAttemptCountRef: RefObject<number>
 }
+
+export type RestoreOutcome = 'restored' | 'invalid' | 'skipped'
 
 /**
  * Coordinator hook for scene mutation handlers. Co-locates all event handlers
@@ -141,6 +158,7 @@ export function useSceneHandlers({
   } = dialogState
   const {
     clearEditorMessage,
+    setEditorMessage,
     handleHistoryChange,
     selectedFurniture,
     sceneReadModel,
@@ -150,9 +168,18 @@ export function useSceneHandlers({
     handleAssetsReady,
     retryAssetLoading,
     resetEditorShellState,
+    restoreInitialLayout,
+    catalog,
   } = startup
 
+  // One-shot guard: URL restore is attempted at most once per page load.
+  // This ref lives in App's render tree and survives scene remounts and retries.
+  const restoreAttemptedRef = useRef(false)
+  const restoreOutcomeRef = useRef<RestoreOutcome | null>(null)
+  const restoreAttemptCountRef = useRef(0)
+
   const handleAddFurniture = useCallback(() => {
+    clearEditorMessage()
     const added = addFurniture()
     const nextReadModel = syncSceneReadModel({
       announceSelectionChange: false,
@@ -170,15 +197,16 @@ export function useSceneHandlers({
     }
 
     return added
-  }, [addFurniture, syncSceneReadModel, announcePolite])
+  }, [addFurniture, clearEditorMessage, syncSceneReadModel, announcePolite])
 
   const handleSelectById = useCallback(
     (id: string | null): SelectByIdResult => {
       const result = selectById(id)
+      clearEditorMessage()
       syncSceneReadModel({ requestOutlinerFocus: false })
       return result
     },
-    [selectById, syncSceneReadModel],
+    [selectById, clearEditorMessage, syncSceneReadModel],
   )
 
   const handleMoveSelection = useCallback(
@@ -186,6 +214,7 @@ export function useSceneHandlers({
       delta: { x: number; z: number },
       options?: { source?: MoveSource },
     ): MoveSelectionResult => {
+      clearEditorMessage()
       const result = moveSelection(delta, options)
 
       if (result.ok) {
@@ -211,13 +240,19 @@ export function useSceneHandlers({
 
       return result
     },
-    [moveSelection, syncSceneReadModel, queueMovementAnnouncement],
+    [
+      moveSelection,
+      syncSceneReadModel,
+      clearEditorMessage,
+      queueMovementAnnouncement,
+    ],
   )
 
   const handleRotateSelection = useCallback(
     (direction: -1 | 1) => {
       const rotatingName = selectedFurniture?.name ?? null
 
+      clearEditorMessage()
       rotateSelection(direction)
       syncSceneReadModel()
 
@@ -225,7 +260,13 @@ export function useSceneHandlers({
         announcePolite(`${rotatingName} rotated.`)
       }
     },
-    [rotateSelection, syncSceneReadModel, announcePolite, selectedFurniture],
+    [
+      rotateSelection,
+      clearEditorMessage,
+      syncSceneReadModel,
+      announcePolite,
+      selectedFurniture,
+    ],
   )
 
   const handleConfirmDeleteSelection = useCallback(() => {
@@ -260,21 +301,28 @@ export function useSceneHandlers({
   ])
 
   const handleUndo = useCallback(() => {
-    undo()
+    const undid = undo()
     syncSceneReadModel()
-    announcePolite('Undo complete.')
-  }, [undo, syncSceneReadModel, announcePolite])
+    clearEditorMessage()
+    if (undid) {
+      announcePolite('Undo complete.')
+    }
+  }, [undo, syncSceneReadModel, clearEditorMessage, announcePolite])
 
   const handleRedo = useCallback(() => {
-    redo()
+    const redid = redo()
     syncSceneReadModel()
-    announcePolite('Redo complete.')
-  }, [redo, syncSceneReadModel, announcePolite])
+    clearEditorMessage()
+    if (redid) {
+      announcePolite('Redo complete.')
+    }
+  }, [redo, syncSceneReadModel, clearEditorMessage, announcePolite])
 
   const handleClearSelection = useCallback(() => {
     clearSelection()
+    clearEditorMessage()
     syncSceneReadModel({ requestOutlinerFocus: false })
-  }, [clearSelection, syncSceneReadModel])
+  }, [clearSelection, clearEditorMessage, syncSceneReadModel])
 
   const handleCatalogDrawerOpenChange = useCallback(
     (open: boolean) => {
@@ -325,9 +373,65 @@ export function useSceneHandlers({
   )
 
   const handleSceneAssetsReady = useCallback(() => {
-    handleAssetsReady()
+    // Restore from URL on first asset-ready event only (one-shot guard).
+    if (!restoreAttemptedRef.current) {
+      restoreAttemptedRef.current = true
+      restoreAttemptCountRef.current += 1
+
+      const parseResult = parseSceneUrl(window.location.href)
+
+      if (parseResult.ok) {
+        if (validateCatalogReferences(parseResult.items, catalog)) {
+          try {
+            restoreInitialLayout(parseResult.items)
+            restoreOutcomeRef.current = 'restored'
+            announcePolite('Room layout restored from shared link.')
+          } catch {
+            // Restore threw (e.g. catalog/model node mismatch) — fail closed.
+            setEditorMessage(
+              'Shared link could not be restored. Starting with an empty room.',
+            )
+            restoreOutcomeRef.current = 'invalid'
+            announceAssertive(
+              'Shared link could not be restored. Starting with an empty room.',
+            )
+          }
+        } else {
+          // Unknown catalog IDs — reject and keep empty scene.
+          setEditorMessage(
+            'Shared link contained unrecognized furniture. Starting with an empty room.',
+          )
+          restoreOutcomeRef.current = 'invalid'
+          announceAssertive(
+            'Shared link could not be restored. Starting with an empty room.',
+          )
+        }
+      } else if (parseResult.reason !== 'no-param') {
+        // Malformed URL payload — reject and keep empty scene.
+        setEditorMessage(
+          'Shared link could not be restored. Starting with an empty room.',
+        )
+        restoreOutcomeRef.current = 'invalid'
+        announceAssertive(
+          'Shared link could not be restored. Starting with an empty room.',
+        )
+      } else {
+        // No scene param — normal startup.
+        restoreOutcomeRef.current = 'skipped'
+      }
+    }
+
     syncSceneReadModel()
-  }, [handleAssetsReady, syncSceneReadModel])
+    handleAssetsReady()
+  }, [
+    handleAssetsReady,
+    syncSceneReadModel,
+    catalog,
+    restoreInitialLayout,
+    announcePolite,
+    announceAssertive,
+    setEditorMessage,
+  ])
 
   const handleRetryAssetLoading = useCallback(() => {
     runStartupRetryTransition({
@@ -341,6 +445,31 @@ export function useSceneHandlers({
     resetEditorShellState,
     retryAssetLoading,
     clearAssertiveAnnouncement,
+  ])
+
+  const handleCopySceneUrl = useCallback(async () => {
+    const url = serializeSceneToUrl(sceneReadModel.items, window.location.href)
+
+    if (!url) {
+      setEditorMessage('Scene is too large to share as a URL.')
+      announceAssertive('Scene is too large to share as a URL.')
+      return
+    }
+
+    try {
+      await navigator.clipboard.writeText(url)
+      clearEditorMessage()
+      announcePolite('Scene URL copied to clipboard.')
+    } catch {
+      setEditorMessage('Could not copy URL to clipboard.')
+      announceAssertive('Could not copy URL to clipboard.')
+    }
+  }, [
+    sceneReadModel.items,
+    clearEditorMessage,
+    setEditorMessage,
+    announcePolite,
+    announceAssertive,
   ])
 
   return {
@@ -359,6 +488,9 @@ export function useSceneHandlers({
     handleSceneAssetError,
     handleSceneAssetsReady,
     handleRetryAssetLoading,
+    handleCopySceneUrl,
+    restoreOutcomeRef,
+    restoreAttemptCountRef,
   }
 }
 

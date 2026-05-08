@@ -11,15 +11,20 @@ import type { LayoutBounds } from '@/lib/three/furniture-layout'
 import type { HistoryState } from '@/lib/ui/editor-history'
 import {
   addFurnitureToHistory,
+  buildFurnitureItemsFromInstances,
   createFurnitureInstanceId,
   deleteSelectionFromHistory,
 } from './furniture-operations'
 import { resolveMovedFurniturePosition } from '@/lib/three/furniture-layout'
 import { commitHistoryPresent } from '@/lib/ui/editor-history'
+import { createHistoryState } from '@/lib/ui/editor-history'
 import { redoSceneHistory, undoSceneHistory } from './scene-history-state'
 import { createSceneSnapshot } from './scene-snapshot'
 import type { MoveSource, SceneRef } from '../scene.types'
-import type { FurnitureItem } from '../objects/furniture.types'
+import type {
+  FurnitureInstance,
+  FurnitureItem,
+} from '../objects/furniture.types'
 import type {
   FurnitureCatalogEntry,
   FurnitureCollection,
@@ -337,6 +342,32 @@ export function useSceneImperativeApi({
         selectedId: selectedIdRef.current,
         items: furnitureRef.current,
       }),
+      restoreInitialLayout: (instances: FurnitureInstance[]) => {
+        const restoredItems = buildFurnitureItemsFromInstances(
+          instances,
+          catalog,
+          collections,
+          sourceScenesByPath,
+        )
+
+        const newHistory = createHistoryState(restoredItems)
+
+        historyRef.current = newHistory
+        furnitureRef.current = restoredItems
+        selectedIdRef.current = null
+
+        setHistory(newHistory)
+        setSelectedIdAndResolveObject(null)
+
+        // Reseed the instance-id counter so future adds don't collide.
+        const maxSuffix = instances.reduce((max, item) => {
+          const match = /^furniture-instance-(\d+)$/.exec(item.id)
+          const suffix = match ? parseInt(match[1], 10) : 0
+          return Math.max(max, suffix)
+        }, 0)
+
+        instanceIdRef.current = maxSuffix
+      },
     }),
     [
       camera,

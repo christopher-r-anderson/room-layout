@@ -22,6 +22,8 @@ import { Outliner } from '../scene-panel/outliner'
 import type { SceneOutlinerFocusRequest } from '../scene-panel.types'
 import { Inspector } from '../scene-panel/inspector'
 import type { StartupErrorKind } from '../startup/use-startup-state'
+import { Button } from '@/components/ui/button'
+import { IconLink } from '@tabler/icons-react'
 
 export interface EditorStartupProps {
   assetError: boolean
@@ -84,6 +86,7 @@ export interface EditorPreviewProps {
 interface EditorOverlayProps {
   editorInteractionsEnabled: boolean
   statusMessage: string | null
+  onCopySceneUrl: () => void
   startup: EditorStartupProps
   history: EditorHistoryProps
   scene: EditorSceneProps
@@ -96,6 +99,7 @@ interface EditorOverlayProps {
 export function EditorOverlay({
   editorInteractionsEnabled,
   statusMessage,
+  onCopySceneUrl,
   startup,
   history,
   scene,
@@ -135,6 +139,17 @@ export function EditorOverlay({
               onRotateSelection={selection.onRotateSelection}
               selectedFurniture={selection.selectedFurniture}
             />
+            <Button
+              variant="secondary"
+              size="sm"
+              disabled={!editorInteractionsEnabled}
+              onClick={onCopySceneUrl}
+              aria-label="Copy Scene URL to clipboard"
+              className="pointer-events-auto"
+            >
+              <IconLink aria-hidden="true" size={16} />
+              Copy Scene URL
+            </Button>
           </div>
 
           <div className="justify-self-end shrink-0 flex items-start gap-4">
