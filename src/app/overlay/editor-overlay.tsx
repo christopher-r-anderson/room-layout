@@ -1,10 +1,12 @@
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
 import type { FurnitureCatalogEntry } from '@/scene/objects/furniture-catalog'
 import type {
+  CameraPreset,
   MoveSelectionResult,
   MoveSource,
   SceneReadModel,
 } from '@/scene/scene.types'
+import { CameraTools } from '../camera/camera-tools'
 import { DeleteConfirmationDialog } from '../selection/delete-confirmation-dialog'
 import type { HistoryAvailability } from '../history/history.types'
 import { StatusMessage } from './status-message'
@@ -24,6 +26,11 @@ import { Inspector } from '../scene-panel/inspector'
 import type { StartupErrorKind } from '../startup/use-startup-state'
 import { Button } from '@/components/ui/button'
 import { IconLink } from '@tabler/icons-react'
+
+export interface EditorCameraProps {
+  onSetCameraPreset: (preset: CameraPreset) => void
+  onFocusSelected: () => void
+}
 
 export interface EditorStartupProps {
   assetError: boolean
@@ -87,6 +94,7 @@ interface EditorOverlayProps {
   editorInteractionsEnabled: boolean
   statusMessage: string | null
   onCopySceneUrl: () => void
+  camera: EditorCameraProps
   startup: EditorStartupProps
   history: EditorHistoryProps
   scene: EditorSceneProps
@@ -100,6 +108,7 @@ export function EditorOverlay({
   editorInteractionsEnabled,
   statusMessage,
   onCopySceneUrl,
+  camera,
   startup,
   history,
   scene,
@@ -110,6 +119,22 @@ export function EditorOverlay({
 }: EditorOverlayProps) {
   return (
     <>
+      {/* Camera controls — right-center navigation strip, separate from the editing toolbar */}
+      <div
+        className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2"
+        inert={startup.startupOverlayActive}
+        aria-hidden={startup.startupOverlayActive}
+      >
+        <div className="pointer-events-auto">
+          <CameraTools
+            editorInteractionsEnabled={editorInteractionsEnabled}
+            hasSelection={scene.readModel.selectedId !== null}
+            onSetPreset={camera.onSetCameraPreset}
+            onFocusSelected={camera.onFocusSelected}
+          />
+        </div>
+      </div>
+
       <div
         className="pointer-events-none absolute inset-2 flex flex-col justify-between"
         inert={startup.startupOverlayActive}
@@ -139,30 +164,34 @@ export function EditorOverlay({
               onRotateSelection={selection.onRotateSelection}
               selectedFurniture={selection.selectedFurniture}
             />
-            <Button
-              variant="secondary"
-              size="sm"
-              disabled={!editorInteractionsEnabled}
-              onClick={onCopySceneUrl}
-              aria-label="Copy Scene URL to clipboard"
-              className="pointer-events-auto"
-            >
-              <IconLink aria-hidden="true" size={16} />
-              Copy Scene URL
-            </Button>
           </div>
 
-          <div className="justify-self-end shrink-0 flex items-center gap-2">
-            <h1 className="rounded-sm bg-background/65 px-2 py-0.5 text-base/6 font-semibold text-foreground backdrop-blur-[1px]">
-              Room Layout
-            </h1>
-            <ProjectInfoDialog
-              open={dialogs.isInfoDialogOpen}
-              onOpenChange={dialogs.onInfoDialogOpenChange}
-              triggerButton={
-                <ProjectInfoButton className="pointer-events-auto" />
-              }
-            />
+          <div className="shrink-0">
+            <div className="flex justify-self-end items-center gap-2">
+              <h1 className="rounded-sm bg-background/65 px-2 py-0.5 text-base/6 font-semibold text-foreground backdrop-blur-[1px]">
+                Room Layout
+              </h1>
+              <ProjectInfoDialog
+                open={dialogs.isInfoDialogOpen}
+                onOpenChange={dialogs.onInfoDialogOpenChange}
+                triggerButton={
+                  <ProjectInfoButton className="pointer-events-auto" />
+                }
+              />
+            </div>
+            <div className="mt-1 flex justify-end">
+              <Button
+                variant="secondary"
+                size="sm"
+                disabled={!editorInteractionsEnabled}
+                onClick={onCopySceneUrl}
+                aria-label="Copy Scene URL to clipboard"
+                className="pointer-events-auto"
+              >
+                <IconLink aria-hidden="true" size={16} />
+                Copy Scene URL
+              </Button>
+            </div>
           </div>
         </div>
 

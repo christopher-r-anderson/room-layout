@@ -62,7 +62,7 @@ Deliver a small, polished 3D room-layout editor demo that demonstrates productio
 ### Camera and Visual Polish (Core)
 
 - [x] Render baseline polish (lighting, shadows, background).
-- [ ] Camera UX baseline (reset, presets, focus selected).
+- [x] Camera UX baseline (reset, presets, focus selected).
 - [ ] Surface finish (floor/wall material pass).
 - [ ] Mood presets and URL-sync extensions.
 

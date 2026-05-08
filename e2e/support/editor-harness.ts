@@ -328,6 +328,7 @@ export async function dragSelectedFurniture(
   await page.mouse.down()
   await page.mouse.move(startX + delta.x, startY + delta.y, { steps: 8 })
   await page.mouse.up()
+  await page.mouse.move(1, 1)
 
   return readSceneState(page)
 }

@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import type {
+  EditorCameraProps,
   EditorCatalogProps,
   EditorDialogsProps,
   EditorHistoryProps,
@@ -16,6 +17,8 @@ interface UseOverlayPropsOptions {
   startupLoadingActive: boolean
   startupOverlayActive: boolean
   onRetryAssetLoading: () => void
+  onSetCameraPreset: EditorCameraProps['onSetCameraPreset']
+  onFocusSelected: EditorCameraProps['onFocusSelected']
   historyAvailability: EditorHistoryProps['historyAvailability']
   onUndo: () => void
   onRedo: () => void
@@ -45,6 +48,7 @@ interface UseOverlayPropsOptions {
 
 interface EditorOverlayPropsShape {
   startupProps: EditorStartupProps
+  cameraProps: EditorCameraProps
   historyProps: EditorHistoryProps
   sceneProps: EditorSceneProps
   selectionProps: EditorSelectionProps
@@ -60,6 +64,8 @@ export function useOverlayProps({
   startupLoadingActive,
   startupOverlayActive,
   onRetryAssetLoading,
+  onSetCameraPreset,
+  onFocusSelected,
   historyAvailability,
   onUndo,
   onRedo,
@@ -103,6 +109,14 @@ export function useOverlayProps({
       startupLoadingActive,
       startupOverlayActive,
     ],
+  )
+
+  const cameraProps = useMemo<EditorCameraProps>(
+    () => ({
+      onSetCameraPreset,
+      onFocusSelected,
+    }),
+    [onSetCameraPreset, onFocusSelected],
   )
 
   const historyProps = useMemo<EditorHistoryProps>(
@@ -182,6 +196,7 @@ export function useOverlayProps({
   return useMemo(
     () => ({
       startupProps,
+      cameraProps,
       historyProps,
       sceneProps,
       selectionProps,
@@ -190,6 +205,7 @@ export function useOverlayProps({
       previewProps: { onPreviewChange },
     }),
     [
+      cameraProps,
       catalogProps,
       dialogsProps,
       historyProps,

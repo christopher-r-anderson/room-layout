@@ -41,6 +41,8 @@ function createSceneRef(readModel: SceneReadModel) {
       })),
       undo: vi.fn(() => true),
       restoreInitialLayout: vi.fn(),
+      setCameraPreset: vi.fn(),
+      focusSelected: vi.fn(),
     } satisfies SceneRef,
   }
 }

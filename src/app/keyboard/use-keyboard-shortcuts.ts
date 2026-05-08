@@ -14,6 +14,7 @@ interface UseKeyboardShortcutsOptions {
   onUndo: () => void
   onRedo: () => void
   onOpenDeleteDialog: () => void
+  onFocusSelected: () => void
   onMoveSelection: (delta: { x: number; z: number }) => void
   onClearSelection: () => void
   onRotate: (direction: RotationDirection) => void
@@ -26,6 +27,7 @@ export function useKeyboardShortcuts({
   onUndo,
   onRedo,
   onOpenDeleteDialog,
+  onFocusSelected,
   onMoveSelection,
   onClearSelection,
   onRotate,
@@ -113,6 +115,25 @@ export function useKeyboardShortcuts({
     if (hasSelection && deleteIntent) {
       event.preventDefault()
       onOpenDeleteDialog()
+      return
+    }
+
+    const canFocusSelected =
+      event.key === 'f' &&
+      !event.altKey &&
+      !event.ctrlKey &&
+      !event.metaKey &&
+      !event.shiftKey &&
+      !isModalOpen &&
+      !targetIsInDialog &&
+      !targetIsContentEditable &&
+      targetTagName !== 'INPUT' &&
+      targetTagName !== 'TEXTAREA' &&
+      targetTagName !== 'SELECT'
+
+    if (hasSelection && canFocusSelected) {
+      event.preventDefault()
+      onFocusSelected()
       return
     }
 

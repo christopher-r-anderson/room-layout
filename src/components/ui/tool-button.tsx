@@ -4,6 +4,7 @@ import {
   type HTMLAttributes,
   type ReactElement,
 } from 'react'
+import { cn } from '@/lib/utils'
 import { Tooltip, TooltipContent, TooltipTrigger } from './tooltip'
 import { Button } from './button'
 import { KbdShortcutDisplay } from './keyboard-shortcut-display'
@@ -17,6 +18,8 @@ export function ToolButton({
   visibleLabel,
   shortcutHint,
   icon,
+  className,
+  tooltipSide,
 }: {
   action: () => void
   disabled: boolean
@@ -26,6 +29,8 @@ export function ToolButton({
   visibleLabel?: string
   shortcutHint?: string
   icon: ReactElement<HTMLAttributes<HTMLElement>>
+  className?: string
+  tooltipSide?: 'top' | 'right' | 'bottom' | 'left'
 }) {
   const shortcutHintId = useId()
   const ariaHiddenIcon = cloneElement(icon, {
@@ -42,7 +47,10 @@ export function ToolButton({
             aria-label={label}
             aria-describedby={shortcutHint ? shortcutHintId : undefined}
             aria-disabled={disabled}
-            className="aria-disabled:active:translate-y-0 aria-disabled:cursor-not-allowed aria-disabled:opacity-50"
+            className={cn(
+              'aria-disabled:active:translate-y-0 aria-disabled:cursor-not-allowed aria-disabled:opacity-50',
+              className,
+            )}
             onClick={(event) => {
               event.preventDefault()
               if (!disabled) {
@@ -62,7 +70,10 @@ export function ToolButton({
           {shortcutHint}
         </span>
       ) : null}
-      <TooltipContent className="flex flex-col items-start gap-1">
+      <TooltipContent
+        className="flex flex-col items-start gap-1"
+        side={tooltipSide}
+      >
         <span className="pb-2">{disabled ? disabledMessage : label}</span>
         {shortcutHint ? (
           <span className="text-xs text-muted-foreground">{shortcutHint}</span>

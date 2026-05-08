@@ -1,7 +1,21 @@
 import { Environment, Lightformer } from '@react-three/drei'
 import { BackSide } from 'three'
 
-export function Lighting() {
+export function Lighting({ lowQuality = false }: { lowQuality?: boolean }) {
+  if (lowQuality) {
+    return (
+      <>
+        <ambientLight intensity={0.45} />
+        <hemisphereLight args={['#edf2f8', '#bcc5d1', 0.4]} />
+        <directionalLight
+          position={[4.2, 6.2, -2.6]}
+          intensity={0.7}
+          color="#fff4e6"
+        />
+      </>
+    )
+  }
+
   return (
     <>
       <ambientLight intensity={0.35} />

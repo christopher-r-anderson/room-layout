@@ -46,6 +46,8 @@ function createSceneRef(overrides?: Partial<SceneRef>) {
       })),
       undo: vi.fn(() => true),
       restoreInitialLayout: vi.fn(),
+      setCameraPreset: vi.fn(),
+      focusSelected: vi.fn(),
       ...overrides,
     } satisfies SceneRef,
   }

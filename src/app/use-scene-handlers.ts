@@ -1,5 +1,6 @@
 import { useCallback, useRef, type RefObject } from 'react'
 import type {
+  CameraPreset,
   MoveSelectionResult,
   MoveSource,
   SceneReadModel,
@@ -29,6 +30,7 @@ interface Commands {
   addFurniture: () => boolean
   clearSelection: () => void
   confirmDeleteSelection: () => boolean
+  focusSelected: () => void
   moveSelection: (
     delta: { x: number; z: number },
     options?: { source?: MoveSource },
@@ -36,6 +38,7 @@ interface Commands {
   redo: () => boolean
   rotateSelection: (direction: -1 | 1) => void
   selectById: (id: string | null) => SelectByIdResult
+  setCameraPreset: (preset: CameraPreset) => void
   undo: () => boolean
 }
 
@@ -94,6 +97,7 @@ interface UseSceneHandlersOptions {
 
 interface SceneHandlers {
   handleAddFurniture: () => boolean
+  handleFocusSelected: () => void
   handleSelectById: (id: string | null) => SelectByIdResult
   handleMoveSelection: (
     delta: { x: number; z: number },
@@ -104,6 +108,7 @@ interface SceneHandlers {
   handleUndo: () => void
   handleRedo: () => void
   handleClearSelection: () => void
+  handleSetCameraPreset: (preset: CameraPreset) => void
   handleCatalogDrawerOpenChange: (open: boolean) => void
   handleOpenDeleteDialog: () => void
   handleSceneHistoryChange: (availability: HistoryAvailability) => void
@@ -136,10 +141,12 @@ export function useSceneHandlers({
     addFurniture,
     clearSelection,
     confirmDeleteSelection,
+    focusSelected,
     moveSelection,
     redo,
     rotateSelection,
     selectById,
+    setCameraPreset,
     undo,
   } = commands
   const { syncSceneReadModel, requestOutlinerFocusByIndex } = sync
@@ -472,8 +479,20 @@ export function useSceneHandlers({
     announceAssertive,
   ])
 
+  const handleSetCameraPreset = useCallback(
+    (preset: CameraPreset) => {
+      setCameraPreset(preset)
+    },
+    [setCameraPreset],
+  )
+
+  const handleFocusSelected = useCallback(() => {
+    focusSelected()
+  }, [focusSelected])
+
   return {
     handleAddFurniture,
+    handleFocusSelected,
     handleSelectById,
     handleMoveSelection,
     handleRotateSelection,
@@ -481,6 +500,7 @@ export function useSceneHandlers({
     handleUndo,
     handleRedo,
     handleClearSelection,
+    handleSetCameraPreset,
     handleCatalogDrawerOpenChange,
     handleOpenDeleteDialog,
     handleSceneHistoryChange,

@@ -70,6 +70,7 @@ function defaultOptions(
     } satisfies LayoutBounds,
     camera: new PerspectiveCamera(),
     canvasSize: { width: 800, height: 600 },
+    cameraControlsRef: { current: null },
     catalog: [],
     clearDragState: vi.fn(),
     collections: [],

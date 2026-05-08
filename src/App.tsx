@@ -84,7 +84,10 @@ class SceneAssetErrorBoundary extends Component<
 
 function App() {
   const sceneRef = useRef<SceneRef | null>(null)
+  const previewedIdRef = useRef<string | null>(null)
   const overlayState = useOverlayState()
+  const isE2ELowRenderQuality =
+    import.meta.env.DEV && import.meta.env.VITE_E2E_RENDER_QUALITY === 'low'
 
   const startup = useStartupLifecycle({
     sceneRef,
@@ -178,6 +181,7 @@ function App() {
     catalogProps,
     dialogsProps,
     previewProps,
+    cameraProps,
   } = useOverlayProps({
     assetError: Boolean(startup.assetError),
     assetErrorKind: startup.assetErrorKind,
@@ -198,6 +202,8 @@ function App() {
     onMoveSelection: handlers.handleMoveSelection,
     onOpenDeleteDialog: handlers.handleOpenDeleteDialog,
     onRotateSelection: handlers.handleRotateSelection,
+    onSetCameraPreset: handlers.handleSetCameraPreset,
+    onFocusSelected: handlers.handleFocusSelected,
     catalogIdToAdd: overlayState.catalogIdToAdd,
     catalog: startup.catalog,
     isCatalogDrawerOpen: dialogState.isCatalogDrawerOpen,
@@ -214,6 +220,10 @@ function App() {
   })
 
   useEffect(() => {
+    previewedIdRef.current = previewedId
+  }, [previewedId])
+
+  useEffect(() => {
     if (!import.meta.env.DEV) {
       return
     }
@@ -226,7 +236,7 @@ function App() {
           assetsReady: startup.assetsReadyRef.current,
           assetError: startup.assetErrorRef.current !== null,
           selectedId: sceneState?.selectedId ?? null,
-          previewedId,
+          previewedId: previewedIdRef.current,
           selectedName: sceneState?.selectedName ?? null,
           itemCount: sceneState?.itemCount ?? 0,
           items: sceneState?.items ?? [],
@@ -240,7 +250,6 @@ function App() {
       delete window.__ROOM_LAYOUT_TEST__
     }
   }, [
-    previewedId,
     startup.assetErrorRef,
     startup.assetsReadyRef,
     handlers.restoreOutcomeRef,
@@ -254,6 +263,7 @@ function App() {
     onUndo: handlers.handleUndo,
     onRedo: handlers.handleRedo,
     onOpenDeleteDialog: handlers.handleOpenDeleteDialog,
+    onFocusSelected: handlers.handleFocusSelected,
     onMoveSelection: (delta) => {
       handlers.handleMoveSelection(delta, { source: 'keyboard' })
     },
@@ -285,7 +295,7 @@ function App() {
             }}
             onCreated={({ gl }) => {
               gl.toneMapping = NeutralToneMapping
-              gl.toneMappingExposure = 1.05
+              gl.toneMappingExposure = isE2ELowRenderQuality ? 1 : 1.05
             }}
             onPointerMissed={() => {
               if (!startup.editorInteractionsEnabled) {
@@ -295,7 +305,7 @@ function App() {
               clearPreviewOnCanvasMiss()
               handlers.handleClearSelection()
             }}
-            shadows
+            shadows={!isE2ELowRenderQuality}
           >
             <SceneAssetErrorBoundary
               key={startup.cacheInvalidationKey}
@@ -304,6 +314,7 @@ function App() {
               <Suspense fallback={null}>
                 <Scene
                   ref={sceneRef}
+                  renderQuality={isE2ELowRenderQuality ? 'e2e-low' : 'default'}
                   catalog={startup.catalog}
                   collections={startup.collections}
                   onSelectionChange={handlers.handleSceneSelectionChange}
@@ -322,6 +333,7 @@ function App() {
           editorInteractionsEnabled={startup.editorInteractionsEnabled}
           statusMessage={overlayState.editorMessage}
           onCopySceneUrl={() => void handlers.handleCopySceneUrl()}
+          camera={cameraProps}
           startup={startupProps}
           history={historyProps}
           scene={sceneProps}

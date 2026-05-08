@@ -48,14 +48,20 @@ export function InteractiveFurniture({
   onPreviewStart,
   onPreviewEnd,
   nodeName,
-}: InteractiveFurnitureProps & { nodeName: string }) {
+  enableShadows = true,
+}: InteractiveFurnitureProps & {
+  nodeName: string
+  enableShadows?: boolean
+}) {
   const groupRef = useRef<Group>(null)
   const [model] = useState<Object3D>(() => {
+    // Model/shadow flags are intentionally derived once at mount. The quality mode
+    // is configured at app startup and not expected to toggle during a running session.
     const node = getClonedNode(sourceScene, nodeName)
     node.position.set(0, 0, 0)
     for (const mesh of getMeshes(node)) {
-      mesh.castShadow = true
-      mesh.receiveShadow = true
+      mesh.castShadow = enableShadows
+      mesh.receiveShadow = enableShadows
     }
     return node
   })

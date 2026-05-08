@@ -23,6 +23,9 @@ export default defineConfig({
   },
   webServer: {
     command: 'pnpm exec vite --host 127.0.0.1 --port 4173',
+    env: {
+      VITE_E2E_RENDER_QUALITY: 'low',
+    },
     url: 'http://127.0.0.1:4173',
     reuseExistingServer: !isCI,
     timeout: 120_000,
