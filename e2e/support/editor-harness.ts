@@ -16,6 +16,8 @@ export interface BrowserSceneState {
   previewedId: string | null
   selectedName: string | null
   itemCount: number
+  restoreOutcome: 'restored' | 'invalid' | 'skipped' | null
+  restoreAttemptCount: number
   items: {
     id: string
     catalogId: string

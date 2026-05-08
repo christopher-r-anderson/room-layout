@@ -45,6 +45,7 @@ function createSceneRef(overrides?: Partial<SceneRef>) {
         status: 'selected' as const,
       })),
       undo: vi.fn(() => true),
+      restoreInitialLayout: vi.fn(),
       ...overrides,
     } satisfies SceneRef,
   }

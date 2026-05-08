@@ -13,20 +13,26 @@ import { useSceneImperativeApi } from './use-scene-imperative-api'
 import { redoSceneHistory, undoSceneHistory } from './scene-history-state'
 import type { LayoutBounds } from '@/lib/three/furniture-layout'
 import type { SceneRef } from '../scene.types'
-import type { FurnitureItem } from '../objects/furniture.types'
+import type {
+  FurnitureInstance,
+  FurnitureItem,
+} from '../objects/furniture.types'
 
 const {
   mockAddFurnitureToHistory,
+  mockBuildFurnitureItemsFromInstances,
   mockDeleteSelectionFromHistory,
   mockCreateSceneSnapshot,
 } = vi.hoisted(() => ({
   mockAddFurnitureToHistory: vi.fn(),
+  mockBuildFurnitureItemsFromInstances: vi.fn(),
   mockDeleteSelectionFromHistory: vi.fn(),
   mockCreateSceneSnapshot: vi.fn(),
 }))
 
 vi.mock('./furniture-operations', () => ({
   addFurnitureToHistory: mockAddFurnitureToHistory,
+  buildFurnitureItemsFromInstances: mockBuildFurnitureItemsFromInstances,
   createFurnitureInstanceId: (sequenceNumber: number) =>
     `furniture-instance-${String(sequenceNumber)}`,
   deleteSelectionFromHistory: mockDeleteSelectionFromHistory,
@@ -91,6 +97,7 @@ function getSceneRef(options: Parameters<typeof useSceneImperativeApi>[0]) {
 describe('useSceneImperativeApi', () => {
   beforeEach(() => {
     mockAddFurnitureToHistory.mockReset()
+    mockBuildFurnitureItemsFromInstances.mockReset()
     mockDeleteSelectionFromHistory.mockReset()
     mockCreateSceneSnapshot.mockReset()
 
@@ -99,6 +106,8 @@ describe('useSceneImperativeApi', () => {
       result: { ok: true, id: 'item-1' },
       incrementInstanceId: true,
     })
+
+    mockBuildFurnitureItemsFromInstances.mockReturnValue([])
 
     mockDeleteSelectionFromHistory.mockReturnValue({
       history: createHistoryState<FurnitureItem[]>([]),
@@ -640,5 +649,185 @@ describe('useSceneImperativeApi', () => {
       updatedOptions.camera,
       updatedOptions.canvasSize,
     )
+  })
+})
+
+describe('restoreInitialLayout', () => {
+  function makeInstance(
+    id: string,
+    overrides?: Partial<FurnitureInstance>,
+  ): FurnitureInstance {
+    return {
+      id,
+      catalogId: 'catalog-chair',
+      position: [0, 0, 0],
+      rotationY: 0,
+      ...overrides,
+    }
+  }
+
+  function makeFurnitureItem(id: string): FurnitureItem {
+    return {
+      id,
+      catalogId: 'catalog-chair',
+      name: 'Chair',
+      kind: 'armchair',
+      collectionId: 'collection-1',
+      nodeName: 'ChairNode',
+      sourcePath: '/models/chair.glb',
+      footprintSize: { width: 1, depth: 1 },
+      position: [0, 0, 0],
+      rotationY: 0,
+    }
+  }
+
+  it('seeds the scene with reconstructed furniture items', () => {
+    const restoredItems = [makeFurnitureItem('furniture-instance-1')]
+    mockBuildFurnitureItemsFromInstances.mockReturnValue(restoredItems)
+
+    const options = defaultOptions()
+    const sceneRef = getSceneRef(options)
+    renderHook(() => {
+      useSceneImperativeApi(options)
+    })
+
+    act(() => {
+      sceneRef.current?.restoreInitialLayout([
+        makeInstance('furniture-instance-1'),
+      ])
+    })
+
+    const readModel = sceneRef.current?.getReadModel()
+    expect(readModel?.items).toHaveLength(1)
+    expect(readModel?.items[0].id).toBe('furniture-instance-1')
+  })
+
+  it('clears selection after restore', () => {
+    const restoredItems = [makeFurnitureItem('furniture-instance-1')]
+    mockBuildFurnitureItemsFromInstances.mockReturnValue(restoredItems)
+
+    const options = defaultOptions()
+    const sceneRef = getSceneRef(options)
+    renderHook(() => {
+      useSceneImperativeApi(options)
+    })
+
+    act(() => {
+      sceneRef.current?.restoreInitialLayout([
+        makeInstance('furniture-instance-1'),
+      ])
+    })
+
+    expect(sceneRef.current?.getReadModel().selectedId).toBeNull()
+    expect(options.setSelectedIdAndResolveObject).toHaveBeenCalledWith(null)
+  })
+
+  it('establishes empty undo/redo history baseline', () => {
+    const restoredItems = [makeFurnitureItem('furniture-instance-2')]
+    mockBuildFurnitureItemsFromInstances.mockReturnValue(restoredItems)
+
+    const options = defaultOptions()
+    const sceneRef = getSceneRef(options)
+    renderHook(() => {
+      useSceneImperativeApi(options)
+    })
+
+    act(() => {
+      sceneRef.current?.restoreInitialLayout([
+        makeInstance('furniture-instance-2'),
+      ])
+    })
+
+    // Undo should return false since the restore IS the baseline
+    const undoResult = sceneRef.current?.undo()
+    expect(undoResult).toBe(false)
+  })
+
+  it('reseeds instanceIdRef to max restored suffix', () => {
+    const restoredItems = [
+      makeFurnitureItem('furniture-instance-5'),
+      makeFurnitureItem('furniture-instance-3'),
+    ]
+    mockBuildFurnitureItemsFromInstances.mockReturnValue(restoredItems)
+
+    const instanceIdRef = { current: 0 }
+    const options = defaultOptions({ instanceIdRef })
+    const sceneRef = getSceneRef(options)
+    renderHook(() => {
+      useSceneImperativeApi(options)
+    })
+
+    act(() => {
+      sceneRef.current?.restoreInitialLayout([
+        makeInstance('furniture-instance-5'),
+        makeInstance('furniture-instance-3'),
+      ])
+    })
+
+    expect(instanceIdRef.current).toBe(5)
+  })
+
+  it('handles instances with non-standard id format gracefully', () => {
+    const restoredItems = [makeFurnitureItem('custom-id')]
+    mockBuildFurnitureItemsFromInstances.mockReturnValue(restoredItems)
+
+    const instanceIdRef = { current: 0 }
+    const options = defaultOptions({ instanceIdRef })
+    const sceneRef = getSceneRef(options)
+    renderHook(() => {
+      useSceneImperativeApi(options)
+    })
+
+    act(() => {
+      sceneRef.current?.restoreInitialLayout([makeInstance('custom-id')])
+    })
+
+    // Non-standard ids produce suffix=0, so instanceIdRef stays at 0
+    expect(instanceIdRef.current).toBe(0)
+  })
+
+  it('calls setHistory with a fresh history state', () => {
+    const restoredItems = [makeFurnitureItem('furniture-instance-1')]
+    mockBuildFurnitureItemsFromInstances.mockReturnValue(restoredItems)
+
+    const options = defaultOptions()
+    const sceneRef = getSceneRef(options)
+    renderHook(() => {
+      useSceneImperativeApi(options)
+    })
+
+    act(() => {
+      sceneRef.current?.restoreInitialLayout([
+        makeInstance('furniture-instance-1'),
+      ])
+    })
+
+    expect(options.setHistory).toHaveBeenCalledWith(
+      expect.objectContaining({
+        past: [],
+        present: restoredItems,
+        future: [],
+      }),
+    )
+  })
+
+  it('propagates errors from buildFurnitureItemsFromInstances', () => {
+    mockBuildFurnitureItemsFromInstances.mockImplementation(() => {
+      throw new Error('node not found')
+    })
+
+    const options = defaultOptions()
+    const sceneRef = getSceneRef(options)
+    renderHook(() => {
+      useSceneImperativeApi(options)
+    })
+
+    expect(() => {
+      act(() => {
+        sceneRef.current?.restoreInitialLayout([
+          makeInstance('furniture-instance-1'),
+        ])
+      })
+    }).toThrow('node not found')
   })
 })

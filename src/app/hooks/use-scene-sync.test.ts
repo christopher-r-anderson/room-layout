@@ -40,6 +40,7 @@ function createSceneRef(readModel: SceneReadModel) {
         status: 'selected' as const,
       })),
       undo: vi.fn(() => true),
+      restoreInitialLayout: vi.fn(),
     } satisfies SceneRef,
   }
 }

@@ -153,6 +153,40 @@ Because the manifest and all furniture assets are co-deployed as part of the sam
 
 Asset preloading occurs in the background during startup. If an asset fails to preload, the app surfaces a recoverable error overlay with a retry action. Editor interactions remain disabled until the error is cleared and all assets are successfully loaded.
 
+### URL Scene Sharing
+
+The editor supports sharing a room layout via URL. Use the **Copy Scene URL** button in the toolbar to copy the current layout to the clipboard as a shareable link.
+
+#### Query parameter format
+
+The scene is encoded as a `?scene=` query parameter containing a URL-encoded JSON payload:
+
+```text
+?scene={"v":1,"items":[{"id":"furniture-instance-1","catalogId":"armchair-1","position":[0,0,0],"rotationY":0}]}
+```
+
+| Field               | Type        | Description                                             |
+| ------------------- | ----------- | ------------------------------------------------------- |
+| `v`                 | `1`         | Schema version (currently only version 1)               |
+| `items`             | array       | Ordered list of furniture instances                     |
+| `items[].id`        | string      | Instance identifier (e.g. `furniture-instance-N`)       |
+| `items[].catalogId` | string      | Catalog entry ID (must exist in the loaded catalog)     |
+| `items[].position`  | `[x, y, z]` | World-space position, rounded to 3 decimal places       |
+| `items[].rotationY` | number      | Y-axis rotation in radians, rounded to 3 decimal places |
+
+**Constraints:**
+
+- Encoded payload must not exceed 4000 characters (the button shows an error if the layout is too large to share).
+- Duplicate `?scene=` parameters are rejected as invalid.
+- All `catalogId` values must reference entries in the currently loaded catalog; unknown IDs cause the restore to fail closed (empty scene + error message).
+- Items are sorted by `id` for determinism before encoding.
+
+#### Restore behavior
+
+On startup, if a valid `?scene=` param is present, the editor restores the saved layout **before** the editor becomes interactive. The restore is a one-shot operation — retrying after an asset-load error will not re-apply the URL param.
+
+If the param is invalid (malformed JSON, schema violation, or unknown catalog references), the editor starts empty and displays an error message. The message clears on the next user action (add, move, rotate, delete, undo, redo, select, copy URL).
+
 ## 🗺️ Project Plan
 
 Current roadmap and progress checklist are tracked in [PLAN.md](./PLAN.md).
