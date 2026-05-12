@@ -1,19 +1,65 @@
-export function Room() {
+import type {
+  FloorFinishOption,
+  WallFinishOption,
+} from '@/lib/three/environment-materials'
+import { FloorMaterial } from './floor-material'
+import { WallMaterial } from './wall-material'
+import {
+  ROOM_FLOOR_DEPTH_METERS,
+  ROOM_FLOOR_WIDTH_METERS,
+  ROOM_HALF_DEPTH_METERS,
+  ROOM_HALF_WIDTH_METERS,
+  ROOM_WALL_HEIGHT_METERS,
+} from './room-constants'
+
+interface RoomProps {
+  receiveShadows?: boolean
+  floorOption?: FloorFinishOption | null
+  wallOption?: WallFinishOption | null
+  onFloorLoadingChange?: (isLoading: boolean) => void
+}
+
+export function Room({
+  receiveShadows = true,
+  floorOption = null,
+  wallOption = null,
+  onFloorLoadingChange,
+}: RoomProps) {
   return (
     <>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-        <planeGeometry args={[6, 6]} />
-        <meshStandardMaterial color="#e5e5e5" />
+      <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow={receiveShadows}>
+        <planeGeometry
+          args={[ROOM_FLOOR_WIDTH_METERS, ROOM_FLOOR_DEPTH_METERS]}
+        />
+        <FloorMaterial
+          option={floorOption}
+          roomSizeMeters={{
+            width: ROOM_FLOOR_WIDTH_METERS,
+            depth: ROOM_FLOOR_DEPTH_METERS,
+          }}
+          onLoadingChange={onFloorLoadingChange}
+        />
       </mesh>
 
-      <mesh position={[0, 1.25, -3]}>
-        <planeGeometry args={[6, 2.5]} />
-        <meshStandardMaterial color="#f5f5f5" />
+      <mesh
+        position={[0, ROOM_WALL_HEIGHT_METERS / 2, -ROOM_HALF_DEPTH_METERS]}
+        receiveShadow={receiveShadows}
+      >
+        <planeGeometry
+          args={[ROOM_FLOOR_WIDTH_METERS, ROOM_WALL_HEIGHT_METERS]}
+        />
+        <WallMaterial option={wallOption} />
       </mesh>
 
-      <mesh position={[-3, 1.25, 0]} rotation={[0, Math.PI / 2, 0]}>
-        <planeGeometry args={[6, 2.5]} />
-        <meshStandardMaterial color="#f0f0f0" />
+      <mesh
+        position={[-ROOM_HALF_WIDTH_METERS, ROOM_WALL_HEIGHT_METERS / 2, 0]}
+        rotation={[0, Math.PI / 2, 0]}
+        receiveShadow={receiveShadows}
+      >
+        <planeGeometry
+          args={[ROOM_FLOOR_DEPTH_METERS, ROOM_WALL_HEIGHT_METERS]}
+        />
+        <WallMaterial option={wallOption} />
       </mesh>
     </>
   )

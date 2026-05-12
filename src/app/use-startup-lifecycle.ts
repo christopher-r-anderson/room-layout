@@ -1,5 +1,6 @@
 import { useCallback, type RefObject } from 'react'
 import type { SceneRef } from '@/scene/scene.types'
+import type { EnvironmentMaterialConfig } from '@/lib/three/environment-materials'
 import { useStartupState } from './startup/use-startup-state'
 import { runStartupReset } from './startup/reset-startup-state'
 import type {
@@ -20,6 +21,7 @@ interface StartupLifecycle {
   assetsReadyRef: RefObject<boolean>
   catalog: FurnitureCatalogEntry[]
   collections: FurnitureCollection[]
+  environmentConfig: EnvironmentMaterialConfig | null
   editorInteractionsEnabled: boolean
   cacheInvalidationKey: number
   startupLoadingActive: boolean
@@ -48,6 +50,7 @@ export function useStartupLifecycle({
     assetsReadyRef,
     catalog,
     collections,
+    environmentConfig,
     editorInteractionsEnabled,
     handleAssetError,
     handleAssetsReady,
@@ -68,6 +71,7 @@ export function useStartupLifecycle({
     assetsReadyRef,
     catalog,
     collections,
+    environmentConfig,
     editorInteractionsEnabled,
     cacheInvalidationKey,
     startupLoadingActive,

@@ -42,6 +42,12 @@ test('project info dialog preserves repository metadata and returns focus', asyn
     }),
   ).toBeVisible()
   await expect(infoDialog.getByRole('link', { name: /^mit/i })).toBeVisible()
+  await expect(
+    infoDialog.getByRole('heading', { name: 'Wood Floor Texture Set' }),
+  ).toBeVisible()
+  await expect(
+    infoDialog.getByRole('link', { name: /^cc0/i }).first(),
+  ).toBeVisible()
 
   await closeWithEscapeAndRestoreFocus(page, infoDialog, infoButton)
 })

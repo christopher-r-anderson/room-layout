@@ -1,10 +1,15 @@
 import { getMeshes } from '@/lib/three/get-meshes'
 import { Room } from './internal/environment/room'
 import { Lighting } from './internal/environment/lighting'
+import type {
+  FloorFinishOption,
+  WallFinishOption,
+} from '@/lib/three/environment-materials'
 import { CameraControls } from './internal/camera/camera-controls'
 import { InteractiveFurniture } from './internal/objects/interactive-furniture'
 import { useGLTF } from '@react-three/drei'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import type { CameraControlsImpl } from '@react-three/drei'
 import { useThree } from '@react-three/fiber'
 import { type Object3D } from 'three'
 import { EffectComposer, Outline } from '@react-three/postprocessing'
@@ -28,8 +33,12 @@ import type { SceneRef } from './scene.types'
 import { useSceneDrag } from './internal/use-scene-drag'
 import { useSceneImperativeApi } from './internal/use-scene-imperative-api'
 import { useSceneSelection } from './internal/use-scene-selection'
+import { BlendFunction } from 'postprocessing'
+import {
+  ROOM_HALF_DEPTH_METERS,
+  ROOM_HALF_WIDTH_METERS,
+} from './internal/environment/room-constants'
 
-const ROOM_HALF_SIZE = 3
 const FLOOR_PLANE_Y = 0
 const SNAP_SIZE = 0.5
 const EDGE_SNAP_THRESHOLD = 0.12
@@ -37,10 +46,10 @@ const EDGE_SNAP_THRESHOLD = 0.12
 const SELECTED_OUTLINE_LAYER = 10
 const PREVIEW_OUTLINE_LAYER = 11
 const ROOM_BOUNDS: LayoutBounds = {
-  minX: -ROOM_HALF_SIZE,
-  maxX: ROOM_HALF_SIZE,
-  minZ: -ROOM_HALF_SIZE,
-  maxZ: ROOM_HALF_SIZE,
+  minX: -ROOM_HALF_WIDTH_METERS,
+  maxX: ROOM_HALF_WIDTH_METERS,
+  minZ: -ROOM_HALF_DEPTH_METERS,
+  maxZ: ROOM_HALF_DEPTH_METERS,
 }
 
 function getInitialFurnitureItems(): FurnitureItem[] {
@@ -49,6 +58,7 @@ function getInitialFurnitureItems(): FurnitureItem[] {
 
 export function Scene({
   ref,
+  renderQuality = 'default',
   catalog,
   collections,
   onSelectionChange,
@@ -57,8 +67,12 @@ export function Scene({
   previewedId = null,
   onPreviewChange,
   onDragStateChange,
+  floorOption = null,
+  wallOption = null,
+  onFloorLoadingChange,
 }: {
   ref: React.Ref<SceneRef>
+  renderQuality?: 'default' | 'e2e-low'
   catalog: FurnitureCatalogEntry[]
   collections: FurnitureCollection[]
   onSelectionChange?: (item: FurnitureItem | null) => void
@@ -67,7 +81,11 @@ export function Scene({
   previewedId?: string | null
   onPreviewChange?: (id: string | null) => void
   onDragStateChange?: (isDragging: boolean) => void
+  floorOption?: FloorFinishOption | null
+  wallOption?: WallFinishOption | null
+  onFloorLoadingChange?: (isLoading: boolean) => void
 }) {
+  const isE2ELowQuality = renderQuality === 'e2e-low'
   const camera = useThree((state) => state.camera)
   const canvasSize = useThree((state) => state.size)
   const collectionPaths = useMemo(
@@ -90,6 +108,7 @@ export function Scene({
   }, [gltfResult, collectionPaths])
 
   const hasReportedAssetsReadyRef = useRef(false)
+  const cameraControlsRef = useRef<CameraControlsImpl | null>(null)
   const [history, setHistory] = useState(() =>
     createHistoryState<FurnitureItem[]>(getInitialFurnitureItems()),
   )
@@ -179,8 +198,8 @@ export function Scene({
   }, [historyAvailability, onHistoryChange])
 
   useEffect(() => {
-    // Do not report ready if no collections have been passed yet — this happens
-    // during the loading-manifest phase when App renders Scene with [] initially.
+    // Do not report ready if no collections have been passed yet
+    // this happens during the loading-manifest phase when App renders Scene with [] initially.
     if (collectionPaths.length === 0) {
       return
     }
@@ -213,6 +232,7 @@ export function Scene({
     bounds: ROOM_BOUNDS,
     camera,
     canvasSize,
+    cameraControlsRef,
     catalog,
     clearDragState,
     collections,
@@ -268,26 +288,35 @@ export function Scene({
 
   return (
     <>
-      <EffectComposer autoClear={false}>
+      <EffectComposer autoClear={false} multisampling={isE2ELowQuality ? 0 : 4}>
         {/* Note: do not use `Selection` is is broken in react 19: https://github.com/pmndrs/react-postprocessing/issues/330 */}
         <Outline
           selection={selection}
           selectionLayer={SELECTED_OUTLINE_LAYER}
-          visibleEdgeColor={0xffffff}
-          hiddenEdgeColor={0xffffff}
-          edgeStrength={3}
+          blendFunction={BlendFunction.ALPHA}
+          visibleEdgeColor={0xf59e0b}
+          hiddenEdgeColor={0xb45309}
+          edgeStrength={3.2}
+          blur={false}
         />
         <Outline
           selection={showPreviewOutline ? previewMeshes : []}
           selectionLayer={PREVIEW_OUTLINE_LAYER}
-          visibleEdgeColor={0xaaaaaa}
-          hiddenEdgeColor={0xaaaaaa}
-          edgeStrength={1.5}
+          blendFunction={BlendFunction.ALPHA}
+          visibleEdgeColor={0x60a5fa}
+          hiddenEdgeColor={0x2563eb}
+          edgeStrength={2.1}
+          blur={false}
         />
       </EffectComposer>
-      <CameraControls enabled={!dragState} />
-      <Lighting />
-      <Room />
+      <CameraControls enabled={!dragState} controlsRef={cameraControlsRef} />
+      <Lighting lowQuality={isE2ELowQuality} />
+      <Room
+        receiveShadows={!isE2ELowQuality}
+        floorOption={floorOption}
+        wallOption={wallOption}
+        onFloorLoadingChange={onFloorLoadingChange}
+      />
       {sceneFurniture.map(({ item, sourceScene }) => (
         <InteractiveFurniture
           key={item.id}
@@ -305,6 +334,7 @@ export function Scene({
           onPreviewStart={handlePreviewStart}
           onPreviewEnd={handlePreviewEnd}
           nodeName={item.nodeName}
+          enableShadows={!isE2ELowQuality}
         />
       ))}
     </>

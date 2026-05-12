@@ -5,6 +5,7 @@ import {
   DELETE_SELECTION_MISSING_MESSAGE,
 } from './command-messages'
 import type {
+  CameraPreset,
   MoveSource,
   MoveSelectionResult,
   SceneReadModel,
@@ -25,6 +26,7 @@ interface SceneCommands {
   addFurniture: () => boolean
   clearSelection: () => void
   confirmDeleteSelection: () => boolean
+  focusSelected: () => void
   getSceneReadModel: () => SceneReadModel | null
   moveSelection: (
     delta: { x: number; z: number },
@@ -33,6 +35,7 @@ interface SceneCommands {
   redo: () => boolean
   rotateSelection: (direction: -1 | 1) => void
   selectById: (id: string | null) => SelectByIdResult
+  setCameraPreset: (preset: CameraPreset) => void
   undo: () => boolean
 }
 
@@ -160,15 +163,28 @@ export function useSceneCommands({
     return true
   }, [clearEditorMessage, getEnabledScene, setEditorMessage])
 
+  const setCameraPreset = useCallback(
+    (preset: CameraPreset) => {
+      getEnabledScene()?.setCameraPreset(preset)
+    },
+    [getEnabledScene],
+  )
+
+  const focusSelected = useCallback(() => {
+    getEnabledScene()?.focusSelected()
+  }, [getEnabledScene])
+
   return {
     addFurniture,
     clearSelection,
     confirmDeleteSelection,
+    focusSelected,
     getSceneReadModel,
     moveSelection,
     redo,
     rotateSelection,
     selectById,
+    setCameraPreset,
     undo,
   }
 }

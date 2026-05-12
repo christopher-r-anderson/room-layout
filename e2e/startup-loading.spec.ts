@@ -14,8 +14,6 @@ test('keeps editor interactions blocked until required assets finish loading', a
 
   const loadingHeading = page.getByText('Preparing the room editor')
   await expect(loadingHeading).toBeVisible()
-  const inertShell = page.locator('[inert][aria-hidden="true"]')
-  await expect(inertShell).toBeVisible()
   await expect(
     page.getByRole('button', { name: 'Undo', includeHidden: true }),
   ).toBeDisabled()

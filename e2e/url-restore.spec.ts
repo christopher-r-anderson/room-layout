@@ -9,7 +9,7 @@
  *  - Selection is cleared after restore
  *  - Full round-trip: copy URL in app → navigate to it → scene restored
  */
-import { expect, test } from '@playwright/test'
+import { expect, test, type Page } from '@playwright/test'
 import type { FurnitureInstance } from '../src/scene/objects/furniture.types'
 import {
   addFurniture,
@@ -25,11 +25,32 @@ import {
 // ---------------------------------------------------------------------------
 
 /** Build a minimal valid ?scene= route for testing restore. */
-function makeSceneRoute(items: FurnitureInstance[]): string {
-  const payload = { v: 1 as const, items }
+function makeSceneRoute(
+  items: FurnitureInstance[],
+  options?: {
+    floorFinishId?: string
+    wallFinishId?: string
+  },
+): string {
+  const payload = {
+    v: 1 as const,
+    items,
+    ...(options?.floorFinishId ? { floorFinishId: options.floorFinishId } : {}),
+    ...(options?.wallFinishId ? { wallFinishId: options.wallFinishId } : {}),
+  }
   const params = new URLSearchParams()
   params.set('scene', JSON.stringify(payload))
   return `/?${params.toString()}`
+}
+
+async function ensureEnvironmentPanelExpanded(page: Page) {
+  const wallFinishTrigger = page.getByLabel('Wall Finish')
+  if (await wallFinishTrigger.isVisible()) {
+    return
+  }
+
+  await page.getByRole('button', { name: 'Toggle environment panel' }).click()
+  await expect(wallFinishTrigger).toBeVisible()
 }
 
 const VALID_ITEM = {
@@ -83,6 +104,66 @@ test('restores multiple items from a valid ?scene= param', async ({ page }) => {
   expect(state.restoreOutcome).toBe('restored')
 })
 
+test('populates outliner with restored items from ?scene=', async ({
+  page,
+}) => {
+  const items: FurnitureInstance[] = [
+    {
+      id: 'furniture-instance-1',
+      catalogId: 'armchair-1',
+      position: [0, 0, 0],
+      rotationY: 0,
+    },
+    {
+      id: 'furniture-instance-2',
+      catalogId: 'end-table-1',
+      position: [1, 0, 1],
+      rotationY: 0,
+    },
+  ]
+
+  await page.goto(makeSceneRoute(items))
+  await waitForEditorReady(page)
+
+  await expect(
+    page.getByRole('button', { name: /leather armchair/i }),
+  ).toBeVisible()
+  await expect(page.getByRole('button', { name: /end table/i })).toBeVisible()
+})
+
+test('restores floor and wall finish IDs from a valid ?scene= param', async ({
+  page,
+}) => {
+  await page.goto(
+    makeSceneRoute([VALID_ITEM], {
+      floorFinishId: 'granite-tile',
+      wallFinishId: 'sage-green',
+    }),
+  )
+  const state = await waitForEditorReady(page)
+
+  expect(state.floorFinishId).toBe('granite-tile')
+  expect(state.wallFinishId).toBe('sage-green')
+  expect(state.restoreOutcome).toBe('restored')
+})
+
+test('ignores unknown floor and wall finish IDs from ?scene= while still restoring furniture', async ({
+  page,
+}) => {
+  await page.goto(
+    makeSceneRoute([VALID_ITEM], {
+      floorFinishId: 'unknown-floor',
+      wallFinishId: 'unknown-wall',
+    }),
+  )
+  const state = await waitForEditorReady(page)
+
+  expect(state.itemCount).toBe(1)
+  expect(state.floorFinishId).toBe('wood-floor')
+  expect(state.wallFinishId).toBe('light-gray')
+  expect(state.restoreOutcome).toBe('restored')
+})
+
 test('shows no-param outcome for a URL without ?scene=', async ({ page }) => {
   await page.goto('/')
   const state = await waitForEditorReady(page)
@@ -101,7 +182,11 @@ test('shows error message and marks outcome invalid for a malformed ?scene= para
   expect(state.restoreOutcome).toBe('invalid')
 
   // An error message should be visible to the user
-  await expect(page.getByRole('status')).toBeVisible()
+  await expect(
+    page
+      .getByRole('status')
+      .filter({ hasText: 'Shared link could not be restored' }),
+  ).toBeVisible()
 })
 
 test('marks outcome invalid when catalogId does not exist in catalog', async ({
@@ -169,8 +254,8 @@ test('error message clears on undo after restore-invalid', async ({ page }) => {
   await page.goto('/?scene=notjson!!!')
   await waitForEditorReady(page)
 
-  // Confirm message is visible
-  await expect(page.getByRole('status')).toBeVisible()
+  const statusRegion = page.getByRole('status', { name: 'Editor status' })
+  await expect(statusRegion).toContainText('Shared link could not be restored')
 
   // Undo should clear the message (even though there's nothing to undo)
   await page.keyboard.press('Control+z')
@@ -178,8 +263,7 @@ test('error message clears on undo after restore-invalid', async ({ page }) => {
   // The status element should be empty or gone
   await expect
     .poll(async () => {
-      const status = page.getByRole('status')
-      return status.textContent()
+      return statusRegion.textContent()
     })
     .toBe('')
 })
@@ -189,7 +273,10 @@ test('error message clears on add furniture after restore-invalid', async ({
 }) => {
   await page.goto('/?scene=notjson!!!')
   await waitForEditorReady(page)
-  await expect(page.getByRole('status')).toBeVisible()
+  const restoreStatus = page
+    .getByRole('status', { name: 'Editor status' })
+    .filter({ hasText: 'Shared link could not be restored' })
+  await expect(restoreStatus).toBeVisible()
 
   const addBtn = page.getByRole('button', { name: 'Add Furniture' })
   await addBtn.click()
@@ -202,10 +289,10 @@ test('error message clears on add furniture after restore-invalid', async ({
     await drawerItem.click()
     await expect
       .poll(async () => {
-        const status = page.getByRole('status')
-        return status.textContent()
+        const text = await restoreStatus.textContent().catch(() => null)
+        return text === null || text.trim() === '' ? 'cleared' : 'set'
       })
-      .toBe('')
+      .toBe('cleared')
   }
 })
 
@@ -222,6 +309,15 @@ test('copy-URL-then-load round-trip: app serializer output is accepted by restor
 
   await openEditor(page)
 
+  await ensureEnvironmentPanelExpanded(page)
+
+  // Change environment options so round-trip includes non-default finishes.
+  await page.getByLabel('Wall Finish').click()
+  await page.getByRole('option', { name: 'Sage Green' }).click()
+
+  await page.getByLabel('Floor Finish').click()
+  await page.getByRole('option', { name: 'Granite' }).click()
+
   // Add one item via the real UI so the app owns the scene state
   await addFurniture(page, 'Leather Armchair')
 
@@ -236,6 +332,15 @@ test('copy-URL-then-load round-trip: app serializer output is accepted by restor
   const copiedUrl = await page.evaluate(() => navigator.clipboard.readText())
   expect(copiedUrl).toContain('scene=')
 
+  const copiedScenePayload = JSON.parse(
+    new URL(copiedUrl).searchParams.get('scene') ?? '{}',
+  ) as {
+    floorFinishId?: string
+    wallFinishId?: string
+  }
+  expect(copiedScenePayload.floorFinishId).toBe('granite-tile')
+  expect(copiedScenePayload.wallFinishId).toBe('sage-green')
+
   // Navigate to the copied URL in the same page — the restore path must accept
   // what the serializer produced, confirming the round-trip contract
   await page.goto(copiedUrl)
@@ -244,4 +349,6 @@ test('copy-URL-then-load round-trip: app serializer output is accepted by restor
   expect(restored.itemCount).toBe(1)
   expect(restored.restoreOutcome).toBe('restored')
   expect(restored.items[0].catalogId).toBe('armchair-1')
+  expect(restored.floorFinishId).toBe('granite-tile')
+  expect(restored.wallFinishId).toBe('sage-green')
 })

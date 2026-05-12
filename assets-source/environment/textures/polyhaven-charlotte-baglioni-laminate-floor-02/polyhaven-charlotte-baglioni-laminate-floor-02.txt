@@ -1,0 +1,10 @@
+Model: Laminate Floor 02
+Source: https://polyhaven.com/a/laminate_floor_02
+Photographer: https://www.artstation.com/wyrine (Charlotte Baglioni)
+Processing: https://polyhaven.com/all?a=Dario%20Barresi (Dario Barresi)
+License: CC0
+Size: 1.7m
+Output name: laminate-floor_diff_2k + laminate-floor_nor_gl_1k
+
+Notes/modifications:
+Downloaded as 2k png and compressed/resized/renamed

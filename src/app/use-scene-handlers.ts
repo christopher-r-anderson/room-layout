@@ -1,5 +1,6 @@
 import { useCallback, useRef, type RefObject } from 'react'
 import type {
+  CameraPreset,
   MoveSelectionResult,
   MoveSource,
   SceneReadModel,
@@ -29,6 +30,7 @@ interface Commands {
   addFurniture: () => boolean
   clearSelection: () => void
   confirmDeleteSelection: () => boolean
+  focusSelected: () => void
   moveSelection: (
     delta: { x: number; z: number },
     options?: { source?: MoveSource },
@@ -36,6 +38,7 @@ interface Commands {
   redo: () => boolean
   rotateSelection: (direction: -1 | 1) => void
   selectById: (id: string | null) => SelectByIdResult
+  setCameraPreset: (preset: CameraPreset) => void
   undo: () => boolean
 }
 
@@ -63,12 +66,19 @@ interface DialogState {
 }
 
 interface StartupSlice {
+  activeFloorFinishId: string
+  activeWallFinishId: string
   catalog: FurnitureCatalogEntry[]
+  editorInteractionsEnabled: boolean
+  floorFinishIds: string[]
   handleAssetError: (error: Error) => void
   handleAssetsReady: () => void
   retryAssetLoading: () => void
   resetEditorShellState: () => void
   restoreInitialLayout: (instances: FurnitureInstance[]) => void
+  setFloorFinishId: (id: string) => void
+  setWallFinishId: (id: string) => void
+  wallFinishIds: string[]
 }
 
 interface OverlayState {
@@ -94,6 +104,7 @@ interface UseSceneHandlersOptions {
 
 interface SceneHandlers {
   handleAddFurniture: () => boolean
+  handleFocusSelected: () => void
   handleSelectById: (id: string | null) => SelectByIdResult
   handleMoveSelection: (
     delta: { x: number; z: number },
@@ -104,6 +115,7 @@ interface SceneHandlers {
   handleUndo: () => void
   handleRedo: () => void
   handleClearSelection: () => void
+  handleSetCameraPreset: (preset: CameraPreset) => void
   handleCatalogDrawerOpenChange: (open: boolean) => void
   handleOpenDeleteDialog: () => void
   handleSceneHistoryChange: (availability: HistoryAvailability) => void
@@ -136,10 +148,12 @@ export function useSceneHandlers({
     addFurniture,
     clearSelection,
     confirmDeleteSelection,
+    focusSelected,
     moveSelection,
     redo,
     rotateSelection,
     selectById,
+    setCameraPreset,
     undo,
   } = commands
   const { syncSceneReadModel, requestOutlinerFocusByIndex } = sync
@@ -164,12 +178,19 @@ export function useSceneHandlers({
     sceneReadModel,
   } = overlayState
   const {
+    activeFloorFinishId,
+    activeWallFinishId,
+    editorInteractionsEnabled,
     handleAssetError,
     handleAssetsReady,
     retryAssetLoading,
     resetEditorShellState,
     restoreInitialLayout,
     catalog,
+    floorFinishIds,
+    wallFinishIds,
+    setFloorFinishId,
+    setWallFinishId,
   } = startup
 
   // One-shot guard: URL restore is attempted at most once per page load.
@@ -346,14 +367,23 @@ export function useSceneHandlers({
   const handleSceneHistoryChange = useCallback(
     (availability: HistoryAvailability) => {
       handleHistoryChange(availability)
+
+      if (!editorInteractionsEnabled) {
+        return
+      }
+
       syncSceneReadModel()
     },
-    [handleHistoryChange, syncSceneReadModel],
+    [editorInteractionsEnabled, handleHistoryChange, syncSceneReadModel],
   )
 
   const handleSceneSelectionChange = useCallback(() => {
+    if (!editorInteractionsEnabled) {
+      return
+    }
+
     syncSceneReadModel({ requestOutlinerFocus: false })
-  }, [syncSceneReadModel])
+  }, [editorInteractionsEnabled, syncSceneReadModel])
 
   const handleSceneAssetError = useCallback(
     (error: Error) => {
@@ -384,6 +414,21 @@ export function useSceneHandlers({
         if (validateCatalogReferences(parseResult.items, catalog)) {
           try {
             restoreInitialLayout(parseResult.items)
+
+            if (
+              parseResult.floorFinishId &&
+              floorFinishIds.includes(parseResult.floorFinishId)
+            ) {
+              setFloorFinishId(parseResult.floorFinishId)
+            }
+
+            if (
+              parseResult.wallFinishId &&
+              wallFinishIds.includes(parseResult.wallFinishId)
+            ) {
+              setWallFinishId(parseResult.wallFinishId)
+            }
+
             restoreOutcomeRef.current = 'restored'
             announcePolite('Room layout restored from shared link.')
           } catch {
@@ -421,13 +466,21 @@ export function useSceneHandlers({
       }
     }
 
-    syncSceneReadModel()
+    syncSceneReadModel({
+      announceSelectionChange: false,
+      requestOutlinerFocus: false,
+    })
+
     handleAssetsReady()
   }, [
     handleAssetsReady,
     syncSceneReadModel,
     catalog,
+    floorFinishIds,
+    wallFinishIds,
     restoreInitialLayout,
+    setFloorFinishId,
+    setWallFinishId,
     announcePolite,
     announceAssertive,
     setEditorMessage,
@@ -448,7 +501,18 @@ export function useSceneHandlers({
   ])
 
   const handleCopySceneUrl = useCallback(async () => {
-    const url = serializeSceneToUrl(sceneReadModel.items, window.location.href)
+    const url = serializeSceneToUrl(
+      sceneReadModel.items,
+      window.location.href,
+      {
+        floorFinishId: floorFinishIds.includes(activeFloorFinishId)
+          ? activeFloorFinishId
+          : undefined,
+        wallFinishId: wallFinishIds.includes(activeWallFinishId)
+          ? activeWallFinishId
+          : undefined,
+      },
+    )
 
     if (!url) {
       setEditorMessage('Scene is too large to share as a URL.')
@@ -466,14 +530,30 @@ export function useSceneHandlers({
     }
   }, [
     sceneReadModel.items,
+    activeFloorFinishId,
+    activeWallFinishId,
+    floorFinishIds,
+    wallFinishIds,
     clearEditorMessage,
     setEditorMessage,
     announcePolite,
     announceAssertive,
   ])
 
+  const handleSetCameraPreset = useCallback(
+    (preset: CameraPreset) => {
+      setCameraPreset(preset)
+    },
+    [setCameraPreset],
+  )
+
+  const handleFocusSelected = useCallback(() => {
+    focusSelected()
+  }, [focusSelected])
+
   return {
     handleAddFurniture,
+    handleFocusSelected,
     handleSelectById,
     handleMoveSelection,
     handleRotateSelection,
@@ -481,6 +561,7 @@ export function useSceneHandlers({
     handleUndo,
     handleRedo,
     handleClearSelection,
+    handleSetCameraPreset,
     handleCatalogDrawerOpenChange,
     handleOpenDeleteDialog,
     handleSceneHistoryChange,

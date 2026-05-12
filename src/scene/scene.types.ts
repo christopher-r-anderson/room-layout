@@ -3,6 +3,8 @@ import type {
   FurnitureInstance,
   FurnitureItem,
 } from './objects/furniture.types'
+import type { CameraPreset } from '@/lib/three/camera-presets'
+export type { CameraPreset } from '@/lib/three/camera-presets'
 
 export type MoveSource = 'keyboard' | 'inspector' | 'toolbar' | 'drag'
 
@@ -45,6 +47,8 @@ export interface SceneRef {
   redo: () => boolean
   getSnapshot: () => SceneSnapshot
   getReadModel: () => SceneReadModel
+  setCameraPreset: (preset: CameraPreset) => void
+  focusSelected: () => void
   /**
    * Seeds the scene with the given furniture instances as the initial baseline,
    * clearing selection and establishing an empty undo/redo stack. The instance-id

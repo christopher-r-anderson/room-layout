@@ -35,6 +35,8 @@ interface OverlayOptions {
   startupLoadingActive: boolean
   startupOverlayActive: boolean
   onRetryAssetLoading: () => void
+  onSetCameraPreset: () => void
+  onFocusSelected: () => void
   historyAvailability: { canUndo: boolean; canRedo: boolean }
   onUndo: () => void
   onRedo: () => void
@@ -75,6 +77,8 @@ function createOptions(overrides?: Partial<OverlayOptions>): OverlayOptions {
     startupLoadingActive: false,
     startupOverlayActive: false,
     onRetryAssetLoading: vi.fn(),
+    onSetCameraPreset: vi.fn(),
+    onFocusSelected: vi.fn(),
     historyAvailability: { canUndo: false, canRedo: false },
     onUndo: vi.fn(),
     onRedo: vi.fn(),

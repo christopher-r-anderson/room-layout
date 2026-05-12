@@ -1,37 +1,142 @@
 [
   {
     "assetName": "Leather Couch",
-    "authorName": "YouSaveTime",
-    "authorHref": "https://sketchfab.com/YouSaveTime",
+    "contributors": [
+      {
+        "label": "Author",
+        "name": "YouSaveTime",
+        "href": "https://sketchfab.com/YouSaveTime"
+      }
+    ],
+    "sourceName": "Sketchfab",
     "sourceHref": "https://sketchfab.com/3d-models/leather-couch-c2ac7a44144e4b80ab51f21b59c827f8",
+    "licenseName": "CC BY 4.0",
+    "licenseHref": "https://creativecommons.org/licenses/by/4.0/deed.en",
     "localSourcePath": "assets-source/leather-couch/leather-couch-source.txt"
   },
   {
     "assetName": "Leather Armchair",
-    "authorName": "YouSaveTime",
-    "authorHref": "https://sketchfab.com/YouSaveTime",
+    "contributors": [
+      {
+        "label": "Author",
+        "name": "YouSaveTime",
+        "href": "https://sketchfab.com/YouSaveTime"
+      }
+    ],
+    "sourceName": "Sketchfab",
     "sourceHref": "https://sketchfab.com/3d-models/leather-couch-c2ac7a44144e4b80ab51f21b59c827f8",
+    "licenseName": "CC BY 4.0",
+    "licenseHref": "https://creativecommons.org/licenses/by/4.0/deed.en",
     "localSourcePath": "assets-source/leather-couch/leather-couch-source.txt"
   },
   {
     "assetName": "End Table",
-    "authorName": "cirax we",
-    "authorHref": "https://sketchfab.com/cirax-we",
+    "contributors": [
+      {
+        "label": "Author",
+        "name": "cirax we",
+        "href": "https://sketchfab.com/cirax-we"
+      }
+    ],
+    "sourceName": "Sketchfab",
     "sourceHref": "https://sketchfab.com/3d-models/end-table-d0032d49ca214200929d4151d733f828",
+    "licenseName": "CC BY 4.0",
+    "licenseHref": "https://creativecommons.org/licenses/by/4.0/deed.en",
     "localSourcePath": "assets-source/cirax-we-end-table/end-table.txt"
   },
   {
     "assetName": "Modern Coffee Table",
-    "authorName": "ZeeRKad",
-    "authorHref": "https://sketchfab.com/zeerkad",
+    "contributors": [
+      {
+        "label": "Author",
+        "name": "ZeeRKad",
+        "href": "https://sketchfab.com/zeerkad"
+      }
+    ],
+    "sourceName": "Sketchfab",
     "sourceHref": "https://sketchfab.com/3d-models/coffee-table-91872709bf054d8994be323599e23107",
+    "licenseName": "CC BY 4.0",
+    "licenseHref": "https://creativecommons.org/licenses/by/4.0/deed.en",
     "localSourcePath": "assets-source/zeerkad-coffee-table/coffee-table.txt"
   },
   {
     "assetName": "Classic Coffee Table",
-    "authorName": "Machine Meza",
-    "authorHref": "https://sketchfab.com/maurib98",
+    "contributors": [
+      {
+        "label": "Author",
+        "name": "Machine Meza",
+        "href": "https://sketchfab.com/maurib98"
+      }
+    ],
+    "sourceName": "Sketchfab",
     "sourceHref": "https://sketchfab.com/3d-models/coffee-table-living-room-aa5b9a41c90245e8992ba93de6dde8c8",
+    "licenseName": "CC BY 4.0",
+    "licenseHref": "https://creativecommons.org/licenses/by/4.0/deed.en",
     "localSourcePath": "assets-source/machine-meza-coffee-table-living-room/coffee-table-living-room.txt"
+  },
+  {
+    "assetName": "Wood Floor Texture Set",
+    "contributors": [
+      {
+        "label": "Author",
+        "name": "Dimitrios Savva",
+        "href": "https://polyhaven.com/all?a=Dimitrios%20Savva"
+      }
+    ],
+    "sourceName": "Poly Haven",
+    "sourceHref": "https://polyhaven.com/a/wood_floor",
+    "licenseName": "CC0",
+    "licenseHref": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "localSourcePath": "assets-source/environment/textures/polyhaven-dimitrios-savva-wood-floor/polyhaven-dimitrios-savva-wood-floor.txt"
+  },
+  {
+    "assetName": "Laminate Floor Texture Set",
+    "contributors": [
+      {
+        "label": "Photographer",
+        "name": "Charlotte Baglioni",
+        "href": "https://www.artstation.com/wyrine"
+      },
+      {
+        "label": "Processing",
+        "name": "Dario Barresi",
+        "href": "https://polyhaven.com/all?a=Dario%20Barresi"
+      }
+    ],
+    "sourceName": "Poly Haven",
+    "sourceHref": "https://polyhaven.com/a/laminate_floor_02",
+    "licenseName": "CC0",
+    "licenseHref": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "localSourcePath": "assets-source/environment/textures/polyhaven-charlotte-baglioni-laminate-floor-02/polyhaven-charlotte-baglioni-laminate-floor-02.txt"
+  },
+  {
+    "assetName": "Granite Tile Texture Set",
+    "contributors": [
+      {
+        "label": "Author",
+        "name": "Amal Kumar",
+        "href": "https://www.artstation.com/amalbubble"
+      }
+    ],
+    "sourceName": "Poly Haven",
+    "sourceHref": "https://polyhaven.com/a/granite_tile_04",
+    "licenseName": "CC0",
+    "licenseHref": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "localSourcePath": "assets-source/environment/textures/polyhaven-amal-kumar-granite-tile-04/polyhaven-amal-kumar-granite-tile-04.txt"
+  },
+  {
+    "assetName": "Painted Concrete Texture Set",
+    "contributors": [
+      {
+        "label": "Author",
+        "name": "Rob Tuytel",
+        "href": "https://www.artstation.com/tuytel"
+      }
+    ],
+    "sourceName": "Poly Haven",
+    "sourceHref": "https://polyhaven.com/a/painted_concrete_02",
+    "licenseName": "CC0",
+    "licenseHref": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "localSourcePath": "assets-source/environment/textures/polyhaven-rob-tuytel-painted-concrete-02/polyhaven-rob-tuytel-painted-concrete-02.txt"
   }
 ]

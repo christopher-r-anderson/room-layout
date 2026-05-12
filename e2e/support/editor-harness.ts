@@ -12,6 +12,8 @@ const POINTER_SELECTION_ATTEMPTS = 3
 export interface BrowserSceneState {
   assetsReady: boolean
   assetError: boolean
+  floorFinishId: string
+  wallFinishId: string
   selectedId: string | null
   previewedId: string | null
   selectedName: string | null
@@ -328,6 +330,7 @@ export async function dragSelectedFurniture(
   await page.mouse.down()
   await page.mouse.move(startX + delta.x, startY + delta.y, { steps: 8 })
   await page.mouse.up()
+  await page.mouse.move(1, 1)
 
   return readSceneState(page)
 }

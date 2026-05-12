@@ -6,9 +6,15 @@ import {
   type ReactNode,
   useEffect,
   useMemo,
+  useState,
   useRef,
 } from 'react'
+import { NeutralToneMapping, SRGBColorSpace } from 'three'
 import type { SceneRef } from './scene/scene.types'
+import {
+  findFloorFinishOption,
+  findWallFinishOption,
+} from './lib/three/environment-materials'
 import { EditorOverlay } from './app/overlay/editor-overlay'
 import { useDialogState } from './app/overlay/use-dialog-state'
 import { useKeyboardShortcuts } from './app/keyboard/use-keyboard-shortcuts'
@@ -26,6 +32,8 @@ import { TooltipProvider } from './components/ui/tooltip'
 interface BrowserSceneState {
   assetsReady: boolean
   assetError: boolean
+  floorFinishId: string
+  wallFinishId: string
   selectedId: string | null
   previewedId: string | null
   selectedName: string | null
@@ -83,12 +91,48 @@ class SceneAssetErrorBoundary extends Component<
 
 function App() {
   const sceneRef = useRef<SceneRef | null>(null)
+  const previewedIdRef = useRef<string | null>(null)
   const overlayState = useOverlayState()
+  const [floorFinishId, setFloorFinishId] = useState('')
+  const [wallFinishId, setWallFinishId] = useState('')
+  const [isFloorFinishLoading, setIsFloorFinishLoading] = useState(false)
+  const isE2ELowRenderQuality =
+    import.meta.env.DEV && import.meta.env.VITE_E2E_RENDER_QUALITY === 'low'
 
   const startup = useStartupLifecycle({
     sceneRef,
     resetOverlayState: overlayState.resetOverlayState,
   })
+
+  const environmentConfig = startup.environmentConfig
+
+  const activeFloorFinishId = environmentConfig?.floorFinishes.some(
+    (option) => option.id === floorFinishId,
+  )
+    ? floorFinishId
+    : (environmentConfig?.defaultFloorFinishId ?? '')
+
+  const activeWallFinishId = environmentConfig?.wallFinishes.some(
+    (option) => option.id === wallFinishId,
+  )
+    ? wallFinishId
+    : (environmentConfig?.defaultWallFinishId ?? '')
+
+  const selectedFloorOption = useMemo(
+    () =>
+      environmentConfig
+        ? findFloorFinishOption(environmentConfig, activeFloorFinishId)
+        : null,
+    [environmentConfig, activeFloorFinishId],
+  )
+
+  const selectedWallOption = useMemo(
+    () =>
+      environmentConfig
+        ? findWallFinishOption(environmentConfig, activeWallFinishId)
+        : null,
+    [environmentConfig, activeWallFinishId],
+  )
 
   const announcements = useAnnouncements()
 
@@ -144,7 +188,12 @@ function App() {
       handleHistoryChange: overlayState.handleHistoryChange,
     },
     startup: {
+      activeFloorFinishId,
+      activeWallFinishId,
       catalog: startup.catalog,
+      editorInteractionsEnabled: startup.editorInteractionsEnabled,
+      floorFinishIds:
+        environmentConfig?.floorFinishes.map((option) => option.id) ?? [],
       handleAssetError: startup.handleAssetError,
       handleAssetsReady: startup.handleAssetsReady,
       retryAssetLoading: startup.retryAssetLoading,
@@ -154,6 +203,10 @@ function App() {
           throw new Error('sceneRef not initialized at restore')
         sceneRef.current.restoreInitialLayout(instances)
       },
+      setFloorFinishId,
+      setWallFinishId,
+      wallFinishIds:
+        environmentConfig?.wallFinishes.map((option) => option.id) ?? [],
     },
   })
 
@@ -177,6 +230,7 @@ function App() {
     catalogProps,
     dialogsProps,
     previewProps,
+    cameraProps,
   } = useOverlayProps({
     assetError: Boolean(startup.assetError),
     assetErrorKind: startup.assetErrorKind,
@@ -197,6 +251,8 @@ function App() {
     onMoveSelection: handlers.handleMoveSelection,
     onOpenDeleteDialog: handlers.handleOpenDeleteDialog,
     onRotateSelection: handlers.handleRotateSelection,
+    onSetCameraPreset: handlers.handleSetCameraPreset,
+    onFocusSelected: handlers.handleFocusSelected,
     catalogIdToAdd: overlayState.catalogIdToAdd,
     catalog: startup.catalog,
     isCatalogDrawerOpen: dialogState.isCatalogDrawerOpen,
@@ -213,6 +269,10 @@ function App() {
   })
 
   useEffect(() => {
+    previewedIdRef.current = previewedId
+  }, [previewedId])
+
+  useEffect(() => {
     if (!import.meta.env.DEV) {
       return
     }
@@ -224,8 +284,10 @@ function App() {
         return {
           assetsReady: startup.assetsReadyRef.current,
           assetError: startup.assetErrorRef.current !== null,
+          floorFinishId: activeFloorFinishId,
+          wallFinishId: activeWallFinishId,
           selectedId: sceneState?.selectedId ?? null,
-          previewedId,
+          previewedId: previewedIdRef.current,
           selectedName: sceneState?.selectedName ?? null,
           itemCount: sceneState?.itemCount ?? 0,
           items: sceneState?.items ?? [],
@@ -239,7 +301,8 @@ function App() {
       delete window.__ROOM_LAYOUT_TEST__
     }
   }, [
-    previewedId,
+    activeFloorFinishId,
+    activeWallFinishId,
     startup.assetErrorRef,
     startup.assetsReadyRef,
     handlers.restoreOutcomeRef,
@@ -253,6 +316,7 @@ function App() {
     onUndo: handlers.handleUndo,
     onRedo: handlers.handleRedo,
     onOpenDeleteDialog: handlers.handleOpenDeleteDialog,
+    onFocusSelected: handlers.handleFocusSelected,
     onMoveSelection: (delta) => {
       handlers.handleMoveSelection(delta, { source: 'keyboard' })
     },
@@ -282,6 +346,11 @@ function App() {
               position: [3, 2.5, 3],
               fov: 50,
             }}
+            onCreated={({ gl }) => {
+              gl.outputColorSpace = SRGBColorSpace
+              gl.toneMapping = NeutralToneMapping
+              gl.toneMappingExposure = isE2ELowRenderQuality ? 1 : 1.05
+            }}
             onPointerMissed={() => {
               if (!startup.editorInteractionsEnabled) {
                 return
@@ -290,9 +359,8 @@ function App() {
               clearPreviewOnCanvasMiss()
               handlers.handleClearSelection()
             }}
-            shadows
+            shadows={!isE2ELowRenderQuality}
           >
-            <color attach="background" args={['#f0f0f0']} />
             <SceneAssetErrorBoundary
               key={startup.cacheInvalidationKey}
               onError={handlers.handleSceneAssetError}
@@ -300,6 +368,7 @@ function App() {
               <Suspense fallback={null}>
                 <Scene
                   ref={sceneRef}
+                  renderQuality={isE2ELowRenderQuality ? 'e2e-low' : 'default'}
                   catalog={startup.catalog}
                   collections={startup.collections}
                   onSelectionChange={handlers.handleSceneSelectionChange}
@@ -308,6 +377,9 @@ function App() {
                   previewedId={previewedId}
                   onPreviewChange={handleScenePreviewChange}
                   onDragStateChange={handleDragStateChange}
+                  floorOption={selectedFloorOption}
+                  wallOption={selectedWallOption}
+                  onFloorLoadingChange={setIsFloorFinishLoading}
                 />
               </Suspense>
             </SceneAssetErrorBoundary>
@@ -318,6 +390,7 @@ function App() {
           editorInteractionsEnabled={startup.editorInteractionsEnabled}
           statusMessage={overlayState.editorMessage}
           onCopySceneUrl={() => void handlers.handleCopySceneUrl()}
+          camera={cameraProps}
           startup={startupProps}
           history={historyProps}
           scene={sceneProps}
@@ -325,6 +398,13 @@ function App() {
           catalog={catalogProps}
           dialogs={dialogsProps}
           preview={previewProps}
+          floorFinishId={activeFloorFinishId}
+          floorFinishLoading={isFloorFinishLoading}
+          floorFinishes={environmentConfig?.floorFinishes ?? []}
+          onFloorFinishChange={setFloorFinishId}
+          wallFinishId={activeWallFinishId}
+          wallFinishes={environmentConfig?.wallFinishes ?? []}
+          onWallFinishChange={setWallFinishId}
         />
         <Announcer
           politeMessage={announcements.politeAnnouncement}

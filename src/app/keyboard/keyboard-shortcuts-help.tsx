@@ -51,6 +51,15 @@ const SHORTCUT_GROUPS: ShortcutGroup[] = [
     ],
   },
   {
+    groupLabel: 'Camera',
+    rows: [
+      {
+        label: 'Focus selected item',
+        combos: [['F']],
+      },
+    ],
+  },
+  {
     groupLabel: 'Selection',
     rows: [
       {

@@ -1,4 +1,5 @@
 import { getClonedNode } from '@/lib/three/get-cloned-node'
+import { getMeshes } from '@/lib/three/get-meshes'
 import type { ThreeEvent } from '@react-three/fiber'
 import { useEffect, useRef, useState } from 'react'
 import type { Group, Object3D } from 'three'
@@ -47,11 +48,21 @@ export function InteractiveFurniture({
   onPreviewStart,
   onPreviewEnd,
   nodeName,
-}: InteractiveFurnitureProps & { nodeName: string }) {
+  enableShadows = true,
+}: InteractiveFurnitureProps & {
+  nodeName: string
+  enableShadows?: boolean
+}) {
   const groupRef = useRef<Group>(null)
   const [model] = useState<Object3D>(() => {
+    // Model/shadow flags are intentionally derived once at mount. The quality mode
+    // is configured at app startup and not expected to toggle during a running session.
     const node = getClonedNode(sourceScene, nodeName)
     node.position.set(0, 0, 0)
+    for (const mesh of getMeshes(node)) {
+      mesh.castShadow = enableShadows
+      mesh.receiveShadow = enableShadows
+    }
     return node
   })
 

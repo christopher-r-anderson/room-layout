@@ -7,8 +7,10 @@ import {
   type SetStateAction,
 } from 'react'
 import { type Object3D } from 'three'
+import type { CameraControlsImpl } from '@react-three/drei'
 import type { LayoutBounds } from '@/lib/three/furniture-layout'
 import type { HistoryState } from '@/lib/ui/editor-history'
+import { CAMERA_PRESETS } from '@/lib/three/camera-presets'
 import {
   addFurnitureToHistory,
   buildFurnitureItemsFromInstances,
@@ -35,6 +37,7 @@ interface UseSceneImperativeApiOptions {
   bounds: LayoutBounds
   camera: Parameters<typeof createSceneSnapshot>[3]
   canvasSize: Parameters<typeof createSceneSnapshot>[4]
+  cameraControlsRef: RefObject<CameraControlsImpl | null>
   catalog: FurnitureCatalogEntry[]
   clearDragState: () => void
   collections: FurnitureCollection[]
@@ -58,6 +61,7 @@ export function useSceneImperativeApi({
   bounds,
   camera,
   canvasSize,
+  cameraControlsRef,
   catalog,
   clearDragState,
   collections,
@@ -368,6 +372,26 @@ export function useSceneImperativeApi({
 
         instanceIdRef.current = maxSuffix
       },
+      setCameraPreset: (preset) => {
+        const view = CAMERA_PRESETS[preset]
+        void cameraControlsRef.current?.setLookAt(
+          ...view.position,
+          ...view.target,
+          true,
+        )
+      },
+      focusSelected: () => {
+        const ctrl = cameraControlsRef.current
+        if (!ctrl || !selectedIdRef.current) return
+        const object = objectRefs.current.get(selectedIdRef.current)
+        if (!object) return
+        void ctrl.fitToBox(object, true, {
+          paddingTop: 0.5,
+          paddingBottom: 0.5,
+          paddingLeft: 0.5,
+          paddingRight: 0.5,
+        })
+      },
     }),
     [
       camera,
@@ -387,6 +411,7 @@ export function useSceneImperativeApi({
       sourceScenesByPath,
       edgeSnapThreshold,
       instanceIdRef,
+      cameraControlsRef,
     ],
   )
 }

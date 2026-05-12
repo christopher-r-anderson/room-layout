@@ -127,19 +127,48 @@ Current editor UI highlights include a visual furniture picker, history and sele
 ## 📚 Catalog
 
 The editor loads its furniture catalog from a runtime manifest (`public/catalog-manifest.json`), allowing catalog updates without rebuilding the app.
+The same manifest also defines environment material options (floor texture sets and wall colors) used by the Environment panel.
 
 ### Manifest Updates
 
-To add or modify furniture items:
+To add or modify furniture/environment options:
 
-1. **Update the manifest**: Edit `public/catalog-manifest.json` to add collections and catalog entries
+1. **Update the manifest**: Edit `public/catalog-manifest.json` to add collections, catalog entries, and environment finish options
 2. **Prepare assets**:
    - Place GLTF model files in `public/models/`
    - Place preview images in `public/catalog-previews/`
 3. **Validate**:
    - Node names in GLTF files must match the `nodeName` values in the catalog
    - All paths in the manifest must be relative (e.g., `"models/foo.glb"`)
+   - Environment texture paths (`diffusePath`, `normalPath`) must also be relative and should point to `.ktx2` assets
+   - Wall finish colors must use `#RRGGBB` format
    - Footprint dimensions must be positive numbers
+   - Floor finishes must provide `tileSizeMeters` with positive `width` and `depth`
+
+Floor textures tile from physical dimensions rather than hardcoded UV repeat values:
+
+- `repeat.x = roomWidthMeters / tileSizeMeters.width`
+- `repeat.y = roomDepthMeters / tileSizeMeters.depth`
+
+### Floor Texture Pipeline (KTX2)
+
+The editor is configured for KTX2 floor textures using Basis Universal compression:
+
+- Diffuse/albedo: ETC1S at 2K (`*_diff_2k.ktx2`)
+- Normal maps: UASTC at 1K with normal-map encoding (`*_nor_gl_1k.ktx2`)
+
+Export textures with:
+
+```bash
+pnpm textures:export
+```
+
+Requirements for export:
+
+- KTX-Software `toktx` (v4.4.2 or newer recommended)
+- ImageMagick (`convert` or `magick`) for normal-map downscaling
+
+Basis decoder files (`public/basis/`) are automatically copied into the project during `pnpm install`.
 
 For detailed manifest format and validation rules, see [public/catalog-manifest-schema.md](./public/catalog-manifest-schema.md).
 
@@ -162,7 +191,7 @@ The editor supports sharing a room layout via URL. Use the **Copy Scene URL** bu
 The scene is encoded as a `?scene=` query parameter containing a URL-encoded JSON payload:
 
 ```text
-?scene=%7B%22v%22%3A1%2C%22items%22%3A%5B%7B%22id%22%3A%22furniture-instance-1%22%2C%22catalogId%22%3A%22armchair-1%22%2C%22position%22%3A%5B0%2C0%2C0%5D%2C%22rotationY%22%3A0%7D%5D%7D
+?scene=%7B%22v%22%3A1%2C%22items%22%3A%5B%7B%22id%22%3A%22furniture-instance-1%22%2C%22catalogId%22%3A%22armchair-1%22%2C%22position%22%3A%5B0%2C0%2C0%5D%2C%22rotationY%22%3A0%7D%5D%2C%22floorFinishId%22%3A%22granite-tile%22%2C%22wallFinishId%22%3A%22sage-green%22%7D
 ```
 
 | Field               | Type        | Description                                             |
@@ -173,6 +202,8 @@ The scene is encoded as a `?scene=` query parameter containing a URL-encoded JSO
 | `items[].catalogId` | string      | Catalog entry ID (must exist in the loaded catalog)     |
 | `items[].position`  | `[x, y, z]` | World-space position, rounded to 3 decimal places       |
 | `items[].rotationY` | number      | Y-axis rotation in radians, rounded to 3 decimal places |
+| `floorFinishId`     | string      | Optional floor finish ID from the loaded environment    |
+| `wallFinishId`      | string      | Optional wall finish ID from the loaded environment     |
 
 **Constraints:**
 
@@ -183,7 +214,7 @@ The scene is encoded as a `?scene=` query parameter containing a URL-encoded JSO
 
 #### Restore behavior
 
-On startup, if a valid `?scene=` param is present, the editor restores the saved layout **before** the editor becomes interactive. The restore is a one-shot operation — retrying after an asset-load error will not re-apply the URL param.
+On startup, if a valid `?scene=` param is present, the editor restores the saved layout **before** the editor becomes interactive. This includes furniture instances and, when provided, wall/floor finish IDs that exist in the loaded environment options.
 
 If the param is invalid (malformed JSON, schema violation, or unknown catalog references), the editor starts empty and displays an error message. The message clears on the next user action (add, move, rotate, delete, undo, redo, select, copy URL).
 
@@ -197,6 +228,10 @@ Current roadmap and progress checklist are tracked in [PLAN.md](./PLAN.md).
 - **End Table**: Source <https://sketchfab.com/3d-models/end-table-d0032d49ca214200929d4151d733f828>, author <https://sketchfab.com/cirax-we>, license CC Attribution 4.0, local details in [./assets-source/cirax-we-end-table/end-table.txt](./assets-source/cirax-we-end-table/end-table.txt)
 - **Modern Coffee Table**: Source <https://sketchfab.com/3d-models/coffee-table-91872709bf054d8994be323599e23107>, author <https://sketchfab.com/zeerkad>, license CC Attribution 4.0, local details in [./assets-source/zeerkad-coffee-table/coffee-table.txt](./assets-source/zeerkad-coffee-table/coffee-table.txt)
 - **Classic Coffee Table**: Source <https://sketchfab.com/3d-models/coffee-table-living-room-aa5b9a41c90245e8992ba93de6dde8c8>, author <https://sketchfab.com/maurib98>, license CC Attribution 4.0, local details in [./assets-source/machine-meza-coffee-table-living-room/coffee-table-living-room.txt](./assets-source/machine-meza-coffee-table-living-room/coffee-table-living-room.txt)
+- **Wood Floor Texture Set**: Source <https://polyhaven.com/a/wood_floor>, author <https://polyhaven.com/all?a=Dimitrios%20Savva>, license CC0, local details in [./assets-source/environment/textures/polyhaven-dimitrios-savva-wood-floor/polyhaven-dimitrios-savva-wood-floor.txt](./assets-source/environment/textures/polyhaven-dimitrios-savva-wood-floor/polyhaven-dimitrios-savva-wood-floor.txt)
+- **Laminate Floor Texture Set**: Source <https://polyhaven.com/a/laminate_floor_02>, photographer <https://www.artstation.com/wyrine>, processing <https://polyhaven.com/all?a=Dario%20Barresi>, license CC0, local details in [./assets-source/environment/textures/polyhaven-charlotte-baglioni-laminate-floor-02/polyhaven-charlotte-baglioni-laminate-floor-02.txt](./assets-source/environment/textures/polyhaven-charlotte-baglioni-laminate-floor-02/polyhaven-charlotte-baglioni-laminate-floor-02.txt)
+- **Granite Tile Texture Set**: Source <https://polyhaven.com/a/granite_tile_04>, author <https://www.artstation.com/amalbubble>, license CC0, local details in [./assets-source/environment/textures/polyhaven-amal-kumar-granite-tile-04/polyhaven-amal-kumar-granite-tile-04.txt](./assets-source/environment/textures/polyhaven-amal-kumar-granite-tile-04/polyhaven-amal-kumar-granite-tile-04.txt)
+- **Painted Concrete Texture Set**: Source <https://polyhaven.com/a/painted_concrete_02>, author <https://www.artstation.com/tuytel>, license CC0, local details in [./assets-source/environment/textures/polyhaven-rob-tuytel-painted-concrete-02/polyhaven-rob-tuytel-painted-concrete-02.txt](./assets-source/environment/textures/polyhaven-rob-tuytel-painted-concrete-02/polyhaven-rob-tuytel-painted-concrete-02.txt)
 
 ## 📄 License
 
@@ -204,3 +239,6 @@ This project source code is licensed under the MIT License. See [LICENSE](./LICE
 
 Third-party furniture assets in this repository remain under their
 original CC Attribution 4.0 licenses.
+
+Third-party environment texture assets in this repository remain under
+their original CC0 licenses.

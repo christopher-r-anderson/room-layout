@@ -6,6 +6,7 @@ import {
   useRef,
   type RefObject,
 } from 'react'
+import { type EnvironmentMaterialConfig } from '@/lib/three/environment-materials'
 import {
   clearFurnitureCollectionCache,
   preloadFurnitureCollections,
@@ -32,6 +33,7 @@ interface ReducerState {
   phase: StartupPhase
   manifestCatalog: FurnitureCatalogEntry[] | null
   manifestCollections: FurnitureCollection[] | null
+  manifestEnvironment: EnvironmentMaterialConfig | null
   assetError: Error | null
   cacheInvalidationKey: number
   retryKey: number
@@ -43,6 +45,7 @@ type Action =
       type: 'MANIFEST_LOADED'
       catalog: FurnitureCatalogEntry[]
       collections: FurnitureCollection[]
+      environment: EnvironmentMaterialConfig
     }
   | { type: 'MANIFEST_FAILED'; error: Error; kind: StartupErrorKind }
   | { type: 'ASSETS_READY' }
@@ -53,6 +56,7 @@ const INITIAL_STATE: ReducerState = {
   phase: 'loading-manifest',
   manifestCatalog: null,
   manifestCollections: null,
+  manifestEnvironment: null,
   assetError: null,
   assetErrorKind: null,
   cacheInvalidationKey: 0,
@@ -118,6 +122,7 @@ function reducer(state: ReducerState, action: Action): ReducerState {
         phase: 'loading-assets',
         manifestCatalog: action.catalog,
         manifestCollections: action.collections,
+        manifestEnvironment: action.environment,
         assetError: null,
         assetErrorKind: null,
         cacheInvalidationKey: state.cacheInvalidationKey + 1,
@@ -129,6 +134,7 @@ function reducer(state: ReducerState, action: Action): ReducerState {
         phase: 'error',
         manifestCatalog: null,
         manifestCollections: null,
+        manifestEnvironment: null,
         assetError: action.error,
         assetErrorKind: action.kind,
       }
@@ -153,6 +159,7 @@ function reducer(state: ReducerState, action: Action): ReducerState {
         phase: 'loading-manifest',
         manifestCatalog: null,
         manifestCollections: null,
+        manifestEnvironment: null,
         assetError: null,
         assetErrorKind: null,
         cacheInvalidationKey: state.cacheInvalidationKey + 1,
@@ -171,6 +178,7 @@ interface StartupState {
   assetErrorKind: StartupErrorKind | null
   catalog: FurnitureCatalogEntry[]
   collections: FurnitureCollection[]
+  environmentConfig: EnvironmentMaterialConfig | null
   editorInteractionsEnabled: boolean
   handleAssetError: (error: Error) => void
   handleAssetsReady: () => void
@@ -183,9 +191,9 @@ interface StartupState {
 export function useStartupState(): StartupState {
   const [state, dispatch] = useReducer(reducer, INITIAL_STATE)
 
-  // Non-null selectors: empty until manifest loads — the manifest is the only catalog source
   const catalog = state.manifestCatalog ?? EMPTY_CATALOG
   const collections = state.manifestCollections ?? EMPTY_COLLECTIONS
+  const environmentConfig = state.manifestEnvironment
   const { retryKey } = state
 
   const assetsReady = state.phase === 'ready'
@@ -209,8 +217,6 @@ export function useStartupState(): StartupState {
   }, [assetError])
 
   // Fetch the runtime catalog manifest and preload the resolved collections.
-  // The manifest is the authoritative catalog source — failures are fatal and show an error overlay.
-  // Runs on mount and on each retry (retryKey increment).
   useEffect(() => {
     let cancelled = false
     let manifestFetchTimedOut = false
@@ -233,6 +239,7 @@ export function useStartupState(): StartupState {
           type: 'MANIFEST_LOADED',
           catalog: result.catalog,
           collections: result.collections,
+          environment: result.environment,
         })
 
         preloadFurnitureCollections(result.collections.map((c) => c.sourcePath))
@@ -297,6 +304,7 @@ export function useStartupState(): StartupState {
       assetsReadyRef,
       catalog,
       collections,
+      environmentConfig,
       editorInteractionsEnabled,
       handleAssetError,
       handleAssetsReady,
@@ -313,6 +321,7 @@ export function useStartupState(): StartupState {
       assetsReadyRef,
       catalog,
       collections,
+      environmentConfig,
       editorInteractionsEnabled,
       handleAssetError,
       handleAssetsReady,

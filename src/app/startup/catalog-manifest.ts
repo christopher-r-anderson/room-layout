@@ -1,4 +1,9 @@
 import { resolvePublicAssetPath } from '@/lib/asset-path'
+import {
+  type EnvironmentMaterialConfig,
+  type FloorFinishOption,
+  type WallFinishOption,
+} from '@/lib/three/environment-materials'
 import type {
   FurnitureCatalogEntry,
   FurnitureCollection,
@@ -39,6 +44,7 @@ export class ManifestValidationError extends Error {
 export interface CatalogManifestResult {
   catalog: FurnitureCatalogEntry[]
   collections: FurnitureCollection[]
+  environment: EnvironmentMaterialConfig
 }
 
 interface FetchCatalogManifestOptions {
@@ -219,6 +225,223 @@ function validateAndNormalizeCatalogEntry(
   }
 }
 
+function parseHexColor(value: unknown, path: string): number {
+  if (typeof value !== 'string' || !/^#[0-9a-fA-F]{6}$/.test(value)) {
+    throw new ManifestValidationError(
+      `${path}: "color" must be a #RRGGBB string`,
+    )
+  }
+
+  return Number.parseInt(value.slice(1), 16)
+}
+
+function validateAndNormalizeFloorFinish(
+  raw: unknown,
+  index: number,
+): FloorFinishOption {
+  if (typeof raw !== 'object' || raw === null) {
+    throw new ManifestValidationError(
+      `environment.floorFinishes[${String(index)}]: must be an object`,
+    )
+  }
+
+  const entry = raw as Record<string, unknown>
+
+  if (typeof entry.id !== 'string' || entry.id.trim() === '') {
+    throw new ManifestValidationError(
+      `environment.floorFinishes[${String(index)}]: "id" must be a non-empty string`,
+    )
+  }
+
+  if (typeof entry.label !== 'string' || entry.label.trim() === '') {
+    throw new ManifestValidationError(
+      `environment.floorFinishes[${String(index)}] ("${entry.id}"): "label" must be a non-empty string`,
+    )
+  }
+
+  const normalizedDiffusePath = normalizeRelativeAssetPath(entry.diffusePath)
+  if (normalizedDiffusePath === null) {
+    throw new ManifestValidationError(
+      `environment.floorFinishes[${String(index)}] ("${entry.id}"): "diffusePath" must be a relative path`,
+    )
+  }
+
+  const normalizedNormalPath = normalizeRelativeAssetPath(entry.normalPath)
+  if (normalizedNormalPath === null) {
+    throw new ManifestValidationError(
+      `environment.floorFinishes[${String(index)}] ("${entry.id}"): "normalPath" must be a relative path`,
+    )
+  }
+
+  if (
+    typeof entry.tileSizeMeters !== 'object' ||
+    entry.tileSizeMeters === null
+  ) {
+    throw new ManifestValidationError(
+      `environment.floorFinishes[${String(index)}] ("${entry.id}"): "tileSizeMeters" must be an object`,
+    )
+  }
+
+  const tileSizeMeters = entry.tileSizeMeters as Record<string, unknown>
+
+  if (
+    typeof tileSizeMeters.width !== 'number' ||
+    !Number.isFinite(tileSizeMeters.width) ||
+    tileSizeMeters.width <= 0
+  ) {
+    throw new ManifestValidationError(
+      `environment.floorFinishes[${String(index)}] ("${entry.id}"): "tileSizeMeters.width" must be a positive finite number`,
+    )
+  }
+
+  if (
+    typeof tileSizeMeters.depth !== 'number' ||
+    !Number.isFinite(tileSizeMeters.depth) ||
+    tileSizeMeters.depth <= 0
+  ) {
+    throw new ManifestValidationError(
+      `environment.floorFinishes[${String(index)}] ("${entry.id}"): "tileSizeMeters.depth" must be a positive finite number`,
+    )
+  }
+
+  return {
+    id: entry.id,
+    label: entry.label,
+    diffusePath: resolvePublicAssetPath(normalizedDiffusePath),
+    normalPath: resolvePublicAssetPath(normalizedNormalPath),
+    tileSizeMeters: {
+      width: tileSizeMeters.width,
+      depth: tileSizeMeters.depth,
+    },
+  }
+}
+
+function validateAndNormalizeWallFinish(
+  raw: unknown,
+  index: number,
+): WallFinishOption {
+  if (typeof raw !== 'object' || raw === null) {
+    throw new ManifestValidationError(
+      `environment.wallFinishes[${String(index)}]: must be an object`,
+    )
+  }
+
+  const entry = raw as Record<string, unknown>
+
+  if (typeof entry.id !== 'string' || entry.id.trim() === '') {
+    throw new ManifestValidationError(
+      `environment.wallFinishes[${String(index)}]: "id" must be a non-empty string`,
+    )
+  }
+
+  if (typeof entry.label !== 'string' || entry.label.trim() === '') {
+    throw new ManifestValidationError(
+      `environment.wallFinishes[${String(index)}] ("${entry.id}"): "label" must be a non-empty string`,
+    )
+  }
+
+  return {
+    id: entry.id,
+    label: entry.label,
+    color: parseHexColor(
+      entry.color,
+      `environment.wallFinishes[${String(index)}] ("${entry.id}")`,
+    ),
+  }
+}
+
+function validateAndNormalizeEnvironment(
+  raw: unknown,
+): EnvironmentMaterialConfig {
+  if (typeof raw !== 'object' || raw === null) {
+    throw new ManifestValidationError(
+      'Catalog manifest must have an "environment" object',
+    )
+  }
+
+  const environment = raw as Record<string, unknown>
+
+  if (!Array.isArray(environment.floorFinishes)) {
+    throw new ManifestValidationError(
+      'Catalog manifest environment must have a "floorFinishes" array',
+    )
+  }
+
+  if (environment.floorFinishes.length === 0) {
+    throw new ManifestValidationError(
+      'Catalog manifest environment "floorFinishes" array must not be empty',
+    )
+  }
+
+  if (!Array.isArray(environment.wallFinishes)) {
+    throw new ManifestValidationError(
+      'Catalog manifest environment must have a "wallFinishes" array',
+    )
+  }
+
+  if (environment.wallFinishes.length === 0) {
+    throw new ManifestValidationError(
+      'Catalog manifest environment "wallFinishes" array must not be empty',
+    )
+  }
+
+  const floorFinishes = environment.floorFinishes.map((rawFloor, i) =>
+    validateAndNormalizeFloorFinish(rawFloor, i),
+  )
+  const wallFinishes = environment.wallFinishes.map((rawWall, i) =>
+    validateAndNormalizeWallFinish(rawWall, i),
+  )
+
+  const floorIds = new Set<string>()
+  for (const option of floorFinishes) {
+    if (floorIds.has(option.id)) {
+      throw new ManifestValidationError(
+        `environment.floorFinishes: duplicate id "${option.id}"`,
+      )
+    }
+    floorIds.add(option.id)
+  }
+
+  const wallIds = new Set<string>()
+  for (const option of wallFinishes) {
+    if (wallIds.has(option.id)) {
+      throw new ManifestValidationError(
+        `environment.wallFinishes: duplicate id "${option.id}"`,
+      )
+    }
+    wallIds.add(option.id)
+  }
+
+  const defaultFloorFinishIdCandidate =
+    typeof environment.defaultFloorFinishId === 'string'
+      ? environment.defaultFloorFinishId
+      : floorFinishes[0].id
+
+  const defaultWallFinishIdCandidate =
+    typeof environment.defaultWallFinishId === 'string'
+      ? environment.defaultWallFinishId
+      : wallFinishes[0].id
+
+  if (!floorIds.has(defaultFloorFinishIdCandidate)) {
+    throw new ManifestValidationError(
+      'Catalog manifest environment "defaultFloorFinishId" must reference an existing floor finish id',
+    )
+  }
+
+  if (!wallIds.has(defaultWallFinishIdCandidate)) {
+    throw new ManifestValidationError(
+      'Catalog manifest environment "defaultWallFinishId" must reference an existing wall finish id',
+    )
+  }
+
+  return {
+    floorFinishes,
+    wallFinishes,
+    defaultFloorFinishId: defaultFloorFinishIdCandidate,
+    defaultWallFinishId: defaultWallFinishIdCandidate,
+  }
+}
+
 export async function fetchCatalogManifest(
   manifestUrl = 'catalog-manifest.json',
   options: FetchCatalogManifestOptions = {},
@@ -324,6 +547,7 @@ export async function fetchCatalogManifest(
   const catalog = manifest.catalog.map((raw, i) =>
     validateAndNormalizeCatalogEntry(raw, i, collectionIds),
   )
+  const environment = validateAndNormalizeEnvironment(manifest.environment)
 
   const catalogIds = new Set<string>()
   for (const entry of catalog) {
@@ -338,8 +562,10 @@ export async function fetchCatalogManifest(
   perfLog('Catalog manifest loaded', {
     collections: collections.length,
     catalog: catalog.length,
+    floorFinishes: environment.floorFinishes.length,
+    wallFinishes: environment.wallFinishes.length,
     durationMs: `${duration}ms`,
   })
 
-  return { catalog, collections }
+  return { catalog, collections, environment }
 }

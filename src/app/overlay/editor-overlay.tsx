@@ -1,10 +1,16 @@
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
 import type { FurnitureCatalogEntry } from '@/scene/objects/furniture-catalog'
 import type {
+  FloorFinishOption,
+  WallFinishOption,
+} from '@/lib/three/environment-materials'
+import type {
+  CameraPreset,
   MoveSelectionResult,
   MoveSource,
   SceneReadModel,
 } from '@/scene/scene.types'
+import { CameraTools } from '../camera/camera-tools'
 import { DeleteConfirmationDialog } from '../selection/delete-confirmation-dialog'
 import type { HistoryAvailability } from '../history/history.types'
 import { StatusMessage } from './status-message'
@@ -19,11 +25,17 @@ import { HistoryTools } from '../history/history-tools'
 import { SelectionToolsMovement } from '../selection/selection-tools-movement'
 import { SelectionToolsOther } from '../selection/selection-tools-other'
 import { Outliner } from '../scene-panel/outliner'
+import { EnvironmentPanel } from './environment-panel'
 import type { SceneOutlinerFocusRequest } from '../scene-panel.types'
 import { Inspector } from '../scene-panel/inspector'
 import type { StartupErrorKind } from '../startup/use-startup-state'
 import { Button } from '@/components/ui/button'
 import { IconLink } from '@tabler/icons-react'
+
+export interface EditorCameraProps {
+  onSetCameraPreset: (preset: CameraPreset) => void
+  onFocusSelected: () => void
+}
 
 export interface EditorStartupProps {
   assetError: boolean
@@ -87,6 +99,7 @@ interface EditorOverlayProps {
   editorInteractionsEnabled: boolean
   statusMessage: string | null
   onCopySceneUrl: () => void
+  camera: EditorCameraProps
   startup: EditorStartupProps
   history: EditorHistoryProps
   scene: EditorSceneProps
@@ -94,12 +107,20 @@ interface EditorOverlayProps {
   catalog: EditorCatalogProps
   dialogs: EditorDialogsProps
   preview: EditorPreviewProps
+  floorFinishId: string
+  floorFinishLoading: boolean
+  floorFinishes: FloorFinishOption[]
+  onFloorFinishChange: (finishId: string) => void
+  wallFinishId: string
+  wallFinishes: WallFinishOption[]
+  onWallFinishChange: (finishId: string) => void
 }
 
 export function EditorOverlay({
   editorInteractionsEnabled,
   statusMessage,
   onCopySceneUrl,
+  camera,
   startup,
   history,
   scene,
@@ -107,15 +128,38 @@ export function EditorOverlay({
   catalog,
   dialogs,
   preview,
+  floorFinishId,
+  floorFinishLoading,
+  floorFinishes,
+  onFloorFinishChange,
+  wallFinishId,
+  wallFinishes,
+  onWallFinishChange,
 }: EditorOverlayProps) {
   return (
     <>
+      {/* Camera controls — right-center navigation strip, separate from the editing toolbar */}
+      <div
+        className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2"
+        inert={startup.startupOverlayActive}
+        aria-hidden={startup.startupOverlayActive}
+      >
+        <div className="pointer-events-auto">
+          <CameraTools
+            editorInteractionsEnabled={editorInteractionsEnabled}
+            hasSelection={scene.readModel.selectedId !== null}
+            onSetPreset={camera.onSetCameraPreset}
+            onFocusSelected={camera.onFocusSelected}
+          />
+        </div>
+      </div>
+
       <div
         className="pointer-events-none absolute inset-2 flex flex-col justify-between"
         inert={startup.startupOverlayActive}
         aria-hidden={startup.startupOverlayActive}
       >
-        <div className="flex justify-between gap-2">
+        <div className="flex items-start justify-between gap-2">
           <div
             role="toolbar"
             aria-label="Editor actions"
@@ -139,30 +183,34 @@ export function EditorOverlay({
               onRotateSelection={selection.onRotateSelection}
               selectedFurniture={selection.selectedFurniture}
             />
-            <Button
-              variant="secondary"
-              size="sm"
-              disabled={!editorInteractionsEnabled}
-              onClick={onCopySceneUrl}
-              aria-label="Copy Scene URL to clipboard"
-              className="pointer-events-auto"
-            >
-              <IconLink aria-hidden="true" size={16} />
-              Copy Scene URL
-            </Button>
           </div>
 
-          <div className="justify-self-end shrink-0 flex items-start gap-4">
-            <h1 className="text-lg text-background font-semibold">
-              Room Layout
-            </h1>
-            <ProjectInfoDialog
-              open={dialogs.isInfoDialogOpen}
-              onOpenChange={dialogs.onInfoDialogOpenChange}
-              triggerButton={
-                <ProjectInfoButton className="pointer-events-auto" />
-              }
-            />
+          <div className="shrink-0">
+            <div className="flex justify-self-end items-center gap-2">
+              <h1 className="rounded-sm bg-background/65 px-2 py-0.5 text-base/6 font-semibold text-foreground backdrop-blur-[1px]">
+                Room Layout
+              </h1>
+              <ProjectInfoDialog
+                open={dialogs.isInfoDialogOpen}
+                onOpenChange={dialogs.onInfoDialogOpenChange}
+                triggerButton={
+                  <ProjectInfoButton className="pointer-events-auto" />
+                }
+              />
+            </div>
+            <div className="mt-1 flex justify-end">
+              <Button
+                variant="secondary"
+                size="sm"
+                disabled={!editorInteractionsEnabled}
+                onClick={onCopySceneUrl}
+                aria-label="Copy Scene URL to clipboard"
+                className="pointer-events-auto"
+              >
+                <IconLink aria-hidden="true" size={16} />
+                Copy Scene URL
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -183,6 +231,15 @@ export function EditorOverlay({
               onPreviewChange={preview.onPreviewChange}
             />
             <Inspector selectedFurniture={selection.selectedFurniture} />
+            <EnvironmentPanel
+              floorFinishId={floorFinishId}
+              floorFinishLoading={floorFinishLoading}
+              floorFinishes={floorFinishes}
+              onFloorFinishChange={onFloorFinishChange}
+              wallFinishId={wallFinishId}
+              wallFinishes={wallFinishes}
+              onWallFinishChange={onWallFinishChange}
+            />
           </div>
 
           <div className="flex w-full sm:w-auto sm:flex-col justify-between sm:justify-end items-end gap-2">

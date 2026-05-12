@@ -12,6 +12,7 @@ export default defineConfig([
     'node_modules',
     'assets-source',
     'public/models',
+    'public/basis',
     '.agents',
   ]),
   {

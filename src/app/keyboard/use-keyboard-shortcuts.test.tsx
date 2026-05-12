@@ -13,6 +13,7 @@ function KeyboardShortcutHarness(props: {
   onUndo: () => void
   onRedo: () => void
   onOpenDeleteDialog: () => void
+  onFocusSelected: () => void
   onMoveSelection: (delta: { x: number; z: number }) => void
   onClearSelection: () => void
   onRotate: (direction: -1 | 1) => void
@@ -37,6 +38,7 @@ function DialogEscapeHarness(props: {
     onUndo: vi.fn(),
     onRedo: vi.fn(),
     onOpenDeleteDialog: vi.fn(),
+    onFocusSelected: vi.fn(),
     onMoveSelection: vi.fn(),
     onClearSelection: props.onClearSelection,
     onRotate: vi.fn(),
@@ -76,6 +78,7 @@ function TextInputHarness(props: {
     onUndo: props.onUndo,
     onRedo: props.onRedo,
     onOpenDeleteDialog: vi.fn(),
+    onFocusSelected: vi.fn(),
     onMoveSelection: vi.fn(),
     onClearSelection: vi.fn(),
     onRotate: vi.fn(),
@@ -101,6 +104,7 @@ describe('useKeyboardShortcuts', () => {
         onUndo={vi.fn()}
         onRedo={vi.fn()}
         onOpenDeleteDialog={onOpenDeleteDialog}
+        onFocusSelected={vi.fn()}
         onMoveSelection={vi.fn()}
         onClearSelection={vi.fn()}
         onRotate={vi.fn()}
@@ -118,6 +122,7 @@ describe('useKeyboardShortcuts', () => {
         onUndo={vi.fn()}
         onRedo={vi.fn()}
         onOpenDeleteDialog={onOpenDeleteDialog}
+        onFocusSelected={vi.fn()}
         onMoveSelection={vi.fn()}
         onClearSelection={vi.fn()}
         onRotate={vi.fn()}
@@ -144,6 +149,7 @@ describe('useKeyboardShortcuts', () => {
         onUndo={onUndo}
         onRedo={onRedo}
         onOpenDeleteDialog={vi.fn()}
+        onFocusSelected={vi.fn()}
         onMoveSelection={onMoveSelection}
         onClearSelection={onClearSelection}
         onRotate={onRotate}
@@ -176,6 +182,7 @@ describe('useKeyboardShortcuts', () => {
         onUndo={vi.fn()}
         onRedo={vi.fn()}
         onOpenDeleteDialog={vi.fn()}
+        onFocusSelected={vi.fn()}
         onMoveSelection={onMoveSelection}
         onClearSelection={onClearSelection}
         onRotate={vi.fn()}
@@ -191,6 +198,77 @@ describe('useKeyboardShortcuts', () => {
     expect(onMoveSelection).toHaveBeenNthCalledWith(2, { x: 0, z: -1 })
     expect(onMoveSelection).toHaveBeenNthCalledWith(3, { x: 0, z: 0.1 })
     expect(onClearSelection).toHaveBeenCalledTimes(1)
+  })
+
+  it('dispatches focusSelected on F when selection exists and no modal/input context', async () => {
+    const user = userEvent.setup()
+    const onFocusSelected = vi.fn()
+    const onMoveSelection = vi.fn()
+
+    render(
+      <KeyboardShortcutHarness
+        enabled
+        hasSelection
+        isModalOpen={false}
+        onUndo={vi.fn()}
+        onRedo={vi.fn()}
+        onOpenDeleteDialog={vi.fn()}
+        onFocusSelected={onFocusSelected}
+        onMoveSelection={onMoveSelection}
+        onClearSelection={vi.fn()}
+        onRotate={vi.fn()}
+      />,
+    )
+
+    await user.keyboard('f')
+    expect(onFocusSelected).toHaveBeenCalledTimes(1)
+    expect(onMoveSelection).not.toHaveBeenCalled()
+  })
+
+  it('does not dispatch focusSelected on F when no selection', async () => {
+    const user = userEvent.setup()
+    const onFocusSelected = vi.fn()
+
+    render(
+      <KeyboardShortcutHarness
+        enabled
+        hasSelection={false}
+        isModalOpen={false}
+        onUndo={vi.fn()}
+        onRedo={vi.fn()}
+        onOpenDeleteDialog={vi.fn()}
+        onFocusSelected={onFocusSelected}
+        onMoveSelection={vi.fn()}
+        onClearSelection={vi.fn()}
+        onRotate={vi.fn()}
+      />,
+    )
+
+    await user.keyboard('f')
+    expect(onFocusSelected).not.toHaveBeenCalled()
+  })
+
+  it('does not dispatch focusSelected on F when modal is open', async () => {
+    const user = userEvent.setup()
+    const onFocusSelected = vi.fn()
+
+    render(
+      <KeyboardShortcutHarness
+        enabled
+        hasSelection
+        isModalOpen
+        onUndo={vi.fn()}
+        onRedo={vi.fn()}
+        onOpenDeleteDialog={vi.fn()}
+        onFocusSelected={onFocusSelected}
+        onMoveSelection={vi.fn()}
+        onClearSelection={vi.fn()}
+        onRotate={vi.fn()}
+      />,
+    )
+
+    await user.keyboard('f')
+    expect(onFocusSelected).not.toHaveBeenCalled()
   })
 
   it('does not clear selection when Escape originates inside dialog content', async () => {

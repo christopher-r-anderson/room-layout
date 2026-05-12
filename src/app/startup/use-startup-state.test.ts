@@ -3,6 +3,7 @@
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { describe, expect, it, beforeEach, vi } from 'vitest'
 import { useStartupState } from './use-startup-state'
+import type { EnvironmentMaterialConfig } from '@/lib/three/environment-materials'
 import type {
   FurnitureCatalogEntry,
   FurnitureCollection,
@@ -46,6 +47,27 @@ const MANIFEST_COLLECTIONS: FurnitureCollection[] = [
   { id: 'manifest-col', sourcePath: '/models/manifest.glb' },
 ]
 
+const MANIFEST_ENVIRONMENT: EnvironmentMaterialConfig = {
+  floorFinishes: [
+    {
+      id: 'wood-floor',
+      label: 'Wood',
+      diffusePath: '/environment/textures/wood-floor_diff_2k.ktx2',
+      normalPath: '/environment/textures/wood-floor_nor_gl_1k.ktx2',
+      tileSizeMeters: { width: 0.5, depth: 0.5 },
+    },
+  ],
+  wallFinishes: [
+    {
+      id: 'light-gray',
+      label: 'Light Gray',
+      color: 0xf5f5f5,
+    },
+  ],
+  defaultFloorFinishId: 'wood-floor',
+  defaultWallFinishId: 'light-gray',
+}
+
 describe('useStartupState', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -79,6 +101,7 @@ describe('useStartupState', () => {
     manifestMocks.fetchCatalogManifest.mockResolvedValue({
       catalog: MANIFEST_CATALOG,
       collections: MANIFEST_COLLECTIONS,
+      environment: MANIFEST_ENVIRONMENT,
     })
 
     renderHook(() => useStartupState())
@@ -114,6 +137,7 @@ describe('useStartupState', () => {
     manifestMocks.fetchCatalogManifest.mockResolvedValue({
       catalog: MANIFEST_CATALOG,
       collections: MANIFEST_COLLECTIONS,
+      environment: MANIFEST_ENVIRONMENT,
     })
 
     const { result } = renderHook(() => useStartupState())
@@ -123,6 +147,7 @@ describe('useStartupState', () => {
     })
 
     expect(result.current.collections).toEqual(MANIFEST_COLLECTIONS)
+    expect(result.current.environmentConfig).toEqual(MANIFEST_ENVIRONMENT)
   })
 
   it('handleAssetsReady enables editor interactions and clears errors', () => {
@@ -220,6 +245,7 @@ describe('useStartupState', () => {
     manifestMocks.fetchCatalogManifest.mockResolvedValue({
       catalog: MANIFEST_CATALOG,
       collections: MANIFEST_COLLECTIONS,
+      environment: MANIFEST_ENVIRONMENT,
     })
 
     act(() => {

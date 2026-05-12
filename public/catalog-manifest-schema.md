@@ -28,7 +28,30 @@ The manifest is a JSON file with the following structure:
       },
       "previewPath": "string"
     }
-  ]
+  ],
+  "environment": {
+    "floorFinishes": [
+      {
+        "id": "string",
+        "label": "string",
+        "diffusePath": "string",
+        "normalPath": "string",
+        "tileSizeMeters": {
+          "width": number,
+          "depth": number
+        }
+      }
+    ],
+    "wallFinishes": [
+      {
+        "id": "string",
+        "label": "string",
+        "color": "#RRGGBB"
+      }
+    ],
+    "defaultFloorFinishId": "string",
+    "defaultWallFinishId": "string"
+  }
 }
 ```
 
@@ -36,11 +59,12 @@ The manifest is a JSON file with the following structure:
 
 ### Root Object
 
-| Field         | Type   | Description                        |
-| ------------- | ------ | ---------------------------------- |
-| `version`     | number | Schema version (currently `1`)     |
-| `collections` | array  | Array of GLTF model collections    |
-| `catalog`     | array  | Array of furniture catalog entries |
+| Field         | Type   | Description                              |
+| ------------- | ------ | ---------------------------------------- |
+| `version`     | number | Schema version (currently `1`)           |
+| `collections` | array  | Array of GLTF model collections          |
+| `catalog`     | array  | Array of furniture catalog entries       |
+| `environment` | object | Floor/wall material options and defaults |
 
 ### Collection Object
 
@@ -63,16 +87,58 @@ The manifest is a JSON file with the following structure:
 | `footprintSize.depth` | number | Depth in meters (must be > 0)                                                     |
 | `previewPath`         | string | Relative path to a preview image                                                  |
 
+### Environment Object
+
+| Field                  | Type   | Description                                                                                      |
+| ---------------------- | ------ | ------------------------------------------------------------------------------------------------ |
+| `floorFinishes`        | array  | Available floor texture options                                                                  |
+| `wallFinishes`         | array  | Available wall color options                                                                     |
+| `defaultFloorFinishId` | string | Default floor finish id; must reference `floorFinishes[].id` (optional, defaults to first entry) |
+| `defaultWallFinishId`  | string | Default wall finish id; must reference `wallFinishes[].id` (optional, defaults to first entry)   |
+
+### Floor Finish Object
+
+| Field                  | Type   | Description                                    |
+| ---------------------- | ------ | ---------------------------------------------- |
+| `id`                   | string | Unique floor finish id                         |
+| `label`                | string | Display label in the editor                    |
+| `diffusePath`          | string | Relative path to diffuse/albedo texture        |
+| `normalPath`           | string | Relative path to normal texture                |
+| `tileSizeMeters`       | object | Physical texture coverage in meters (required) |
+| `tileSizeMeters.width` | number | Covered width in meters (> 0)                  |
+| `tileSizeMeters.depth` | number | Covered depth in meters (> 0)                  |
+
+Floor texture repeat is computed at runtime from room dimensions:
+
+- `repeat.x = roomWidthMeters / tileSizeMeters.width`
+- `repeat.y = roomDepthMeters / tileSizeMeters.depth`
+
+For web delivery, prefer KTX2 textures for floor finishes:
+
+- Diffuse/albedo maps: ETC1S (`*_diff_2k.ktx2`)
+- Normal maps: UASTC (`*_nor_gl_1k.ktx2`)
+
+### Wall Finish Object
+
+| Field   | Type   | Description                          |
+| ------- | ------ | ------------------------------------ |
+| `id`    | string | Unique wall finish id                |
+| `label` | string | Display label in the editor          |
+| `color` | string | Hex color string in `#RRGGBB` format |
+
 ## Validation Rules
 
-- All `modelPath` and `previewPath` values must be **relative paths** that do not escape the public directory:
+- All path fields (`modelPath`, `previewPath`, `diffusePath`, `normalPath`) must be **relative paths** that do not escape the public directory:
   - ✅ Allowed: `"models/foo.glb"`, `"catalog-previews/couch.webp"`
   - ❌ Not allowed: `"/models/foo.glb"`, `"http://example.com/foo.glb"`, `"//cdn.example.com/foo.glb"`, `"../models/foo.glb"`, `"%2e%2e/models/foo.glb"`, `"models\\foo.glb"`, `"models%2ffoo.glb"`
   - Paths are percent-decoded for validation and then canonicalized before runtime resolution
 - All `kind` values must match one of the known furniture kinds
 - All `collectionId` references must point to an existing collection
 - All footprint dimensions must be positive numbers
+- Wall colors must use `#RRGGBB` hex format
+- Default environment finish ids must reference existing floor/wall finish ids
 - Both `collections` and `catalog` arrays must not be empty
+- Both `environment.floorFinishes` and `environment.wallFinishes` arrays must not be empty
 
 ## Runtime Behavior
 
@@ -116,6 +182,26 @@ The manifest is a JSON file with the following structure:
       },
       "previewPath": "catalog-previews/armchair.webp"
     }
-  ]
+  ],
+  "environment": {
+    "floorFinishes": [
+      {
+        "id": "wood-floor",
+        "label": "Wood",
+        "diffusePath": "environment/textures/wood-floor_diff_2k.ktx2",
+        "normalPath": "environment/textures/wood-floor_nor_gl_1k.ktx2",
+        "tileSizeMeters": { "width": 2, "depth": 2 }
+      }
+    ],
+    "wallFinishes": [
+      {
+        "id": "light-gray",
+        "label": "Light Gray",
+        "color": "#f5f5f5"
+      }
+    ],
+    "defaultFloorFinishId": "wood-floor",
+    "defaultWallFinishId": "light-gray"
+  }
 }
 ```

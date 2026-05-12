@@ -15,16 +15,20 @@ export default defineConfig({
   reporter: [['list'], ['html', { open: 'never' }]],
   outputDir: 'test-results/playwright',
   use: {
-    baseURL: 'http://127.0.0.1:4173',
+    baseURL: 'http://127.0.0.1:4174',
     viewport: { width: 1440, height: 960 },
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
   },
   webServer: {
-    command: 'pnpm exec vite --host 127.0.0.1 --port 4173',
-    url: 'http://127.0.0.1:4173',
-    reuseExistingServer: !isCI,
+    command: 'pnpm exec vite --host 127.0.0.1 --port 4174',
+    env: {
+      VITE_E2E_RENDER_QUALITY: 'low',
+    },
+    url: 'http://127.0.0.1:4174',
+    // Always start a fresh server so low-quality e2e env flags are guaranteed.
+    reuseExistingServer: false,
     timeout: 120_000,
   },
   projects: [
