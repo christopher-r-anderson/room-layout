@@ -3,6 +3,10 @@ import type {
   FurnitureInstance,
   FurnitureItem,
 } from '@/scene/objects/furniture.types'
+import {
+  isValidFurnitureInstance,
+  roundTo3,
+} from '@/lib/furniture-serialization'
 
 export const SCENE_URL_PARAM = 'scene'
 export const SCENE_URL_MAX_ENCODED_LENGTH = 4000
@@ -42,29 +46,6 @@ export type ParseSceneUrlResult =
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-function roundTo3(n: number): number {
-  return Math.round(n * 1000) / 1000
-}
-
-function isFiniteNumber(value: unknown): value is number {
-  return typeof value === 'number' && isFinite(value)
-}
-
-function isValidFurnitureInstance(value: unknown): value is FurnitureInstance {
-  if (typeof value !== 'object' || value === null) return false
-  const v = value as Record<string, unknown>
-  if (typeof v.id !== 'string' || v.id.length === 0) return false
-  if (typeof v.catalogId !== 'string' || v.catalogId.length === 0) return false
-  if (!isFiniteNumber(v.rotationY)) return false
-  if (
-    !Array.isArray(v.position) ||
-    v.position.length !== 3 ||
-    !v.position.every(isFiniteNumber)
-  )
-    return false
-  return true
-}
 
 function isValidScenePayloadV1(value: unknown): value is SceneUrlPayloadV1 {
   if (typeof value !== 'object' || value === null) return false
@@ -144,6 +125,20 @@ export function serializeSceneToUrl(
 
   const url = new URL(href)
   url.searchParams.set(SCENE_URL_PARAM, jsonString)
+  return url.toString()
+}
+
+/**
+ * Returns the provided URL without any `scene` query params, preserving all
+ * other query params and the hash.
+ */
+export function removeSceneParamFromUrl(href: string): string {
+  const url = new URL(href)
+
+  while (url.searchParams.has(SCENE_URL_PARAM)) {
+    url.searchParams.delete(SCENE_URL_PARAM)
+  }
+
   return url.toString()
 }
 

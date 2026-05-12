@@ -17,10 +17,18 @@ import {
   runStartupRetryTransition,
 } from './startup/startup-transitions'
 import {
+  SCENE_URL_PARAM,
+  type ParseSceneUrlResult,
   parseSceneUrl,
   serializeSceneToUrl,
   validateCatalogReferences,
 } from './url-scene/scene-url'
+import {
+  loadSceneDraft,
+  saveSceneDraft,
+  type SceneDraftState,
+} from './url-scene/scene-draft'
+import { toast } from 'sonner'
 
 // ---------------------------------------------------------------------------
 // Dependency slices accepted from outer hooks
@@ -123,12 +131,221 @@ interface SceneHandlers {
   handleSceneAssetError: (error: Error) => void
   handleSceneAssetsReady: () => void
   handleRetryAssetLoading: () => void
-  handleCopySceneUrl: () => Promise<void>
+  handleCopySceneUrl: () => Promise<boolean>
   restoreOutcomeRef: RefObject<RestoreOutcome | null>
   restoreAttemptCountRef: RefObject<number>
 }
 
 export type RestoreOutcome = 'restored' | 'invalid' | 'skipped'
+
+interface RestorableState {
+  items: FurnitureInstance[]
+  floorFinishId?: string
+  wallFinishId?: string
+}
+
+type DraftRestoreAttempt = 'restored' | 'failed' | 'missing'
+
+interface RestoreFlowNotifications {
+  announcePolite: (message: string) => void
+  announceAssertive: (message: string) => void
+  setEditorMessage: (message: string) => void
+  setRestoreOutcome: (outcome: RestoreOutcome) => void
+  toastSuccess: (message: string) => void
+  toastWarning: (message: string) => void
+  toastError: (message: string) => void
+}
+
+interface InvalidRestoreCase {
+  editorMessage: string
+  assertiveMessage: string
+  toastMessage: string
+}
+
+function tryRestoreDraft(
+  draftState: RestorableState | null,
+  applyState: (state: RestorableState) => void,
+): DraftRestoreAttempt {
+  if (!draftState) {
+    return 'missing'
+  }
+
+  try {
+    applyState(draftState)
+    return 'restored'
+  } catch {
+    return 'failed'
+  }
+}
+
+function reportInvalidRestore(
+  notifications: RestoreFlowNotifications,
+  invalidCase: InvalidRestoreCase,
+) {
+  notifications.setRestoreOutcome('invalid')
+  notifications.setEditorMessage(invalidCase.editorMessage)
+  notifications.announceAssertive(invalidCase.assertiveMessage)
+  notifications.toastError(invalidCase.toastMessage)
+}
+
+function reportRecoveredDraftAfterInvalidLink(
+  notifications: RestoreFlowNotifications,
+  toastMessage: string,
+) {
+  const recoveredMessage =
+    'Shared link could not be restored. Recovered your local draft.'
+  notifications.setRestoreOutcome('invalid')
+  notifications.setEditorMessage(recoveredMessage)
+  notifications.announceAssertive(recoveredMessage)
+  notifications.toastWarning(toastMessage)
+}
+
+function restoreFromInvalidLinkWithDraftFallback(
+  notifications: RestoreFlowNotifications,
+  applyState: (state: RestorableState) => void,
+  draftState: RestorableState | null,
+  options: {
+    recoveredToastMessage: string
+    whenDraftMissing: InvalidRestoreCase
+    whenDraftFailed: InvalidRestoreCase
+  },
+) {
+  const draftRestore = tryRestoreDraft(draftState, applyState)
+
+  if (draftRestore === 'restored') {
+    reportRecoveredDraftAfterInvalidLink(
+      notifications,
+      options.recoveredToastMessage,
+    )
+    return
+  }
+
+  reportInvalidRestore(
+    notifications,
+    draftRestore === 'failed'
+      ? options.whenDraftFailed
+      : options.whenDraftMissing,
+  )
+}
+
+export function runStartupRestoreFlow(options: {
+  parseResult: ParseSceneUrlResult
+  catalog: FurnitureCatalogEntry[]
+  validDraftState: SceneDraftState | null
+  applyState: (state: RestorableState) => void
+  notifications: RestoreFlowNotifications
+}) {
+  const { parseResult, catalog, validDraftState, applyState, notifications } =
+    options
+
+  if (parseResult.ok) {
+    if (validateCatalogReferences(parseResult.items, catalog)) {
+      try {
+        applyState(parseResult)
+        notifications.setRestoreOutcome('restored')
+        notifications.announcePolite('Room layout restored from shared link.')
+        notifications.toastSuccess('Room layout restored from shared link.')
+      } catch {
+        restoreFromInvalidLinkWithDraftFallback(
+          notifications,
+          applyState,
+          validDraftState,
+          {
+            recoveredToastMessage:
+              'Shared link was invalid. Recovered your local draft.',
+            whenDraftMissing: {
+              editorMessage:
+                'Shared link could not be restored. Starting with an empty room.',
+              assertiveMessage:
+                'Shared link could not be restored. Starting with an empty room.',
+              toastMessage: 'Shared link could not be restored.',
+            },
+            whenDraftFailed: {
+              editorMessage:
+                'Shared link could not be restored. Draft also failed to restore. Starting with an empty room.',
+              assertiveMessage:
+                'Shared link and draft could not be restored. Starting with an empty room.',
+              toastMessage: 'Shared link and draft could not be restored.',
+            },
+          },
+        )
+      }
+      return
+    }
+
+    restoreFromInvalidLinkWithDraftFallback(
+      notifications,
+      applyState,
+      validDraftState,
+      {
+        recoveredToastMessage:
+          'Shared link contained unknown furniture. Draft restored.',
+        whenDraftMissing: {
+          editorMessage:
+            'Shared link contained unrecognized furniture. Starting with an empty room.',
+          assertiveMessage:
+            'Shared link could not be restored. Starting with an empty room.',
+          toastMessage: 'Shared link contained unrecognized furniture.',
+        },
+        whenDraftFailed: {
+          editorMessage:
+            'Shared link had unknown furniture. Draft also failed to restore. Starting with an empty room.',
+          assertiveMessage:
+            'Shared link and draft could not be restored. Starting with an empty room.',
+          toastMessage: 'Shared link and draft could not be restored.',
+        },
+      },
+    )
+    return
+  }
+
+  if (parseResult.reason !== 'no-param') {
+    restoreFromInvalidLinkWithDraftFallback(
+      notifications,
+      applyState,
+      validDraftState,
+      {
+        recoveredToastMessage:
+          'Shared link was invalid. Recovered your local draft.',
+        whenDraftMissing: {
+          editorMessage:
+            'Shared link could not be restored. Starting with an empty room.',
+          assertiveMessage:
+            'Shared link could not be restored. Starting with an empty room.',
+          toastMessage: 'Shared link could not be restored.',
+        },
+        whenDraftFailed: {
+          editorMessage:
+            'Shared link was invalid. Draft also failed to restore. Starting with an empty room.',
+          assertiveMessage:
+            'Shared link and draft could not be restored. Starting with an empty room.',
+          toastMessage: 'Shared link and draft could not be restored.',
+        },
+      },
+    )
+    return
+  }
+
+  if (validDraftState) {
+    try {
+      applyState(validDraftState)
+      if (validDraftState.items.length > 0) {
+        notifications.announcePolite('Recovered your local draft.')
+        notifications.toastSuccess('Recovered your local draft.')
+      }
+    } catch {
+      reportInvalidRestore(notifications, {
+        editorMessage: 'Draft failed to restore. Starting with an empty room.',
+        assertiveMessage:
+          'Draft could not be restored. Starting with an empty room.',
+        toastMessage: 'Draft could not be restored.',
+      })
+      return
+    }
+  }
+
+  notifications.setRestoreOutcome('skipped')
+}
 
 /**
  * Coordinator hook for scene mutation handlers. Co-locates all event handlers
@@ -193,8 +410,7 @@ export function useSceneHandlers({
     setWallFinishId,
   } = startup
 
-  // One-shot guard: URL restore is attempted at most once per page load.
-  // This ref lives in App's render tree and survives scene remounts and retries.
+  // URL/draft restore runs only once per page load, even across scene remounts.
   const restoreAttemptedRef = useRef(false)
   const restoreOutcomeRef = useRef<RestoreOutcome | null>(null)
   const restoreAttemptCountRef = useRef(0)
@@ -392,6 +608,7 @@ export function useSceneHandlers({
         recordAssetError: handleAssetError,
         resetEditorShellState,
       })
+      toast.error('Unable to load room editor assets. Retry available.')
       announceAssertive('Unable to load room editor assets. Retry available.')
     },
     [
@@ -403,67 +620,80 @@ export function useSceneHandlers({
   )
 
   const handleSceneAssetsReady = useCallback(() => {
-    // Restore from URL on first asset-ready event only (one-shot guard).
+    // Notification channel policy for restore flows:
+    // - setEditorMessage + announceAssertive: blocking/actionable restore failures.
+    // - announcePolite (+ toast companion): successful/non-blocking restore info.
+    // - toast is visual companion only, never the only notification channel.
     if (!restoreAttemptedRef.current) {
       restoreAttemptedRef.current = true
       restoreAttemptCountRef.current += 1
 
+      const draftState = loadSceneDraft()
       const parseResult = parseSceneUrl(window.location.href)
+      const shouldCleanupSceneParam = parseResult.ok
+        ? true
+        : parseResult.reason !== 'no-param'
 
-      if (parseResult.ok) {
-        if (validateCatalogReferences(parseResult.items, catalog)) {
-          try {
-            restoreInitialLayout(parseResult.items)
+      if (shouldCleanupSceneParam) {
+        try {
+          const url = new URL(window.location.href)
 
-            if (
-              parseResult.floorFinishId &&
-              floorFinishIds.includes(parseResult.floorFinishId)
-            ) {
-              setFloorFinishId(parseResult.floorFinishId)
-            }
-
-            if (
-              parseResult.wallFinishId &&
-              wallFinishIds.includes(parseResult.wallFinishId)
-            ) {
-              setWallFinishId(parseResult.wallFinishId)
-            }
-
-            restoreOutcomeRef.current = 'restored'
-            announcePolite('Room layout restored from shared link.')
-          } catch {
-            // Restore threw (e.g. catalog/model node mismatch) — fail closed.
-            setEditorMessage(
-              'Shared link could not be restored. Starting with an empty room.',
-            )
-            restoreOutcomeRef.current = 'invalid'
-            announceAssertive(
-              'Shared link could not be restored. Starting with an empty room.',
-            )
+          while (url.searchParams.has(SCENE_URL_PARAM)) {
+            url.searchParams.delete(SCENE_URL_PARAM)
           }
-        } else {
-          // Unknown catalog IDs — reject and keep empty scene.
-          setEditorMessage(
-            'Shared link contained unrecognized furniture. Starting with an empty room.',
-          )
-          restoreOutcomeRef.current = 'invalid'
-          announceAssertive(
-            'Shared link could not be restored. Starting with an empty room.',
-          )
+
+          window.history.replaceState(window.history.state, '', url.toString())
+        } catch {
+          // Ignore malformed URL/state failures and continue restore flow.
         }
-      } else if (parseResult.reason !== 'no-param') {
-        // Malformed URL payload — reject and keep empty scene.
-        setEditorMessage(
-          'Shared link could not be restored. Starting with an empty room.',
-        )
-        restoreOutcomeRef.current = 'invalid'
-        announceAssertive(
-          'Shared link could not be restored. Starting with an empty room.',
-        )
-      } else {
-        // No scene param — normal startup.
-        restoreOutcomeRef.current = 'skipped'
       }
+
+      const applyFinishIds = (
+        floorFinishId: string | undefined,
+        wallFinishId: string | undefined,
+      ) => {
+        if (floorFinishId && floorFinishIds.includes(floorFinishId)) {
+          setFloorFinishId(floorFinishId)
+        }
+
+        if (wallFinishId && wallFinishIds.includes(wallFinishId)) {
+          setWallFinishId(wallFinishId)
+        }
+      }
+
+      const applyRestoredState = (state: RestorableState) => {
+        restoreInitialLayout(state.items)
+        applyFinishIds(state.floorFinishId, state.wallFinishId)
+        saveSceneDraft(state.items, {
+          floorFinishId: state.floorFinishId,
+          wallFinishId: state.wallFinishId,
+        })
+      }
+
+      const validDraftState =
+        draftState && validateCatalogReferences(draftState.items, catalog)
+          ? draftState
+          : null
+
+      runStartupRestoreFlow({
+        parseResult,
+        catalog,
+        validDraftState,
+        applyState: applyRestoredState,
+        notifications: {
+          announcePolite,
+          announceAssertive,
+          setEditorMessage: (message) => {
+            setEditorMessage(message)
+          },
+          setRestoreOutcome: (outcome) => {
+            restoreOutcomeRef.current = outcome
+          },
+          toastSuccess: (message) => toast.success(message),
+          toastWarning: (message) => toast.warning(message),
+          toastError: (message) => toast.error(message),
+        },
+      })
     }
 
     syncSceneReadModel({
@@ -517,16 +747,18 @@ export function useSceneHandlers({
     if (!url) {
       setEditorMessage('Scene is too large to share as a URL.')
       announceAssertive('Scene is too large to share as a URL.')
-      return
+      return false
     }
 
     try {
       await navigator.clipboard.writeText(url)
       clearEditorMessage()
       announcePolite('Scene URL copied to clipboard.')
+      return true
     } catch {
       setEditorMessage('Could not copy URL to clipboard.')
       announceAssertive('Could not copy URL to clipboard.')
+      return false
     }
   }, [
     sceneReadModel.items,

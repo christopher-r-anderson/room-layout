@@ -28,6 +28,8 @@ import { useStartupLifecycle } from './app/use-startup-lifecycle'
 import { useSceneHandlers, type RestoreOutcome } from './app/use-scene-handlers'
 import { Announcer } from './app/scene-panel/announcer'
 import { TooltipProvider } from './components/ui/tooltip'
+import { Toaster } from './components/ui/sonner'
+import { saveSceneDraft } from './app/url-scene/scene-draft'
 
 interface BrowserSceneState {
   assetsReady: boolean
@@ -96,6 +98,7 @@ function App() {
   const [floorFinishId, setFloorFinishId] = useState('')
   const [wallFinishId, setWallFinishId] = useState('')
   const [isFloorFinishLoading, setIsFloorFinishLoading] = useState(false)
+  const [isSceneDragging, setIsSceneDragging] = useState(false)
   const isE2ELowRenderQuality =
     import.meta.env.DEV && import.meta.env.VITE_E2E_RENDER_QUALITY === 'low'
 
@@ -167,6 +170,11 @@ function App() {
     editorInteractionsEnabled: startup.editorInteractionsEnabled,
     itemIds,
   })
+
+  const handleSceneDragStateChange = (dragging: boolean) => {
+    setIsSceneDragging(dragging)
+    handleDragStateChange(dragging)
+  }
 
   const sync = useSceneSync({
     sceneRef,
@@ -309,6 +317,32 @@ function App() {
     handlers.restoreAttemptCountRef,
   ])
 
+  useEffect(() => {
+    if (startup.startupLoadingActive || isSceneDragging) {
+      return
+    }
+
+    saveSceneDraft(overlayState.sceneReadModel.items, {
+      floorFinishId: environmentConfig?.floorFinishes.some(
+        (option) => option.id === activeFloorFinishId,
+      )
+        ? activeFloorFinishId
+        : undefined,
+      wallFinishId: environmentConfig?.wallFinishes.some(
+        (option) => option.id === activeWallFinishId,
+      )
+        ? activeWallFinishId
+        : undefined,
+    })
+  }, [
+    startup.startupLoadingActive,
+    isSceneDragging,
+    overlayState.sceneReadModel.items,
+    environmentConfig,
+    activeFloorFinishId,
+    activeWallFinishId,
+  ])
+
   useKeyboardShortcuts({
     enabled: startup.editorInteractionsEnabled,
     hasSelection: overlayState.selectedFurniture !== null,
@@ -376,7 +410,7 @@ function App() {
                   onAssetsReady={handlers.handleSceneAssetsReady}
                   previewedId={previewedId}
                   onPreviewChange={handleScenePreviewChange}
-                  onDragStateChange={handleDragStateChange}
+                  onDragStateChange={handleSceneDragStateChange}
                   floorOption={selectedFloorOption}
                   wallOption={selectedWallOption}
                   onFloorLoadingChange={setIsFloorFinishLoading}
@@ -389,7 +423,7 @@ function App() {
         <EditorOverlay
           editorInteractionsEnabled={startup.editorInteractionsEnabled}
           statusMessage={overlayState.editorMessage}
-          onCopySceneUrl={() => void handlers.handleCopySceneUrl()}
+          onCopySceneUrl={handlers.handleCopySceneUrl}
           camera={cameraProps}
           startup={startupProps}
           history={historyProps}
@@ -410,6 +444,7 @@ function App() {
           politeMessage={announcements.politeAnnouncement}
           assertiveMessage={announcements.assertiveAnnouncement}
         />
+        <Toaster />
       </main>
     </TooltipProvider>
   )
