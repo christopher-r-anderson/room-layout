@@ -66,12 +66,18 @@ interface DialogState {
 }
 
 interface StartupSlice {
+  activeFloorFinishId: string
+  activeWallFinishId: string
   catalog: FurnitureCatalogEntry[]
+  floorFinishIds: string[]
   handleAssetError: (error: Error) => void
   handleAssetsReady: () => void
   retryAssetLoading: () => void
   resetEditorShellState: () => void
   restoreInitialLayout: (instances: FurnitureInstance[]) => void
+  setFloorFinishId: (id: string) => void
+  setWallFinishId: (id: string) => void
+  wallFinishIds: string[]
 }
 
 interface OverlayState {
@@ -171,12 +177,18 @@ export function useSceneHandlers({
     sceneReadModel,
   } = overlayState
   const {
+    activeFloorFinishId,
+    activeWallFinishId,
     handleAssetError,
     handleAssetsReady,
     retryAssetLoading,
     resetEditorShellState,
     restoreInitialLayout,
     catalog,
+    floorFinishIds,
+    wallFinishIds,
+    setFloorFinishId,
+    setWallFinishId,
   } = startup
 
   // One-shot guard: URL restore is attempted at most once per page load.
@@ -391,6 +403,21 @@ export function useSceneHandlers({
         if (validateCatalogReferences(parseResult.items, catalog)) {
           try {
             restoreInitialLayout(parseResult.items)
+
+            if (
+              parseResult.floorFinishId &&
+              floorFinishIds.includes(parseResult.floorFinishId)
+            ) {
+              setFloorFinishId(parseResult.floorFinishId)
+            }
+
+            if (
+              parseResult.wallFinishId &&
+              wallFinishIds.includes(parseResult.wallFinishId)
+            ) {
+              setWallFinishId(parseResult.wallFinishId)
+            }
+
             restoreOutcomeRef.current = 'restored'
             announcePolite('Room layout restored from shared link.')
           } catch {
@@ -434,7 +461,11 @@ export function useSceneHandlers({
     handleAssetsReady,
     syncSceneReadModel,
     catalog,
+    floorFinishIds,
+    wallFinishIds,
     restoreInitialLayout,
+    setFloorFinishId,
+    setWallFinishId,
     announcePolite,
     announceAssertive,
     setEditorMessage,
@@ -455,7 +486,18 @@ export function useSceneHandlers({
   ])
 
   const handleCopySceneUrl = useCallback(async () => {
-    const url = serializeSceneToUrl(sceneReadModel.items, window.location.href)
+    const url = serializeSceneToUrl(
+      sceneReadModel.items,
+      window.location.href,
+      {
+        floorFinishId: floorFinishIds.includes(activeFloorFinishId)
+          ? activeFloorFinishId
+          : undefined,
+        wallFinishId: wallFinishIds.includes(activeWallFinishId)
+          ? activeWallFinishId
+          : undefined,
+      },
+    )
 
     if (!url) {
       setEditorMessage('Scene is too large to share as a URL.')
@@ -473,6 +515,10 @@ export function useSceneHandlers({
     }
   }, [
     sceneReadModel.items,
+    activeFloorFinishId,
+    activeWallFinishId,
+    floorFinishIds,
+    wallFinishIds,
     clearEditorMessage,
     setEditorMessage,
     announcePolite,

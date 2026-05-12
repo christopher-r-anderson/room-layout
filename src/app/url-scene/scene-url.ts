@@ -15,6 +15,8 @@ const SCENE_URL_VERSION = 1
 interface SceneUrlPayloadV1 {
   v: 1
   items: FurnitureInstance[]
+  floorFinishId?: string
+  wallFinishId?: string
 }
 
 // ---------------------------------------------------------------------------
@@ -29,7 +31,12 @@ export type ParseSceneUrlOutcome =
   | 'invalid-schema'
 
 export type ParseSceneUrlResult =
-  | { ok: true; items: FurnitureInstance[] }
+  | {
+      ok: true
+      items: FurnitureInstance[]
+      floorFinishId?: string
+      wallFinishId?: string
+    }
   | { ok: false; reason: ParseSceneUrlOutcome }
 
 // ---------------------------------------------------------------------------
@@ -69,6 +76,19 @@ function isValidScenePayloadV1(value: unknown): value is SceneUrlPayloadV1 {
   // Safe: every item passed isValidFurnitureInstance which checks id is string.
   const ids = v.items.map((item) => item.id)
   if (new Set(ids).size !== ids.length) return false
+
+  if ('floorFinishId' in v) {
+    if (typeof v.floorFinishId !== 'string' || v.floorFinishId.length === 0) {
+      return false
+    }
+  }
+
+  if ('wallFinishId' in v) {
+    if (typeof v.wallFinishId !== 'string' || v.wallFinishId.length === 0) {
+      return false
+    }
+  }
+
   return true
 }
 
@@ -85,6 +105,10 @@ function isValidScenePayloadV1(value: unknown): value is SceneUrlPayloadV1 {
 export function serializeSceneToUrl(
   items: FurnitureItem[],
   href: string,
+  options?: {
+    floorFinishId?: string
+    wallFinishId?: string
+  },
 ): string | null {
   const sortedItems: FurnitureInstance[] = [...items]
     .sort((a, b) => a.id.localeCompare(b.id))
@@ -103,6 +127,15 @@ export function serializeSceneToUrl(
     v: SCENE_URL_VERSION,
     items: sortedItems,
   }
+
+  if (options?.floorFinishId) {
+    payload.floorFinishId = options.floorFinishId
+  }
+
+  if (options?.wallFinishId) {
+    payload.wallFinishId = options.wallFinishId
+  }
+
   const jsonString = JSON.stringify(payload)
 
   if (encodeURIComponent(jsonString).length > SCENE_URL_MAX_ENCODED_LENGTH) {
@@ -159,7 +192,12 @@ export function parseSceneUrl(href: string): ParseSceneUrlResult {
     return { ok: false, reason: 'invalid-schema' }
   }
 
-  return { ok: true, items: payload.items }
+  return {
+    ok: true,
+    items: payload.items,
+    floorFinishId: payload.floorFinishId,
+    wallFinishId: payload.wallFinishId,
+  }
 }
 
 // ---------------------------------------------------------------------------

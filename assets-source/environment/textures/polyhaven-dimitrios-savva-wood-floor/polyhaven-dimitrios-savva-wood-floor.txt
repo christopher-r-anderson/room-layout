@@ -1,0 +1,9 @@
+Model: Wood Floor
+Source: https://polyhaven.com/a/wood_floor
+Author: https://polyhaven.com/all?a=Dimitrios%20Savva (Dimitrios Savva)
+License: CC0
+Size: 1.7m
+Output name: wood-floor_diff_2k + wood-floor_nor_gl_1k
+
+Notes/modifications:
+Downloaded as 2k png and compressed/resized/renamed

@@ -12,6 +12,8 @@ const POINTER_SELECTION_ATTEMPTS = 3
 export interface BrowserSceneState {
   assetsReady: boolean
   assetError: boolean
+  floorFinishId: string
+  wallFinishId: string
   selectedId: string | null
   previewedId: string | null
   selectedName: string | null

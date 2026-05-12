@@ -1,6 +1,10 @@
 import { getMeshes } from '@/lib/three/get-meshes'
 import { Room } from './internal/environment/room'
 import { Lighting } from './internal/environment/lighting'
+import type {
+  FloorFinishOption,
+  WallFinishOption,
+} from '@/lib/three/environment-materials'
 import { CameraControls } from './internal/camera/camera-controls'
 import { InteractiveFurniture } from './internal/objects/interactive-furniture'
 import { useGLTF } from '@react-three/drei'
@@ -30,8 +34,11 @@ import { useSceneDrag } from './internal/use-scene-drag'
 import { useSceneImperativeApi } from './internal/use-scene-imperative-api'
 import { useSceneSelection } from './internal/use-scene-selection'
 import { BlendFunction } from 'postprocessing'
+import {
+  ROOM_HALF_DEPTH_METERS,
+  ROOM_HALF_WIDTH_METERS,
+} from './internal/environment/room-constants'
 
-const ROOM_HALF_SIZE = 3
 const FLOOR_PLANE_Y = 0
 const SNAP_SIZE = 0.5
 const EDGE_SNAP_THRESHOLD = 0.12
@@ -39,10 +46,10 @@ const EDGE_SNAP_THRESHOLD = 0.12
 const SELECTED_OUTLINE_LAYER = 10
 const PREVIEW_OUTLINE_LAYER = 11
 const ROOM_BOUNDS: LayoutBounds = {
-  minX: -ROOM_HALF_SIZE,
-  maxX: ROOM_HALF_SIZE,
-  minZ: -ROOM_HALF_SIZE,
-  maxZ: ROOM_HALF_SIZE,
+  minX: -ROOM_HALF_WIDTH_METERS,
+  maxX: ROOM_HALF_WIDTH_METERS,
+  minZ: -ROOM_HALF_DEPTH_METERS,
+  maxZ: ROOM_HALF_DEPTH_METERS,
 }
 
 function getInitialFurnitureItems(): FurnitureItem[] {
@@ -60,6 +67,9 @@ export function Scene({
   previewedId = null,
   onPreviewChange,
   onDragStateChange,
+  floorOption = null,
+  wallOption = null,
+  onFloorLoadingChange,
 }: {
   ref: React.Ref<SceneRef>
   renderQuality?: 'default' | 'e2e-low'
@@ -71,6 +81,9 @@ export function Scene({
   previewedId?: string | null
   onPreviewChange?: (id: string | null) => void
   onDragStateChange?: (isDragging: boolean) => void
+  floorOption?: FloorFinishOption | null
+  wallOption?: WallFinishOption | null
+  onFloorLoadingChange?: (isLoading: boolean) => void
 }) {
   const isE2ELowQuality = renderQuality === 'e2e-low'
   const camera = useThree((state) => state.camera)
@@ -185,8 +198,8 @@ export function Scene({
   }, [historyAvailability, onHistoryChange])
 
   useEffect(() => {
-    // Do not report ready if no collections have been passed yet — this happens
-    // during the loading-manifest phase when App renders Scene with [] initially.
+    // Do not report ready if no collections have been passed yet
+    // this happens during the loading-manifest phase when App renders Scene with [] initially.
     if (collectionPaths.length === 0) {
       return
     }
@@ -298,7 +311,12 @@ export function Scene({
       </EffectComposer>
       <CameraControls enabled={!dragState} controlsRef={cameraControlsRef} />
       <Lighting lowQuality={isE2ELowQuality} />
-      <Room receiveShadows={!isE2ELowQuality} />
+      <Room
+        receiveShadows={!isE2ELowQuality}
+        floorOption={floorOption}
+        wallOption={wallOption}
+        onFloorLoadingChange={onFloorLoadingChange}
+      />
       {sceneFurniture.map(({ item, sourceScene }) => (
         <InteractiveFurniture
           key={item.id}

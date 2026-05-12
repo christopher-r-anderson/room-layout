@@ -1,6 +1,10 @@
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
 import type { FurnitureCatalogEntry } from '@/scene/objects/furniture-catalog'
 import type {
+  FloorFinishOption,
+  WallFinishOption,
+} from '@/lib/three/environment-materials'
+import type {
   CameraPreset,
   MoveSelectionResult,
   MoveSource,
@@ -21,6 +25,7 @@ import { HistoryTools } from '../history/history-tools'
 import { SelectionToolsMovement } from '../selection/selection-tools-movement'
 import { SelectionToolsOther } from '../selection/selection-tools-other'
 import { Outliner } from '../scene-panel/outliner'
+import { EnvironmentPanel } from './environment-panel'
 import type { SceneOutlinerFocusRequest } from '../scene-panel.types'
 import { Inspector } from '../scene-panel/inspector'
 import type { StartupErrorKind } from '../startup/use-startup-state'
@@ -102,6 +107,13 @@ interface EditorOverlayProps {
   catalog: EditorCatalogProps
   dialogs: EditorDialogsProps
   preview: EditorPreviewProps
+  floorFinishId: string
+  floorFinishLoading: boolean
+  floorFinishes: FloorFinishOption[]
+  onFloorFinishChange: (finishId: string) => void
+  wallFinishId: string
+  wallFinishes: WallFinishOption[]
+  onWallFinishChange: (finishId: string) => void
 }
 
 export function EditorOverlay({
@@ -116,6 +128,13 @@ export function EditorOverlay({
   catalog,
   dialogs,
   preview,
+  floorFinishId,
+  floorFinishLoading,
+  floorFinishes,
+  onFloorFinishChange,
+  wallFinishId,
+  wallFinishes,
+  onWallFinishChange,
 }: EditorOverlayProps) {
   return (
     <>
@@ -212,6 +231,15 @@ export function EditorOverlay({
               onPreviewChange={preview.onPreviewChange}
             />
             <Inspector selectedFurniture={selection.selectedFurniture} />
+            <EnvironmentPanel
+              floorFinishId={floorFinishId}
+              floorFinishLoading={floorFinishLoading}
+              floorFinishes={floorFinishes}
+              onFloorFinishChange={onFloorFinishChange}
+              wallFinishId={wallFinishId}
+              wallFinishes={wallFinishes}
+              onWallFinishChange={onWallFinishChange}
+            />
           </div>
 
           <div className="flex w-full sm:w-auto sm:flex-col justify-between sm:justify-end items-end gap-2">

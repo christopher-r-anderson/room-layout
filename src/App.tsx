@@ -6,10 +6,15 @@ import {
   type ReactNode,
   useEffect,
   useMemo,
+  useState,
   useRef,
 } from 'react'
-import { NeutralToneMapping } from 'three'
+import { NeutralToneMapping, SRGBColorSpace } from 'three'
 import type { SceneRef } from './scene/scene.types'
+import {
+  findFloorFinishOption,
+  findWallFinishOption,
+} from './lib/three/environment-materials'
 import { EditorOverlay } from './app/overlay/editor-overlay'
 import { useDialogState } from './app/overlay/use-dialog-state'
 import { useKeyboardShortcuts } from './app/keyboard/use-keyboard-shortcuts'
@@ -27,6 +32,8 @@ import { TooltipProvider } from './components/ui/tooltip'
 interface BrowserSceneState {
   assetsReady: boolean
   assetError: boolean
+  floorFinishId: string
+  wallFinishId: string
   selectedId: string | null
   previewedId: string | null
   selectedName: string | null
@@ -86,6 +93,9 @@ function App() {
   const sceneRef = useRef<SceneRef | null>(null)
   const previewedIdRef = useRef<string | null>(null)
   const overlayState = useOverlayState()
+  const [floorFinishId, setFloorFinishId] = useState('')
+  const [wallFinishId, setWallFinishId] = useState('')
+  const [isFloorFinishLoading, setIsFloorFinishLoading] = useState(false)
   const isE2ELowRenderQuality =
     import.meta.env.DEV && import.meta.env.VITE_E2E_RENDER_QUALITY === 'low'
 
@@ -93,6 +103,36 @@ function App() {
     sceneRef,
     resetOverlayState: overlayState.resetOverlayState,
   })
+
+  const environmentConfig = startup.environmentConfig
+
+  const activeFloorFinishId = environmentConfig?.floorFinishes.some(
+    (option) => option.id === floorFinishId,
+  )
+    ? floorFinishId
+    : (environmentConfig?.defaultFloorFinishId ?? '')
+
+  const activeWallFinishId = environmentConfig?.wallFinishes.some(
+    (option) => option.id === wallFinishId,
+  )
+    ? wallFinishId
+    : (environmentConfig?.defaultWallFinishId ?? '')
+
+  const selectedFloorOption = useMemo(
+    () =>
+      environmentConfig
+        ? findFloorFinishOption(environmentConfig, activeFloorFinishId)
+        : null,
+    [environmentConfig, activeFloorFinishId],
+  )
+
+  const selectedWallOption = useMemo(
+    () =>
+      environmentConfig
+        ? findWallFinishOption(environmentConfig, activeWallFinishId)
+        : null,
+    [environmentConfig, activeWallFinishId],
+  )
 
   const announcements = useAnnouncements()
 
@@ -148,7 +188,11 @@ function App() {
       handleHistoryChange: overlayState.handleHistoryChange,
     },
     startup: {
+      activeFloorFinishId,
+      activeWallFinishId,
       catalog: startup.catalog,
+      floorFinishIds:
+        environmentConfig?.floorFinishes.map((option) => option.id) ?? [],
       handleAssetError: startup.handleAssetError,
       handleAssetsReady: startup.handleAssetsReady,
       retryAssetLoading: startup.retryAssetLoading,
@@ -158,6 +202,10 @@ function App() {
           throw new Error('sceneRef not initialized at restore')
         sceneRef.current.restoreInitialLayout(instances)
       },
+      setFloorFinishId,
+      setWallFinishId,
+      wallFinishIds:
+        environmentConfig?.wallFinishes.map((option) => option.id) ?? [],
     },
   })
 
@@ -235,6 +283,8 @@ function App() {
         return {
           assetsReady: startup.assetsReadyRef.current,
           assetError: startup.assetErrorRef.current !== null,
+          floorFinishId: activeFloorFinishId,
+          wallFinishId: activeWallFinishId,
           selectedId: sceneState?.selectedId ?? null,
           previewedId: previewedIdRef.current,
           selectedName: sceneState?.selectedName ?? null,
@@ -250,6 +300,8 @@ function App() {
       delete window.__ROOM_LAYOUT_TEST__
     }
   }, [
+    activeFloorFinishId,
+    activeWallFinishId,
     startup.assetErrorRef,
     startup.assetsReadyRef,
     handlers.restoreOutcomeRef,
@@ -294,6 +346,7 @@ function App() {
               fov: 50,
             }}
             onCreated={({ gl }) => {
+              gl.outputColorSpace = SRGBColorSpace
               gl.toneMapping = NeutralToneMapping
               gl.toneMappingExposure = isE2ELowRenderQuality ? 1 : 1.05
             }}
@@ -323,6 +376,9 @@ function App() {
                   previewedId={previewedId}
                   onPreviewChange={handleScenePreviewChange}
                   onDragStateChange={handleDragStateChange}
+                  floorOption={selectedFloorOption}
+                  wallOption={selectedWallOption}
+                  onFloorLoadingChange={setIsFloorFinishLoading}
                 />
               </Suspense>
             </SceneAssetErrorBoundary>
@@ -341,6 +397,13 @@ function App() {
           catalog={catalogProps}
           dialogs={dialogsProps}
           preview={previewProps}
+          floorFinishId={activeFloorFinishId}
+          floorFinishLoading={isFloorFinishLoading}
+          floorFinishes={environmentConfig?.floorFinishes ?? []}
+          onFloorFinishChange={setFloorFinishId}
+          wallFinishId={activeWallFinishId}
+          wallFinishes={environmentConfig?.wallFinishes ?? []}
+          onWallFinishChange={setWallFinishId}
         />
         <Announcer
           politeMessage={announcements.politeAnnouncement}

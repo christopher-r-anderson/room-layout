@@ -64,5 +64,48 @@
       "footprintSize": { "width": 1.91, "depth": 1.03 },
       "previewPath": "catalog-previews/living-room-coffee-table.webp"
     }
-  ]
+  ],
+  "environment": {
+    "floorFinishes": [
+      {
+        "id": "wood-floor",
+        "label": "Wood",
+        "diffusePath": "environment/textures/wood-floor_diff_2k.ktx2",
+        "normalPath": "environment/textures/wood-floor_nor_gl_1k.ktx2",
+        "tileSizeMeters": { "width": 1.7, "depth": 1.7 }
+      },
+      {
+        "id": "laminate-floor",
+        "label": "Laminate",
+        "diffusePath": "environment/textures/laminate-floor_diff_2k.ktx2",
+        "normalPath": "environment/textures/laminate-floor_nor_gl_1k.ktx2",
+        "tileSizeMeters": { "width": 1.7, "depth": 1.7 }
+      },
+      {
+        "id": "granite-tile",
+        "label": "Granite",
+        "diffusePath": "environment/textures/granite-tile_diff_2k.ktx2",
+        "normalPath": "environment/textures/granite-tile_nor_gl_1k.ktx2",
+        "tileSizeMeters": { "width": 2, "depth": 2 }
+      },
+      {
+        "id": "concrete-floor",
+        "label": "Concrete",
+        "diffusePath": "environment/textures/concrete-floor_diff_2k.ktx2",
+        "normalPath": "environment/textures/concrete-floor_nor_gl_1k.ktx2",
+        "tileSizeMeters": { "width": 4, "depth": 4 }
+      }
+    ],
+    "wallFinishes": [
+      { "id": "light-gray", "label": "Light Gray", "color": "#f5f5f5" },
+      { "id": "warm-white", "label": "Warm White", "color": "#faf8f3" },
+      { "id": "soft-beige", "label": "Soft Beige", "color": "#f0e6d2" },
+      { "id": "pale-blue", "label": "Pale Blue", "color": "#e8f0f7" },
+      { "id": "slate-blue", "label": "Slate Blue", "color": "#7a8fa6" },
+      { "id": "sage-green", "label": "Sage Green", "color": "#8a9e85" },
+      { "id": "dusty-mauve", "label": "Dusty Mauve", "color": "#a8909a" }
+    ],
+    "defaultFloorFinishId": "wood-floor",
+    "defaultWallFinishId": "light-gray"
+  }
 }

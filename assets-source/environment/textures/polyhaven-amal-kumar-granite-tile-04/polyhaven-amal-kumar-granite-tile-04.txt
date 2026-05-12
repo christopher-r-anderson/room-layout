@@ -1,0 +1,9 @@
+Model: Granite Tile 04
+Source: https://polyhaven.com/a/granite_tile_04
+Author: https://www.artstation.com/amalbubble (Amal Kumar)
+License: CC0
+Size: 2.0m
+Output name: granite-tile_diff_2k + granite-tile_nor_gl_1k
+
+Notes/modifications:
+Downloaded as 2k png and compressed/resized/renamed

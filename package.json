@@ -5,6 +5,7 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
+    "postinstall": "node ./scripts/copy-basis-transcoder.js",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "typecheck": "tsc -b",
@@ -23,6 +24,7 @@
     "bench": "vitest bench --run",
     "bench:json": "vitest bench --run --outputJson .bench/results.json",
     "bench:compare": "vitest bench --run --compare .bench/baseline.json",
+    "textures:export": "./scripts/export-textures.sh",
     "preview": "vite preview"
   },
   "dependencies": {

@@ -15,6 +15,8 @@ import {
 
 interface ScenePayload {
   v: number
+  floorFinishId?: string
+  wallFinishId?: string
   items: {
     id: string
     catalogId: string
@@ -125,6 +127,25 @@ describe('serializeSceneToUrl', () => {
   it('includes the version field v: 1', () => {
     const payload = parsePayload(requireSceneUrl([], 'https://example.com/'))
     expect(payload.v).toBe(1)
+  })
+
+  it('includes floor and wall finish IDs when provided', () => {
+    const url = serializeSceneToUrl([], 'https://example.com/', {
+      floorFinishId: 'granite-tile',
+      wallFinishId: 'sage-green',
+    })
+    if (url === null) throw new Error('expected non-null URL')
+    const payload = parsePayload(url)
+
+    expect(payload.floorFinishId).toBe('granite-tile')
+    expect(payload.wallFinishId).toBe('sage-green')
+  })
+
+  it('omits finish IDs when not provided', () => {
+    const payload = parsePayload(requireSceneUrl([], 'https://example.com/'))
+
+    expect(payload.floorFinishId).toBeUndefined()
+    expect(payload.wallFinishId).toBeUndefined()
   })
 
   it('produces byte-identical output for equivalent inputs', () => {
@@ -264,6 +285,22 @@ describe('parseSceneUrl', () => {
     expect(result).toEqual({ ok: false, reason: 'invalid-schema' })
   })
 
+  it('returns invalid-schema when floorFinishId is empty', () => {
+    const payload = JSON.stringify({ v: 1, items: [], floorFinishId: '' })
+    const result = parseSceneUrl(
+      `https://example.com/?${SCENE_URL_PARAM}=${encodeURIComponent(payload)}`,
+    )
+    expect(result).toEqual({ ok: false, reason: 'invalid-schema' })
+  })
+
+  it('returns invalid-schema when wallFinishId is not a string', () => {
+    const payload = JSON.stringify({ v: 1, items: [], wallFinishId: 42 })
+    const result = parseSceneUrl(
+      `https://example.com/?${SCENE_URL_PARAM}=${encodeURIComponent(payload)}`,
+    )
+    expect(result).toEqual({ ok: false, reason: 'invalid-schema' })
+  })
+
   it('returns over-limit when encoded payload exceeds max length', () => {
     // Build a payload guaranteed to exceed 4000 encoded chars.
     // 80 items × ~80 chars each ≈ 6400 chars, well above the limit.
@@ -297,6 +334,24 @@ describe('parseSceneUrl', () => {
       `https://example.com/?${SCENE_URL_PARAM}=${encodeURIComponent(payload)}`,
     )
     expect(result).toEqual({ ok: true, items: [expected] })
+  })
+
+  it('returns ok with optional finish IDs for a valid payload', () => {
+    const payload = JSON.stringify({
+      v: 1,
+      items: [],
+      floorFinishId: 'laminate-floor',
+      wallFinishId: 'soft-beige',
+    })
+    const result = parseSceneUrl(
+      `https://example.com/?${SCENE_URL_PARAM}=${encodeURIComponent(payload)}`,
+    )
+    expect(result).toEqual({
+      ok: true,
+      items: [],
+      floorFinishId: 'laminate-floor',
+      wallFinishId: 'soft-beige',
+    })
   })
 
   it('is a round-trip with serializeSceneToUrl', () => {

@@ -27,3 +27,4 @@ test-results
 *.sw?
 
 *.blend[0-9]
+public/basis

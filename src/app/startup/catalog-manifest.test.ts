@@ -39,6 +39,26 @@ const VALID_MANIFEST = {
       previewPath: 'catalog-previews/test-armchair.webp',
     },
   ],
+  environment: {
+    floorFinishes: [
+      {
+        id: 'wood-floor',
+        label: 'Wood',
+        diffusePath: 'environment/textures/wood-floor_diff_2k.ktx2',
+        normalPath: 'environment/textures/wood-floor_nor_gl_1k.ktx2',
+        tileSizeMeters: { width: 0.5, depth: 0.5 },
+      },
+    ],
+    wallFinishes: [
+      {
+        id: 'light-gray',
+        label: 'Light Gray',
+        color: '#f5f5f5',
+      },
+    ],
+    defaultFloorFinishId: 'wood-floor',
+    defaultWallFinishId: 'light-gray',
+  },
 }
 
 function mockFetchOk(body: unknown) {
@@ -122,6 +142,32 @@ describe('fetchCatalogManifest', () => {
       expect(item.collectionId).toBe('col-1')
       expect(item.nodeName).toBe('couch-node')
       expect(item.footprintSize).toEqual({ width: 2.0, depth: 1.0 })
+    })
+
+    it('returns normalized environment floor and wall material options', async () => {
+      mockFetchOk(VALID_MANIFEST)
+
+      const result = await fetchCatalogManifest()
+
+      expect(result.environment.defaultFloorFinishId).toBe('wood-floor')
+      expect(result.environment.defaultWallFinishId).toBe('light-gray')
+      expect(result.environment.floorFinishes).toEqual([
+        {
+          id: 'wood-floor',
+          label: 'Wood',
+          diffusePath: '/__base__/environment/textures/wood-floor_diff_2k.ktx2',
+          normalPath:
+            '/__base__/environment/textures/wood-floor_nor_gl_1k.ktx2',
+          tileSizeMeters: { width: 0.5, depth: 0.5 },
+        },
+      ])
+      expect(result.environment.wallFinishes).toEqual([
+        {
+          id: 'light-gray',
+          label: 'Light Gray',
+          color: 0xf5f5f5,
+        },
+      ])
     })
 
     it('fetches from catalog-manifest.json by default', async () => {
@@ -220,6 +266,78 @@ describe('fetchCatalogManifest', () => {
 
     it('throws ManifestValidationError when "catalog" is missing', async () => {
       mockFetchOk({ ...VALID_MANIFEST, catalog: undefined })
+
+      await expect(fetchCatalogManifest()).rejects.toBeInstanceOf(
+        ManifestValidationError,
+      )
+    })
+
+    it('throws ManifestValidationError when "environment" is missing', async () => {
+      mockFetchOk({ ...VALID_MANIFEST, environment: undefined })
+
+      await expect(fetchCatalogManifest()).rejects.toBeInstanceOf(
+        ManifestValidationError,
+      )
+    })
+
+    it('throws ManifestValidationError when wall color is not #RRGGBB', async () => {
+      const badManifest = {
+        ...VALID_MANIFEST,
+        environment: {
+          ...VALID_MANIFEST.environment,
+          wallFinishes: [
+            {
+              id: 'bad-color',
+              label: 'Bad Color',
+              color: 'rgb(1,2,3)',
+            },
+          ],
+        },
+      }
+
+      mockFetchOk(badManifest)
+
+      await expect(fetchCatalogManifest()).rejects.toBeInstanceOf(
+        ManifestValidationError,
+      )
+    })
+
+    it('throws ManifestValidationError when floor tileSizeMeters is missing', async () => {
+      const badManifest = {
+        ...VALID_MANIFEST,
+        environment: {
+          ...VALID_MANIFEST.environment,
+          floorFinishes: [
+            {
+              ...VALID_MANIFEST.environment.floorFinishes[0],
+              tileSizeMeters: undefined,
+            },
+          ],
+        },
+      }
+
+      mockFetchOk(badManifest)
+
+      await expect(fetchCatalogManifest()).rejects.toBeInstanceOf(
+        ManifestValidationError,
+      )
+    })
+
+    it('throws ManifestValidationError when floor tileSizeMeters width is non-positive', async () => {
+      const badManifest = {
+        ...VALID_MANIFEST,
+        environment: {
+          ...VALID_MANIFEST.environment,
+          floorFinishes: [
+            {
+              ...VALID_MANIFEST.environment.floorFinishes[0],
+              tileSizeMeters: { width: 0, depth: 0.5 },
+            },
+          ],
+        },
+      }
+
+      mockFetchOk(badManifest)
 
       await expect(fetchCatalogManifest()).rejects.toBeInstanceOf(
         ManifestValidationError,

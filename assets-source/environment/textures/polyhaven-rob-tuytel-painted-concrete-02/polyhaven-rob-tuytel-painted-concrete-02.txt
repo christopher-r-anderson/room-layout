@@ -1,0 +1,9 @@
+Model: Painted Concrete 02
+Source: https://polyhaven.com/a/painted_concrete_02
+Author: https://www.artstation.com/tuytel (Rob Tuytel)
+License: CC0
+Size: 4.0m
+Output name: concrete-floor_diff_2k + concrete-floor_nor_gl_1k
+
+Notes/modifications:
+Downloaded as 2k png and compressed/resized/renamed
