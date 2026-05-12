@@ -3,14 +3,22 @@ import {
   DescriptionList,
   DescriptionTerm,
 } from '@/components/ui/description-list'
-import { useId } from 'react'
+import { Fragment, useId } from 'react'
 import attributions from './asset-attributions.json'
+
+interface AttributionContributor {
+  label: string
+  name: string
+  href: string
+}
 
 interface AssetAttributionProps {
   assetName: string
-  authorHref: string
-  authorName: string
+  contributors: AttributionContributor[]
+  sourceName: string
   sourceHref: string
+  licenseName: string
+  licenseHref: string
   localSourcePath: string
 }
 
@@ -35,9 +43,11 @@ function ExternalLink({
 
 export function AssetAttribution({
   assetName,
-  authorHref,
-  authorName,
+  contributors,
+  sourceName,
   sourceHref,
+  licenseName,
+  licenseHref,
   localSourcePath,
 }: AssetAttributionProps) {
   const id = useId()
@@ -53,19 +63,23 @@ export function AssetAttribution({
         {assetName}
       </h4>
       <DescriptionList>
-        <DescriptionTerm>Author</DescriptionTerm>
-        <DescriptionDetail>
-          <ExternalLink href={authorHref}>{authorName}</ExternalLink>
-        </DescriptionDetail>
+        {contributors.map((contributor) => (
+          <Fragment key={`${contributor.label}:${contributor.name}`}>
+            <DescriptionTerm>{contributor.label}</DescriptionTerm>
+            <DescriptionDetail>
+              <ExternalLink href={contributor.href}>
+                {contributor.name}
+              </ExternalLink>
+            </DescriptionDetail>
+          </Fragment>
+        ))}
         <DescriptionTerm>Source</DescriptionTerm>
         <DescriptionDetail>
-          <ExternalLink href={sourceHref}>Sketchfab</ExternalLink>
+          <ExternalLink href={sourceHref}>{sourceName}</ExternalLink>
         </DescriptionDetail>
         <DescriptionTerm>License</DescriptionTerm>
         <DescriptionDetail>
-          <ExternalLink href="https://creativecommons.org/licenses/by/4.0/deed.en">
-            CC BY 4.0
-          </ExternalLink>
+          <ExternalLink href={licenseHref}>{licenseName}</ExternalLink>
         </DescriptionDetail>
         <DescriptionTerm>Notes/Modifications</DescriptionTerm>
         <DescriptionDetail>

@@ -104,7 +104,9 @@ test('restores multiple items from a valid ?scene= param', async ({ page }) => {
   expect(state.restoreOutcome).toBe('restored')
 })
 
-test('populates outliner with restored items from ?scene=', async ({ page }) => {
+test('populates outliner with restored items from ?scene=', async ({
+  page,
+}) => {
   const items: FurnitureInstance[] = [
     {
       id: 'furniture-instance-1',
