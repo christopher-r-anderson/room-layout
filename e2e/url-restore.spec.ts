@@ -104,6 +104,31 @@ test('restores multiple items from a valid ?scene= param', async ({ page }) => {
   expect(state.restoreOutcome).toBe('restored')
 })
 
+test('populates outliner with restored items from ?scene=', async ({ page }) => {
+  const items: FurnitureInstance[] = [
+    {
+      id: 'furniture-instance-1',
+      catalogId: 'armchair-1',
+      position: [0, 0, 0],
+      rotationY: 0,
+    },
+    {
+      id: 'furniture-instance-2',
+      catalogId: 'end-table-1',
+      position: [1, 0, 1],
+      rotationY: 0,
+    },
+  ]
+
+  await page.goto(makeSceneRoute(items))
+  await waitForEditorReady(page)
+
+  await expect(
+    page.getByRole('button', { name: /leather armchair/i }),
+  ).toBeVisible()
+  await expect(page.getByRole('button', { name: /end table/i })).toBeVisible()
+})
+
 test('restores floor and wall finish IDs from a valid ?scene= param', async ({
   page,
 }) => {

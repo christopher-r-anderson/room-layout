@@ -191,6 +191,7 @@ function App() {
       activeFloorFinishId,
       activeWallFinishId,
       catalog: startup.catalog,
+      editorInteractionsEnabled: startup.editorInteractionsEnabled,
       floorFinishIds:
         environmentConfig?.floorFinishes.map((option) => option.id) ?? [],
       handleAssetError: startup.handleAssetError,

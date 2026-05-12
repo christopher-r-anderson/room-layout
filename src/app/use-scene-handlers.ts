@@ -69,6 +69,7 @@ interface StartupSlice {
   activeFloorFinishId: string
   activeWallFinishId: string
   catalog: FurnitureCatalogEntry[]
+  editorInteractionsEnabled: boolean
   floorFinishIds: string[]
   handleAssetError: (error: Error) => void
   handleAssetsReady: () => void
@@ -179,6 +180,7 @@ export function useSceneHandlers({
   const {
     activeFloorFinishId,
     activeWallFinishId,
+    editorInteractionsEnabled,
     handleAssetError,
     handleAssetsReady,
     retryAssetLoading,
@@ -365,14 +367,23 @@ export function useSceneHandlers({
   const handleSceneHistoryChange = useCallback(
     (availability: HistoryAvailability) => {
       handleHistoryChange(availability)
+
+      if (!editorInteractionsEnabled) {
+        return
+      }
+
       syncSceneReadModel()
     },
-    [handleHistoryChange, syncSceneReadModel],
+    [editorInteractionsEnabled, handleHistoryChange, syncSceneReadModel],
   )
 
   const handleSceneSelectionChange = useCallback(() => {
+    if (!editorInteractionsEnabled) {
+      return
+    }
+
     syncSceneReadModel({ requestOutlinerFocus: false })
-  }, [syncSceneReadModel])
+  }, [editorInteractionsEnabled, syncSceneReadModel])
 
   const handleSceneAssetError = useCallback(
     (error: Error) => {
@@ -455,7 +466,11 @@ export function useSceneHandlers({
       }
     }
 
-    syncSceneReadModel()
+    syncSceneReadModel({
+      announceSelectionChange: false,
+      requestOutlinerFocus: false,
+    })
+
     handleAssetsReady()
   }, [
     handleAssetsReady,

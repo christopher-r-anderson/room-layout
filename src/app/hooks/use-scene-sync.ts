@@ -39,7 +39,6 @@ export function useSceneSync({
       if (!nextReadModel) {
         return null
       }
-
       const previousSelectedId = previousSelectedIdRef.current
       const selectionChanged = previousSelectedId !== nextReadModel.selectedId
 
