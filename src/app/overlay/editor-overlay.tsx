@@ -29,8 +29,7 @@ import { EnvironmentPanel } from './environment-panel'
 import type { SceneOutlinerFocusRequest } from '../scene-panel.types'
 import { Inspector } from '../scene-panel/inspector'
 import type { StartupErrorKind } from '../startup/use-startup-state'
-import { Button } from '@/components/ui/button'
-import { IconLink } from '@tabler/icons-react'
+import { CopySceneUrlButton } from './copy-scene-url-button'
 
 export interface EditorCameraProps {
   onSetCameraPreset: (preset: CameraPreset) => void
@@ -98,7 +97,7 @@ export interface EditorPreviewProps {
 interface EditorOverlayProps {
   editorInteractionsEnabled: boolean
   statusMessage: string | null
-  onCopySceneUrl: () => void
+  onCopySceneUrl: () => Promise<boolean>
   camera: EditorCameraProps
   startup: EditorStartupProps
   history: EditorHistoryProps
@@ -138,7 +137,6 @@ export function EditorOverlay({
 }: EditorOverlayProps) {
   return (
     <>
-      {/* Camera controls — right-center navigation strip, separate from the editing toolbar */}
       <div
         className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2"
         inert={startup.startupOverlayActive}
@@ -199,17 +197,10 @@ export function EditorOverlay({
               />
             </div>
             <div className="mt-1 flex justify-end">
-              <Button
-                variant="secondary"
-                size="sm"
+              <CopySceneUrlButton
                 disabled={!editorInteractionsEnabled}
-                onClick={onCopySceneUrl}
-                aria-label="Copy Scene URL to clipboard"
-                className="pointer-events-auto"
-              >
-                <IconLink aria-hidden="true" size={16} />
-                Copy Scene URL
-              </Button>
+                onCopySceneUrl={onCopySceneUrl}
+              />
             </div>
           </div>
         </div>

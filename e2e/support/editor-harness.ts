@@ -83,13 +83,15 @@ export async function readSceneState(page: Page): Promise<BrowserSceneState> {
 }
 
 export async function readPoliteAnnouncement(page: Page) {
-  const text = await page.locator('[aria-live="polite"]').textContent()
+  const text = await page.locator('.sr-only [aria-live="polite"]').textContent()
 
   return text?.trim() ?? ''
 }
 
 export async function readAssertiveAnnouncement(page: Page) {
-  const text = await page.locator('[aria-live="assertive"]').textContent()
+  const text = await page
+    .locator('.sr-only [aria-live="assertive"]')
+    .textContent()
 
   return text?.trim() ?? ''
 }

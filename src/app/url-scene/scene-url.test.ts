@@ -5,6 +5,7 @@ import {
   SCENE_URL_MAX_ENCODED_LENGTH,
   SCENE_URL_PARAM,
   parseSceneUrl,
+  removeSceneParamFromUrl,
   serializeSceneToUrl,
   validateCatalogReferences,
 } from './scene-url'
@@ -173,6 +174,29 @@ describe('serializeSceneToUrl', () => {
   it('handles empty items array', () => {
     const payload = parsePayload(requireSceneUrl([], 'https://example.com/'))
     expect(payload.items).toEqual([])
+  })
+})
+
+// ---------------------------------------------------------------------------
+// removeSceneParamFromUrl
+// ---------------------------------------------------------------------------
+
+describe('removeSceneParamFromUrl', () => {
+  it('removes all scene params while preserving other params and hash', () => {
+    const url = removeSceneParamFromUrl(
+      'https://example.com/?scene=abc&other=123&scene=def#section',
+    )
+
+    const parsed = new URL(url)
+    expect(parsed.searchParams.has(SCENE_URL_PARAM)).toBe(false)
+    expect(parsed.searchParams.get('other')).toBe('123')
+    expect(parsed.hash).toBe('#section')
+  })
+
+  it('returns the same URL when scene param is absent', () => {
+    expect(
+      removeSceneParamFromUrl('https://example.com/?other=123#section'),
+    ).toBe('https://example.com/?other=123#section')
   })
 })
 
