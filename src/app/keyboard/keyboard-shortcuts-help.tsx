@@ -88,6 +88,18 @@ const SHORTCUT_GROUPS: ShortcutGroup[] = [
       },
     ],
   },
+  {
+    groupLabel: 'Scene',
+    rows: [
+      {
+        label: 'New Scene',
+        combos: [
+          ['Ctrl', 'N'],
+          ['Cmd', 'N'],
+        ],
+      },
+    ],
+  },
 ]
 
 function renderShortcutCombos(combos: ShortcutCombo[]) {

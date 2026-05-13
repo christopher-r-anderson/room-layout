@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { render } from '@testing-library/react'
+import { fireEvent, render } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useEffect, useRef } from 'react'
 import { describe, expect, it, vi } from 'vitest'
@@ -10,15 +10,20 @@ function KeyboardShortcutHarness(props: {
   enabled: boolean
   hasSelection: boolean
   isModalOpen: boolean
+  canStartNewScene?: boolean
   onUndo: () => void
   onRedo: () => void
+  onNewSceneIntent: () => void
   onOpenDeleteDialog: () => void
   onFocusSelected: () => void
   onMoveSelection: (delta: { x: number; z: number }) => void
   onClearSelection: () => void
   onRotate: (direction: -1 | 1) => void
 }) {
-  useKeyboardShortcuts(props)
+  useKeyboardShortcuts({
+    ...props,
+    canStartNewScene: props.canStartNewScene ?? true,
+  })
 
   return <button type="button">Editor Root</button>
 }
@@ -35,8 +40,10 @@ function DialogEscapeHarness(props: {
     enabled: props.enabled,
     hasSelection: props.hasSelection,
     isModalOpen: false,
+    canStartNewScene: true,
     onUndo: vi.fn(),
     onRedo: vi.fn(),
+    onNewSceneIntent: vi.fn(),
     onOpenDeleteDialog: vi.fn(),
     onFocusSelected: vi.fn(),
     onMoveSelection: vi.fn(),
@@ -75,8 +82,10 @@ function TextInputHarness(props: {
     enabled: props.enabled,
     hasSelection: false,
     isModalOpen: false,
+    canStartNewScene: true,
     onUndo: props.onUndo,
     onRedo: props.onRedo,
+    onNewSceneIntent: vi.fn(),
     onOpenDeleteDialog: vi.fn(),
     onFocusSelected: vi.fn(),
     onMoveSelection: vi.fn(),
@@ -103,6 +112,7 @@ describe('useKeyboardShortcuts', () => {
         isModalOpen={false}
         onUndo={vi.fn()}
         onRedo={vi.fn()}
+        onNewSceneIntent={vi.fn()}
         onOpenDeleteDialog={onOpenDeleteDialog}
         onFocusSelected={vi.fn()}
         onMoveSelection={vi.fn()}
@@ -121,6 +131,7 @@ describe('useKeyboardShortcuts', () => {
         isModalOpen
         onUndo={vi.fn()}
         onRedo={vi.fn()}
+        onNewSceneIntent={vi.fn()}
         onOpenDeleteDialog={onOpenDeleteDialog}
         onFocusSelected={vi.fn()}
         onMoveSelection={vi.fn()}
@@ -148,6 +159,7 @@ describe('useKeyboardShortcuts', () => {
         isModalOpen={false}
         onUndo={onUndo}
         onRedo={onRedo}
+        onNewSceneIntent={vi.fn()}
         onOpenDeleteDialog={vi.fn()}
         onFocusSelected={vi.fn()}
         onMoveSelection={onMoveSelection}
@@ -181,6 +193,7 @@ describe('useKeyboardShortcuts', () => {
         isModalOpen={false}
         onUndo={vi.fn()}
         onRedo={vi.fn()}
+        onNewSceneIntent={vi.fn()}
         onOpenDeleteDialog={vi.fn()}
         onFocusSelected={vi.fn()}
         onMoveSelection={onMoveSelection}
@@ -212,6 +225,7 @@ describe('useKeyboardShortcuts', () => {
         isModalOpen={false}
         onUndo={vi.fn()}
         onRedo={vi.fn()}
+        onNewSceneIntent={vi.fn()}
         onOpenDeleteDialog={vi.fn()}
         onFocusSelected={onFocusSelected}
         onMoveSelection={onMoveSelection}
@@ -236,6 +250,7 @@ describe('useKeyboardShortcuts', () => {
         isModalOpen={false}
         onUndo={vi.fn()}
         onRedo={vi.fn()}
+        onNewSceneIntent={vi.fn()}
         onOpenDeleteDialog={vi.fn()}
         onFocusSelected={onFocusSelected}
         onMoveSelection={vi.fn()}
@@ -259,6 +274,7 @@ describe('useKeyboardShortcuts', () => {
         isModalOpen
         onUndo={vi.fn()}
         onRedo={vi.fn()}
+        onNewSceneIntent={vi.fn()}
         onOpenDeleteDialog={vi.fn()}
         onFocusSelected={onFocusSelected}
         onMoveSelection={vi.fn()}
@@ -339,5 +355,71 @@ describe('useKeyboardShortcuts', () => {
     expect(redoEvent.defaultPrevented).toBe(false)
     expect(onUndo).not.toHaveBeenCalled()
     expect(onRedo).not.toHaveBeenCalled()
+  })
+
+  it('dispatches the new scene shortcut and suppresses the browser default', () => {
+    const onNewSceneIntent = vi.fn()
+
+    render(
+      <KeyboardShortcutHarness
+        enabled
+        hasSelection={false}
+        isModalOpen={false}
+        canStartNewScene
+        onUndo={vi.fn()}
+        onRedo={vi.fn()}
+        onNewSceneIntent={onNewSceneIntent}
+        onOpenDeleteDialog={vi.fn()}
+        onFocusSelected={vi.fn()}
+        onMoveSelection={vi.fn()}
+        onClearSelection={vi.fn()}
+        onRotate={vi.fn()}
+      />,
+    )
+
+    const event = new KeyboardEvent('keydown', {
+      bubbles: true,
+      cancelable: true,
+      key: 'n',
+      ctrlKey: true,
+    })
+
+    fireEvent(window, event)
+
+    expect(onNewSceneIntent).toHaveBeenCalledTimes(1)
+    expect(event.defaultPrevented).toBe(true)
+  })
+
+  it('suppresses browser default but does not dispatch new scene when disabled', () => {
+    const onNewSceneIntent = vi.fn()
+
+    render(
+      <KeyboardShortcutHarness
+        enabled
+        hasSelection={false}
+        isModalOpen={false}
+        canStartNewScene={false}
+        onUndo={vi.fn()}
+        onRedo={vi.fn()}
+        onNewSceneIntent={onNewSceneIntent}
+        onOpenDeleteDialog={vi.fn()}
+        onFocusSelected={vi.fn()}
+        onMoveSelection={vi.fn()}
+        onClearSelection={vi.fn()}
+        onRotate={vi.fn()}
+      />,
+    )
+
+    const event = new KeyboardEvent('keydown', {
+      bubbles: true,
+      cancelable: true,
+      key: 'n',
+      ctrlKey: true,
+    })
+
+    fireEvent(window, event)
+
+    expect(onNewSceneIntent).not.toHaveBeenCalled()
+    expect(event.defaultPrevented).toBe(true)
   })
 })

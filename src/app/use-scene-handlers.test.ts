@@ -106,11 +106,13 @@ describe('useSceneHandlers', () => {
       closeDialog: vi.fn(),
       closeAllDialogs: vi.fn(),
       openDelete: vi.fn(),
+      openNewScene: vi.fn(),
       setCatalogOpen: vi.fn(),
       pendingDeleteFurniture: null,
     }
 
     const mockOverlayState = {
+      clearPreview: vi.fn(),
       clearEditorMessage: vi.fn(),
       setEditorMessage: vi.fn(),
       handleHistoryChange: vi.fn(),
@@ -122,6 +124,8 @@ describe('useSceneHandlers', () => {
       activeFloorFinishId: '',
       activeWallFinishId: '',
       catalog: [],
+      defaultFloorFinishId: 'wood-floor',
+      defaultWallFinishId: 'light-gray',
       editorInteractionsEnabled: true,
       floorFinishIds: [],
       handleAssetError: vi.fn(),
@@ -284,15 +288,16 @@ describe('runStartupRestoreFlow', () => {
       catalog,
       validDraftState: draft,
       applyState,
+      isFreshState: () => false,
       notifications,
     })
 
     expect(applyState).toHaveBeenCalledWith(draft)
     expect(calls.announcePolite).toHaveBeenCalledWith(
-      'Recovered your local draft.',
+      'Restored your saved draft.',
     )
     expect(calls.toastSuccess).toHaveBeenCalledWith(
-      'Recovered your local draft.',
+      'Restored your saved draft.',
     )
     expect(calls.setRestoreOutcome).toHaveBeenLastCalledWith('skipped')
   })
@@ -317,6 +322,7 @@ describe('runStartupRestoreFlow', () => {
       catalog,
       validDraftState: emptyDraft,
       applyState,
+      isFreshState: () => true,
       notifications,
     })
 
@@ -341,6 +347,7 @@ describe('runStartupRestoreFlow', () => {
       catalog,
       validDraftState: draft,
       applyState,
+      isFreshState: () => false,
       notifications,
     })
 
@@ -355,5 +362,37 @@ describe('runStartupRestoreFlow', () => {
     expect(calls.toastError).toHaveBeenCalledWith(
       'Draft could not be restored.',
     )
+  })
+
+  it('keeps no-param draft restore silent when finishes match defaults even without furniture check', () => {
+    const draft = {
+      items: [
+        {
+          id: 'chair-instance-1',
+          catalogId: 'chair-1',
+          position: [0, 0, 0] as [number, number, number],
+          rotationY: 0,
+        },
+      ],
+      floorFinishId: 'wood-floor',
+      wallFinishId: 'light-gray',
+    }
+    const catalog = [createCatalogEntry('chair-1')]
+    const applyState = vi.fn()
+    const { calls, notifications } = createNotificationsSpies()
+
+    runStartupRestoreFlow({
+      parseResult: { ok: false, reason: 'no-param' },
+      catalog,
+      validDraftState: draft,
+      applyState,
+      isFreshState: () => true,
+      notifications,
+    })
+
+    expect(applyState).toHaveBeenCalledWith(draft)
+    expect(calls.announcePolite).not.toHaveBeenCalled()
+    expect(calls.toastSuccess).not.toHaveBeenCalled()
+    expect(calls.setRestoreOutcome).toHaveBeenLastCalledWith('skipped')
   })
 })

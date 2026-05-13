@@ -8,7 +8,7 @@ export function ProjectInfoButton({
   ...props
 }: ComponentProps<typeof Button>) {
   return (
-    <div className={cn('flex items-center gap-4', className)}>
+    <div className={cn('flex items-center', className)}>
       <Button
         variant="secondary"
         size="icon"

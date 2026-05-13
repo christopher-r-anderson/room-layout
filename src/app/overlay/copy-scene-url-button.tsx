@@ -38,7 +38,7 @@ export function CopySceneUrlButton({
   return (
     <Button
       variant="secondary"
-      size="sm"
+      size="default"
       disabled={disabled}
       onClick={() => {
         void handleClick()

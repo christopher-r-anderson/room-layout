@@ -2,6 +2,7 @@ import { useEffect, useEffectEvent } from 'react'
 import { getDeleteHotkeyIntent } from '@/lib/ui/delete-hotkeys'
 import { getHistoryHotkeyIntent } from '@/lib/ui/history-hotkeys'
 import { getMoveHotkeyIntent } from '@/lib/ui/move-hotkeys'
+import { getNewSceneHotkeyIntent } from '@/lib/ui/new-scene-hotkeys'
 import {
   getRotationHotkeyDirection,
   type RotationDirection,
@@ -11,8 +12,10 @@ interface UseKeyboardShortcutsOptions {
   enabled: boolean
   hasSelection: boolean
   isModalOpen: boolean
+  canStartNewScene: boolean
   onUndo: () => void
   onRedo: () => void
+  onNewSceneIntent: () => void
   onOpenDeleteDialog: () => void
   onFocusSelected: () => void
   onMoveSelection: (delta: { x: number; z: number }) => void
@@ -24,8 +27,10 @@ export function useKeyboardShortcuts({
   enabled,
   hasSelection,
   isModalOpen,
+  canStartNewScene,
   onUndo,
   onRedo,
+  onNewSceneIntent,
   onOpenDeleteDialog,
   onFocusSelected,
   onMoveSelection,
@@ -99,6 +104,16 @@ export function useKeyboardShortcuts({
       targetTagName !== 'INPUT' &&
       targetTagName !== 'TEXTAREA' &&
       targetTagName !== 'SELECT'
+    const newSceneIntent = getNewSceneHotkeyIntent({
+      key: event.key,
+      altKey: event.altKey,
+      ctrlKey: event.ctrlKey,
+      metaKey: event.metaKey,
+      shiftKey: event.shiftKey,
+      isModalOpen,
+      targetTagName,
+      targetIsContentEditable,
+    })
 
     if (historyIntent === 'undo') {
       event.preventDefault()
@@ -109,6 +124,16 @@ export function useKeyboardShortcuts({
     if (historyIntent === 'redo') {
       event.preventDefault()
       onRedo()
+      return
+    }
+
+    if (newSceneIntent) {
+      event.preventDefault()
+
+      if (canStartNewScene) {
+        onNewSceneIntent()
+      }
+
       return
     }
 
