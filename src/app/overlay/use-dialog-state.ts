@@ -1,12 +1,13 @@
 import { useCallback, useState } from 'react'
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
 
-type ActiveDialog = 'catalog' | 'delete' | 'info' | null
+type ActiveDialog = 'catalog' | 'delete' | 'info' | 'new-scene' | null
 
 interface UseDialogStateOptions {
   editorInteractionsEnabled: boolean
   startupOverlayActive: boolean
   selectedFurniture: FurnitureItem | null
+  canStartNewScene: boolean
 }
 
 interface DialogState {
@@ -14,11 +15,13 @@ interface DialogState {
   isCatalogDrawerOpen: boolean
   isDeleteDialogOpen: boolean
   isInfoDialogOpen: boolean
+  isNewSceneDialogOpen: boolean
   isModalOpen: boolean
   pendingDeleteFurniture: FurnitureItem | null
   openCatalog: () => boolean
   openDelete: () => boolean
   openInfo: () => boolean
+  openNewScene: () => boolean
   closeDialog: () => void
   closeAllDialogs: () => void
   setCatalogOpen: (open: boolean) => boolean
@@ -29,6 +32,7 @@ export function useDialogState({
   editorInteractionsEnabled,
   startupOverlayActive,
   selectedFurniture,
+  canStartNewScene,
 }: UseDialogStateOptions): DialogState {
   const [activeDialog, setActiveDialog] = useState<ActiveDialog>(null)
   const [pendingDeleteFurniture, setPendingDeleteFurniture] =
@@ -37,6 +41,7 @@ export function useDialogState({
   const isCatalogDrawerOpen = activeDialog === 'catalog'
   const isDeleteDialogOpen = activeDialog === 'delete'
   const isInfoDialogOpen = activeDialog === 'info'
+  const isNewSceneDialogOpen = activeDialog === 'new-scene'
   const isModalOpen = activeDialog !== null
 
   const closeDialog = useCallback(() => {
@@ -80,6 +85,19 @@ export function useDialogState({
     return true
   }, [activeDialog, editorInteractionsEnabled, selectedFurniture])
 
+  const openNewScene = useCallback(() => {
+    if (
+      !editorInteractionsEnabled ||
+      activeDialog !== null ||
+      !canStartNewScene
+    ) {
+      return false
+    }
+
+    setActiveDialog('new-scene')
+    return true
+  }, [activeDialog, editorInteractionsEnabled, canStartNewScene])
+
   const setCatalogOpen = useCallback(
     (open: boolean) => {
       if (!open) {
@@ -109,11 +127,13 @@ export function useDialogState({
     isCatalogDrawerOpen,
     isDeleteDialogOpen,
     isInfoDialogOpen,
+    isNewSceneDialogOpen,
     isModalOpen,
     pendingDeleteFurniture,
     openCatalog,
     openDelete,
     openInfo,
+    openNewScene,
     closeDialog,
     closeAllDialogs,
     setCatalogOpen,

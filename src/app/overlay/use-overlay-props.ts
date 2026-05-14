@@ -41,6 +41,10 @@ interface UseOverlayPropsOptions {
   pendingDeleteFurniture: EditorDialogsProps['pendingDeleteFurniture']
   onCloseDeleteDialog: EditorDialogsProps['onCloseDeleteDialog']
   onConfirmDeleteSelection: EditorDialogsProps['onConfirmDeleteSelection']
+  isNewSceneDialogOpen: EditorDialogsProps['isNewSceneDialogOpen']
+  onCloseNewSceneDialog: EditorDialogsProps['onCloseNewSceneDialog']
+  onOpenNewSceneDialog: EditorDialogsProps['onOpenNewSceneDialog']
+  onConfirmNewScene: EditorDialogsProps['onConfirmNewScene']
   isInfoDialogOpen: EditorDialogsProps['isInfoDialogOpen']
   onInfoDialogOpenChange: EditorDialogsProps['onInfoDialogOpenChange']
   onPreviewChange: EditorPreviewProps['onPreviewChange']
@@ -88,6 +92,10 @@ export function useOverlayProps({
   pendingDeleteFurniture,
   onCloseDeleteDialog,
   onConfirmDeleteSelection,
+  isNewSceneDialogOpen,
+  onCloseNewSceneDialog,
+  onOpenNewSceneDialog,
+  onConfirmNewScene,
   isInfoDialogOpen,
   onInfoDialogOpenChange,
   onPreviewChange,
@@ -180,6 +188,10 @@ export function useOverlayProps({
       pendingDeleteFurniture,
       onCloseDeleteDialog,
       onConfirmDeleteSelection,
+      isNewSceneDialogOpen,
+      onCloseNewSceneDialog,
+      onOpenNewSceneDialog,
+      onConfirmNewScene,
       isInfoDialogOpen,
       onInfoDialogOpenChange,
     }),
@@ -188,6 +200,10 @@ export function useOverlayProps({
       pendingDeleteFurniture,
       onCloseDeleteDialog,
       onConfirmDeleteSelection,
+      isNewSceneDialogOpen,
+      onCloseNewSceneDialog,
+      onOpenNewSceneDialog,
+      onConfirmNewScene,
       isInfoDialogOpen,
       onInfoDialogOpenChange,
     ],

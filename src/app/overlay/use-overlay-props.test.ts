@@ -59,6 +59,10 @@ interface OverlayOptions {
   pendingDeleteFurniture: FurnitureItem | null
   onCloseDeleteDialog: () => void
   onConfirmDeleteSelection: () => void
+  isNewSceneDialogOpen: boolean
+  onCloseNewSceneDialog: () => void
+  onOpenNewSceneDialog: () => void
+  onConfirmNewScene: () => void
   isInfoDialogOpen: boolean
   onInfoDialogOpenChange: (open: boolean) => void
   onPreviewChange: (
@@ -107,6 +111,10 @@ function createOptions(overrides?: Partial<OverlayOptions>): OverlayOptions {
     pendingDeleteFurniture: selectedFurniture,
     onCloseDeleteDialog: vi.fn(),
     onConfirmDeleteSelection: vi.fn(),
+    isNewSceneDialogOpen: false,
+    onCloseNewSceneDialog: vi.fn(),
+    onOpenNewSceneDialog: vi.fn(),
+    onConfirmNewScene: vi.fn(),
     isInfoDialogOpen: false,
     onInfoDialogOpenChange: vi.fn(),
     onPreviewChange: vi.fn(),
@@ -126,6 +134,7 @@ describe('useOverlayProps', () => {
       catalogIdToAdd: 'table-1',
       isCatalogDrawerOpen: true,
       isDeleteDialogOpen: true,
+      isNewSceneDialogOpen: true,
       isInfoDialogOpen: true,
       sceneInteractionsDisabled: true,
     })
@@ -171,6 +180,10 @@ describe('useOverlayProps', () => {
       pendingDeleteFurniture: options.pendingDeleteFurniture,
       onCloseDeleteDialog: options.onCloseDeleteDialog,
       onConfirmDeleteSelection: options.onConfirmDeleteSelection,
+      isNewSceneDialogOpen: true,
+      onCloseNewSceneDialog: options.onCloseNewSceneDialog,
+      onOpenNewSceneDialog: options.onOpenNewSceneDialog,
+      onConfirmNewScene: options.onConfirmNewScene,
       isInfoDialogOpen: true,
       onInfoDialogOpenChange: options.onInfoDialogOpenChange,
     })

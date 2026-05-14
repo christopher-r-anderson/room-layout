@@ -1,3 +1,40 @@
+it('enforces the new scene freshness guard at the dialog boundary', () => {
+  const { result, rerender } = renderHook(
+    (props: DialogStateHookProps & { canStartNewScene: boolean }) =>
+      useDialogState({
+        editorInteractionsEnabled: props.editorInteractionsEnabled,
+        startupOverlayActive: props.startupOverlayActive,
+        selectedFurniture: props.selectedFurniture,
+        canStartNewScene: props.canStartNewScene,
+      }),
+    {
+      initialProps: {
+        editorInteractionsEnabled: true,
+        startupOverlayActive: false,
+        selectedFurniture: null,
+        canStartNewScene: false,
+      },
+    },
+  )
+
+  // Should not open when canStartNewScene is false
+  act(() => {
+    expect(result.current.openNewScene()).toBe(false)
+  })
+  expect(result.current.isNewSceneDialogOpen).toBe(false)
+
+  // Should open when canStartNewScene is true
+  rerender({
+    editorInteractionsEnabled: true,
+    startupOverlayActive: false,
+    selectedFurniture: null,
+    canStartNewScene: true,
+  })
+  act(() => {
+    expect(result.current.openNewScene()).toBe(true)
+  })
+  expect(result.current.isNewSceneDialogOpen).toBe(true)
+})
 // @vitest-environment jsdom
 
 import { act, renderHook } from '@testing-library/react'
@@ -53,6 +90,7 @@ describe('useDialogState', () => {
           editorInteractionsEnabled: true,
           startupOverlayActive: false,
           selectedFurniture,
+          canStartNewScene: true,
         }),
       {
         initialProps,
@@ -96,6 +134,7 @@ describe('useDialogState', () => {
           editorInteractionsEnabled,
           startupOverlayActive,
           selectedFurniture,
+          canStartNewScene: true,
         }),
       {
         initialProps,

@@ -1,4 +1,5 @@
 import { useCallback, useRef, type RefObject } from 'react'
+import { isSceneStateAtDefaults } from '@/lib/three/scene-model'
 import type {
   CameraPreset,
   MoveSelectionResult,
@@ -23,7 +24,9 @@ import {
   serializeSceneToUrl,
   validateCatalogReferences,
 } from './url-scene/scene-url'
+import { createDefaultSceneState } from './startup/scene-defaults'
 import {
+  clearSceneDraft,
   loadSceneDraft,
   saveSceneDraft,
   type SceneDraftState,
@@ -69,6 +72,7 @@ interface DialogState {
   closeDialog: () => void
   closeAllDialogs: () => void
   openDelete: () => boolean
+  openNewScene: () => boolean
   setCatalogOpen: (open: boolean) => boolean
   pendingDeleteFurniture: FurnitureItem | null
 }
@@ -77,6 +81,8 @@ interface StartupSlice {
   activeFloorFinishId: string
   activeWallFinishId: string
   catalog: FurnitureCatalogEntry[]
+  defaultFloorFinishId: string
+  defaultWallFinishId: string
   editorInteractionsEnabled: boolean
   floorFinishIds: string[]
   handleAssetError: (error: Error) => void
@@ -90,6 +96,7 @@ interface StartupSlice {
 }
 
 interface OverlayState {
+  clearPreview: () => void
   clearEditorMessage: () => void
   setEditorMessage: (message: string | null) => void
   sceneReadModel: SceneReadModel
@@ -126,6 +133,8 @@ interface SceneHandlers {
   handleSetCameraPreset: (preset: CameraPreset) => void
   handleCatalogDrawerOpenChange: (open: boolean) => void
   handleOpenDeleteDialog: () => void
+  handleOpenNewSceneDialog: () => void
+  handleConfirmNewScene: () => void
   handleSceneHistoryChange: (availability: HistoryAvailability) => void
   handleSceneSelectionChange: () => void
   handleSceneAssetError: (error: Error) => void
@@ -233,10 +242,17 @@ export function runStartupRestoreFlow(options: {
   catalog: FurnitureCatalogEntry[]
   validDraftState: SceneDraftState | null
   applyState: (state: RestorableState) => void
+  isFreshState?: (state: RestorableState) => boolean
   notifications: RestoreFlowNotifications
 }) {
-  const { parseResult, catalog, validDraftState, applyState, notifications } =
-    options
+  const {
+    parseResult,
+    catalog,
+    validDraftState,
+    applyState,
+    isFreshState = () => false,
+    notifications,
+  } = options
 
   if (parseResult.ok) {
     if (validateCatalogReferences(parseResult.items, catalog)) {
@@ -329,9 +345,9 @@ export function runStartupRestoreFlow(options: {
   if (validDraftState) {
     try {
       applyState(validDraftState)
-      if (validDraftState.items.length > 0) {
-        notifications.announcePolite('Recovered your local draft.')
-        notifications.toastSuccess('Recovered your local draft.')
+      if (!isFreshState(validDraftState)) {
+        notifications.announcePolite('Restored your saved draft.')
+        notifications.toastSuccess('Restored your saved draft.')
       }
     } catch {
       reportInvalidRestore(notifications, {
@@ -384,10 +400,12 @@ export function useSceneHandlers({
     closeDialog,
     closeAllDialogs,
     openDelete,
+    openNewScene,
     setCatalogOpen,
     pendingDeleteFurniture,
   } = dialogState
   const {
+    clearPreview,
     clearEditorMessage,
     setEditorMessage,
     handleHistoryChange,
@@ -397,6 +415,8 @@ export function useSceneHandlers({
   const {
     activeFloorFinishId,
     activeWallFinishId,
+    defaultFloorFinishId,
+    defaultWallFinishId,
     editorInteractionsEnabled,
     handleAssetError,
     handleAssetsReady,
@@ -580,6 +600,43 @@ export function useSceneHandlers({
     }
   }, [openDelete, clearEditorMessage])
 
+  const handleOpenNewSceneDialog = useCallback(() => {
+    const opened = openNewScene()
+
+    if (opened) {
+      clearEditorMessage()
+    }
+  }, [openNewScene, clearEditorMessage])
+
+  const handleConfirmNewScene = useCallback(() => {
+    closeDialog()
+    clearPreview()
+    clearEditorMessage()
+    restoreInitialLayout([])
+    setFloorFinishId(defaultFloorFinishId)
+    setWallFinishId(defaultWallFinishId)
+    setCameraPreset('corner')
+    clearSceneDraft()
+    syncSceneReadModel({
+      announceSelectionChange: false,
+      requestOutlinerFocus: false,
+    })
+    announcePolite('New scene started. Your changes were cleared.')
+    toast.success('New scene started. Your changes were cleared.')
+  }, [
+    closeDialog,
+    clearPreview,
+    clearEditorMessage,
+    restoreInitialLayout,
+    setFloorFinishId,
+    setWallFinishId,
+    defaultFloorFinishId,
+    defaultWallFinishId,
+    setCameraPreset,
+    syncSceneReadModel,
+    announcePolite,
+  ])
+
   const handleSceneHistoryChange = useCallback(
     (availability: HistoryAvailability) => {
       handleHistoryChange(availability)
@@ -675,11 +732,27 @@ export function useSceneHandlers({
           ? draftState
           : null
 
+      const defaultSceneState = createDefaultSceneState({
+        defaultFloorFinishId,
+        defaultWallFinishId,
+      })
+
       runStartupRestoreFlow({
         parseResult,
         catalog,
         validDraftState,
         applyState: applyRestoredState,
+        isFreshState: (state) =>
+          isSceneStateAtDefaults(
+            {
+              items: state.items,
+              floorFinishId:
+                state.floorFinishId ?? defaultSceneState.floorFinishId,
+              wallFinishId:
+                state.wallFinishId ?? defaultSceneState.wallFinishId,
+            },
+            defaultSceneState,
+          ),
         notifications: {
           announcePolite,
           announceAssertive,
@@ -706,6 +779,8 @@ export function useSceneHandlers({
     handleAssetsReady,
     syncSceneReadModel,
     catalog,
+    defaultFloorFinishId,
+    defaultWallFinishId,
     floorFinishIds,
     wallFinishIds,
     restoreInitialLayout,
@@ -796,6 +871,8 @@ export function useSceneHandlers({
     handleSetCameraPreset,
     handleCatalogDrawerOpenChange,
     handleOpenDeleteDialog,
+    handleOpenNewSceneDialog,
+    handleConfirmNewScene,
     handleSceneHistoryChange,
     handleSceneSelectionChange,
     handleSceneAssetError,

@@ -12,6 +12,7 @@ import type {
 } from '@/scene/scene.types'
 import { CameraTools } from '../camera/camera-tools'
 import { DeleteConfirmationDialog } from '../selection/delete-confirmation-dialog'
+import { NewSceneConfirmationDialog } from '../selection/new-scene-confirmation-dialog'
 import type { HistoryAvailability } from '../history/history.types'
 import { StatusMessage } from './status-message'
 import { InitializationError } from '../startup/initialization-error'
@@ -30,6 +31,7 @@ import type { SceneOutlinerFocusRequest } from '../scene-panel.types'
 import { Inspector } from '../scene-panel/inspector'
 import type { StartupErrorKind } from '../startup/use-startup-state'
 import { CopySceneUrlButton } from './copy-scene-url-button'
+import { NewSceneButton } from './new-scene-button'
 
 export interface EditorCameraProps {
   onSetCameraPreset: (preset: CameraPreset) => void
@@ -83,6 +85,10 @@ export interface EditorDialogsProps {
   pendingDeleteFurniture: FurnitureItem | null
   onCloseDeleteDialog: () => void
   onConfirmDeleteSelection: () => void
+  isNewSceneDialogOpen: boolean
+  onCloseNewSceneDialog: () => void
+  onOpenNewSceneDialog: () => void
+  onConfirmNewScene: () => void
   isInfoDialogOpen: boolean
   onInfoDialogOpenChange: (open: boolean) => void
 }
@@ -96,6 +102,7 @@ export interface EditorPreviewProps {
 
 interface EditorOverlayProps {
   editorInteractionsEnabled: boolean
+  newSceneDisabled: boolean
   statusMessage: string | null
   onCopySceneUrl: () => Promise<boolean>
   camera: EditorCameraProps
@@ -117,6 +124,7 @@ interface EditorOverlayProps {
 
 export function EditorOverlay({
   editorInteractionsEnabled,
+  newSceneDisabled,
   statusMessage,
   onCopySceneUrl,
   camera,
@@ -184,23 +192,32 @@ export function EditorOverlay({
           </div>
 
           <div className="shrink-0">
-            <div className="flex justify-self-end items-center gap-2">
-              <h1 className="rounded-sm bg-background/65 px-2 py-0.5 text-base/6 font-semibold text-foreground backdrop-blur-[1px]">
-                Room Layout
-              </h1>
-              <ProjectInfoDialog
-                open={dialogs.isInfoDialogOpen}
-                onOpenChange={dialogs.onInfoDialogOpenChange}
-                triggerButton={
-                  <ProjectInfoButton className="pointer-events-auto" />
-                }
-              />
-            </div>
-            <div className="mt-1 flex justify-end">
-              <CopySceneUrlButton
-                disabled={!editorInteractionsEnabled}
-                onCopySceneUrl={onCopySceneUrl}
-              />
+            <div className="pointer-events-auto rounded-md border border-border/70 bg-background/75 p-2 backdrop-blur-[2px]">
+              <div className="flex items-center justify-end gap-2">
+                <h1 className="px-1 text-base/6 font-semibold text-foreground">
+                  Room Layout
+                </h1>
+                <ProjectInfoDialog
+                  open={dialogs.isInfoDialogOpen}
+                  onOpenChange={dialogs.onInfoDialogOpenChange}
+                  triggerButton={<ProjectInfoButton />}
+                />
+              </div>
+              <div className="mt-2 flex flex-wrap justify-end gap-2">
+                <NewSceneButton
+                  disabled={!editorInteractionsEnabled || newSceneDisabled}
+                  disabledMessage={
+                    !editorInteractionsEnabled
+                      ? 'Editor interactions are unavailable while loading'
+                      : 'Scene already matches defaults'
+                  }
+                  onOpenNewSceneDialog={dialogs.onOpenNewSceneDialog}
+                />
+                <CopySceneUrlButton
+                  disabled={!editorInteractionsEnabled}
+                  onCopySceneUrl={onCopySceneUrl}
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -263,6 +280,11 @@ export function EditorOverlay({
         pendingDeleteFurniture={dialogs.pendingDeleteFurniture}
         onClose={dialogs.onCloseDeleteDialog}
         onConfirm={dialogs.onConfirmDeleteSelection}
+      />
+      <NewSceneConfirmationDialog
+        open={dialogs.isNewSceneDialogOpen}
+        onClose={dialogs.onCloseNewSceneDialog}
+        onConfirm={dialogs.onConfirmNewScene}
       />
 
       <InitializationProgress visible={startup.startupLoadingActive} />

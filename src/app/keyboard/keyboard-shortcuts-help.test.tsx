@@ -21,6 +21,7 @@ describe('KeyboardShortcutsHelp', () => {
     expect(screen.getByRole('table')).toBeVisible()
     expect(screen.getByText('Nudge (0.5 m)')).toBeVisible()
     expect(screen.getByText('Clear')).toBeVisible()
+    expect(screen.getByText('New Scene')).toBeVisible()
 
     await user.click(screen.getByRole('button', { name: 'Dismiss' }))
 

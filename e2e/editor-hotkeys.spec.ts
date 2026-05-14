@@ -43,11 +43,15 @@ test('applies keyboard shortcuts for rotate, history, and delete confirmation', 
   await page.locator('body').press('e')
   await page.locator('body').press('Control+z')
   await page.locator('body').press('Delete')
+  await page.locator('body').press('Control+n')
 
   const whileInfoOpen = await readSceneState(page)
   expect(whileInfoOpen.items[0].rotationY).toBeCloseTo(initialItem.rotationY, 6)
   await expect(
     page.getByRole('alertdialog', { name: /delete furniture/i }),
+  ).toBeHidden()
+  await expect(
+    page.getByRole('alertdialog', { name: /start over with a new scene/i }),
   ).toBeHidden()
 
   await page.keyboard.press('Escape')
@@ -60,6 +64,7 @@ test('applies keyboard shortcuts for rotate, history, and delete confirmation', 
 
   await page.locator('body').press('e')
   await page.locator('body').press('Delete')
+  await page.locator('body').press('Control+n')
 
   const whileSheetOpen = await readSceneState(page)
   expect(whileSheetOpen.items[0].rotationY).toBeCloseTo(
@@ -68,6 +73,9 @@ test('applies keyboard shortcuts for rotate, history, and delete confirmation', 
   )
   await expect(
     page.getByRole('alertdialog', { name: /delete furniture/i }),
+  ).toBeHidden()
+  await expect(
+    page.getByRole('alertdialog', { name: /start over with a new scene/i }),
   ).toBeHidden()
 
   await page.keyboard.press('Escape')
@@ -112,6 +120,22 @@ test('applies keyboard shortcuts for rotate, history, and delete confirmation', 
     NORMALIZED_RIGHT_ROTATION_RADIANS,
     6,
   )
+
+  await page.locator('body').press('Control+n')
+  const newSceneDialog = page.getByRole('alertdialog', {
+    name: /start over with a new scene/i,
+  })
+  await expect(newSceneDialog).toBeVisible()
+
+  await newSceneDialog.getByRole('button', { name: 'New Scene' }).click()
+  const afterNewScene = await waitForItemCount(page, 0)
+  expect(afterNewScene.floorFinishId).toBe('wood-floor')
+  expect(afterNewScene.wallFinishId).toBe('light-gray')
+
+  await page.locator('body').press('Control+n')
+  await expect(
+    page.getByRole('alertdialog', { name: /start over with a new scene/i }),
+  ).toBeHidden()
 })
 
 test('supports keyboard-driven furniture picker flow', async ({ page }) => {

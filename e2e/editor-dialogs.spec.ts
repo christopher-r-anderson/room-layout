@@ -80,6 +80,23 @@ test('sheet and delete confirmation keep accessible contracts and return focus',
   await deleteDialog.getByRole('button', { name: 'Cancel' }).click()
   await expect(deleteDialog).toBeHidden()
   await expect(deleteButton).toBeFocused()
+
+  const newSceneButton = page.getByRole('button', {
+    name: 'Start a new scene',
+  })
+  await newSceneButton.click()
+
+  const newSceneDialog = page.getByRole('alertdialog', {
+    name: /start over with a new scene/i,
+  })
+  await expect(newSceneDialog).toBeVisible()
+  await expect(
+    newSceneDialog.getByText(/resets the room to the default scene/i),
+  ).toBeVisible()
+
+  await newSceneDialog.getByRole('button', { name: 'Cancel' }).click()
+  await expect(newSceneDialog).toBeHidden()
+  await expect(newSceneButton).toBeFocused()
 })
 
 test('catalog, delete, and info dialogs stay mutually exclusive', async ({

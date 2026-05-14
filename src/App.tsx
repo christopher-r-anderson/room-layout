@@ -29,7 +29,8 @@ import { useSceneHandlers, type RestoreOutcome } from './app/use-scene-handlers'
 import { Announcer } from './app/scene-panel/announcer'
 import { TooltipProvider } from './components/ui/tooltip'
 import { Toaster } from './components/ui/sonner'
-import { saveSceneDraft } from './app/url-scene/scene-draft'
+import { clearSceneDraft, saveSceneDraft } from './app/url-scene/scene-draft'
+import { isFreshSceneState } from './app/startup/scene-defaults'
 
 interface BrowserSceneState {
   assetsReady: boolean
@@ -137,12 +138,33 @@ function App() {
     [environmentConfig, activeWallFinishId],
   )
 
+  const sceneIsAtDefaults = useMemo(() => {
+    if (!environmentConfig) {
+      return false
+    }
+
+    return isFreshSceneState(
+      {
+        items: overlayState.sceneReadModel.items,
+        floorFinishId: activeFloorFinishId,
+        wallFinishId: activeWallFinishId,
+      },
+      environmentConfig,
+    )
+  }, [
+    overlayState.sceneReadModel.items,
+    environmentConfig,
+    activeFloorFinishId,
+    activeWallFinishId,
+  ])
+
   const announcements = useAnnouncements()
 
   const dialogState = useDialogState({
     editorInteractionsEnabled: startup.editorInteractionsEnabled,
     startupOverlayActive: startup.startupOverlayActive,
     selectedFurniture: overlayState.selectedFurniture,
+    canStartNewScene: !sceneIsAtDefaults,
   })
 
   const commands = useSceneCommands({
@@ -189,6 +211,7 @@ function App() {
     announcements,
     dialogState,
     overlayState: {
+      clearPreview: clearPreviewOnCanvasMiss,
       clearEditorMessage: overlayState.clearEditorMessage,
       setEditorMessage: overlayState.setEditorMessage,
       sceneReadModel: overlayState.sceneReadModel,
@@ -199,6 +222,8 @@ function App() {
       activeFloorFinishId,
       activeWallFinishId,
       catalog: startup.catalog,
+      defaultFloorFinishId: environmentConfig?.defaultFloorFinishId ?? '',
+      defaultWallFinishId: environmentConfig?.defaultWallFinishId ?? '',
       editorInteractionsEnabled: startup.editorInteractionsEnabled,
       floorFinishIds:
         environmentConfig?.floorFinishes.map((option) => option.id) ?? [],
@@ -271,6 +296,10 @@ function App() {
     pendingDeleteFurniture: dialogState.pendingDeleteFurniture,
     onCloseDeleteDialog: dialogState.closeDialog,
     onConfirmDeleteSelection: handlers.handleConfirmDeleteSelection,
+    isNewSceneDialogOpen: dialogState.isNewSceneDialogOpen,
+    onCloseNewSceneDialog: dialogState.closeDialog,
+    onOpenNewSceneDialog: handlers.handleOpenNewSceneDialog,
+    onConfirmNewScene: handlers.handleConfirmNewScene,
     isInfoDialogOpen: dialogState.isInfoDialogOpen,
     onInfoDialogOpenChange: dialogState.setInfoOpen,
     onPreviewChange: handleOutlinerPreviewChange,
@@ -322,13 +351,22 @@ function App() {
       return
     }
 
+    if (!environmentConfig) {
+      return
+    }
+
+    if (sceneIsAtDefaults) {
+      clearSceneDraft()
+      return
+    }
+
     saveSceneDraft(overlayState.sceneReadModel.items, {
-      floorFinishId: environmentConfig?.floorFinishes.some(
+      floorFinishId: environmentConfig.floorFinishes.some(
         (option) => option.id === activeFloorFinishId,
       )
         ? activeFloorFinishId
         : undefined,
-      wallFinishId: environmentConfig?.wallFinishes.some(
+      wallFinishId: environmentConfig.wallFinishes.some(
         (option) => option.id === activeWallFinishId,
       )
         ? activeWallFinishId
@@ -339,6 +377,7 @@ function App() {
     isSceneDragging,
     overlayState.sceneReadModel.items,
     environmentConfig,
+    sceneIsAtDefaults,
     activeFloorFinishId,
     activeWallFinishId,
   ])
@@ -347,8 +386,10 @@ function App() {
     enabled: startup.editorInteractionsEnabled,
     hasSelection: overlayState.selectedFurniture !== null,
     isModalOpen: dialogState.isModalOpen,
+    canStartNewScene: !sceneIsAtDefaults,
     onUndo: handlers.handleUndo,
     onRedo: handlers.handleRedo,
+    onNewSceneIntent: handlers.handleOpenNewSceneDialog,
     onOpenDeleteDialog: handlers.handleOpenDeleteDialog,
     onFocusSelected: handlers.handleFocusSelected,
     onMoveSelection: (delta) => {
@@ -422,6 +463,7 @@ function App() {
 
         <EditorOverlay
           editorInteractionsEnabled={startup.editorInteractionsEnabled}
+          newSceneDisabled={sceneIsAtDefaults}
           statusMessage={overlayState.editorMessage}
           onCopySceneUrl={handlers.handleCopySceneUrl}
           camera={cameraProps}

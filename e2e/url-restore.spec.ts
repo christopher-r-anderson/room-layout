@@ -448,10 +448,9 @@ test('auto-saves furniture to localStorage draft when furniture is added', async
 }) => {
   await openEditor(page)
 
-  // Get the initial draft (which exists with empty items by default)
+  // Fresh/default scenes should not create a draft until the user changes them.
   const draftBefore = await readDraftFromStorage(page)
-  expect(draftBefore).not.toBeNull()
-  expect(draftBefore?.items.length).toBe(0)
+  expect(draftBefore).toBeNull()
 
   // Add furniture
   await addFurniture(page, 'Leather Armchair')
@@ -484,6 +483,45 @@ test('draft persists across page reload', async ({ page }) => {
   expect(stateAfter.items[0].catalogId).toBe('armchair-1')
   // Note: restoreOutcome is 'skipped' because there's no ?scene= param,
   // but the scene is still populated from the saved draft
+})
+
+test('new scene clears the saved draft so reload stays fresh', async ({
+  page,
+}) => {
+  await openEditor(page)
+
+  await addFurniture(page, 'Leather Armchair')
+
+  const draftBeforeReset = await readDraftFromStorage(page)
+  expect(draftBeforeReset).not.toBeNull()
+  expect(draftBeforeReset?.items.length).toBe(1)
+
+  const newSceneButton = page.getByRole('button', {
+    name: 'Start a new scene',
+  })
+  await newSceneButton.click()
+
+  const newSceneDialog = page.getByRole('alertdialog', {
+    name: /start over with a new scene/i,
+  })
+  await expect(newSceneDialog).toBeVisible()
+  await newSceneDialog.getByRole('button', { name: 'New Scene' }).click()
+
+  const resetState = await waitForEditorReady(page)
+  expect(resetState.itemCount).toBe(0)
+  expect(resetState.floorFinishId).toBe('wood-floor')
+  expect(resetState.wallFinishId).toBe('light-gray')
+
+  await expect.poll(async () => readDraftFromStorage(page)).toBeNull()
+
+  await page.reload()
+  const reloadedState = await waitForEditorReady(page)
+
+  expect(reloadedState.itemCount).toBe(0)
+  expect(reloadedState.restoreOutcome).toBe('skipped')
+  await expect
+    .poll(async () => readPoliteAnnouncement(page))
+    .not.toBe('Restored your saved draft.')
 })
 
 test('draft items are stored in deterministic order (sorted by ID)', async ({

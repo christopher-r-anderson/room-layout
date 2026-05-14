@@ -4,19 +4,11 @@ A minimal interactive 3D room layout built with React Three Fiber.
 
 <https://christopher-r-anderson.github.io/room-layout/>
 
-This project demonstrates core web 3D concepts relevant to retail and product experiences, including scene composition, camera controls, collision-aware object placement, catalog-driven editor workflows, and a guarded startup asset-loading flow.
-
----
+This project demonstrates core web 3D concepts relevant to retail and product experiences, including scene composition, camera controls, collision-aware object placement, history and selection tools, outliner and selected-item inspector surfaces, keyboard movement/rotation shortcuts, catalog-driven editor workflows, and a guarded startup asset-loading flow.
 
 ## 🏁 Goals
 
-- Establish a clean 3D scene with real-world scale
-- Demonstrate camera interaction patterns
-- Provide a foundation for object placement and manipulation
-- Keep usage accessible for keyboard users
-- Keep scope intentionally small and focused
-
----
+Current editor UI highlights include a visual furniture picker, history and selection tools, outliner and selected-item inspector surfaces, keyboard movement/rotation shortcuts, startup loading and retryable error overlays, and project/asset information dialogs.
 
 ## 🔋 Tech Stack
 
@@ -25,8 +17,6 @@ This project demonstrates core web 3D concepts relevant to retail and product ex
 - @react-three/drei
 - TypeScript
 - Vite
-
----
 
 ## 🧑‍💻 Development
 
@@ -106,11 +96,11 @@ Current deployment URL:
 
 <https://christopher-r-anderson.github.io/room-layout/>
 
-## 📝 Notes
+## 📝 Documentation
 
-This project is intentionally focused on spatial interaction and rendering fundamentals rather than backend integration or full product features.
+In addition to this README, project-specific guides are available:
 
-Current editor UI highlights include a visual furniture picker, history and selection tools, outliner and selected-item inspector surfaces, keyboard movement/rotation shortcuts, startup loading and retryable error overlays, and project/asset information dialogs.
+- [Keyboard Shortcuts](docs/keyboard-shortcuts.md): Defines the global shortcut system, ToolButton integration, and how to add or modify shortcuts.
 
 ## 🖦 Usage
 
