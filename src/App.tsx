@@ -164,6 +164,7 @@ function App() {
     editorInteractionsEnabled: startup.editorInteractionsEnabled,
     startupOverlayActive: startup.startupOverlayActive,
     selectedFurniture: overlayState.selectedFurniture,
+    canStartNewScene: !sceneIsAtDefaults,
   })
 
   const commands = useSceneCommands({

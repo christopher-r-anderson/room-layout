@@ -7,6 +7,7 @@ interface UseDialogStateOptions {
   editorInteractionsEnabled: boolean
   startupOverlayActive: boolean
   selectedFurniture: FurnitureItem | null
+  canStartNewScene: boolean
 }
 
 interface DialogState {
@@ -31,6 +32,7 @@ export function useDialogState({
   editorInteractionsEnabled,
   startupOverlayActive,
   selectedFurniture,
+  canStartNewScene,
 }: UseDialogStateOptions): DialogState {
   const [activeDialog, setActiveDialog] = useState<ActiveDialog>(null)
   const [pendingDeleteFurniture, setPendingDeleteFurniture] =
@@ -84,13 +86,17 @@ export function useDialogState({
   }, [activeDialog, editorInteractionsEnabled, selectedFurniture])
 
   const openNewScene = useCallback(() => {
-    if (!editorInteractionsEnabled || activeDialog !== null) {
+    if (
+      !editorInteractionsEnabled ||
+      activeDialog !== null ||
+      !canStartNewScene
+    ) {
       return false
     }
 
     setActiveDialog('new-scene')
     return true
-  }, [activeDialog, editorInteractionsEnabled])
+  }, [activeDialog, editorInteractionsEnabled, canStartNewScene])
 
   const setCatalogOpen = useCallback(
     (open: boolean) => {
