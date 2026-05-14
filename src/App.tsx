@@ -397,6 +397,7 @@ function App() {
     },
     onClearSelection: handlers.handleClearSelection,
     onRotate: handlers.handleRotateSelection,
+    onSetCameraPreset: handlers.handleSetCameraPreset,
   })
 
   return (

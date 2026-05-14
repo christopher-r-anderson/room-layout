@@ -1,4 +1,5 @@
 import { useEffect, useEffectEvent } from 'react'
+import type { CameraPreset } from '@/scene/scene.types'
 
 export type RotationDirection = -1 | 1
 
@@ -39,6 +40,7 @@ interface UseKeyboardShortcutsOptions {
   onMoveSelection: (delta: { x: number; z: number }) => void
   onClearSelection: () => void
   onRotate: (direction: RotationDirection) => void
+  onSetCameraPreset: (preset: CameraPreset) => void
 }
 
 function isTextInputLikeTarget(tagName?: string): boolean {
@@ -131,6 +133,7 @@ export function useKeyboardShortcuts({
   onMoveSelection,
   onClearSelection,
   onRotate,
+  onSetCameraPreset,
 }: UseKeyboardShortcutsOptions): void {
   const shortcutDefinitions: ShortcutDefinition[] = [
     {
@@ -165,6 +168,34 @@ export function useKeyboardShortcuts({
       match: { key: 'f' },
       requiresSelection: true,
       execute: onFocusSelected,
+    },
+    {
+      id: 'preset-corner',
+      match: { key: '1' },
+      execute: () => {
+        onSetCameraPreset('corner')
+      },
+    },
+    {
+      id: 'preset-front',
+      match: { key: '2' },
+      execute: () => {
+        onSetCameraPreset('front')
+      },
+    },
+    {
+      id: 'preset-side',
+      match: { key: '3' },
+      execute: () => {
+        onSetCameraPreset('side')
+      },
+    },
+    {
+      id: 'preset-top',
+      match: { key: '4' },
+      execute: () => {
+        onSetCameraPreset('top')
+      },
     },
     {
       id: 'move-up',
