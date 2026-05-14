@@ -159,6 +159,91 @@ describe('useSceneHandlers', () => {
       'Chair added to room.',
     )
   })
+
+  it('forwards camera preset and focus actions to commands', () => {
+    const mockCommands = {
+      addFurniture: vi.fn(() => true),
+      clearSelection: vi.fn(),
+      confirmDeleteSelection: vi.fn(),
+      focusSelected: vi.fn(),
+      moveSelection: vi.fn(),
+      redo: vi.fn(),
+      rotateSelection: vi.fn(),
+      selectById: vi.fn(),
+      setCameraPreset: vi.fn(),
+      undo: vi.fn(),
+    }
+
+    const mockSync = {
+      syncSceneReadModel: vi.fn(() => ({
+        items: [],
+        selectedId: null,
+      })),
+      requestOutlinerFocusByIndex: vi.fn(),
+    }
+
+    const mockAnnouncements = {
+      announcePolite: vi.fn(),
+      announceAssertive: vi.fn(),
+      clearAssertiveAnnouncement: vi.fn(),
+      queueMovementAnnouncement: vi.fn(),
+    }
+
+    const mockDialogState = {
+      closeDialog: vi.fn(),
+      closeAllDialogs: vi.fn(),
+      openDelete: vi.fn(),
+      openNewScene: vi.fn(),
+      setCatalogOpen: vi.fn(),
+      pendingDeleteFurniture: null,
+    }
+
+    const mockOverlayState = {
+      clearPreview: vi.fn(),
+      clearEditorMessage: vi.fn(),
+      setEditorMessage: vi.fn(),
+      handleHistoryChange: vi.fn(),
+      selectedFurniture: null,
+      sceneReadModel: { items: [], selectedId: null },
+    }
+
+    const mockStartup = {
+      activeFloorFinishId: '',
+      activeWallFinishId: '',
+      catalog: [],
+      defaultFloorFinishId: 'wood-floor',
+      defaultWallFinishId: 'light-gray',
+      editorInteractionsEnabled: true,
+      floorFinishIds: [],
+      handleAssetError: vi.fn(),
+      handleAssetsReady: vi.fn(),
+      retryAssetLoading: vi.fn(),
+      resetEditorShellState: vi.fn(),
+      restoreInitialLayout: vi.fn(),
+      setFloorFinishId: vi.fn(),
+      setWallFinishId: vi.fn(),
+      wallFinishIds: [],
+    }
+
+    const { result } = renderHook(() =>
+      useSceneHandlers({
+        commands: mockCommands,
+        sync: mockSync,
+        announcements: mockAnnouncements,
+        dialogState: mockDialogState,
+        overlayState: mockOverlayState,
+        startup: mockStartup,
+      }),
+    )
+
+    act(() => {
+      result.current.handleSetCameraPreset('top')
+      result.current.handleFocusSelected()
+    })
+
+    expect(mockCommands.setCameraPreset).toHaveBeenCalledWith('top')
+    expect(mockCommands.focusSelected).toHaveBeenCalledOnce()
+  })
 })
 
 describe('runStartupRestoreFlow', () => {

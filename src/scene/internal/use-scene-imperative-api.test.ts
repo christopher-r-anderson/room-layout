@@ -4,6 +4,7 @@ import { createRef, type RefObject } from 'react'
 import { act, renderHook } from '@testing-library/react'
 import { describe, expect, it, beforeEach, vi } from 'vitest'
 import { Object3D, PerspectiveCamera } from 'three'
+import type { CameraControlsImpl } from '@react-three/drei'
 import {
   createHistoryState,
   commitHistoryPresent,
@@ -650,6 +651,64 @@ describe('useSceneImperativeApi', () => {
       updatedOptions.camera,
       updatedOptions.canvasSize,
     )
+  })
+
+  it('setCameraPreset delegates to camera controls setLookAt', () => {
+    const setLookAt = vi
+      .fn<CameraControlsImpl['setLookAt']>()
+      .mockResolvedValue(undefined)
+    const controls = {
+      setLookAt,
+    } as Pick<CameraControlsImpl, 'setLookAt'>
+    const options = defaultOptions({
+      cameraControlsRef: {
+        current: controls as CameraControlsImpl,
+      },
+    })
+    const sceneRef = getSceneRef(options)
+    renderHook(() => {
+      useSceneImperativeApi(options)
+    })
+
+    act(() => {
+      sceneRef.current?.setCameraPreset('top')
+    })
+
+    expect(setLookAt).toHaveBeenCalledTimes(1)
+  })
+
+  it('focusSelected delegates to camera controls fitToBox for the selected object', () => {
+    const selectedObject = new Object3D()
+    const fitToBox = vi
+      .fn<CameraControlsImpl['fitToBox']>()
+      .mockResolvedValue([])
+    const controls = {
+      fitToBox,
+    } as Pick<CameraControlsImpl, 'fitToBox'>
+    const options = defaultOptions({
+      selectedId: 'item-1',
+      objectRefs: {
+        current: new Map<string, Object3D>([['item-1', selectedObject]]),
+      },
+      cameraControlsRef: {
+        current: controls as CameraControlsImpl,
+      },
+    })
+    const sceneRef = getSceneRef(options)
+    renderHook(() => {
+      useSceneImperativeApi(options)
+    })
+
+    act(() => {
+      sceneRef.current?.focusSelected()
+    })
+
+    expect(fitToBox).toHaveBeenCalledWith(selectedObject, true, {
+      paddingTop: 0.5,
+      paddingBottom: 0.5,
+      paddingLeft: 0.5,
+      paddingRight: 0.5,
+    })
   })
 })
 
