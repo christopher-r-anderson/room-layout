@@ -64,13 +64,19 @@ async function holdKeyUntilCameraMoves(
   page: Page,
   key: string,
   baseline: [number, number, number],
+  minimumDistance = 0.2,
 ) {
   await page.keyboard.down(key)
 
   try {
     await expect
-      .poll(async () => (await readSceneState(page)).cameraPosition)
-      .not.toEqual(baseline)
+      .poll(async () => {
+        return cameraDistance(
+          (await readSceneState(page)).cameraPosition,
+          baseline,
+        )
+      })
+      .toBeGreaterThan(minimumDistance)
   } finally {
     await page.keyboard.up(key)
   }

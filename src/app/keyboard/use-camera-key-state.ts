@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useLayoutEffect, useRef } from 'react'
 import { isDialogTarget, isEditingTarget } from '@/lib/ui/keyboard-event-target'
 import type { CameraKeyName, CameraKeyState } from '@/scene/scene.types'
 
@@ -101,7 +101,7 @@ export function useCameraKeyState({
     return nextState
   }
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const resetKeyState = () => {
       pressedShiftCodesRef.current = new Set()
 
