@@ -160,7 +160,7 @@ Requirements for export:
 - KTX-Software `toktx` (v4.4.2 or newer recommended)
 - ImageMagick (`convert` or `magick`) for normal-map downscaling
 
-Basis decoder files (`public/basis/`) are automatically copied into the project during `pnpm install`.
+Basis decoder files (`public/basis/`) are automatically copied into the project during `pnpm install` and again before `pnpm build`, so Vite can include them from `public/` even though the generated directory is gitignored.
 
 For detailed manifest format and validation rules, see [public/catalog-manifest-schema.md](./public/catalog-manifest-schema.md).
 
