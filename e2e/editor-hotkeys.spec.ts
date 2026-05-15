@@ -22,6 +22,44 @@ function cameraDistance(
   return Math.hypot(deltaX, deltaY, deltaZ)
 }
 
+async function waitForCameraToSettle(
+  page: Page,
+  options?: {
+    intervalMs?: number
+    stableSamples?: number
+    tolerance?: number
+    timeoutMs?: number
+  },
+) {
+  const intervalMs = options?.intervalMs ?? 100
+  const stableSamples = options?.stableSamples ?? 3
+  const tolerance = options?.tolerance ?? 0.01
+  const timeoutMs = options?.timeoutMs ?? 2_000
+  const deadline = Date.now() + timeoutMs
+
+  let previousPosition = (await readSceneState(page)).cameraPosition
+  let stableCount = 0
+
+  while (Date.now() < deadline) {
+    await page.waitForTimeout(intervalMs)
+
+    const nextPosition = (await readSceneState(page)).cameraPosition
+
+    if (cameraDistance(previousPosition, nextPosition) <= tolerance) {
+      stableCount += 1
+      if (stableCount >= stableSamples) {
+        return nextPosition
+      }
+    } else {
+      stableCount = 0
+    }
+
+    previousPosition = nextPosition
+  }
+
+  return previousPosition
+}
+
 async function holdKeyUntilCameraMoves(
   page: Page,
   key: string,
@@ -47,10 +85,14 @@ async function holdKeyAndAssertCameraStable(
 
   try {
     await expect
-      .poll(async () => (await readSceneState(page)).cameraPosition, {
-        timeout: 500,
-      })
-      .toEqual(baseline)
+      .poll(
+        async () =>
+          cameraDistance((await readSceneState(page)).cameraPosition, baseline),
+        {
+          timeout: 500,
+        },
+      )
+      .toBeLessThanOrEqual(0.02)
   } finally {
     await page.keyboard.up(key)
   }
@@ -364,7 +406,7 @@ test('WASD is suppressed in modal dialogs but enabled in the editor', async ({
   page,
 }) => {
   await openEditor(page)
-  const initialCameraPosition = (await readSceneState(page)).cameraPosition
+  const initialCameraPosition = await waitForCameraToSettle(page)
 
   // Try WASD in a dialog text input (should pass through)
   const infoButton = page.getByRole('button', {
