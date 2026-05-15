@@ -64,6 +64,22 @@ describe('useCameraKeyState', () => {
     expect(secondCall.size).toBe(0)
   })
 
+  it('does not start WASD movement from physical key codes on non-QWERTY layouts', () => {
+    const sceneRef = createSceneRef()
+
+    renderHook(() => {
+      useCameraKeyState({
+        enabled: true,
+        sceneRef,
+      })
+    })
+
+    fireEvent.keyDown(window, { code: 'KeyW', key: 'z' })
+    fireEvent.keyUp(window, { code: 'KeyW', key: 'z' })
+
+    expect(sceneRef.setCameraKeyState).not.toHaveBeenCalled()
+  })
+
   it('suppresses camera motion while focus is inside a modal dialog', () => {
     const sceneRef = createSceneRef()
     const dialog = document.createElement('div')

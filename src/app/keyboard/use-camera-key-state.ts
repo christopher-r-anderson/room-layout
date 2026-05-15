@@ -38,6 +38,11 @@ const CAMERA_KEY_IDS: Record<string, CameraKeyName> = {
   NumpadSubtract: 'minus',
 }
 
+const LETTER_CAMERA_CODES = new Set(['KeyW', 'KeyA', 'KeyS', 'KeyD'])
+
+const normalizeCameraKey = (key: string): string =>
+  key.length === 1 ? key.toLowerCase() : key
+
 export function useCameraKeyState({
   enabled,
   sceneRef,
@@ -84,8 +89,10 @@ export function useCameraKeyState({
       }
 
       const nextState =
-        updateCameraKeyState(event.code, true) ??
-        updateCameraKeyState(event.key, true)
+        updateCameraKeyState(normalizeCameraKey(event.key), true) ??
+        (LETTER_CAMERA_CODES.has(event.code)
+          ? null
+          : updateCameraKeyState(event.code, true))
       if (nextState !== null) {
         sceneRef.current?.setCameraKeyState(nextState)
       }
@@ -93,8 +100,10 @@ export function useCameraKeyState({
 
     const handleKeyUp = (event: KeyboardEvent) => {
       const nextState =
-        updateCameraKeyState(event.code, false) ??
-        updateCameraKeyState(event.key, false)
+        updateCameraKeyState(normalizeCameraKey(event.key), false) ??
+        (LETTER_CAMERA_CODES.has(event.code)
+          ? null
+          : updateCameraKeyState(event.code, false))
       if (nextState !== null) {
         sceneRef.current?.setCameraKeyState(nextState)
       }
