@@ -193,3 +193,27 @@ test('clears preview state on background click when furniture is not selected', 
     .poll(async () => (await readSceneState(page)).previewedId)
     .toBeNull()
 })
+
+test('prevents the browser context menu on canvas right-click', async ({
+  page,
+}) => {
+  await openEditor(page)
+
+  const contextMenuPrevented = await page.evaluate(() => {
+    const canvas = document.querySelector('canvas')
+
+    if (!canvas) {
+      throw new Error('canvas element was not available for interaction')
+    }
+
+    const event = new MouseEvent('contextmenu', {
+      bubbles: true,
+      cancelable: true,
+      button: 2,
+    })
+
+    return !canvas.dispatchEvent(event)
+  })
+
+  expect(contextMenuPrevented).toBe(true)
+})

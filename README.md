@@ -100,18 +100,20 @@ Current deployment URL:
 
 In addition to this README, project-specific guides are available:
 
-- [Keyboard Shortcuts](docs/keyboard-shortcuts.md): Defines the global shortcut system, ToolButton integration, and how to add or modify shortcuts.
+- [Editor Shortcuts Reference](docs/editor-shortcuts-reference.md): End-user shortcut map for camera, object, and scene actions.
+- [Keyboard Shortcuts (Engineering)](docs/keyboard-shortcuts.md): Input architecture, matching/suppression/execution rules, and held-key camera behavior.
 
 ## 🖦 Usage
 
 - Click a furniture item to select it.
 - Wait for the startup loading overlay to finish before interacting with the room.
 - Drag selected furniture along the floor; movement stays within room bounds and avoids collisions.
-- Rotate the selected item with `Q` / `E` or the rotate buttons.
+- Rotate the selected item with `,` / `.` or the rotate buttons.
 - Add another furniture instance from the bottom-centered `Add Furniture` trigger and modal picker.
 - Remove the selected item from the selection controls or with `Delete` / `Backspace`, then confirm the dialog.
 - You can fully edit without canvas dragging via the outliner and selected-item inspector surfaces.
 - Keyboard movement supports `Arrow` (0.5m), `Shift+Arrow` (1.0m), and `Alt+Arrow` (0.1m).
+- Camera controls support held-key orbit/pan/zoom and press-based view presets. See [docs/editor-shortcuts-reference.md](docs/editor-shortcuts-reference.md).
 - If a core furniture asset fails to load at startup, use the retry action from the startup error overlay.
 
 ## 📚 Catalog
@@ -158,7 +160,7 @@ Requirements for export:
 - KTX-Software `toktx` (v4.4.2 or newer recommended)
 - ImageMagick (`convert` or `magick`) for normal-map downscaling
 
-Basis decoder files (`public/basis/`) are automatically copied into the project during `pnpm install`.
+Basis decoder files (`public/basis/`) are automatically copied into the project during `pnpm install` and again before `pnpm build`, so Vite can include them from `public/` even though the generated directory is gitignored.
 
 For detailed manifest format and validation rules, see [public/catalog-manifest-schema.md](./public/catalog-manifest-schema.md).
 

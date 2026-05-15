@@ -4,6 +4,7 @@ import { createRef, type RefObject } from 'react'
 import { act, renderHook } from '@testing-library/react'
 import { describe, expect, it, beforeEach, vi } from 'vitest'
 import { Object3D, PerspectiveCamera } from 'three'
+import type { CameraControlsImpl } from '@react-three/drei'
 import {
   createHistoryState,
   commitHistoryPresent,
@@ -12,7 +13,7 @@ import {
 import { useSceneImperativeApi } from './use-scene-imperative-api'
 import { redoSceneHistory, undoSceneHistory } from './scene-history-state'
 import type { LayoutBounds } from '@/lib/three/furniture-layout'
-import type { SceneRef } from '../scene.types'
+import type { CameraKeyName, SceneRef } from '../scene.types'
 import type {
   FurnitureInstance,
   FurnitureItem,
@@ -23,11 +24,17 @@ const {
   mockBuildFurnitureItemsFromInstances,
   mockDeleteSelectionFromHistory,
   mockCreateSceneSnapshot,
+  mockUseFrame,
 } = vi.hoisted(() => ({
   mockAddFurnitureToHistory: vi.fn(),
   mockBuildFurnitureItemsFromInstances: vi.fn(),
   mockDeleteSelectionFromHistory: vi.fn(),
   mockCreateSceneSnapshot: vi.fn(),
+  mockUseFrame: vi.fn(),
+}))
+
+vi.mock('@react-three/fiber', () => ({
+  useFrame: mockUseFrame,
 }))
 
 vi.mock('./furniture-operations', () => ({
@@ -101,6 +108,7 @@ describe('useSceneImperativeApi', () => {
     mockBuildFurnitureItemsFromInstances.mockReset()
     mockDeleteSelectionFromHistory.mockReset()
     mockCreateSceneSnapshot.mockReset()
+    mockUseFrame.mockReset()
 
     mockAddFurnitureToHistory.mockReturnValue({
       history: createHistoryState<FurnitureItem[]>([]),
@@ -650,6 +658,128 @@ describe('useSceneImperativeApi', () => {
       updatedOptions.camera,
       updatedOptions.canvasSize,
     )
+  })
+
+  it('setCameraPreset delegates to camera controls setLookAt', () => {
+    const setLookAt = vi
+      .fn<CameraControlsImpl['setLookAt']>()
+      .mockResolvedValue(undefined)
+    const controls = {
+      setLookAt,
+    } as Pick<CameraControlsImpl, 'setLookAt'>
+    const options = defaultOptions({
+      cameraControlsRef: {
+        current: controls as CameraControlsImpl,
+      },
+    })
+    const sceneRef = getSceneRef(options)
+    renderHook(() => {
+      useSceneImperativeApi(options)
+    })
+
+    act(() => {
+      sceneRef.current?.setCameraPreset('top')
+    })
+
+    expect(setLookAt).toHaveBeenCalledTimes(1)
+  })
+
+  it('focusSelected delegates to camera controls fitToBox for the selected object', () => {
+    const selectedObject = new Object3D()
+    const fitToBox = vi
+      .fn<CameraControlsImpl['fitToBox']>()
+      .mockResolvedValue([])
+    const controls = {
+      fitToBox,
+    } as Pick<CameraControlsImpl, 'fitToBox'>
+    const options = defaultOptions({
+      selectedId: 'item-1',
+      objectRefs: {
+        current: new Map<string, Object3D>([['item-1', selectedObject]]),
+      },
+      cameraControlsRef: {
+        current: controls as CameraControlsImpl,
+      },
+    })
+    const sceneRef = getSceneRef(options)
+    renderHook(() => {
+      useSceneImperativeApi(options)
+    })
+
+    act(() => {
+      sceneRef.current?.focusSelected()
+    })
+
+    expect(fitToBox).toHaveBeenCalledWith(selectedObject, true, {
+      paddingTop: 0.5,
+      paddingBottom: 0.5,
+      paddingLeft: 0.5,
+      paddingRight: 0.5,
+    })
+  })
+
+  it('applies continuous camera motion using the render-loop delta', () => {
+    let frameCallback: ((state: unknown, delta: number) => void) | undefined
+    mockUseFrame.mockImplementation((callback) => {
+      frameCallback = callback as (state: unknown, delta: number) => void
+    })
+
+    const truck = vi
+      .fn<CameraControlsImpl['truck']>()
+      .mockResolvedValue(undefined)
+    const rotate = vi
+      .fn<CameraControlsImpl['rotate']>()
+      .mockResolvedValue(undefined)
+    const dolly = vi
+      .fn<CameraControlsImpl['dolly']>()
+      .mockResolvedValue(undefined)
+    const controls = {
+      truck,
+      rotate,
+      dolly,
+    } as unknown as CameraControlsImpl
+    const options = defaultOptions({
+      cameraControlsRef: {
+        current: controls,
+      },
+    })
+    const sceneRef = getSceneRef(options)
+
+    renderHook(() => {
+      useSceneImperativeApi(options)
+    })
+
+    // Orbit (rotate) with W
+    act(() => {
+      const keyState = new Set<CameraKeyName>(['keyW'])
+      sceneRef.current?.setCameraKeyState(keyState)
+      frameCallback?.({}, 0.025)
+    })
+    expect(rotate).toHaveBeenCalledWith(0, -1.5 * 0.025, false)
+
+    // Pan (truck) with Shift+W
+    act(() => {
+      const keyState = new Set<CameraKeyName>(['keyW', 'shift'])
+      sceneRef.current?.setCameraKeyState(keyState)
+      frameCallback?.({}, 0.025)
+    })
+    expect(truck).toHaveBeenCalledWith(0, -3 * 0.025, false)
+
+    // Zoom in with =
+    act(() => {
+      const keyState = new Set<CameraKeyName>(['equal'])
+      sceneRef.current?.setCameraKeyState(keyState)
+      frameCallback?.({}, 0.025)
+    })
+    expect(dolly).toHaveBeenCalledWith(3 * 0.025, false)
+
+    // Zoom out with -
+    act(() => {
+      const keyState = new Set<CameraKeyName>(['minus'])
+      sceneRef.current?.setCameraKeyState(keyState)
+      frameCallback?.({}, 0.025)
+    })
+    expect(dolly).toHaveBeenCalledWith(-3 * 0.025, false)
   })
 })
 

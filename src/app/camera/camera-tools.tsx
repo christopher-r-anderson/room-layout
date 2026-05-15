@@ -38,7 +38,7 @@ export function CameraTools({
         }}
         disabled={presetsDisabled}
         disabledMessage={presetsDisabledMessage}
-        shortcuts=""
+        shortcuts="1"
         label="Switch to Corner view"
         visibleLabel="Corner"
         className={buttonClass}
@@ -51,7 +51,7 @@ export function CameraTools({
         }}
         disabled={presetsDisabled}
         disabledMessage={presetsDisabledMessage}
-        shortcuts=""
+        shortcuts="2"
         label="Switch to Front view"
         visibleLabel="Front"
         className={buttonClass}
@@ -64,7 +64,7 @@ export function CameraTools({
         }}
         disabled={presetsDisabled}
         disabledMessage={presetsDisabledMessage}
-        shortcuts=""
+        shortcuts="3"
         label="Switch to Side view"
         visibleLabel="Side"
         className={buttonClass}
@@ -77,7 +77,7 @@ export function CameraTools({
         }}
         disabled={presetsDisabled}
         disabledMessage={presetsDisabledMessage}
-        shortcuts=""
+        shortcuts="4"
         label="Switch to Top view"
         visibleLabel="Top"
         className={buttonClass}

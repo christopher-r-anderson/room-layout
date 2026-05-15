@@ -19,10 +19,12 @@ function KeyboardShortcutHarness(props: {
   onMoveSelection: (delta: { x: number; z: number }) => void
   onClearSelection: () => void
   onRotate: (direction: -1 | 1) => void
+  onSetCameraPreset?: (preset: 'corner' | 'front' | 'side' | 'top') => void
 }) {
   useKeyboardShortcuts({
     ...props,
     canStartNewScene: props.canStartNewScene ?? true,
+    onSetCameraPreset: props.onSetCameraPreset ?? vi.fn(),
   })
 
   return <button type="button">Editor Root</button>
@@ -48,6 +50,7 @@ function DialogEscapeHarness(props: {
     onMoveSelection: vi.fn(),
     onClearSelection: props.onClearSelection,
     onRotate: vi.fn(),
+    onSetCameraPreset: vi.fn(),
   })
 
   useEffect(() => {
@@ -86,6 +89,7 @@ function TextInputHarness(props: {
     onMoveSelection: vi.fn(),
     onClearSelection: vi.fn(),
     onRotate: vi.fn(),
+    onSetCameraPreset: vi.fn(),
   })
 
   useEffect(() => {
@@ -115,6 +119,7 @@ function DialogNewSceneHarness(props: {
     onMoveSelection: vi.fn(),
     onClearSelection: vi.fn(),
     onRotate: vi.fn(),
+    onSetCameraPreset: vi.fn(),
   })
 
   return (
@@ -147,6 +152,7 @@ function PreHandledEscapeHarness(props: {
     onMoveSelection: vi.fn(),
     onClearSelection: props.onClearSelection,
     onRotate: vi.fn(),
+    onSetCameraPreset: vi.fn(),
   })
 
   useEffect(() => {
@@ -187,6 +193,7 @@ function ContentEditableHarness(props: {
     onMoveSelection: vi.fn(),
     onClearSelection: vi.fn(),
     onRotate: vi.fn(),
+    onSetCameraPreset: vi.fn(),
   })
 
   useEffect(() => {
@@ -272,6 +279,62 @@ describe('useKeyboardShortcuts', () => {
     expect(onOpenDeleteDialog).toHaveBeenCalledTimes(1)
   })
 
+  it('handles Backspace as a delete shortcut variant when selection exists', async () => {
+    const user = userEvent.setup()
+    const onOpenDeleteDialog = vi.fn()
+
+    render(
+      <KeyboardShortcutHarness
+        enabled
+        hasSelection
+        isModalOpen={false}
+        onUndo={vi.fn()}
+        onRedo={vi.fn()}
+        onNewSceneIntent={vi.fn()}
+        onOpenDeleteDialog={onOpenDeleteDialog}
+        onFocusSelected={vi.fn()}
+        onMoveSelection={vi.fn()}
+        onClearSelection={vi.fn()}
+        onRotate={vi.fn()}
+      />,
+    )
+
+    await user.keyboard('{Backspace}')
+    expect(onOpenDeleteDialog).toHaveBeenCalledTimes(1)
+  })
+
+  it('does not intercept or execute shortcuts when disabled', () => {
+    const onUndo = vi.fn()
+
+    render(
+      <KeyboardShortcutHarness
+        enabled={false}
+        hasSelection
+        isModalOpen={false}
+        onUndo={onUndo}
+        onRedo={vi.fn()}
+        onNewSceneIntent={vi.fn()}
+        onOpenDeleteDialog={vi.fn()}
+        onFocusSelected={vi.fn()}
+        onMoveSelection={vi.fn()}
+        onClearSelection={vi.fn()}
+        onRotate={vi.fn()}
+      />,
+    )
+
+    const event = new KeyboardEvent('keydown', {
+      bubbles: true,
+      cancelable: true,
+      key: 'z',
+      ctrlKey: true,
+    })
+
+    fireEvent(window, event)
+
+    expect(event.defaultPrevented).toBe(false)
+    expect(onUndo).not.toHaveBeenCalled()
+  })
+
   it('dispatches history and rotation shortcuts when enabled and no modal is open', async () => {
     const user = userEvent.setup()
     const onUndo = vi.fn()
@@ -299,8 +362,8 @@ describe('useKeyboardShortcuts', () => {
     await user.keyboard('{Control>}z{/Control}')
     await user.keyboard('{Control>}{Shift>}z{/Shift}{/Control}')
     await user.keyboard('{Control>}y{/Control}')
-    await user.keyboard('q')
-    await user.keyboard('e')
+    await user.keyboard(',')
+    await user.keyboard('.')
 
     expect(onUndo).toHaveBeenCalledTimes(1)
     expect(onRedo).toHaveBeenCalledTimes(2)
@@ -441,6 +504,188 @@ describe('useKeyboardShortcuts', () => {
     expect(onMoveSelection).not.toHaveBeenCalled()
   })
 
+  it('dispatches camera preset shortcuts on 1/2/3/4 when enabled and no modal/input context', async () => {
+    const user = userEvent.setup()
+    const onSetCameraPreset = vi.fn()
+
+    render(
+      <KeyboardShortcutHarness
+        enabled
+        hasSelection={false}
+        isModalOpen={false}
+        onUndo={vi.fn()}
+        onRedo={vi.fn()}
+        onNewSceneIntent={vi.fn()}
+        onOpenDeleteDialog={vi.fn()}
+        onFocusSelected={vi.fn()}
+        onMoveSelection={vi.fn()}
+        onClearSelection={vi.fn()}
+        onRotate={vi.fn()}
+        onSetCameraPreset={onSetCameraPreset}
+      />,
+    )
+
+    await user.keyboard('1234')
+
+    expect(onSetCameraPreset).toHaveBeenNthCalledWith(1, 'corner')
+    expect(onSetCameraPreset).toHaveBeenNthCalledWith(2, 'front')
+    expect(onSetCameraPreset).toHaveBeenNthCalledWith(3, 'side')
+    expect(onSetCameraPreset).toHaveBeenNthCalledWith(4, 'top')
+  })
+
+  it('dispatches camera preset shortcuts for shifted number-row digit codes on common alternate layouts', () => {
+    const onSetCameraPreset = vi.fn()
+
+    render(
+      <KeyboardShortcutHarness
+        enabled
+        hasSelection={false}
+        isModalOpen={false}
+        onUndo={vi.fn()}
+        onRedo={vi.fn()}
+        onNewSceneIntent={vi.fn()}
+        onOpenDeleteDialog={vi.fn()}
+        onFocusSelected={vi.fn()}
+        onMoveSelection={vi.fn()}
+        onClearSelection={vi.fn()}
+        onRotate={vi.fn()}
+        onSetCameraPreset={onSetCameraPreset}
+      />,
+    )
+
+    fireEvent(
+      window,
+      new KeyboardEvent('keydown', {
+        bubbles: true,
+        cancelable: true,
+        key: '&',
+        code: 'Digit1',
+        shiftKey: true,
+      }),
+    )
+    fireEvent(
+      window,
+      new KeyboardEvent('keydown', {
+        bubbles: true,
+        cancelable: true,
+        key: '@',
+        code: 'Digit2',
+        shiftKey: true,
+      }),
+    )
+    fireEvent(
+      window,
+      new KeyboardEvent('keydown', {
+        bubbles: true,
+        cancelable: true,
+        key: '"',
+        code: 'Digit3',
+        shiftKey: true,
+      }),
+    )
+    fireEvent(
+      window,
+      new KeyboardEvent('keydown', {
+        bubbles: true,
+        cancelable: true,
+        key: "'",
+        code: 'Digit4',
+        shiftKey: true,
+      }),
+    )
+
+    expect(onSetCameraPreset).toHaveBeenNthCalledWith(1, 'corner')
+    expect(onSetCameraPreset).toHaveBeenNthCalledWith(2, 'front')
+    expect(onSetCameraPreset).toHaveBeenNthCalledWith(3, 'side')
+    expect(onSetCameraPreset).toHaveBeenNthCalledWith(4, 'top')
+  })
+
+  it('does not dispatch camera preset shortcuts for unshifted alternate-layout number-row symbols', () => {
+    const onSetCameraPreset = vi.fn()
+
+    render(
+      <KeyboardShortcutHarness
+        enabled
+        hasSelection={false}
+        isModalOpen={false}
+        onUndo={vi.fn()}
+        onRedo={vi.fn()}
+        onNewSceneIntent={vi.fn()}
+        onOpenDeleteDialog={vi.fn()}
+        onFocusSelected={vi.fn()}
+        onMoveSelection={vi.fn()}
+        onClearSelection={vi.fn()}
+        onRotate={vi.fn()}
+        onSetCameraPreset={onSetCameraPreset}
+      />,
+    )
+
+    fireEvent(
+      window,
+      new KeyboardEvent('keydown', {
+        bubbles: true,
+        cancelable: true,
+        key: '&',
+        code: 'Digit1',
+      }),
+    )
+    fireEvent(
+      window,
+      new KeyboardEvent('keydown', {
+        bubbles: true,
+        cancelable: true,
+        key: 'é',
+        code: 'Digit2',
+      }),
+    )
+    fireEvent(
+      window,
+      new KeyboardEvent('keydown', {
+        bubbles: true,
+        cancelable: true,
+        key: '"',
+        code: 'Digit3',
+      }),
+    )
+    fireEvent(
+      window,
+      new KeyboardEvent('keydown', {
+        bubbles: true,
+        cancelable: true,
+        key: "'",
+        code: 'Digit4',
+      }),
+    )
+
+    expect(onSetCameraPreset).not.toHaveBeenCalled()
+  })
+
+  it('does not dispatch camera preset shortcuts when modal is open', async () => {
+    const user = userEvent.setup()
+    const onSetCameraPreset = vi.fn()
+
+    render(
+      <KeyboardShortcutHarness
+        enabled
+        hasSelection={false}
+        isModalOpen
+        onUndo={vi.fn()}
+        onRedo={vi.fn()}
+        onNewSceneIntent={vi.fn()}
+        onOpenDeleteDialog={vi.fn()}
+        onFocusSelected={vi.fn()}
+        onMoveSelection={vi.fn()}
+        onClearSelection={vi.fn()}
+        onRotate={vi.fn()}
+        onSetCameraPreset={onSetCameraPreset}
+      />,
+    )
+
+    await user.keyboard('1234')
+
+    expect(onSetCameraPreset).not.toHaveBeenCalled()
+  })
+
   it('does not dispatch focusSelected on F when no selection', async () => {
     const user = userEvent.setup()
     const onFocusSelected = vi.fn()
@@ -556,6 +801,44 @@ describe('useKeyboardShortcuts', () => {
     expect(redoEvent.defaultPrevented).toBe(false)
     expect(onUndo).not.toHaveBeenCalled()
     expect(onRedo).not.toHaveBeenCalled()
+  })
+
+  it('does not dispatch camera preset shortcuts in text inputs', () => {
+    const onSetCameraPreset = vi.fn()
+
+    const view = render(
+      <KeyboardShortcutHarness
+        enabled
+        hasSelection={false}
+        isModalOpen={false}
+        onUndo={vi.fn()}
+        onRedo={vi.fn()}
+        onNewSceneIntent={vi.fn()}
+        onOpenDeleteDialog={vi.fn()}
+        onFocusSelected={vi.fn()}
+        onMoveSelection={vi.fn()}
+        onClearSelection={vi.fn()}
+        onRotate={vi.fn()}
+        onSetCameraPreset={onSetCameraPreset}
+      />,
+    )
+
+    const input = document.createElement('input')
+    input.type = 'text'
+    input.setAttribute('aria-label', 'preset input')
+    view.container.appendChild(input)
+    input.focus()
+
+    const presetEvent = new KeyboardEvent('keydown', {
+      bubbles: true,
+      cancelable: true,
+      key: '1',
+    })
+    const presetNotCanceled = input.dispatchEvent(presetEvent)
+
+    expect(presetNotCanceled).toBe(true)
+    expect(presetEvent.defaultPrevented).toBe(false)
+    expect(onSetCameraPreset).not.toHaveBeenCalled()
   })
 
   it('dispatches new scene and suppresses browser default for Ctrl+N and Meta+N', () => {
@@ -708,4 +991,145 @@ describe('useKeyboardShortcuts', () => {
       }
     },
   )
+
+  it('does not prevent default or intercept browser zoom keys (Ctrl+Plus/Minus, Cmd+Plus/Minus)', () => {
+    render(
+      <KeyboardShortcutHarness
+        enabled
+        hasSelection={false}
+        isModalOpen={false}
+        onUndo={vi.fn()}
+        onRedo={vi.fn()}
+        onNewSceneIntent={vi.fn()}
+        onOpenDeleteDialog={vi.fn()}
+        onFocusSelected={vi.fn()}
+        onMoveSelection={vi.fn()}
+        onClearSelection={vi.fn()}
+        onRotate={vi.fn()}
+        onSetCameraPreset={vi.fn()}
+      />,
+    )
+
+    const browserZoomCombos: {
+      init: Pick<KeyboardEventInit, 'ctrlKey' | 'metaKey'>
+      key: string
+    }[] = [
+      { init: { ctrlKey: true }, key: '+' },
+      { init: { ctrlKey: true }, key: '-' },
+      { init: { metaKey: true }, key: '+' },
+      { init: { metaKey: true }, key: '-' },
+    ]
+
+    for (const { init, key } of browserZoomCombos) {
+      const event = new KeyboardEvent('keydown', {
+        bubbles: true,
+        cancelable: true,
+        key,
+        ...init,
+      })
+
+      fireEvent(window, event)
+
+      expect(event.defaultPrevented).toBe(false)
+    }
+  })
+
+  it('suppresses always-on-match shortcuts (Ctrl+Z) even when execute condition fails (modal open)', () => {
+    const onUndo = vi.fn()
+
+    render(
+      <KeyboardShortcutHarness
+        enabled
+        hasSelection={false}
+        isModalOpen
+        onUndo={onUndo}
+        onRedo={vi.fn()}
+        onNewSceneIntent={vi.fn()}
+        onOpenDeleteDialog={vi.fn()}
+        onFocusSelected={vi.fn()}
+        onMoveSelection={vi.fn()}
+        onClearSelection={vi.fn()}
+        onRotate={vi.fn()}
+      />,
+    )
+
+    const event = new KeyboardEvent('keydown', {
+      bubbles: true,
+      cancelable: true,
+      key: 'z',
+      ctrlKey: true,
+    })
+
+    fireEvent(window, event)
+
+    // Should prevent default even though modal is open (always-on-match behavior)
+    expect(event.defaultPrevented).toBe(true)
+    // Should NOT execute the action because modal blocks execution
+    expect(onUndo).not.toHaveBeenCalled()
+  })
+
+  it('suppresses on-execute shortcuts only when action executes', () => {
+    const onMoveSelection = vi.fn()
+
+    render(
+      <KeyboardShortcutHarness
+        enabled
+        hasSelection
+        isModalOpen={false}
+        onUndo={vi.fn()}
+        onRedo={vi.fn()}
+        onNewSceneIntent={vi.fn()}
+        onOpenDeleteDialog={vi.fn()}
+        onFocusSelected={vi.fn()}
+        onMoveSelection={onMoveSelection}
+        onClearSelection={vi.fn()}
+        onRotate={vi.fn()}
+      />,
+    )
+
+    // When selection exists and can execute: should prevent default
+    const moveEvent = new KeyboardEvent('keydown', {
+      bubbles: true,
+      cancelable: true,
+      key: 'ArrowUp',
+    })
+
+    fireEvent(window, moveEvent)
+
+    expect(moveEvent.defaultPrevented).toBe(true)
+    expect(onMoveSelection).toHaveBeenCalled()
+  })
+
+  it('does not suppress on-execute shortcuts when action cannot execute (no selection)', () => {
+    const onMoveSelection = vi.fn()
+
+    render(
+      <KeyboardShortcutHarness
+        enabled
+        hasSelection={false}
+        isModalOpen={false}
+        onUndo={vi.fn()}
+        onRedo={vi.fn()}
+        onNewSceneIntent={vi.fn()}
+        onOpenDeleteDialog={vi.fn()}
+        onFocusSelected={vi.fn()}
+        onMoveSelection={onMoveSelection}
+        onClearSelection={vi.fn()}
+        onRotate={vi.fn()}
+      />,
+    )
+
+    // When no selection: should NOT prevent default (allow fallthrough)
+    const moveEvent = new KeyboardEvent('keydown', {
+      bubbles: true,
+      cancelable: true,
+      key: 'ArrowUp',
+    })
+
+    fireEvent(window, moveEvent)
+
+    // Should NOT prevent default because action doesn't execute without selection
+    expect(moveEvent.defaultPrevented).toBe(false)
+    expect(onMoveSelection).not.toHaveBeenCalled()
+  })
 })

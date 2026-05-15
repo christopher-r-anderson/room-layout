@@ -71,10 +71,7 @@ export function FloorMaterial({
         setTexturesByOption({
           optionId: option.id,
           textures: tex,
-          tileSizeMeters: option.tileSizeMeters as {
-            width: number
-            depth: number
-          },
+          tileSizeMeters: option.tileSizeMeters,
         })
         onLoadingChange?.(false)
       })

@@ -1,209 +1,132 @@
 # Keyboard Shortcuts
 
-This project uses a declarative shortcut system defined in `src/app/keyboard/use-keyboard-shortcuts.ts`. All global editor shortcuts (undo, delete, movement, etc.) are centralized in one shortcut table.
+This document covers implementation rules for keyboard input behavior.
 
-## Architecture
+For end-user key mappings, see [Editor Shortcuts Reference](./editor-shortcuts-reference.md).
 
-The system splits shortcut handling into three phases:
+## Input Systems
 
-1. **Match phase:** Does the key combo match, and is it allowed to match in the current context?
-2. **Suppress phase:** Prevent browser default (triggered for all matched shortcuts).
-3. **Execute phase:** Only run the action if execution conditions are met (modal open? selection exists? feature enabled?).
+The app uses two keyboard systems:
 
-This split allows browser-native combos (like Ctrl+N for new window) to be suppressed while still blocking execution of the related action if needed.
+- **Discrete shortcuts (press-triggered):** Defined in `src/app/keyboard/use-keyboard-shortcuts.ts`.
+- **Held camera motion (state-driven):** Captured in `src/app/keyboard/use-camera-key-state.ts`, consumed per frame in `src/scene/internal/use-scene-imperative-api.ts`.
 
-## Defining Shortcuts
+The split exists because press actions and continuous camera motion have different timing and suppression needs.
 
-All shortcuts are defined in the `shortcutDefinitions` array:
+## Discrete Shortcut Model
 
-```typescript
-const shortcutDefinitions: ShortcutDefinition[] = [
-  {
-    id: 'undo',
-    match: { key: 'z', ctrlOrMeta: true, shift: false },
-  },
-  {
-    id: 'new-scene',
-    match: { key: 'n', ctrlOrMeta: true, shift: false },
-    allowMatchInEditingTarget: true,
-    canExecute: (context) =>
-      context.canStartNewScene && !context.targetIsEditingTarget,
-  },
-]
-```
+Each shortcut runs through three phases:
+
+1. **Match:** Combo matches and is allowed in current target context.
+2. **Suppress:** Browser default is prevented based on `suppressionMode`.
+3. **Execute:** Action runs only if execution gates pass.
+
+This allows browser-native combos (for example Ctrl+N) to be suppressed while still blocking app execution in contexts like text input.
 
 ### ShortcutDefinition Fields
 
-- **id:** Unique identifier; must match a case in the `runShortcut` switch statement.
-- **match:** Single `KeyCombo` or array of `KeyCombo` objects. Shortcut is matched if any combo matches.
-- **allowMatchInEditingTarget:** (optional) If `true`, shortcut matches inside input/textarea/select/contenteditable. Default is `false` (blocked). Use for shortcuts that need browser suppression even while typing.
-- **requiresSelection:** (optional) If `true`, execution is blocked when `hasSelection` is `false`.
-- **canExecute:** (optional) Function for custom execution checks. Receives the current `ShortcutContext` and returns boolean.
+- **id:** Identifier for the shortcut definition.
+- **match:** Single `KeyCombo` or array of `KeyCombo` alternatives.
+- **allowMatchInEditingTarget:** (optional) Allows matching in input/textarea/select/contenteditable.
+- **requiresSelection:** (optional) Blocks execution when `hasSelection` is false.
+- **canExecute:** (optional) Extra execution gate for rules not covered by built-in flags.
+- **suppressionMode:** (optional) `'always-on-match' | 'on-execute'` (default `'on-execute'`).
 
 ### KeyCombo Fields
 
-- **key:** The key name (case-insensitive matching). Examples: `'z'`, `'n'`, `'ArrowUp'`, `'Delete'`, `'Escape'`.
-- **ctrlOrMeta:** (optional) If specified, must match Ctrl-or-Cmd state. Omitted behaves like `false`.
-- **shift:** (optional) If specified, must match shift state. Omitted behaves like `false`.
-- **alt:** (optional) If specified, must match alt state. Omitted behaves like `false`.
+- **key:** (optional) Key name, case-insensitive.
+- **code:** (optional) Physical key code, case-insensitive.
+- **ctrlOrMeta:** (optional) Ctrl/Cmd state must match.
+- **shift:** (optional) Shift state must match.
+- **alt:** (optional) Alt state must match.
 
-## Modifier Semantics
+At least one of `key` or `code` must be present.
 
-Modifiers follow a strict rule: **unspecified means not pressed.**
+### Modifier Semantics
 
-- `{ key: 'z', ctrlOrMeta: true, shift: false }` matches Ctrl+Z and Cmd+Z, but not Ctrl+Shift+Z.
+Unspecified modifiers are treated as `false`.
+
 - `{ key: 'z', ctrlOrMeta: true }` matches Ctrl+Z and Cmd+Z.
-- `{ key: 'f' }` matches plain F only.
-- `{ key: 'ArrowRight', shift: true }` matches only Shift+ArrowRight.
+- `{ key: 'z', ctrlOrMeta: true, shift: false }` does not match Ctrl+Shift+Z.
 
-If a shortcut should work with multiple modifier variants, define each variant explicitly.
+If multiple modifier variants should work, define each explicitly.
 
-This project prefers explicit definitions over wildcard matching. That keeps shortcut behavior in one place and avoids splitting meaning between the matcher and the executor.
+For layout-robust shortcuts (for example number-row presets and punctuation keys), prefer adding `code` alternatives so the same physical key works across keyboard layouts.
 
-### Ctrl/Meta Unification
+Camera preset shortcuts intentionally keep strict modifier matching. To support common layouts where number-row digits require Shift (for example AZERTY), explicitly define shifted `code` variants (for example `{ code: 'Digit1', shift: true }`) rather than relaxing modifier matching globally.
 
-Use `ctrlOrMeta` instead of separate `ctrl` and `meta` fields. This keeps definitions clean and acknowledges that Ctrl is Windows/Linux convention and Cmd is macOS convention for the same logical action.
+### Context and Gating
 
-## Context and Gating
+`ShortcutContext` includes:
 
-The `ShortcutContext` provided to `canMatch` and `canExecute` includes:
+- `targetIsEditingTarget`
+- `targetIsInDialog`
+- `isModalOpen`
+- `hasSelection`
+- `canStartNewScene`
 
-- **targetIsEditingTarget:** True if event target is input/textarea/select/contenteditable.
-- **targetIsInDialog:** True if target is inside `[role="dialog"]` or `[role="alertdialog"]`.
-- **isModalOpen:** True if an overlay/modal is currently displayed.
-- **hasSelection:** True if an item is currently selected in the editor.
-- **canStartNewScene:** True if the new-scene action is allowed (not at defaults).
+Use built-in flags first:
 
-## Dialog and Escape Handling
+- Use `requiresSelection` for selection-gated actions.
+- Use `allowMatchInEditingTarget` only when browser suppression is needed even in inputs.
+- Use `canExecute` only for non-standard conditions.
 
-**Escape in dialogs is special.** When Escape originates inside a dialog, it is not intercepted for the app's clear-selection handler. This allows dialogs to handle Escape natively (e.g., closing the dialog).
+### Browser-Native Combo Pattern
 
-If you want Escape to work elsewhere while dialogs are open, use the modal execution gate:
-
-```typescript
-if (shortcut.requiresSelection && !context.hasSelection) {
-  return false
-}
-```
-
-(The execute phase also checks `isModalOpen` globally, preventing all selection-gated actions while a modal is open.)
-
-## Modal Suppression
-
-When `isModalOpen` is true:
-
-- **Matched shortcuts still suppress browser default.** This prevents Ctrl+N from opening a new window while your app's dialog is focused.
-- **Execution is blocked.** `onNewSceneIntent()`, `onUndo()`, etc. are not called.
-
-This two-phase approach gives dialogs clean keyboard control while preventing accidental browser interactions.
-
-## Browser Native Combos
-
-Some key combos are handled by the browser or OS (Ctrl+W to close tab, Ctrl+S to save, Ctrl+Q to quit). To prevent these from firing while your UI is focused, use `allowMatchInEditingTarget: true` and ensure your action suppresses the default without executing if conditions aren't met.
-
-Example: Ctrl+N (browser new window)
+Use this pattern when browser default should be suppressed but app execution should still be blocked in editing targets:
 
 ```typescript
 {
   id: 'new-scene',
-  match: { key: 'n', ctrlOrMeta: true, shift: false },
-  allowMatchInEditingTarget: true,  // match even in inputs
+  match: { key: 'n', ctrlOrMeta: true },
+  allowMatchInEditingTarget: true,
+  suppressionMode: 'always-on-match',
   canExecute: (context) =>
-    context.canStartNewScene && !context.targetIsEditingTarget,  // but don't execute in inputs
+    context.canStartNewScene && !context.targetIsEditingTarget,
 }
 ```
 
-This prevents the browser from opening a new window while still suppressing the keystroke.
+### Modal and Dialog Rules
 
-## Explicit Action Variants
+- `isModalOpen` blocks execution for all shortcuts.
+- `always-on-match` can still suppress browser defaults while modal-gated.
+- Escape inside dialogs is not intercepted by clear-selection, so dialogs can handle close behavior natively.
 
-Movement and rotation use explicit shortcut variants instead of broad matches with event-dependent branching.
+## Held Camera Key Model
 
-- `ArrowRight` is its own action.
-- `Shift+ArrowRight` is its own action.
-- `Alt+ArrowRight` is its own action.
-- `Q` and `E` are separate rotate actions.
+Held camera input tracks a `Set<CameraKeyName>`.
 
-This keeps the shortcut table declarative:
+Flow:
 
-- The definition describes the exact combo.
-- The definition describes the exact action.
-- The executor does not need to decode modifier meaning from the event.
+1. `keydown`/`keyup` update the key-state set.
+2. App pushes state to scene with `setCameraKeyState`.
+3. Scene reads state in `useFrame` and applies `rotate`/`truck`/`dolly` deltas.
 
-If you add a new shortcut family with modifier-based variants, prefer defining each variant explicitly unless the modifiers are truly interchangeable.
+Unlike discrete shortcuts, this path does not use `suppressionMode`.
 
-## Custom Execution Functions
+### Normalization
 
-Use `canExecute` for feature-level checks that don't fit the standard gates:
+`use-camera-key-state.ts` normalizes both `event.code` and `event.key`:
 
-```typescript
-{
-  id: 'custom-action',
-  match: { key: 'x' },
-  canExecute: (context) => {
-    // Only allow if a specific menu is open, or feature is enabled
-    return myFeatureIsEnabled && context.hasSelection
-  },
-}
-```
+- `W/A/S/D`: key codes and letter variants.
+- `Shift`: left/right shift codes.
+- Zoom-in: `Equal`, `=`, `+`, `NumpadAdd`.
+- Zoom-out: `Minus`, `-`, `_`, `NumpadSubtract`.
 
-## Accessibility and UI Integration
+### Held-Key Gating and Safety
 
-### ToolButton Integration
+- `keydown` is ignored in editing targets and dialogs.
+- `keyup` still updates state so release events clear correctly.
+- State is reset on window blur and hook cleanup to avoid stuck keys.
 
-Use `ToolButton` to pair a button action with keyboard shortcuts and automatic ARIA/tooltip annotations:
+### Frame Behavior
 
-```typescript
-<ToolButton
-  action={() => onMoveSelection({ x: 0, z: -0.5 })}
-  disabled={controlsDisabled}
-  disabledMessage="No item selected"
-  shortcuts="ArrowUp Shift+ArrowUp Alt+ArrowUp"
-  label="Move Up"
-  visibleLabel="Up"
-  shortcutHint="Keyboard: Shift moves farther. Alt moves finely."
-  icon={<IconArrowUp />}
-/>
-```
+- `W/A/S/D` without Shift: orbit.
+- `Shift+W/A/S/D`: pan.
+- `=` / `-`: zoom.
+- If both zoom directions are held, `=` wins.
+- Frame delta is capped at `0.05` seconds to avoid large jumps after frame stalls.
 
-**ToolButton automatically:**
+## UI Integration Notes
 
-- Adds `aria-keyshortcuts` for screen reader discovery.
-- Displays shortcuts in a tooltip using `KbdShortcutDisplay`.
-- Shows the disabled reason on hover when disabled.
-
-### Shortcut String Format
-
-The `shortcuts` prop uses the ARIA keyshortcuts format (space-separated, `+` for modifiers):
-
-- Single key: `"Escape"`
-- Modifier combo: `"Control+Z"` or `"Shift+Control+Z"`
-- Multiple alternatives: `"Control+Z Control+Shift+Z Alt+Z"`
-  - Display: Ctrl+Z or Shift+Ctrl+Z or Alt+Z
-
-### KbdShortcutDisplay
-
-For custom tooltip or help text, use the `KbdShortcutDisplay` component to render shortcuts consistently:
-
-```typescript
-<div className="flex gap-2">
-  <span>Move:</span>
-  <KbdShortcutDisplay shortcuts="ArrowUp ArrowDown" />
-</div>
-```
-
-This parses the aria-keyshortcuts format and renders styled keyboard keys.
-
-## Design Notes
-
-**Why simple declarations over more flexible logic?**
-
-Global shortcuts are few and relatively stable (undo, delete, movement, escape). A single declarative table centralizes policy, makes testing straightforward, and prevents duplicate listeners or missed edge cases. More complex scenarios not achievable by these definitions are not needed in the scope of this project.
-
-**Why split match and execute?**
-
-Separating the phases allows suppression of browser combos (preventing new-window, save dialogs, etc.) while still gating execution. Modal suppression and editing-target protection emerge cleanly from this structure.
-
-**Why do unspecified modifiers behave like false?**
-
-This keeps matching exact by default. A shortcut definition only matches the combo it names. If multiple modifier variants matter, define multiple shortcuts instead of letting the executor infer intent from the raw event.
+`ToolButton` can attach keyboard metadata to controls using `shortcuts` (ARIA keyshortcuts format), and the shared UI renders consistent key hints via `KbdShortcutDisplay`.

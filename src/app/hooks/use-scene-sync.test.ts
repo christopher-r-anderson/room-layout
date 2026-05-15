@@ -43,6 +43,7 @@ function createSceneRef(readModel: SceneReadModel) {
       restoreInitialLayout: vi.fn(),
       setCameraPreset: vi.fn(),
       focusSelected: vi.fn(),
+      setCameraKeyState: vi.fn(),
     } satisfies SceneRef,
   }
 }

@@ -17,6 +17,7 @@ export interface SceneSnapshot {
   selectedId: string | null
   selectedName: string | null
   itemCount: number
+  cameraPosition: [number, number, number]
   items: SceneSnapshotItem[]
 }
 
@@ -83,6 +84,9 @@ export function createSceneSnapshot(
     selectedId,
     selectedName: selectedFurniture?.name ?? null,
     itemCount: furniture.length,
+    cameraPosition: camera.position.toArray().map((coordinate) => {
+      return roundToPrecision(coordinate, 3)
+    }) as [number, number, number],
     items: furniture.map((item) => ({
       id: item.id,
       catalogId: item.catalogId,
