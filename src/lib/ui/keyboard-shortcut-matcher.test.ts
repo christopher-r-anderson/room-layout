@@ -9,6 +9,7 @@ import {
 
 function createKeyEvent(
   key: string,
+  code?: string,
   init: Pick<
     KeyboardEventInit,
     'ctrlKey' | 'metaKey' | 'shiftKey' | 'altKey'
@@ -18,6 +19,7 @@ function createKeyEvent(
     bubbles: true,
     cancelable: true,
     key,
+    code,
     ...init,
   })
 }
@@ -29,8 +31,8 @@ describe('keyboard-shortcut-matcher', () => {
   })
 
   it('matches ctrlOrMeta using either ctrl or meta modifier', () => {
-    const ctrlEvent = createKeyEvent('z', { ctrlKey: true })
-    const metaEvent = createKeyEvent('z', { metaKey: true })
+    const ctrlEvent = createKeyEvent('z', undefined, { ctrlKey: true })
+    const metaEvent = createKeyEvent('z', undefined, { metaKey: true })
     const combo: KeyCombo = { key: 'z', ctrlOrMeta: true }
 
     expect(matchKeyCombo(ctrlEvent, combo)).toBe(true)
@@ -38,7 +40,7 @@ describe('keyboard-shortcut-matcher', () => {
   })
 
   it('requires exact modifier parity for shift and alt', () => {
-    const event = createKeyEvent('ArrowUp', { shiftKey: true })
+    const event = createKeyEvent('ArrowUp', undefined, { shiftKey: true })
 
     expect(matchKeyCombo(event, { key: 'ArrowUp', shift: true })).toBe(true)
     expect(matchKeyCombo(event, { key: 'ArrowUp' })).toBe(false)
@@ -46,7 +48,7 @@ describe('keyboard-shortcut-matcher', () => {
   })
 
   it('matches any combo in an array', () => {
-    const event = createKeyEvent('y', { ctrlKey: true })
+    const event = createKeyEvent('y', undefined, { ctrlKey: true })
 
     expect(
       matchesKeyCombo(event, [
@@ -57,8 +59,21 @@ describe('keyboard-shortcut-matcher', () => {
   })
 
   it('returns false when no combo matches', () => {
-    const event = createKeyEvent('x', { ctrlKey: true })
+    const event = createKeyEvent('x', undefined, { ctrlKey: true })
 
     expect(matchesKeyCombo(event, { key: 'z', ctrlOrMeta: true })).toBe(false)
+  })
+
+  it('matches shortcuts by physical key code', () => {
+    const event = createKeyEvent('!', 'Digit1', { shiftKey: true })
+
+    expect(matchKeyCombo(event, { code: 'Digit1', shift: true })).toBe(true)
+    expect(matchKeyCombo(event, { code: 'Digit1' })).toBe(false)
+  })
+
+  it('returns false when neither key nor code are provided', () => {
+    const event = createKeyEvent('z')
+
+    expect(matchKeyCombo(event, {})).toBe(false)
   })
 })

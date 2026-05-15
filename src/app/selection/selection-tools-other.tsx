@@ -35,7 +35,7 @@ export function SelectionToolsOther({
         }}
         disabled={controlsDisabled}
         disabledMessage={disabledMessage}
-        shortcuts="Q"
+        shortcuts=","
         label="Rotate Left"
         icon={<IconRotate3d className="-scale-x-100" />}
       />
@@ -45,7 +45,7 @@ export function SelectionToolsOther({
         }}
         disabled={controlsDisabled}
         disabledMessage={disabledMessage}
-        shortcuts="E"
+        shortcuts="."
         label="Rotate Right"
         icon={<IconRotate3d />}
       />

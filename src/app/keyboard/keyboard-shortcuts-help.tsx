@@ -95,13 +95,18 @@ const SHORTCUT_SECTIONS: ShortcutSection[] = [
         rows: [
           {
             label: 'Undo',
-            combos: [['Control', 'Z']],
+            combos: [
+              ['Ctrl', 'Z'],
+              ['Cmd', 'Z'],
+            ],
           },
           {
             label: 'Redo',
             combos: [
-              ['Control', 'Shift', 'Z'],
-              ['Control', 'Y'],
+              ['Ctrl', 'Shift', 'Z'],
+              ['Ctrl', 'Y'],
+              ['Cmd', 'Shift', 'Z'],
+              ['Cmd', 'Y'],
             ],
           },
         ],

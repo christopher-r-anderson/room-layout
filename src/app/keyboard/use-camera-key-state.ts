@@ -39,15 +39,36 @@ const CAMERA_KEY_IDS: Record<string, CameraKeyName> = {
 }
 
 const LETTER_CAMERA_CODES = new Set(['KeyW', 'KeyA', 'KeyS', 'KeyD'])
+const SHIFT_CAMERA_CODES = new Set(['ShiftLeft', 'ShiftRight'])
 
 const normalizeCameraKey = (key: string): string =>
   key.length === 1 ? key.toLowerCase() : key
+
+const isZoomModifierChord = (event: KeyboardEvent): boolean => {
+  if (!event.ctrlKey && !event.metaKey) {
+    return false
+  }
+
+  const normalizedKey = normalizeCameraKey(event.key)
+  const keyMatch = CAMERA_KEY_IDS[normalizedKey]
+  const codeMatch = LETTER_CAMERA_CODES.has(event.code)
+    ? undefined
+    : CAMERA_KEY_IDS[event.code]
+
+  return (
+    keyMatch === 'equal' ||
+    keyMatch === 'minus' ||
+    codeMatch === 'equal' ||
+    codeMatch === 'minus'
+  )
+}
 
 export function useCameraKeyState({
   enabled,
   sceneRef,
 }: UseCameraKeyStateOptions): void {
   const keyStateRef = useRef<CameraKeyState>(new Set())
+  const pressedShiftCodesRef = useRef<Set<string>>(new Set())
 
   const updateCameraKeyState = (
     keyId: string,
@@ -88,6 +109,14 @@ export function useCameraKeyState({
         return
       }
 
+      if (isZoomModifierChord(event)) {
+        return
+      }
+
+      if (SHIFT_CAMERA_CODES.has(event.code)) {
+        pressedShiftCodesRef.current.add(event.code)
+      }
+
       const nextState =
         updateCameraKeyState(normalizeCameraKey(event.key), true) ??
         (LETTER_CAMERA_CODES.has(event.code)
@@ -99,6 +128,18 @@ export function useCameraKeyState({
     }
 
     const handleKeyUp = (event: KeyboardEvent) => {
+      if (SHIFT_CAMERA_CODES.has(event.code)) {
+        pressedShiftCodesRef.current.delete(event.code)
+        const nextState = updateCameraKeyState(
+          event.code,
+          pressedShiftCodesRef.current.size > 0,
+        )
+        if (nextState !== null) {
+          sceneRef.current?.setCameraKeyState(nextState)
+        }
+        return
+      }
+
       const nextState =
         updateCameraKeyState(normalizeCameraKey(event.key), false) ??
         (LETTER_CAMERA_CODES.has(event.code)
@@ -110,6 +151,8 @@ export function useCameraKeyState({
     }
 
     const resetKeyState = () => {
+      pressedShiftCodesRef.current = new Set()
+
       if (keyStateRef.current.size === 0) {
         return
       }

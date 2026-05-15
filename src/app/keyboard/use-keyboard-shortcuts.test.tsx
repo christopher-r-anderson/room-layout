@@ -533,6 +533,133 @@ describe('useKeyboardShortcuts', () => {
     expect(onSetCameraPreset).toHaveBeenNthCalledWith(4, 'top')
   })
 
+  it('dispatches camera preset shortcuts for shifted number-row digit codes on common alternate layouts', () => {
+    const onSetCameraPreset = vi.fn()
+
+    render(
+      <KeyboardShortcutHarness
+        enabled
+        hasSelection={false}
+        isModalOpen={false}
+        onUndo={vi.fn()}
+        onRedo={vi.fn()}
+        onNewSceneIntent={vi.fn()}
+        onOpenDeleteDialog={vi.fn()}
+        onFocusSelected={vi.fn()}
+        onMoveSelection={vi.fn()}
+        onClearSelection={vi.fn()}
+        onRotate={vi.fn()}
+        onSetCameraPreset={onSetCameraPreset}
+      />,
+    )
+
+    fireEvent(
+      window,
+      new KeyboardEvent('keydown', {
+        bubbles: true,
+        cancelable: true,
+        key: '&',
+        code: 'Digit1',
+        shiftKey: true,
+      }),
+    )
+    fireEvent(
+      window,
+      new KeyboardEvent('keydown', {
+        bubbles: true,
+        cancelable: true,
+        key: '@',
+        code: 'Digit2',
+        shiftKey: true,
+      }),
+    )
+    fireEvent(
+      window,
+      new KeyboardEvent('keydown', {
+        bubbles: true,
+        cancelable: true,
+        key: '"',
+        code: 'Digit3',
+        shiftKey: true,
+      }),
+    )
+    fireEvent(
+      window,
+      new KeyboardEvent('keydown', {
+        bubbles: true,
+        cancelable: true,
+        key: "'",
+        code: 'Digit4',
+        shiftKey: true,
+      }),
+    )
+
+    expect(onSetCameraPreset).toHaveBeenNthCalledWith(1, 'corner')
+    expect(onSetCameraPreset).toHaveBeenNthCalledWith(2, 'front')
+    expect(onSetCameraPreset).toHaveBeenNthCalledWith(3, 'side')
+    expect(onSetCameraPreset).toHaveBeenNthCalledWith(4, 'top')
+  })
+
+  it('does not dispatch camera preset shortcuts for unshifted alternate-layout number-row symbols', () => {
+    const onSetCameraPreset = vi.fn()
+
+    render(
+      <KeyboardShortcutHarness
+        enabled
+        hasSelection={false}
+        isModalOpen={false}
+        onUndo={vi.fn()}
+        onRedo={vi.fn()}
+        onNewSceneIntent={vi.fn()}
+        onOpenDeleteDialog={vi.fn()}
+        onFocusSelected={vi.fn()}
+        onMoveSelection={vi.fn()}
+        onClearSelection={vi.fn()}
+        onRotate={vi.fn()}
+        onSetCameraPreset={onSetCameraPreset}
+      />,
+    )
+
+    fireEvent(
+      window,
+      new KeyboardEvent('keydown', {
+        bubbles: true,
+        cancelable: true,
+        key: '&',
+        code: 'Digit1',
+      }),
+    )
+    fireEvent(
+      window,
+      new KeyboardEvent('keydown', {
+        bubbles: true,
+        cancelable: true,
+        key: 'é',
+        code: 'Digit2',
+      }),
+    )
+    fireEvent(
+      window,
+      new KeyboardEvent('keydown', {
+        bubbles: true,
+        cancelable: true,
+        key: '"',
+        code: 'Digit3',
+      }),
+    )
+    fireEvent(
+      window,
+      new KeyboardEvent('keydown', {
+        bubbles: true,
+        cancelable: true,
+        key: "'",
+        code: 'Digit4',
+      }),
+    )
+
+    expect(onSetCameraPreset).not.toHaveBeenCalled()
+  })
+
   it('does not dispatch camera preset shortcuts when modal is open', async () => {
     const user = userEvent.setup()
     const onSetCameraPreset = vi.fn()

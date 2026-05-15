@@ -34,10 +34,13 @@ This allows browser-native combos (for example Ctrl+N) to be suppressed while st
 
 ### KeyCombo Fields
 
-- **key:** Key name, case-insensitive.
+- **key:** (optional) Key name, case-insensitive.
+- **code:** (optional) Physical key code, case-insensitive.
 - **ctrlOrMeta:** (optional) Ctrl/Cmd state must match.
 - **shift:** (optional) Shift state must match.
 - **alt:** (optional) Alt state must match.
+
+At least one of `key` or `code` must be present.
 
 ### Modifier Semantics
 
@@ -47,6 +50,10 @@ Unspecified modifiers are treated as `false`.
 - `{ key: 'z', ctrlOrMeta: true, shift: false }` does not match Ctrl+Shift+Z.
 
 If multiple modifier variants should work, define each explicitly.
+
+For layout-robust shortcuts (for example number-row presets and punctuation keys), prefer adding `code` alternatives so the same physical key works across keyboard layouts.
+
+Camera preset shortcuts intentionally keep strict modifier matching. To support common layouts where number-row digits require Shift (for example AZERTY), explicitly define shifted `code` variants (for example `{ code: 'Digit1', shift: true }`) rather than relaxing modifier matching globally.
 
 ### Context and Gating
 

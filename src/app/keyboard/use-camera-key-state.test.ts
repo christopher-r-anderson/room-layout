@@ -64,6 +64,45 @@ describe('useCameraKeyState', () => {
     expect(secondCall.size).toBe(0)
   })
 
+  it('keeps shift pressed until both physical shift keys are released', () => {
+    const sceneRef = createSceneRef()
+
+    renderHook(() => {
+      useCameraKeyState({
+        enabled: true,
+        sceneRef,
+      })
+    })
+
+    fireEvent.keyDown(window, { code: 'ShiftLeft', key: 'Shift' })
+    fireEvent.keyDown(window, { code: 'ShiftRight', key: 'Shift' })
+    fireEvent.keyUp(window, { code: 'ShiftLeft', key: 'Shift' })
+    fireEvent.keyUp(window, { code: 'ShiftRight', key: 'Shift' })
+
+    expect(sceneRef.setCameraKeyState.mock.calls).toHaveLength(2)
+    const firstCall = sceneRef.setCameraKeyState.mock.calls[0][0]
+    const secondCall = sceneRef.setCameraKeyState.mock.calls[1][0]
+
+    expect(firstCall.has('shift')).toBe(true)
+    expect(secondCall.has('shift')).toBe(false)
+  })
+
+  it('ignores browser zoom modifier chords for held camera zoom keys', () => {
+    const sceneRef = createSceneRef()
+
+    renderHook(() => {
+      useCameraKeyState({
+        enabled: true,
+        sceneRef,
+      })
+    })
+
+    fireEvent.keyDown(window, { code: 'Equal', key: '+', ctrlKey: true })
+    fireEvent.keyDown(window, { code: 'Minus', key: '-', metaKey: true })
+
+    expect(sceneRef.setCameraKeyState).not.toHaveBeenCalled()
+  })
+
   it('does not start WASD movement from physical key codes on non-QWERTY layouts', () => {
     const sceneRef = createSceneRef()
 

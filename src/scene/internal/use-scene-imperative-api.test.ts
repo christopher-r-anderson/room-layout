@@ -730,9 +730,13 @@ describe('useSceneImperativeApi', () => {
     const rotate = vi
       .fn<CameraControlsImpl['rotate']>()
       .mockResolvedValue(undefined)
+    const dolly = vi
+      .fn<CameraControlsImpl['dolly']>()
+      .mockResolvedValue(undefined)
     const controls = {
       truck,
       rotate,
+      dolly,
     } as unknown as CameraControlsImpl
     const options = defaultOptions({
       cameraControlsRef: {
@@ -760,6 +764,22 @@ describe('useSceneImperativeApi', () => {
       frameCallback?.({}, 0.025)
     })
     expect(truck).toHaveBeenCalledWith(0, -3 * 0.025, false)
+
+    // Zoom in with =
+    act(() => {
+      const keyState = new Set<CameraKeyName>(['equal'])
+      sceneRef.current?.setCameraKeyState(keyState)
+      frameCallback?.({}, 0.025)
+    })
+    expect(dolly).toHaveBeenCalledWith(3 * 0.025, false)
+
+    // Zoom out with -
+    act(() => {
+      const keyState = new Set<CameraKeyName>(['minus'])
+      sceneRef.current?.setCameraKeyState(keyState)
+      frameCallback?.({}, 0.025)
+    })
+    expect(dolly).toHaveBeenCalledWith(-3 * 0.025, false)
   })
 })
 

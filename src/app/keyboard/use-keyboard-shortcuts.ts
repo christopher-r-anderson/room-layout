@@ -150,7 +150,12 @@ export function useKeyboardShortcuts({
     },
     {
       id: 'preset-corner',
-      match: { key: '1' },
+      match: [
+        { key: '1' },
+        // Some common layouts (for example AZERTY) require Shift for number-row digits.
+        { code: 'Digit1', shift: true },
+        { code: 'Numpad1' },
+      ],
       suppressionMode: 'on-execute',
       execute: () => {
         onSetCameraPreset('corner')
@@ -158,7 +163,11 @@ export function useKeyboardShortcuts({
     },
     {
       id: 'preset-front',
-      match: { key: '2' },
+      match: [
+        { key: '2' },
+        { code: 'Digit2', shift: true },
+        { code: 'Numpad2' },
+      ],
       suppressionMode: 'on-execute',
       execute: () => {
         onSetCameraPreset('front')
@@ -166,7 +175,11 @@ export function useKeyboardShortcuts({
     },
     {
       id: 'preset-side',
-      match: { key: '3' },
+      match: [
+        { key: '3' },
+        { code: 'Digit3', shift: true },
+        { code: 'Numpad3' },
+      ],
       suppressionMode: 'on-execute',
       execute: () => {
         onSetCameraPreset('side')
@@ -174,7 +187,11 @@ export function useKeyboardShortcuts({
     },
     {
       id: 'preset-top',
-      match: { key: '4' },
+      match: [
+        { key: '4' },
+        { code: 'Digit4', shift: true },
+        { code: 'Numpad4' },
+      ],
       suppressionMode: 'on-execute',
       execute: () => {
         onSetCameraPreset('top')
@@ -290,7 +307,7 @@ export function useKeyboardShortcuts({
     },
     {
       id: 'rotate-left',
-      match: [{ key: ',' }, { key: 'comma' }],
+      match: [{ key: ',' }, { code: 'Comma' }],
       requiresSelection: true,
       suppressionMode: 'on-execute',
       execute: () => {
@@ -299,7 +316,7 @@ export function useKeyboardShortcuts({
     },
     {
       id: 'rotate-right',
-      match: [{ key: '.' }, { key: 'period' }],
+      match: [{ key: '.' }, { code: 'Period' }],
       requiresSelection: true,
       suppressionMode: 'on-execute',
       execute: () => {

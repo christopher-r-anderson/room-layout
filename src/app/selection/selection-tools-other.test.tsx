@@ -43,11 +43,11 @@ describe('SelectionToolsOther', () => {
 
     expect(screen.getByRole('button', { name: 'Rotate Left' })).toHaveAttribute(
       'aria-keyshortcuts',
-      'Q',
+      ',',
     )
     expect(
       screen.getByRole('button', { name: 'Rotate Right' }),
-    ).toHaveAttribute('aria-keyshortcuts', 'E')
+    ).toHaveAttribute('aria-keyshortcuts', '.')
     expect(screen.getByRole('button', { name: 'Delete' })).toHaveAttribute(
       'aria-keyshortcuts',
       'Delete Backspace',

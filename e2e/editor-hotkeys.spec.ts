@@ -56,6 +56,19 @@ async function holdKeyAndAssertCameraStable(
   }
 }
 
+async function pressKeyAndWaitForCameraMove(
+  page: Page,
+  key: string,
+  baseline: [number, number, number],
+) {
+  await page.keyboard.press(key)
+  await expect
+    .poll(async () => (await readSceneState(page)).cameraPosition)
+    .not.toEqual(baseline)
+
+  return readSceneState(page)
+}
+
 async function tabTo(page: Page, target: Locator, maxTabs = 30) {
   for (let index = 0; index < maxTabs; index += 1) {
     try {
@@ -283,6 +296,43 @@ test('camera motion with = and - keys zooms camera', async ({ page }) => {
   const zoomedCameraPosition = afterZoomIn.cameraPosition
 
   await holdKeyUntilCameraMoves(page, 'Minus', zoomedCameraPosition)
+})
+
+test('camera preset shortcuts 1/2/3/4 reposition the camera', async ({
+  page,
+}) => {
+  await openEditor(page)
+
+  const initialState = await readSceneState(page)
+  await holdKeyUntilCameraMoves(page, 'KeyW', initialState.cameraPosition)
+
+  const afterPresetCorner = await pressKeyAndWaitForCameraMove(
+    page,
+    '1',
+    (await readSceneState(page)).cameraPosition,
+  )
+
+  const afterPresetFront = await pressKeyAndWaitForCameraMove(
+    page,
+    '2',
+    afterPresetCorner.cameraPosition,
+  )
+
+  const afterPresetSide = await pressKeyAndWaitForCameraMove(
+    page,
+    '3',
+    afterPresetFront.cameraPosition,
+  )
+
+  const afterPresetTop = await pressKeyAndWaitForCameraMove(
+    page,
+    '4',
+    afterPresetSide.cameraPosition,
+  )
+
+  expect(afterPresetTop.cameraPosition).not.toEqual(
+    afterPresetSide.cameraPosition,
+  )
 })
 
 test('arrow keys move selected object and do not move the camera', async ({
