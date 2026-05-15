@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState, type RefObject } from 'react'
+import { useCallback, useEffect, useRef, useState, type RefObject } from 'react'
 import type { SceneReadModel, SceneRef } from '@/scene/scene.types'
 import type { SceneOutlinerFocusRequest } from '../scene-panel.types'
 
@@ -28,6 +28,18 @@ export function useSceneSync({
   const [outlinerFocusRequest, setOutlinerFocusRequest] =
     useState<SceneOutlinerFocusRequest | null>(null)
   const previousSelectedIdRef = useRef<string | null>(null)
+
+  useEffect(() => {
+    if (!isModalOpen || outlinerFocusRequest === null) {
+      return
+    }
+
+    // Dialogs intentionally trap focus and suspend outliner focus handoff.
+    // If a modal opens before a pending request is handled, discard it rather
+    // than replaying unexpected focus after the dialog closes.
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- modal visibility is the authoritative source for whether focus handoff may remain pending.
+    setOutlinerFocusRequest(null)
+  }, [isModalOpen, outlinerFocusRequest])
 
   const syncSceneReadModel = useCallback(
     (options?: {
@@ -102,7 +114,7 @@ export function useSceneSync({
 
   return {
     syncSceneReadModel,
-    outlinerFocusRequest,
+    outlinerFocusRequest: isModalOpen ? null : outlinerFocusRequest,
     handleOutlinerFocusHandled,
     requestOutlinerFocusByIndex,
   }

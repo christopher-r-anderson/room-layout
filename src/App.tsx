@@ -409,6 +409,7 @@ function App() {
 
   useCameraKeyState({
     enabled: startup.editorInteractionsEnabled,
+    isModalOpen: dialogState.isModalOpen,
     sceneRef,
   })
 

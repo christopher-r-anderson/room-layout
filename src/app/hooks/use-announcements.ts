@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 const MOVEMENT_ANNOUNCEMENT_DELAY_MS = 180
 
@@ -20,6 +20,23 @@ export function useAnnouncements(): Announcements {
   const pendingAssertiveSetRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   )
+
+  const clearPendingAnnouncementTimers = useCallback(() => {
+    if (movementAnnouncementTimeoutRef.current !== null) {
+      window.clearTimeout(movementAnnouncementTimeoutRef.current)
+      movementAnnouncementTimeoutRef.current = null
+    }
+
+    if (pendingPoliteSetRef.current !== null) {
+      clearTimeout(pendingPoliteSetRef.current)
+      pendingPoliteSetRef.current = null
+    }
+
+    if (pendingAssertiveSetRef.current !== null) {
+      clearTimeout(pendingAssertiveSetRef.current)
+      pendingAssertiveSetRef.current = null
+    }
+  }, [])
 
   const clearQueuedMovementAnnouncement = useCallback(() => {
     if (movementAnnouncementTimeoutRef.current !== null) {
@@ -105,6 +122,12 @@ export function useAnnouncements(): Announcements {
     }
     setAssertiveAnnouncement('')
   }, [clearQueuedMovementAnnouncement])
+
+  useEffect(() => {
+    return () => {
+      clearPendingAnnouncementTimers()
+    }
+  }, [clearPendingAnnouncementTimers])
 
   return {
     politeAnnouncement,

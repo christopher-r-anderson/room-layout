@@ -4,6 +4,7 @@ import type { CameraKeyName, CameraKeyState } from '@/scene/scene.types'
 
 interface UseCameraKeyStateOptions {
   enabled: boolean
+  isModalOpen?: boolean
   sceneRef: React.RefObject<{
     setCameraKeyState(keyState: CameraKeyState): void
   } | null>
@@ -65,6 +66,7 @@ const isZoomModifierChord = (event: KeyboardEvent): boolean => {
 
 export function useCameraKeyState({
   enabled,
+  isModalOpen = false,
   sceneRef,
 }: UseCameraKeyStateOptions): void {
   const keyStateRef = useRef<CameraKeyState>(new Set())
@@ -100,7 +102,19 @@ export function useCameraKeyState({
   }
 
   useEffect(() => {
-    if (!enabled) {
+    const resetKeyState = () => {
+      pressedShiftCodesRef.current = new Set()
+
+      if (keyStateRef.current.size === 0) {
+        return
+      }
+
+      keyStateRef.current = new Set()
+      sceneRef.current?.setCameraKeyState(new Set())
+    }
+
+    if (!enabled || isModalOpen) {
+      resetKeyState()
       return
     }
 
@@ -150,17 +164,6 @@ export function useCameraKeyState({
       }
     }
 
-    const resetKeyState = () => {
-      pressedShiftCodesRef.current = new Set()
-
-      if (keyStateRef.current.size === 0) {
-        return
-      }
-
-      keyStateRef.current = new Set()
-      sceneRef.current?.setCameraKeyState(new Set())
-    }
-
     window.addEventListener('keydown', handleKeyDown)
     window.addEventListener('keyup', handleKeyUp)
     window.addEventListener('blur', resetKeyState)
@@ -171,5 +174,5 @@ export function useCameraKeyState({
       window.removeEventListener('blur', resetKeyState)
       resetKeyState()
     }
-  }, [enabled, sceneRef])
+  }, [enabled, isModalOpen, sceneRef])
 }

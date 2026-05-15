@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 interface UsePreviewStateOptions {
   isDragging: boolean
@@ -21,9 +21,14 @@ export function usePreviewState({
 }: UsePreviewStateOptions): PreviewState {
   const [previewedId, setPreviewedId] = useState<string | null>(null)
 
-  if (previewedId !== null && !itemIds.includes(previewedId)) {
+  useEffect(() => {
+    if (previewedId === null || itemIds.includes(previewedId)) {
+      return
+    }
+
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- local preview state must be reconciled when the backing item disappears.
     setPreviewedId(null)
-  }
+  }, [itemIds, previewedId])
 
   const setPreview = useCallback((id: string) => {
     setPreviewedId(id)
