@@ -160,4 +160,57 @@ describe('useCameraKeyState', () => {
 
     expect(sceneRef.current.setCameraKeyState).not.toHaveBeenCalled()
   })
+
+  it('suppresses camera motion whenever a modal is open', () => {
+    const sceneRef = createSceneRef()
+
+    renderHook(() => {
+      useCameraKeyState({
+        enabled: true,
+        isModalOpen: true,
+        sceneRef,
+      })
+    })
+
+    fireEvent.keyDown(window, { code: 'KeyW', key: 'w' })
+    fireEvent.keyUp(window, { code: 'KeyW', key: 'w' })
+
+    expect(sceneRef.current.setCameraKeyState).not.toHaveBeenCalled()
+  })
+
+  it('clears held camera keys when a modal opens', () => {
+    const sceneRef = createSceneRef()
+
+    const { rerender } = renderHook(
+      ({
+        enabled,
+        isModalOpen,
+      }: {
+        enabled: boolean
+        isModalOpen: boolean
+      }) => {
+        useCameraKeyState({
+          enabled,
+          isModalOpen,
+          sceneRef,
+        })
+      },
+      {
+        initialProps: {
+          enabled: true,
+          isModalOpen: false,
+        },
+      },
+    )
+
+    fireEvent.keyDown(window, { code: 'KeyW', key: 'w' })
+    rerender({
+      enabled: true,
+      isModalOpen: true,
+    })
+
+    expect(sceneRef.setCameraKeyState.mock.calls).toHaveLength(2)
+    expect(sceneRef.setCameraKeyState.mock.calls[0][0].has('keyW')).toBe(true)
+    expect(sceneRef.setCameraKeyState.mock.calls[1][0].size).toBe(0)
+  })
 })

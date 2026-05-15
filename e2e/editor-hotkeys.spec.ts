@@ -374,10 +374,16 @@ test('WASD is suppressed in modal dialogs but enabled in the editor', async ({
 
   const infoDialog = page.getByRole('dialog', { name: /project & asset info/i })
   await expect(infoDialog).toBeVisible()
+  const dialogCloseButton = infoDialog
+    .getByRole('button', { name: 'Close' })
+    .first()
+  await expect(dialogCloseButton).toBeVisible()
+  await dialogCloseButton.focus()
+  await expect(dialogCloseButton).toBeFocused()
 
   await holdKeyAndAssertCameraStable(page, 'KeyW', initialCameraPosition)
 
-  // Focus should remain in dialog
+  await expect(dialogCloseButton).toBeFocused()
   await page.keyboard.press('Escape')
   await expect(infoDialog).toBeHidden()
 

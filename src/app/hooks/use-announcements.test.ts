@@ -176,4 +176,21 @@ describe('useAnnouncements', () => {
     // Inner timer was cancelled — live region stays empty.
     expect(result.current.assertiveAnnouncement).toBe('')
   })
+
+  it('cancels pending timers on unmount', () => {
+    vi.useFakeTimers()
+
+    const clearTimeoutSpy = vi.spyOn(window, 'clearTimeout')
+
+    const { result, unmount } = renderHook(() => useAnnouncements())
+
+    act(() => {
+      result.current.queueMovementAnnouncement('Queued movement')
+      result.current.announceAssertive('Assertive message')
+    })
+
+    unmount()
+
+    expect(clearTimeoutSpy).toHaveBeenCalled()
+  })
 })

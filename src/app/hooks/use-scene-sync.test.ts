@@ -219,6 +219,46 @@ describe('useSceneSync', () => {
     expect(result.current.outlinerFocusRequest).toBeNull()
   })
 
+  it('drops pending outliner focus requests when a modal opens', () => {
+    vi.spyOn(Date, 'now').mockReturnValue(404)
+
+    const selectedItem = createFurnitureItem('item-1', 'Armchair')
+    const readModel: SceneReadModel = {
+      selectedId: selectedItem.id,
+      items: [selectedItem],
+    }
+
+    const sceneRef = createSceneRef(readModel)
+
+    const { result, rerender } = renderHook(
+      ({ isModalOpen }: { isModalOpen: boolean }) =>
+        useSceneSync({
+          sceneRef,
+          isModalOpen,
+          handleSceneReadModelChange: vi.fn(),
+          announcePolite: vi.fn(),
+        }),
+      {
+        initialProps: {
+          isModalOpen: false,
+        },
+      },
+    )
+
+    act(() => {
+      result.current.syncSceneReadModel()
+    })
+
+    expect(result.current.outlinerFocusRequest).toEqual({
+      token: 404,
+      targetSelectedId: 'item-1',
+    })
+
+    rerender({ isModalOpen: true })
+
+    expect(result.current.outlinerFocusRequest).toBeNull()
+  })
+
   it('supports explicit outliner index requests and clear handling', () => {
     vi.spyOn(Date, 'now').mockReturnValue(303)
 

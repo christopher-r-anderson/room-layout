@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { usePreviewState } from './use-preview-state'
 
 function defaultOptions(
@@ -136,6 +136,27 @@ describe('usePreviewState', () => {
       // item-1 comes back (undo) — preview must NOT reappear without a new interaction
       rerender(defaultOptions({ itemIds: ['item-1', 'item-2'] }))
       expect(result.current.previewedId).toBeNull()
+    })
+
+    it('reconciles removed preview ids after render without render-phase state updates', () => {
+      const consoleErrorSpy = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => undefined)
+
+      const { result, rerender } = renderHook((opts) => usePreviewState(opts), {
+        initialProps: defaultOptions({ itemIds: ['item-1', 'item-2'] }),
+      })
+
+      act(() => {
+        result.current.setPreview('item-1')
+      })
+
+      rerender(defaultOptions({ itemIds: ['item-2'] }))
+
+      expect(result.current.previewedId).toBeNull()
+      expect(consoleErrorSpy).not.toHaveBeenCalled()
+
+      consoleErrorSpy.mockRestore()
     })
   })
 })
