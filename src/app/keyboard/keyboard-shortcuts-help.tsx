@@ -35,31 +35,30 @@ const SHORTCUT_SECTIONS: ShortcutSection[] = [
       {
         groupLabel: 'View Presets',
         rows: [
-          {
-            label: 'Corner',
-            combos: [['1']],
-          },
-          {
-            label: 'Front',
-            combos: [['2']],
-          },
-          {
-            label: 'Side',
-            combos: [['3']],
-          },
-          {
-            label: 'Top',
-            combos: [['4']],
-          },
+          { label: 'Corner', combos: [['1']] },
+          { label: 'Front', combos: [['2']] },
+          { label: 'Side', combos: [['3']] },
+          { label: 'Top', combos: [['4']] },
         ],
       },
       {
         groupLabel: 'Focus',
+        rows: [{ label: 'Focus selected item', combos: [['F']] }],
+      },
+      {
+        groupLabel: 'Motion (Hold)',
         rows: [
+          { label: 'Orbit camera', combos: [['W'], ['A'], ['S'], ['D']] },
           {
-            label: 'Focus selected item',
-            combos: [['F']],
+            label: 'Pan camera',
+            combos: [
+              ['Shift', 'W'],
+              ['Shift', 'A'],
+              ['Shift', 'S'],
+              ['Shift', 'D'],
+            ],
           },
+          { label: 'Zoom in/out', combos: [['='], ['-']] },
         ],
       },
     ],
@@ -70,40 +69,20 @@ const SHORTCUT_SECTIONS: ShortcutSection[] = [
       {
         groupLabel: 'Move',
         rows: [
-          {
-            label: 'Nudge (0.5 m)',
-            combos: [['Arrow']],
-          },
-          {
-            label: 'Farther (1.0 m)',
-            combos: [['Shift', 'Arrow']],
-          },
-          {
-            label: 'Fine (0.1 m)',
-            combos: [['Alt', 'Arrow']],
-          },
+          { label: 'Nudge (0.5 m)', combos: [['Arrow']] },
+          { label: 'Farther (1.0 m)', combos: [['Shift', 'Arrow']] },
+          { label: 'Fine (0.1 m)', combos: [['Alt', 'Arrow']] },
         ],
       },
       {
         groupLabel: 'Rotate',
-        rows: [
-          {
-            label: 'Selection',
-            combos: [['Q'], ['E']],
-          },
-        ],
+        rows: [{ label: 'Selection', combos: [[','], ['.']] }],
       },
       {
         groupLabel: 'Selection',
         rows: [
-          {
-            label: 'Delete',
-            combos: [['Delete'], ['Backspace']],
-          },
-          {
-            label: 'Clear',
-            combos: [['Escape']],
-          },
+          { label: 'Delete', combos: [['Delete'], ['Backspace']] },
+          { label: 'Clear', combos: [['Escape']] },
         ],
       },
     ],

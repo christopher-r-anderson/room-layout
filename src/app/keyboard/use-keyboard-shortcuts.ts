@@ -1,7 +1,17 @@
 import { useEffect, useEffectEvent } from 'react'
 import type { CameraPreset } from '@/scene/scene.types'
+import {
+  isContentEditableTarget,
+  isDialogTarget,
+  isTextInputLikeTagName,
+} from '@/lib/ui/keyboard-event-target'
+import {
+  matchesKeyCombo,
+  type KeyCombo,
+} from '@/lib/ui/keyboard-shortcut-matcher'
 
 export type RotationDirection = -1 | 1
+export type SuppressionMode = 'always-on-match' | 'on-execute'
 
 interface ShortcutContext {
   targetIsEditingTarget: boolean
@@ -11,19 +21,13 @@ interface ShortcutContext {
   canStartNewScene: boolean
 }
 
-interface KeyCombo {
-  key: string
-  ctrlOrMeta?: boolean
-  shift?: boolean
-  alt?: boolean
-}
-
 interface ShortcutDefinition {
   id: string
   match: KeyCombo | KeyCombo[]
   allowMatchInEditingTarget?: boolean
   requiresSelection?: boolean
   canExecute?: (context: ShortcutContext) => boolean
+  suppressionMode?: SuppressionMode
   execute: () => void
 }
 
@@ -43,43 +47,13 @@ interface UseKeyboardShortcutsOptions {
   onSetCameraPreset: (preset: CameraPreset) => void
 }
 
-function isTextInputLikeTarget(tagName?: string): boolean {
-  return tagName === 'INPUT' || tagName === 'TEXTAREA' || tagName === 'SELECT'
-}
-
 function shouldBlockForTextInput(
   targetTagName?: string,
   targetIsContentEditable?: boolean,
 ): boolean {
   return (
-    targetIsContentEditable === true || isTextInputLikeTarget(targetTagName)
+    targetIsContentEditable === true || isTextInputLikeTagName(targetTagName)
   )
-}
-
-function isContentEditableTarget(target: HTMLElement): boolean {
-  const contentEditableAttr = target.getAttribute('contenteditable')
-  return (
-    target.isContentEditable ||
-    contentEditableAttr === '' ||
-    contentEditableAttr === 'true'
-  )
-}
-
-function matchKeyCombo(event: KeyboardEvent, combo: KeyCombo): boolean {
-  return (
-    event.key.toLowerCase() === combo.key.toLowerCase() &&
-    (combo.ctrlOrMeta ?? false) === (event.ctrlKey || event.metaKey) &&
-    (combo.shift ?? false) === event.shiftKey &&
-    (combo.alt ?? false) === event.altKey
-  )
-}
-
-function matchesShortcutCombo(
-  event: KeyboardEvent,
-  match: KeyCombo | KeyCombo[],
-): boolean {
-  const combos = Array.isArray(match) ? match : [match]
-  return combos.some((combo) => matchKeyCombo(event, combo))
 }
 
 function canMatchShortcut(
@@ -139,6 +113,7 @@ export function useKeyboardShortcuts({
     {
       id: 'undo',
       match: { key: 'z', ctrlOrMeta: true },
+      suppressionMode: 'always-on-match',
       execute: onUndo,
     },
     {
@@ -147,12 +122,14 @@ export function useKeyboardShortcuts({
         { key: 'z', ctrlOrMeta: true, shift: true },
         { key: 'y', ctrlOrMeta: true },
       ],
+      suppressionMode: 'always-on-match',
       execute: onRedo,
     },
     {
       id: 'new-scene',
       match: { key: 'n', ctrlOrMeta: true },
       allowMatchInEditingTarget: true,
+      suppressionMode: 'always-on-match',
       canExecute: (context) =>
         context.canStartNewScene && !context.targetIsEditingTarget,
       execute: onNewSceneIntent,
@@ -161,17 +138,20 @@ export function useKeyboardShortcuts({
       id: 'delete',
       match: [{ key: 'delete' }, { key: 'backspace' }],
       requiresSelection: true,
+      suppressionMode: 'on-execute',
       execute: onOpenDeleteDialog,
     },
     {
       id: 'focus-selected',
       match: { key: 'f' },
       requiresSelection: true,
+      suppressionMode: 'on-execute',
       execute: onFocusSelected,
     },
     {
       id: 'preset-corner',
       match: { key: '1' },
+      suppressionMode: 'on-execute',
       execute: () => {
         onSetCameraPreset('corner')
       },
@@ -179,6 +159,7 @@ export function useKeyboardShortcuts({
     {
       id: 'preset-front',
       match: { key: '2' },
+      suppressionMode: 'on-execute',
       execute: () => {
         onSetCameraPreset('front')
       },
@@ -186,6 +167,7 @@ export function useKeyboardShortcuts({
     {
       id: 'preset-side',
       match: { key: '3' },
+      suppressionMode: 'on-execute',
       execute: () => {
         onSetCameraPreset('side')
       },
@@ -193,6 +175,7 @@ export function useKeyboardShortcuts({
     {
       id: 'preset-top',
       match: { key: '4' },
+      suppressionMode: 'on-execute',
       execute: () => {
         onSetCameraPreset('top')
       },
@@ -201,6 +184,7 @@ export function useKeyboardShortcuts({
       id: 'move-up',
       match: { key: 'ArrowUp' },
       requiresSelection: true,
+      suppressionMode: 'on-execute',
       execute: () => {
         onMoveSelection({ x: 0, z: -0.5 })
       },
@@ -209,6 +193,7 @@ export function useKeyboardShortcuts({
       id: 'move-up-large',
       match: { key: 'ArrowUp', shift: true },
       requiresSelection: true,
+      suppressionMode: 'on-execute',
       execute: () => {
         onMoveSelection({ x: 0, z: -1 })
       },
@@ -217,6 +202,7 @@ export function useKeyboardShortcuts({
       id: 'move-up-small',
       match: { key: 'ArrowUp', alt: true },
       requiresSelection: true,
+      suppressionMode: 'on-execute',
       execute: () => {
         onMoveSelection({ x: 0, z: -0.1 })
       },
@@ -225,6 +211,7 @@ export function useKeyboardShortcuts({
       id: 'move-down',
       match: { key: 'ArrowDown' },
       requiresSelection: true,
+      suppressionMode: 'on-execute',
       execute: () => {
         onMoveSelection({ x: 0, z: 0.5 })
       },
@@ -233,6 +220,7 @@ export function useKeyboardShortcuts({
       id: 'move-down-large',
       match: { key: 'ArrowDown', shift: true },
       requiresSelection: true,
+      suppressionMode: 'on-execute',
       execute: () => {
         onMoveSelection({ x: 0, z: 1 })
       },
@@ -241,6 +229,7 @@ export function useKeyboardShortcuts({
       id: 'move-down-small',
       match: { key: 'ArrowDown', alt: true },
       requiresSelection: true,
+      suppressionMode: 'on-execute',
       execute: () => {
         onMoveSelection({ x: 0, z: 0.1 })
       },
@@ -249,6 +238,7 @@ export function useKeyboardShortcuts({
       id: 'move-left',
       match: { key: 'ArrowLeft' },
       requiresSelection: true,
+      suppressionMode: 'on-execute',
       execute: () => {
         onMoveSelection({ x: -0.5, z: 0 })
       },
@@ -257,6 +247,7 @@ export function useKeyboardShortcuts({
       id: 'move-left-large',
       match: { key: 'ArrowLeft', shift: true },
       requiresSelection: true,
+      suppressionMode: 'on-execute',
       execute: () => {
         onMoveSelection({ x: -1, z: 0 })
       },
@@ -265,6 +256,7 @@ export function useKeyboardShortcuts({
       id: 'move-left-small',
       match: { key: 'ArrowLeft', alt: true },
       requiresSelection: true,
+      suppressionMode: 'on-execute',
       execute: () => {
         onMoveSelection({ x: -0.1, z: 0 })
       },
@@ -273,6 +265,7 @@ export function useKeyboardShortcuts({
       id: 'move-right',
       match: { key: 'ArrowRight' },
       requiresSelection: true,
+      suppressionMode: 'on-execute',
       execute: () => {
         onMoveSelection({ x: 0.5, z: 0 })
       },
@@ -281,6 +274,7 @@ export function useKeyboardShortcuts({
       id: 'move-right-large',
       match: { key: 'ArrowRight', shift: true },
       requiresSelection: true,
+      suppressionMode: 'on-execute',
       execute: () => {
         onMoveSelection({ x: 1, z: 0 })
       },
@@ -289,22 +283,25 @@ export function useKeyboardShortcuts({
       id: 'move-right-small',
       match: { key: 'ArrowRight', alt: true },
       requiresSelection: true,
+      suppressionMode: 'on-execute',
       execute: () => {
         onMoveSelection({ x: 0.1, z: 0 })
       },
     },
     {
       id: 'rotate-left',
-      match: { key: 'q' },
+      match: [{ key: ',' }, { key: 'comma' }],
       requiresSelection: true,
+      suppressionMode: 'on-execute',
       execute: () => {
         onRotate(1)
       },
     },
     {
       id: 'rotate-right',
-      match: { key: 'e' },
+      match: [{ key: '.' }, { key: 'period' }],
       requiresSelection: true,
+      suppressionMode: 'on-execute',
       execute: () => {
         onRotate(-1)
       },
@@ -313,6 +310,7 @@ export function useKeyboardShortcuts({
       id: 'clear-selection',
       match: { key: 'Escape' },
       requiresSelection: true,
+      suppressionMode: 'on-execute',
       execute: onClearSelection,
     },
   ]
@@ -337,9 +335,7 @@ export function useKeyboardShortcuts({
         targetTagName,
         targetIsContentEditable,
       ),
-      targetIsInDialog: target
-        ? Boolean(target.closest('[role="dialog"], [role="alertdialog"]'))
-        : false,
+      targetIsInDialog: isDialogTarget(target),
       isModalOpen,
       hasSelection,
       canStartNewScene,
@@ -350,13 +346,22 @@ export function useKeyboardShortcuts({
         continue
       }
 
-      if (!matchesShortcutCombo(event, shortcut.match)) {
+      if (!matchesKeyCombo(event, shortcut.match)) {
         continue
       }
 
-      event.preventDefault()
+      const suppressionMode = shortcut.suppressionMode ?? 'on-execute'
+      const canExecute = canExecuteShortcut(shortcut, context)
 
-      if (canExecuteShortcut(shortcut, context)) {
+      // always-on-match: suppress immediately on match
+      if (suppressionMode === 'always-on-match') {
+        event.preventDefault()
+      } else if (canExecute) {
+        // on-execute: suppress only if action will execute
+        event.preventDefault()
+      }
+
+      if (canExecute) {
         shortcut.execute()
       }
 

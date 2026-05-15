@@ -279,6 +279,62 @@ describe('useKeyboardShortcuts', () => {
     expect(onOpenDeleteDialog).toHaveBeenCalledTimes(1)
   })
 
+  it('handles Backspace as a delete shortcut variant when selection exists', async () => {
+    const user = userEvent.setup()
+    const onOpenDeleteDialog = vi.fn()
+
+    render(
+      <KeyboardShortcutHarness
+        enabled
+        hasSelection
+        isModalOpen={false}
+        onUndo={vi.fn()}
+        onRedo={vi.fn()}
+        onNewSceneIntent={vi.fn()}
+        onOpenDeleteDialog={onOpenDeleteDialog}
+        onFocusSelected={vi.fn()}
+        onMoveSelection={vi.fn()}
+        onClearSelection={vi.fn()}
+        onRotate={vi.fn()}
+      />,
+    )
+
+    await user.keyboard('{Backspace}')
+    expect(onOpenDeleteDialog).toHaveBeenCalledTimes(1)
+  })
+
+  it('does not intercept or execute shortcuts when disabled', () => {
+    const onUndo = vi.fn()
+
+    render(
+      <KeyboardShortcutHarness
+        enabled={false}
+        hasSelection
+        isModalOpen={false}
+        onUndo={onUndo}
+        onRedo={vi.fn()}
+        onNewSceneIntent={vi.fn()}
+        onOpenDeleteDialog={vi.fn()}
+        onFocusSelected={vi.fn()}
+        onMoveSelection={vi.fn()}
+        onClearSelection={vi.fn()}
+        onRotate={vi.fn()}
+      />,
+    )
+
+    const event = new KeyboardEvent('keydown', {
+      bubbles: true,
+      cancelable: true,
+      key: 'z',
+      ctrlKey: true,
+    })
+
+    fireEvent(window, event)
+
+    expect(event.defaultPrevented).toBe(false)
+    expect(onUndo).not.toHaveBeenCalled()
+  })
+
   it('dispatches history and rotation shortcuts when enabled and no modal is open', async () => {
     const user = userEvent.setup()
     const onUndo = vi.fn()
@@ -306,8 +362,8 @@ describe('useKeyboardShortcuts', () => {
     await user.keyboard('{Control>}z{/Control}')
     await user.keyboard('{Control>}{Shift>}z{/Shift}{/Control}')
     await user.keyboard('{Control>}y{/Control}')
-    await user.keyboard('q')
-    await user.keyboard('e')
+    await user.keyboard(',')
+    await user.keyboard('.')
 
     expect(onUndo).toHaveBeenCalledTimes(1)
     expect(onRedo).toHaveBeenCalledTimes(2)
@@ -808,4 +864,145 @@ describe('useKeyboardShortcuts', () => {
       }
     },
   )
+
+  it('does not prevent default or intercept browser zoom keys (Ctrl+Plus/Minus, Cmd+Plus/Minus)', () => {
+    render(
+      <KeyboardShortcutHarness
+        enabled
+        hasSelection={false}
+        isModalOpen={false}
+        onUndo={vi.fn()}
+        onRedo={vi.fn()}
+        onNewSceneIntent={vi.fn()}
+        onOpenDeleteDialog={vi.fn()}
+        onFocusSelected={vi.fn()}
+        onMoveSelection={vi.fn()}
+        onClearSelection={vi.fn()}
+        onRotate={vi.fn()}
+        onSetCameraPreset={vi.fn()}
+      />,
+    )
+
+    const browserZoomCombos: {
+      init: Pick<KeyboardEventInit, 'ctrlKey' | 'metaKey'>
+      key: string
+    }[] = [
+      { init: { ctrlKey: true }, key: '+' },
+      { init: { ctrlKey: true }, key: '-' },
+      { init: { metaKey: true }, key: '+' },
+      { init: { metaKey: true }, key: '-' },
+    ]
+
+    for (const { init, key } of browserZoomCombos) {
+      const event = new KeyboardEvent('keydown', {
+        bubbles: true,
+        cancelable: true,
+        key,
+        ...init,
+      })
+
+      fireEvent(window, event)
+
+      expect(event.defaultPrevented).toBe(false)
+    }
+  })
+
+  it('suppresses always-on-match shortcuts (Ctrl+Z) even when execute condition fails (modal open)', () => {
+    const onUndo = vi.fn()
+
+    render(
+      <KeyboardShortcutHarness
+        enabled
+        hasSelection={false}
+        isModalOpen
+        onUndo={onUndo}
+        onRedo={vi.fn()}
+        onNewSceneIntent={vi.fn()}
+        onOpenDeleteDialog={vi.fn()}
+        onFocusSelected={vi.fn()}
+        onMoveSelection={vi.fn()}
+        onClearSelection={vi.fn()}
+        onRotate={vi.fn()}
+      />,
+    )
+
+    const event = new KeyboardEvent('keydown', {
+      bubbles: true,
+      cancelable: true,
+      key: 'z',
+      ctrlKey: true,
+    })
+
+    fireEvent(window, event)
+
+    // Should prevent default even though modal is open (always-on-match behavior)
+    expect(event.defaultPrevented).toBe(true)
+    // Should NOT execute the action because modal blocks execution
+    expect(onUndo).not.toHaveBeenCalled()
+  })
+
+  it('suppresses on-execute shortcuts only when action executes', () => {
+    const onMoveSelection = vi.fn()
+
+    render(
+      <KeyboardShortcutHarness
+        enabled
+        hasSelection
+        isModalOpen={false}
+        onUndo={vi.fn()}
+        onRedo={vi.fn()}
+        onNewSceneIntent={vi.fn()}
+        onOpenDeleteDialog={vi.fn()}
+        onFocusSelected={vi.fn()}
+        onMoveSelection={onMoveSelection}
+        onClearSelection={vi.fn()}
+        onRotate={vi.fn()}
+      />,
+    )
+
+    // When selection exists and can execute: should prevent default
+    const moveEvent = new KeyboardEvent('keydown', {
+      bubbles: true,
+      cancelable: true,
+      key: 'ArrowUp',
+    })
+
+    fireEvent(window, moveEvent)
+
+    expect(moveEvent.defaultPrevented).toBe(true)
+    expect(onMoveSelection).toHaveBeenCalled()
+  })
+
+  it('does not suppress on-execute shortcuts when action cannot execute (no selection)', () => {
+    const onMoveSelection = vi.fn()
+
+    render(
+      <KeyboardShortcutHarness
+        enabled
+        hasSelection={false}
+        isModalOpen={false}
+        onUndo={vi.fn()}
+        onRedo={vi.fn()}
+        onNewSceneIntent={vi.fn()}
+        onOpenDeleteDialog={vi.fn()}
+        onFocusSelected={vi.fn()}
+        onMoveSelection={onMoveSelection}
+        onClearSelection={vi.fn()}
+        onRotate={vi.fn()}
+      />,
+    )
+
+    // When no selection: should NOT prevent default (allow fallthrough)
+    const moveEvent = new KeyboardEvent('keydown', {
+      bubbles: true,
+      cancelable: true,
+      key: 'ArrowUp',
+    })
+
+    fireEvent(window, moveEvent)
+
+    // Should NOT prevent default because action doesn't execute without selection
+    expect(moveEvent.defaultPrevented).toBe(false)
+    expect(onMoveSelection).not.toHaveBeenCalled()
+  })
 })

@@ -18,6 +18,7 @@ import {
 import { EditorOverlay } from './app/overlay/editor-overlay'
 import { useDialogState } from './app/overlay/use-dialog-state'
 import { useKeyboardShortcuts } from './app/keyboard/use-keyboard-shortcuts'
+import { useCameraKeyState } from './app/keyboard/use-camera-key-state'
 import { useOverlayState } from './app/overlay/use-overlay-state'
 import { useOverlayProps } from './app/overlay/use-overlay-props'
 import { useSceneCommands } from './app/hooks/use-scene-commands'
@@ -35,6 +36,7 @@ import { isFreshSceneState } from './app/startup/scene-defaults'
 interface BrowserSceneState {
   assetsReady: boolean
   assetError: boolean
+  cameraPosition: [number, number, number]
   floorFinishId: string
   wallFinishId: string
   selectedId: string | null
@@ -317,10 +319,15 @@ function App() {
     window.__ROOM_LAYOUT_TEST__ = {
       getState: () => {
         const sceneState = sceneRef.current?.getSnapshot()
+        const rawCameraPosition = sceneState?.cameraPosition
+        const cameraPosition: [number, number, number] = rawCameraPosition
+          ? [rawCameraPosition[0], rawCameraPosition[1], rawCameraPosition[2]]
+          : [0, 0, 0]
 
         return {
           assetsReady: startup.assetsReadyRef.current,
           assetError: startup.assetErrorRef.current !== null,
+          cameraPosition,
           floorFinishId: activeFloorFinishId,
           wallFinishId: activeWallFinishId,
           selectedId: sceneState?.selectedId ?? null,
@@ -398,6 +405,11 @@ function App() {
     onClearSelection: handlers.handleClearSelection,
     onRotate: handlers.handleRotateSelection,
     onSetCameraPreset: handlers.handleSetCameraPreset,
+  })
+
+  useCameraKeyState({
+    enabled: startup.editorInteractionsEnabled,
+    sceneRef,
   })
 
   return (

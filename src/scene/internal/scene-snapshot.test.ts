@@ -66,6 +66,7 @@ describe('createSceneSnapshot', () => {
       selectedId: 'item-1',
       selectedName: 'Catalog Couch',
       itemCount: 1,
+      cameraPosition: [0, 0, 0],
       items: [
         {
           id: 'item-1',

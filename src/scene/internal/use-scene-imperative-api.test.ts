@@ -13,7 +13,7 @@ import {
 import { useSceneImperativeApi } from './use-scene-imperative-api'
 import { redoSceneHistory, undoSceneHistory } from './scene-history-state'
 import type { LayoutBounds } from '@/lib/three/furniture-layout'
-import type { SceneRef } from '../scene.types'
+import type { CameraKeyName, SceneRef } from '../scene.types'
 import type {
   FurnitureInstance,
   FurnitureItem,
@@ -24,11 +24,17 @@ const {
   mockBuildFurnitureItemsFromInstances,
   mockDeleteSelectionFromHistory,
   mockCreateSceneSnapshot,
+  mockUseFrame,
 } = vi.hoisted(() => ({
   mockAddFurnitureToHistory: vi.fn(),
   mockBuildFurnitureItemsFromInstances: vi.fn(),
   mockDeleteSelectionFromHistory: vi.fn(),
   mockCreateSceneSnapshot: vi.fn(),
+  mockUseFrame: vi.fn(),
+}))
+
+vi.mock('@react-three/fiber', () => ({
+  useFrame: mockUseFrame,
 }))
 
 vi.mock('./furniture-operations', () => ({
@@ -102,6 +108,7 @@ describe('useSceneImperativeApi', () => {
     mockBuildFurnitureItemsFromInstances.mockReset()
     mockDeleteSelectionFromHistory.mockReset()
     mockCreateSceneSnapshot.mockReset()
+    mockUseFrame.mockReset()
 
     mockAddFurnitureToHistory.mockReturnValue({
       history: createHistoryState<FurnitureItem[]>([]),
@@ -709,6 +716,50 @@ describe('useSceneImperativeApi', () => {
       paddingLeft: 0.5,
       paddingRight: 0.5,
     })
+  })
+
+  it('applies continuous camera motion using the render-loop delta', () => {
+    let frameCallback: ((state: unknown, delta: number) => void) | undefined
+    mockUseFrame.mockImplementation((callback) => {
+      frameCallback = callback as (state: unknown, delta: number) => void
+    })
+
+    const truck = vi
+      .fn<CameraControlsImpl['truck']>()
+      .mockResolvedValue(undefined)
+    const rotate = vi
+      .fn<CameraControlsImpl['rotate']>()
+      .mockResolvedValue(undefined)
+    const controls = {
+      truck,
+      rotate,
+    } as unknown as CameraControlsImpl
+    const options = defaultOptions({
+      cameraControlsRef: {
+        current: controls,
+      },
+    })
+    const sceneRef = getSceneRef(options)
+
+    renderHook(() => {
+      useSceneImperativeApi(options)
+    })
+
+    // Orbit (rotate) with W
+    act(() => {
+      const keyState = new Set<CameraKeyName>(['keyW'])
+      sceneRef.current?.setCameraKeyState(keyState)
+      frameCallback?.({}, 0.025)
+    })
+    expect(rotate).toHaveBeenCalledWith(0, -1.5 * 0.025, false)
+
+    // Pan (truck) with Shift+W
+    act(() => {
+      const keyState = new Set<CameraKeyName>(['keyW', 'shift'])
+      sceneRef.current?.setCameraKeyState(keyState)
+      frameCallback?.({}, 0.025)
+    })
+    expect(truck).toHaveBeenCalledWith(0, -3 * 0.025, false)
   })
 })
 

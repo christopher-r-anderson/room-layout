@@ -3,12 +3,58 @@ import {
   addFurniture,
   openEditor,
   readSceneState,
+  selectFurnitureById,
   waitForFirstItemRotationY,
   waitForItemCount,
 } from './support/editor-harness'
 
 const ROTATION_STEP_RADIANS = Math.PI / 12
 const NORMALIZED_RIGHT_ROTATION_RADIANS = Math.PI * 2 - ROTATION_STEP_RADIANS
+
+function cameraDistance(
+  from: [number, number, number],
+  to: [number, number, number],
+) {
+  const deltaX = to[0] - from[0]
+  const deltaY = to[1] - from[1]
+  const deltaZ = to[2] - from[2]
+
+  return Math.hypot(deltaX, deltaY, deltaZ)
+}
+
+async function holdKeyUntilCameraMoves(
+  page: Page,
+  key: string,
+  baseline: [number, number, number],
+) {
+  await page.keyboard.down(key)
+
+  try {
+    await expect
+      .poll(async () => (await readSceneState(page)).cameraPosition)
+      .not.toEqual(baseline)
+  } finally {
+    await page.keyboard.up(key)
+  }
+}
+
+async function holdKeyAndAssertCameraStable(
+  page: Page,
+  key: string,
+  baseline: [number, number, number],
+) {
+  await page.keyboard.down(key)
+
+  try {
+    await expect
+      .poll(async () => (await readSceneState(page)).cameraPosition, {
+        timeout: 500,
+      })
+      .toEqual(baseline)
+  } finally {
+    await page.keyboard.up(key)
+  }
+}
 
 async function tabTo(page: Page, target: Locator, maxTabs = 30) {
   for (let index = 0; index < maxTabs; index += 1) {
@@ -40,7 +86,7 @@ test('applies keyboard shortcuts for rotate, history, and delete confirmation', 
   const infoDialog = page.getByRole('dialog', { name: /project & asset info/i })
   await expect(infoDialog).toBeVisible()
 
-  await page.locator('body').press('e')
+  await page.locator('body').press('.')
   await page.locator('body').press('Control+z')
   await page.locator('body').press('Delete')
   await page.locator('body').press('Control+n')
@@ -62,7 +108,7 @@ test('applies keyboard shortcuts for rotate, history, and delete confirmation', 
   const pickerSheet = page.getByRole('dialog', { name: 'Add furniture' })
   await expect(pickerSheet).toBeVisible()
 
-  await page.locator('body').press('e')
+  await page.locator('body').press('.')
   await page.locator('body').press('Delete')
   await page.locator('body').press('Control+n')
 
@@ -81,7 +127,7 @@ test('applies keyboard shortcuts for rotate, history, and delete confirmation', 
   await page.keyboard.press('Escape')
   await expect(pickerSheet).toBeHidden()
 
-  await page.locator('body').press('e')
+  await page.locator('body').press('.')
   const afterRotate = await waitForFirstItemRotationY(
     page,
     NORMALIZED_RIGHT_ROTATION_RADIANS,
@@ -182,4 +228,121 @@ test('supports keyboard-driven furniture picker flow', async ({ page }) => {
   await page.keyboard.press('Escape')
   await expect(pickerSheet).toBeHidden()
   await expect(pickerTrigger).toBeFocused()
+})
+
+test('camera motion with WASD orbits when no selection', async ({ page }) => {
+  await openEditor(page)
+
+  const initialState = await readSceneState(page)
+  expect(initialState.itemCount).toBe(0)
+  const initialCameraPosition = initialState.cameraPosition
+
+  // Hold W for camera orbit
+  await holdKeyUntilCameraMoves(page, 'KeyW', initialCameraPosition)
+
+  const afterMotion = await readSceneState(page)
+  expect(afterMotion.itemCount).toBe(initialState.itemCount)
+  expect(
+    cameraDistance(initialCameraPosition, afterMotion.cameraPosition),
+  ).toBeGreaterThan(0.2)
+})
+
+test('camera motion with Shift+WASD pans camera', async ({ page }) => {
+  await openEditor(page)
+
+  const initialState = await addFurniture(page, 'Leather Couch')
+  const initialCameraPosition = initialState.cameraPosition
+
+  // Hold Shift+W key for pan motion
+  await page.keyboard.down('Shift')
+  await holdKeyUntilCameraMoves(page, 'KeyW', initialCameraPosition)
+  await page.keyboard.up('Shift')
+
+  const afterWMotion = await readSceneState(page)
+  expect(afterWMotion.itemCount).toBe(1)
+  expect(
+    cameraDistance(initialCameraPosition, afterWMotion.cameraPosition),
+  ).toBeGreaterThan(0.2)
+})
+
+test('camera motion with = and - keys zooms camera', async ({ page }) => {
+  await openEditor(page)
+
+  const initialState = await addFurniture(page, 'Leather Couch')
+  const initialCameraPosition = initialState.cameraPosition
+
+  // Hold = key for zoom in
+  await holdKeyUntilCameraMoves(page, 'Equal', initialCameraPosition)
+
+  const afterZoomIn = await readSceneState(page)
+  expect(afterZoomIn.itemCount).toBe(1)
+  expect(
+    cameraDistance(initialCameraPosition, afterZoomIn.cameraPosition),
+  ).toBeGreaterThan(0.2)
+
+  const zoomedCameraPosition = afterZoomIn.cameraPosition
+
+  await holdKeyUntilCameraMoves(page, 'Minus', zoomedCameraPosition)
+})
+
+test('arrow keys move selected object and do not move the camera', async ({
+  page,
+}) => {
+  await openEditor(page)
+
+  const addedState = await addFurniture(page, 'Leather Couch')
+  const furnitureId = addedState.items[0].id
+  const initialPosition = addedState.items[0].position
+  const initialCameraPosition = addedState.cameraPosition
+
+  // Select the furniture using canvas interaction
+  await selectFurnitureById(page, furnitureId)
+
+  // Move the furniture left using arrow keys
+  for (let i = 0; i < 3; i++) {
+    await page.keyboard.press('ArrowLeft')
+  }
+
+  const afterMove = await readSceneState(page)
+  // Furniture should have moved (position x should be less than initial)
+  expect(afterMove.items[0].position[0]).toBeLessThan(initialPosition[0])
+  // Camera should remain stable while arrows are used for object movement
+  expect(afterMove.cameraPosition).toEqual(initialCameraPosition)
+})
+
+test('WASD is suppressed in modal dialogs but enabled in the editor', async ({
+  page,
+}) => {
+  await openEditor(page)
+  const initialCameraPosition = (await readSceneState(page)).cameraPosition
+
+  // Try WASD in a dialog text input (should pass through)
+  const infoButton = page.getByRole('button', {
+    name: 'Open project and asset info',
+  })
+  await infoButton.click()
+
+  const infoDialog = page.getByRole('dialog', { name: /project & asset info/i })
+  await expect(infoDialog).toBeVisible()
+
+  await holdKeyAndAssertCameraStable(page, 'KeyW', initialCameraPosition)
+
+  // Focus should remain in dialog
+  await page.keyboard.press('Escape')
+  await expect(infoDialog).toBeHidden()
+
+  // Test WASD in open editor (should work)
+  const afterAdd = await addFurniture(page, 'Leather Couch')
+  const cameraPositionAfterDialog = afterAdd.cameraPosition
+
+  // Hold Shift+W for pan
+  await page.keyboard.down('Shift')
+  await holdKeyUntilCameraMoves(page, 'KeyW', cameraPositionAfterDialog)
+  await page.keyboard.up('Shift')
+
+  const afterWMotion = await readSceneState(page)
+  expect(afterWMotion.itemCount).toBe(1)
+  expect(
+    cameraDistance(cameraPositionAfterDialog, afterWMotion.cameraPosition),
+  ).toBeGreaterThan(0.2)
 })

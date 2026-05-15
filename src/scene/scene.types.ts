@@ -24,6 +24,21 @@ export type SelectByIdResult =
   | { ok: true; status: 'selected' | 'cleared' }
   | { ok: false; status: 'not-found' | 'blocked-dragging' }
 
+export type CameraKeyName =
+  | 'arrowUp'
+  | 'arrowDown'
+  | 'arrowLeft'
+  | 'arrowRight'
+  | 'keyW'
+  | 'keyA'
+  | 'keyS'
+  | 'keyD'
+  | 'shift'
+  | 'equal'
+  | 'minus'
+
+export type CameraKeyState = Set<CameraKeyName>
+
 export interface SceneReadModel {
   selectedId: string | null
   items: FurnitureItem[]
@@ -49,6 +64,12 @@ export interface SceneRef {
   getReadModel: () => SceneReadModel
   setCameraPreset: (preset: CameraPreset) => void
   focusSelected: () => void
+  /**
+   * Accepts held-key state for continuous camera motion (orbit, pan, zoom).
+   * Called by app on each keydown/keyup event to push key state into the scene.
+   * Scene owns deriving per-frame deltas from key state and frame delta.
+   */
+  setCameraKeyState: (keyState: CameraKeyState) => void
   /**
    * Seeds the scene with the given furniture instances as the initial baseline,
    * clearing selection and establishing an empty undo/redo stack. The instance-id
