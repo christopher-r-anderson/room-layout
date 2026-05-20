@@ -22,44 +22,6 @@ function cameraDistance(
   return Math.hypot(deltaX, deltaY, deltaZ)
 }
 
-async function waitForCameraToSettle(
-  page: Page,
-  options?: {
-    intervalMs?: number
-    stableSamples?: number
-    tolerance?: number
-    timeoutMs?: number
-  },
-) {
-  const intervalMs = options?.intervalMs ?? 100
-  const stableSamples = options?.stableSamples ?? 3
-  const tolerance = options?.tolerance ?? 0.01
-  const timeoutMs = options?.timeoutMs ?? 2_000
-  const deadline = Date.now() + timeoutMs
-
-  let previousPosition = (await readSceneState(page)).cameraPosition
-  let stableCount = 0
-
-  while (Date.now() < deadline) {
-    await page.waitForTimeout(intervalMs)
-
-    const nextPosition = (await readSceneState(page)).cameraPosition
-
-    if (cameraDistance(previousPosition, nextPosition) <= tolerance) {
-      stableCount += 1
-      if (stableCount >= stableSamples) {
-        return nextPosition
-      }
-    } else {
-      stableCount = 0
-    }
-
-    previousPosition = nextPosition
-  }
-
-  return previousPosition
-}
-
 async function holdKeyUntilCameraMoves(
   page: Page,
   key: string,
@@ -82,11 +44,12 @@ async function holdKeyUntilCameraMoves(
   }
 }
 
-async function holdKeyAndAssertCameraStable(
-  page: Page,
-  key: string,
-  baseline: [number, number, number],
-) {
+async function holdKeyAndAssertCameraStable(page: Page, key: string) {
+  // Capture baseline immediately before pressing the key so the assertion
+  // measures only key-driven movement, not any drift that accumulated during
+  // earlier test steps (dialog opening, focus changes, etc.).
+  const baseline = (await readSceneState(page)).cameraPosition
+
   await page.keyboard.down(key)
 
   try {
@@ -412,7 +375,6 @@ test('WASD is suppressed in modal dialogs but enabled in the editor', async ({
   page,
 }) => {
   await openEditor(page)
-  const initialCameraPosition = await waitForCameraToSettle(page)
 
   // Try WASD in a dialog text input (should pass through)
   const infoButton = page.getByRole('button', {
@@ -429,7 +391,7 @@ test('WASD is suppressed in modal dialogs but enabled in the editor', async ({
   await dialogCloseButton.focus()
   await expect(dialogCloseButton).toBeFocused()
 
-  await holdKeyAndAssertCameraStable(page, 'KeyW', initialCameraPosition)
+  await holdKeyAndAssertCameraStable(page, 'KeyW')
 
   await expect(dialogCloseButton).toBeFocused()
   await page.keyboard.press('Escape')
