@@ -15,6 +15,7 @@ export interface BrowserSceneState {
   cameraPosition: [number, number, number]
   floorFinishId: string
   wallFinishId: string
+  isModalOpen: boolean
   selectedId: string | null
   previewedId: string | null
   selectedName: string | null

@@ -48,22 +48,51 @@ async function holdKeyAndAssertCameraStable(page: Page, key: string) {
   // Capture baseline immediately before pressing the key so the assertion
   // measures only key-driven movement, not any drift that accumulated during
   // earlier test steps (dialog opening, focus changes, etc.).
-  const baseline = (await readSceneState(page)).cameraPosition
+  const baselineState = await readSceneState(page)
+  const baseline = baselineState.cameraPosition
 
   await page.keyboard.down(key)
 
+  // Sample the camera position every 100 ms for 2 seconds so that CI failures
+  // produce a full trajectory — distance, absolute position, and isModalOpen
+  // at each tick — rather than a bare timeout message.
+  const SAMPLE_INTERVAL_MS = 100
+  const SAMPLE_COUNT = 20 // 2 000 ms total
+  const MAX_ALLOWED_DISTANCE = 0.05
+
+  const samples: {
+    ms: number
+    dist: number
+    pos: [number, number, number]
+    isModalOpen: boolean
+  }[] = []
+
   try {
-    await expect
-      .poll(
-        async () =>
-          cameraDistance((await readSceneState(page)).cameraPosition, baseline),
-        {
-          timeout: 500,
-        },
-      )
-      .toBeLessThanOrEqual(0.02)
+    for (let i = 0; i < SAMPLE_COUNT; i++) {
+      await page.waitForTimeout(SAMPLE_INTERVAL_MS)
+      const s = await readSceneState(page)
+      samples.push({
+        ms: (i + 1) * SAMPLE_INTERVAL_MS,
+        dist: cameraDistance(baseline, s.cameraPosition),
+        pos: s.cameraPosition,
+        isModalOpen: s.isModalOpen,
+      })
+    }
   } finally {
     await page.keyboard.up(key)
+  }
+
+  const exceeded = samples.filter((s) => s.dist > MAX_ALLOWED_DISTANCE)
+
+  if (exceeded.length > 0) {
+    const fmt = (s: (typeof samples)[0]) =>
+      `  t=${String(s.ms).padStart(4)}ms  dist=${s.dist.toFixed(4)}  modal=${String(s.isModalOpen)}  pos=[${s.pos.map((v) => v.toFixed(3)).join(', ')}]`
+    const base = `[${baseline.map((v) => v.toFixed(3)).join(', ')}]`
+    throw new Error(
+      `Camera moved when '${key}' was held (modal suppression should prevent this).\n` +
+        `Baseline: ${base}  isModalOpen at key-down: ${String(baselineState.isModalOpen)}\n` +
+        `All samples:\n${samples.map(fmt).join('\n')}`,
+    )
   }
 }
 
