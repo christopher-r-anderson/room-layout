@@ -53,12 +53,12 @@ async function holdKeyAndAssertCameraStable(page: Page, key: string) {
 
   await page.keyboard.down(key)
 
-  // Sample every 100 ms for 2 seconds and always log the full trajectory so
-  // that CI output shows what the camera did whether the test passes or fails.
+  // Sample every 100 ms for 1 second. The threshold is tight (0.02) because
+  // CI data confirmed dist=0.0000 the entire time — the fresh baseline (above)
+  // is the actual fix; the threshold and window size were never the issue.
   const SAMPLE_INTERVAL_MS = 100
-  const SAMPLE_COUNT = 20 // 2 000 ms total
-  const MAX_ALLOWED_DISTANCE = 0.05
-  const OLD_THRESHOLD = 0.02 // threshold that was failing before; logged per-sample for comparison
+  const SAMPLE_COUNT = 10 // 1 000 ms total
+  const MAX_ALLOWED_DISTANCE = 0.02
 
   interface Sample {
     ms: number
@@ -84,11 +84,10 @@ async function holdKeyAndAssertCameraStable(page: Page, key: string) {
   }
 
   const fmt = (s: Sample) =>
-    `  t=${String(s.ms).padStart(4)}ms  dist=${s.dist.toFixed(4)}  old_fail=${String(s.dist > OLD_THRESHOLD)}  modal=${String(s.isModalOpen)}  pos=[${s.pos.map((v) => v.toFixed(3)).join(', ')}]`
+    `  t=${String(s.ms).padStart(4)}ms  dist=${s.dist.toFixed(4)}  modal=${String(s.isModalOpen)}  pos=[${s.pos.map((v) => v.toFixed(3)).join(', ')}]`
   const base = `[${baseline.map((v) => v.toFixed(3)).join(', ')}]`
   const header = `holdKeyAndAssertCameraStable key='${key}' baseline=${base} isModalOpen=${String(baselineState.isModalOpen)}`
 
-  // Always print the trajectory so CI logs show it on both pass and fail.
   console.log(`${header}\n${samples.map(fmt).join('\n')}`)
 
   const maxDist = Math.max(...samples.map((s) => s.dist))
