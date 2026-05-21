@@ -45,27 +45,28 @@ async function holdKeyUntilCameraMoves(
 }
 
 async function holdKeyAndAssertCameraStable(page: Page, key: string) {
-  // Capture baseline immediately before pressing the key so the assertion
-  // measures only key-driven movement, not any drift that accumulated during
-  // earlier test steps (dialog opening, focus changes, etc.).
+  // Baseline is captured immediately before the key goes down so the
+  // assertion measures only key-driven movement, not any drift that
+  // accumulated during earlier test steps (commit 4f57511).
   const baselineState = await readSceneState(page)
   const baseline = baselineState.cameraPosition
 
   await page.keyboard.down(key)
 
-  // Sample the camera position every 100 ms for 2 seconds so that CI failures
-  // produce a full trajectory — distance, absolute position, and isModalOpen
-  // at each tick — rather than a bare timeout message.
+  // Sample every 100 ms for 2 seconds and always log the full trajectory so
+  // that CI output shows what the camera did whether the test passes or fails.
   const SAMPLE_INTERVAL_MS = 100
   const SAMPLE_COUNT = 20 // 2 000 ms total
   const MAX_ALLOWED_DISTANCE = 0.05
+  const OLD_THRESHOLD = 0.02 // threshold that was failing before; logged per-sample for comparison
 
-  const samples: {
+  interface Sample {
     ms: number
     dist: number
     pos: [number, number, number]
     isModalOpen: boolean
-  }[] = []
+  }
+  const samples: Sample[] = []
 
   try {
     for (let i = 0; i < SAMPLE_COUNT; i++) {
@@ -82,16 +83,19 @@ async function holdKeyAndAssertCameraStable(page: Page, key: string) {
     await page.keyboard.up(key)
   }
 
-  const exceeded = samples.filter((s) => s.dist > MAX_ALLOWED_DISTANCE)
+  const fmt = (s: Sample) =>
+    `  t=${String(s.ms).padStart(4)}ms  dist=${s.dist.toFixed(4)}  old_fail=${String(s.dist > OLD_THRESHOLD)}  modal=${String(s.isModalOpen)}  pos=[${s.pos.map((v) => v.toFixed(3)).join(', ')}]`
+  const base = `[${baseline.map((v) => v.toFixed(3)).join(', ')}]`
+  const header = `holdKeyAndAssertCameraStable key='${key}' baseline=${base} isModalOpen=${String(baselineState.isModalOpen)}`
 
-  if (exceeded.length > 0) {
-    const fmt = (s: (typeof samples)[0]) =>
-      `  t=${String(s.ms).padStart(4)}ms  dist=${s.dist.toFixed(4)}  modal=${String(s.isModalOpen)}  pos=[${s.pos.map((v) => v.toFixed(3)).join(', ')}]`
-    const base = `[${baseline.map((v) => v.toFixed(3)).join(', ')}]`
+  // Always print the trajectory so CI logs show it on both pass and fail.
+  console.log(`${header}\n${samples.map(fmt).join('\n')}`)
+
+  const maxDist = Math.max(...samples.map((s) => s.dist))
+  if (maxDist > MAX_ALLOWED_DISTANCE) {
     throw new Error(
-      `Camera moved when '${key}' was held (modal suppression should prevent this).\n` +
-        `Baseline: ${base}  isModalOpen at key-down: ${String(baselineState.isModalOpen)}\n` +
-        `All samples:\n${samples.map(fmt).join('\n')}`,
+      `Camera moved (max dist ${maxDist.toFixed(4)} > ${MAX_ALLOWED_DISTANCE.toFixed(2)}) when '${key}' held — modal suppression should prevent this.\n` +
+        `${header}\n${samples.map(fmt).join('\n')}`,
     )
   }
 }
