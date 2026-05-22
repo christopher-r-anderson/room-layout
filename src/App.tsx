@@ -169,13 +169,6 @@ function App() {
     canStartNewScene: !sceneIsAtDefaults,
   })
 
-  // Stable ref so the __ROOM_LAYOUT_TEST__ closure always reads the current
-  // modal state without requiring the test hook effect to re-run.
-  const isModalOpenRef = useRef(dialogState.isModalOpen)
-  useEffect(() => {
-    isModalOpenRef.current = dialogState.isModalOpen
-  }, [dialogState.isModalOpen])
-
   const commands = useSceneCommands({
     catalogIdToAdd: overlayState.catalogIdToAdd,
     clearEditorMessage: overlayState.clearEditorMessage,
@@ -337,7 +330,6 @@ function App() {
           cameraPosition,
           floorFinishId: activeFloorFinishId,
           wallFinishId: activeWallFinishId,
-          isModalOpen: isModalOpenRef.current,
           selectedId: sceneState?.selectedId ?? null,
           previewedId: previewedIdRef.current,
           selectedName: sceneState?.selectedName ?? null,

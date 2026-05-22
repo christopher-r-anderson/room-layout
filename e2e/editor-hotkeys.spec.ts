@@ -46,27 +46,16 @@ async function holdKeyUntilCameraMoves(
 
 async function holdKeyAndAssertCameraStable(page: Page, key: string) {
   // Baseline is captured immediately before the key goes down so the
-  // assertion measures only key-driven movement, not any drift that
-  // accumulated during earlier test steps (commit 4f57511).
-  const baselineState = await readSceneState(page)
-  const baseline = baselineState.cameraPosition
+  // assertion measures only key-driven movement, not prior camera drift.
+  const baseline = (await readSceneState(page)).cameraPosition
 
   await page.keyboard.down(key)
 
-  // Sample every 100 ms for 1 second. The threshold is tight (0.02) because
-  // CI data confirmed dist=0.0000 the entire time — the fresh baseline (above)
-  // is the actual fix; the threshold and window size were never the issue.
   const SAMPLE_INTERVAL_MS = 100
-  const SAMPLE_COUNT = 10 // 1 000 ms total
+  const SAMPLE_COUNT = 10
   const MAX_ALLOWED_DISTANCE = 0.02
-
-  interface Sample {
-    ms: number
-    dist: number
-    pos: [number, number, number]
-    isModalOpen: boolean
-  }
-  const samples: Sample[] = []
+  const samples: { ms: number; dist: number; pos: [number, number, number] }[] =
+    []
 
   try {
     for (let i = 0; i < SAMPLE_COUNT; i++) {
@@ -76,25 +65,20 @@ async function holdKeyAndAssertCameraStable(page: Page, key: string) {
         ms: (i + 1) * SAMPLE_INTERVAL_MS,
         dist: cameraDistance(baseline, s.cameraPosition),
         pos: s.cameraPosition,
-        isModalOpen: s.isModalOpen,
       })
     }
   } finally {
     await page.keyboard.up(key)
   }
 
-  const fmt = (s: Sample) =>
-    `  t=${String(s.ms).padStart(4)}ms  dist=${s.dist.toFixed(4)}  modal=${String(s.isModalOpen)}  pos=[${s.pos.map((v) => v.toFixed(3)).join(', ')}]`
-  const base = `[${baseline.map((v) => v.toFixed(3)).join(', ')}]`
-  const header = `holdKeyAndAssertCameraStable key='${key}' baseline=${base} isModalOpen=${String(baselineState.isModalOpen)}`
-
-  console.log(`${header}\n${samples.map(fmt).join('\n')}`)
-
   const maxDist = Math.max(...samples.map((s) => s.dist))
   if (maxDist > MAX_ALLOWED_DISTANCE) {
+    const fmt = (s: (typeof samples)[0]) =>
+      `  t=${String(s.ms).padStart(4)}ms  dist=${s.dist.toFixed(4)}  pos=[${s.pos.map((v) => v.toFixed(3)).join(', ')}]`
+    const base = `[${baseline.map((v) => v.toFixed(3)).join(', ')}]`
     throw new Error(
       `Camera moved (max dist ${maxDist.toFixed(4)} > ${MAX_ALLOWED_DISTANCE.toFixed(2)}) when '${key}' held — modal suppression should prevent this.\n` +
-        `${header}\n${samples.map(fmt).join('\n')}`,
+        `Baseline: ${base}\n${samples.map(fmt).join('\n')}`,
     )
   }
 }
