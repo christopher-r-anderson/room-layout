@@ -13,7 +13,7 @@ This is a React Three Fiber consumer-style 3D furniture layout demo intended for
 
 The app currently has:
 
-- a visible collapsible panel named **“Furniture in room”** that lists each furniture item,
+- a visible collapsible panel named **“Furniture List”** that lists each furniture item,
 - keyboard-tabbable item controls in that panel,
 - visual selected state in the panel,
 - yellow outline around the selected mesh in the 3D scene,
@@ -21,6 +21,7 @@ The app currently has:
 - direct mesh click selection,
 - Escape to deselect when not in a text field/contenteditable,
 - global keyboard shortcuts for camera movement, item movement, rotation, deletion, zoom, etc.,
+- an existing **Keyboard Help** popover and centralized polite/assertive live-region announcer,
 - a selected-item toolbar with rotate clockwise, rotate counterclockwise, and delete controls,
 - a details panel with position/rotation information that currently exists globally and is not editable.
 
@@ -33,6 +34,107 @@ The selected-item toolbar and details panel are expected to evolve later into:
 - focus behavior that depends on how the item was selected.
 
 This plan primarily covers the selection, preview, keyboard navigation, shortcut scoping, and accessibility model. It also includes extension points so the future toolbar/details work can build on this without reworking the core interaction model.
+
+## Codebase audit and terminology mapping
+
+This plan was originally written without access to the repository. The current codebase already contains several of the interaction surfaces discussed here, so implementation should extend those surfaces instead of rebuilding them.
+
+### Current component and file map
+
+```text
+App shell / interaction composition:
+- src/App.tsx
+- src/app/overlay/editor-overlay.tsx
+- src/app/overlay/use-overlay-props.ts
+- src/app/overlay/use-overlay-state.ts
+
+Keyboard handling:
+- src/app/keyboard/use-keyboard-shortcuts.ts
+- src/app/keyboard/use-camera-key-state.ts
+- src/app/keyboard/keyboard-shortcuts-help.tsx
+
+Preview / announcement / selection sync:
+- src/app/use-preview-controller.ts
+- src/app/hooks/use-announcements.ts
+- src/app/scene-panel/announcer.tsx
+- src/app/hooks/use-scene-sync.ts
+- src/app/use-scene-handlers.ts
+
+Visible DOM scene representation:
+- src/app/scene-panel/outliner.tsx
+
+Current details surface:
+- src/app/scene-panel/inspector.tsx
+
+Scene-domain selection and camera internals:
+- src/scene/scene.tsx
+- src/scene/scene.types.ts
+- src/scene/internal/use-scene-selection.ts
+- src/scene/internal/use-scene-imperative-api.ts
+- src/scene/internal/objects/interactive-furniture.tsx
+```
+
+### Terminology corrections for this repository
+
+The rest of this document may use product-language names that do not exactly match the current UI. In this codebase, treat them as follows:
+
+```text
+"Furniture in room" -> the current "Furniture List" outliner in src/app/scene-panel/outliner.tsx
+"selected-item details panel" -> the current read-only Inspector in src/app/scene-panel/inspector.tsx
+"selected-item toolbar" -> the current top toolbar modules SelectionToolsMovement and SelectionToolsOther in src/app/overlay/editor-overlay.tsx
+```
+
+### Current-state findings that change the implementation approach
+
+```text
+- App.tsx already renders a wrapper section around Canvas plus SR-only scene instructions.
+- That wrapper is not currently focusable, does not track room-view focus, and does not scope keyboard behavior.
+- Keyboard behavior is currently window-global in both use-keyboard-shortcuts.ts and use-camera-key-state.ts.
+- usePreviewController.ts already centralizes preview-source conflict handling, but only for scene pointer + outliner hover/focus.
+- useSceneSync.ts already centralizes read-model syncing and selection announcements, and can still request outliner focus handoff.
+- useSceneHandlers.ts already suppresses some outliner focus handoff, but deletion still explicitly returns focus into the outliner.
+- useAnnouncements.ts and Announcer already provide live regions; do not add a second announcement system.
+- KeyboardShortcutsHelp already exists; update it instead of creating a new shortcut-help UI.
+- Outliner currently renders selected state only; it does not receive previewedId or render a separate preview style.
+- SceneReadModel currently exposes only selectedId + items, so camera-relative keyboard navigation data should not be derived from app state alone.
+```
+
+### Ownership decisions for the implementation
+
+Use the existing architecture boundaries instead of introducing a second parallel interaction model.
+
+```text
+Room-view focus ownership:
+- Keep roomViewRef + roomViewHasFocus in App.tsx (or extract a tiny app-level hook used only by App.tsx).
+
+Selection-source tracking:
+- Keep selectedSource in app-shell state, not scene-domain persistence.
+- Add a shared app type at src/app/scene-interaction.types.ts if the type is consumed across App, handlers, and overlay state.
+
+Preview-source tracking:
+- Extend src/app/use-preview-controller.ts with room-view keyboard preview support.
+
+Spatial navigation logic:
+- Keep camera-relative projection/sorting in the scene layer.
+- Prefer a new pure helper in src/lib/three/ for ordering math, exposed through SceneRef via src/scene/internal/use-scene-imperative-api.ts.
+
+Shortcut scoping:
+- Keep Escape globally prioritized.
+- Keep standard command shortcuts (Undo / Redo / New Scene) global unless product requirements explicitly change.
+- Scope single-character room-manipulation keys to the focused room view.
+```
+
+### Source-aware defaults adopted by this updated plan
+
+Unless product requirements change, this plan assumes:
+
+```text
+- Ctrl/Cmd+Z, Ctrl/Cmd+Y, and Ctrl/Cmd+N remain global editor shortcuts.
+- W/A/S/D, Shift+W/A/S/D, 1-4, F, Arrow keys, Shift+Arrow, Alt+Arrow, , / ., Delete / Backspace, and - / = are room-view scoped.
+- Canvas-origin selection/delete/clear keeps focus on the room view.
+- Outliner-origin delete keeps focus in the outliner.
+- useSceneSync selection announcements are suppressed for canvas-keyboard selection so a richer source-aware announcement can be emitted once.
+```
 
 ---
 
@@ -1792,239 +1894,275 @@ Rationale:
 
 # Implementation phases
 
-## Phase 1: Audit current state and events
+## Phase 1: Add app-shell interaction state and source metadata
 
-The implementation agent should inspect:
+Ground the new keyboard model in the existing app shell instead of expanding SceneReadModel for UI-only metadata.
+
+Concrete work:
 
 ```text
-- where selected item state lives
-- where hover/preview state lives
-- how mesh outlines are currently controlled
-- how panel selected/focused styles are controlled
-- where global keyboard shortcuts are registered
-- how text field/contenteditable guards are implemented
-- how delete confirmation currently works
-- how canvas empty-click detection works
-- how mesh click/hover events stop propagation
-- how the current selected-item toolbar is positioned and ordered in the DOM
-- how the current details panel is positioned and ordered in the DOM
+- Add InteractionSource and related app-shell types in src/app/scene-interaction.types.ts if shared across files.
+- Extend src/app/overlay/use-overlay-state.ts with selectedSource metadata and setters/reset helpers.
+- Keep roomViewHasFocus in src/App.tsx (or a tiny app-only hook used there), not in scene state.
+- Do not put selectedSource into src/scene/scene.types.ts SceneReadModel unless a later requirement proves the scene domain needs it.
 ```
 
-Do not rewrite everything if the current structure is sound.
-
-Deliverable:
+Implementation notes:
 
 ```text
-- identify existing state names and event handlers
-- map them to selectedItemId, selectedSource, previewItemId, previewSource, roomViewHasFocus concepts
-```
-
-## Phase 2: Introduce unified preview and selection source handling
-
-Add or adapt state so preview can be set by:
-
-```text
-- canvas pointer
-- canvas keyboard
-- panel pointer
-- panel keyboard
-```
-
-Add or adapt state so selection source can be tracked:
-
-```text
-- canvas pointer
-- canvas keyboard
-- panel pointer
-- panel keyboard
-- toolbar
-- details panel
-```
-
-Ensure stale events from one source do not clear preview set by another source.
-
-Deliverable:
-
-```text
-- shared preview state
-- selectedSource tracking
-- helper functions for setPreview and clearPreview
-- existing hover/focus behavior migrated to use helpers
-```
-
-## Phase 3: Sync visual states both ways
-
-Ensure:
-
-```text
-Panel hover/focus → canvas blue outline
-Canvas mesh hover → panel preview style
-Canvas keyboard preview → canvas blue outline + panel preview style
-Selection from either place → canvas yellow outline + panel selected style
+- selectedId remains scene-domain state.
+- selectedSource is UI metadata used for focus return, announcements, and future toolbar/details behavior.
+- preview-source conflict handling continues to live in usePreviewController.ts.
 ```
 
 Deliverable:
 
 ```text
-- selected and preview styles are consistently applied
-- selected visual state dominates preview visual state
-- focus style remains distinct from preview style
+- selectedId remains driven by SceneRef / SceneReadModel
+- selectedSource is available to App, handlers, and overlay logic
+- roomViewHasFocus is tracked in the app shell
 ```
 
-## Phase 4: Add focusable 3D room view wrapper
+## Phase 2: Turn the existing App room section into the focusable 3D room view
 
-Add the focusable wrapper around the canvas.
+The focusable room-view wrapper already conceptually exists in src/App.tsx. Upgrade that existing section instead of introducing a parallel wrapper elsewhere.
 
-Implement:
+Concrete work in `src/App.tsx`:
 
 ```text
-- tabIndex=0
-- role=region
-- aria-label
-- aria-describedby
-- visible focus style
-- focus/blur tracking
-- click/pointer-down in canvas focuses wrapper
+- Add roomViewRef and roomViewHasFocus state.
+- Make the existing section around Canvas focusable with tabIndex=0.
+- Keep the current aria-label / aria-describedby pattern and update the SR-only instructions text instead of duplicating it.
+- Add visible focus styling to the wrapper.
+- Focus the wrapper on canvas-origin pointer interaction without interfering with pointer capture.
+- Keep future contextual controls after this region in DOM order.
+```
+
+Important integration points:
+
+```text
+- Empty-canvas selection clearing already happens in Canvas onPointerMissed in App.tsx.
+- Mesh pointer selection starts in src/scene/internal/objects/interactive-furniture.tsx.
+- Do not move pointer-capture logic out of interactive-furniture.tsx.
+- Canvas-origin focus should be coordinated at App/Scene callback boundaries, not by rewriting drag handling.
 ```
 
 Deliverable:
 
 ```text
-- user can Tab to the 3D room view
-- focus is visibly indicated
-- screen reader has basic instructions
-- future selected-item toolbar/details have a logical place after this region
+- user can Tab to the room view
+- room-view focus is visible and screen-reader-described
+- canvas pointer interaction preserves pointer-to-keyboard continuity
 ```
 
-## Phase 5: Rescope keyboard shortcuts
+## Phase 3: Rescope the existing keyboard hooks instead of replacing them
 
-Move or gate shortcuts so that:
+Keyboard behavior is currently split across two global listeners. Re-scope those hooks based on room-view focus and interaction context.
+
+Concrete work:
 
 ```text
-Global:
-- Escape only, with priority handling
-
-3D room view focused:
-- camera controls
-- spatial preview controls
-- selected item controls
-
-Text inputs/contenteditable:
-- app shortcuts do not fire
-
-Future selected-item details inputs:
-- app shortcuts do not fire
-
-Dialogs/popovers:
-- dialog/popover controls get priority
+- Update src/app/keyboard/use-keyboard-shortcuts.ts to accept roomViewHasFocus and room-view selection/preview context.
+- Update src/app/keyboard/use-camera-key-state.ts to stop feeding camera keys to the scene unless the room view is focused.
+- Keep Ctrl/Cmd+Z, Ctrl/Cmd+Y, and Ctrl/Cmd+N global by default.
+- Scope 1-4, F, W/A/S/D, Shift+W/A/S/D, Arrow keys, Shift+Arrow, Alt+Arrow, , / ., Delete / Backspace, and - / = to the room view.
+- Keep Escape global, but apply the documented priority rules so dialogs/popovers and text entry still win first.
 ```
 
 Deliverable:
 
 ```text
-- WASD no longer works globally
-- arrow movement no longer works globally
-- Delete no longer works globally
-- shortcuts work when 3D room view has focus
-- shortcut model will not conflict with future editable details panel
+- standard command shortcuts remain editor-global
+- room-manipulation keys stop firing outside the focused room view
+- future editable details inputs will not accidentally move furniture
 ```
 
-## Phase 6: Implement canvas spatial navigation
+## Phase 4: Extend preview control and outliner rendering for room-view keyboard preview
 
-Implement the spatial navigation utility.
+Preview state already has a single controller. Extend that controller rather than introducing a second preview store.
 
-Requirements:
+Concrete work:
 
 ```text
-- compute/project furniture item positions into viewport space
-- sort visible items top-to-bottom, then left-to-right
-- ArrowRight/ArrowDown previews next
-- ArrowLeft/ArrowUp previews previous
-- Home previews first
-- End previews last
-- Enter/Space selects previewed item
+- Extend src/app/use-preview-controller.ts with a room-view keyboard preview source.
+- Preserve the current delayed-clear behavior for scene pointer preview.
+- Pass previewedId through src/app/overlay/use-overlay-props.ts -> src/app/overlay/editor-overlay.tsx -> src/app/scene-panel/outliner.tsx.
+- Update Outliner to render a preview style distinct from:
+  - selected state
+  - native DOM focus state
+  - pointer hover state
+```
+
+Recommended visual behavior:
+
+```text
+- previewedId from outliner hover/focus or room-view keyboard shows the blue canvas outline
+- previewedId also highlights the matching outliner row
+- selected styling remains dominant over preview styling
+- focus ring on the actual focused outliner button remains distinct from preview styling
 ```
 
 Deliverable:
 
 ```text
-- keyboard user can focus 3D room view and browse items without tabbing through panel
-- preview state syncs to mesh and panel
-- DOM focus remains on 3D room view
-- selection from canvas keyboard tracks selectedSource = 'canvas-keyboard'
+- canvas keyboard preview uses the same preview pipeline as pointer and outliner preview
+- outliner and canvas visuals stay synchronized both ways
 ```
 
-## Phase 7: Add live region announcements
+## Phase 5: Add source-aware selection plumbing
 
-Add a centralized announcement mechanism.
+Selection-source tracking needs explicit origin signals from the current UI surfaces.
 
-Use it for:
+Concrete work:
 
 ```text
-- canvas keyboard preview
-- canvas keyboard selection
-- deselection
-- deletion
-- movement
-- rotation
+- Update src/app/use-scene-handlers.ts so handleSelectById can accept a source parameter rather than only an id.
+- Update src/app/overlay/use-overlay-props.ts and src/app/overlay/editor-overlay.tsx so Outliner can send source-aware selection events.
+- In src/app/scene-panel/outliner.tsx, distinguish panel-pointer vs panel-keyboard activation instead of relying on click alone.
+- Extend Scene/App callback plumbing so canvas pointer selection reports canvas-pointer source to the app shell.
+- Room-view keyboard Enter/Space selection should set selectedSource = 'canvas-keyboard' before or alongside scene selection sync.
+```
+
+Recommended source set for this codebase:
+
+```ts
+type InteractionSource =
+  | 'canvas-keyboard'
+  | 'canvas-pointer'
+  | 'panel-keyboard'
+  | 'panel-pointer'
+  | 'toolbar'
+  | 'inspector'
+  | null
 ```
 
 Deliverable:
 
 ```text
-- screen reader users receive feedback for canvas-only interactions
-- announcements are concise and not overly noisy
-- selection announcements mention Tab path to item actions/details
+- selectedSource is trustworthy enough to drive announcement wording and focus return
+- canvas-pointer, canvas-keyboard, panel-pointer, and panel-keyboard selections are no longer conflated
 ```
 
-## Phase 8: Review dialogs and destructive actions
+## Phase 6: Keep spatial navigation logic in the scene layer and expose it through SceneRef
 
-Ensure delete confirmation behavior is correct.
+Do not try to compute camera-relative keyboard ordering from App.tsx using SceneReadModel alone. The scene layer already owns camera state and object refs.
+
+Concrete work:
+
+```text
+- Add a pure camera-projection / ordering helper under src/lib/three/ (for example a scene-keyboard-navigation utility).
+- Expose scene-owned keyboard navigation data through src/scene/scene.types.ts and src/scene/internal/use-scene-imperative-api.ts.
+- Keep viewport projection, visibility checks, and ordering in the scene layer.
+- Let App.tsx / use-keyboard-shortcuts.ts ask the scene for the current navigation snapshot/order rather than deriving it from SceneReadModel.
+```
+
+Recommended room-view behavior:
+
+```text
+- no selection: Arrow keys navigate preview order, Home/End jump, Enter/Space selects previewed item
+- selection present: Arrow keys move the selected item, Shift/Alt modify step size
+- DOM focus stays on the room-view wrapper during keyboard scene browsing
+```
 
 Deliverable:
 
 ```text
-- Delete/Backspace opens confirmation only in correct scope
-- dialog traps/manages focus appropriately
-- Escape cancels dialog before it clears selection
-- focus returns sensibly after cancel/delete
-- deletion is announced
-- selection, selectedSource, preview, and previewSource are cleared after deletion
+- room-view keyboard browsing is camera-relative
+- ordering logic is reusable and testable without leaking scene internals into the overlay layer
 ```
 
-## Phase 9: Add keyboard shortcut help UI
+## Phase 7: Make announcements source-aware by reusing the existing announcement system
 
-Add visible help.
+This repository already has centralized live regions. Extend them; do not add a second announcer.
+
+Concrete work:
+
+```text
+- Keep src/app/hooks/use-announcements.ts and src/app/scene-panel/announcer.tsx as the only live-region mechanism.
+- Update src/app/hooks/use-scene-sync.ts so canvas-keyboard selection can suppress the default generic selection announcement.
+- Use src/app/use-scene-handlers.ts for richer canvas-keyboard announcements such as:
+  "Sofa selected. Use arrow keys to move it, comma and period to rotate it, Delete to remove it, or Tab for item actions and details."
+- Add concise preview announcements for room-view keyboard preview changes.
+- Keep movement announcements queued/debounced through the existing queueMovementAnnouncement path.
+```
+
+Implementation note:
+
+```text
+- The existing code already announces selection changes, deletion, undo/redo, rotation, movement, and startup flows.
+- Update wording and suppression rules instead of duplicating those channels.
+```
 
 Deliverable:
 
 ```text
-- user can discover keyboard controls
-- help clearly says shortcuts are active when the 3D room view is focused
-- selected-item shortcuts are distinguished from general room-view shortcuts
-- help mentions Tab reaches item actions/details when an item is selected
+- canvas-only keyboard interactions are announced once
+- selection announcements do not double-fire
+- movement announcements remain concise and throttled
 ```
 
-## Phase 10: Light compatibility check for toolbar/details
+## Phase 8: Replace generic outliner focus handoff with source-aware focus return
 
-This phase is not the full floating-toolbar/details implementation.
+The current codebase already has focus handoff machinery in useSceneSync.ts plus delete-time outliner focus requests in useSceneHandlers.ts. Those rules must be narrowed.
 
-Check only that current toolbar/details do not conflict with the new model.
+Concrete work:
+
+```text
+- Review src/app/hooks/use-scene-sync.ts default requestOutlinerFocus behavior.
+- Keep automatic outliner focus handoff suppressed for canvas-origin selection and clear flows.
+- Update src/app/use-scene-handlers.ts deletion flow so requestOutlinerFocusByIndex(...) is only used for outliner-origin delete behavior.
+- For canvas-origin delete/clear, return focus to roomViewRef instead.
+- Preserve modal behavior: dialogs still trap focus and Escape closes the dialog before selection clearing runs.
+```
 
 Deliverable:
 
 ```text
-- current toolbar does not create bad tab stops when disabled
-- current details panel does not contain focusable controls that conflict with scene shortcuts
-- selectedSource can support toolbar/details later
-- README notes future/current contextual controls appropriately
+- focus returns to the same interaction surface the user was using
+- delete/cancel behavior no longer contradicts canvas keyboard continuity
 ```
 
-## Phase 11: README updates
+## Phase 9: Update existing help and docs, then validate the new model in existing tests
 
-Update the README with the accessibility and interaction model decisions.
+This repository already has visible shortcut help, engineering docs, README accessibility notes, and browser tests. Update those artifacts instead of creating parallel documentation.
 
-See README guidance below.
+Concrete documentation updates:
+
+```text
+- src/app/keyboard/keyboard-shortcuts-help.tsx
+- README.md
+- docs/editor-shortcuts-reference.md
+- docs/keyboard-shortcuts.md
+```
+
+Concrete test updates to plan for:
+
+```text
+Unit / integration:
+- src/app/keyboard/use-keyboard-shortcuts.test.tsx
+- src/app/keyboard/use-camera-key-state.test.ts
+- src/app/use-preview-controller.test.ts
+- src/app/hooks/use-scene-sync.test.ts
+- src/app/use-scene-handlers.test.ts
+- src/app/scene-panel/outliner.test.tsx
+- src/app/keyboard/keyboard-shortcuts-help.test.tsx
+- new pure utility tests for any scene-keyboard-navigation helper in src/lib/three/
+
+Browser / accessibility:
+- e2e/editor-hotkeys.spec.ts
+- e2e/editor-accessibility.spec.ts
+- e2e/editor-accessibility-flows.spec.ts
+- e2e/editor-dialogs.spec.ts
+- e2e/editor-a11y-audits.spec.ts
+```
+
+Deliverable:
+
+```text
+- visible help explains room-view-scoped shortcuts
+- README and engineering docs describe the actual interaction model in this repo
+- automated coverage reflects the new focus and shortcut rules
+```
 
 ---
 
