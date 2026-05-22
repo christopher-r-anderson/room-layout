@@ -32,6 +32,7 @@ import { Inspector } from '../scene-panel/inspector'
 import type { StartupErrorKind } from '../startup/use-startup-state'
 import { CopySceneUrlButton } from './copy-scene-url-button'
 import { NewSceneButton } from './new-scene-button'
+import type { PanelSelectById } from '../scene-interaction.types'
 
 export interface EditorCameraProps {
   onSetCameraPreset: (preset: CameraPreset) => void
@@ -66,10 +67,7 @@ export interface EditorSelectionProps {
 export interface EditorSceneProps {
   focusRequest: SceneOutlinerFocusRequest | null
   onFocusHandled: () => void
-  onSelectById: (
-    id: string | null,
-    source?: 'panel-keyboard' | 'panel-pointer',
-  ) => void
+  onSelectById: PanelSelectById
   readModel: SceneReadModel
   sceneInteractionsDisabled: boolean
 }

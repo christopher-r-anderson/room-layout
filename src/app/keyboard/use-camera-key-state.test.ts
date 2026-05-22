@@ -66,6 +66,31 @@ describe('useCameraKeyState', () => {
     expect(secondCall.size).toBe(0)
   })
 
+  it('tracks Shift+Minus as zoom-out without introducing extra camera keys', () => {
+    const sceneRef = createSceneRef()
+
+    renderHook(() => {
+      useCameraKeyState({
+        enabled: true,
+        roomViewHasFocus: true,
+        sceneRef,
+      })
+    })
+
+    fireEvent.keyDown(window, { code: 'ShiftLeft', key: 'Shift' })
+    fireEvent.keyDown(window, { code: 'Minus', key: '_' })
+
+    expect(sceneRef.setCameraKeyState).toHaveBeenCalledTimes(2)
+    const shiftState = sceneRef.setCameraKeyState.mock.calls[0][0]
+    const zoomState = sceneRef.setCameraKeyState.mock.calls[1][0]
+
+    expect(shiftState.has('shift')).toBe(true)
+    expect(shiftState.size).toBe(1)
+    expect(zoomState.has('shift')).toBe(true)
+    expect(zoomState.has('minus')).toBe(true)
+    expect(zoomState.size).toBe(2)
+  })
+
   it('keeps shift pressed until both physical shift keys are released', () => {
     const sceneRef = createSceneRef()
 

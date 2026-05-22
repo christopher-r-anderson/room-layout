@@ -452,13 +452,13 @@ test('canvas browse: arrow keys cycle preview when nothing is selected, Enter se
   const itemIds = state2.items.map((i) => i.id)
 
   // Deselect so canvas browse mode is active (ArrowRight browses, not moves)
+  await focusRoomView(page)
   await page.keyboard.press('Escape')
 
   const deselectedState = await readSceneState(page)
   expect(deselectedState.selectedId).toBeNull()
 
   // Nothing selected, room view focused — ArrowRight should preview the first item
-  await focusRoomView(page)
   await page.keyboard.press('ArrowRight')
 
   const afterFirstRight = await readSceneState(page)
@@ -497,9 +497,8 @@ test('canvas browse: announces item name and then selection with Tab hint', asyn
   expect(state.itemCount).toBe(1)
 
   // Deselect so canvas browse mode is active (ArrowRight browses, not moves)
-  await page.keyboard.press('Escape')
-
   await focusRoomView(page)
+  await page.keyboard.press('Escape')
 
   // First ArrowRight should preview the item and announce its name
   await page.keyboard.press('ArrowRight')

@@ -6,3 +6,10 @@ export type InteractionSource =
   | 'toolbar'
   | 'inspector'
   | null
+
+export type PanelInteractionSource = 'panel-keyboard' | 'panel-pointer'
+
+export type PanelSelectById = (
+  id: string,
+  source: PanelInteractionSource,
+) => void

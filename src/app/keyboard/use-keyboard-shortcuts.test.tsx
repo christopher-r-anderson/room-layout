@@ -789,6 +789,32 @@ describe('useKeyboardShortcuts', () => {
     expect(onClearSelection).not.toHaveBeenCalled()
   })
 
+  it('does not clear selection when room view is not focused', async () => {
+    const user = userEvent.setup()
+    const onClearSelection = vi.fn()
+
+    render(
+      <KeyboardShortcutHarness
+        enabled
+        hasSelection
+        isModalOpen={false}
+        roomViewHasFocus={false}
+        onUndo={vi.fn()}
+        onRedo={vi.fn()}
+        onNewSceneIntent={vi.fn()}
+        onOpenDeleteDialog={vi.fn()}
+        onFocusSelected={vi.fn()}
+        onMoveSelection={vi.fn()}
+        onClearSelection={onClearSelection}
+        onRotate={vi.fn()}
+      />,
+    )
+
+    await user.keyboard('{Escape}')
+
+    expect(onClearSelection).not.toHaveBeenCalled()
+  })
+
   it('does not intercept undo/redo in text inputs', () => {
     const onUndo = vi.fn()
     const onRedo = vi.fn()

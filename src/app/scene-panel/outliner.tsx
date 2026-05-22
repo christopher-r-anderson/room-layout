@@ -19,6 +19,10 @@ import {
 } from '@/components/ui/collapsible'
 import { loadBooleanPreference, saveBooleanPreference } from '@/lib/ui/storage'
 import type { SceneOutlinerFocusRequest } from '../scene-panel.types'
+import type {
+  PanelInteractionSource,
+  PanelSelectById,
+} from '../scene-interaction.types'
 
 const OUTLINER_EXPANDED_PREFERENCE_KEY = 'outliner-expanded'
 
@@ -39,7 +43,7 @@ export function Outliner({
   disabled: boolean
   focusRequest: SceneOutlinerFocusRequest | null
   onFocusHandled: () => void
-  onSelectById: (id: string, source: 'panel-keyboard' | 'panel-pointer') => void
+  onSelectById: PanelSelectById
   previewedId?: string | null
   onPreviewChange: (
     id: string | null,
@@ -173,7 +177,7 @@ export function Outliner({
                             isPreviewed && 'bg-accent text-accent-foreground',
                           )}
                           onClick={(e) => {
-                            const source =
+                            const source: PanelInteractionSource =
                               e.detail === 0
                                 ? 'panel-keyboard'
                                 : 'panel-pointer'
