@@ -66,7 +66,10 @@ export interface EditorSelectionProps {
 export interface EditorSceneProps {
   focusRequest: SceneOutlinerFocusRequest | null
   onFocusHandled: () => void
-  onSelectById: (id: string | null) => void
+  onSelectById: (
+    id: string | null,
+    source?: 'panel-keyboard' | 'panel-pointer',
+  ) => void
   readModel: SceneReadModel
   sceneInteractionsDisabled: boolean
 }
@@ -94,6 +97,7 @@ export interface EditorDialogsProps {
 }
 
 export interface EditorPreviewProps {
+  previewedId: string | null
   onPreviewChange: (
     id: string | null,
     source: 'outliner-hover' | 'outliner-focus',
@@ -236,6 +240,7 @@ export function EditorOverlay({
               focusRequest={scene.focusRequest}
               onFocusHandled={scene.onFocusHandled}
               onSelectById={scene.onSelectById}
+              previewedId={preview.previewedId}
               onPreviewChange={preview.onPreviewChange}
             />
             <Inspector selectedFurniture={selection.selectedFurniture} />

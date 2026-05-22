@@ -227,6 +227,7 @@ function App() {
       clearPreview: clearPreviewOnCanvasMiss,
       clearEditorMessage: overlayState.clearEditorMessage,
       setEditorMessage: overlayState.setEditorMessage,
+      setSelectedSource: overlayState.setSelectedSource,
       sceneReadModel: overlayState.sceneReadModel,
       selectedFurniture: overlayState.selectedFurniture,
       handleHistoryChange: overlayState.handleHistoryChange,
@@ -316,6 +317,7 @@ function App() {
     isInfoDialogOpen: dialogState.isInfoDialogOpen,
     onInfoDialogOpenChange: dialogState.setInfoOpen,
     onPreviewChange: handleOutlinerPreviewChange,
+    previewedId,
   })
 
   useEffect(() => {

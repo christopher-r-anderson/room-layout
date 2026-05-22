@@ -116,6 +116,7 @@ describe('useSceneHandlers', () => {
       clearEditorMessage: vi.fn(),
       setEditorMessage: vi.fn(),
       handleHistoryChange: vi.fn(),
+      setSelectedSource: vi.fn(),
       selectedFurniture: null,
       sceneReadModel: { items: [], selectedId: null },
     }
@@ -203,6 +204,7 @@ describe('useSceneHandlers', () => {
       clearEditorMessage: vi.fn(),
       setEditorMessage: vi.fn(),
       handleHistoryChange: vi.fn(),
+      setSelectedSource: vi.fn(),
       selectedFurniture: null,
       sceneReadModel: { items: [], selectedId: null },
     }

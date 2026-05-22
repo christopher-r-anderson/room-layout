@@ -42,7 +42,7 @@ interface OverlayOptions {
   onRedo: () => void
   focusRequest: SceneOutlinerFocusRequest | null
   onFocusHandled: () => void
-  onSelectById: (id: string | null) => void
+  onSelectById: (id: string | null, source?: 'panel-keyboard' | 'panel-pointer') => void
   readModel: SceneReadModel
   sceneInteractionsDisabled: boolean
   selectedFurniture: FurnitureItem | null
@@ -69,6 +69,7 @@ interface OverlayOptions {
     id: string | null,
     source: 'outliner-hover' | 'outliner-focus',
   ) => void
+  previewedId: string | null
 }
 
 function createOptions(overrides?: Partial<OverlayOptions>): OverlayOptions {
@@ -118,6 +119,7 @@ function createOptions(overrides?: Partial<OverlayOptions>): OverlayOptions {
     isInfoDialogOpen: false,
     onInfoDialogOpenChange: vi.fn(),
     onPreviewChange: vi.fn(),
+    previewedId: null,
     ...overrides,
   }
 }

@@ -13,6 +13,7 @@ import type {
 } from '@/scene/objects/furniture.types'
 import type { FurnitureCatalogEntry } from '@/scene/objects/furniture-catalog'
 import type { HistoryAvailability } from './history/history.types'
+import type { InteractionSource } from './scene-interaction.types'
 import {
   runStartupAssetErrorTransition,
   runStartupRetryTransition,
@@ -99,6 +100,7 @@ interface OverlayState {
   clearPreview: () => void
   clearEditorMessage: () => void
   setEditorMessage: (message: string | null) => void
+  setSelectedSource: (source: InteractionSource) => void
   sceneReadModel: SceneReadModel
   selectedFurniture: FurnitureItem | null
   handleHistoryChange: (availability: HistoryAvailability) => void
@@ -408,6 +410,7 @@ export function useSceneHandlers({
     clearPreview,
     clearEditorMessage,
     setEditorMessage,
+    setSelectedSource,
     handleHistoryChange,
     selectedFurniture,
     sceneReadModel,
@@ -457,13 +460,19 @@ export function useSceneHandlers({
   }, [addFurniture, clearEditorMessage, syncSceneReadModel, announcePolite])
 
   const handleSelectById = useCallback(
-    (id: string | null): SelectByIdResult => {
+    (
+      id: string | null,
+      source?: 'panel-keyboard' | 'panel-pointer',
+    ): SelectByIdResult => {
+      if (source) {
+        setSelectedSource(source)
+      }
       const result = selectById(id)
       clearEditorMessage()
       syncSceneReadModel({ requestOutlinerFocus: false })
       return result
     },
-    [selectById, clearEditorMessage, syncSceneReadModel],
+    [selectById, clearEditorMessage, setSelectedSource, syncSceneReadModel],
   )
 
   const handleMoveSelection = useCallback(
