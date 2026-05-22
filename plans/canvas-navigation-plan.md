@@ -2238,52 +2238,52 @@ The final implementation should satisfy these checks.
 ## Focus and keyboard
 
 ```text
-[ ] User can Tab to the “Furniture in room” panel items.
-[ ] User can Tab to the 3D room view.
-[ ] 3D room view has visible focus styling.
-[ ] WASD does not work when focus is outside the 3D room view.
-[ ] Arrow movement does not work when focus is outside the 3D room view.
-[ ] Delete/Backspace does not remove furniture globally.
-[ ] Escape clears selection only after dialogs/menus/text inputs get priority.
-[ ] Shortcut model anticipates future editable details inputs.
+[x] User can Tab to the “Furniture in room” panel items.
+[x] User can Tab to the 3D room view.
+[x] 3D room view has visible focus styling.
+[x] WASD does not work when focus is outside the 3D room view.
+[x] Arrow movement does not work when focus is outside the 3D room view.
+[x] Delete/Backspace does not remove furniture globally.
+[x] Escape clears selection only after dialogs/menus/text inputs get priority.
+[x] Shortcut model anticipates future editable details inputs.
 ```
 
 ## Panel behavior
 
 ```text
-[ ] Panel item hover previews mesh.
-[ ] Panel item keyboard focus previews mesh.
-[ ] Panel item activation selects mesh.
-[ ] Panel item activation tracks selectedSource.
-[ ] Selected panel item has clear selected style.
-[ ] Previewed panel item has clear preview style.
-[ ] Focus ring remains visible and distinct.
+[x] Panel item hover previews mesh.
+[x] Panel item keyboard focus previews mesh.
+[x] Panel item activation selects mesh.
+[x] Panel item activation tracks selectedSource.
+[x] Selected panel item has clear selected style.
+[x] Previewed panel item has clear preview style.
+[x] Focus ring remains visible and distinct.
 ```
 
 ## Canvas behavior
 
 ```text
-[ ] Mesh hover previews matching panel item.
-[ ] Mesh click selects item.
-[ ] Mesh click tracks selectedSource = 'canvas-pointer'.
-[ ] Empty canvas click clears selection.
-[ ] Clicking canvas focuses 3D room view where appropriate.
-[ ] Canvas keyboard spatial navigation previews items.
-[ ] Canvas keyboard selection selects previewed item.
-[ ] Canvas keyboard selection tracks selectedSource = 'canvas-keyboard'.
-[ ] DOM focus does not jump to panel items during canvas keyboard navigation.
+[x] Mesh hover previews matching panel item.
+[x] Mesh click selects item.
+[x] Mesh click tracks selectedSource = 'canvas-pointer'.
+[x] Empty canvas click clears selection.
+[x] Clicking canvas focuses 3D room view where appropriate.
+[x] Canvas keyboard spatial navigation previews items.
+[x] Canvas keyboard selection selects previewed item.
+[x] Canvas keyboard selection tracks selectedSource = 'canvas-keyboard'.
+[x] DOM focus does not jump to panel items during canvas keyboard navigation.
 [ ] DOM focus does not jump to toolbar/details after selection.
 ```
 
 ## Visual sync
 
 ```text
-[ ] Selected mesh has yellow outline.
-[ ] Previewed mesh has blue outline if not selected.
-[ ] Selected state dominates preview state.
-[ ] Canvas preview updates panel preview.
-[ ] Panel preview updates canvas preview.
-[ ] Pointer/focus source conflicts do not clear newer preview state.
+[x] Selected mesh has yellow outline.
+[x] Previewed mesh has blue outline if not selected.
+[x] Selected state dominates preview state.
+[x] Canvas preview updates panel preview.
+[x] Panel preview updates canvas preview.
+[x] Pointer/focus source conflicts do not clear newer preview state.
 ```
 
 ## Announcements
@@ -2301,12 +2301,12 @@ The final implementation should satisfy these checks.
 ## Spatial navigation
 
 ```text
-[ ] Spatial order is based on current camera projection.
-[ ] Visible items are sorted top-to-bottom, then left-to-right.
-[ ] ArrowRight/ArrowDown move to next item.
-[ ] ArrowLeft/ArrowUp move to previous item.
-[ ] Home/End work.
-[ ] Spatial ordering does not reorder the visible panel.
+[x] Spatial order is based on current camera projection.
+[x] Visible items are sorted top-to-bottom, then left-to-right.
+[x] ArrowRight/ArrowDown move to next item.
+[x] ArrowLeft/ArrowUp move to previous item.
+[x] Home/End work.
+[x] Spatial ordering does not reorder the visible panel.
 ```
 
 ## Toolbar/details compatibility

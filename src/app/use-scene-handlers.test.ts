@@ -93,6 +93,7 @@ describe('useSceneHandlers', () => {
         selectedId: '1',
       })),
       requestOutlinerFocusByIndex: vi.fn(),
+      focusRoomView: vi.fn(),
     }
 
     const mockAnnouncements = {
@@ -116,6 +117,7 @@ describe('useSceneHandlers', () => {
       clearEditorMessage: vi.fn(),
       setEditorMessage: vi.fn(),
       handleHistoryChange: vi.fn(),
+      selectedSource: null,
       setSelectedSource: vi.fn(),
       selectedFurniture: null,
       sceneReadModel: { items: [], selectedId: null },
@@ -181,6 +183,7 @@ describe('useSceneHandlers', () => {
         selectedId: null,
       })),
       requestOutlinerFocusByIndex: vi.fn(),
+      focusRoomView: vi.fn(),
     }
 
     const mockAnnouncements = {
@@ -204,6 +207,7 @@ describe('useSceneHandlers', () => {
       clearEditorMessage: vi.fn(),
       setEditorMessage: vi.fn(),
       handleHistoryChange: vi.fn(),
+      selectedSource: null,
       setSelectedSource: vi.fn(),
       selectedFurniture: null,
       sceneReadModel: { items: [], selectedId: null },

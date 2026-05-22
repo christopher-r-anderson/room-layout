@@ -42,7 +42,10 @@ interface OverlayOptions {
   onRedo: () => void
   focusRequest: SceneOutlinerFocusRequest | null
   onFocusHandled: () => void
-  onSelectById: (id: string | null, source?: 'panel-keyboard' | 'panel-pointer') => void
+  onSelectById: (
+    id: string | null,
+    source?: 'panel-keyboard' | 'panel-pointer',
+  ) => void
   readModel: SceneReadModel
   sceneInteractionsDisabled: boolean
   selectedFurniture: FurnitureItem | null

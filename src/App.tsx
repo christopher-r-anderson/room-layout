@@ -33,6 +33,7 @@ import { TooltipProvider } from './components/ui/tooltip'
 import { Toaster } from './components/ui/sonner'
 import { clearSceneDraft, saveSceneDraft } from './app/url-scene/scene-draft'
 import { isFreshSceneState } from './app/startup/scene-defaults'
+import { sortSpatially } from './lib/three/spatial-sort'
 
 interface BrowserSceneState {
   assetsReady: boolean
@@ -190,6 +191,7 @@ function App() {
     previewedId,
     handleScenePreviewChange,
     handleOutlinerPreviewChange,
+    handleCanvasKeyboardPreviewChange,
     handleDragStateChange,
     clearPreviewOnCanvasMiss,
   } = usePreviewController({
@@ -220,13 +222,14 @@ function App() {
 
   const handlers = useSceneHandlers({
     commands,
-    sync,
+    sync: { ...sync, focusRoomView },
     announcements,
     dialogState,
     overlayState: {
       clearPreview: clearPreviewOnCanvasMiss,
       clearEditorMessage: overlayState.clearEditorMessage,
       setEditorMessage: overlayState.setEditorMessage,
+      selectedSource: overlayState.selectedSource,
       setSelectedSource: overlayState.setSelectedSource,
       sceneReadModel: overlayState.sceneReadModel,
       selectedFurniture: overlayState.selectedFurniture,
@@ -263,6 +266,49 @@ function App() {
       clearQueuedMovementAnnouncement()
     }
   }, [clearQueuedMovementAnnouncement])
+
+  const handleCanvasBrowse = useCallback(
+    (direction: 'next' | 'prev' | 'first' | 'last') => {
+      const snapshot = sceneRef.current?.getSnapshot()
+      if (!snapshot || snapshot.items.length === 0) {
+        return
+      }
+
+      const orderedIds = sortSpatially(snapshot.items)
+      if (orderedIds.length === 0) {
+        return
+      }
+
+      const currentIndex = orderedIds.indexOf(previewedIdRef.current ?? '')
+      let nextIndex: number
+
+      if (direction === 'first') {
+        nextIndex = 0
+      } else if (direction === 'last') {
+        nextIndex = orderedIds.length - 1
+      } else if (direction === 'next') {
+        nextIndex =
+          currentIndex === -1 ? 0 : (currentIndex + 1) % orderedIds.length
+      } else {
+        nextIndex =
+          currentIndex === -1
+            ? orderedIds.length - 1
+            : (currentIndex - 1 + orderedIds.length) % orderedIds.length
+      }
+
+      handleCanvasKeyboardPreviewChange(orderedIds[nextIndex])
+    },
+    [handleCanvasKeyboardPreviewChange],
+  )
+
+  const handleCanvasSelectPreviewed = useCallback(() => {
+    const id = previewedIdRef.current
+    if (!id) {
+      return
+    }
+
+    handlers.handleSelectById(id, 'canvas-keyboard')
+  }, [handlers])
 
   const { initializeCatalogSelection } = overlayState
   useEffect(() => {
@@ -419,6 +465,8 @@ function App() {
     onClearSelection: handlers.handleClearSelection,
     onRotate: handlers.handleRotateSelection,
     onSetCameraPreset: handlers.handleSetCameraPreset,
+    onCanvasBrowse: handleCanvasBrowse,
+    onCanvasSelectPreviewed: handleCanvasSelectPreviewed,
   })
 
   useCameraKeyState({

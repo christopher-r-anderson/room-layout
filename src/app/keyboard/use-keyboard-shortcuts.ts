@@ -48,6 +48,8 @@ interface UseKeyboardShortcutsOptions {
   onClearSelection: () => void
   onRotate: (direction: RotationDirection) => void
   onSetCameraPreset: (preset: CameraPreset) => void
+  onCanvasBrowse: (direction: 'next' | 'prev' | 'first' | 'last') => void
+  onCanvasSelectPreviewed: () => void
 }
 
 function shouldBlockForTextInput(
@@ -117,6 +119,8 @@ export function useKeyboardShortcuts({
   onClearSelection,
   onRotate,
   onSetCameraPreset,
+  onCanvasBrowse,
+  onCanvasSelectPreviewed,
 }: UseKeyboardShortcutsOptions): void {
   const shortcutDefinitions: ShortcutDefinition[] = [
     {
@@ -353,6 +357,54 @@ export function useKeyboardShortcuts({
       },
     },
     {
+      id: 'canvas-browse-next',
+      match: [{ key: 'ArrowRight' }, { key: 'ArrowDown' }],
+      requiresRoomViewFocus: true,
+      canExecute: (context) => !context.hasSelection,
+      suppressionMode: 'on-execute',
+      execute: () => {
+        onCanvasBrowse('next')
+      },
+    },
+    {
+      id: 'canvas-browse-prev',
+      match: [{ key: 'ArrowLeft' }, { key: 'ArrowUp' }],
+      requiresRoomViewFocus: true,
+      canExecute: (context) => !context.hasSelection,
+      suppressionMode: 'on-execute',
+      execute: () => {
+        onCanvasBrowse('prev')
+      },
+    },
+    {
+      id: 'canvas-browse-first',
+      match: { key: 'Home' },
+      requiresRoomViewFocus: true,
+      canExecute: (context) => !context.hasSelection,
+      suppressionMode: 'on-execute',
+      execute: () => {
+        onCanvasBrowse('first')
+      },
+    },
+    {
+      id: 'canvas-browse-last',
+      match: { key: 'End' },
+      requiresRoomViewFocus: true,
+      canExecute: (context) => !context.hasSelection,
+      suppressionMode: 'on-execute',
+      execute: () => {
+        onCanvasBrowse('last')
+      },
+    },
+    {
+      id: 'canvas-select-previewed',
+      match: [{ key: 'Enter' }, { key: ' ' }],
+      requiresRoomViewFocus: true,
+      canExecute: (context) => !context.hasSelection,
+      suppressionMode: 'on-execute',
+      execute: onCanvasSelectPreviewed,
+    },
+    {
       id: 'clear-selection',
       match: { key: 'Escape' },
       requiresSelection: true,
@@ -400,19 +452,23 @@ export function useKeyboardShortcuts({
       const suppressionMode = shortcut.suppressionMode ?? 'on-execute'
       const canExecute = canExecuteShortcut(shortcut, context)
 
-      // always-on-match: suppress immediately on match
+      // always-on-match: suppress and stop on first match regardless of execute
       if (suppressionMode === 'always-on-match') {
         event.preventDefault()
-      } else if (canExecute) {
-        // on-execute: suppress only if action will execute
-        event.preventDefault()
+        if (canExecute) {
+          shortcut.execute()
+        }
+        return
       }
 
+      // on-execute: suppress and stop only if the action will actually run
       if (canExecute) {
+        event.preventDefault()
         shortcut.execute()
+        return
       }
 
-      return
+      // on-execute + can't execute: fall through to the next matching shortcut
     }
   })
 

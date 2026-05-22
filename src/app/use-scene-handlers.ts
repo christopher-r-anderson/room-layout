@@ -60,6 +60,7 @@ interface Sync {
     requestOutlinerFocus?: boolean
   }) => SceneReadModel | null
   requestOutlinerFocusByIndex: (preferredIndex: number) => void
+  focusRoomView: () => void
 }
 
 interface Announcements {
@@ -100,6 +101,7 @@ interface OverlayState {
   clearPreview: () => void
   clearEditorMessage: () => void
   setEditorMessage: (message: string | null) => void
+  selectedSource: InteractionSource
   setSelectedSource: (source: InteractionSource) => void
   sceneReadModel: SceneReadModel
   selectedFurniture: FurnitureItem | null
@@ -122,7 +124,10 @@ interface UseSceneHandlersOptions {
 interface SceneHandlers {
   handleAddFurniture: () => boolean
   handleFocusSelected: () => void
-  handleSelectById: (id: string | null) => SelectByIdResult
+  handleSelectById: (
+    id: string | null,
+    source?: InteractionSource,
+  ) => SelectByIdResult
   handleMoveSelection: (
     delta: { x: number; z: number },
     options?: { source?: MoveSource },
@@ -391,7 +396,8 @@ export function useSceneHandlers({
     setCameraPreset,
     undo,
   } = commands
-  const { syncSceneReadModel, requestOutlinerFocusByIndex } = sync
+  const { syncSceneReadModel, requestOutlinerFocusByIndex, focusRoomView } =
+    sync
   const {
     announcePolite,
     announceAssertive,
@@ -410,6 +416,7 @@ export function useSceneHandlers({
     clearPreview,
     clearEditorMessage,
     setEditorMessage,
+    selectedSource,
     setSelectedSource,
     handleHistoryChange,
     selectedFurniture,
@@ -462,7 +469,7 @@ export function useSceneHandlers({
   const handleSelectById = useCallback(
     (
       id: string | null,
-      source?: 'panel-keyboard' | 'panel-pointer',
+      source?: InteractionSource,
     ): SelectByIdResult => {
       if (source) {
         setSelectedSource(source)
@@ -548,7 +555,15 @@ export function useSceneHandlers({
     const nextReadModel = syncSceneReadModel()
 
     if (deleted) {
-      requestOutlinerFocusByIndex(deletedIndex >= 0 ? deletedIndex : 0)
+      const isCanvasSource =
+        selectedSource === 'canvas-keyboard' ||
+        selectedSource === 'canvas-pointer'
+
+      if (isCanvasSource) {
+        focusRoomView()
+      } else {
+        requestOutlinerFocusByIndex(deletedIndex >= 0 ? deletedIndex : 0)
+      }
 
       if (deletedName) {
         announcePolite(`${deletedName} removed from room.`)
@@ -561,9 +576,11 @@ export function useSceneHandlers({
     syncSceneReadModel,
     announcePolite,
     requestOutlinerFocusByIndex,
+    focusRoomView,
     closeDialog,
     pendingDeleteFurniture,
     sceneReadModel.items,
+    selectedSource,
   ])
 
   const handleUndo = useCallback(() => {
