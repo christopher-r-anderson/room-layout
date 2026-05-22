@@ -11,6 +11,7 @@ function KeyboardShortcutHarness(props: {
   hasSelection: boolean
   isModalOpen: boolean
   canStartNewScene?: boolean
+  roomViewHasFocus?: boolean
   onUndo: () => void
   onRedo: () => void
   onNewSceneIntent: () => void
@@ -24,6 +25,7 @@ function KeyboardShortcutHarness(props: {
   useKeyboardShortcuts({
     ...props,
     canStartNewScene: props.canStartNewScene ?? true,
+    roomViewHasFocus: props.roomViewHasFocus ?? true,
     onSetCameraPreset: props.onSetCameraPreset ?? vi.fn(),
   })
 
@@ -42,6 +44,7 @@ function DialogEscapeHarness(props: {
     hasSelection: props.hasSelection,
     isModalOpen: false,
     canStartNewScene: true,
+    roomViewHasFocus: true,
     onUndo: vi.fn(),
     onRedo: vi.fn(),
     onNewSceneIntent: vi.fn(),
@@ -81,6 +84,7 @@ function TextInputHarness(props: {
     hasSelection: false,
     isModalOpen: props.isModalOpen ?? false,
     canStartNewScene: props.canStartNewScene ?? true,
+    roomViewHasFocus: true,
     onUndo: props.onUndo,
     onRedo: props.onRedo,
     onNewSceneIntent: props.onNewSceneIntent ?? vi.fn(),
@@ -111,6 +115,7 @@ function DialogNewSceneHarness(props: {
     hasSelection: false,
     isModalOpen: props.isModalOpen,
     canStartNewScene: props.canStartNewScene ?? true,
+    roomViewHasFocus: true,
     onUndo: vi.fn(),
     onRedo: vi.fn(),
     onNewSceneIntent: props.onNewSceneIntent,
@@ -144,6 +149,7 @@ function PreHandledEscapeHarness(props: {
     hasSelection: props.hasSelection,
     isModalOpen: false,
     canStartNewScene: true,
+    roomViewHasFocus: true,
     onUndo: vi.fn(),
     onRedo: vi.fn(),
     onNewSceneIntent: vi.fn(),
@@ -185,6 +191,7 @@ function ContentEditableHarness(props: {
     hasSelection: false,
     isModalOpen: false,
     canStartNewScene: true,
+    roomViewHasFocus: true,
     onUndo: vi.fn(),
     onRedo: vi.fn(),
     onNewSceneIntent: props.onNewSceneIntent,
@@ -1130,6 +1137,43 @@ describe('useKeyboardShortcuts', () => {
 
     // Should NOT prevent default because action doesn't execute without selection
     expect(moveEvent.defaultPrevented).toBe(false)
+    expect(onMoveSelection).not.toHaveBeenCalled()
+  })
+
+  it('keeps room-view scoped shortcuts inactive until the room view has focus', async () => {
+    const user = userEvent.setup()
+    const onOpenDeleteDialog = vi.fn()
+    const onMoveSelection = vi.fn()
+    const onRotate = vi.fn()
+    const onFocusSelected = vi.fn()
+    const onSetCameraPreset = vi.fn()
+
+    render(
+      <KeyboardShortcutHarness
+        enabled
+        hasSelection
+        isModalOpen={false}
+        roomViewHasFocus={false}
+        onUndo={vi.fn()}
+        onRedo={vi.fn()}
+        onNewSceneIntent={vi.fn()}
+        onOpenDeleteDialog={onOpenDeleteDialog}
+        onFocusSelected={onFocusSelected}
+        onMoveSelection={onMoveSelection}
+        onClearSelection={vi.fn()}
+        onRotate={onRotate}
+        onSetCameraPreset={onSetCameraPreset}
+      />,
+    )
+
+    await user.keyboard('{Delete}{Backspace}f,.')
+    await user.keyboard('1234')
+    await user.keyboard('{ArrowUp}{ArrowDown}{ArrowLeft}{ArrowRight}')
+
+    expect(onOpenDeleteDialog).not.toHaveBeenCalled()
+    expect(onFocusSelected).not.toHaveBeenCalled()
+    expect(onRotate).not.toHaveBeenCalled()
+    expect(onSetCameraPreset).not.toHaveBeenCalled()
     expect(onMoveSelection).not.toHaveBeenCalled()
   })
 })

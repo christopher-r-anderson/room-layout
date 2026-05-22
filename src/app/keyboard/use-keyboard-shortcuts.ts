@@ -19,12 +19,14 @@ interface ShortcutContext {
   isModalOpen: boolean
   hasSelection: boolean
   canStartNewScene: boolean
+  roomViewHasFocus: boolean
 }
 
 interface ShortcutDefinition {
   id: string
   match: KeyCombo | KeyCombo[]
   allowMatchInEditingTarget?: boolean
+  requiresRoomViewFocus?: boolean
   requiresSelection?: boolean
   canExecute?: (context: ShortcutContext) => boolean
   suppressionMode?: SuppressionMode
@@ -36,6 +38,7 @@ interface UseKeyboardShortcutsOptions {
   hasSelection: boolean
   isModalOpen: boolean
   canStartNewScene: boolean
+  roomViewHasFocus: boolean
   onUndo: () => void
   onRedo: () => void
   onNewSceneIntent: () => void
@@ -62,6 +65,11 @@ function canMatchShortcut(
 ): boolean {
   // Don't match in text inputs unless the shortcut explicitly needs browser suppression.
   if (context.targetIsEditingTarget && !shortcut.allowMatchInEditingTarget) {
+    return false
+  }
+
+  // Room-view-scoped shortcuts only fire when the room view has keyboard focus.
+  if (shortcut.requiresRoomViewFocus && !context.roomViewHasFocus) {
     return false
   }
 
@@ -99,6 +107,7 @@ export function useKeyboardShortcuts({
   hasSelection,
   isModalOpen,
   canStartNewScene,
+  roomViewHasFocus,
   onUndo,
   onRedo,
   onNewSceneIntent,
@@ -137,6 +146,7 @@ export function useKeyboardShortcuts({
     {
       id: 'delete',
       match: [{ key: 'delete' }, { key: 'backspace' }],
+      requiresRoomViewFocus: true,
       requiresSelection: true,
       suppressionMode: 'on-execute',
       execute: onOpenDeleteDialog,
@@ -144,6 +154,7 @@ export function useKeyboardShortcuts({
     {
       id: 'focus-selected',
       match: { key: 'f' },
+      requiresRoomViewFocus: true,
       requiresSelection: true,
       suppressionMode: 'on-execute',
       execute: onFocusSelected,
@@ -156,6 +167,7 @@ export function useKeyboardShortcuts({
         { code: 'Digit1', shift: true },
         { code: 'Numpad1' },
       ],
+      requiresRoomViewFocus: true,
       suppressionMode: 'on-execute',
       execute: () => {
         onSetCameraPreset('corner')
@@ -168,6 +180,7 @@ export function useKeyboardShortcuts({
         { code: 'Digit2', shift: true },
         { code: 'Numpad2' },
       ],
+      requiresRoomViewFocus: true,
       suppressionMode: 'on-execute',
       execute: () => {
         onSetCameraPreset('front')
@@ -180,6 +193,7 @@ export function useKeyboardShortcuts({
         { code: 'Digit3', shift: true },
         { code: 'Numpad3' },
       ],
+      requiresRoomViewFocus: true,
       suppressionMode: 'on-execute',
       execute: () => {
         onSetCameraPreset('side')
@@ -192,6 +206,7 @@ export function useKeyboardShortcuts({
         { code: 'Digit4', shift: true },
         { code: 'Numpad4' },
       ],
+      requiresRoomViewFocus: true,
       suppressionMode: 'on-execute',
       execute: () => {
         onSetCameraPreset('top')
@@ -200,6 +215,7 @@ export function useKeyboardShortcuts({
     {
       id: 'move-up',
       match: { key: 'ArrowUp' },
+      requiresRoomViewFocus: true,
       requiresSelection: true,
       suppressionMode: 'on-execute',
       execute: () => {
@@ -209,6 +225,7 @@ export function useKeyboardShortcuts({
     {
       id: 'move-up-large',
       match: { key: 'ArrowUp', shift: true },
+      requiresRoomViewFocus: true,
       requiresSelection: true,
       suppressionMode: 'on-execute',
       execute: () => {
@@ -218,6 +235,7 @@ export function useKeyboardShortcuts({
     {
       id: 'move-up-small',
       match: { key: 'ArrowUp', alt: true },
+      requiresRoomViewFocus: true,
       requiresSelection: true,
       suppressionMode: 'on-execute',
       execute: () => {
@@ -227,6 +245,7 @@ export function useKeyboardShortcuts({
     {
       id: 'move-down',
       match: { key: 'ArrowDown' },
+      requiresRoomViewFocus: true,
       requiresSelection: true,
       suppressionMode: 'on-execute',
       execute: () => {
@@ -236,6 +255,7 @@ export function useKeyboardShortcuts({
     {
       id: 'move-down-large',
       match: { key: 'ArrowDown', shift: true },
+      requiresRoomViewFocus: true,
       requiresSelection: true,
       suppressionMode: 'on-execute',
       execute: () => {
@@ -245,6 +265,7 @@ export function useKeyboardShortcuts({
     {
       id: 'move-down-small',
       match: { key: 'ArrowDown', alt: true },
+      requiresRoomViewFocus: true,
       requiresSelection: true,
       suppressionMode: 'on-execute',
       execute: () => {
@@ -254,6 +275,7 @@ export function useKeyboardShortcuts({
     {
       id: 'move-left',
       match: { key: 'ArrowLeft' },
+      requiresRoomViewFocus: true,
       requiresSelection: true,
       suppressionMode: 'on-execute',
       execute: () => {
@@ -263,6 +285,7 @@ export function useKeyboardShortcuts({
     {
       id: 'move-left-large',
       match: { key: 'ArrowLeft', shift: true },
+      requiresRoomViewFocus: true,
       requiresSelection: true,
       suppressionMode: 'on-execute',
       execute: () => {
@@ -272,6 +295,7 @@ export function useKeyboardShortcuts({
     {
       id: 'move-left-small',
       match: { key: 'ArrowLeft', alt: true },
+      requiresRoomViewFocus: true,
       requiresSelection: true,
       suppressionMode: 'on-execute',
       execute: () => {
@@ -281,6 +305,7 @@ export function useKeyboardShortcuts({
     {
       id: 'move-right',
       match: { key: 'ArrowRight' },
+      requiresRoomViewFocus: true,
       requiresSelection: true,
       suppressionMode: 'on-execute',
       execute: () => {
@@ -290,6 +315,7 @@ export function useKeyboardShortcuts({
     {
       id: 'move-right-large',
       match: { key: 'ArrowRight', shift: true },
+      requiresRoomViewFocus: true,
       requiresSelection: true,
       suppressionMode: 'on-execute',
       execute: () => {
@@ -299,6 +325,7 @@ export function useKeyboardShortcuts({
     {
       id: 'move-right-small',
       match: { key: 'ArrowRight', alt: true },
+      requiresRoomViewFocus: true,
       requiresSelection: true,
       suppressionMode: 'on-execute',
       execute: () => {
@@ -308,6 +335,7 @@ export function useKeyboardShortcuts({
     {
       id: 'rotate-left',
       match: [{ key: ',' }, { code: 'Comma' }],
+      requiresRoomViewFocus: true,
       requiresSelection: true,
       suppressionMode: 'on-execute',
       execute: () => {
@@ -317,6 +345,7 @@ export function useKeyboardShortcuts({
     {
       id: 'rotate-right',
       match: [{ key: '.' }, { code: 'Period' }],
+      requiresRoomViewFocus: true,
       requiresSelection: true,
       suppressionMode: 'on-execute',
       execute: () => {
@@ -356,6 +385,7 @@ export function useKeyboardShortcuts({
       isModalOpen,
       hasSelection,
       canStartNewScene,
+      roomViewHasFocus,
     }
 
     for (const shortcut of shortcutDefinitions) {

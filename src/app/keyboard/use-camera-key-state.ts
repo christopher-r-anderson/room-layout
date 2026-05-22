@@ -5,6 +5,7 @@ import type { CameraKeyName, CameraKeyState } from '@/scene/scene.types'
 interface UseCameraKeyStateOptions {
   enabled: boolean
   isModalOpen?: boolean
+  roomViewHasFocus: boolean
   sceneRef: React.RefObject<{
     setCameraKeyState(keyState: CameraKeyState): void
   } | null>
@@ -67,6 +68,7 @@ const isZoomModifierChord = (event: KeyboardEvent): boolean => {
 export function useCameraKeyState({
   enabled,
   isModalOpen = false,
+  roomViewHasFocus,
   sceneRef,
 }: UseCameraKeyStateOptions): void {
   const keyStateRef = useRef<CameraKeyState>(new Set())
@@ -113,7 +115,7 @@ export function useCameraKeyState({
       sceneRef.current?.setCameraKeyState(new Set())
     }
 
-    if (!enabled || isModalOpen) {
+    if (!enabled || isModalOpen || !roomViewHasFocus) {
       resetKeyState()
       return
     }
@@ -174,5 +176,5 @@ export function useCameraKeyState({
       window.removeEventListener('blur', resetKeyState)
       resetKeyState()
     }
-  }, [enabled, isModalOpen, sceneRef])
+  }, [enabled, isModalOpen, roomViewHasFocus, sceneRef])
 }

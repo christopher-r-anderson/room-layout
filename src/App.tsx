@@ -4,10 +4,11 @@ import {
   Component,
   Suspense,
   type ReactNode,
+  useCallback,
   useEffect,
   useMemo,
-  useState,
   useRef,
+  useState,
 } from 'react'
 import { NeutralToneMapping, SRGBColorSpace } from 'three'
 import type { SceneRef } from './scene/scene.types'
@@ -96,12 +97,14 @@ class SceneAssetErrorBoundary extends Component<
 
 function App() {
   const sceneRef = useRef<SceneRef | null>(null)
+  const roomViewRef = useRef<HTMLElement | null>(null)
   const previewedIdRef = useRef<string | null>(null)
   const overlayState = useOverlayState()
   const [floorFinishId, setFloorFinishId] = useState('')
   const [wallFinishId, setWallFinishId] = useState('')
   const [isFloorFinishLoading, setIsFloorFinishLoading] = useState(false)
   const [isSceneDragging, setIsSceneDragging] = useState(false)
+  const [roomViewHasFocus, setRoomViewHasFocus] = useState(false)
   const isE2ELowRenderQuality =
     import.meta.env.DEV && import.meta.env.VITE_E2E_RENDER_QUALITY === 'low'
 
@@ -199,6 +202,14 @@ function App() {
     setIsSceneDragging(dragging)
     handleDragStateChange(dragging)
   }
+
+  const focusRoomView = useCallback(() => {
+    if (!startup.editorInteractionsEnabled) {
+      return
+    }
+
+    roomViewRef.current?.focus()
+  }, [startup.editorInteractionsEnabled])
 
   const sync = useSceneSync({
     sceneRef,
@@ -394,6 +405,7 @@ function App() {
     hasSelection: overlayState.selectedFurniture !== null,
     isModalOpen: dialogState.isModalOpen,
     canStartNewScene: !sceneIsAtDefaults,
+    roomViewHasFocus,
     onUndo: handlers.handleUndo,
     onRedo: handlers.handleRedo,
     onNewSceneIntent: handlers.handleOpenNewSceneDialog,
@@ -410,6 +422,7 @@ function App() {
   useCameraKeyState({
     enabled: startup.editorInteractionsEnabled,
     isModalOpen: dialogState.isModalOpen,
+    roomViewHasFocus,
     sceneRef,
   })
 
@@ -427,7 +440,16 @@ function App() {
         <section
           aria-describedby="scene-instructions"
           aria-label="Interactive 3D room editor"
-          className="absolute inset-0 z-0"
+          ref={roomViewRef}
+          tabIndex={startup.editorInteractionsEnabled ? 0 : -1}
+          className="absolute inset-0 z-0 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+          onFocus={() => {
+            setRoomViewHasFocus(true)
+          }}
+          onBlur={() => {
+            setRoomViewHasFocus(false)
+          }}
+          onPointerDownCapture={focusRoomView}
         >
           <Canvas
             className="absolute inset-0 z-0"
@@ -445,6 +467,7 @@ function App() {
                 return
               }
 
+              focusRoomView()
               clearPreviewOnCanvasMiss()
               handlers.handleClearSelection()
             }}
