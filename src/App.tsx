@@ -296,9 +296,15 @@ function App() {
             : (currentIndex - 1 + orderedIds.length) % orderedIds.length
       }
 
-      handleCanvasKeyboardPreviewChange(orderedIds[nextIndex])
+      const nextId = orderedIds[nextIndex]
+      handleCanvasKeyboardPreviewChange(nextId)
+
+      const item = snapshot.items.find((i) => i.id === nextId)
+      if (item) {
+        announcements.announcePolite(item.name)
+      }
     },
-    [handleCanvasKeyboardPreviewChange],
+    [handleCanvasKeyboardPreviewChange, announcements],
   )
 
   const handleCanvasSelectPreviewed = useCallback(() => {
@@ -308,7 +314,8 @@ function App() {
     }
 
     handlers.handleSelectById(id, 'canvas-keyboard')
-  }, [handlers])
+    handleCanvasKeyboardPreviewChange(null)
+  }, [handlers, handleCanvasKeyboardPreviewChange])
 
   const { initializeCatalogSelection } = overlayState
   useEffect(() => {

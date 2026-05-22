@@ -17,6 +17,16 @@ For implementation details and architecture, see [Keyboard Shortcuts](./keyboard
 | Side view   | 3             | Press |
 | Top view    | 4             | Press |
 
+## Canvas Browse (no selection)
+
+| Action             | Shortcut         | Mode  |
+| ------------------ | ---------------- | ----- |
+| Preview next item  | Arrow Right/Down | Press |
+| Preview prev item  | Arrow Left/Up    | Press |
+| Preview first item | Home             | Press |
+| Preview last item  | End              | Press |
+| Select previewed   | Enter            | Press |
+
 ## Selected Object
 
 | Action       | Shortcut               | Mode  |

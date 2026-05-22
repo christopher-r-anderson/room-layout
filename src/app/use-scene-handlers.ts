@@ -467,19 +467,40 @@ export function useSceneHandlers({
   }, [addFurniture, clearEditorMessage, syncSceneReadModel, announcePolite])
 
   const handleSelectById = useCallback(
-    (
-      id: string | null,
-      source?: InteractionSource,
-    ): SelectByIdResult => {
+    (id: string | null, source?: InteractionSource): SelectByIdResult => {
       if (source) {
         setSelectedSource(source)
       }
       const result = selectById(id)
       clearEditorMessage()
-      syncSceneReadModel({ requestOutlinerFocus: false })
+      if (source === 'canvas-keyboard') {
+        syncSceneReadModel({
+          requestOutlinerFocus: false,
+          announceSelectionChange: false,
+        })
+        if (result.ok && result.status === 'selected' && id) {
+          const item = sceneReadModel.items.find((i) => i.id === id)
+          if (item) {
+            announcePolite(
+              `${item.name} selected. Press Tab to reach item controls in the Furniture List.`,
+            )
+          }
+        } else if (result.ok && result.status === 'cleared') {
+          announcePolite('Selection cleared.')
+        }
+      } else {
+        syncSceneReadModel({ requestOutlinerFocus: false })
+      }
       return result
     },
-    [selectById, clearEditorMessage, setSelectedSource, syncSceneReadModel],
+    [
+      selectById,
+      clearEditorMessage,
+      setSelectedSource,
+      syncSceneReadModel,
+      sceneReadModel,
+      announcePolite,
+    ],
   )
 
   const handleMoveSelection = useCallback(

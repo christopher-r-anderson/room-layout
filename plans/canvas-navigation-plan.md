@@ -2272,7 +2272,7 @@ The final implementation should satisfy these checks.
 [x] Canvas keyboard selection selects previewed item.
 [x] Canvas keyboard selection tracks selectedSource = 'canvas-keyboard'.
 [x] DOM focus does not jump to panel items during canvas keyboard navigation.
-[ ] DOM focus does not jump to toolbar/details after selection.
+[x] DOM focus does not jump to toolbar/details after selection.
 ```
 
 ## Visual sync
@@ -2289,13 +2289,13 @@ The final implementation should satisfy these checks.
 ## Announcements
 
 ```text
-[ ] Canvas keyboard preview is announced.
-[ ] Canvas keyboard selection is announced.
-[ ] Selection announcement mentions Tab path to item actions/details.
-[ ] Deselection is announced.
-[ ] Deletion is announced.
-[ ] Movement/rotation feedback is announced without becoming too noisy.
-[ ] Pointer hover is not announced.
+[x] Canvas keyboard preview is announced.
+[x] Canvas keyboard selection is announced.
+[x] Selection announcement mentions Tab path to item actions/details.
+[x] Deselection is announced.
+[x] Deletion is announced.
+[x] Movement/rotation feedback is announced without becoming too noisy.
+[x] Pointer hover is not announced.
 ```
 
 ## Spatial navigation
@@ -2312,21 +2312,21 @@ The final implementation should satisfy these checks.
 ## Toolbar/details compatibility
 
 ```text
-[ ] Current toolbar does not create confusing focus stops when disabled.
-[ ] Current toolbar actions still operate on selected item.
-[ ] Current details panel does not interfere with shortcut scoping.
-[ ] State model supports future selected-item toolbar/details behavior.
+[x] Current toolbar does not create confusing focus stops when disabled.
+[x] Current toolbar actions still operate on selected item.
+[x] Current details panel does not interfere with shortcut scoping.
+[x] State model supports future selected-item toolbar/details behavior.
 [ ] Future selected-item controls can be mounted after 3D room view in DOM order.
 ```
 
 ## Documentation
 
 ```text
-[ ] README explains why the visible “Furniture in room” panel remains.
-[ ] README explains why there is no duplicate hidden DOM scene graph.
-[ ] README explains scoped keyboard shortcuts.
-[ ] README lists keyboard controls.
-[ ] README explains stable panel order vs camera-relative canvas navigation.
+[x] README explains why the visible “Furniture in room” panel remains.
+[x] README explains why there is no duplicate hidden DOM scene graph.
+[x] README explains scoped keyboard shortcuts.
+[x] README lists keyboard controls.
+[x] README explains stable panel order vs camera-relative canvas navigation.
 [ ] README explains selected-item controls as contextual actions/details.
 [ ] README notes that visual floating placement should not break logical tab order.
 ```

@@ -57,8 +57,13 @@ The repository now uses Playwright for real-browser editor coverage and scripted
 
 Accessibility is an explicit goal for this project, especially for no-mouse editor workflows.
 
-- The editor supports keyboard-first interaction through outliner selection, selected-item inspector controls, and global movement/rotation/history shortcuts.
+- The editor supports keyboard-first interaction through outliner selection, selected-item inspector controls, global movement/rotation/history shortcuts, and canvas keyboard browse (spatial navigation when nothing is selected).
 - Startup, dialog, and editor feedback flows include screen-reader announcement support and deterministic focus transitions for key operations like delete and selection reconciliation.
+- All room-view-specific shortcuts (movement, rotation, deletion, and canvas browse) are scoped to the 3D room view's DOM focus, so keyboard navigation outside the canvas — for example, in the Furniture List panel — does not accidentally trigger object actions.
+- Canvas keyboard browse uses spatial ordering (top-to-bottom, left-to-right by screen projection) so arrow keys follow visual layout rather than an internal list order that may differ from what users see. The visible Furniture List panel deliberately uses its own stable alpha-by-name order to remain predictable as objects move.
+- The Furniture List panel is the primary accessible alternative to direct canvas interaction. It remains visible regardless of selection state so assistive technology users always have a stable text representation of the room contents.
+- There is no duplicate hidden DOM scene graph; the Furniture List panel represents the room for assistive technology.
+- After canvas keyboard selection, announcements include a Tab hint to reach item controls in the Furniture List, so screen reader users know what to do next.
 - Automated accessibility checks run through Playwright + axe in Chromium and currently cover baseline shell/dialog states plus outliner/inspector states.
 - Automated checks are necessary but not sufficient; manual assistive-technology verification remains an ongoing task.
 
@@ -105,7 +110,7 @@ In addition to this README, project-specific guides are available:
 
 ## 🖦 Usage
 
-- Click a furniture item to select it.
+- Click a furniture item to select it, or Tab to the 3D room view and use Arrow keys to browse items spatially without selecting.
 - Wait for the startup loading overlay to finish before interacting with the room.
 - Drag selected furniture along the floor; movement stays within room bounds and avoids collisions.
 - Rotate the selected item with `,` / `.` or the rotate buttons.
@@ -113,6 +118,7 @@ In addition to this README, project-specific guides are available:
 - Remove the selected item from the selection controls or with `Delete` / `Backspace`, then confirm the dialog.
 - You can fully edit without canvas dragging via the outliner and selected-item inspector surfaces.
 - Keyboard movement supports `Arrow` (0.5m), `Shift+Arrow` (1.0m), and `Alt+Arrow` (0.1m).
+- With nothing selected, `Arrow` keys browse items in spatial order, `Home`/`End` jump to first/last, and `Enter` selects the previewed item.
 - Camera controls support held-key orbit/pan/zoom and press-based view presets. See [docs/editor-shortcuts-reference.md](docs/editor-shortcuts-reference.md).
 - If a core furniture asset fails to load at startup, use the retry action from the startup error overlay.
 
