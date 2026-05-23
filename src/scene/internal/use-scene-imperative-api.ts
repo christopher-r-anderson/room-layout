@@ -102,75 +102,62 @@ export function useSceneImperativeApi({
     dragStateRef.current = dragState
   }, [dragState])
 
-  // Apply continuous camera motion based on held-key state
-  try {
-    // useFrame can only be used within R3F Canvas context
-    // In test environments without Canvas, this will throw and we gracefully skip
-    useFrame((_, delta) => {
-      const controls = cameraControlsRef.current
-      if (!controls) {
-        return
-      }
-
-      const keyState = cameraKeyStateRef.current
-      const deltaTime = Math.min(delta, 0.05) // Cap delta to prevent large jumps after frame stalls
-
-      // Camera motion constants tuned for the 6x6 meter room scale.
-      const ROTATION_SPEED = 1.5 // radians per second
-      const TRUCK_SPEED = 3.0 // units per second (pan/strafe)
-      const DOLLY_SPEED = 3.0 // units per second (zoom forward/backward)
-
-      const hasShift = keyState.has('shift')
-
-      // Camera controls: WASD for orbit, Shift+WASD for pan
-      // Orbit (no shift)
-      if (keyState.has('keyW') && !hasShift) {
-        void controls.rotate(0, -ROTATION_SPEED * deltaTime, false)
-      }
-      if (keyState.has('keyS') && !hasShift) {
-        void controls.rotate(0, ROTATION_SPEED * deltaTime, false)
-      }
-      if (keyState.has('keyA') && !hasShift) {
-        void controls.rotate(-ROTATION_SPEED * deltaTime, 0, false)
-      }
-      if (keyState.has('keyD') && !hasShift) {
-        void controls.rotate(ROTATION_SPEED * deltaTime, 0, false)
-      }
-
-      // Pan (Shift+WASD)
-      if (keyState.has('keyW') && hasShift) {
-        void controls.truck(0, -TRUCK_SPEED * deltaTime, false)
-      }
-      if (keyState.has('keyS') && hasShift) {
-        void controls.truck(0, TRUCK_SPEED * deltaTime, false)
-      }
-      if (keyState.has('keyA') && hasShift) {
-        void controls.truck(-TRUCK_SPEED * deltaTime, 0, false)
-      }
-      if (keyState.has('keyD') && hasShift) {
-        void controls.truck(TRUCK_SPEED * deltaTime, 0, false)
-      }
-
-      // Zoom/dolly camera with = and - keys
-      const hasEqual = keyState.has('equal')
-      const hasMinus = keyState.has('minus')
-      if (hasEqual || hasMinus) {
-        const dollyDistance = hasEqual
-          ? DOLLY_SPEED * deltaTime
-          : -DOLLY_SPEED * deltaTime
-        void controls.dolly(dollyDistance, false)
-      }
-    })
-  } catch (error) {
-    // useFrame throws when called outside of R3F Canvas context (e.g., in tests)
-    // Gracefully ignore to allow tests to run without full R3F setup
-    if (
-      !(error instanceof Error) ||
-      !error.message.includes('Hooks can only be used within the Canvas')
-    ) {
-      throw error
+  // Apply continuous camera motion based on held-key state.
+  useFrame((_, delta) => {
+    const controls = cameraControlsRef.current
+    if (!controls) {
+      return
     }
-  }
+
+    const keyState = cameraKeyStateRef.current
+    const deltaTime = Math.min(delta, 0.05) // Cap delta to prevent large jumps after frame stalls
+
+    // Camera motion constants tuned for the 6x6 meter room scale.
+    const ROTATION_SPEED = 1.5 // radians per second
+    const TRUCK_SPEED = 3.0 // units per second (pan/strafe)
+    const DOLLY_SPEED = 3.0 // units per second (zoom forward/backward)
+
+    const hasShift = keyState.has('shift')
+
+    // Camera controls: WASD for orbit, Shift+WASD for pan
+    // Orbit (no shift)
+    if (keyState.has('keyW') && !hasShift) {
+      void controls.rotate(0, -ROTATION_SPEED * deltaTime, false)
+    }
+    if (keyState.has('keyS') && !hasShift) {
+      void controls.rotate(0, ROTATION_SPEED * deltaTime, false)
+    }
+    if (keyState.has('keyA') && !hasShift) {
+      void controls.rotate(-ROTATION_SPEED * deltaTime, 0, false)
+    }
+    if (keyState.has('keyD') && !hasShift) {
+      void controls.rotate(ROTATION_SPEED * deltaTime, 0, false)
+    }
+
+    // Pan (Shift+WASD)
+    if (keyState.has('keyW') && hasShift) {
+      void controls.truck(0, -TRUCK_SPEED * deltaTime, false)
+    }
+    if (keyState.has('keyS') && hasShift) {
+      void controls.truck(0, TRUCK_SPEED * deltaTime, false)
+    }
+    if (keyState.has('keyA') && hasShift) {
+      void controls.truck(-TRUCK_SPEED * deltaTime, 0, false)
+    }
+    if (keyState.has('keyD') && hasShift) {
+      void controls.truck(TRUCK_SPEED * deltaTime, 0, false)
+    }
+
+    // Zoom/dolly camera with = and - keys
+    const hasEqual = keyState.has('equal')
+    const hasMinus = keyState.has('minus')
+    if (hasEqual || hasMinus) {
+      const dollyDistance = hasEqual
+        ? DOLLY_SPEED * deltaTime
+        : -DOLLY_SPEED * deltaTime
+      void controls.dolly(dollyDistance, false)
+    }
+  })
 
   useImperativeHandle(
     ref,

@@ -1,11 +1,13 @@
 import { expect, test, type Locator, type Page } from '@playwright/test'
 import {
   addFurniture,
+  focusRoomView,
   openEditor,
   readSceneState,
   selectFurnitureById,
   waitForFirstItemRotationY,
   waitForItemCount,
+  waitForPoliteAnnouncement,
 } from './support/editor-harness'
 
 const ROTATION_STEP_RADIANS = Math.PI / 12
@@ -167,7 +169,8 @@ test('applies keyboard shortcuts for rotate, history, and delete confirmation', 
   await page.keyboard.press('Escape')
   await expect(pickerSheet).toBeHidden()
 
-  await page.locator('body').press('.')
+  await focusRoomView(page)
+  await page.keyboard.press('.')
   const afterRotate = await waitForFirstItemRotationY(
     page,
     NORMALIZED_RIGHT_ROTATION_RADIANS,
@@ -175,30 +178,30 @@ test('applies keyboard shortcuts for rotate, history, and delete confirmation', 
   )
   expect(afterRotate.selectedName).toBe('Leather Couch')
 
-  await page.locator('body').press('Control+z')
+  await page.keyboard.press('Control+z')
   await waitForFirstItemRotationY(page, initialItem.rotationY)
 
   const afterUndo = await readSceneState(page)
   expect(afterUndo.itemCount).toBe(1)
   expect(afterUndo.selectedName).toBe('Leather Couch')
 
-  await page.locator('body').press('Control+y')
+  await page.keyboard.press('Control+y')
   await waitForFirstItemRotationY(page, NORMALIZED_RIGHT_ROTATION_RADIANS, 6)
 
-  await page.locator('body').press('Delete')
+  await page.keyboard.press('Delete')
   const deleteDialog = page.getByRole('alertdialog', {
     name: /delete furniture/i,
   })
   await expect(deleteDialog).toBeVisible()
 
-  await page.locator('body').press('Control+z')
+  await page.keyboard.press('Control+z')
   await waitForFirstItemRotationY(page, NORMALIZED_RIGHT_ROTATION_RADIANS, 6)
   await expect(deleteDialog).toBeVisible()
 
   await deleteDialog.getByRole('button', { name: 'Delete' }).click()
   await waitForItemCount(page, 0)
 
-  await page.locator('body').press('Control+z')
+  await page.keyboard.press('Control+z')
   await waitForItemCount(page, 1)
 
   const afterRestore = await readSceneState(page)
@@ -207,7 +210,7 @@ test('applies keyboard shortcuts for rotate, history, and delete confirmation', 
     6,
   )
 
-  await page.locator('body').press('Control+n')
+  await page.keyboard.press('Control+n')
   const newSceneDialog = page.getByRole('alertdialog', {
     name: /start over with a new scene/i,
   })
@@ -218,7 +221,7 @@ test('applies keyboard shortcuts for rotate, history, and delete confirmation', 
   expect(afterNewScene.floorFinishId).toBe('wood-floor')
   expect(afterNewScene.wallFinishId).toBe('light-gray')
 
-  await page.locator('body').press('Control+n')
+  await page.keyboard.press('Control+n')
   await expect(
     page.getByRole('alertdialog', { name: /start over with a new scene/i }),
   ).toBeHidden()
@@ -277,6 +280,7 @@ test('camera motion with WASD orbits when no selection', async ({ page }) => {
   expect(initialState.itemCount).toBe(0)
   const initialCameraPosition = initialState.cameraPosition
 
+  await focusRoomView(page)
   // Hold W for camera orbit
   await holdKeyUntilCameraMoves(page, 'KeyW', initialCameraPosition)
 
@@ -293,6 +297,7 @@ test('camera motion with Shift+WASD pans camera', async ({ page }) => {
   const initialState = await addFurniture(page, 'Leather Couch')
   const initialCameraPosition = initialState.cameraPosition
 
+  await focusRoomView(page)
   // Hold Shift+W key for pan motion
   await page.keyboard.down('Shift')
   await holdKeyUntilCameraMoves(page, 'KeyW', initialCameraPosition)
@@ -311,6 +316,7 @@ test('camera motion with = and - keys zooms camera', async ({ page }) => {
   const initialState = await addFurniture(page, 'Leather Couch')
   const initialCameraPosition = initialState.cameraPosition
 
+  await focusRoomView(page)
   // Hold = key for zoom in
   await holdKeyUntilCameraMoves(page, 'Equal', initialCameraPosition)
 
@@ -329,6 +335,7 @@ test('camera preset shortcuts 1/2/3/4 reposition the camera', async ({
   page,
 }) => {
   await openEditor(page)
+  await focusRoomView(page)
 
   const initialState = await readSceneState(page)
   await holdKeyUntilCameraMoves(page, 'KeyW', initialState.cameraPosition)
@@ -374,6 +381,8 @@ test('arrow keys move selected object and do not move the camera', async ({
 
   // Select the furniture using canvas interaction
   await selectFurnitureById(page, furnitureId)
+  // Ensure room view has focus before pressing arrow keys
+  await focusRoomView(page)
 
   // Move the furniture left using arrow keys
   for (let i = 0; i < 3; i++) {
@@ -417,6 +426,7 @@ test('WASD is suppressed in modal dialogs but enabled in the editor', async ({
   const afterAdd = await addFurniture(page, 'Leather Couch')
   const cameraPositionAfterDialog = afterAdd.cameraPosition
 
+  await focusRoomView(page)
   // Hold Shift+W for pan
   await page.keyboard.down('Shift')
   await holdKeyUntilCameraMoves(page, 'KeyW', cameraPositionAfterDialog)
@@ -427,4 +437,81 @@ test('WASD is suppressed in modal dialogs but enabled in the editor', async ({
   expect(
     cameraDistance(cameraPositionAfterDialog, afterWMotion.cameraPosition),
   ).toBeGreaterThan(0.2)
+})
+
+test('canvas browse: arrow keys cycle preview when nothing is selected, Enter selects previewed item', async ({
+  page,
+}) => {
+  await openEditor(page)
+
+  // Add two items so there is something to browse through
+  await addFurniture(page, 'Leather Couch')
+  const state2 = await addFurniture(page, 'End Table')
+  expect(state2.itemCount).toBe(2)
+
+  const itemIds = state2.items.map((i) => i.id)
+
+  // Deselect so canvas browse mode is active (ArrowRight browses, not moves)
+  await focusRoomView(page)
+  await page.keyboard.press('Escape')
+
+  const deselectedState = await readSceneState(page)
+  expect(deselectedState.selectedId).toBeNull()
+
+  // Nothing selected, room view focused — ArrowRight should preview the first item
+  await page.keyboard.press('ArrowRight')
+
+  const afterFirstRight = await readSceneState(page)
+  expect(afterFirstRight.selectedId).toBeNull()
+  expect(afterFirstRight.previewedId).not.toBeNull()
+  const firstPreviewId = afterFirstRight.previewedId
+
+  // A second ArrowRight should advance to the next item (or wrap)
+  await page.keyboard.press('ArrowRight')
+  const afterSecondRight = await readSceneState(page)
+  expect(afterSecondRight.selectedId).toBeNull()
+  expect(afterSecondRight.previewedId).not.toBeNull()
+  // The preview should have cycled to a valid item
+  const secondPreviewId = afterSecondRight.previewedId
+  expect(itemIds).toContain(firstPreviewId)
+  expect(itemIds).toContain(secondPreviewId)
+
+  // Home should go to the first item in spatial order
+  await page.keyboard.press('Home')
+  const afterHome = await readSceneState(page)
+  expect(afterHome.selectedId).toBeNull()
+  expect(afterHome.previewedId).not.toBeNull()
+
+  // Enter should select the currently previewed item
+  await page.keyboard.press('Enter')
+  const afterEnter = await readSceneState(page)
+  expect(afterEnter.selectedId).toBe(afterHome.previewedId)
+  expect(afterEnter.previewedId).toBeNull()
+})
+
+test('canvas browse: announces item name and then selection with Tab hint', async ({
+  page,
+}) => {
+  await openEditor(page)
+  const state = await addFurniture(page, 'Leather Couch')
+  expect(state.itemCount).toBe(1)
+
+  // Deselect so canvas browse mode is active (ArrowRight browses, not moves)
+  await focusRoomView(page)
+  await page.keyboard.press('Escape')
+
+  // First ArrowRight should preview the item and announce its name
+  await page.keyboard.press('ArrowRight')
+  const itemName = state.items[0].name
+  await waitForPoliteAnnouncement(page, itemName)
+
+  // Enter should select and announce with Tab hint
+  await page.keyboard.press('Enter')
+  await waitForPoliteAnnouncement(
+    page,
+    `${itemName} selected. Press Tab to reach item controls in the Furniture List.`,
+  )
+
+  const afterSelect = await readSceneState(page)
+  expect(afterSelect.selectedId).toBe(state.items[0].id)
 })

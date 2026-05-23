@@ -23,6 +23,31 @@ Each shortcut runs through three phases:
 
 This allows browser-native combos (for example Ctrl+N) to be suppressed while still blocking app execution in contexts like text input.
 
+### Room-View Focus Scoping
+
+Room-view-scoped shortcuts require the 3D room view to have DOM focus before they can execute. In the current implementation, that includes object movement, rotation, deletion, clear-selection (`Escape`), canvas browse, and camera preset keys. This gating is controlled by `requiresRoomViewFocus` in `useKeyboardShortcuts`.
+
+The 3D room view is a focusable room-view wrapper element with `tabIndex={0}` and visible focus styling. Clicking the canvas or pressing Tab to it acquires focus.
+
+Focus state is tracked as `roomViewHasFocus`, and `ShortcutContext` includes that field so shortcut execution can apply room-view focus rules consistently.
+
+Global shortcuts (Undo, Redo, New Scene) remain active regardless of room-view focus.
+
+### Canvas Browse and Dual-Purpose Arrow Keys
+
+Arrow keys serve two roles depending on selection state:
+
+- **With selection:** Arrow keys move the selected item (move-\* shortcuts).
+- **Without selection:** Arrow keys preview the next/previous item in spatial order (canvas-browse-\* shortcuts).
+
+This dual-purpose dispatch works via shortcut loop fallthrough:
+
+- `move-*` shortcuts use `suppressionMode: 'on-execute'` and `requiresSelection: true`.
+- When no selection exists, the move shortcut matches but cannot execute — it falls through.
+- `canvas-browse-*` shortcuts are defined after move-\* shortcuts and only fire when `hasSelection` is false.
+
+Home, End, Enter, and Space are canvas-browse-only (no selection) shortcuts.
+
 ### ShortcutDefinition Fields
 
 - **id:** Identifier for the shortcut definition.

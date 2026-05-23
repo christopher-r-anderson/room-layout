@@ -222,6 +222,14 @@ export async function expectSceneFlags(
   return state
 }
 
+export async function focusRoomView(page: Page) {
+  const roomView = page.getByRole('region', {
+    name: 'Interactive 3D room editor',
+  })
+  await roomView.focus()
+  await expect(roomView).toBeFocused()
+}
+
 export async function addFurniture(page: Page, name = 'Leather Couch') {
   const initialState = await readSceneState(page)
   const pickerTrigger = page.getByRole('button', { name: 'Add Furniture' })

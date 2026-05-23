@@ -19,9 +19,16 @@ describe('KeyboardShortcutsHelp', () => {
       screen.getByRole('heading', { name: 'Keyboard Shortcuts' }),
     ).toBeVisible()
     expect(screen.getByRole('table')).toBeVisible()
+    expect(screen.getByText('Preview next item')).toBeVisible()
+    expect(screen.getByText('Select previewed item')).toBeVisible()
     expect(screen.getByText('Nudge (0.5 m)')).toBeVisible()
     expect(screen.getByText('Clear')).toBeVisible()
     expect(screen.getByText('New Scene')).toBeVisible()
+    expect(
+      screen.getByText(
+        /Most shortcuts below work only while the 3D room view is focused/i,
+      ),
+    ).toBeVisible()
 
     await user.click(screen.getByRole('button', { name: 'Dismiss' }))
 
