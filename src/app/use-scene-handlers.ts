@@ -479,12 +479,24 @@ export function useSceneHandlers({
 
   const handleSelectById = useCallback(
     (id: string | null, source?: InteractionSource): SelectByIdResult => {
-      if (source) {
-        pendingSelectionSourceRef.current = source
-        setSelectedSource(source)
-      }
+      const selectionWillChange = sceneReadModel.selectedId !== id
       const result = selectById(id)
       clearEditorMessage()
+
+      if (source) {
+        if (result.ok) {
+          if (selectionWillChange) {
+            pendingSelectionSourceRef.current = source
+          } else {
+            pendingSelectionSourceRef.current = null
+          }
+
+          setSelectedSource(source)
+        } else {
+          pendingSelectionSourceRef.current = null
+        }
+      }
+
       if (source === 'canvas-keyboard') {
         const freshReadModel = syncSceneReadModel({
           requestOutlinerFocus: false,
@@ -506,6 +518,7 @@ export function useSceneHandlers({
       return result
     },
     [
+      sceneReadModel.selectedId,
       selectById,
       clearEditorMessage,
       setSelectedSource,
@@ -715,6 +728,8 @@ export function useSceneHandlers({
       }
 
       const newId = item?.id ?? null
+      const pendingSource = pendingSelectionSourceRef.current
+      pendingSelectionSourceRef.current = null
 
       // Only update selectedSource when the selection identity changes.
       // This guard is necessary because onSelectionChange also fires when the
@@ -725,8 +740,7 @@ export function useSceneHandlers({
         // If the selection was triggered programmatically (handleSelectById),
         // pendingSelectionSourceRef carries the intended source. Otherwise this
         // is a canvas-pointer selection (user clicked a mesh directly).
-        const source = pendingSelectionSourceRef.current ?? 'canvas-pointer'
-        pendingSelectionSourceRef.current = null
+        const source = pendingSource ?? 'canvas-pointer'
         setSelectedSource(source)
       }
 
