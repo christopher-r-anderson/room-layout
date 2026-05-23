@@ -112,13 +112,14 @@ describe('useSceneHandlers', () => {
       pendingDeleteFurniture: null,
     }
 
+    const setSelectedSource = vi.fn()
     const mockOverlayState = {
       clearPreview: vi.fn(),
       clearEditorMessage: vi.fn(),
       setEditorMessage: vi.fn(),
       handleHistoryChange: vi.fn(),
       selectedSource: null,
-      setSelectedSource: vi.fn(),
+      setSelectedSource,
       selectedFurniture: null,
       sceneReadModel: { items: [], selectedId: null },
     }
@@ -154,10 +155,12 @@ describe('useSceneHandlers', () => {
 
     act(() => {
       result.current.handleAddFurniture()
+      result.current.handleSceneSelectionChange(makeItem('1'))
     })
 
     expect(mockCommands.addFurniture).toHaveBeenCalled()
     expect(mockSync.syncSceneReadModel).toHaveBeenCalled()
+    expect(setSelectedSource).toHaveBeenLastCalledWith('toolbar')
     expect(mockAnnouncements.announcePolite).toHaveBeenCalledWith(
       'Chair added to room.',
     )
@@ -264,7 +267,7 @@ describe('useSceneHandlers', () => {
     rotationY: 0,
   })
 
-  it('sets selectedSource to canvas-pointer when handleSceneSelectionChange fires without a programmatic source', () => {
+  it('sets selectedSource to canvas-pointer for canvas pointer selections', () => {
     const mockCommands = {
       addFurniture: vi.fn(),
       clearSelection: vi.fn(),
@@ -342,10 +345,11 @@ describe('useSceneHandlers', () => {
     )
 
     act(() => {
+      result.current.handleCanvasPointerSelection()
       result.current.handleSceneSelectionChange(makeItem('item-1'))
     })
 
-    expect(setSelectedSource).toHaveBeenCalledWith('canvas-pointer')
+    expect(setSelectedSource).toHaveBeenLastCalledWith('canvas-pointer')
   })
 
   it('does not update selectedSource when handleSceneSelectionChange fires with same item id (e.g. position update)', () => {
@@ -425,11 +429,11 @@ describe('useSceneHandlers', () => {
       }),
     )
 
-    // First call with item-1 (id changes null → item-1, so source updates)
     act(() => {
+      result.current.handleCanvasPointerSelection()
       result.current.handleSceneSelectionChange(makeItem('item-1'))
     })
-    expect(setSelectedSource).toHaveBeenCalledTimes(1)
+    expect(setSelectedSource).toHaveBeenCalledTimes(2)
 
     setSelectedSource.mockClear()
 
@@ -440,6 +444,96 @@ describe('useSceneHandlers', () => {
 
     // No additional setSelectedSource call should have happened
     expect(setSelectedSource).not.toHaveBeenCalled()
+  })
+
+  it('clears selectedSource when handleSceneSelectionChange clears selection', () => {
+    const mockCommands = {
+      addFurniture: vi.fn(),
+      clearSelection: vi.fn(),
+      confirmDeleteSelection: vi.fn(),
+      focusSelected: vi.fn(),
+      moveSelection: vi.fn(),
+      redo: vi.fn(),
+      rotateSelection: vi.fn(),
+      selectById: vi.fn(),
+      setCameraPreset: vi.fn(),
+      undo: vi.fn(),
+    }
+
+    const mockSync = {
+      syncSceneReadModel: vi.fn(() => ({ items: [], selectedId: null })),
+      requestOutlinerFocusByIndex: vi.fn(),
+      focusRoomView: vi.fn(),
+    }
+
+    const mockAnnouncements = {
+      announcePolite: vi.fn(),
+      announceAssertive: vi.fn(),
+      clearAssertiveAnnouncement: vi.fn(),
+      queueMovementAnnouncement: vi.fn(),
+    }
+
+    const mockDialogState = {
+      closeDialog: vi.fn(),
+      closeAllDialogs: vi.fn(),
+      openDelete: vi.fn(),
+      openNewScene: vi.fn(),
+      setCatalogOpen: vi.fn(),
+      pendingDeleteFurniture: null,
+    }
+
+    const setSelectedSource = vi.fn()
+    const mockOverlayState = {
+      clearPreview: vi.fn(),
+      clearEditorMessage: vi.fn(),
+      setEditorMessage: vi.fn(),
+      handleHistoryChange: vi.fn(),
+      selectedSource: 'canvas-pointer' as const,
+      setSelectedSource,
+      selectedFurniture: makeItem('item-1'),
+      sceneReadModel: { items: [makeItem('item-1')], selectedId: 'item-1' },
+    }
+
+    const mockStartup = {
+      activeFloorFinishId: '',
+      activeWallFinishId: '',
+      catalog: [],
+      defaultFloorFinishId: 'wood-floor',
+      defaultWallFinishId: 'light-gray',
+      editorInteractionsEnabled: true,
+      floorFinishIds: [],
+      handleAssetError: vi.fn(),
+      handleAssetsReady: vi.fn(),
+      retryAssetLoading: vi.fn(),
+      resetEditorShellState: vi.fn(),
+      restoreInitialLayout: vi.fn(),
+      setFloorFinishId: vi.fn(),
+      setWallFinishId: vi.fn(),
+      wallFinishIds: [],
+    }
+
+    const { result } = renderHook(() =>
+      useSceneHandlers({
+        commands: mockCommands,
+        sync: mockSync,
+        announcements: mockAnnouncements,
+        dialogState: mockDialogState,
+        overlayState: mockOverlayState,
+        startup: mockStartup,
+      }),
+    )
+
+    act(() => {
+      result.current.handleCanvasPointerSelection()
+      result.current.handleSceneSelectionChange(makeItem('item-1'))
+    })
+    setSelectedSource.mockClear()
+
+    act(() => {
+      result.current.handleSceneSelectionChange(null)
+    })
+
+    expect(setSelectedSource).toHaveBeenCalledWith(null)
   })
 
   it('preserves programmatic selectedSource when handleSelectById fires before handleSceneSelectionChange', () => {
@@ -618,10 +712,15 @@ describe('useSceneHandlers', () => {
 
     act(() => {
       result.current.handleSelectById('missing-id', 'panel-pointer')
+    })
+    setSelectedSource.mockClear()
+
+    act(() => {
+      result.current.handleCanvasPointerSelection()
       result.current.handleSceneSelectionChange(makeItem('item-1'))
     })
 
-    expect(setSelectedSource).toHaveBeenCalledTimes(1)
+    expect(setSelectedSource).toHaveBeenCalledTimes(2)
     expect(setSelectedSource).toHaveBeenLastCalledWith('canvas-pointer')
   })
 
@@ -706,17 +805,17 @@ describe('useSceneHandlers', () => {
     )
 
     act(() => {
-      result.current.handleSceneSelectionChange(makeItem('item-1'))
+      result.current.handleSelectById('item-1', 'panel-pointer')
     })
     setSelectedSource.mockClear()
 
     act(() => {
-      result.current.handleSelectById('item-1', 'panel-pointer')
+      result.current.handleCanvasPointerSelection()
       result.current.handleSceneSelectionChange(makeItem('item-2'))
     })
 
-    expect(setSelectedSource).toHaveBeenNthCalledWith(1, 'panel-pointer')
-    expect(setSelectedSource).toHaveBeenNthCalledWith(2, 'canvas-pointer')
+    expect(setSelectedSource).toHaveBeenCalledTimes(2)
+    expect(setSelectedSource).toHaveBeenLastCalledWith('canvas-pointer')
   })
 })
 

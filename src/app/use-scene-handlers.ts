@@ -123,6 +123,7 @@ interface UseSceneHandlersOptions {
 
 interface SceneHandlers {
   handleAddFurniture: () => boolean
+  handleCanvasPointerSelection: () => void
   handleFocusSelected: () => void
   handleSelectById: (
     id: string | null,
@@ -459,6 +460,14 @@ export function useSceneHandlers({
   const handleAddFurniture = useCallback(() => {
     clearEditorMessage()
     const added = addFurniture()
+
+    if (added) {
+      pendingSelectionSourceRef.current = 'toolbar'
+      setSelectedSource('toolbar')
+    } else {
+      pendingSelectionSourceRef.current = null
+    }
+
     const nextReadModel = syncSceneReadModel({
       announceSelectionChange: false,
       requestOutlinerFocus: false,
@@ -475,7 +484,22 @@ export function useSceneHandlers({
     }
 
     return added
-  }, [addFurniture, clearEditorMessage, syncSceneReadModel, announcePolite])
+  }, [
+    addFurniture,
+    clearEditorMessage,
+    syncSceneReadModel,
+    announcePolite,
+    setSelectedSource,
+  ])
+
+  const handleCanvasPointerSelection = useCallback(() => {
+    if (!editorInteractionsEnabled) {
+      return
+    }
+
+    pendingSelectionSourceRef.current = 'canvas-pointer'
+    setSelectedSource('canvas-pointer')
+  }, [editorInteractionsEnabled, setSelectedSource])
 
   const handleSelectById = useCallback(
     (id: string | null, source?: InteractionSource): SelectByIdResult => {
@@ -737,10 +761,7 @@ export function useSceneHandlers({
       // clobber the source that was set during the original selection event.
       if (newId !== previousHandlerSelectedIdRef.current) {
         previousHandlerSelectedIdRef.current = newId
-        // If the selection was triggered programmatically (handleSelectById),
-        // pendingSelectionSourceRef carries the intended source. Otherwise this
-        // is a canvas-pointer selection (user clicked a mesh directly).
-        const source = pendingSource ?? 'canvas-pointer'
+        const source = newId === null ? null : pendingSource
         setSelectedSource(source)
       }
 
@@ -951,6 +972,7 @@ export function useSceneHandlers({
 
   return {
     handleAddFurniture,
+    handleCanvasPointerSelection,
     handleFocusSelected,
     handleSelectById,
     handleMoveSelection,

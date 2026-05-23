@@ -471,7 +471,7 @@ function App() {
     },
     onClearSelection: () => {
       handlers.handleClearSelection()
-      handleCanvasKeyboardPreviewChange(null)
+      clearPreviewOnCanvasMiss()
     },
     onRotate: handlers.handleRotateSelection,
     onSetCameraPreset: handlers.handleSetCameraPreset,
@@ -543,6 +543,9 @@ function App() {
                   renderQuality={isE2ELowRenderQuality ? 'e2e-low' : 'default'}
                   catalog={startup.catalog}
                   collections={startup.collections}
+                  onCanvasPointerSelection={
+                    handlers.handleCanvasPointerSelection
+                  }
                   onSelectionChange={handlers.handleSceneSelectionChange}
                   onHistoryChange={handlers.handleSceneHistoryChange}
                   onAssetsReady={handlers.handleSceneAssetsReady}
