@@ -143,7 +143,7 @@ interface SceneHandlers {
   handleOpenNewSceneDialog: () => void
   handleConfirmNewScene: () => void
   handleSceneHistoryChange: (availability: HistoryAvailability) => void
-  handleSceneSelectionChange: () => void
+  handleSceneSelectionChange: (item: FurnitureItem | null) => void
   handleSceneAssetError: (error: Error) => void
   handleSceneAssetsReady: () => void
   handleRetryAssetLoading: () => void
@@ -445,6 +445,17 @@ export function useSceneHandlers({
   const restoreOutcomeRef = useRef<RestoreOutcome | null>(null)
   const restoreAttemptCountRef = useRef(0)
 
+  // When selection is triggered programmatically (e.g. handleSelectById), this
+  // ref is set to the intended source BEFORE the scene mutation fires, so that
+  // the resulting onSelectionChange callback can read the right source instead
+  // of defaulting to 'canvas-pointer'.
+  const pendingSelectionSourceRef = useRef<InteractionSource>(null)
+
+  // Tracks the last selected ID seen by handleSceneSelectionChange so we can
+  // distinguish a real selection-change event from a re-fire caused by a
+  // reference change to the same selected item (e.g. position updates).
+  const previousHandlerSelectedIdRef = useRef<string | null>(null)
+
   const handleAddFurniture = useCallback(() => {
     clearEditorMessage()
     const added = addFurniture()
@@ -469,17 +480,18 @@ export function useSceneHandlers({
   const handleSelectById = useCallback(
     (id: string | null, source?: InteractionSource): SelectByIdResult => {
       if (source) {
+        pendingSelectionSourceRef.current = source
         setSelectedSource(source)
       }
       const result = selectById(id)
       clearEditorMessage()
       if (source === 'canvas-keyboard') {
-        syncSceneReadModel({
+        const freshReadModel = syncSceneReadModel({
           requestOutlinerFocus: false,
           announceSelectionChange: false,
         })
         if (result.ok && result.status === 'selected' && id) {
-          const item = sceneReadModel.items.find((i) => i.id === id)
+          const item = freshReadModel?.items.find((i) => i.id === id)
           if (item) {
             announcePolite(
               `${item.name} selected. Press Tab to reach item controls in the Furniture List.`,
@@ -498,7 +510,6 @@ export function useSceneHandlers({
       clearEditorMessage,
       setSelectedSource,
       syncSceneReadModel,
-      sceneReadModel,
       announcePolite,
     ],
   )
@@ -697,13 +708,32 @@ export function useSceneHandlers({
     [editorInteractionsEnabled, handleHistoryChange, syncSceneReadModel],
   )
 
-  const handleSceneSelectionChange = useCallback(() => {
-    if (!editorInteractionsEnabled) {
-      return
-    }
+  const handleSceneSelectionChange = useCallback(
+    (item: FurnitureItem | null) => {
+      if (!editorInteractionsEnabled) {
+        return
+      }
 
-    syncSceneReadModel({ requestOutlinerFocus: false })
-  }, [editorInteractionsEnabled, syncSceneReadModel])
+      const newId = item?.id ?? null
+
+      // Only update selectedSource when the selection identity changes.
+      // This guard is necessary because onSelectionChange also fires when the
+      // selected item's properties change (e.g. after a move), and we must not
+      // clobber the source that was set during the original selection event.
+      if (newId !== previousHandlerSelectedIdRef.current) {
+        previousHandlerSelectedIdRef.current = newId
+        // If the selection was triggered programmatically (handleSelectById),
+        // pendingSelectionSourceRef carries the intended source. Otherwise this
+        // is a canvas-pointer selection (user clicked a mesh directly).
+        const source = pendingSelectionSourceRef.current ?? 'canvas-pointer'
+        pendingSelectionSourceRef.current = null
+        setSelectedSource(source)
+      }
+
+      syncSceneReadModel({ requestOutlinerFocus: false })
+    },
+    [editorInteractionsEnabled, setSelectedSource, syncSceneReadModel],
+  )
 
   const handleSceneAssetError = useCallback(
     (error: Error) => {

@@ -408,7 +408,6 @@ export function useKeyboardShortcuts({
       id: 'clear-selection',
       match: { key: 'Escape' },
       requiresRoomViewFocus: true,
-      requiresSelection: true,
       suppressionMode: 'on-execute',
       execute: onClearSelection,
     },

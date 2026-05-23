@@ -469,7 +469,10 @@ function App() {
     onMoveSelection: (delta) => {
       handlers.handleMoveSelection(delta, { source: 'keyboard' })
     },
-    onClearSelection: handlers.handleClearSelection,
+    onClearSelection: () => {
+      handlers.handleClearSelection()
+      handleCanvasKeyboardPreviewChange(null)
+    },
     onRotate: handlers.handleRotateSelection,
     onSetCameraPreset: handlers.handleSetCameraPreset,
     onCanvasBrowse: handleCanvasBrowse,

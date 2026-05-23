@@ -250,6 +250,289 @@ describe('useSceneHandlers', () => {
     expect(mockCommands.setCameraPreset).toHaveBeenCalledWith('top')
     expect(mockCommands.focusSelected).toHaveBeenCalledOnce()
   })
+
+  const makeItem = (id: string) => ({
+    id,
+    catalogId: 'test',
+    name: 'Test Item',
+    kind: 'armchair' as const,
+    collectionId: 'test',
+    nodeName: 'test',
+    sourcePath: 'test',
+    footprintSize: { width: 1, depth: 1 },
+    position: [0, 0, 0] as [number, number, number],
+    rotationY: 0,
+  })
+
+  it('sets selectedSource to canvas-pointer when handleSceneSelectionChange fires without a programmatic source', () => {
+    const mockCommands = {
+      addFurniture: vi.fn(),
+      clearSelection: vi.fn(),
+      confirmDeleteSelection: vi.fn(),
+      focusSelected: vi.fn(),
+      moveSelection: vi.fn(),
+      redo: vi.fn(),
+      rotateSelection: vi.fn(),
+      selectById: vi.fn(),
+      setCameraPreset: vi.fn(),
+      undo: vi.fn(),
+    }
+
+    const mockSync = {
+      syncSceneReadModel: vi.fn(() => ({ items: [], selectedId: null })),
+      requestOutlinerFocusByIndex: vi.fn(),
+      focusRoomView: vi.fn(),
+    }
+
+    const mockAnnouncements = {
+      announcePolite: vi.fn(),
+      announceAssertive: vi.fn(),
+      clearAssertiveAnnouncement: vi.fn(),
+      queueMovementAnnouncement: vi.fn(),
+    }
+
+    const mockDialogState = {
+      closeDialog: vi.fn(),
+      closeAllDialogs: vi.fn(),
+      openDelete: vi.fn(),
+      openNewScene: vi.fn(),
+      setCatalogOpen: vi.fn(),
+      pendingDeleteFurniture: null,
+    }
+
+    const setSelectedSource = vi.fn()
+    const mockOverlayState = {
+      clearPreview: vi.fn(),
+      clearEditorMessage: vi.fn(),
+      setEditorMessage: vi.fn(),
+      handleHistoryChange: vi.fn(),
+      selectedSource: null,
+      setSelectedSource,
+      selectedFurniture: null,
+      sceneReadModel: { items: [], selectedId: null },
+    }
+
+    const mockStartup = {
+      activeFloorFinishId: '',
+      activeWallFinishId: '',
+      catalog: [],
+      defaultFloorFinishId: 'wood-floor',
+      defaultWallFinishId: 'light-gray',
+      editorInteractionsEnabled: true,
+      floorFinishIds: [],
+      handleAssetError: vi.fn(),
+      handleAssetsReady: vi.fn(),
+      retryAssetLoading: vi.fn(),
+      resetEditorShellState: vi.fn(),
+      restoreInitialLayout: vi.fn(),
+      setFloorFinishId: vi.fn(),
+      setWallFinishId: vi.fn(),
+      wallFinishIds: [],
+    }
+
+    const { result } = renderHook(() =>
+      useSceneHandlers({
+        commands: mockCommands,
+        sync: mockSync,
+        announcements: mockAnnouncements,
+        dialogState: mockDialogState,
+        overlayState: mockOverlayState,
+        startup: mockStartup,
+      }),
+    )
+
+    act(() => {
+      result.current.handleSceneSelectionChange(makeItem('item-1'))
+    })
+
+    expect(setSelectedSource).toHaveBeenCalledWith('canvas-pointer')
+  })
+
+  it('does not update selectedSource when handleSceneSelectionChange fires with same item id (e.g. position update)', () => {
+    const mockCommands = {
+      addFurniture: vi.fn(),
+      clearSelection: vi.fn(),
+      confirmDeleteSelection: vi.fn(),
+      focusSelected: vi.fn(),
+      moveSelection: vi.fn(),
+      redo: vi.fn(),
+      rotateSelection: vi.fn(),
+      selectById: vi.fn(),
+      setCameraPreset: vi.fn(),
+      undo: vi.fn(),
+    }
+
+    const mockSync = {
+      syncSceneReadModel: vi.fn(() => ({ items: [], selectedId: null })),
+      requestOutlinerFocusByIndex: vi.fn(),
+      focusRoomView: vi.fn(),
+    }
+
+    const mockAnnouncements = {
+      announcePolite: vi.fn(),
+      announceAssertive: vi.fn(),
+      clearAssertiveAnnouncement: vi.fn(),
+      queueMovementAnnouncement: vi.fn(),
+    }
+
+    const mockDialogState = {
+      closeDialog: vi.fn(),
+      closeAllDialogs: vi.fn(),
+      openDelete: vi.fn(),
+      openNewScene: vi.fn(),
+      setCatalogOpen: vi.fn(),
+      pendingDeleteFurniture: null,
+    }
+
+    const setSelectedSource = vi.fn()
+    const mockOverlayState = {
+      clearPreview: vi.fn(),
+      clearEditorMessage: vi.fn(),
+      setEditorMessage: vi.fn(),
+      handleHistoryChange: vi.fn(),
+      selectedSource: null,
+      setSelectedSource,
+      selectedFurniture: null,
+      sceneReadModel: { items: [], selectedId: null },
+    }
+
+    const mockStartup = {
+      activeFloorFinishId: '',
+      activeWallFinishId: '',
+      catalog: [],
+      defaultFloorFinishId: 'wood-floor',
+      defaultWallFinishId: 'light-gray',
+      editorInteractionsEnabled: true,
+      floorFinishIds: [],
+      handleAssetError: vi.fn(),
+      handleAssetsReady: vi.fn(),
+      retryAssetLoading: vi.fn(),
+      resetEditorShellState: vi.fn(),
+      restoreInitialLayout: vi.fn(),
+      setFloorFinishId: vi.fn(),
+      setWallFinishId: vi.fn(),
+      wallFinishIds: [],
+    }
+
+    const { result } = renderHook(() =>
+      useSceneHandlers({
+        commands: mockCommands,
+        sync: mockSync,
+        announcements: mockAnnouncements,
+        dialogState: mockDialogState,
+        overlayState: mockOverlayState,
+        startup: mockStartup,
+      }),
+    )
+
+    // First call with item-1 (id changes null → item-1, so source updates)
+    act(() => {
+      result.current.handleSceneSelectionChange(makeItem('item-1'))
+    })
+    const callsAfterFirst = setSelectedSource.mock.calls.length
+
+    setSelectedSource.mockClear()
+
+    // Second call with a different object but same id (simulates position update)
+    act(() => {
+      result.current.handleSceneSelectionChange(makeItem('item-1'))
+    })
+
+    // No additional setSelectedSource call should have happened
+    expect(setSelectedSource).not.toHaveBeenCalled()
+    void callsAfterFirst
+  })
+
+  it('preserves programmatic selectedSource when handleSelectById fires before handleSceneSelectionChange', () => {
+    const mockCommands = {
+      addFurniture: vi.fn(),
+      clearSelection: vi.fn(),
+      confirmDeleteSelection: vi.fn(),
+      focusSelected: vi.fn(),
+      moveSelection: vi.fn(),
+      redo: vi.fn(),
+      rotateSelection: vi.fn(),
+      selectById: vi.fn(() => ({ ok: true as const, status: 'selected' as const })),
+      setCameraPreset: vi.fn(),
+      undo: vi.fn(),
+    }
+
+    const mockSync = {
+      syncSceneReadModel: vi.fn(() => ({ items: [], selectedId: null })),
+      requestOutlinerFocusByIndex: vi.fn(),
+      focusRoomView: vi.fn(),
+    }
+
+    const mockAnnouncements = {
+      announcePolite: vi.fn(),
+      announceAssertive: vi.fn(),
+      clearAssertiveAnnouncement: vi.fn(),
+      queueMovementAnnouncement: vi.fn(),
+    }
+
+    const mockDialogState = {
+      closeDialog: vi.fn(),
+      closeAllDialogs: vi.fn(),
+      openDelete: vi.fn(),
+      openNewScene: vi.fn(),
+      setCatalogOpen: vi.fn(),
+      pendingDeleteFurniture: null,
+    }
+
+    const setSelectedSource = vi.fn()
+    const mockOverlayState = {
+      clearPreview: vi.fn(),
+      clearEditorMessage: vi.fn(),
+      setEditorMessage: vi.fn(),
+      handleHistoryChange: vi.fn(),
+      selectedSource: null,
+      setSelectedSource,
+      selectedFurniture: null,
+      sceneReadModel: { items: [], selectedId: null },
+    }
+
+    const mockStartup = {
+      activeFloorFinishId: '',
+      activeWallFinishId: '',
+      catalog: [],
+      defaultFloorFinishId: 'wood-floor',
+      defaultWallFinishId: 'light-gray',
+      editorInteractionsEnabled: true,
+      floorFinishIds: [],
+      handleAssetError: vi.fn(),
+      handleAssetsReady: vi.fn(),
+      retryAssetLoading: vi.fn(),
+      resetEditorShellState: vi.fn(),
+      restoreInitialLayout: vi.fn(),
+      setFloorFinishId: vi.fn(),
+      setWallFinishId: vi.fn(),
+      wallFinishIds: [],
+    }
+
+    const { result } = renderHook(() =>
+      useSceneHandlers({
+        commands: mockCommands,
+        sync: mockSync,
+        announcements: mockAnnouncements,
+        dialogState: mockDialogState,
+        overlayState: mockOverlayState,
+        startup: mockStartup,
+      }),
+    )
+
+    // Simulate programmatic selection via canvas-keyboard followed by the
+    // scene's onSelectionChange callback firing.
+    act(() => {
+      result.current.handleSelectById('item-1', 'canvas-keyboard')
+      result.current.handleSceneSelectionChange(makeItem('item-1'))
+    })
+
+    // The pending source should have been consumed and the second call should
+    // use 'canvas-keyboard', not default to 'canvas-pointer'.
+    const sourceCalls = setSelectedSource.mock.calls.map((c: unknown[]) => c[0])
+    expect(sourceCalls).toContain('canvas-keyboard')
+    expect(sourceCalls[sourceCalls.length - 1]).toBe('canvas-keyboard')
+  })
 })
 
 describe('runStartupRestoreFlow', () => {

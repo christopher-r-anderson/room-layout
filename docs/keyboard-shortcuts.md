@@ -27,7 +27,7 @@ This allows browser-native combos (for example Ctrl+N) to be suppressed while st
 
 All room-view-specific shortcuts (object movement, rotation, deletion, canvas browse, and camera preset keys) require the 3D room view to have DOM focus. This is tracked by `roomViewHasFocus` in `useKeyboardShortcuts`.
 
-The 3D room view is a focusable `div` with `tabIndex={0}` and visible focus styling. Clicking the canvas or pressing Tab to it acquires focus.
+The 3D room view is a focusable room-view wrapper element with `tabIndex={0}` and visible focus styling. Clicking the canvas or pressing Tab to it acquires focus.
 
 Global shortcuts (Undo, Redo, New Scene) remain active regardless of room-view focus.
 
