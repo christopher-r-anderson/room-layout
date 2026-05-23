@@ -493,9 +493,10 @@ function App() {
         aria-busy={startup.startupLoadingActive}
       >
         <p id="scene-instructions" className="sr-only">
-          Interactive 3D room editor. Use the furniture list to select items and
-          the selected item panel to move, rotate, or delete them without
-          dragging.
+          Interactive 3D room editor. Tab to focus the room-view region, then
+          use the arrow keys to preview items in the room and Enter or Space to
+          select the previewed item. You can also use the furniture list and
+          selected item panel to move, rotate, or delete items without dragging.
         </p>
         <section
           aria-describedby="scene-instructions"
