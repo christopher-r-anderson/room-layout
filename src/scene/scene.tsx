@@ -130,10 +130,12 @@ export function Scene({
 
   const handleSelect = useCallback(
     (id: string) => {
-      onCanvasPointerSelection?.()
+      if (id !== selectedId) {
+        onCanvasPointerSelection?.()
+      }
       selectFurniture(id)
     },
-    [onCanvasPointerSelection, selectFurniture],
+    [onCanvasPointerSelection, selectFurniture, selectedId],
   )
 
   const updateFurniturePosition = useCallback(
