@@ -4,6 +4,7 @@ import {
   dragSelectedFurniture,
   expectAssertiveAnnouncementUnchanged,
   expectPoliteAnnouncementUnchanged,
+  focusRoomView,
   openEditor,
   readAssertiveAnnouncement,
   readPoliteAnnouncement,
@@ -25,17 +26,18 @@ test('applies Arrow, Shift+Arrow, and Alt+Arrow movement steps in no-mouse flow'
   const initialState = await readSceneState(page)
   const initialX = initialState.items[0].position[0]
 
-  await page.locator('body').press('ArrowRight')
+  await focusRoomView(page)
+  await page.keyboard.press('ArrowRight')
   await expect
     .poll(async () => (await readSceneState(page)).items[0].position[0])
     .toBeCloseTo(initialX + 0.5, 6)
 
-  await page.locator('body').press('Shift+ArrowRight')
+  await page.keyboard.press('Shift+ArrowRight')
   await expect
     .poll(async () => (await readSceneState(page)).items[0].position[0])
     .toBeCloseTo(initialX + 1.5, 6)
 
-  await page.locator('body').press('Alt+ArrowRight')
+  await page.keyboard.press('Alt+ArrowRight')
   await expect
     .poll(async () => (await readSceneState(page)).items[0].position[0])
     .toBeCloseTo(initialX + 1.6, 6)
@@ -50,8 +52,9 @@ test('keeps announcements deterministic and reconciles focus on undo selection l
 
   await page.getByRole('button', { name: /^Leather Couch/i }).click()
 
-  await page.locator('body').press('ArrowRight')
-  await page.locator('body').press('Control+z')
+  await focusRoomView(page)
+  await page.keyboard.press('ArrowRight')
+  await page.keyboard.press('Control+z')
 
   await waitForPoliteAnnouncement(page, 'Undo complete.')
 
@@ -61,7 +64,7 @@ test('keeps announcements deterministic and reconciles focus on undo selection l
 
   await waitForFirstItemPosition(page, initialPosition)
 
-  await page.locator('body').press('Control+z')
+  await page.keyboard.press('Control+z')
   await waitForItemCount(page, 0)
   await waitForPoliteAnnouncement(page, 'Undo complete.')
   await expect(

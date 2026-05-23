@@ -48,6 +48,7 @@ interface UseOverlayPropsOptions {
   isInfoDialogOpen: EditorDialogsProps['isInfoDialogOpen']
   onInfoDialogOpenChange: EditorDialogsProps['onInfoDialogOpenChange']
   onPreviewChange: EditorPreviewProps['onPreviewChange']
+  previewedId: EditorPreviewProps['previewedId']
 }
 
 interface EditorOverlayPropsShape {
@@ -99,6 +100,7 @@ export function useOverlayProps({
   isInfoDialogOpen,
   onInfoDialogOpenChange,
   onPreviewChange,
+  previewedId,
 }: UseOverlayPropsOptions): EditorOverlayPropsShape {
   const startupProps = useMemo<EditorStartupProps>(
     () => ({
@@ -218,7 +220,7 @@ export function useOverlayProps({
       selectionProps,
       catalogProps,
       dialogsProps,
-      previewProps: { onPreviewChange },
+      previewProps: { onPreviewChange, previewedId },
     }),
     [
       cameraProps,
@@ -226,6 +228,7 @@ export function useOverlayProps({
       dialogsProps,
       historyProps,
       onPreviewChange,
+      previewedId,
       sceneProps,
       selectionProps,
       startupProps,

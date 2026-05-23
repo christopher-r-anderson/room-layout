@@ -1,10 +1,11 @@
-import { useLayoutEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { isDialogTarget, isEditingTarget } from '@/lib/ui/keyboard-event-target'
 import type { CameraKeyName, CameraKeyState } from '@/scene/scene.types'
 
 interface UseCameraKeyStateOptions {
   enabled: boolean
   isModalOpen?: boolean
+  roomViewHasFocus: boolean
   sceneRef: React.RefObject<{
     setCameraKeyState(keyState: CameraKeyState): void
   } | null>
@@ -19,16 +20,12 @@ const CAMERA_KEY_IDS: Record<string, CameraKeyName> = {
   ArrowRight: 'arrowRight',
   KeyW: 'keyW',
   w: 'keyW',
-  W: 'keyW',
   KeyA: 'keyA',
   a: 'keyA',
-  A: 'keyA',
   KeyS: 'keyS',
   s: 'keyS',
-  S: 'keyS',
   KeyD: 'keyD',
   d: 'keyD',
-  D: 'keyD',
   Equal: 'equal',
   '=': 'equal',
   '+': 'equal',
@@ -67,6 +64,7 @@ const isZoomModifierChord = (event: KeyboardEvent): boolean => {
 export function useCameraKeyState({
   enabled,
   isModalOpen = false,
+  roomViewHasFocus,
   sceneRef,
 }: UseCameraKeyStateOptions): void {
   const keyStateRef = useRef<CameraKeyState>(new Set())
@@ -101,7 +99,7 @@ export function useCameraKeyState({
     return nextState
   }
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     const resetKeyState = () => {
       pressedShiftCodesRef.current = new Set()
 
@@ -113,7 +111,7 @@ export function useCameraKeyState({
       sceneRef.current?.setCameraKeyState(new Set())
     }
 
-    if (!enabled || isModalOpen) {
+    if (!enabled || isModalOpen || !roomViewHasFocus) {
       resetKeyState()
       return
     }
@@ -174,5 +172,5 @@ export function useCameraKeyState({
       window.removeEventListener('blur', resetKeyState)
       resetKeyState()
     }
-  }, [enabled, isModalOpen, sceneRef])
+  }, [enabled, isModalOpen, roomViewHasFocus, sceneRef])
 }

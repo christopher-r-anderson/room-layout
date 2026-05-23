@@ -11,6 +11,7 @@ function KeyboardShortcutHarness(props: {
   hasSelection: boolean
   isModalOpen: boolean
   canStartNewScene?: boolean
+  roomViewHasFocus?: boolean
   onUndo: () => void
   onRedo: () => void
   onNewSceneIntent: () => void
@@ -20,11 +21,16 @@ function KeyboardShortcutHarness(props: {
   onClearSelection: () => void
   onRotate: (direction: -1 | 1) => void
   onSetCameraPreset?: (preset: 'corner' | 'front' | 'side' | 'top') => void
+  onCanvasBrowse?: (direction: 'next' | 'prev' | 'first' | 'last') => void
+  onCanvasSelectPreviewed?: () => void
 }) {
   useKeyboardShortcuts({
     ...props,
     canStartNewScene: props.canStartNewScene ?? true,
+    roomViewHasFocus: props.roomViewHasFocus ?? true,
     onSetCameraPreset: props.onSetCameraPreset ?? vi.fn(),
+    onCanvasBrowse: props.onCanvasBrowse ?? vi.fn(),
+    onCanvasSelectPreviewed: props.onCanvasSelectPreviewed ?? vi.fn(),
   })
 
   return <button type="button">Editor Root</button>
@@ -42,6 +48,7 @@ function DialogEscapeHarness(props: {
     hasSelection: props.hasSelection,
     isModalOpen: false,
     canStartNewScene: true,
+    roomViewHasFocus: true,
     onUndo: vi.fn(),
     onRedo: vi.fn(),
     onNewSceneIntent: vi.fn(),
@@ -51,6 +58,8 @@ function DialogEscapeHarness(props: {
     onClearSelection: props.onClearSelection,
     onRotate: vi.fn(),
     onSetCameraPreset: vi.fn(),
+    onCanvasBrowse: vi.fn(),
+    onCanvasSelectPreviewed: vi.fn(),
   })
 
   useEffect(() => {
@@ -81,6 +90,7 @@ function TextInputHarness(props: {
     hasSelection: false,
     isModalOpen: props.isModalOpen ?? false,
     canStartNewScene: props.canStartNewScene ?? true,
+    roomViewHasFocus: true,
     onUndo: props.onUndo,
     onRedo: props.onRedo,
     onNewSceneIntent: props.onNewSceneIntent ?? vi.fn(),
@@ -90,6 +100,8 @@ function TextInputHarness(props: {
     onClearSelection: vi.fn(),
     onRotate: vi.fn(),
     onSetCameraPreset: vi.fn(),
+    onCanvasBrowse: vi.fn(),
+    onCanvasSelectPreviewed: vi.fn(),
   })
 
   useEffect(() => {
@@ -111,6 +123,7 @@ function DialogNewSceneHarness(props: {
     hasSelection: false,
     isModalOpen: props.isModalOpen,
     canStartNewScene: props.canStartNewScene ?? true,
+    roomViewHasFocus: true,
     onUndo: vi.fn(),
     onRedo: vi.fn(),
     onNewSceneIntent: props.onNewSceneIntent,
@@ -120,6 +133,8 @@ function DialogNewSceneHarness(props: {
     onClearSelection: vi.fn(),
     onRotate: vi.fn(),
     onSetCameraPreset: vi.fn(),
+    onCanvasBrowse: vi.fn(),
+    onCanvasSelectPreviewed: vi.fn(),
   })
 
   return (
@@ -144,6 +159,7 @@ function PreHandledEscapeHarness(props: {
     hasSelection: props.hasSelection,
     isModalOpen: false,
     canStartNewScene: true,
+    roomViewHasFocus: true,
     onUndo: vi.fn(),
     onRedo: vi.fn(),
     onNewSceneIntent: vi.fn(),
@@ -153,6 +169,8 @@ function PreHandledEscapeHarness(props: {
     onClearSelection: props.onClearSelection,
     onRotate: vi.fn(),
     onSetCameraPreset: vi.fn(),
+    onCanvasBrowse: vi.fn(),
+    onCanvasSelectPreviewed: vi.fn(),
   })
 
   useEffect(() => {
@@ -185,6 +203,7 @@ function ContentEditableHarness(props: {
     hasSelection: false,
     isModalOpen: false,
     canStartNewScene: true,
+    roomViewHasFocus: true,
     onUndo: vi.fn(),
     onRedo: vi.fn(),
     onNewSceneIntent: props.onNewSceneIntent,
@@ -194,6 +213,8 @@ function ContentEditableHarness(props: {
     onClearSelection: vi.fn(),
     onRotate: vi.fn(),
     onSetCameraPreset: vi.fn(),
+    onCanvasBrowse: vi.fn(),
+    onCanvasSelectPreviewed: vi.fn(),
   })
 
   useEffect(() => {
@@ -768,6 +789,58 @@ describe('useKeyboardShortcuts', () => {
     expect(onClearSelection).not.toHaveBeenCalled()
   })
 
+  it('does not clear selection when room view is not focused', async () => {
+    const user = userEvent.setup()
+    const onClearSelection = vi.fn()
+
+    render(
+      <KeyboardShortcutHarness
+        enabled
+        hasSelection
+        isModalOpen={false}
+        roomViewHasFocus={false}
+        onUndo={vi.fn()}
+        onRedo={vi.fn()}
+        onNewSceneIntent={vi.fn()}
+        onOpenDeleteDialog={vi.fn()}
+        onFocusSelected={vi.fn()}
+        onMoveSelection={vi.fn()}
+        onClearSelection={onClearSelection}
+        onRotate={vi.fn()}
+      />,
+    )
+
+    await user.keyboard('{Escape}')
+
+    expect(onClearSelection).not.toHaveBeenCalled()
+  })
+
+  it('dispatches clear-selection on Escape even when there is no selection (for preview clearing)', async () => {
+    const user = userEvent.setup()
+    const onClearSelection = vi.fn()
+
+    render(
+      <KeyboardShortcutHarness
+        enabled
+        hasSelection={false}
+        isModalOpen={false}
+        roomViewHasFocus={true}
+        onUndo={vi.fn()}
+        onRedo={vi.fn()}
+        onNewSceneIntent={vi.fn()}
+        onOpenDeleteDialog={vi.fn()}
+        onFocusSelected={vi.fn()}
+        onMoveSelection={vi.fn()}
+        onClearSelection={onClearSelection}
+        onRotate={vi.fn()}
+      />,
+    )
+
+    await user.keyboard('{Escape}')
+
+    expect(onClearSelection).toHaveBeenCalledTimes(1)
+  })
+
   it('does not intercept undo/redo in text inputs', () => {
     const onUndo = vi.fn()
     const onRedo = vi.fn()
@@ -1100,8 +1173,9 @@ describe('useKeyboardShortcuts', () => {
     expect(onMoveSelection).toHaveBeenCalled()
   })
 
-  it('does not suppress on-execute shortcuts when action cannot execute (no selection)', () => {
+  it('falls through to canvas-browse shortcut when move shortcut cannot execute (no selection)', () => {
     const onMoveSelection = vi.fn()
+    const onCanvasBrowse = vi.fn()
 
     render(
       <KeyboardShortcutHarness
@@ -1116,20 +1190,167 @@ describe('useKeyboardShortcuts', () => {
         onMoveSelection={onMoveSelection}
         onClearSelection={vi.fn()}
         onRotate={vi.fn()}
+        onCanvasBrowse={onCanvasBrowse}
       />,
     )
 
-    // When no selection: should NOT prevent default (allow fallthrough)
-    const moveEvent = new KeyboardEvent('keydown', {
+    // When no selection: move-up cannot execute, falls through to canvas-browse-prev
+    const upEvent = new KeyboardEvent('keydown', {
       bubbles: true,
       cancelable: true,
       key: 'ArrowUp',
     })
 
-    fireEvent(window, moveEvent)
+    fireEvent(window, upEvent)
 
-    // Should NOT prevent default because action doesn't execute without selection
-    expect(moveEvent.defaultPrevented).toBe(false)
     expect(onMoveSelection).not.toHaveBeenCalled()
+    expect(onCanvasBrowse).toHaveBeenCalledWith('prev')
+    // canvas-browse-prev suppresses the default action
+    expect(upEvent.defaultPrevented).toBe(true)
+  })
+
+  it('dispatches canvas-browse shortcuts when room view has focus and no selection', async () => {
+    const user = userEvent.setup()
+    const onCanvasBrowse = vi.fn()
+    const onCanvasSelectPreviewed = vi.fn()
+
+    render(
+      <KeyboardShortcutHarness
+        enabled
+        hasSelection={false}
+        isModalOpen={false}
+        roomViewHasFocus
+        onUndo={vi.fn()}
+        onRedo={vi.fn()}
+        onNewSceneIntent={vi.fn()}
+        onOpenDeleteDialog={vi.fn()}
+        onFocusSelected={vi.fn()}
+        onMoveSelection={vi.fn()}
+        onClearSelection={vi.fn()}
+        onRotate={vi.fn()}
+        onCanvasBrowse={onCanvasBrowse}
+        onCanvasSelectPreviewed={onCanvasSelectPreviewed}
+      />,
+    )
+
+    await user.keyboard('{ArrowRight}')
+    await user.keyboard('{ArrowDown}')
+    await user.keyboard('{ArrowLeft}')
+    await user.keyboard('{ArrowUp}')
+    await user.keyboard('{Home}')
+    await user.keyboard('{End}')
+    await user.keyboard('{Enter}')
+
+    expect(onCanvasBrowse).toHaveBeenNthCalledWith(1, 'next')
+    expect(onCanvasBrowse).toHaveBeenNthCalledWith(2, 'next')
+    expect(onCanvasBrowse).toHaveBeenNthCalledWith(3, 'prev')
+    expect(onCanvasBrowse).toHaveBeenNthCalledWith(4, 'prev')
+    expect(onCanvasBrowse).toHaveBeenNthCalledWith(5, 'first')
+    expect(onCanvasBrowse).toHaveBeenNthCalledWith(6, 'last')
+    expect(onCanvasSelectPreviewed).toHaveBeenCalledTimes(1)
+  })
+
+  it('does not dispatch canvas-browse shortcuts when room view lacks focus', async () => {
+    const user = userEvent.setup()
+    const onCanvasBrowse = vi.fn()
+    const onCanvasSelectPreviewed = vi.fn()
+
+    render(
+      <KeyboardShortcutHarness
+        enabled
+        hasSelection={false}
+        isModalOpen={false}
+        roomViewHasFocus={false}
+        onUndo={vi.fn()}
+        onRedo={vi.fn()}
+        onNewSceneIntent={vi.fn()}
+        onOpenDeleteDialog={vi.fn()}
+        onFocusSelected={vi.fn()}
+        onMoveSelection={vi.fn()}
+        onClearSelection={vi.fn()}
+        onRotate={vi.fn()}
+        onCanvasBrowse={onCanvasBrowse}
+        onCanvasSelectPreviewed={onCanvasSelectPreviewed}
+      />,
+    )
+
+    await user.keyboard('{ArrowRight}{ArrowLeft}{Home}{End}{Enter}')
+
+    expect(onCanvasBrowse).not.toHaveBeenCalled()
+    expect(onCanvasSelectPreviewed).not.toHaveBeenCalled()
+  })
+
+  it('does not dispatch canvas-browse shortcuts when selection exists', async () => {
+    const user = userEvent.setup()
+    const onCanvasBrowse = vi.fn()
+    const onMoveSelection = vi.fn()
+
+    render(
+      <KeyboardShortcutHarness
+        enabled
+        hasSelection
+        isModalOpen={false}
+        roomViewHasFocus
+        onUndo={vi.fn()}
+        onRedo={vi.fn()}
+        onNewSceneIntent={vi.fn()}
+        onOpenDeleteDialog={vi.fn()}
+        onFocusSelected={vi.fn()}
+        onMoveSelection={onMoveSelection}
+        onClearSelection={vi.fn()}
+        onRotate={vi.fn()}
+        onCanvasBrowse={onCanvasBrowse}
+      />,
+    )
+
+    await user.keyboard('{ArrowRight}{ArrowLeft}')
+
+    // Arrow keys should go to move-selection (has selection), not canvas-browse
+    expect(onMoveSelection).toHaveBeenCalled()
+    expect(onCanvasBrowse).not.toHaveBeenCalled()
+  })
+
+  it('keeps room-view scoped shortcuts inactive until the room view has focus', async () => {
+    const user = userEvent.setup()
+    const onOpenDeleteDialog = vi.fn()
+    const onMoveSelection = vi.fn()
+    const onRotate = vi.fn()
+    const onFocusSelected = vi.fn()
+    const onSetCameraPreset = vi.fn()
+    const onCanvasBrowse = vi.fn()
+    const onCanvasSelectPreviewed = vi.fn()
+
+    render(
+      <KeyboardShortcutHarness
+        enabled
+        hasSelection
+        isModalOpen={false}
+        roomViewHasFocus={false}
+        onUndo={vi.fn()}
+        onRedo={vi.fn()}
+        onNewSceneIntent={vi.fn()}
+        onOpenDeleteDialog={onOpenDeleteDialog}
+        onFocusSelected={onFocusSelected}
+        onMoveSelection={onMoveSelection}
+        onClearSelection={vi.fn()}
+        onRotate={onRotate}
+        onSetCameraPreset={onSetCameraPreset}
+        onCanvasBrowse={onCanvasBrowse}
+        onCanvasSelectPreviewed={onCanvasSelectPreviewed}
+      />,
+    )
+
+    await user.keyboard('{Delete}{Backspace}f,.')
+    await user.keyboard('1234')
+    await user.keyboard('{ArrowUp}{ArrowDown}{ArrowLeft}{ArrowRight}')
+    await user.keyboard('{Home}{End}{Enter}')
+
+    expect(onOpenDeleteDialog).not.toHaveBeenCalled()
+    expect(onFocusSelected).not.toHaveBeenCalled()
+    expect(onRotate).not.toHaveBeenCalled()
+    expect(onSetCameraPreset).not.toHaveBeenCalled()
+    expect(onMoveSelection).not.toHaveBeenCalled()
+    expect(onCanvasBrowse).not.toHaveBeenCalled()
+    expect(onCanvasSelectPreviewed).not.toHaveBeenCalled()
   })
 })

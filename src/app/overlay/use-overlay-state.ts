@@ -3,10 +3,12 @@ import type { HistoryAvailability } from '../history/history.types'
 import type { FurnitureCatalogEntry } from '@/scene/objects/furniture-catalog'
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
 import type { SceneReadModel } from '@/scene/scene.types'
+import type { InteractionSource } from '../scene-interaction.types'
 
 interface OverlayState {
   catalogIdToAdd: string
   clearEditorMessage: () => void
+  clearSelectedSource: () => void
   editorMessage: string | null
   handleHistoryChange: (availability: HistoryAvailability) => void
   handleSceneReadModelChange: (readModel: SceneReadModel) => void
@@ -15,8 +17,10 @@ interface OverlayState {
   resetOverlayState: () => void
   sceneReadModel: SceneReadModel
   selectedFurniture: FurnitureItem | null
+  selectedSource: InteractionSource
   setCatalogIdToAdd: (catalogId: string) => void
   setEditorMessage: (message: string | null) => void
+  setSelectedSource: (source: InteractionSource) => void
 }
 
 const INITIAL_HISTORY_AVAILABILITY: HistoryAvailability = {
@@ -40,6 +44,7 @@ export function useOverlayState(): OverlayState {
   const [historyAvailability, setHistoryAvailability] = useState(
     INITIAL_HISTORY_AVAILABILITY,
   )
+  const [selectedSource, setSelectedSource] = useState<InteractionSource>(null)
 
   const handleHistoryChange = useCallback(
     (availability: HistoryAvailability) => {
@@ -58,6 +63,10 @@ export function useOverlayState(): OverlayState {
         : null
 
       setSelectedFurniture(nextSelectedFurniture)
+
+      if (readModel.selectedId === null) {
+        setSelectedSource(null)
+      }
     },
     [],
   )
@@ -67,6 +76,7 @@ export function useOverlayState(): OverlayState {
     setSceneReadModel(INITIAL_SCENE_READ_MODEL)
     setEditorMessage(null)
     setHistoryAvailability(INITIAL_HISTORY_AVAILABILITY)
+    setSelectedSource(null)
   }, [])
 
   const initializeCatalogSelection = useCallback(
@@ -93,9 +103,14 @@ export function useOverlayState(): OverlayState {
     setEditorMessage(null)
   }, [])
 
+  const clearSelectedSource = useCallback(() => {
+    setSelectedSource(null)
+  }, [])
+
   return {
     catalogIdToAdd,
     clearEditorMessage,
+    clearSelectedSource,
     editorMessage,
     handleHistoryChange,
     handleSceneReadModelChange,
@@ -104,7 +119,9 @@ export function useOverlayState(): OverlayState {
     resetOverlayState,
     sceneReadModel,
     selectedFurniture,
+    selectedSource,
     setCatalogIdToAdd,
     setEditorMessage: updateEditorMessage,
+    setSelectedSource,
   }
 }
