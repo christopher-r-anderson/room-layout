@@ -19,12 +19,14 @@ interface ShortcutContext {
   isModalOpen: boolean
   hasSelection: boolean
   canStartNewScene: boolean
+  roomViewHasFocus: boolean
 }
 
 interface ShortcutDefinition {
   id: string
   match: KeyCombo | KeyCombo[]
   allowMatchInEditingTarget?: boolean
+  requiresRoomViewFocus?: boolean
   requiresSelection?: boolean
   canExecute?: (context: ShortcutContext) => boolean
   suppressionMode?: SuppressionMode
@@ -36,6 +38,7 @@ interface UseKeyboardShortcutsOptions {
   hasSelection: boolean
   isModalOpen: boolean
   canStartNewScene: boolean
+  roomViewHasFocus: boolean
   onUndo: () => void
   onRedo: () => void
   onNewSceneIntent: () => void
@@ -45,6 +48,8 @@ interface UseKeyboardShortcutsOptions {
   onClearSelection: () => void
   onRotate: (direction: RotationDirection) => void
   onSetCameraPreset: (preset: CameraPreset) => void
+  onCanvasBrowse: (direction: 'next' | 'prev' | 'first' | 'last') => void
+  onCanvasSelectPreviewed: () => void
 }
 
 function shouldBlockForTextInput(
@@ -62,6 +67,11 @@ function canMatchShortcut(
 ): boolean {
   // Don't match in text inputs unless the shortcut explicitly needs browser suppression.
   if (context.targetIsEditingTarget && !shortcut.allowMatchInEditingTarget) {
+    return false
+  }
+
+  // Room-view-scoped shortcuts only fire when the room view has keyboard focus.
+  if (shortcut.requiresRoomViewFocus && !context.roomViewHasFocus) {
     return false
   }
 
@@ -99,6 +109,7 @@ export function useKeyboardShortcuts({
   hasSelection,
   isModalOpen,
   canStartNewScene,
+  roomViewHasFocus,
   onUndo,
   onRedo,
   onNewSceneIntent,
@@ -108,6 +119,8 @@ export function useKeyboardShortcuts({
   onClearSelection,
   onRotate,
   onSetCameraPreset,
+  onCanvasBrowse,
+  onCanvasSelectPreviewed,
 }: UseKeyboardShortcutsOptions): void {
   const shortcutDefinitions: ShortcutDefinition[] = [
     {
@@ -137,6 +150,7 @@ export function useKeyboardShortcuts({
     {
       id: 'delete',
       match: [{ key: 'delete' }, { key: 'backspace' }],
+      requiresRoomViewFocus: true,
       requiresSelection: true,
       suppressionMode: 'on-execute',
       execute: onOpenDeleteDialog,
@@ -144,6 +158,7 @@ export function useKeyboardShortcuts({
     {
       id: 'focus-selected',
       match: { key: 'f' },
+      requiresRoomViewFocus: true,
       requiresSelection: true,
       suppressionMode: 'on-execute',
       execute: onFocusSelected,
@@ -156,6 +171,7 @@ export function useKeyboardShortcuts({
         { code: 'Digit1', shift: true },
         { code: 'Numpad1' },
       ],
+      requiresRoomViewFocus: true,
       suppressionMode: 'on-execute',
       execute: () => {
         onSetCameraPreset('corner')
@@ -168,6 +184,7 @@ export function useKeyboardShortcuts({
         { code: 'Digit2', shift: true },
         { code: 'Numpad2' },
       ],
+      requiresRoomViewFocus: true,
       suppressionMode: 'on-execute',
       execute: () => {
         onSetCameraPreset('front')
@@ -180,6 +197,7 @@ export function useKeyboardShortcuts({
         { code: 'Digit3', shift: true },
         { code: 'Numpad3' },
       ],
+      requiresRoomViewFocus: true,
       suppressionMode: 'on-execute',
       execute: () => {
         onSetCameraPreset('side')
@@ -192,6 +210,7 @@ export function useKeyboardShortcuts({
         { code: 'Digit4', shift: true },
         { code: 'Numpad4' },
       ],
+      requiresRoomViewFocus: true,
       suppressionMode: 'on-execute',
       execute: () => {
         onSetCameraPreset('top')
@@ -200,6 +219,7 @@ export function useKeyboardShortcuts({
     {
       id: 'move-up',
       match: { key: 'ArrowUp' },
+      requiresRoomViewFocus: true,
       requiresSelection: true,
       suppressionMode: 'on-execute',
       execute: () => {
@@ -209,6 +229,7 @@ export function useKeyboardShortcuts({
     {
       id: 'move-up-large',
       match: { key: 'ArrowUp', shift: true },
+      requiresRoomViewFocus: true,
       requiresSelection: true,
       suppressionMode: 'on-execute',
       execute: () => {
@@ -218,6 +239,7 @@ export function useKeyboardShortcuts({
     {
       id: 'move-up-small',
       match: { key: 'ArrowUp', alt: true },
+      requiresRoomViewFocus: true,
       requiresSelection: true,
       suppressionMode: 'on-execute',
       execute: () => {
@@ -227,6 +249,7 @@ export function useKeyboardShortcuts({
     {
       id: 'move-down',
       match: { key: 'ArrowDown' },
+      requiresRoomViewFocus: true,
       requiresSelection: true,
       suppressionMode: 'on-execute',
       execute: () => {
@@ -236,6 +259,7 @@ export function useKeyboardShortcuts({
     {
       id: 'move-down-large',
       match: { key: 'ArrowDown', shift: true },
+      requiresRoomViewFocus: true,
       requiresSelection: true,
       suppressionMode: 'on-execute',
       execute: () => {
@@ -245,6 +269,7 @@ export function useKeyboardShortcuts({
     {
       id: 'move-down-small',
       match: { key: 'ArrowDown', alt: true },
+      requiresRoomViewFocus: true,
       requiresSelection: true,
       suppressionMode: 'on-execute',
       execute: () => {
@@ -254,6 +279,7 @@ export function useKeyboardShortcuts({
     {
       id: 'move-left',
       match: { key: 'ArrowLeft' },
+      requiresRoomViewFocus: true,
       requiresSelection: true,
       suppressionMode: 'on-execute',
       execute: () => {
@@ -263,6 +289,7 @@ export function useKeyboardShortcuts({
     {
       id: 'move-left-large',
       match: { key: 'ArrowLeft', shift: true },
+      requiresRoomViewFocus: true,
       requiresSelection: true,
       suppressionMode: 'on-execute',
       execute: () => {
@@ -272,6 +299,7 @@ export function useKeyboardShortcuts({
     {
       id: 'move-left-small',
       match: { key: 'ArrowLeft', alt: true },
+      requiresRoomViewFocus: true,
       requiresSelection: true,
       suppressionMode: 'on-execute',
       execute: () => {
@@ -281,6 +309,7 @@ export function useKeyboardShortcuts({
     {
       id: 'move-right',
       match: { key: 'ArrowRight' },
+      requiresRoomViewFocus: true,
       requiresSelection: true,
       suppressionMode: 'on-execute',
       execute: () => {
@@ -290,6 +319,7 @@ export function useKeyboardShortcuts({
     {
       id: 'move-right-large',
       match: { key: 'ArrowRight', shift: true },
+      requiresRoomViewFocus: true,
       requiresSelection: true,
       suppressionMode: 'on-execute',
       execute: () => {
@@ -299,6 +329,7 @@ export function useKeyboardShortcuts({
     {
       id: 'move-right-small',
       match: { key: 'ArrowRight', alt: true },
+      requiresRoomViewFocus: true,
       requiresSelection: true,
       suppressionMode: 'on-execute',
       execute: () => {
@@ -308,6 +339,7 @@ export function useKeyboardShortcuts({
     {
       id: 'rotate-left',
       match: [{ key: ',' }, { code: 'Comma' }],
+      requiresRoomViewFocus: true,
       requiresSelection: true,
       suppressionMode: 'on-execute',
       execute: () => {
@@ -317,6 +349,7 @@ export function useKeyboardShortcuts({
     {
       id: 'rotate-right',
       match: [{ key: '.' }, { code: 'Period' }],
+      requiresRoomViewFocus: true,
       requiresSelection: true,
       suppressionMode: 'on-execute',
       execute: () => {
@@ -324,9 +357,57 @@ export function useKeyboardShortcuts({
       },
     },
     {
+      id: 'canvas-browse-next',
+      match: [{ key: 'ArrowRight' }, { key: 'ArrowDown' }],
+      requiresRoomViewFocus: true,
+      canExecute: (context) => !context.hasSelection,
+      suppressionMode: 'on-execute',
+      execute: () => {
+        onCanvasBrowse('next')
+      },
+    },
+    {
+      id: 'canvas-browse-prev',
+      match: [{ key: 'ArrowLeft' }, { key: 'ArrowUp' }],
+      requiresRoomViewFocus: true,
+      canExecute: (context) => !context.hasSelection,
+      suppressionMode: 'on-execute',
+      execute: () => {
+        onCanvasBrowse('prev')
+      },
+    },
+    {
+      id: 'canvas-browse-first',
+      match: { key: 'Home' },
+      requiresRoomViewFocus: true,
+      canExecute: (context) => !context.hasSelection,
+      suppressionMode: 'on-execute',
+      execute: () => {
+        onCanvasBrowse('first')
+      },
+    },
+    {
+      id: 'canvas-browse-last',
+      match: { key: 'End' },
+      requiresRoomViewFocus: true,
+      canExecute: (context) => !context.hasSelection,
+      suppressionMode: 'on-execute',
+      execute: () => {
+        onCanvasBrowse('last')
+      },
+    },
+    {
+      id: 'canvas-select-previewed',
+      match: [{ key: 'Enter' }, { key: ' ' }],
+      requiresRoomViewFocus: true,
+      canExecute: (context) => !context.hasSelection,
+      suppressionMode: 'on-execute',
+      execute: onCanvasSelectPreviewed,
+    },
+    {
       id: 'clear-selection',
       match: { key: 'Escape' },
-      requiresSelection: true,
+      requiresRoomViewFocus: true,
       suppressionMode: 'on-execute',
       execute: onClearSelection,
     },
@@ -356,6 +437,7 @@ export function useKeyboardShortcuts({
       isModalOpen,
       hasSelection,
       canStartNewScene,
+      roomViewHasFocus,
     }
 
     for (const shortcut of shortcutDefinitions) {
@@ -370,19 +452,23 @@ export function useKeyboardShortcuts({
       const suppressionMode = shortcut.suppressionMode ?? 'on-execute'
       const canExecute = canExecuteShortcut(shortcut, context)
 
-      // always-on-match: suppress immediately on match
+      // always-on-match: suppress and stop on first match regardless of execute
       if (suppressionMode === 'always-on-match') {
         event.preventDefault()
-      } else if (canExecute) {
-        // on-execute: suppress only if action will execute
-        event.preventDefault()
+        if (canExecute) {
+          shortcut.execute()
+        }
+        return
       }
 
+      // on-execute: suppress and stop only if the action will actually run
       if (canExecute) {
+        event.preventDefault()
         shortcut.execute()
+        return
       }
 
-      return
+      // on-execute + can't execute: fall through to the next matching shortcut
     }
   })
 

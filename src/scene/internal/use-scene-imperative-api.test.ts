@@ -780,6 +780,16 @@ describe('useSceneImperativeApi', () => {
       frameCallback?.({}, 0.025)
     })
     expect(dolly).toHaveBeenCalledWith(-3 * 0.025, false)
+
+    // Shift+Minus still zooms and does not introduce pan/orbit side effects.
+    act(() => {
+      const keyState = new Set<CameraKeyName>(['shift', 'minus'])
+      sceneRef.current?.setCameraKeyState(keyState)
+      frameCallback?.({}, 0.025)
+    })
+    expect(dolly).toHaveBeenCalledWith(-3 * 0.025, false)
+    expect(truck).toHaveBeenCalledTimes(1)
+    expect(rotate).toHaveBeenCalledTimes(1)
   })
 })
 

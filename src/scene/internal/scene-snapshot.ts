@@ -63,6 +63,17 @@ function getPointerTargetForObject({
     return null
   }
 
+  if (
+    projectedPoint.x < -1 ||
+    projectedPoint.x > 1 ||
+    projectedPoint.y < -1 ||
+    projectedPoint.y > 1 ||
+    projectedPoint.z < -1 ||
+    projectedPoint.z > 1
+  ) {
+    return null
+  }
+
   return {
     x: roundToPrecision((projectedPoint.x * 0.5 + 0.5) * canvasSize.width, 3),
     y: roundToPrecision((-projectedPoint.y * 0.5 + 0.5) * canvasSize.height, 3),

@@ -191,6 +191,38 @@ describe('createSceneSnapshot', () => {
     )
   })
 
+  it('returns null pointerTarget for a mesh behind the camera', () => {
+    const camera = createDefaultCamera()
+    const mesh = new Mesh(new BoxGeometry(1, 1, 1), new MeshBasicMaterial())
+    mesh.position.set(0, 0, 2)
+
+    const snapshot = createSceneSnapshot(
+      [createFurnitureItem('item-1')],
+      null,
+      new Map([['item-1', mesh]]),
+      camera,
+      CANVAS_SIZE,
+    )
+
+    expect(snapshot.items[0]?.pointerTarget).toBeNull()
+  })
+
+  it('returns null pointerTarget for a mesh outside the viewport', () => {
+    const camera = createDefaultCamera()
+    const mesh = new Mesh(new BoxGeometry(1, 1, 1), new MeshBasicMaterial())
+    mesh.position.set(5, 0, -2)
+
+    const snapshot = createSceneSnapshot(
+      [createFurnitureItem('item-1')],
+      null,
+      new Map([['item-1', mesh]]),
+      camera,
+      CANVAS_SIZE,
+    )
+
+    expect(snapshot.items[0]?.pointerTarget).toBeNull()
+  })
+
   it('falls back to matrix position when object bounds are empty', () => {
     const camera = createDefaultCamera()
     const object = new Object3D()

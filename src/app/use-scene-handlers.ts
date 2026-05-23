@@ -13,6 +13,7 @@ import type {
 } from '@/scene/objects/furniture.types'
 import type { FurnitureCatalogEntry } from '@/scene/objects/furniture-catalog'
 import type { HistoryAvailability } from './history/history.types'
+import type { InteractionSource } from './scene-interaction.types'
 import {
   runStartupAssetErrorTransition,
   runStartupRetryTransition,
@@ -59,6 +60,7 @@ interface Sync {
     requestOutlinerFocus?: boolean
   }) => SceneReadModel | null
   requestOutlinerFocusByIndex: (preferredIndex: number) => void
+  focusRoomView: () => void
 }
 
 interface Announcements {
@@ -99,6 +101,8 @@ interface OverlayState {
   clearPreview: () => void
   clearEditorMessage: () => void
   setEditorMessage: (message: string | null) => void
+  selectedSource: InteractionSource
+  setSelectedSource: (source: InteractionSource) => void
   sceneReadModel: SceneReadModel
   selectedFurniture: FurnitureItem | null
   handleHistoryChange: (availability: HistoryAvailability) => void
@@ -119,8 +123,12 @@ interface UseSceneHandlersOptions {
 
 interface SceneHandlers {
   handleAddFurniture: () => boolean
+  handleCanvasPointerSelection: (id: string) => void
   handleFocusSelected: () => void
-  handleSelectById: (id: string | null) => SelectByIdResult
+  handleSelectById: (
+    id: string | null,
+    source?: InteractionSource,
+  ) => SelectByIdResult
   handleMoveSelection: (
     delta: { x: number; z: number },
     options?: { source?: MoveSource },
@@ -133,10 +141,11 @@ interface SceneHandlers {
   handleSetCameraPreset: (preset: CameraPreset) => void
   handleCatalogDrawerOpenChange: (open: boolean) => void
   handleOpenDeleteDialog: () => void
+  handleOpenDeleteDialogFromRoomView: () => void
   handleOpenNewSceneDialog: () => void
   handleConfirmNewScene: () => void
   handleSceneHistoryChange: (availability: HistoryAvailability) => void
-  handleSceneSelectionChange: () => void
+  handleSceneSelectionChange: (item: FurnitureItem | null) => void
   handleSceneAssetError: (error: Error) => void
   handleSceneAssetsReady: () => void
   handleRetryAssetLoading: () => void
@@ -389,7 +398,8 @@ export function useSceneHandlers({
     setCameraPreset,
     undo,
   } = commands
-  const { syncSceneReadModel, requestOutlinerFocusByIndex } = sync
+  const { syncSceneReadModel, requestOutlinerFocusByIndex, focusRoomView } =
+    sync
   const {
     announcePolite,
     announceAssertive,
@@ -408,6 +418,8 @@ export function useSceneHandlers({
     clearPreview,
     clearEditorMessage,
     setEditorMessage,
+    selectedSource,
+    setSelectedSource,
     handleHistoryChange,
     selectedFurniture,
     sceneReadModel,
@@ -435,9 +447,31 @@ export function useSceneHandlers({
   const restoreOutcomeRef = useRef<RestoreOutcome | null>(null)
   const restoreAttemptCountRef = useRef(0)
 
+  // When selection is triggered programmatically (e.g. handleSelectById), this
+  // ref is set to the intended source BEFORE the scene mutation fires, so that
+  // the resulting onSelectionChange callback can read the right source instead
+  // of defaulting to 'canvas-pointer'.
+  const pendingSelectionSourceRef = useRef<InteractionSource>(null)
+
+  // Tracks the last selected ID seen by handleSceneSelectionChange so we can
+  // distinguish a real selection-change event from a re-fire caused by a
+  // reference change to the same selected item (e.g. position updates).
+  const previousHandlerSelectedIdRef = useRef<string | null>(null)
+  const pendingDeleteFocusTargetRef = useRef<'room-view' | 'outliner' | null>(
+    null,
+  )
+
   const handleAddFurniture = useCallback(() => {
     clearEditorMessage()
     const added = addFurniture()
+
+    if (added) {
+      pendingSelectionSourceRef.current = 'toolbar'
+      setSelectedSource('toolbar')
+    } else {
+      pendingSelectionSourceRef.current = null
+    }
+
     const nextReadModel = syncSceneReadModel({
       announceSelectionChange: false,
       requestOutlinerFocus: false,
@@ -454,16 +488,75 @@ export function useSceneHandlers({
     }
 
     return added
-  }, [addFurniture, clearEditorMessage, syncSceneReadModel, announcePolite])
+  }, [
+    addFurniture,
+    clearEditorMessage,
+    syncSceneReadModel,
+    announcePolite,
+    setSelectedSource,
+  ])
+
+  const handleCanvasPointerSelection = useCallback(
+    (id: string) => {
+      if (!editorInteractionsEnabled) {
+        return
+      }
+
+      pendingSelectionSourceRef.current =
+        sceneReadModel.selectedId === id ? null : 'canvas-pointer'
+      setSelectedSource('canvas-pointer')
+    },
+    [editorInteractionsEnabled, sceneReadModel.selectedId, setSelectedSource],
+  )
 
   const handleSelectById = useCallback(
-    (id: string | null): SelectByIdResult => {
+    (id: string | null, source?: InteractionSource): SelectByIdResult => {
+      const selectionWillChange = sceneReadModel.selectedId !== id
       const result = selectById(id)
       clearEditorMessage()
-      syncSceneReadModel({ requestOutlinerFocus: false })
+
+      if (source) {
+        if (result.ok) {
+          if (selectionWillChange) {
+            pendingSelectionSourceRef.current = source
+          } else {
+            pendingSelectionSourceRef.current = null
+          }
+
+          setSelectedSource(source)
+        } else {
+          pendingSelectionSourceRef.current = null
+        }
+      }
+
+      if (source === 'canvas-keyboard') {
+        const freshReadModel = syncSceneReadModel({
+          requestOutlinerFocus: false,
+          announceSelectionChange: false,
+        })
+        if (result.ok && result.status === 'selected' && id) {
+          const item = freshReadModel?.items.find((i) => i.id === id)
+          if (item) {
+            announcePolite(
+              `${item.name} selected. Press Tab to reach item controls in the Furniture List.`,
+            )
+          }
+        } else if (result.ok && result.status === 'cleared') {
+          announcePolite('Selection cleared.')
+        }
+      } else {
+        syncSceneReadModel({ requestOutlinerFocus: false })
+      }
       return result
     },
-    [selectById, clearEditorMessage, syncSceneReadModel],
+    [
+      sceneReadModel.selectedId,
+      selectById,
+      clearEditorMessage,
+      setSelectedSource,
+      syncSceneReadModel,
+      announcePolite,
+    ],
   )
 
   const handleMoveSelection = useCallback(
@@ -539,7 +632,20 @@ export function useSceneHandlers({
     const nextReadModel = syncSceneReadModel()
 
     if (deleted) {
-      requestOutlinerFocusByIndex(deletedIndex >= 0 ? deletedIndex : 0)
+      const pendingFocusTarget = pendingDeleteFocusTargetRef.current
+      pendingDeleteFocusTargetRef.current = null
+      const isCanvasSource =
+        selectedSource === 'canvas-keyboard' ||
+        selectedSource === 'canvas-pointer'
+      const shouldFocusRoomView =
+        pendingFocusTarget === 'room-view' ||
+        (pendingFocusTarget === null && isCanvasSource)
+
+      if (shouldFocusRoomView) {
+        focusRoomView()
+      } else {
+        requestOutlinerFocusByIndex(deletedIndex >= 0 ? deletedIndex : 0)
+      }
 
       if (deletedName) {
         announcePolite(`${deletedName} removed from room.`)
@@ -552,9 +658,11 @@ export function useSceneHandlers({
     syncSceneReadModel,
     announcePolite,
     requestOutlinerFocusByIndex,
+    focusRoomView,
     closeDialog,
     pendingDeleteFurniture,
     sceneReadModel.items,
+    selectedSource,
   ])
 
   const handleUndo = useCallback(() => {
@@ -596,7 +704,21 @@ export function useSceneHandlers({
     const opened = openDelete()
 
     if (opened) {
+      pendingDeleteFocusTargetRef.current = 'outliner'
       clearEditorMessage()
+    } else {
+      pendingDeleteFocusTargetRef.current = null
+    }
+  }, [openDelete, clearEditorMessage])
+
+  const handleOpenDeleteDialogFromRoomView = useCallback(() => {
+    const opened = openDelete()
+
+    if (opened) {
+      pendingDeleteFocusTargetRef.current = 'room-view'
+      clearEditorMessage()
+    } else {
+      pendingDeleteFocusTargetRef.current = null
     }
   }, [openDelete, clearEditorMessage])
 
@@ -650,13 +772,30 @@ export function useSceneHandlers({
     [editorInteractionsEnabled, handleHistoryChange, syncSceneReadModel],
   )
 
-  const handleSceneSelectionChange = useCallback(() => {
-    if (!editorInteractionsEnabled) {
-      return
-    }
+  const handleSceneSelectionChange = useCallback(
+    (item: FurnitureItem | null) => {
+      if (!editorInteractionsEnabled) {
+        return
+      }
 
-    syncSceneReadModel({ requestOutlinerFocus: false })
-  }, [editorInteractionsEnabled, syncSceneReadModel])
+      const newId = item?.id ?? null
+      const pendingSource = pendingSelectionSourceRef.current
+      pendingSelectionSourceRef.current = null
+
+      // Only update selectedSource when the selection identity changes.
+      // This guard is necessary because onSelectionChange also fires when the
+      // selected item's properties change (e.g. after a move), and we must not
+      // clobber the source that was set during the original selection event.
+      if (newId !== previousHandlerSelectedIdRef.current) {
+        previousHandlerSelectedIdRef.current = newId
+        const source = newId === null ? null : pendingSource
+        setSelectedSource(source)
+      }
+
+      syncSceneReadModel({ requestOutlinerFocus: false })
+    },
+    [editorInteractionsEnabled, setSelectedSource, syncSceneReadModel],
+  )
 
   const handleSceneAssetError = useCallback(
     (error: Error) => {
@@ -860,6 +999,7 @@ export function useSceneHandlers({
 
   return {
     handleAddFurniture,
+    handleCanvasPointerSelection,
     handleFocusSelected,
     handleSelectById,
     handleMoveSelection,
@@ -871,6 +1011,7 @@ export function useSceneHandlers({
     handleSetCameraPreset,
     handleCatalogDrawerOpenChange,
     handleOpenDeleteDialog,
+    handleOpenDeleteDialogFromRoomView,
     handleOpenNewSceneDialog,
     handleConfirmNewScene,
     handleSceneHistoryChange,

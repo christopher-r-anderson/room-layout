@@ -90,7 +90,7 @@ describe('SceneOutliner', () => {
     )
   })
 
-  it('forwards selection through item buttons', async () => {
+  it('forwards selection through item buttons with pointer source', async () => {
     const user = userEvent.setup()
     const onSelectById = vi.fn()
 
@@ -107,7 +107,71 @@ describe('SceneOutliner', () => {
 
     await user.click(screen.getByRole('button', { name: /end table/i }))
 
-    expect(onSelectById).toHaveBeenCalledWith('item-2')
+    expect(onSelectById).toHaveBeenCalledWith('item-2', 'panel-pointer')
+  })
+
+  it('forwards selection with keyboard source when activated via keyboard', async () => {
+    const user = userEvent.setup()
+    const onSelectById = vi.fn()
+
+    render(
+      <Outliner
+        readModel={READ_MODEL}
+        disabled={false}
+        focusRequest={null}
+        onFocusHandled={vi.fn()}
+        onSelectById={onSelectById}
+        onPreviewChange={vi.fn()}
+      />,
+    )
+
+    // Tab to reach the first item button, then press Enter to activate
+    await user.tab()
+    await user.tab()
+    await user.keyboard('{Enter}')
+
+    expect(onSelectById).toHaveBeenCalledWith(
+      expect.any(String),
+      'panel-keyboard',
+    )
+  })
+
+  it('applies preview styling to the previewed non-selected item', () => {
+    render(
+      <Outliner
+        readModel={READ_MODEL}
+        disabled={false}
+        focusRequest={null}
+        onFocusHandled={vi.fn()}
+        onSelectById={vi.fn()}
+        previewedId="item-2"
+        onPreviewChange={vi.fn()}
+      />,
+    )
+
+    const previewedButton = screen.getByRole('button', { name: /end table/i })
+    // item-2 is previewed (not selected) — should have accent bg class
+    expect(previewedButton.className).toMatch(/bg-accent/)
+  })
+
+  it('does not apply preview styling to the selected item even if it matches previewedId', () => {
+    render(
+      <Outliner
+        readModel={READ_MODEL}
+        disabled={false}
+        focusRequest={null}
+        onFocusHandled={vi.fn()}
+        onSelectById={vi.fn()}
+        previewedId="item-1"
+        onPreviewChange={vi.fn()}
+      />,
+    )
+
+    const selectedButton = screen.getByRole('button', {
+      name: /leather couch/i,
+    })
+    // item-1 is selected AND previewed — selected style wins, no accent class
+    expect(selectedButton.className).not.toMatch(/bg-accent/)
   })
 
   it('focuses the preferred item when expanded', async () => {

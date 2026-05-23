@@ -4,10 +4,11 @@ import {
   Component,
   Suspense,
   type ReactNode,
+  useCallback,
   useEffect,
   useMemo,
-  useState,
   useRef,
+  useState,
 } from 'react'
 import { NeutralToneMapping, SRGBColorSpace } from 'three'
 import type { SceneRef } from './scene/scene.types'
@@ -32,6 +33,7 @@ import { TooltipProvider } from './components/ui/tooltip'
 import { Toaster } from './components/ui/sonner'
 import { clearSceneDraft, saveSceneDraft } from './app/url-scene/scene-draft'
 import { isFreshSceneState } from './app/startup/scene-defaults'
+import { sortSpatially } from './lib/three/spatial-sort'
 
 interface BrowserSceneState {
   assetsReady: boolean
@@ -96,12 +98,14 @@ class SceneAssetErrorBoundary extends Component<
 
 function App() {
   const sceneRef = useRef<SceneRef | null>(null)
+  const roomViewRef = useRef<HTMLElement | null>(null)
   const previewedIdRef = useRef<string | null>(null)
   const overlayState = useOverlayState()
   const [floorFinishId, setFloorFinishId] = useState('')
   const [wallFinishId, setWallFinishId] = useState('')
   const [isFloorFinishLoading, setIsFloorFinishLoading] = useState(false)
   const [isSceneDragging, setIsSceneDragging] = useState(false)
+  const [roomViewHasFocus, setRoomViewHasFocus] = useState(false)
   const isE2ELowRenderQuality =
     import.meta.env.DEV && import.meta.env.VITE_E2E_RENDER_QUALITY === 'low'
 
@@ -187,6 +191,7 @@ function App() {
     previewedId,
     handleScenePreviewChange,
     handleOutlinerPreviewChange,
+    handleCanvasKeyboardPreviewChange,
     handleDragStateChange,
     clearPreviewOnCanvasMiss,
   } = usePreviewController({
@@ -200,6 +205,14 @@ function App() {
     handleDragStateChange(dragging)
   }
 
+  const focusRoomView = useCallback(() => {
+    if (!startup.editorInteractionsEnabled) {
+      return
+    }
+
+    roomViewRef.current?.focus()
+  }, [startup.editorInteractionsEnabled])
+
   const sync = useSceneSync({
     sceneRef,
     isModalOpen: dialogState.isModalOpen,
@@ -209,13 +222,15 @@ function App() {
 
   const handlers = useSceneHandlers({
     commands,
-    sync,
+    sync: { ...sync, focusRoomView },
     announcements,
     dialogState,
     overlayState: {
       clearPreview: clearPreviewOnCanvasMiss,
       clearEditorMessage: overlayState.clearEditorMessage,
       setEditorMessage: overlayState.setEditorMessage,
+      selectedSource: overlayState.selectedSource,
+      setSelectedSource: overlayState.setSelectedSource,
       sceneReadModel: overlayState.sceneReadModel,
       selectedFurniture: overlayState.selectedFurniture,
       handleHistoryChange: overlayState.handleHistoryChange,
@@ -251,6 +266,56 @@ function App() {
       clearQueuedMovementAnnouncement()
     }
   }, [clearQueuedMovementAnnouncement])
+
+  const handleCanvasBrowse = useCallback(
+    (direction: 'next' | 'prev' | 'first' | 'last') => {
+      const snapshot = sceneRef.current?.getSnapshot()
+      if (!snapshot || snapshot.items.length === 0) {
+        return
+      }
+
+      const orderedIds = sortSpatially(snapshot.items)
+      if (orderedIds.length === 0) {
+        return
+      }
+
+      const currentIndex = orderedIds.indexOf(previewedIdRef.current ?? '')
+      let nextIndex: number
+
+      if (direction === 'first') {
+        nextIndex = 0
+      } else if (direction === 'last') {
+        nextIndex = orderedIds.length - 1
+      } else if (direction === 'next') {
+        nextIndex =
+          currentIndex === -1 ? 0 : (currentIndex + 1) % orderedIds.length
+      } else {
+        nextIndex =
+          currentIndex === -1
+            ? orderedIds.length - 1
+            : (currentIndex - 1 + orderedIds.length) % orderedIds.length
+      }
+
+      const nextId = orderedIds[nextIndex]
+      handleCanvasKeyboardPreviewChange(nextId)
+
+      const item = snapshot.items.find((i) => i.id === nextId)
+      if (item) {
+        announcements.announcePolite(item.name)
+      }
+    },
+    [handleCanvasKeyboardPreviewChange, announcements],
+  )
+
+  const handleCanvasSelectPreviewed = useCallback(() => {
+    const id = previewedIdRef.current
+    if (!id) {
+      return
+    }
+
+    handlers.handleSelectById(id, 'canvas-keyboard')
+    handleCanvasKeyboardPreviewChange(null)
+  }, [handlers, handleCanvasKeyboardPreviewChange])
 
   const { initializeCatalogSelection } = overlayState
   useEffect(() => {
@@ -305,6 +370,7 @@ function App() {
     isInfoDialogOpen: dialogState.isInfoDialogOpen,
     onInfoDialogOpenChange: dialogState.setInfoOpen,
     onPreviewChange: handleOutlinerPreviewChange,
+    previewedId,
   })
 
   useEffect(() => {
@@ -394,22 +460,29 @@ function App() {
     hasSelection: overlayState.selectedFurniture !== null,
     isModalOpen: dialogState.isModalOpen,
     canStartNewScene: !sceneIsAtDefaults,
+    roomViewHasFocus,
     onUndo: handlers.handleUndo,
     onRedo: handlers.handleRedo,
     onNewSceneIntent: handlers.handleOpenNewSceneDialog,
-    onOpenDeleteDialog: handlers.handleOpenDeleteDialog,
+    onOpenDeleteDialog: handlers.handleOpenDeleteDialogFromRoomView,
     onFocusSelected: handlers.handleFocusSelected,
     onMoveSelection: (delta) => {
       handlers.handleMoveSelection(delta, { source: 'keyboard' })
     },
-    onClearSelection: handlers.handleClearSelection,
+    onClearSelection: () => {
+      handlers.handleClearSelection()
+      clearPreviewOnCanvasMiss()
+    },
     onRotate: handlers.handleRotateSelection,
     onSetCameraPreset: handlers.handleSetCameraPreset,
+    onCanvasBrowse: handleCanvasBrowse,
+    onCanvasSelectPreviewed: handleCanvasSelectPreviewed,
   })
 
   useCameraKeyState({
     enabled: startup.editorInteractionsEnabled,
     isModalOpen: dialogState.isModalOpen,
+    roomViewHasFocus,
     sceneRef,
   })
 
@@ -420,14 +493,24 @@ function App() {
         aria-busy={startup.startupLoadingActive}
       >
         <p id="scene-instructions" className="sr-only">
-          Interactive 3D room editor. Use the furniture list to select items and
-          the selected item panel to move, rotate, or delete them without
-          dragging.
+          Interactive 3D room editor. Tab to focus the room-view region, then
+          use the arrow keys to preview items in the room and Enter or Space to
+          select the previewed item. You can also use the furniture list and
+          selected item panel to move, rotate, or delete items without dragging.
         </p>
         <section
           aria-describedby="scene-instructions"
           aria-label="Interactive 3D room editor"
-          className="absolute inset-0 z-0"
+          ref={roomViewRef}
+          tabIndex={startup.editorInteractionsEnabled ? 0 : -1}
+          className="absolute inset-0 z-0 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+          onFocus={() => {
+            setRoomViewHasFocus(true)
+          }}
+          onBlur={() => {
+            setRoomViewHasFocus(false)
+          }}
+          onPointerDownCapture={focusRoomView}
         >
           <Canvas
             className="absolute inset-0 z-0"
@@ -445,6 +528,7 @@ function App() {
                 return
               }
 
+              focusRoomView()
               clearPreviewOnCanvasMiss()
               handlers.handleClearSelection()
             }}
@@ -460,6 +544,9 @@ function App() {
                   renderQuality={isE2ELowRenderQuality ? 'e2e-low' : 'default'}
                   catalog={startup.catalog}
                   collections={startup.collections}
+                  onCanvasPointerSelection={
+                    handlers.handleCanvasPointerSelection
+                  }
                   onSelectionChange={handlers.handleSceneSelectionChange}
                   onHistoryChange={handlers.handleSceneHistoryChange}
                   onAssetsReady={handlers.handleSceneAssetsReady}

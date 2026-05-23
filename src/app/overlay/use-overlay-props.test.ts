@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from 'vitest'
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
 import type { FurnitureCatalogEntry } from '@/scene/objects/furniture-catalog'
 import type { SceneReadModel } from '@/scene/scene.types'
+import type { PanelSelectById } from '../scene-interaction.types'
 import type { SceneOutlinerFocusRequest } from '../scene-panel.types'
 import { useOverlayProps } from './use-overlay-props'
 
@@ -42,7 +43,7 @@ interface OverlayOptions {
   onRedo: () => void
   focusRequest: SceneOutlinerFocusRequest | null
   onFocusHandled: () => void
-  onSelectById: (id: string | null) => void
+  onSelectById: PanelSelectById
   readModel: SceneReadModel
   sceneInteractionsDisabled: boolean
   selectedFurniture: FurnitureItem | null
@@ -69,6 +70,7 @@ interface OverlayOptions {
     id: string | null,
     source: 'outliner-hover' | 'outliner-focus',
   ) => void
+  previewedId: string | null
 }
 
 function createOptions(overrides?: Partial<OverlayOptions>): OverlayOptions {
@@ -118,6 +120,7 @@ function createOptions(overrides?: Partial<OverlayOptions>): OverlayOptions {
     isInfoDialogOpen: false,
     onInfoDialogOpenChange: vi.fn(),
     onPreviewChange: vi.fn(),
+    previewedId: null,
     ...overrides,
   }
 }

@@ -19,6 +19,10 @@ import {
 } from '@/components/ui/collapsible'
 import { loadBooleanPreference, saveBooleanPreference } from '@/lib/ui/storage'
 import type { SceneOutlinerFocusRequest } from '../scene-panel.types'
+import type {
+  PanelInteractionSource,
+  PanelSelectById,
+} from '../scene-interaction.types'
 
 const OUTLINER_EXPANDED_PREFERENCE_KEY = 'outliner-expanded'
 
@@ -32,13 +36,15 @@ export function Outliner({
   focusRequest,
   onFocusHandled,
   onSelectById,
+  previewedId,
   onPreviewChange,
 }: {
   readModel: SceneReadModel
   disabled: boolean
   focusRequest: SceneOutlinerFocusRequest | null
   onFocusHandled: () => void
-  onSelectById: (id: string | null) => void
+  onSelectById: PanelSelectById
+  previewedId?: string | null
   onPreviewChange: (
     id: string | null,
     source: 'outliner-hover' | 'outliner-focus',
@@ -146,6 +152,7 @@ export function Outliner({
                 <ul className="space-y-2" aria-label="Furniture items">
                   {readModel.items.map((item) => {
                     const isSelected = item.id === readModel.selectedId
+                    const isPreviewed = item.id === previewedId && !isSelected
 
                     return (
                       <li key={item.id}>
@@ -167,9 +174,14 @@ export function Outliner({
                               size: 'sm',
                             }),
                             'w-full justify-between text-left',
+                            isPreviewed && 'bg-accent text-accent-foreground',
                           )}
-                          onClick={() => {
-                            onSelectById(item.id)
+                          onClick={(e) => {
+                            const source: PanelInteractionSource =
+                              e.detail === 0
+                                ? 'panel-keyboard'
+                                : 'panel-pointer'
+                            onSelectById(item.id, source)
                           }}
                           onFocus={() => {
                             if (!disabled) {
