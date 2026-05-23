@@ -2316,7 +2316,7 @@ The final implementation should satisfy these checks.
 [x] Current toolbar actions still operate on selected item.
 [x] Current details panel does not interfere with shortcut scoping.
 [x] State model supports future selected-item toolbar/details behavior.
-[ ] Future selected-item controls can be mounted after 3D room view in DOM order.
+[x] Future selected-item controls can be mounted after 3D room view in DOM order.
 ```
 
 ## Documentation
@@ -2327,8 +2327,8 @@ The final implementation should satisfy these checks.
 [x] README explains scoped keyboard shortcuts.
 [x] README lists keyboard controls.
 [x] README explains stable panel order vs camera-relative canvas navigation.
-[ ] README explains selected-item controls as contextual actions/details.
-[ ] README notes that visual floating placement should not break logical tab order.
+[x] README explains selected-item controls as contextual actions/details.
+[x] README notes that visual floating placement should not break logical tab order.
 ```
 
 ---

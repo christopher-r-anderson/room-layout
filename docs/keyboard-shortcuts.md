@@ -44,7 +44,7 @@ This dual-purpose dispatch works via shortcut loop fallthrough:
 - When no selection exists, the move shortcut matches but cannot execute — it falls through.
 - `canvas-browse-*` shortcuts are defined after move-\* shortcuts and only fire when `hasSelection` is false.
 
-Home, End, and Enter are canvas-browse-only (no selection) shortcuts.
+Home, End, Enter, and Space are canvas-browse-only (no selection) shortcuts.
 
 ### ShortcutDefinition Fields
 

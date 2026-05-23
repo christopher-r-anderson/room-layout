@@ -64,6 +64,7 @@ Accessibility is an explicit goal for this project, especially for no-mouse edit
 - The Furniture List panel is the primary accessible alternative to direct canvas interaction. It remains visible regardless of selection state so assistive technology users always have a stable text representation of the room contents.
 - There is no duplicate hidden DOM scene graph; the Furniture List panel represents the room for assistive technology.
 - After canvas keyboard selection, announcements include a Tab hint to reach item controls in the Furniture List, so screen reader users know what to do next.
+- The current selected-item actions/details are transitional surfaces for a future contextual model. Even if those controls later float visually near the selected object, they should remain after the 3D room view in logical DOM/tab order.
 - Automated accessibility checks run through Playwright + axe in Chromium and currently cover baseline shell/dialog states plus outliner/inspector states.
 - Automated checks are necessary but not sufficient; manual assistive-technology verification remains an ongoing task.
 
@@ -118,7 +119,7 @@ In addition to this README, project-specific guides are available:
 - Remove the selected item from the selection controls or with `Delete` / `Backspace`, then confirm the dialog.
 - You can fully edit without canvas dragging via the outliner and selected-item inspector surfaces.
 - Keyboard movement supports `Arrow` (0.5m), `Shift+Arrow` (1.0m), and `Alt+Arrow` (0.1m).
-- With nothing selected, `Arrow` keys browse items in spatial order, `Home`/`End` jump to first/last, and `Enter` selects the previewed item.
+- With nothing selected, `Arrow` keys browse items in spatial order, `Home`/`End` jump to first/last, and `Enter` or `Space` selects the previewed item.
 - Camera controls support held-key orbit/pan/zoom and press-based view presets. See [docs/editor-shortcuts-reference.md](docs/editor-shortcuts-reference.md).
 - If a core furniture asset fails to load at startup, use the retry action from the startup error overlay.
 

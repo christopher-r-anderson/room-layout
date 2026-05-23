@@ -30,6 +30,30 @@ interface ShortcutSection {
 
 const SHORTCUT_SECTIONS: ShortcutSection[] = [
   {
+    sectionTitle: '3D Room View (No Selection)',
+    groups: [
+      {
+        groupLabel: 'Browse',
+        rows: [
+          {
+            label: 'Preview next item',
+            combos: [['ArrowRight'], ['ArrowDown']],
+          },
+          {
+            label: 'Preview previous item',
+            combos: [['ArrowLeft'], ['ArrowUp']],
+          },
+          { label: 'Preview first/last', combos: [['Home'], ['End']] },
+          { label: 'Select previewed item', combos: [['Enter'], ['Space']] },
+        ],
+      },
+      {
+        groupLabel: 'Selection',
+        rows: [{ label: 'Clear preview/selection', combos: [['Escape']] }],
+      },
+    ],
+  },
+  {
     sectionTitle: 'Camera Controls',
     groups: [
       {
@@ -176,8 +200,8 @@ export function KeyboardShortcutsHelp() {
         <PopoverHeader>
           <PopoverTitle>Keyboard Shortcuts</PopoverTitle>
           <PopoverDescription>
-            Quick reference for camera controls, object manipulation, and scene
-            operations.
+            Quick reference for room-view, camera, object, and scene shortcuts.
+            Most shortcuts below work only while the 3D room view is focused.
           </PopoverDescription>
         </PopoverHeader>
 
