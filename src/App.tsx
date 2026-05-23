@@ -464,7 +464,7 @@ function App() {
     onUndo: handlers.handleUndo,
     onRedo: handlers.handleRedo,
     onNewSceneIntent: handlers.handleOpenNewSceneDialog,
-    onOpenDeleteDialog: handlers.handleOpenDeleteDialog,
+    onOpenDeleteDialog: handlers.handleOpenDeleteDialogFromRoomView,
     onFocusSelected: handlers.handleFocusSelected,
     onMoveSelection: (delta) => {
       handlers.handleMoveSelection(delta, { source: 'keyboard' })

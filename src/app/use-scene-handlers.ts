@@ -141,6 +141,7 @@ interface SceneHandlers {
   handleSetCameraPreset: (preset: CameraPreset) => void
   handleCatalogDrawerOpenChange: (open: boolean) => void
   handleOpenDeleteDialog: () => void
+  handleOpenDeleteDialogFromRoomView: () => void
   handleOpenNewSceneDialog: () => void
   handleConfirmNewScene: () => void
   handleSceneHistoryChange: (availability: HistoryAvailability) => void
@@ -456,6 +457,9 @@ export function useSceneHandlers({
   // distinguish a real selection-change event from a re-fire caused by a
   // reference change to the same selected item (e.g. position updates).
   const previousHandlerSelectedIdRef = useRef<string | null>(null)
+  const pendingDeleteFocusTargetRef = useRef<'room-view' | 'outliner' | null>(
+    null,
+  )
 
   const handleAddFurniture = useCallback(() => {
     clearEditorMessage()
@@ -624,11 +628,16 @@ export function useSceneHandlers({
     const nextReadModel = syncSceneReadModel()
 
     if (deleted) {
+      const pendingFocusTarget = pendingDeleteFocusTargetRef.current
+      pendingDeleteFocusTargetRef.current = null
       const isCanvasSource =
         selectedSource === 'canvas-keyboard' ||
         selectedSource === 'canvas-pointer'
+      const shouldFocusRoomView =
+        pendingFocusTarget === 'room-view' ||
+        (pendingFocusTarget === null && isCanvasSource)
 
-      if (isCanvasSource) {
+      if (shouldFocusRoomView) {
         focusRoomView()
       } else {
         requestOutlinerFocusByIndex(deletedIndex >= 0 ? deletedIndex : 0)
@@ -691,7 +700,21 @@ export function useSceneHandlers({
     const opened = openDelete()
 
     if (opened) {
+      pendingDeleteFocusTargetRef.current = 'outliner'
       clearEditorMessage()
+    } else {
+      pendingDeleteFocusTargetRef.current = null
+    }
+  }, [openDelete, clearEditorMessage])
+
+  const handleOpenDeleteDialogFromRoomView = useCallback(() => {
+    const opened = openDelete()
+
+    if (opened) {
+      pendingDeleteFocusTargetRef.current = 'room-view'
+      clearEditorMessage()
+    } else {
+      pendingDeleteFocusTargetRef.current = null
     }
   }, [openDelete, clearEditorMessage])
 
@@ -984,6 +1007,7 @@ export function useSceneHandlers({
     handleSetCameraPreset,
     handleCatalogDrawerOpenChange,
     handleOpenDeleteDialog,
+    handleOpenDeleteDialogFromRoomView,
     handleOpenNewSceneDialog,
     handleConfirmNewScene,
     handleSceneHistoryChange,
