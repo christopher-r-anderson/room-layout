@@ -345,7 +345,7 @@ describe('useSceneHandlers', () => {
     )
 
     act(() => {
-      result.current.handleCanvasPointerSelection()
+      result.current.handleCanvasPointerSelection('item-1')
       result.current.handleSceneSelectionChange(makeItem('item-1'))
     })
 
@@ -430,7 +430,7 @@ describe('useSceneHandlers', () => {
     )
 
     act(() => {
-      result.current.handleCanvasPointerSelection()
+      result.current.handleCanvasPointerSelection('item-1')
       result.current.handleSceneSelectionChange(makeItem('item-1'))
     })
     expect(setSelectedSource).toHaveBeenCalledTimes(2)
@@ -524,7 +524,7 @@ describe('useSceneHandlers', () => {
     )
 
     act(() => {
-      result.current.handleCanvasPointerSelection()
+      result.current.handleCanvasPointerSelection('item-1')
       result.current.handleSceneSelectionChange(makeItem('item-1'))
     })
     setSelectedSource.mockClear()
@@ -716,7 +716,7 @@ describe('useSceneHandlers', () => {
     setSelectedSource.mockClear()
 
     act(() => {
-      result.current.handleCanvasPointerSelection()
+      result.current.handleCanvasPointerSelection('item-1')
       result.current.handleSceneSelectionChange(makeItem('item-1'))
     })
 
@@ -810,12 +810,104 @@ describe('useSceneHandlers', () => {
     setSelectedSource.mockClear()
 
     act(() => {
-      result.current.handleCanvasPointerSelection()
+      result.current.handleCanvasPointerSelection('item-2')
       result.current.handleSceneSelectionChange(makeItem('item-2'))
     })
 
     expect(setSelectedSource).toHaveBeenCalledTimes(2)
     expect(setSelectedSource).toHaveBeenLastCalledWith('canvas-pointer')
+  })
+
+  it('marks same-id canvas clicks as canvas-pointer without leaking pending source', () => {
+    const mockCommands = {
+      addFurniture: vi.fn(),
+      clearSelection: vi.fn(),
+      confirmDeleteSelection: vi.fn(),
+      focusSelected: vi.fn(),
+      moveSelection: vi.fn(),
+      redo: vi.fn(),
+      rotateSelection: vi.fn(),
+      selectById: vi.fn(),
+      setCameraPreset: vi.fn(),
+      undo: vi.fn(),
+    }
+
+    const mockSync = {
+      syncSceneReadModel: vi.fn(() => ({ items: [], selectedId: 'item-1' })),
+      requestOutlinerFocusByIndex: vi.fn(),
+      focusRoomView: vi.fn(),
+    }
+
+    const mockAnnouncements = {
+      announcePolite: vi.fn(),
+      announceAssertive: vi.fn(),
+      clearAssertiveAnnouncement: vi.fn(),
+      queueMovementAnnouncement: vi.fn(),
+    }
+
+    const mockDialogState = {
+      closeDialog: vi.fn(),
+      closeAllDialogs: vi.fn(),
+      openDelete: vi.fn(),
+      openNewScene: vi.fn(),
+      setCatalogOpen: vi.fn(),
+      pendingDeleteFurniture: null,
+    }
+
+    const setSelectedSource = vi.fn()
+    const mockOverlayState = {
+      clearPreview: vi.fn(),
+      clearEditorMessage: vi.fn(),
+      setEditorMessage: vi.fn(),
+      handleHistoryChange: vi.fn(),
+      selectedSource: 'panel-pointer' as const,
+      setSelectedSource,
+      selectedFurniture: makeItem('item-1'),
+      sceneReadModel: { items: [makeItem('item-1')], selectedId: 'item-1' },
+    }
+
+    const mockStartup = {
+      activeFloorFinishId: '',
+      activeWallFinishId: '',
+      catalog: [],
+      defaultFloorFinishId: 'wood-floor',
+      defaultWallFinishId: 'light-gray',
+      editorInteractionsEnabled: true,
+      floorFinishIds: [],
+      handleAssetError: vi.fn(),
+      handleAssetsReady: vi.fn(),
+      retryAssetLoading: vi.fn(),
+      resetEditorShellState: vi.fn(),
+      restoreInitialLayout: vi.fn(),
+      setFloorFinishId: vi.fn(),
+      setWallFinishId: vi.fn(),
+      wallFinishIds: [],
+    }
+
+    const { result } = renderHook(() =>
+      useSceneHandlers({
+        commands: mockCommands,
+        sync: mockSync,
+        announcements: mockAnnouncements,
+        dialogState: mockDialogState,
+        overlayState: mockOverlayState,
+        startup: mockStartup,
+      }),
+    )
+
+    act(() => {
+      result.current.handleCanvasPointerSelection('item-1')
+    })
+
+    expect(setSelectedSource).toHaveBeenLastCalledWith('canvas-pointer')
+
+    setSelectedSource.mockClear()
+
+    act(() => {
+      result.current.handleSceneSelectionChange(makeItem('item-2'))
+    })
+
+    expect(setSelectedSource).toHaveBeenCalledWith(null)
   })
 
   it('returns focus to room view when delete is initiated from room view', () => {

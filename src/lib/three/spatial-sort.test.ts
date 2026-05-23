@@ -72,4 +72,18 @@ describe('sortSpatially', () => {
       'bottom-right',
     ])
   })
+
+  it('produces deterministic rows when y distances chain within tolerance', () => {
+    const items = [
+      { id: 'mid-left', pointerTarget: { x: 0, y: 40 } },
+      { id: 'bottom-middle', pointerTarget: { x: 50, y: 80 } },
+      { id: 'top-right', pointerTarget: { x: 100, y: 0 } },
+    ]
+
+    expect(sortSpatially(items)).toEqual([
+      'mid-left',
+      'top-right',
+      'bottom-middle',
+    ])
+  })
 })

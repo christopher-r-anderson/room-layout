@@ -123,7 +123,7 @@ interface UseSceneHandlersOptions {
 
 interface SceneHandlers {
   handleAddFurniture: () => boolean
-  handleCanvasPointerSelection: () => void
+  handleCanvasPointerSelection: (id: string) => void
   handleFocusSelected: () => void
   handleSelectById: (
     id: string | null,
@@ -496,14 +496,18 @@ export function useSceneHandlers({
     setSelectedSource,
   ])
 
-  const handleCanvasPointerSelection = useCallback(() => {
-    if (!editorInteractionsEnabled) {
-      return
-    }
+  const handleCanvasPointerSelection = useCallback(
+    (id: string) => {
+      if (!editorInteractionsEnabled) {
+        return
+      }
 
-    pendingSelectionSourceRef.current = 'canvas-pointer'
-    setSelectedSource('canvas-pointer')
-  }, [editorInteractionsEnabled, setSelectedSource])
+      pendingSelectionSourceRef.current =
+        sceneReadModel.selectedId === id ? null : 'canvas-pointer'
+      setSelectedSource('canvas-pointer')
+    },
+    [editorInteractionsEnabled, sceneReadModel.selectedId, setSelectedSource],
+  )
 
   const handleSelectById = useCallback(
     (id: string | null, source?: InteractionSource): SelectByIdResult => {

@@ -76,7 +76,7 @@ export function Scene({
   renderQuality?: 'default' | 'e2e-low'
   catalog: FurnitureCatalogEntry[]
   collections: FurnitureCollection[]
-  onCanvasPointerSelection?: () => void
+  onCanvasPointerSelection?: (id: string) => void
   onSelectionChange?: (item: FurnitureItem | null) => void
   onHistoryChange?: (availability: SceneHistoryAvailability) => void
   onAssetsReady?: () => void
@@ -130,12 +130,10 @@ export function Scene({
 
   const handleSelect = useCallback(
     (id: string) => {
-      if (id !== selectedId) {
-        onCanvasPointerSelection?.()
-      }
+      onCanvasPointerSelection?.(id)
       selectFurniture(id)
     },
-    [onCanvasPointerSelection, selectFurniture, selectedId],
+    [onCanvasPointerSelection, selectFurniture],
   )
 
   const updateFurniturePosition = useCallback(

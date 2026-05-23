@@ -19,13 +19,48 @@ export function sortSpatially(
       item.pointerTarget !== null,
   )
 
-  visible.sort((a, b) => {
-    const dy = a.pointerTarget.y - b.pointerTarget.y
-    if (Math.abs(dy) > rowTolerance) {
-      return dy
+  const sortedByTopEdge = [...visible].sort((a, b) => {
+    const byY = a.pointerTarget.y - b.pointerTarget.y
+    if (byY !== 0) {
+      return byY
     }
-    return a.pointerTarget.x - b.pointerTarget.x
+
+    const byX = a.pointerTarget.x - b.pointerTarget.x
+    if (byX !== 0) {
+      return byX
+    }
+
+    return a.id.localeCompare(b.id)
   })
 
-  return visible.map((item) => item.id)
+  const rows: (typeof sortedByTopEdge)[] = []
+
+  for (const item of sortedByTopEdge) {
+    const row = rows.at(-1)
+
+    if (row && item.pointerTarget.y - row[0].pointerTarget.y <= rowTolerance) {
+      row.push(item)
+      continue
+    }
+
+    rows.push([item])
+  }
+
+  return rows.flatMap((row) =>
+    row
+      .sort((a, b) => {
+        const byX = a.pointerTarget.x - b.pointerTarget.x
+        if (byX !== 0) {
+          return byX
+        }
+
+        const byY = a.pointerTarget.y - b.pointerTarget.y
+        if (byY !== 0) {
+          return byY
+        }
+
+        return a.id.localeCompare(b.id)
+      })
+      .map((item) => item.id),
+  )
 }
