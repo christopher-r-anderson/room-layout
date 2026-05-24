@@ -1,1319 +1,637 @@
-# Plan A: Selected Item Actions and Editable Details
+# Plan A: Selected Item Controls and Editable Details
 
-## Purpose
+## Goal
 
-Update the selected-item controls for the React Three Fiber furniture layout demo so they feel appropriate for a consumer e-commerce room-planning experience while preserving the accessibility model established in the previous work.
+Turn the current selection-specific UI into a consumer-facing selected-item workflow that fits the existing app architecture:
 
-This plan covers:
+- remove the always-present top-bar selection controls,
+- replace the read-only inspector with editable selected-item details,
+- keep the visible room-contents list as the primary DOM accessibility surface,
+- preserve the room-view keyboard model introduced in the canvas-navigation work,
+- make typed edits respect the same bounds and collision rules as direct manipulation.
 
-- conditionally rendering selected-item controls only when an item is selected,
-- improving the selected-item action toolbar,
-- removing the old movement button toolbar,
-- making the selected-item details panel editable,
-- validating position and rotation edits against existing room bounds/collision rules,
-- preserving the scoped keyboard shortcut model,
-- integrating proper focus/tab behavior,
-- adding accessible feedback and announcements,
-- updating README documentation.
+This pass is about semantics, focus order, validation, and shared command flow. It does not include a floating object-anchored toolbar.
 
-This plan **does not** cover visually floating the toolbar near the selected mesh. That should be a separate follow-up plan. The toolbar should be structured so it can later be visually floated without changing its semantics, DOM order, or focus behavior.
+## Current Codebase Map
 
----
+### App shell and DOM order
 
-# Existing relevant behavior
+- `src/App.tsx` renders the focusable room-view `<section>` first, then `EditorOverlay`.
+- Because `EditorOverlay` renders after the room view, everything inside it is already after the room view in DOM order.
+- The current overlay order is not suitable for the desired tab flow because `EditorOverlay` renders camera tools first, then the top action row and title/actions block, then the left-column panels.
 
-The project currently has or recently added:
+### Current selected-item UI
 
-- a visible **Furniture in room** panel,
-- a focusable **3D room view**,
-- scoped keyboard shortcuts active primarily when the 3D room view is focused,
-- canvas keyboard spatial navigation for previewing/selecting items,
-- selected/preview state synced between the canvas and the panel,
-- `selectedItemId`,
-- `selectedSource`,
-- `previewItemId`,
-- `previewSource`,
-- live announcements for canvas interactions,
-- Escape handling with priority for dialogs/menus/inputs,
-- selected mesh outline,
-- preview mesh outline.
+- `src/app/selection/selection-tools-movement.tsx` renders the move up/down/left/right toolbar.
+- `src/app/selection/selection-tools-other.tsx` renders the rotate/delete toolbar with `aria-label="Selection Other Actions"`.
+- `src/app/scene-panel/inspector.tsx` is the current always-mounted, read-only details card.
+- `src/app/overlay/editor-overlay.tsx` mounts all three surfaces inside the overlay, regardless of whether anything is selected.
 
-The project also currently has:
+### Selection and focus state
 
-- a **Selection Other Actions** toolbar containing:
-  - Delete,
-  - Rotate Left,
-  - Rotate Right,
+- The canonical scene selection lives in `SceneReadModel.selectedId` from `src/scene/scene.types.ts`.
+- App-shell selection metadata lives in `src/app/overlay/use-overlay-state.ts` as `selectedSource` plus the derived `selectedFurniture` lookup.
+- Selection-source tracking already uses `InteractionSource` from `src/app/scene-interaction.types.ts`, which already includes `'toolbar'` and `'inspector'`.
+- Outliner focus handoff is owned by `src/app/hooks/use-scene-sync.ts`.
+- Delete-confirm focus return is currently managed in `src/app/use-scene-handlers.ts` through `pendingDeleteFocusTargetRef`, which only distinguishes `'room-view'` and `'outliner'`.
 
-- a details panel that always exists and shows selected item position/orientation as static text,
-- a movement button toolbar with left/up/right/down buttons,
-- toolbar and details panel positioned globally rather than contextually,
-- toolbar disabled when nothing is selected rather than conditionally rendered.
+### Command and validation path
 
----
+- App-level command dispatch is centralized in `src/app/hooks/use-scene-commands.ts`.
+- App-level orchestration, announcements, and focus behavior are centralized in `src/app/use-scene-handlers.ts`.
+- Scene mutations cross the boundary through `SceneRef` in `src/scene/scene.types.ts` and are implemented in `src/scene/internal/use-scene-imperative-api.ts`.
+- Movement validation currently uses `resolveMovedFurniturePosition` in `src/lib/three/furniture-layout.ts`.
+- Rotation validation currently uses `resolveRotatedFurnitureTransform` in `src/lib/three/furniture-layout.ts` and `rotateSelectedFurnitureInHistory` in `src/scene/internal/furniture-operations.ts`.
+- The current move path includes edge snapping. That is appropriate for drag and keyboard nudge behavior, but not ideal for typed precision edits.
 
-# High-level recommendation
+### Keyboard scoping
 
-Implement this as one selected-item-controls pass.
+- Room-view shortcuts are defined in `src/app/keyboard/use-keyboard-shortcuts.ts`.
+- Text-input and dialog suppression comes from `src/lib/ui/keyboard-event-target.ts`.
+- The current architecture already suppresses room-view shortcuts when focus leaves the room view, and also avoids matching most shortcuts inside text inputs.
 
-The selected-item toolbar and details panel should be handled together because they share:
+### Documentation and copy surfaces that will need updates
 
-- selection lifecycle,
-- DOM/tab order,
-- focus management,
-- validation feedback,
-- announcements,
-- README documentation,
-- future floating-toolbar compatibility.
+- `README.md`
+- `docs/keyboard-shortcuts.md`
+- `docs/editor-shortcuts-reference.md`
+- `src/app/keyboard/keyboard-shortcuts-help.tsx`
+- `src/App.tsx` screen-reader instructions
+- `src/app/use-scene-handlers.ts` canvas-selection announcement copy
 
-Keep the floating visual placement for a later pass.
+## Product Decisions for This Codebase
 
----
+### Keep the visible room-contents panel
 
-# Target final behavior for this pass
+The current `Outliner` in `src/app/scene-panel/outliner.tsx` remains the primary DOM representation of placed furniture. This pass should not introduce a hidden duplicate scene graph or move selection management into canvas-only controls.
+
+In user-facing docs, test titles, and browser assertions, prefer the shipped UI wording such as `Furniture in room` or `room-contents panel`. Keep `Outliner` as the internal code name.
+
+### Move selected-item controls out of `EditorOverlay`
+
+To get the desired keyboard order, the selected-item controls should not remain inside the current overlay toolbar or left-column stack.
+
+The implementation should render a new `SelectedItemControls` block directly in `src/App.tsx` after the room-view `<section>` and before `EditorOverlay`. That gives the correct logical order:
+
+1. room view
+2. selected item actions, when selected
+3. selected item details, when selected
+4. remaining overlay controls such as camera tools, history, outliner, and environment
+
+This keeps `App.tsx` as orchestration only while making tab order explicit and testable.
+
+### Resolve the outliner-origin tab tradeoff explicitly
+
+Moving selected-item controls ahead of `EditorOverlay` optimizes the room-view path, but it also means those controls sit earlier in DOM order than the outliner.
+
+For this pass, preserve the current rule that outliner-origin selection keeps focus in the outliner. The consequence should be documented explicitly:
+
+- room-view-origin selection reaches selected-item controls with forward `Tab`
+- outliner-origin selection keeps focus in the outliner and reaches selected-item controls via `Shift+Tab`, not forward `Tab`
+
+That is an acceptable tradeoff for this pass because it preserves source-aware focus behavior without adding surprise focus jumps or moving the selected-item controls back behind the overlay.
+
+### Replace, do not extend, the old selection toolbar layout
+
+The move button toolbar should be removed from the UI entirely. The current movement behavior remains available through:
+
+- room-view arrow-key shortcuts,
+- future typed absolute edits in the details panel.
+
+The rotate/delete toolbar should be reworked into a selected-item-only surface rather than kept as a permanently mounted disabled toolbar.
+
+### Use consumer-facing labels, but do not invent wall semantics
+
+The current scene model exposes `position[0]` and `position[2]` in meters, and the codebase does not have a product-facing wall-name contract.
+
+For this pass, the editable fields should use safe, consumer-readable labels tied to the actual data model:
+
+- `Left/right position (m)` for X
+- `Front/back position (m)` for Z
+- `Rotation (deg)` for rotation
+
+Do not relabel these as “distance from left wall” or “distance from back wall” until the app has a stable wall-orientation contract in the UI and docs.
+
+### Keep legacy source identifiers in this pass
+
+The shared interaction types already include `'inspector'` in both:
+
+- `src/app/scene-interaction.types.ts`
+- `src/scene/scene.types.ts`
+
+Typed details commits should keep using that existing identifier in this pass. Renaming the shared source contracts to match newer UI copy would create broader churn across command tests and app-state plumbing without improving the shipped behavior.
+
+### Typed position edits should be precise, not snap-oriented
+
+Keyboard nudges and drag should keep the current edge-snapping behavior.
+
+Typed details edits should use the same bounds and collision rules but should not silently wall-snap a valid numeric entry to a nearby edge. A precision field that changes `1.95` to `2.0` because of drag-oriented snap logic will feel wrong in a consumer details editor.
+
+That means this pass should add an explicit absolute-transform validation path rather than routing typed edits through `moveSelection()`.
+
+### Keep delete confirmation, but use consumer copy
+
+The existing `DeleteConfirmationDialog` should stay, but the visible copy should be updated from scene-editor wording to consumer wording, for example:
+
+- title: `Remove item from room?`
+- description: `Remove Sofa from your room layout?`
+- confirm button: `Remove item`
+
+The file can stay named `delete-confirmation-dialog.tsx`; this pass only needs to update the surfaced copy and behavior.
+
+## Target End State
 
 When no item is selected:
 
-```text
-- No selected-item action toolbar is rendered.
-- No selected-item details panel is rendered.
-- No selected-item movement toolbar is rendered.
-- Normal app controls and Furniture in room panel remain available.
-- The 3D room view can still be focused and used to spatially preview/select furniture.
-```
+- `SelectedItemControls` is not rendered.
+- `SelectionToolsMovement` is not rendered anywhere.
+- `SelectionToolsOther` is not rendered in its old always-on form.
+- The outliner and other editor controls remain available.
 
 When an item is selected:
 
-```text
-- Selected-item action toolbar appears.
-- Editable selected-item details panel appears.
-- Toolbar appears before details panel in DOM/tab order.
-- Toolbar contains rotate counterclockwise, rotate clockwise, and remove item actions.
-- Details panel contains editable position and rotation fields.
-- Tab from the focused 3D room view reaches toolbar controls, then details inputs.
-- Focus is not automatically moved to the toolbar/details when selection changes.
-- Existing canvas keyboard movement/rotation shortcuts still work while the 3D room view has focus.
-- Inputs suppress scene shortcuts.
-- Invalid edits are rejected or not committed with visible and announced feedback.
-```
+- A selected-item actions section appears after the room view in DOM order.
+- An editable item-details section appears immediately after the actions section.
+- Focus stays where the selection originated; selection does not auto-jump focus into the new controls.
+- `Tab` from the focused room view reaches the selected-item actions first, then the editable details fields.
+- Inputs commit on `Enter` and blur, cancel the local draft on `Escape`, and do not trigger room-view shortcuts.
+- Invalid typed changes do not mutate scene state.
 
----
+## Concrete Component Plan
 
-# DOM and tab order
+### 1. Introduce a dedicated selected-item controls feature folder
 
-## Recommended logical order
+Create or repurpose components under `src/app/selection/`:
 
-The selected-item toolbar and details panel should be mounted after the 3D room view in DOM order.
+- `selected-item-controls.tsx` as the wrapper
+- `selected-item-actions.tsx` for rotate/remove controls
+- `selected-item-details.tsx` for editable fields
 
-Recommended structure:
+Do not keep the editable details implementation in `src/app/scene-panel/inspector.tsx`. That file is currently a passive scene-panel card; this feature is selected-item controls and belongs with the other selection surfaces.
 
-```text
-Header / app controls
-Furniture in room panel
-3D room view
-Selected item actions toolbar, if selected
-Selected item details panel, if selected
-Other page controls
-```
+### 2. Remove the old top-bar movement surface
 
-This means that when a furniture item is selected and focus is in the 3D room view:
+Delete the `SelectionToolsMovement` usage from `src/app/overlay/editor-overlay.tsx`.
 
-```text
-Tab →
-  Rotate counterclockwise →
-  Rotate clockwise →
-  Remove item →
-  Distance/position input 1 →
-  Distance/position input 2 →
-  Rotation input →
-  next page control
-```
+If nothing else uses it after the rewrite, remove:
 
-Do not visually float the toolbar in this pass unless the codebase already makes it trivial. Logical DOM order matters more right now than visual proximity.
+- `src/app/selection/selection-tools-movement.tsx`
+- `src/app/selection/selection-tools-movement.test.tsx`
+- `src/app/selection/selection-tools-other.test.tsx`
 
-## No automatic focus jump
+### 3. Rework rotate/delete into selected-item actions
 
-Do **not** automatically focus the selected-item toolbar or details panel when an item becomes selected.
+`selection-tools-other.tsx` can either be renamed or replaced. The important outcome is:
 
-Preserve source-aware focus:
+- render only when `selectedFurniture` is not `null`
+- label the section `Selected item actions`
+- keep button order as rotate counterclockwise, rotate clockwise, remove item
+- use consumer-visible labels
+- keep `ToolButton` and `ButtonGroup` if that remains the cleanest reuse path
 
-```text
-Selection from canvas keyboard:
-- focus remains on 3D room view
+The current rotate wiring already goes through `handlers.handleRotateSelection()` and ultimately `useSceneCommands().rotateSelection()`. That shared path should remain.
 
-Selection from canvas pointer:
-- focus moves to/remains on 3D room view
+### 4. Replace the read-only inspector with editable details
 
-Selection from Furniture in room panel keyboard:
-- focus remains on the activated panel button
+Replace the current `Inspector` behavior with a new selected-item-details surface that:
 
-Selection from Furniture in room panel pointer:
-- use normal button/pointer focus behavior
+- only mounts when `selectedFurniture` exists
+- shows current X, Z, and rotation values as editable strings
+- keeps local draft state per field
+- surfaces inline validation errors near each field
 
-Selection from toolbar/details:
-- focus remains in the toolbar/details unless the action removes or clears the item
-```
+Because `src/components/ui/` does not currently contain `input.tsx` or `label.tsx`, this pass should explicitly account for one of these options:
 
-The user should reach toolbar/details with Tab, not by surprise focus movement.
+1. Add `src/components/ui/input.tsx` and `src/components/ui/label.tsx` from the project’s shadcn setup and use them here.
+2. Build a minimal local field row in `selected-item-details.tsx` using native `<label>` and `<input>` if adding shared primitives would create unnecessary churn.
 
----
+The first option is preferable if the generated primitives match the rest of the repo cleanly. Do not introduce a heavier form abstraction than this feature needs.
 
-# Selected-item action toolbar
+## Scene and Command Architecture Changes
 
-## Rename and semantics
+### Add an explicit absolute transform command
 
-Rename the toolbar from **Selection Other Actions** to something consumer-facing.
+The current `SceneRef` API does not expose a command for “set the selected item to this exact position/rotation if valid.” That is the core missing capability for editable details.
 
-Recommended visible/accessible label:
-
-```text
-Selected item actions
-```
-
-Possible implementation:
-
-```tsx
-<section aria-label="Selected item actions">...</section>
-```
-
-If there is a visible heading, prefer:
-
-```tsx
-<section aria-labelledby="selected-item-actions-heading">
-  <h2 id="selected-item-actions-heading">Selected item actions</h2>
-  ...
-</section>
-```
-
-The exact heading level should fit the existing page structure.
-
-## Conditional rendering
-
-The selected-item toolbar should only render when `selectedItemId` exists.
-
-Avoid:
-
-```text
-- permanently mounted disabled toolbar
-- disabled buttons appearing in tab order
-- generic “no selected item” placeholder text inside the toolbar
-```
-
-Preferred:
-
-```tsx
-{
-  selectedItem ? <SelectedItemActions item={selectedItem} /> : null
-}
-```
-
-## Button order
-
-Use this order:
-
-```text
-1. Rotate counterclockwise
-2. Rotate clockwise
-3. Remove item
-```
-
-Rationale:
-
-- rotation actions are common, low-risk item adjustments,
-- destructive action should be last,
-- this feels more natural than Delete first,
-- Delete/Remove should not visually lead the group.
-
-## Button labels
-
-Prefer consumer-facing language.
-
-Recommended visible labels where there is enough room:
-
-```text
-Rotate counterclockwise
-Rotate clockwise
-Remove item
-```
-
-On smaller screens, icon-only buttons are acceptable if each has a robust accessible name and ideally a tooltip/visible-on-focus label.
-
-Recommended accessible names:
-
-```text
-Rotate selected item counterclockwise
-Rotate selected item clockwise
-Remove selected item
-```
-
-For the destructive action, prefer **Remove item** over **Delete** in visible UI because this is a consumer room layout context. “Remove item” maps better to “remove from room/layout.”
-
-The confirmation dialog can say:
-
-```text
-Remove sofa from room?
-```
-
-## Toolbar actions
-
-Toolbar buttons should call the same underlying command functions used by keyboard shortcuts.
-
-Do not duplicate rotation/delete logic separately.
-
-Conceptual commands:
+Add a new scene command on `SceneRef` in `src/scene/scene.types.ts`, for example:
 
 ```ts
-rotateSelectedItemCounterclockwise()
-rotateSelectedItemClockwise()
-requestRemoveSelectedItem()
+setSelectionTransform: (input: {
+  position?: [number, number, number]
+  rotationY?: number
+}) => UpdateSelectionTransformResult
 ```
 
-These commands should:
+The exact name can differ, but it should represent an absolute transform commit rather than a delta move.
 
-- operate on `selectedItemId`,
-- update item state,
-- update live announcements,
-- preserve focus appropriately,
-- respect existing collision/bounds logic if rotation can affect footprint/collision.
+### Add a structured result type
 
-## Focus behavior in toolbar
+This new command should return a structured result rather than a boolean so the app layer can map failures to field-level errors and announcements.
 
-Normal buttons with normal Tab navigation are sufficient.
-
-Do not implement roving tabindex or ARIA toolbar behavior unless the codebase already uses that pattern and it can be done correctly.
-
-Simple is better here:
-
-```text
-Tab moves through:
-- Rotate counterclockwise
-- Rotate clockwise
-- Remove item
-```
-
-When a toolbar button is activated:
-
-```text
-Rotate counterclockwise:
-- rotate selected item
-- keep focus on the button
-- announce result
-
-Rotate clockwise:
-- rotate selected item
-- keep focus on the button
-- announce result
-
-Remove item:
-- open confirmation dialog
-- dialog receives focus
-```
-
-If removing succeeds:
-
-```text
-- selected item is removed
-- selection is cleared
-- toolbar/details unmount
-- announce removal
-- return focus to a sensible place
-```
-
-Recommended focus return after removal from toolbar:
-
-```text
-- return focus to the 3D room view wrapper
-```
-
-This is a stable fallback because the toolbar will disappear.
-
-If the codebase can reliably return focus to the next item in the Furniture in room panel, that is also acceptable, but do not overcomplicate this pass.
-
----
-
-# Remove the movement button toolbar
-
-The existing selected-item movement button toolbar with left/up/right/down should be removed.
-
-Rationale:
-
-```text
-- movement is already available through keyboard arrows in the focused 3D room view
-- precise movement will be available through editable details fields
-- button-based nudging can feel more like a debug/demo control than a polished consumer planner
-- removing it reduces duplicated control surfaces
-```
-
-Do not remove the underlying movement commands. Keep them for:
-
-- arrow-key movement while 3D room view is focused,
-- possible future touch/mobile nudge controls if intentionally designed later.
-
-This pass should remove the visible movement toolbar UI, not necessarily the movement logic.
-
----
-
-# Selected-item details panel
-
-## Rename and semantics
-
-Use consumer-facing naming.
-
-Recommended visible heading:
-
-```text
-Item details
-```
-
-or, if space allows:
-
-```text
-Selected item details
-```
-
-Possible structure:
-
-```tsx
-<section aria-labelledby="selected-item-details-heading">
-  <h2 id="selected-item-details-heading">Item details</h2>
-  ...
-</section>
-```
-
-If the selected item name is available, include it in the panel:
-
-```text
-Sofa details
-```
-
-or:
-
-```text
-Item details: Sofa
-```
-
-Be careful not to create a heading that changes too noisily. A stable heading plus item name inside the panel is fine.
-
-## Conditional rendering
-
-The details panel should only render when an item is selected.
-
-Avoid always showing:
-
-```text
-- empty details panel
-- “No item selected” static text
-- non-editable position text when no item is selected
-```
-
-Preferred:
-
-```tsx
-{
-  selectedItem ? <SelectedItemDetails item={selectedItem} /> : null
-}
-```
-
-## Editable fields
-
-Replace static position/orientation text with editable fields.
-
-Recommended fields:
-
-```text
-Position:
-- Distance from left wall
-- Distance from back wall
-
-Rotation:
-- Rotation
-```
-
-However, the implementation agent must verify that the app’s coordinate system maps accurately to “left wall” and “back wall.”
-
-If it does, use consumer labels:
-
-```text
-Distance from left wall
-Distance from back wall
-Rotation
-```
-
-If not, use safer labels:
-
-```text
-Left/right position
-Front/back position
-Rotation
-```
-
-Do not expose raw technical labels like `x`, `z`, or `rotationY` in the visible UI unless no better consumer label is accurate.
-
-## Field order
-
-Use this order:
-
-```text
-1. Position fields
-2. Rotation field
-```
-
-Rationale:
-
-- position is the core placement detail,
-- rotation also exists in the toolbar, so details rotation can come after position,
-- this matches a consumer “where is it?” then “which way is it facing?” mental model.
-
-## Units
-
-Use clear units.
-
-If the app’s room dimensions are in meters, feet, or arbitrary units, decide how to present them.
-
-Preferred for consumer UI:
-
-```text
-ft
-in
-cm
-m
-```
-
-If the app currently uses abstract scene units, either:
-
-1. map scene units to consumer units, or
-2. label the field clearly enough without pretending.
-
-Examples:
-
-```text
-Distance from left wall (ft)
-Distance from back wall (ft)
-Rotation (degrees)
-```
-
-Rotation should be degrees in the UI even if stored internally as radians.
-
-## Input components
-
-If the project already has shadcn UI components for inputs/labels/fields, reuse them.
-
-If not, install the needed components with shadcn:
-
-```bash
-pnpm shadcn@latest add input label
-```
-
-Depending on the shadcn version and project setup, also consider:
-
-```bash
-pnpm shadcn@latest add field
-```
-
-The implementation agent should inspect existing components first.
-
-Treat generated shadcn components as project-owned code and adjust styling/accessibility as needed.
-
-## Input types
-
-Use a controlled text or number input with careful validation.
-
-For this demo, a text input with explicit parsing can be easier to handle accessibly than `type="number"` because it allows intermediate states like:
-
-```text
--
-1.
-empty string
-```
-
-Either is acceptable if implemented carefully.
-
-Recommended:
-
-```tsx
-<Input
-  inputMode="decimal"
-  value={draftValue}
-  onChange={...}
-  onBlur={commit}
-  onKeyDown={...}
-/>
-```
-
-Use `aria-describedby` to connect help/error text.
-
----
-
-# Editing and commit behavior
-
-Avoid applying scene updates on every keystroke unless the existing app architecture strongly favors it.
-
-Recommended behavior:
-
-```text
-While editing:
-- maintain local draft string state for each input
-- allow temporary incomplete values
-
-On Enter:
-- attempt to commit
-
-On blur:
-- attempt to commit
-
-On Escape:
-- cancel edit and restore previous committed value
-```
-
-This is better than rejecting every intermediate keystroke because users may need to type temporarily invalid strings before reaching a valid number.
-
-## Commit flow
-
-On commit:
-
-```text
-1. Parse the input.
-2. Validate numeric format.
-3. Convert UI units to scene units if needed.
-4. Build a proposed item transform.
-5. Run existing out-of-bounds validation.
-6. Run existing collision validation.
-7. If valid:
-   - update item transform
-   - clear error for that field
-   - update draft value from committed canonical value
-   - announce success if appropriate
-8. If invalid:
-   - do not commit the transform
-   - show field-level error
-   - announce error
-   - either keep invalid draft for correction or restore previous valid value
-```
-
-## Keep invalid draft or restore?
-
-Either approach can be valid.
-
-Recommended for consumer demo:
-
-```text
-Keep the invalid draft focused and show an error.
-```
-
-This lets users correct their value without losing what they typed.
-
-But if the codebase strongly favors canonical value restoration, restoring is acceptable as long as the error clearly explains what happened.
-
-Recommended invalid behavior:
-
-```text
-- keep focus in the invalid field
-- mark the field invalid
-- show inline error text
-- announce the error
-- do not move the furniture
-```
-
-## Error examples
-
-For parse errors:
-
-```text
-Enter a number.
-```
-
-For out-of-bounds:
-
-```text
-Sofa must stay inside the room.
-```
-
-For collision:
-
-```text
-Sofa overlaps another item. Choose a different position.
-```
-
-For rotation collision if applicable:
-
-```text
-Sofa overlaps another item at that rotation.
-```
-
-For unsupported precision/range:
-
-```text
-Enter a value between 0 and 12 ft.
-```
-
-The implementation agent should tailor the messages to the actual room dimensions and validation model.
-
----
-
-# Validation requirements
-
-The editable details panel must not bypass existing placement rules.
-
-Use the existing source of truth for:
-
-- out-of-bounds checks,
-- collision checks,
-- item footprint,
-- room dimensions,
-- rotation normalization.
-
-Do not create a separate approximate validation system if existing collision/footprint logic can be reused.
-
-## Position validation
-
-When editing a position field:
-
-```text
-- preserve the other coordinate
-- preserve the current rotation
-- build proposed transform
-- validate against bounds
-- validate against collisions
-- commit only if valid
-```
-
-## Rotation validation
-
-When editing rotation:
-
-```text
-- parse degrees
-- normalize degrees to a sensible range, likely 0–359 or -180–180
-- convert to internal representation if needed
-- build proposed transform
-- validate footprint/collision if rotation affects footprint
-- commit only if valid
-```
-
-## Rotation normalization
-
-Consumer UI should probably display degrees.
-
-Recommended display normalization:
-
-```text
-0° to 359°
-```
-
-Examples:
-
-```text
-- 0
-- 90
-- 180
-- 270
-```
-
-If user enters:
-
-```text
--90
-```
-
-Either normalize to:
-
-```text
-270
-```
-
-or accept/display `-90` if the app’s existing model works that way.
-
-For consumer clarity, `0–359` is usually cleaner.
-
-## Step values
-
-Suggested defaults:
-
-```text
-Position:
-- step: whatever matches the existing fine movement increment
-- maybe 0.1 if using meters or feet
-- maybe 1 if using inches/cm
-
-Rotation:
-- step: 15 degrees, or existing keyboard rotation increment
-```
-
-The implementation agent should align with existing keyboard movement/rotation increments.
-
----
-
-# Shortcut scoping with inputs
-
-This is critical.
-
-When focus is inside details panel inputs:
-
-```text
-- Arrow keys must not move furniture.
-- W/A/S/D must not orbit camera.
-- Shift + W/A/S/D must not pan camera.
-- , / . must not rotate furniture.
-- - / = must not zoom camera.
-- Delete/Backspace must edit text normally, not remove item.
-- Escape should cancel the current input edit if supported, otherwise allow normal input behavior.
-```
-
-The previous shortcut scope model should already support this. Confirm it works with the new inputs.
-
-Recommended scope extension:
+Recommended result shape:
 
 ```ts
-type ShortcutScope =
-  | 'global'
-  | 'room-view'
-  | 'room-view-object-selected'
-  | 'dialog'
-  | 'text-entry'
-  | 'selected-item-toolbar'
-  | 'selected-item-details'
+type UpdateSelectionTransformResult =
+  | { ok: true; item: FurnitureItem }
+  | {
+      ok: false
+      reason: 'no-selection' | 'blocked-bounds' | 'blocked-collision' | 'no-op'
+    }
 ```
 
-For this pass, the key rule is:
+Returning the updated item on success makes announcement formatting and draft normalization easier in `use-scene-handlers.ts`.
 
-```text
-If activeElement is an input/textarea/select/contenteditable, scene shortcuts do not fire.
-```
+### Add the smallest geometry helper that enables absolute commits
 
----
+Do not duplicate collision and bounds logic inside the React component or inside `use-scene-handlers.ts`.
 
-# Announcements
+Instead, add the smallest new absolute-transform helper needed in `src/lib/three/furniture-layout.ts` and keep `resolveMovedFurniturePosition` as the snap-aware helper for drag and keyboard movement.
 
-Use the existing live region/status system from the previous accessibility work.
+If extracting common clamp-plus-overlap logic from `resolveRotatedFurnitureTransform` meaningfully reduces duplication, do that. If not, prefer the narrower change that only adds the new absolute-commit path.
 
-Do not create multiple competing live regions unless the codebase already has a pattern for local form errors.
+The required behavior split is:
 
-## Toolbar action announcements
+- snap-aware relative movement for drag and keyboard
+- exact typed absolute edits for details inputs
 
-Rotate counterclockwise:
+### Implement the scene command in `use-scene-imperative-api`
 
-```text
-Sofa rotated counterclockwise.
-```
+In `src/scene/internal/use-scene-imperative-api.ts`:
 
-Rotate clockwise:
+- read the active selected item from `selectedIdRef`
+- build the proposed absolute transform from the input
+- validate through the new helper in `src/lib/three/furniture-layout.ts`
+- commit the new present-state entry through the existing history utilities
+- preserve the selected item ID
 
-```text
-Sofa rotated clockwise.
-```
+This command should create a real history entry on success, just like existing move and rotate commands.
 
-Remove success:
+### Surface the command through `useSceneCommands`
 
-```text
-Sofa removed from room.
-```
+Extend `src/app/hooks/use-scene-commands.ts` with the new command so app code continues to use one command slice rather than reaching into `sceneRef.current` ad hoc.
 
-Remove canceled:
+This is also the right place to keep the `editorInteractionsEnabled` guard consistent with the rest of the command API.
 
-```text
-Remove canceled.
-```
+## Handler and Announcement Plan
 
-## Details success announcements
+### Add a dedicated details-commit handler in `useSceneHandlers`
 
-Position success:
+`src/app/use-scene-handlers.ts` should own the app behavior for typed edits, not the component.
 
-```text
-Sofa position updated.
-```
-
-More specific if useful:
-
-```text
-Sofa distance from left wall updated to 4 feet.
-```
-
-Rotation success:
-
-```text
-Sofa rotation updated to 90 degrees.
-```
-
-## Details error announcements
-
-Invalid number:
-
-```text
-Enter a number for distance from left wall.
-```
-
-Out of bounds:
-
-```text
-Sofa must stay inside the room.
-```
-
-Collision:
-
-```text
-Sofa overlaps another item. Choose a different position.
-```
-
-## Avoid noisy announcements
-
-Do not announce every `onChange` keystroke.
-
-Announce on:
-
-```text
-- successful commit
-- failed commit
-- destructive action result
-- rotation action result
-```
-
----
-
-# Remove confirmation dialog
-
-The Remove item action should continue to use a confirmation dialog.
-
-Recommended dialog copy:
-
-```text
-Title: Remove sofa from room?
-Description: This will remove the sofa from your room layout.
-Actions:
-- Cancel
-- Remove item
-```
-
-Accessibility/focus behavior:
-
-```text
-- focus moves into dialog when opened
-- Escape cancels dialog
-- Cancel closes dialog and returns focus to the Remove item button
-- Confirm removes item
-- after confirm, toolbar/details unmount
-- focus returns to 3D room view or another stable location
-```
-
-Recommended after confirm:
-
-```text
-focus 3D room view wrapper
-```
-
-because the toolbar button disappears.
-
-If the item was removed through another source, use the appropriate source-aware focus return if the codebase supports it.
-
----
-
-# State and command organization
-
-The implementation agent should look for existing command/update functions and avoid duplicating transform logic.
-
-Prefer command-style functions such as:
+Add a handler along the lines of:
 
 ```ts
-selectItem(itemId, source)
-clearSelection()
-rotateSelectedItem(direction)
-removeSelectedItem()
-updateSelectedItemTransform(proposedTransform)
-validateItemTransform(itemId, proposedTransform)
-announce(message)
+handleUpdateSelectedItemDetails(...)
 ```
 
-These names are conceptual; adapt to the codebase.
+Responsibilities:
 
-Important:
+- clear any stale editor message before a commit attempt
+- call the new scene command through `commands`
+- sync the read model on success
+- set `selectedSource` to `'inspector'` on successful details commits
+- announce success through `announcePolite`
+- map failure reasons to field-friendly messages
 
-```text
-- toolbar buttons
-- keyboard shortcuts
-- details input commits
-```
+### Reuse the existing movement failure wording where it still fits
 
-should all use the same underlying item update/validation logic where possible.
+`use-scene-handlers.ts` already has `formatMoveBlockedMessage()` for bounds and collision failure announcements. Reuse or extract that mapping instead of inventing a second wording table.
 
-This reduces risk that keyboard movement and form edits follow different collision rules.
+For field-level details errors, the component can prefix the field name while reusing the shared reason mapping, for example:
 
----
+- `Left/right position must stay inside the room.`
+- `Front/back position overlaps another item.`
 
-# Component structure guidance
+The exact copy can be refined in implementation, but the reason mapping should stay centralized.
 
-Do not assume these exact file names. The implementation agent should adapt to the actual codebase.
+### Update selection announcements to match the new tab path
 
-A reasonable conceptual structure:
+The current canvas-keyboard selection announcement in `handleSelectById()` says:
 
-```text
-SelectedItemControls
-├─ SelectedItemActions
-│  ├─ RotateCounterclockwiseButton
-│  ├─ RotateClockwiseButton
-│  └─ RemoveItemButton
-└─ SelectedItemDetails
-   ├─ PositionFields
-   └─ RotationField
-```
+- `Press Tab to reach item controls in the Furniture List.`
 
-Or:
+That will be wrong once selected-item controls move out of the outliner column. Update it to reference the new selected-item controls, for example:
 
-```tsx
-{selectedItem ? (
-  <SelectedItemControls
-    item={selectedItem}
-    onRotateCounterclockwise={...}
-    onRotateClockwise={...}
-    onRequestRemove={...}
-    onUpdateTransform={...}
-  />
-) : null}
-```
+- `Press Tab to reach selected item actions and details.`
 
-Inside:
+### Preserve the current non-room-view delete focus model
 
-```tsx
-<section aria-label="Selected item actions">
-  ...
-</section>
+The current codebase already distinguishes room-view delete from non-room-view delete in `src/app/use-scene-handlers.ts`, and the current browser contract expects successful non-room-view delete to return focus to the outliner.
 
-<section aria-labelledby="selected-item-details-heading">
-  ...
-</section>
-```
+This pass should preserve that behavior unless a separate product decision explicitly changes it.
 
-Keep this component logically mounted after the 3D room view.
+This is a repo-specific focus contract for this pass, not a general rule that every selected-item toolbar delete should always return focus to the room-contents panel forever.
 
-Future floating pass can add positioning to `SelectedItemActions` without changing its semantic role or DOM position.
+Recommended implementation order:
 
----
+1. Reuse `handleOpenDeleteDialog()` from selected-item controls so successful delete follows the current non-room-view focus path.
+2. Verify that cancel returns focus to the invoking button or input through the existing alert-dialog focus restore.
+3. Only add a more complex explicit return-focus ref if cancel behavior is not stable in tests.
 
-# Styling guidance
+That keeps the visible room-contents list as the primary post-delete DOM surface while avoiding unnecessary focus-model churn in the same pass.
 
-## Toolbar
+Docs and tests for this pass should distinguish the two delete flows clearly:
 
-Current large-screen labels and small-screen icon-only behavior is acceptable.
+- `Delete` from the focused 3D room view follows the room-view focus path.
+- `Remove item` from selected-item actions follows the existing non-room-view room-contents-panel focus path.
 
-Improve as needed:
+## Details Editor Behavior
 
-```text
-Large screens:
-- icon + visible text labels
+### Field model
 
-Small screens:
-- icon-only buttons
-- accessible names required
-- tooltips or visually hidden labels recommended
-```
+The details panel should edit three fields derived from `selectedFurniture`:
 
-Destructive action should be visually distinct but not overly alarming.
+- X position in meters
+- Z position in meters
+- rotation in degrees
 
-Recommended order and style:
+Display formatting should be stable and consumer readable:
 
-```text
-[Rotate counterclockwise] [Rotate clockwise] [Remove item]
-```
+- meters with a fixed decimal precision, matching the current inspector’s `toFixed(1)` convention unless a stronger reason emerges during implementation
+- degrees as a normalized whole number or a short decimal string
 
-`Remove item` should be last.
+### Draft state and commit behavior
 
-## Details panel
+Each field should keep a local string draft so users can type intermediate states such as:
 
-Details panel should visually feel like selected-object precision controls, not debug data.
+- empty string
+- `-`
+- `1.`
 
-Recommended groups:
+Commit rules:
 
-```text
-Item details
-Position
-  Distance from left wall
-  Distance from back wall
-Rotation
-  Rotation
-```
+- `Enter`: attempt commit
+- blur: attempt commit
+- `Escape`: restore the last committed field value and clear the local error
 
-Use compact but readable layout.
+Invalid drafts should remain visible after a failed commit so the user can correct them in place.
 
-Field-level errors should appear near the relevant input.
+Blur-triggered commit should be guarded so it does not apply a stale draft after the selected item changes or while the remove confirmation flow is opening.
 
-Example:
+### Parsing and normalization
 
-```text
-Distance from left wall
-[ 4.2 ft ]
-Sofa must stay inside the room.
-```
+- Parse position fields as meters directly.
+- Parse rotation as degrees in the UI and convert to radians before scene commit.
+- Normalize rotation for display after a successful commit.
 
-Use existing design tokens/classes.
+Use a consistent display range for rotation. Prefer `0` to `359` degrees in the UI even if the internal radian value wraps differently.
 
----
+### Error presentation
 
-# README updates
+Each field should have:
 
-Add or update README documentation for selected-item controls.
+- inline error text
+- `aria-invalid` when invalid
+- `aria-describedby` pointing to help or error text
 
-Suggested text:
+Do not announce on every keystroke. Announce only when a commit succeeds or fails.
 
-```md
-### Selected item controls
+Treat `no-op` commits as low-noise. A parsed value that resolves to the current committed transform should clear local draft/error state without surfacing a loud error or success announcement.
 
-When furniture is selected, the app shows contextual item actions and editable item details. These controls are only rendered while an item is selected so keyboard users do not tab through disabled controls that do not apply.
+## Keyboard and Focus Integration
 
-The selected-item actions include rotation and removal. Destructive removal is confirmed before the item is removed from the room.
+### Preserve the current room-view scoping model
 
-The details panel provides editable position and rotation fields for precise adjustments. These form controls use the same room bounds and collision validation as direct manipulation, so typed changes cannot place furniture outside the room or overlapping another item.
+The plan should rely on the existing keyboard architecture, not replace it.
 
-The 3D room view keeps focus when an item is selected from the canvas. Users can continue using canvas keyboard controls, or press Tab to reach selected-item actions and details. Selecting an item from the “Furniture in room” panel keeps focus in the panel, preserving the user’s current navigation path.
+Important current behavior that must remain true:
 
-The selected-item toolbar is currently placed in logical tab order after the 3D room view. A later visual placement pass may position it near the selected object while preserving the same DOM order and keyboard behavior.
-```
+- room-view shortcuts in `use-keyboard-shortcuts.ts` require `roomViewHasFocus`
+- text-input-like targets are filtered by `keyboard-event-target.ts`
+- dialogs suppress room-view shortcuts
 
-Also update keyboard controls:
-
-```md
-When furniture is selected in the 3D room view:
+### Practical consequence for the new details inputs
 
-- Arrow keys: move the selected item
-- Shift + Arrow keys: move farther
-- Alt + Arrow keys: move precisely
-- , / .: rotate the selected item
-- Tab: move to selected-item actions and details
-- Delete / Backspace: remove the selected item after confirmation
-- Escape: deselect the item
+Once focus leaves the room view and enters the selected-item controls:
 
-In selected-item details:
+- room-view movement, rotate, delete, and camera shortcuts should no longer fire because `roomViewHasFocus` becomes false
+- text-entry targets also remain protected by the existing input-target checks
 
-- Enter or blur: commit an edited value
-- Escape: cancel the current edit, if editing is in progress
-```
+This means the main work here is verification and a small amount of component-level key handling for `Escape`, not a wholesale keyboard-architecture change.
 
----
+### DOM order requirement
 
-# Acceptance checklist
-
-## Conditional rendering
+The selected-item controls must be rendered between the room-view section and `EditorOverlay` in `src/App.tsx`.
 
-```text
-[ ] Selected-item action toolbar is not rendered when no item is selected.
-[ ] Selected-item details panel is not rendered when no item is selected.
-[ ] Old movement button toolbar is removed from the UI.
-[ ] No disabled selected-item controls remain as unnecessary tab stops.
-```
+Do not leave them inside `EditorOverlay` and attempt to fix focus order with `tabIndex` tricks. The DOM should express the intended order directly.
 
-## Toolbar
+## Concrete File-Level Plan
 
-```text
-[ ] Toolbar is labeled “Selected item actions” or equivalent.
-[ ] Buttons are ordered: rotate counterclockwise, rotate clockwise, remove item.
-[ ] Button labels are consumer-facing.
-[ ] Icon-only buttons have accessible names.
-[ ] Rotate buttons use the same underlying rotation logic as keyboard shortcuts.
-[ ] Remove item opens a confirmation dialog.
-[ ] Successful removal clears selection and unmounts toolbar/details.
-[ ] Focus returns sensibly after removal.
-```
+### Phase 1: Create the new selected-item controls surface
 
-## Details panel
+Files:
 
-```text
-[ ] Details panel is labeled “Item details” or equivalent.
-[ ] Position fields are editable.
-[ ] Rotation field is editable.
-[ ] Labels are consumer-friendly and accurate to the coordinate model.
-[ ] Units are visible or otherwise clear.
-[ ] Rotation displays in degrees.
-[ ] Field order is position first, then rotation.
-```
+- `src/app/selection/selected-item-controls.tsx`
+- `src/app/selection/selected-item-actions.tsx`
+- `src/app/selection/selected-item-details.tsx`
+- `src/App.tsx`
+- `src/app/overlay/use-overlay-props.ts`
+- `src/app/overlay/use-overlay-props.test.ts`
 
-## Validation
+Implementation:
 
-```text
-[ ] Invalid numeric input is not committed.
-[ ] Out-of-bounds position is not committed.
-[ ] Colliding position is not committed.
-[ ] Invalid rotation/colliding rotation is not committed if applicable.
-[ ] Validation uses existing room bounds/collision logic.
-[ ] Errors are shown visually near the relevant field.
-[ ] Errors are announced to screen reader users.
-[ ] Successful commits update the item and clear errors.
-```
+- render `SelectedItemControls` only when `overlayState.selectedFurniture` exists
+- mount it immediately after the room-view `<section>`
+- pass selection handlers from `useSceneHandlers`
+- keep `EditorOverlay` responsible for the rest of the overlay chrome
+- trim obsolete selection-only props from the overlay prop-group contract once the controls move out of `EditorOverlay`
+- pass the startup-overlay and catalog-drawer-open gating state needed to keep the new controls out of the focus order when the shell is intentionally inerted
 
-## Focus and keyboard
+### Startup and drawer gating requirement
 
-```text
-[ ] Selecting from canvas keyboard keeps focus on the 3D room view.
-[ ] Selecting from canvas pointer focuses/remains on the 3D room view.
-[ ] Selecting from Furniture in room panel keeps focus in the panel.
-[ ] Focus is not automatically moved to toolbar/details after selection.
-[ ] Tab from 3D room view reaches selected-item toolbar, then details.
-[ ] Inputs suppress scene shortcuts.
-[ ] Arrow keys in inputs do not move furniture.
-[ ] Delete/Backspace in inputs edit text normally and do not remove furniture.
-[ ] Escape in dialogs cancels dialog before clearing selection.
-```
+The new selected-item controls should inherit the same focus suppression expectations as the rest of the non-scene shell.
 
-## Announcements
+At minimum:
 
-```text
-[ ] Rotate toolbar actions are announced.
-[ ] Remove success is announced.
-[ ] Details commit success is announced.
-[ ] Details validation errors are announced.
-[ ] Announcements are not fired on every keystroke.
-```
+- when the startup overlay is active, the selected-item controls must not be reachable or exposed as active interactive content
+- when the catalog drawer is open, the selected-item controls must follow the same non-drawer accessibility and focus-suppression rules as the surrounding shell
 
-## Future floating-toolbar compatibility
+If the implementation uses `inert` and `aria-hidden` to mirror the current overlay behavior, keep that behavior explicit and testable rather than relying on incidental visual overlap.
 
-```text
-[ ] Selected-item toolbar is structurally isolated enough to be visually floated later.
-[ ] Toolbar is logically mounted after the 3D room view.
-[ ] No focus behavior depends on the toolbar’s visual position.
-[ ] README notes floating placement is a future visual enhancement that should preserve DOM order.
-```
+### Phase 2: Remove the old selection-only toolbar and inspector wiring
 
----
+Files:
 
-# Recommended implementation phases
+- `src/app/overlay/editor-overlay.tsx`
+- `src/app/overlay/use-overlay-props.ts`
+- `src/app/overlay/use-overlay-props.test.ts`
+- `src/app/selection/selection-tools-movement.tsx`
+- `src/app/selection/selection-tools-other.tsx`
+- `src/app/selection/selection-tools-other.test.tsx`
+- `src/app/scene-panel/inspector.tsx`
+- `src/app/scene-panel/inspector.test.tsx`
 
-## Phase 1: Audit current selected-item controls
+Implementation:
 
-Inspect:
+- remove `SelectionToolsMovement` from `EditorOverlay`
+- remove the old always-on `SelectionToolsOther` placement from `EditorOverlay`
+- remove the old `Inspector` placement from `EditorOverlay`
+- delete or repurpose the old files and tests so the feature no longer exists in two locations
 
-```text
-- existing Selection Other Actions toolbar component
-- existing details panel component
-- existing movement button toolbar
-- existing selection state and selected item lookup
-- existing rotation/delete command logic
-- existing movement/position update logic
-- existing collision/out-of-bounds validation
-- existing live announcement utility
-- existing shadcn/ui components
-```
+### Phase 3: Add absolute selected-item transform commits
 
-Deliverable:
+Files:
 
-```text
-- map current components and commands to this plan
-- identify what can be reused
-- identify whether input/label/field components need to be installed
-```
+- `src/lib/three/furniture-layout.ts`
+- `src/lib/three/furniture-layout.test.ts`
+- `src/scene/scene.types.ts`
+- `src/scene/internal/use-scene-imperative-api.ts`
+- `src/scene/internal/use-scene-imperative-api.test.ts`
+- `src/app/hooks/use-scene-commands.ts`
+- `src/app/hooks/use-scene-commands.test.ts`
 
-## Phase 2: Rework selected-item toolbar
+Implementation:
 
-Implement:
+- add a shared absolute-transform resolution helper without edge snapping
+- add a new `SceneRef` command for selected-item transform commits
+- expose that command through `useSceneCommands`
+- cover success, bounds rejection, collision rejection, and no-selection behavior in unit tests
 
-```text
-- conditional render only when selected
-- rename/relabel toolbar
-- reorder buttons
-- update labels/accessibility names
-- ensure actions use shared commands
-- remove disabled no-selection behavior
-```
+### Phase 4: Add app-level handlers for details commits and updated delete origin
 
-Deliverable:
+Files:
 
-```text
-- selected-item toolbar behaves correctly in DOM/tab order
-- no floating yet
-```
+- `src/app/use-scene-handlers.ts`
+- `src/app/use-scene-handlers.test.ts`
 
-## Phase 3: Remove movement button toolbar
+Implementation:
 
-Implement:
+- add a handler for details commits
+- keep success and error announcements centralized here
+- update selection-source tracking for `'inspector'`
+- preserve the existing non-room-view delete focus behavior for selected-item controls unless a separate UX decision changes it
+- update the Tab hint announcement text for canvas-keyboard selection
 
-```text
-- remove visible movement button UI
-- keep underlying movement logic for keyboard controls
-- ensure no references break
-```
+### Phase 5: Finish keyboard help, instructions, and docs
 
-Deliverable:
+Files:
 
-```text
-- movement is handled by 3D room keyboard controls and future details fields, not separate arrow buttons
-```
+- `src/App.tsx`
+- `src/app/keyboard/keyboard-shortcuts-help.tsx`
+- `README.md`
+- `docs/keyboard-shortcuts.md`
+- `docs/editor-shortcuts-reference.md`
 
-## Phase 4: Rework details panel as conditional editable panel
+Implementation:
 
-Implement:
+- update the room-view instructions string to mention selected-item actions/details instead of a generic selected-item panel
+- update keyboard help copy to use consumer-facing rotate/remove labels
+- document that selected-item controls only appear when an item is selected
+- document that typed details edits commit on Enter or blur and cancel on Escape
+- rename stale inspector/selected-item-panel wording in app copy and browser-test expectations that still reference the old surface
 
-```text
-- conditional render only when selected
-- add labeled editable fields
-- use shadcn input/label/field if appropriate
-- display units
-- display current selected item values
-- maintain draft state while editing
-```
+## Test Plan
 
-Deliverable:
+### Unit tests
 
-```text
-- details panel is editable but may initially use basic validation wiring
-```
+Add or update:
 
-## Phase 5: Add validation and commit behavior
+- `src/lib/three/furniture-layout.test.ts`
+- `src/scene/internal/use-scene-imperative-api.test.ts`
+- `src/app/hooks/use-scene-commands.test.ts`
+- `src/app/use-scene-handlers.test.ts`
+- `src/app/overlay/use-overlay-props.test.ts`
+- a new component test for selected-item details in `src/app/selection/`
+- remove or replace the old inspector coverage in `src/app/scene-panel/inspector.test.tsx`
 
-Implement:
+Minimum behaviors to cover:
 
-```text
-- parse/commit on Enter and blur
-- cancel on Escape if editing
-- validate against existing bounds/collision logic
-- show field-level errors
-- announce success/error
-- update canonical item state only on valid commit
-```
+- absolute transform commit succeeds when valid
+- absolute transform commit rejects bounds and collision failures
+- absolute transform `no-op` clears draft/error state without a loud announcement
+- details field `Escape` restores the committed value
+- blur caused by selection change or opening remove confirmation does not commit a stale draft to the wrong item
+- success and error announcements fire only on commit
+- delete from selected-item controls returns focus appropriately after confirm
 
-Deliverable:
+### Keyboard suppression tests
 
-```text
-- details edits cannot create invalid layout state
-```
+Extend `src/app/keyboard/use-keyboard-shortcuts.test.tsx` to verify that when focus is inside the new details inputs:
 
-## Phase 6: Verify shortcut scoping and focus
+- arrow keys do not move the selected item
+- `Delete` and `Backspace` do not open delete confirmation
+- comma and period do not rotate the item
 
-Test and fix:
+This repo already has a memory note to add explicit suppression tests whenever shortcut behavior changes; this work should follow that pattern.
 
-```text
-- inputs suppress scene shortcuts
-- toolbar actions do not steal focus unexpectedly
-- selection from different sources preserves focus behavior
-- removal focus return works
-```
+### Existing browser tests and helpers that must move with the feature
 
-Deliverable:
+Update the suites and helpers that already assert the current inspector, move buttons, delete copy, and focus contracts:
 
-```text
-- selected-item controls integrate with existing focus/navigation model
-```
+- `e2e/editor-accessibility.spec.ts`
+- `e2e/editor-dialogs.spec.ts`
+- `e2e/editor-a11y-audits.spec.ts`
+- `e2e/support/editor-harness.ts`
 
-## Phase 7: README update
+These files already encode the current selection controls and dialog copy, so they should be treated as first-class implementation fallout rather than optional follow-up cleanup.
 
-Update documentation with:
+Update their wording and assertions to distinguish:
 
-```text
-- selected-item controls behavior
-- editable details behavior
-- validation behavior
-- tab/focus behavior
-- note that floating toolbar placement is future work
-```
+- `Delete` from the focused 3D room view
+- `Remove item` from selected-item actions
+- `Furniture in room` or `room-contents panel` as the user-facing panel name
 
----
+### Browser tests
 
-# What should remain deferred to Plan B
+Add or extend Playwright coverage in the existing accessibility and hotkey suites:
 
-Do **not** include these unless explicitly requested:
+- `e2e/editor-accessibility-flows.spec.ts`
+- `e2e/editor-hotkeys.spec.ts`
 
-```text
-- visual floating placement of toolbar near selected mesh
-- custom anchor/bounding mesh toolbar positioning
-- projected bounding box toolbar positioning
-- toolbar collision/viewport edge avoidance
-- smoothing toolbar position during camera movement
-- portal strategy for floating toolbar
-- z-index/overlay collision work beyond what is necessary now
-```
+At minimum verify:
 
-Plan A should make the toolbar/details **semantically and behaviorally correct**. Plan B can make the toolbar **visually float** while preserving this behavior.
+- tab order from room view reaches selected-item actions, then details
+- Furniture-in-room-panel-origin selection keeps focus in the room-contents panel and reaches selected-item controls via `Shift+Tab` rather than forward `Tab`
+- selecting from the Furniture in room panel keeps focus in the room-contents panel
+- selecting from the room view keeps focus on the room view
+- typing in details inputs does not trigger room-view shortcuts
+- invalid details commits show visible feedback and do not move the item
+- `Delete` from the focused 3D room view follows the room-view focus path
+- `Remove item` from selected-item actions follows the same non-room-view room-contents-panel focus contract the app uses elsewhere
+- selected-item controls are suppressed from focus/navigation while the startup overlay is active
+- selected-item controls are suppressed from focus/navigation when the catalog drawer is open, matching the surrounding shell behavior
+
+## Acceptance Criteria
+
+### UI structure
+
+- selected-item controls are not rendered when there is no selection
+- the move button toolbar is gone from the UI
+- selected-item actions and details render outside `EditorOverlay`, directly after the room view in `App.tsx`
+
+### Shared behavior
+
+- rotate buttons still go through the shared rotate command path
+- typed details commits go through a shared scene command path, not component-local mutation
+- typed details validation reuses the same bounds/collision rules as the scene domain
+
+### Keyboard and focus
+
+- selection does not auto-move focus into the new controls
+- `Tab` from the room view reaches selected-item actions first
+- Furniture-in-room-panel-origin selection keeps focus in the room-contents panel, and selected-item controls are reachable from there via `Shift+Tab`
+- details inputs suppress room-view shortcuts
+- `Delete` from the focused 3D room view follows the room-view focus path
+- `Remove item` from selected-item actions follows the existing non-room-view room-contents-panel focus behavior unless this is intentionally changed in a separate product decision
+
+### Accessibility and announcements
+
+- actions and details have clear section labels
+- invalid fields expose inline and screen-reader-discernible errors
+- announcements only occur on selection, successful commit, failed commit, rotate, and remove actions
+
+### Documentation
+
+- README and keyboard docs match the shipped behavior
+- the on-canvas Tab hint in `src/app/use-scene-handlers.ts`, the room-view instructions in `src/App.tsx`, and the keyboard help copy all match the new control names and location
+
+## Explicitly Deferred
+
+This pass should not take on:
+
+- floating toolbar placement near the selected object
+- viewport edge-avoidance for a floating toolbar
+- projection math or portal infrastructure for selection HUD placement
+- broader room-contents panel redesign beyond any copy updates directly needed for this feature
+
+The code should, however, leave the selected-item actions/details isolated enough that a later visual placement pass can reposition them without changing their DOM order or command wiring.
