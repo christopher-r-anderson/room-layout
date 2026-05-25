@@ -44,7 +44,7 @@ describe('SelectedItemDetails', () => {
     await user.click(xInput)
     await user.tab()
 
-    expect(xInput).toHaveValue('1.2')
+    expect(xInput).toHaveValue('1.24')
     expect(onUpdateSelectedItemDetails).not.toHaveBeenCalled()
   })
 
@@ -69,7 +69,7 @@ describe('SelectedItemDetails', () => {
     await user.click(xInput)
     await user.keyboard('{Enter}')
 
-    expect(xInput).toHaveValue('1.2')
+    expect(xInput).toHaveValue('1.24')
     expect(onUpdateSelectedItemDetails).not.toHaveBeenCalled()
   })
 

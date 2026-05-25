@@ -154,7 +154,7 @@ describe('useSceneCommands', () => {
     act(() => {
       expect(result.current.addFurniture()).toBe(false)
       expect(
-        result.current.moveSelection({ x: 0.5, z: 0 }, { source: 'inspector' }),
+        result.current.moveSelection({ x: 0.5, z: 0 }, { source: 'keyboard' }),
       ).toEqual({
         ok: false,
         reason: 'no-selection',
@@ -206,7 +206,7 @@ describe('useSceneCommands', () => {
     act(() => {
       expect(result.current.addFurniture()).toBe(false)
       expect(
-        result.current.moveSelection({ x: 0.5, z: 0 }, { source: 'inspector' }),
+        result.current.moveSelection({ x: 0.5, z: 0 }, { source: 'keyboard' }),
       ).toEqual({
         ok: false,
         reason: 'no-selection',
@@ -277,7 +277,7 @@ describe('useSceneCommands', () => {
 
     act(() => {
       expect(
-        result.current.moveSelection({ x: 0.5, z: 0 }, { source: 'inspector' }),
+        result.current.moveSelection({ x: 0.5, z: 0 }, { source: 'keyboard' }),
       ).toEqual({
         ok: true,
         position: [1, 0, 0],
@@ -304,7 +304,7 @@ describe('useSceneCommands', () => {
 
     expect(moveSelection).toHaveBeenCalledWith(
       { x: 0.5, z: 0 },
-      { source: 'inspector' },
+      { source: 'keyboard' },
     )
     expect(setSelectionTransform).toHaveBeenCalledWith({
       position: [1.5, 0, 0],

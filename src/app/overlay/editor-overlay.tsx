@@ -25,7 +25,6 @@ import type { StartupErrorKind } from '../startup/use-startup-state'
 import { CopySceneUrlButton } from './copy-scene-url-button'
 import { NewSceneButton } from './new-scene-button'
 import type { PanelSelectById } from '../scene-interaction.types'
-import { cn } from '@/lib/utils'
 
 export interface EditorCameraProps {
   onSetCameraPreset: (preset: CameraPreset) => void
@@ -200,12 +199,7 @@ export function EditorOverlay({
           it is confusing with screen readers and keyboard tabbing
         */}
         <div className="flex flex-wrap sm:flex-row justify-between gap-2">
-          <div
-            className={cn(
-              'flex w-full sm:w-80 flex-col gap-2 overflow-y-auto',
-              scene.readModel.selectedId !== null && 'pt-[32rem]',
-            )}
-          >
+          <div className="flex w-full sm:w-80 flex-col gap-2 overflow-y-auto">
             <StatusMessage message={statusMessage} />
             <Outliner
               readModel={scene.readModel}

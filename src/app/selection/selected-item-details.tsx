@@ -51,7 +51,10 @@ function normalizeDegrees(value: number) {
 }
 
 function formatMeters(value: number) {
-  return value.toFixed(1)
+  return value
+    .toFixed(3)
+    .replace(/(\.\d*?[1-9])0+$/, '$1')
+    .replace(/\.000$/, '.0')
 }
 
 function formatDegrees(valueRadians: number) {
