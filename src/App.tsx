@@ -513,7 +513,7 @@ function App() {
           onBlur={() => {
             setRoomViewHasFocus(false)
           }}
-          onPointerDown={focusRoomView}
+          onPointerDownCapture={focusRoomView}
         >
           <Canvas
             className="absolute inset-0 z-0"
