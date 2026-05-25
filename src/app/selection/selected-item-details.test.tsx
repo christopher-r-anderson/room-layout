@@ -148,7 +148,7 @@ describe('SelectedItemDetails', () => {
   it('commits a field on Enter and normalizes the displayed value from the returned item', async () => {
     const user = userEvent.setup()
     const onUpdateSelectedItemDetails = vi.fn(() => ({
-      ok: true,
+      ok: true as const,
       item: {
         ...FURNITURE_ITEM,
         position: [1.2, 0, 0] as [number, number, number],
@@ -242,7 +242,7 @@ describe('SelectedItemDetails', () => {
   it('retires optimistic committed values after props catch up and later revert', async () => {
     const user = userEvent.setup()
     const onUpdateSelectedItemDetails = vi.fn(() => ({
-      ok: true,
+      ok: true as const,
       item: {
         ...FURNITURE_ITEM,
         position: [1.2, 0, 0] as [number, number, number],

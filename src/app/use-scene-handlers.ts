@@ -1,4 +1,8 @@
 import { useCallback, useRef, type RefObject } from 'react'
+import type {
+  UpdateSelectedItemDetailsInput,
+  UpdateSelectedItemDetailsResult,
+} from './selected-item-details.types'
 import { isSceneStateAtDefaults } from '@/lib/three/scene-model'
 import type {
   CameraPreset,
@@ -139,16 +143,9 @@ interface SceneHandlers {
     options?: { source?: MoveSource },
   ) => MoveSelectionResult
   handleRotateSelection: (direction: -1 | 1) => void
-  handleUpdateSelectedItemDetails: (input: {
-    field: 'positionX' | 'positionZ' | 'rotationDegrees'
-    fieldLabel: string
-    value: number
-  }) => {
-    ok: boolean
-    item?: FurnitureItem
-    message?: string
-    reason?: Exclude<UpdateSelectionTransformResult, { ok: true }>['reason']
-  }
+  handleUpdateSelectedItemDetails: (
+    input: UpdateSelectedItemDetailsInput,
+  ) => UpdateSelectedItemDetailsResult
   handleConfirmDeleteSelection: () => SceneReadModel | null
   handleUndo: () => void
   handleRedo: () => void
@@ -639,11 +636,9 @@ export function useSceneHandlers({
   )
 
   const handleUpdateSelectedItemDetails = useCallback(
-    (input: {
-      field: 'positionX' | 'positionZ' | 'rotationDegrees'
-      fieldLabel: string
-      value: number
-    }) => {
+    (
+      input: UpdateSelectedItemDetailsInput,
+    ): UpdateSelectedItemDetailsResult => {
       const activeItem = selectedFurniture
 
       clearEditorMessage()
@@ -681,7 +676,7 @@ export function useSceneHandlers({
       })
 
       if (result.ok) {
-        setSelectedSource('inspector')
+        setSelectedSource('panel-keyboard')
         syncSceneReadModel({ requestOutlinerFocus: false })
         announcePolite(`${result.item.name} details updated.`)
 
@@ -694,7 +689,7 @@ export function useSceneHandlers({
       if (result.reason === 'no-op') {
         return {
           ok: false,
-          reason: 'no-op' as const,
+          reason: 'no-op',
         }
       }
 

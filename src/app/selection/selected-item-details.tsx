@@ -1,8 +1,11 @@
 import { useId, useState } from 'react'
+import type {
+  SelectedItemDetailField,
+  UpdateSelectedItemDetailsInput,
+  UpdateSelectedItemDetailsResult,
+} from '@/app/selected-item-details.types'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
-
-type DetailField = 'positionX' | 'positionZ' | 'rotationDegrees'
 
 type FieldOverride =
   | {
@@ -15,20 +18,8 @@ type FieldOverride =
       sourceItem: FurnitureItem
     }
 
-interface UpdateSelectedItemDetailsResult {
-  ok: boolean
-  item?: FurnitureItem
-  message?: string
-  reason?:
-    | 'no-selection'
-    | 'dragging'
-    | 'blocked-collision'
-    | 'blocked-bounds'
-    | 'no-op'
-}
-
 const FIELD_CONFIG: {
-  key: DetailField
+  key: SelectedItemDetailField
   label: string
   helpText: string
 }[] = [
@@ -88,20 +79,20 @@ export function SelectedItemDetails({
   disabled: boolean
   selectedFurniture: FurnitureItem
   consumeBlurCommitSuppression: () => boolean
-  onUpdateSelectedItemDetails: (input: {
-    field: DetailField
-    fieldLabel: string
-    value: number
-  }) => UpdateSelectedItemDetailsResult
+  onUpdateSelectedItemDetails: (
+    input: UpdateSelectedItemDetailsInput,
+  ) => UpdateSelectedItemDetailsResult
 }) {
   const titleId = useId()
   const committedDrafts = createDrafts(selectedFurniture)
   const [fieldOverrides, setFieldOverrides] = useState<
-    Partial<Record<DetailField, FieldOverride>>
+    Partial<Record<SelectedItemDetailField, FieldOverride>>
   >({})
-  const [errors, setErrors] = useState<Partial<Record<DetailField, string>>>({})
+  const [errors, setErrors] = useState<
+    Partial<Record<SelectedItemDetailField, string>>
+  >({})
 
-  const getFieldValue = (field: DetailField) => {
+  const getFieldValue = (field: SelectedItemDetailField) => {
     const override = fieldOverrides[field]
 
     if (!override) {
@@ -117,11 +108,11 @@ export function SelectedItemDetails({
       : committedDrafts[field]
   }
 
-  const isFieldDirty = (field: DetailField) => {
+  const isFieldDirty = (field: SelectedItemDetailField) => {
     return fieldOverrides[field]?.kind === 'dirty'
   }
 
-  const resetField = (field: DetailField) => {
+  const resetField = (field: SelectedItemDetailField) => {
     setFieldOverrides((currentOverrides) => ({
       ...currentOverrides,
       [field]: undefined,
@@ -133,7 +124,7 @@ export function SelectedItemDetails({
   }
 
   const commitField = (
-    field: DetailField,
+    field: SelectedItemDetailField,
     fieldLabel: string,
     itemId: string,
     trigger: 'enter' | 'blur',
@@ -167,7 +158,7 @@ export function SelectedItemDetails({
       value: parsedValue,
     })
 
-    if (result.ok && result.item) {
+    if (result.ok) {
       const nextDrafts = createDrafts(result.item)
 
       setFieldOverrides((currentOverrides) => ({
@@ -190,12 +181,10 @@ export function SelectedItemDetails({
       return
     }
 
-    if (result.message) {
-      setErrors((currentErrors) => ({
-        ...currentErrors,
-        [field]: result.message,
-      }))
-    }
+    setErrors((currentErrors) => ({
+      ...currentErrors,
+      [field]: result.message,
+    }))
   }
 
   return (

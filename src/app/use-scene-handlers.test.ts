@@ -375,7 +375,7 @@ describe('useSceneHandlers', () => {
       position: [1.2, 0, 0],
       rotationY: undefined,
     })
-    expect(setSelectedSource).toHaveBeenCalledWith('inspector')
+    expect(setSelectedSource).toHaveBeenCalledWith('panel-keyboard')
     expect(mockSync.syncSceneReadModel).toHaveBeenCalledWith({
       requestOutlinerFocus: false,
     })
