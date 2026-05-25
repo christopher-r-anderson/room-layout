@@ -33,6 +33,10 @@ function createSceneRef(readModel: SceneReadModel) {
         ok: true as const,
         position: [0, 0, 0] as [number, number, number],
       })),
+      setSelectionTransform: vi.fn(() => ({
+        ok: false as const,
+        reason: 'no-selection' as const,
+      })),
       redo: vi.fn(() => true),
       rotateSelection: vi.fn(),
       selectById: vi.fn(() => ({

@@ -4,7 +4,6 @@ export type InteractionSource =
   | 'panel-keyboard'
   | 'panel-pointer'
   | 'toolbar'
-  | 'inspector'
   | null
 
 export type PanelInteractionSource = 'panel-keyboard' | 'panel-pointer'

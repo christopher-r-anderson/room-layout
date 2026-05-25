@@ -4,12 +4,7 @@ import type {
   FloorFinishOption,
   WallFinishOption,
 } from '@/lib/three/environment-materials'
-import type {
-  CameraPreset,
-  MoveSelectionResult,
-  MoveSource,
-  SceneReadModel,
-} from '@/scene/scene.types'
+import type { CameraPreset, SceneReadModel } from '@/scene/scene.types'
 import { CameraTools } from '../camera/camera-tools'
 import { DeleteConfirmationDialog } from '../selection/delete-confirmation-dialog'
 import { NewSceneConfirmationDialog } from '../selection/new-scene-confirmation-dialog'
@@ -23,12 +18,9 @@ import { ProjectInfoButton } from '../project-info/project-info-button'
 import { CatalogAddButton } from '../catalog/catalog-add-button'
 import { KeyboardShortcutsHelp } from '../keyboard/keyboard-shortcuts-help'
 import { HistoryTools } from '../history/history-tools'
-import { SelectionToolsMovement } from '../selection/selection-tools-movement'
-import { SelectionToolsOther } from '../selection/selection-tools-other'
 import { Outliner } from '../scene-panel/outliner'
 import { EnvironmentPanel } from './environment-panel'
 import type { SceneOutlinerFocusRequest } from '../scene-panel.types'
-import { Inspector } from '../scene-panel/inspector'
 import type { StartupErrorKind } from '../startup/use-startup-state'
 import { CopySceneUrlButton } from './copy-scene-url-button'
 import { NewSceneButton } from './new-scene-button'
@@ -52,16 +44,6 @@ export interface EditorHistoryProps {
   historyAvailability: HistoryAvailability
   onUndo: () => void
   onRedo: () => void
-}
-
-export interface EditorSelectionProps {
-  selectedFurniture: FurnitureItem | null
-  onMoveSelection: (
-    delta: { x: number; z: number },
-    options?: { source?: MoveSource },
-  ) => MoveSelectionResult
-  onOpenDeleteDialog: () => void
-  onRotateSelection: (direction: -1 | 1) => void
 }
 
 export interface EditorSceneProps {
@@ -111,7 +93,6 @@ interface EditorOverlayProps {
   startup: EditorStartupProps
   history: EditorHistoryProps
   scene: EditorSceneProps
-  selection: EditorSelectionProps
   catalog: EditorCatalogProps
   dialogs: EditorDialogsProps
   preview: EditorPreviewProps
@@ -133,7 +114,6 @@ export function EditorOverlay({
   startup,
   history,
   scene,
-  selection,
   catalog,
   dialogs,
   preview,
@@ -180,17 +160,6 @@ export function EditorOverlay({
               onRedo={history.onRedo}
               onUndo={history.onUndo}
             />
-            <SelectionToolsMovement
-              editorInteractionsEnabled={editorInteractionsEnabled}
-              onMoveSelection={selection.onMoveSelection}
-              selectedFurniture={selection.selectedFurniture}
-            />
-            <SelectionToolsOther
-              editorInteractionsEnabled={editorInteractionsEnabled}
-              onOpenDeleteDialog={selection.onOpenDeleteDialog}
-              onRotateSelection={selection.onRotateSelection}
-              selectedFurniture={selection.selectedFurniture}
-            />
           </div>
 
           <div className="shrink-0">
@@ -230,7 +199,7 @@ export function EditorOverlay({
           it is confusing with screen readers and keyboard tabbing
         */}
         <div className="flex flex-wrap sm:flex-row justify-between gap-2">
-          <div className="flex w-full sm:w-80 flex-col gap-2">
+          <div className="flex w-full sm:w-80 flex-col gap-2 overflow-y-auto">
             <StatusMessage message={statusMessage} />
             <Outliner
               readModel={scene.readModel}
@@ -241,7 +210,6 @@ export function EditorOverlay({
               previewedId={preview.previewedId}
               onPreviewChange={preview.onPreviewChange}
             />
-            <Inspector selectedFurniture={selection.selectedFurniture} />
             <EnvironmentPanel
               floorFinishId={floorFinishId}
               floorFinishLoading={floorFinishLoading}

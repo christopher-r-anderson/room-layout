@@ -1,4 +1,8 @@
 import { useCallback, useRef, type RefObject } from 'react'
+import type {
+  UpdateSelectedItemDetailsInput,
+  UpdateSelectedItemDetailsResult,
+} from './selected-item-details.types'
 import { isSceneStateAtDefaults } from '@/lib/three/scene-model'
 import type {
   CameraPreset,
@@ -6,6 +10,7 @@ import type {
   MoveSource,
   SceneReadModel,
   SelectByIdResult,
+  UpdateSelectionTransformResult,
 } from '@/scene/scene.types'
 import type {
   FurnitureInstance,
@@ -47,6 +52,10 @@ interface Commands {
     delta: { x: number; z: number },
     options?: { source?: MoveSource },
   ) => MoveSelectionResult
+  setSelectionTransform?: (input: {
+    position?: [number, number, number]
+    rotationY?: number
+  }) => UpdateSelectionTransformResult
   redo: () => boolean
   rotateSelection: (direction: -1 | 1) => void
   selectById: (id: string | null) => SelectByIdResult
@@ -134,6 +143,10 @@ interface SceneHandlers {
     options?: { source?: MoveSource },
   ) => MoveSelectionResult
   handleRotateSelection: (direction: -1 | 1) => void
+  handleInvalidSelectedItemDetailValue: (fieldLabel: string) => string
+  handleUpdateSelectedItemDetails: (
+    input: UpdateSelectedItemDetailsInput,
+  ) => UpdateSelectedItemDetailsResult
   handleConfirmDeleteSelection: () => SceneReadModel | null
   handleUndo: () => void
   handleRedo: () => void
@@ -392,6 +405,10 @@ export function useSceneHandlers({
     confirmDeleteSelection,
     focusSelected,
     moveSelection,
+    setSelectionTransform = () => ({
+      ok: false as const,
+      reason: 'no-selection' as const,
+    }),
     redo,
     rotateSelection,
     selectById,
@@ -529,7 +546,7 @@ export function useSceneHandlers({
         }
       }
 
-      if (source === 'canvas-keyboard') {
+      if (source === 'canvas-keyboard' || source === 'panel-keyboard') {
         const freshReadModel = syncSceneReadModel({
           requestOutlinerFocus: false,
           announceSelectionChange: false,
@@ -538,10 +555,16 @@ export function useSceneHandlers({
           const item = freshReadModel?.items.find((i) => i.id === id)
           if (item) {
             announcePolite(
-              `${item.name} selected. Press Tab to reach item controls in the Furniture List.`,
+              source === 'panel-keyboard'
+                ? `${item.name} selected. Press Shift+Tab to reach selected item actions and details.`
+                : `${item.name} selected. Press Tab to reach selected item actions and details.`,
             )
           }
-        } else if (result.ok && result.status === 'cleared') {
+        } else if (
+          source === 'canvas-keyboard' &&
+          result.ok &&
+          result.status === 'cleared'
+        ) {
           announcePolite('Selection cleared.')
         }
       } else {
@@ -616,6 +639,104 @@ export function useSceneHandlers({
       syncSceneReadModel,
       announcePolite,
       selectedFurniture,
+    ],
+  )
+
+  const handleInvalidSelectedItemDetailValue = useCallback(
+    (fieldLabel: string) => {
+      clearEditorMessage()
+
+      const message = formatSelectedItemDetailsInvalidValueMessage(fieldLabel)
+
+      setEditorMessage(message)
+      announceAssertive(message)
+
+      return message
+    },
+    [announceAssertive, clearEditorMessage, setEditorMessage],
+  )
+
+  const handleUpdateSelectedItemDetails = useCallback(
+    (
+      input: UpdateSelectedItemDetailsInput,
+    ): UpdateSelectedItemDetailsResult => {
+      const activeItem = selectedFurniture
+
+      clearEditorMessage()
+
+      if (!activeItem) {
+        const message = formatSelectedItemDetailsBlockedMessage(
+          input.fieldLabel,
+          'no-selection',
+        )
+
+        setEditorMessage(message)
+        announceAssertive(message)
+
+        return {
+          ok: false,
+          reason: 'no-selection' as const,
+          message,
+        }
+      }
+
+      const nextPosition: [number, number, number] | undefined =
+        input.field === 'positionX'
+          ? [input.value, activeItem.position[1], activeItem.position[2]]
+          : input.field === 'positionZ'
+            ? [activeItem.position[0], activeItem.position[1], input.value]
+            : undefined
+      const nextRotationY =
+        input.field === 'rotationDegrees'
+          ? normalizeDegreesRadians(input.value)
+          : undefined
+
+      const result = setSelectionTransform({
+        position: nextPosition,
+        rotationY: nextRotationY,
+      })
+
+      if (result.ok) {
+        setSelectedSource('panel-keyboard')
+        syncSceneReadModel({ requestOutlinerFocus: false })
+        announcePolite(`${result.item.name} details updated.`)
+
+        return {
+          ok: true,
+          item: result.item,
+        }
+      }
+
+      if (result.reason === 'no-op') {
+        return {
+          ok: false,
+          reason: 'no-op',
+        }
+      }
+
+      const message = formatSelectedItemDetailsBlockedMessage(
+        input.fieldLabel,
+        result.reason,
+      )
+
+      setEditorMessage(message)
+      announceAssertive(message)
+
+      return {
+        ok: false,
+        reason: result.reason,
+        message,
+      }
+    },
+    [
+      announceAssertive,
+      announcePolite,
+      clearEditorMessage,
+      selectedFurniture,
+      setEditorMessage,
+      setSelectedSource,
+      setSelectionTransform,
+      syncSceneReadModel,
     ],
   )
 
@@ -1004,6 +1125,8 @@ export function useSceneHandlers({
     handleSelectById,
     handleMoveSelection,
     handleRotateSelection,
+    handleInvalidSelectedItemDetailValue,
+    handleUpdateSelectedItemDetails,
     handleConfirmDeleteSelection,
     handleUndo,
     handleRedo,
@@ -1033,6 +1156,11 @@ function formatCoordinate(value: number) {
   return `${value.toFixed(1)} meters`
 }
 
+function normalizeDegreesRadians(valueDegrees: number) {
+  const normalizedDegrees = ((valueDegrees % 360) + 360) % 360
+  return (normalizedDegrees * Math.PI) / 180
+}
+
 function formatMoveBlockedMessage(
   reason: Exclude<MoveSelectionResult, { ok: true }>['reason'],
 ) {
@@ -1048,4 +1176,26 @@ function formatMoveBlockedMessage(
     case 'no-op':
       return ''
   }
+}
+
+function formatSelectedItemDetailsBlockedMessage(
+  fieldLabel: string,
+  reason: Exclude<UpdateSelectionTransformResult, { ok: true }>['reason'],
+) {
+  switch (reason) {
+    case 'blocked-bounds':
+      return `${fieldLabel} must stay inside the room.`
+    case 'blocked-collision':
+      return `${fieldLabel} overlaps another item.`
+    case 'dragging':
+      return 'Finish dragging before editing item details.'
+    case 'no-selection':
+      return 'Select a furniture item first.'
+    case 'no-op':
+      return ''
+  }
+}
+
+function formatSelectedItemDetailsInvalidValueMessage(fieldLabel: string) {
+  return `${fieldLabel} must be a valid number.`
 }

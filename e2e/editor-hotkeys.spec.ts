@@ -136,7 +136,7 @@ test('applies keyboard shortcuts for rotate, history, and delete confirmation', 
   const whileInfoOpen = await readSceneState(page)
   expect(whileInfoOpen.items[0].rotationY).toBeCloseTo(initialItem.rotationY, 6)
   await expect(
-    page.getByRole('alertdialog', { name: /delete furniture/i }),
+    page.getByRole('alertdialog', { name: /remove item from room/i }),
   ).toBeHidden()
   await expect(
     page.getByRole('alertdialog', { name: /start over with a new scene/i }),
@@ -160,7 +160,7 @@ test('applies keyboard shortcuts for rotate, history, and delete confirmation', 
     6,
   )
   await expect(
-    page.getByRole('alertdialog', { name: /delete furniture/i }),
+    page.getByRole('alertdialog', { name: /remove item from room/i }),
   ).toBeHidden()
   await expect(
     page.getByRole('alertdialog', { name: /start over with a new scene/i }),
@@ -190,7 +190,7 @@ test('applies keyboard shortcuts for rotate, history, and delete confirmation', 
 
   await page.keyboard.press('Delete')
   const deleteDialog = page.getByRole('alertdialog', {
-    name: /delete furniture/i,
+    name: /remove item from room/i,
   })
   await expect(deleteDialog).toBeVisible()
 
@@ -198,7 +198,7 @@ test('applies keyboard shortcuts for rotate, history, and delete confirmation', 
   await waitForFirstItemRotationY(page, NORMALIZED_RIGHT_ROTATION_RADIANS, 6)
   await expect(deleteDialog).toBeVisible()
 
-  await deleteDialog.getByRole('button', { name: 'Delete' }).click()
+  await deleteDialog.getByRole('button', { name: 'Remove item' }).click()
   await waitForItemCount(page, 0)
 
   await page.keyboard.press('Control+z')
@@ -489,7 +489,7 @@ test('canvas browse: arrow keys cycle preview when nothing is selected, Enter se
   expect(afterEnter.previewedId).toBeNull()
 })
 
-test('canvas browse: announces item name and then selection with Tab hint', async ({
+test('canvas browse: announces item name and then selection with the selected item controls hint', async ({
   page,
 }) => {
   await openEditor(page)
@@ -509,7 +509,7 @@ test('canvas browse: announces item name and then selection with Tab hint', asyn
   await page.keyboard.press('Enter')
   await waitForPoliteAnnouncement(
     page,
-    `${itemName} selected. Press Tab to reach item controls in the Furniture List.`,
+    `${itemName} selected. Press Tab to reach selected item actions and details.`,
   )
 
   const afterSelect = await readSceneState(page)
