@@ -146,6 +146,10 @@ export function SelectedItemDetails({
       return
     }
 
+    if (!isFieldDirty(field)) {
+      return
+    }
+
     const rawValue = getFieldValue(field).trim()
     const parsedValue = Number(rawValue)
 
