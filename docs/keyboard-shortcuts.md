@@ -25,7 +25,7 @@ This allows browser-native combos (for example Ctrl+N) to be suppressed while st
 
 ### Room-View Focus Scoping
 
-Room-view-scoped shortcuts require the 3D room view to have DOM focus before they can execute. In the current implementation, that includes object movement, rotation, deletion, clear-selection (`Escape`), canvas browse, and camera preset keys. This gating is controlled by `requiresRoomViewFocus` in `useKeyboardShortcuts`.
+Room-view-scoped shortcuts require the 3D room view to have DOM focus before they can execute. In the current implementation, that includes object movement, rotation, deletion, clear-selection (`Escape`), canvas browse, and camera preset keys. This gating is controlled by `requiresRoomViewFocus` in `useKeyboardShortcuts`, so selected-item detail inputs stay isolated from room-view shortcuts while typing.
 
 The 3D room view is a focusable room-view wrapper element with `tabIndex={0}` and visible focus styling. Clicking the canvas or pressing Tab to it acquires focus.
 
@@ -155,3 +155,5 @@ Unlike discrete shortcuts, this path does not use `suppressionMode`.
 ## UI Integration Notes
 
 `ToolButton` can attach keyboard metadata to controls using `shortcuts` (ARIA keyshortcuts format), and the shared UI renders consistent key hints via `KbdShortcutDisplay`.
+
+Selected-item detail inputs commit their local draft on `Enter` or blur, and `Escape` restores the last committed value. Those fields rely on the shared editing-target checks so room-view shortcuts do not fire while focus is inside a detail input.

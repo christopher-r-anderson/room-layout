@@ -20,6 +20,18 @@ export type MoveSelectionResult =
         | 'no-op'
     }
 
+export type UpdateSelectionTransformResult =
+  | { ok: true; item: FurnitureItem }
+  | {
+      ok: false
+      reason:
+        | 'no-selection'
+        | 'dragging'
+        | 'blocked-collision'
+        | 'blocked-bounds'
+        | 'no-op'
+    }
+
 export type SelectByIdResult =
   | { ok: true; status: 'selected' | 'cleared' }
   | { ok: false; status: 'not-found' | 'blocked-dragging' }
@@ -51,6 +63,10 @@ export interface SceneRef {
     delta: { x: number; z: number },
     options?: { source?: MoveSource },
   ) => MoveSelectionResult
+  setSelectionTransform: (input: {
+    position?: [number, number, number]
+    rotationY?: number
+  }) => UpdateSelectionTransformResult
   rotateSelection: (deltaRadians: number) => void
   addFurniture: (
     catalogId: string,

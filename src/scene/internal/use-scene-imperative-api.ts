@@ -14,11 +14,15 @@ import type { HistoryState } from '@/lib/ui/editor-history'
 import { CAMERA_PRESETS } from '@/lib/three/camera-presets'
 import {
   addFurnitureToHistory,
+  areFurnitureCollectionsEqual,
   buildFurnitureItemsFromInstances,
   createFurnitureInstanceId,
   deleteSelectionFromHistory,
 } from './furniture-operations'
-import { resolveMovedFurniturePosition } from '@/lib/three/furniture-layout'
+import {
+  resolveAbsoluteFurnitureTransform,
+  resolveMovedFurniturePosition,
+} from '@/lib/three/furniture-layout'
 import { commitHistoryPresent } from '@/lib/ui/editor-history'
 import { createHistoryState } from '@/lib/ui/editor-history'
 import { redoSceneHistory, undoSceneHistory } from './scene-history-state'
@@ -295,6 +299,106 @@ export function useSceneImperativeApi({
         return {
           ok: true,
           position: resolvedPosition,
+        }
+      },
+      setSelectionTransform: (input) => {
+        if (dragStateRef.current) {
+          return {
+            ok: false,
+            reason: 'dragging',
+          }
+        }
+
+        const activeId = selectedIdRef.current
+
+        if (!activeId) {
+          return {
+            ok: false,
+            reason: 'no-selection',
+          }
+        }
+
+        const activeItem = furnitureRef.current.find(
+          (item) => item.id === activeId,
+        )
+
+        if (!activeItem) {
+          return {
+            ok: false,
+            reason: 'no-selection',
+          }
+        }
+
+        const nextPosition = input.position ?? activeItem.position
+        const nextRotationY = input.rotationY ?? activeItem.rotationY
+
+        if (
+          nextPosition[0] === activeItem.position[0] &&
+          nextPosition[1] === activeItem.position[1] &&
+          nextPosition[2] === activeItem.position[2] &&
+          nextRotationY === activeItem.rotationY
+        ) {
+          return {
+            ok: false,
+            reason: 'no-op',
+          }
+        }
+
+        const resolvedTransform = resolveAbsoluteFurnitureTransform({
+          movingId: activeId,
+          proposedPosition: nextPosition,
+          proposedRotationY: nextRotationY,
+          items: furnitureRef.current,
+          bounds,
+        })
+
+        if (!resolvedTransform) {
+          return {
+            ok: false,
+            reason: 'no-selection',
+          }
+        }
+
+        if (!resolvedTransform.ok) {
+          return resolvedTransform
+        }
+
+        const nextFurniture = furnitureRef.current.map((item) => {
+          if (item.id !== activeId) {
+            return item
+          }
+
+          return {
+            ...item,
+            position: resolvedTransform.position,
+            rotationY: resolvedTransform.rotationY,
+          }
+        })
+
+        const nextHistory = commitHistoryPresent(
+          historyRef.current,
+          nextFurniture,
+          areFurnitureCollectionsEqual,
+        )
+
+        historyRef.current = nextHistory
+        furnitureRef.current = nextHistory.present
+        setHistory(nextHistory)
+
+        const updatedItem = nextHistory.present.find(
+          (item) => item.id === activeId,
+        )
+
+        if (!updatedItem) {
+          return {
+            ok: false,
+            reason: 'no-selection',
+          }
+        }
+
+        return {
+          ok: true,
+          item: updatedItem,
         }
       },
       rotateSelection: (deltaRadians: number) => {

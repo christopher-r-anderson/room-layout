@@ -2,6 +2,7 @@ import {
   cloneElement,
   useId,
   type HTMLAttributes,
+  type PointerEventHandler,
   type ReactElement,
 } from 'react'
 import { cn } from '@/lib/utils'
@@ -20,6 +21,7 @@ export function ToolButton({
   icon,
   className,
   tooltipSide,
+  onPointerDown,
 }: {
   action: () => void
   disabled: boolean
@@ -31,6 +33,7 @@ export function ToolButton({
   icon: ReactElement<HTMLAttributes<HTMLElement>>
   className?: string
   tooltipSide?: 'top' | 'right' | 'bottom' | 'left'
+  onPointerDown?: PointerEventHandler<HTMLButtonElement>
 }) {
   const shortcutHintId = useId()
   const ariaHiddenIcon = cloneElement(icon, {
@@ -51,6 +54,7 @@ export function ToolButton({
               'aria-disabled:active:translate-y-0 aria-disabled:cursor-not-allowed aria-disabled:opacity-50',
               className,
             )}
+            onPointerDown={onPointerDown}
             onClick={(event) => {
               event.preventDefault()
               if (!disabled) {

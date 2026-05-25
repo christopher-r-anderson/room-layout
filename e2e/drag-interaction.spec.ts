@@ -46,6 +46,7 @@ async function movePointerToCanvasBackground(
 }
 
 async function clickCanvasBackground(page: Parameters<typeof openEditor>[0]) {
+  const canvas = page.locator('canvas')
   const canvasBounds = await page.locator('canvas').boundingBox()
 
   if (!canvasBounds) {
@@ -53,14 +54,14 @@ async function clickCanvasBackground(page: Parameters<typeof openEditor>[0]) {
   }
 
   const candidatePoints: readonly { x: number; y: number }[] = [
-    { x: canvasBounds.width / 2, y: 24 },
-    { x: 48, y: canvasBounds.height / 2 },
-    { x: canvasBounds.width - 48, y: canvasBounds.height / 2 },
-    { x: canvasBounds.width / 2, y: canvasBounds.height - 48 },
+    { x: canvasBounds.width * 0.45, y: 40 },
+    { x: canvasBounds.width * 0.55, y: 40 },
+    { x: canvasBounds.width * 0.7, y: 72 },
+    { x: canvasBounds.width * 0.82, y: 120 },
   ]
 
   for (const point of candidatePoints) {
-    await page.mouse.click(canvasBounds.x + point.x, canvasBounds.y + point.y)
+    await canvas.click({ position: { x: point.x, y: point.y } })
 
     const state = await readSceneState(page)
     if (state.selectedId === null) {
@@ -76,17 +77,17 @@ test('drags selected furniture through the canvas and preserves history undo', a
 }) => {
   await openEditor(page)
 
-  const addedState = await addFurniture(page, 'Leather Couch')
+  const addedState = await addFurniture(page, 'Leather Armchair')
   const initialItem = addedState.items[0]
 
   const draggedState = await dragSelectedFurniture(page, {
-    x: 160,
-    y: 40,
+    x: 1_600,
+    y: 0,
   })
   const draggedItem = draggedState.items[0]
 
   expect(draggedState.itemCount).toBe(1)
-  expect(draggedState.selectedName).toBe('Leather Couch')
+  expect(draggedState.selectedName).toBe('Leather Armchair')
   expect(draggedItem.id).toBe(initialItem.id)
   expect(draggedItem.position).not.toEqual(initialItem.position)
 
@@ -94,7 +95,7 @@ test('drags selected furniture through the canvas and preserves history undo', a
   const afterUndo = await waitForFirstItemPosition(page, initialItem.position)
   expect(afterUndo).toMatchObject({
     itemCount: 1,
-    selectedName: 'Leather Couch',
+    selectedName: 'Leather Armchair',
   })
   expect(afterUndo.items[0]?.position).toEqual(initialItem.position)
 
@@ -102,7 +103,7 @@ test('drags selected furniture through the canvas and preserves history undo', a
   const afterRedo = await waitForFirstItemPosition(page, draggedItem.position)
   expect(afterRedo).toMatchObject({
     itemCount: 1,
-    selectedName: 'Leather Couch',
+    selectedName: 'Leather Armchair',
   })
   expect(afterRedo.items[0]?.position).toEqual(draggedItem.position)
 })

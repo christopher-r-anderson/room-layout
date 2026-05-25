@@ -38,6 +38,10 @@ function createSceneRef(overrides?: Partial<SceneRef>) {
         ok: true as const,
         position: [0.5, 0, 0] as [number, number, number],
       })),
+      setSelectionTransform: vi.fn(() => ({
+        ok: false as const,
+        reason: 'no-selection' as const,
+      })),
       redo: vi.fn(() => true),
       rotateSelection: vi.fn(),
       selectById: vi.fn(() => ({
@@ -155,6 +159,12 @@ describe('useSceneCommands', () => {
         ok: false,
         reason: 'no-selection',
       })
+      expect(
+        result.current.setSelectionTransform({ position: [1, 0, 0] }),
+      ).toEqual({
+        ok: false,
+        reason: 'no-selection',
+      })
       expect(result.current.selectById('item-1')).toEqual({
         ok: false,
         status: 'not-found',
@@ -169,6 +179,7 @@ describe('useSceneCommands', () => {
     expect(sceneRef.current.addFurniture).not.toHaveBeenCalled()
     expect(sceneRef.current.deleteSelection).not.toHaveBeenCalled()
     expect(sceneRef.current.moveSelection).not.toHaveBeenCalled()
+    expect(sceneRef.current.setSelectionTransform).not.toHaveBeenCalled()
     expect(sceneRef.current.selectById).not.toHaveBeenCalled()
     expect(sceneRef.current.clearSelection).not.toHaveBeenCalled()
     expect(sceneRef.current.rotateSelection).not.toHaveBeenCalled()
@@ -200,6 +211,12 @@ describe('useSceneCommands', () => {
         ok: false,
         reason: 'no-selection',
       })
+      expect(
+        result.current.setSelectionTransform({ position: [1, 0, 0] }),
+      ).toEqual({
+        ok: false,
+        reason: 'no-selection',
+      })
       expect(result.current.selectById('item-1')).toEqual({
         ok: false,
         status: 'not-found',
@@ -227,11 +244,25 @@ describe('useSceneCommands', () => {
       ok: true,
       status: 'selected',
     }))
+    const setSelectionTransform = vi.fn<SceneRef['setSelectionTransform']>(
+      () => ({
+        ok: true,
+        item: {
+          ...createFurnitureItem('item-1'),
+          position: [1.5, 0, 0],
+        },
+      }),
+    )
     const getReadModel = vi.fn<SceneRef['getReadModel']>(() => ({
       selectedId: 'item-1',
       items: [createFurnitureItem('item-1')],
     }))
-    const sceneRef = createSceneRef({ moveSelection, selectById, getReadModel })
+    const sceneRef = createSceneRef({
+      moveSelection,
+      setSelectionTransform,
+      selectById,
+      getReadModel,
+    })
 
     const { result } = renderHook(() =>
       useSceneCommands({
@@ -255,6 +286,15 @@ describe('useSceneCommands', () => {
         ok: true,
         status: 'selected',
       })
+      expect(
+        result.current.setSelectionTransform({ position: [1.5, 0, 0] }),
+      ).toEqual({
+        ok: true,
+        item: {
+          ...createFurnitureItem('item-1'),
+          position: [1.5, 0, 0],
+        },
+      })
       expect(result.current.getSceneReadModel()).toEqual({
         selectedId: 'item-1',
         items: [createFurnitureItem('item-1')],
@@ -266,6 +306,9 @@ describe('useSceneCommands', () => {
       { x: 0.5, z: 0 },
       { source: 'inspector' },
     )
+    expect(setSelectionTransform).toHaveBeenCalledWith({
+      position: [1.5, 0, 0],
+    })
     expect(selectById).toHaveBeenCalledWith('item-1')
     expect(getReadModel).toHaveBeenCalledTimes(1)
     expect(sceneRef.current.clearSelection).toHaveBeenCalledTimes(1)

@@ -6,7 +6,6 @@ import type {
   EditorHistoryProps,
   EditorPreviewProps,
   EditorSceneProps,
-  EditorSelectionProps,
   EditorStartupProps,
 } from './editor-overlay'
 
@@ -27,10 +26,6 @@ interface UseOverlayPropsOptions {
   onSelectById: EditorSceneProps['onSelectById']
   readModel: EditorSceneProps['readModel']
   sceneInteractionsDisabled: EditorSceneProps['sceneInteractionsDisabled']
-  selectedFurniture: EditorSelectionProps['selectedFurniture']
-  onMoveSelection: EditorSelectionProps['onMoveSelection']
-  onOpenDeleteDialog: EditorSelectionProps['onOpenDeleteDialog']
-  onRotateSelection: EditorSelectionProps['onRotateSelection']
   catalogIdToAdd: EditorCatalogProps['catalogIdToAdd']
   catalog: EditorCatalogProps['catalog']
   isCatalogDrawerOpen: EditorCatalogProps['isCatalogDrawerOpen']
@@ -56,7 +51,6 @@ interface EditorOverlayPropsShape {
   cameraProps: EditorCameraProps
   historyProps: EditorHistoryProps
   sceneProps: EditorSceneProps
-  selectionProps: EditorSelectionProps
   catalogProps: EditorCatalogProps
   dialogsProps: EditorDialogsProps
   previewProps: EditorPreviewProps
@@ -79,10 +73,6 @@ export function useOverlayProps({
   onSelectById,
   readModel,
   sceneInteractionsDisabled,
-  selectedFurniture,
-  onMoveSelection,
-  onOpenDeleteDialog,
-  onRotateSelection,
   catalogIdToAdd,
   catalog,
   isCatalogDrawerOpen,
@@ -155,16 +145,6 @@ export function useOverlayProps({
     ],
   )
 
-  const selectionProps = useMemo<EditorSelectionProps>(
-    () => ({
-      selectedFurniture,
-      onMoveSelection,
-      onOpenDeleteDialog,
-      onRotateSelection,
-    }),
-    [onMoveSelection, onOpenDeleteDialog, onRotateSelection, selectedFurniture],
-  )
-
   const catalogProps = useMemo<EditorCatalogProps>(
     () => ({
       catalog,
@@ -217,7 +197,6 @@ export function useOverlayProps({
       cameraProps,
       historyProps,
       sceneProps,
-      selectionProps,
       catalogProps,
       dialogsProps,
       previewProps: { onPreviewChange, previewedId },
@@ -230,7 +209,6 @@ export function useOverlayProps({
       onPreviewChange,
       previewedId,
       sceneProps,
-      selectionProps,
       startupProps,
     ],
   )
