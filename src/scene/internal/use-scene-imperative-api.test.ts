@@ -39,6 +39,29 @@ vi.mock('@react-three/fiber', () => ({
 
 vi.mock('./furniture-operations', () => ({
   addFurnitureToHistory: mockAddFurnitureToHistory,
+  areFurnitureCollectionsEqual: (
+    left: FurnitureItem[],
+    right: FurnitureItem[],
+  ) =>
+    left.length === right.length &&
+    left.every((item, index) => {
+      const other = right[index]
+      return (
+        item.id === other.id &&
+        item.catalogId === other.catalogId &&
+        item.name === other.name &&
+        item.kind === other.kind &&
+        item.collectionId === other.collectionId &&
+        item.nodeName === other.nodeName &&
+        item.sourcePath === other.sourcePath &&
+        item.footprintSize.width === other.footprintSize.width &&
+        item.footprintSize.depth === other.footprintSize.depth &&
+        item.position[0] === other.position[0] &&
+        item.position[1] === other.position[1] &&
+        item.position[2] === other.position[2] &&
+        item.rotationY === other.rotationY
+      )
+    }),
   buildFurnitureItemsFromInstances: mockBuildFurnitureItemsFromInstances,
   createFurnitureInstanceId: (sequenceNumber: number) =>
     `furniture-instance-${String(sequenceNumber)}`,
@@ -424,6 +447,83 @@ describe('useSceneImperativeApi', () => {
       ok: false,
       reason: 'blocked-collision',
     })
+  })
+
+  it('setSelectionTransform commits a valid exact transform as one history step', () => {
+    const item = createFurnitureItem('item-1')
+    const options = defaultOptions({
+      furniture: [item],
+      history: createHistoryState([item]),
+      selectedId: 'item-1',
+    })
+    const sceneRef = getSceneRef(options)
+    renderHook(() => {
+      useSceneImperativeApi(options)
+    })
+
+    let result: ReturnType<SceneRef['setSelectionTransform']> | null = null
+
+    act(() => {
+      result =
+        sceneRef.current?.setSelectionTransform({
+          position: [1.25, 0, -0.75],
+          rotationY: Math.PI / 6,
+        }) ?? null
+    })
+
+    expect(result).toEqual({
+      ok: true,
+      item: {
+        ...item,
+        position: [1.25, 0, -0.75],
+        rotationY: Math.PI / 6,
+      },
+    })
+    expect(options.setHistory).toHaveBeenCalledTimes(1)
+
+    const committedHistory = vi.mocked(options.setHistory).mock.calls[0][0]
+
+    if (typeof committedHistory === 'function') {
+      throw new Error('expected committed history object')
+    }
+
+    expect(committedHistory.past).toHaveLength(1)
+    expect(committedHistory.present[0].position).toEqual([1.25, 0, -0.75])
+    expect(committedHistory.present[0].rotationY).toBeCloseTo(Math.PI / 6)
+  })
+
+  it('setSelectionTransform rejects exact transforms that fall outside room bounds', () => {
+    const item = createFurnitureItem('item-1')
+    const options = defaultOptions({
+      bounds: {
+        minX: -0.5,
+        maxX: 0.5,
+        minZ: -0.5,
+        maxZ: 0.5,
+      },
+      furniture: [item],
+      history: createHistoryState([item]),
+      selectedId: 'item-1',
+    })
+    const sceneRef = getSceneRef(options)
+    renderHook(() => {
+      useSceneImperativeApi(options)
+    })
+
+    let result: ReturnType<SceneRef['setSelectionTransform']> | null = null
+
+    act(() => {
+      result =
+        sceneRef.current?.setSelectionTransform({
+          position: [1, 0, 0],
+        }) ?? null
+    })
+
+    expect(result).toEqual({
+      ok: false,
+      reason: 'blocked-bounds',
+    })
+    expect(options.setHistory).not.toHaveBeenCalled()
   })
 
   it('undo returns false when no undo is available', () => {

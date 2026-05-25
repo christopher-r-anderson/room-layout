@@ -11,6 +11,7 @@ import type {
   SceneReadModel,
   SceneRef,
   SelectByIdResult,
+  UpdateSelectionTransformResult,
 } from '@/scene/scene.types'
 
 interface UseSceneCommandsOptions {
@@ -32,6 +33,10 @@ interface SceneCommands {
     delta: { x: number; z: number },
     options?: { source?: MoveSource },
   ) => MoveSelectionResult
+  setSelectionTransform: (input: {
+    position?: [number, number, number]
+    rotationY?: number
+  }) => UpdateSelectionTransformResult
   redo: () => boolean
   rotateSelection: (direction: -1 | 1) => void
   selectById: (id: string | null) => SelectByIdResult
@@ -115,6 +120,25 @@ export function useSceneCommands({
     [getEnabledScene],
   )
 
+  const setSelectionTransform = useCallback(
+    (input: {
+      position?: [number, number, number]
+      rotationY?: number
+    }): UpdateSelectionTransformResult => {
+      const scene = getEnabledScene()
+
+      if (!scene) {
+        return {
+          ok: false,
+          reason: 'no-selection',
+        }
+      }
+
+      return scene.setSelectionTransform(input)
+    },
+    [getEnabledScene],
+  )
+
   const getSceneReadModel = useCallback((): SceneReadModel | null => {
     return getEnabledScene()?.getReadModel() ?? null
   }, [getEnabledScene])
@@ -181,6 +205,7 @@ export function useSceneCommands({
     focusSelected,
     getSceneReadModel,
     moveSelection,
+    setSelectionTransform,
     redo,
     rotateSelection,
     selectById,

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  resolveAbsoluteFurnitureTransform,
   resolveMovedFurniturePosition,
   resolveRotatedFurnitureTransform,
 } from './furniture-layout'
@@ -222,5 +223,53 @@ describe('resolveRotatedFurnitureTransform', () => {
     expect(resolved).not.toBeNull()
     expect(resolved?.rotationY).toBeCloseTo(Math.PI / 4)
     expect(resolved?.position).toEqual([0, 0, 0])
+  })
+})
+
+describe('resolveAbsoluteFurnitureTransform', () => {
+  it('returns the exact proposed transform when it is valid', () => {
+    const resolved = resolveAbsoluteFurnitureTransform({
+      movingId: 'moving',
+      proposedPosition: [0.6, 0, 0.4],
+      proposedRotationY: Math.PI / 4,
+      items: [baseItems[0]],
+      bounds: roomBounds,
+    })
+
+    expect(resolved).toEqual({
+      ok: true,
+      position: [0.6, 0, 0.4],
+      rotationY: Math.PI / 4,
+    })
+  })
+
+  it('rejects transforms that would need bounds clamping', () => {
+    const resolved = resolveAbsoluteFurnitureTransform({
+      movingId: 'moving',
+      proposedPosition: [2.6, 0, 0],
+      proposedRotationY: 0,
+      items: [baseItems[0]],
+      bounds: roomBounds,
+    })
+
+    expect(resolved).toEqual({
+      ok: false,
+      reason: 'blocked-bounds',
+    })
+  })
+
+  it('rejects transforms that would overlap another item', () => {
+    const resolved = resolveAbsoluteFurnitureTransform({
+      movingId: 'moving',
+      proposedPosition: [1.4, 0, 0],
+      proposedRotationY: 0,
+      items: baseItems,
+      bounds: roomBounds,
+    })
+
+    expect(resolved).toEqual({
+      ok: false,
+      reason: 'blocked-collision',
+    })
   })
 })

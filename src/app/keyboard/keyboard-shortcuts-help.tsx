@@ -88,25 +88,35 @@ const SHORTCUT_SECTIONS: ShortcutSection[] = [
     ],
   },
   {
-    sectionTitle: 'Selected Object',
+    sectionTitle: 'Selected Item',
     groups: [
       {
         groupLabel: 'Move',
         rows: [
-          { label: 'Nudge (0.5 m)', combos: [['Arrow']] },
-          { label: 'Farther (1.0 m)', combos: [['Shift', 'Arrow']] },
-          { label: 'Fine (0.1 m)', combos: [['Alt', 'Arrow']] },
+          { label: 'Nudge selected item (0.5 m)', combos: [['Arrow']] },
+          { label: 'Move farther (1.0 m)', combos: [['Shift', 'Arrow']] },
+          { label: 'Move finely (0.1 m)', combos: [['Alt', 'Arrow']] },
         ],
       },
       {
         groupLabel: 'Rotate',
-        rows: [{ label: 'Selection', combos: [[','], ['.']] }],
+        rows: [
+          { label: 'Rotate counterclockwise', combos: [[',']] },
+          { label: 'Rotate clockwise', combos: [['.']] },
+        ],
       },
       {
-        groupLabel: 'Selection',
+        groupLabel: 'Actions',
         rows: [
-          { label: 'Delete', combos: [['Delete'], ['Backspace']] },
-          { label: 'Clear', combos: [['Escape']] },
+          { label: 'Remove item', combos: [['Delete'], ['Backspace']] },
+          { label: 'Clear selection', combos: [['Escape']] },
+        ],
+      },
+      {
+        groupLabel: 'Details',
+        rows: [
+          { label: 'Apply typed detail value', combos: [['Enter']] },
+          { label: 'Cancel typed detail draft', combos: [['Escape']] },
         ],
       },
     ],
@@ -200,8 +210,9 @@ export function KeyboardShortcutsHelp() {
         <PopoverHeader>
           <PopoverTitle>Keyboard Shortcuts</PopoverTitle>
           <PopoverDescription>
-            Quick reference for room-view, camera, object, and scene shortcuts.
-            Most shortcuts below work only while the 3D room view is focused.
+            Quick reference for room-view, camera, selected item, and scene
+            shortcuts. Most shortcuts below work only while the 3D room view is
+            focused.
           </PopoverDescription>
         </PopoverHeader>
 

@@ -23,7 +23,7 @@ const FURNITURE_ITEM: FurnitureItem = {
 }
 
 describe('SelectionToolsOther', () => {
-  it('executes rotate, and delete actions when selection is available', async () => {
+  it('executes rotate and remove actions when selection is available', async () => {
     const user = userEvent.setup()
     const onRotateSelection = vi.fn()
     const onOpenDeleteDialog = vi.fn()
@@ -37,18 +37,19 @@ describe('SelectionToolsOther', () => {
       />,
     )
 
-    await user.click(screen.getByRole('button', { name: 'Rotate Left' }))
-    await user.click(screen.getByRole('button', { name: 'Rotate Right' }))
-    await user.click(screen.getByRole('button', { name: 'Delete' }))
-
-    expect(screen.getByRole('button', { name: 'Rotate Left' })).toHaveAttribute(
-      'aria-keyshortcuts',
-      ',',
+    await user.click(
+      screen.getByRole('button', { name: 'Rotate counterclockwise' }),
     )
+    await user.click(screen.getByRole('button', { name: 'Rotate clockwise' }))
+    await user.click(screen.getByRole('button', { name: 'Remove item' }))
+
     expect(
-      screen.getByRole('button', { name: 'Rotate Right' }),
+      screen.getByRole('button', { name: 'Rotate counterclockwise' }),
+    ).toHaveAttribute('aria-keyshortcuts', ',')
+    expect(
+      screen.getByRole('button', { name: 'Rotate clockwise' }),
     ).toHaveAttribute('aria-keyshortcuts', '.')
-    expect(screen.getByRole('button', { name: 'Delete' })).toHaveAttribute(
+    expect(screen.getByRole('button', { name: 'Remove item' })).toHaveAttribute(
       'aria-keyshortcuts',
       'Delete Backspace',
     )
@@ -72,11 +73,15 @@ describe('SelectionToolsOther', () => {
       />,
     )
 
-    const rotateRight = screen.getByRole('button', { name: 'Rotate Right' })
+    const rotateRight = screen.getByRole('button', {
+      name: 'Rotate clockwise',
+    })
     expect(rotateRight).toHaveAttribute('aria-disabled', 'true')
 
-    await user.click(screen.getByRole('button', { name: 'Rotate Left' }))
-    await user.click(screen.getByRole('button', { name: 'Delete' }))
+    await user.click(
+      screen.getByRole('button', { name: 'Rotate counterclockwise' }),
+    )
+    await user.click(screen.getByRole('button', { name: 'Remove item' }))
 
     expect(onRotateSelection).not.toHaveBeenCalled()
     expect(onOpenDeleteDialog).not.toHaveBeenCalled()

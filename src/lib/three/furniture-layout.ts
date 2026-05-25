@@ -34,6 +34,25 @@ interface ResolveRotatedFurnitureTransformOptions {
   bounds: LayoutBounds
 }
 
+interface ResolveAbsoluteFurnitureTransformOptions {
+  movingId: string
+  proposedPosition: [number, number, number]
+  proposedRotationY: number
+  items: FurnitureLayoutItem[]
+  bounds: LayoutBounds
+}
+
+export type ResolveAbsoluteFurnitureTransformResult =
+  | {
+      ok: true
+      position: [number, number, number]
+      rotationY: number
+    }
+  | {
+      ok: false
+      reason: 'blocked-bounds' | 'blocked-collision'
+    }
+
 function getFootprint(item: FurnitureLayoutItem, position = item.position) {
   return {
     centerX: position[0],
@@ -251,6 +270,58 @@ export function resolveRotatedFurnitureTransform({
 
   return {
     position: clampedPosition,
+    rotationY: proposedRotationY,
+  }
+}
+
+export function resolveAbsoluteFurnitureTransform({
+  movingId,
+  proposedPosition,
+  proposedRotationY,
+  items,
+  bounds,
+}: ResolveAbsoluteFurnitureTransformOptions): ResolveAbsoluteFurnitureTransformResult | null {
+  const movingItem = items.find((item) => item.id === movingId)
+
+  if (!movingItem) {
+    return null
+  }
+
+  const proposedItem = {
+    ...movingItem,
+    position: proposedPosition,
+    rotationY: proposedRotationY,
+  }
+
+  const clampedPosition = clampPositionToBounds(
+    proposedItem,
+    proposedPosition,
+    bounds,
+  )
+
+  if (
+    clampedPosition[0] !== proposedPosition[0] ||
+    clampedPosition[1] !== proposedPosition[1] ||
+    clampedPosition[2] !== proposedPosition[2]
+  ) {
+    return {
+      ok: false,
+      reason: 'blocked-bounds',
+    }
+  }
+
+  const proposedFootprint = getFootprint(proposedItem, proposedPosition)
+
+  if (overlapsAnyOtherItem(movingId, proposedFootprint, items)) {
+    return {
+      ok: false,
+      reason: 'blocked-collision',
+    }
+  }
+
+  return {
+    ok: true,
+    position: proposedPosition,
     rotationY: proposedRotationY,
   }
 }

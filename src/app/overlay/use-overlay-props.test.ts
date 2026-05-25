@@ -164,12 +164,6 @@ describe('useOverlayProps', () => {
       readModel: options.readModel,
       sceneInteractionsDisabled: true,
     })
-    expect(result.current.selectionProps).toEqual({
-      selectedFurniture: options.selectedFurniture,
-      onMoveSelection: options.onMoveSelection,
-      onOpenDeleteDialog: options.onOpenDeleteDialog,
-      onRotateSelection: options.onRotateSelection,
-    })
     expect(result.current.catalogProps).toEqual({
       catalog: [],
       catalogIdToAdd: 'table-1',
@@ -209,7 +203,6 @@ describe('useOverlayProps', () => {
     expect(result.current.startupProps).toBe(firstResult.startupProps)
     expect(result.current.historyProps).toBe(firstResult.historyProps)
     expect(result.current.sceneProps).toBe(firstResult.sceneProps)
-    expect(result.current.selectionProps).toBe(firstResult.selectionProps)
     expect(result.current.catalogProps).toBe(firstResult.catalogProps)
     expect(result.current.dialogsProps).toBe(firstResult.dialogsProps)
   })
@@ -238,7 +231,6 @@ describe('useOverlayProps', () => {
       },
     })
 
-    expect(result.current.selectionProps).not.toBe(firstResult.selectionProps)
     expect(result.current.sceneProps).not.toBe(firstResult.sceneProps)
     expect(result.current.startupProps).toBe(firstResult.startupProps)
     expect(result.current.historyProps).toBe(firstResult.historyProps)
