@@ -66,15 +66,15 @@ test('sheet and delete confirmation keep accessible contracts and return focus',
 
   await addFurniture(page, 'Leather Couch')
 
-  const deleteButton = page.getByRole('button', { name: 'Delete' })
+  const deleteButton = page.getByRole('button', { name: 'Remove item' })
   await deleteButton.click()
 
   const deleteDialog = page.getByRole('alertdialog', {
-    name: /delete furniture/i,
+    name: /remove item from room/i,
   })
   await expect(deleteDialog).toBeVisible()
   await expect(
-    deleteDialog.getByText(/delete leather couch from the scene\?/i),
+    deleteDialog.getByText(/remove leather couch from your room layout\?/i),
   ).toBeVisible()
 
   await deleteDialog.getByRole('button', { name: 'Cancel' }).click()
@@ -115,13 +115,13 @@ test('catalog, delete, and info dialogs stay mutually exclusive', async ({
   await selectFurnitureById(page, firstItemId)
 
   const catalogButton = page.getByRole('button', { name: 'Add Furniture' })
-  const deleteButton = page.getByRole('button', { name: 'Delete' })
+  const deleteButton = page.getByRole('button', { name: 'Remove item' })
   const infoButton = page.getByRole('button', {
     name: 'Open project and asset info',
   })
   const catalogDialog = page.getByRole('dialog', { name: 'Add furniture' })
   const deleteDialog = page.getByRole('alertdialog', {
-    name: /delete furniture/i,
+    name: /remove item from room/i,
   })
   const infoDialog = page.getByRole('dialog', { name: /project & asset info/i })
 

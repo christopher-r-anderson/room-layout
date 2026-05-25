@@ -111,6 +111,42 @@ function TextInputHarness(props: {
   return <input ref={inputRef} type="text" aria-label="editor text input" />
 }
 
+function SelectedItemDetailsInputHarness(props: {
+  enabled: boolean
+  onOpenDeleteDialog: () => void
+  onMoveSelection: (delta: { x: number; z: number }) => void
+  onRotate: (direction: -1 | 1) => void
+}) {
+  const inputRef = useRef<HTMLInputElement | null>(null)
+
+  useKeyboardShortcuts({
+    enabled: props.enabled,
+    hasSelection: true,
+    isModalOpen: false,
+    canStartNewScene: true,
+    roomViewHasFocus: true,
+    onUndo: vi.fn(),
+    onRedo: vi.fn(),
+    onNewSceneIntent: vi.fn(),
+    onOpenDeleteDialog: props.onOpenDeleteDialog,
+    onFocusSelected: vi.fn(),
+    onMoveSelection: props.onMoveSelection,
+    onClearSelection: vi.fn(),
+    onRotate: props.onRotate,
+    onSetCameraPreset: vi.fn(),
+    onCanvasBrowse: vi.fn(),
+    onCanvasSelectPreviewed: vi.fn(),
+  })
+
+  useEffect(() => {
+    inputRef.current?.focus()
+  }, [])
+
+  return (
+    <input ref={inputRef} type="text" aria-label="Left/right position (m)" />
+  )
+}
+
 function DialogNewSceneHarness(props: {
   enabled: boolean
   isModalOpen: boolean
@@ -1352,5 +1388,28 @@ describe('useKeyboardShortcuts', () => {
     expect(onMoveSelection).not.toHaveBeenCalled()
     expect(onCanvasBrowse).not.toHaveBeenCalled()
     expect(onCanvasSelectPreviewed).not.toHaveBeenCalled()
+  })
+
+  it('suppresses room-view shortcuts while focus is inside selected item detail inputs', async () => {
+    const user = userEvent.setup()
+    const onOpenDeleteDialog = vi.fn()
+    const onMoveSelection = vi.fn()
+    const onRotate = vi.fn()
+
+    render(
+      <SelectedItemDetailsInputHarness
+        enabled
+        onOpenDeleteDialog={onOpenDeleteDialog}
+        onMoveSelection={onMoveSelection}
+        onRotate={onRotate}
+      />,
+    )
+
+    await user.keyboard('{Delete}{Backspace},.')
+    await user.keyboard('{ArrowUp}{ArrowDown}{ArrowLeft}{ArrowRight}')
+
+    expect(onOpenDeleteDialog).not.toHaveBeenCalled()
+    expect(onRotate).not.toHaveBeenCalled()
+    expect(onMoveSelection).not.toHaveBeenCalled()
   })
 })

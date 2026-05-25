@@ -58,7 +58,7 @@ describe('SceneOutliner', () => {
 
     expect(screen.getByText('No furniture in the room.')).toBeInTheDocument()
     expect(
-      screen.getByRole('button', { name: 'Toggle furniture list' }),
+      screen.getByRole('button', { name: 'Toggle furniture in room' }),
     ).toBeVisible()
   })
 
@@ -79,7 +79,7 @@ describe('SceneOutliner', () => {
     expect(screen.getByRole('button', { name: /leather couch/i })).toBeVisible()
 
     await user.click(
-      screen.getByRole('button', { name: 'Toggle furniture list' }),
+      screen.getByRole('button', { name: 'Toggle furniture in room' }),
     )
 
     expect(
@@ -211,7 +211,7 @@ describe('SceneOutliner', () => {
 
     await waitFor(() => {
       expect(
-        screen.getByRole('button', { name: 'Toggle furniture list' }),
+        screen.getByRole('button', { name: 'Toggle furniture in room' }),
       ).toHaveFocus()
     })
     expect(onFocusHandled).toHaveBeenCalledTimes(1)
@@ -254,7 +254,7 @@ describe('SceneOutliner', () => {
       />,
     )
 
-    const outlinerRegion = screen.getByLabelText('Furniture List')
+    const outlinerRegion = screen.getByLabelText('Furniture in room')
 
     await waitFor(() => {
       expect(outlinerRegion).toHaveFocus()

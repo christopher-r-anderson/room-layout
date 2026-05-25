@@ -34,6 +34,7 @@ import { Toaster } from './components/ui/sonner'
 import { clearSceneDraft, saveSceneDraft } from './app/url-scene/scene-draft'
 import { isFreshSceneState } from './app/startup/scene-defaults'
 import { sortSpatially } from './lib/three/spatial-sort'
+import { SelectedItemControls } from './app/selection/selected-item-controls'
 
 interface BrowserSceneState {
   assetsReady: boolean
@@ -64,6 +65,7 @@ declare global {
   interface Window {
     __ROOM_LAYOUT_TEST__?: {
       getState: () => BrowserSceneState
+      setOverlaysHidden: (hidden: boolean) => void
     }
   }
 }
@@ -106,6 +108,7 @@ function App() {
   const [isFloorFinishLoading, setIsFloorFinishLoading] = useState(false)
   const [isSceneDragging, setIsSceneDragging] = useState(false)
   const [roomViewHasFocus, setRoomViewHasFocus] = useState(false)
+  const [testOverlaysHidden, setTestOverlaysHidden] = useState(false)
   const isE2ELowRenderQuality =
     import.meta.env.DEV && import.meta.env.VITE_E2E_RENDER_QUALITY === 'low'
 
@@ -326,7 +329,6 @@ function App() {
     startupProps,
     historyProps,
     sceneProps,
-    selectionProps,
     catalogProps,
     dialogsProps,
     previewProps,
@@ -347,10 +349,6 @@ function App() {
     readModel: overlayState.sceneReadModel,
     sceneInteractionsDisabled:
       !startup.editorInteractionsEnabled || dialogState.isModalOpen,
-    selectedFurniture: overlayState.selectedFurniture,
-    onMoveSelection: handlers.handleMoveSelection,
-    onOpenDeleteDialog: handlers.handleOpenDeleteDialog,
-    onRotateSelection: handlers.handleRotateSelection,
     onSetCameraPreset: handlers.handleSetCameraPreset,
     onFocusSelected: handlers.handleFocusSelected,
     catalogIdToAdd: overlayState.catalogIdToAdd,
@@ -404,6 +402,9 @@ function App() {
           restoreOutcome: handlers.restoreOutcomeRef.current,
           restoreAttemptCount: handlers.restoreAttemptCountRef.current,
         }
+      },
+      setOverlaysHidden: (hidden: boolean) => {
+        setTestOverlaysHidden(hidden)
       },
     }
 
@@ -491,12 +492,14 @@ function App() {
       <main
         className="relative size-full"
         aria-busy={startup.startupLoadingActive}
+        data-test-overlays-hidden={testOverlaysHidden ? 'true' : 'false'}
       >
         <p id="scene-instructions" className="sr-only">
           Interactive 3D room editor. Tab to focus the room-view region, then
           use the arrow keys to preview items in the room and Enter or Space to
-          select the previewed item. You can also use the furniture list and
-          selected item panel to move, rotate, or delete items without dragging.
+          select the previewed item. You can also use the furniture in room
+          panel and selected item actions and details to rotate, remove, or type
+          exact placement changes without dragging.
         </p>
         <section
           aria-describedby="scene-instructions"
@@ -510,7 +513,7 @@ function App() {
           onBlur={() => {
             setRoomViewHasFocus(false)
           }}
-          onPointerDownCapture={focusRoomView}
+          onPointerDown={focusRoomView}
         >
           <Canvas
             className="absolute inset-0 z-0"
@@ -562,27 +565,42 @@ function App() {
           </Canvas>
         </section>
 
-        <EditorOverlay
-          editorInteractionsEnabled={startup.editorInteractionsEnabled}
-          newSceneDisabled={sceneIsAtDefaults}
-          statusMessage={overlayState.editorMessage}
-          onCopySceneUrl={handlers.handleCopySceneUrl}
-          camera={cameraProps}
-          startup={startupProps}
-          history={historyProps}
-          scene={sceneProps}
-          selection={selectionProps}
-          catalog={catalogProps}
-          dialogs={dialogsProps}
-          preview={previewProps}
-          floorFinishId={activeFloorFinishId}
-          floorFinishLoading={isFloorFinishLoading}
-          floorFinishes={environmentConfig?.floorFinishes ?? []}
-          onFloorFinishChange={setFloorFinishId}
-          wallFinishId={activeWallFinishId}
-          wallFinishes={environmentConfig?.wallFinishes ?? []}
-          onWallFinishChange={setWallFinishId}
-        />
+        {testOverlaysHidden ? null : (
+          <>
+            <SelectedItemControls
+              editorInteractionsEnabled={startup.editorInteractionsEnabled}
+              isCatalogDrawerOpen={dialogState.isCatalogDrawerOpen}
+              onOpenDeleteDialog={handlers.handleOpenDeleteDialog}
+              onRotateSelection={handlers.handleRotateSelection}
+              onUpdateSelectedItemDetails={
+                handlers.handleUpdateSelectedItemDetails
+              }
+              selectedFurniture={overlayState.selectedFurniture}
+              startupOverlayActive={startup.startupOverlayActive}
+            />
+
+            <EditorOverlay
+              editorInteractionsEnabled={startup.editorInteractionsEnabled}
+              newSceneDisabled={sceneIsAtDefaults}
+              statusMessage={overlayState.editorMessage}
+              onCopySceneUrl={handlers.handleCopySceneUrl}
+              camera={cameraProps}
+              startup={startupProps}
+              history={historyProps}
+              scene={sceneProps}
+              catalog={catalogProps}
+              dialogs={dialogsProps}
+              preview={previewProps}
+              floorFinishId={activeFloorFinishId}
+              floorFinishLoading={isFloorFinishLoading}
+              floorFinishes={environmentConfig?.floorFinishes ?? []}
+              onFloorFinishChange={setFloorFinishId}
+              wallFinishId={activeWallFinishId}
+              wallFinishes={environmentConfig?.wallFinishes ?? []}
+              onWallFinishChange={setWallFinishId}
+            />
+          </>
+        )}
         <Announcer
           politeMessage={announcements.politeAnnouncement}
           assertiveMessage={announcements.assertiveAnnouncement}

@@ -6,7 +6,7 @@ import {
   waitForItemCount,
 } from './support/editor-harness'
 
-test('axe audit passes for baseline and outliner/inspector editor states', async ({
+test('axe audit passes for baseline and outliner/selected item editor states', async ({
   page,
 }) => {
   await openEditor(page)
@@ -46,24 +46,26 @@ test('axe audit passes for baseline and outliner/inspector editor states', async
   await expectNoA11yViolations(page, 'outliner visible with selected item')
 
   const deleteButton = page.getByRole('button', {
-    name: 'Delete',
+    name: 'Remove item',
   })
   await expect(deleteButton).toBeEnabled()
-  await expect(page.getByRole('button', { name: 'Rotate Left' })).toBeEnabled()
+  await expect(
+    page.getByRole('button', { name: 'Rotate counterclockwise' }),
+  ).toBeEnabled()
   await expectNoA11yViolations(
     page,
-    'inspector visible with actionable controls',
+    'selected item controls visible with actionable controls',
   )
 
-  await page.getByRole('button', { name: 'Delete' }).click()
+  await page.getByRole('button', { name: 'Remove item' }).click()
   await expect(
-    page.getByRole('alertdialog', { name: /delete furniture/i }),
+    page.getByRole('alertdialog', { name: /remove item from room/i }),
   ).toBeVisible()
   await expectNoA11yViolations(page, 'delete dialog open')
 
   await page
-    .getByRole('alertdialog', { name: /delete furniture/i })
-    .getByRole('button', { name: 'Delete' })
+    .getByRole('alertdialog', { name: /remove item from room/i })
+    .getByRole('button', { name: 'Remove item' })
     .click()
 
   await waitForItemCount(page, 0)

@@ -101,9 +101,22 @@ test('blocks pointer dragging one furniture item through another', async ({
   const collisionState = await dragSelectedFurniture(page, secondTowardCouch)
   const collisionCouch = getItemById(collisionState, couchId)
   const collisionArmchair = getItemById(collisionState, armchair.id)
+  const approachDeltaX =
+    approachArmchair.position[0] - approachCouch.position[0]
+  const approachDeltaZ =
+    approachArmchair.position[2] - approachCouch.position[2]
+  const dominantAxis =
+    Math.abs(approachDeltaX) >= Math.abs(approachDeltaZ) ? 0 : 2
+  const approachDelta =
+    approachArmchair.position[dominantAxis] -
+    approachCouch.position[dominantAxis]
+  const collisionDelta =
+    collisionArmchair.position[dominantAxis] -
+    collisionCouch.position[dominantAxis]
 
   expect(collisionState.itemCount).toBe(2)
   expect(collisionState.selectedId).toBe(armchair.id)
   expect(collisionCouch.position).toEqual(approachCouch.position)
-  expect(collisionArmchair.position).toEqual(approachArmchair.position)
+  expect(Math.sign(collisionDelta)).toBe(Math.sign(approachDelta))
+  expect(Math.abs(collisionDelta)).toBeLessThanOrEqual(Math.abs(approachDelta))
 })

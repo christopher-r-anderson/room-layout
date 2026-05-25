@@ -4,11 +4,11 @@ A minimal interactive 3D room layout built with React Three Fiber.
 
 <https://christopher-r-anderson.github.io/room-layout/>
 
-This project demonstrates core web 3D concepts relevant to retail and product experiences, including scene composition, camera controls, collision-aware object placement, history and selection tools, outliner and selected-item inspector surfaces, keyboard movement/rotation shortcuts, catalog-driven editor workflows, and a guarded startup asset-loading flow.
+This project demonstrates core web 3D concepts relevant to retail and product experiences, including scene composition, camera controls, collision-aware object placement, history and selection tools, a room-contents panel plus selected-item actions/details, keyboard movement/rotation shortcuts, catalog-driven editor workflows, and a guarded startup asset-loading flow.
 
 ## 🏁 Goals
 
-Current editor UI highlights include a visual furniture picker, history and selection tools, outliner and selected-item inspector surfaces, keyboard movement/rotation shortcuts, startup loading and retryable error overlays, and project/asset information dialogs.
+Current editor UI highlights include a visual furniture picker, history tools, a room-contents panel, selected-item actions/details, keyboard movement/rotation shortcuts, startup loading and retryable error overlays, and project/asset information dialogs.
 
 ## 🔋 Tech Stack
 
@@ -51,21 +51,21 @@ The repository now uses Playwright for real-browser editor coverage and scripted
 - Use Vitest for pure utility, scene-state, and microbenchmark work.
 - Use `pnpm test:e2e` for browser-accurate UI and canvas-adjacent workflows like startup loading, retry flows, and editor history.
 - Use `pnpm test:browser:perf` for scripted Chromium interaction measurements that reuse the same harness helpers without acting as a strict correctness gate.
-- Browser accessibility audits run through Playwright + axe in the chromium lane (baseline shell, catalog drawer, delete dialog, and outliner/inspector states).
+- Browser accessibility audits run through Playwright + axe in the chromium lane (baseline shell, catalog drawer, remove-item dialog, and room-contents/selected-item states).
 
 ## ✨ Accessibility
 
 Accessibility is an explicit goal for this project, especially for no-mouse editor workflows.
 
-- The editor supports keyboard-first interaction through outliner selection, selected-item inspector controls, global movement/rotation/history shortcuts, and canvas keyboard browse (spatial navigation when nothing is selected).
+- The editor supports keyboard-first interaction through room-contents selection, selected-item actions/details, global movement/rotation/history shortcuts, and canvas keyboard browse (spatial navigation when nothing is selected).
 - Startup, dialog, and editor feedback flows include screen-reader announcement support and deterministic focus transitions for key operations like delete and selection reconciliation.
-- All room-view-specific shortcuts (movement, rotation, deletion, and canvas browse) are scoped to the 3D room view's DOM focus, so keyboard navigation outside the canvas — for example, in the Furniture List panel — does not accidentally trigger object actions.
-- Canvas keyboard browse uses spatial ordering (top-to-bottom, left-to-right by screen projection) so arrow keys follow visual layout rather than an internal list order that may differ from what users see. The visible Furniture List panel deliberately uses its own stable alpha-by-name order to remain predictable as objects move.
-- The Furniture List panel is the primary accessible alternative to direct canvas interaction. It remains visible regardless of selection state so assistive technology users always have a stable text representation of the room contents.
-- There is no duplicate hidden DOM scene graph; the Furniture List panel represents the room for assistive technology.
-- After canvas keyboard selection, announcements include a Tab hint to reach item controls in the Furniture List, so screen reader users know what to do next.
+- All room-view-specific shortcuts (movement, rotation, deletion, and canvas browse) are scoped to the 3D room view's DOM focus, so keyboard navigation outside the canvas — for example, in the Furniture in room panel or selected-item details inputs — does not accidentally trigger object actions.
+- Canvas keyboard browse uses spatial ordering (top-to-bottom, left-to-right by screen projection) so arrow keys follow visual layout rather than an internal list order that may differ from what users see. The visible Furniture in room panel deliberately uses its own stable alpha-by-name order to remain predictable as objects move.
+- The Furniture in room panel is the primary accessible alternative to direct canvas interaction. It remains visible regardless of selection state so assistive technology users always have a stable text representation of the room contents.
+- There is no duplicate hidden DOM scene graph; the Furniture in room panel represents the room for assistive technology.
+- After canvas keyboard selection, announcements include a Tab hint to reach selected item actions and details, so screen reader users know what to do next.
 - The current selected-item actions/details are transitional surfaces for a future contextual model. Even if those controls later float visually near the selected object, they should remain after the 3D room view in logical DOM/tab order.
-- Automated accessibility checks run through Playwright + axe in Chromium and currently cover baseline shell/dialog states plus outliner/inspector states.
+- Automated accessibility checks run through Playwright + axe in Chromium and currently cover baseline shell/dialog states plus room-contents/selected-item states.
 - Automated checks are necessary but not sufficient; manual assistive-technology verification remains an ongoing task.
 
 First-time local setup:
@@ -116,8 +116,9 @@ In addition to this README, project-specific guides are available:
 - Drag selected furniture along the floor; movement stays within room bounds and avoids collisions.
 - Rotate the selected item with `,` / `.` or the rotate buttons.
 - Add another furniture instance from the bottom-centered `Add Furniture` trigger and modal picker.
-- Remove the selected item from the selection controls or with `Delete` / `Backspace`, then confirm the dialog.
-- You can fully edit without canvas dragging via the outliner and selected-item inspector surfaces.
+- Remove the selected item from the selected item actions or with `Delete` / `Backspace`, then confirm the dialog.
+- You can fully edit without canvas dragging via the Furniture in room panel and selected item details fields.
+- Typed selected-item details commit on `Enter` or blur and cancel the local draft with `Escape`.
 - Keyboard movement supports `Arrow` (0.5m), `Shift+Arrow` (1.0m), and `Alt+Arrow` (0.1m).
 - With nothing selected, `Arrow` keys browse items in spatial order, `Home`/`End` jump to first/last, and `Enter` or `Space` selects the previewed item.
 - Camera controls support held-key orbit/pan/zoom and press-based view presets. See [docs/editor-shortcuts-reference.md](docs/editor-shortcuts-reference.md).

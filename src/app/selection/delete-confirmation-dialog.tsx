@@ -30,17 +30,17 @@ export function DeleteConfirmationDialog({
     >
       <AlertDialogContent size="sm" id="confirm-delete-dialog">
         <AlertDialogHeader>
-          <AlertDialogTitle>Delete furniture</AlertDialogTitle>
+          <AlertDialogTitle>Remove item from room?</AlertDialogTitle>
           <AlertDialogDescription>
             {pendingDeleteFurniture
-              ? `Delete ${pendingDeleteFurniture.name} from the scene?`
-              : 'Delete the selected furniture from the scene?'}
+              ? `Remove ${pendingDeleteFurniture.name} from your room layout?`
+              : 'Remove the selected item from your room layout?'}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel onClick={onClose}>Cancel</AlertDialogCancel>
           <AlertDialogAction variant="destructive" onClick={onConfirm}>
-            Delete
+            Remove item
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

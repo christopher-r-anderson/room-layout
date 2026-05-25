@@ -3,11 +3,12 @@ import {
   addFurniture,
   openEditor,
   readSceneState,
+  updateSelectedItemField,
   waitForPoliteAnnouncement,
   waitForItemCount,
 } from './support/editor-harness'
 
-test('supports outliner selection and inspector movement without the canvas', async ({
+test('supports outliner selection and selected item details without the canvas', async ({
   page,
 }) => {
   await openEditor(page)
@@ -27,10 +28,14 @@ test('supports outliner selection and inspector movement without the canvas', as
   )
 
   if (!selectedBeforeMove) {
-    throw new Error('expected a selected furniture item before inspector move')
+    throw new Error('expected a selected furniture item before details edit')
   }
 
-  await page.getByRole('button', { name: 'Move right' }).click()
+  await updateSelectedItemField(
+    page,
+    'Left/right position (m)',
+    (selectedBeforeMove.position[0] + 0.5).toFixed(1),
+  )
 
   await expect
     .poll(async () => {
@@ -40,10 +45,10 @@ test('supports outliner selection and inspector movement without the canvas', as
     })
     .toBeCloseTo(selectedBeforeMove.position[0] + 0.5, 6)
 
-  await page.getByRole('button', { name: 'Delete' }).click()
+  await page.getByRole('button', { name: 'Remove item' }).click()
   await page
-    .getByRole('alertdialog', { name: /delete furniture/i })
-    .getByRole('button', { name: 'Delete' })
+    .getByRole('alertdialog', { name: /remove item from room/i })
+    .getByRole('button', { name: 'Remove item' })
     .click()
 
   await waitForItemCount(page, 1)

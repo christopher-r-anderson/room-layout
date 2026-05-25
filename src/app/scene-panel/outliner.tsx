@@ -125,7 +125,7 @@ export function Outliner({
           className="w-full"
         >
           <CardHeader>
-            <CardTitle id={headingId}>Furniture List</CardTitle>
+            <CardTitle id={headingId}>Furniture in room</CardTitle>
             <CardAction>
               <CollapsibleTrigger
                 render={
@@ -135,7 +135,7 @@ export function Outliner({
                     variant="ghost"
                     size="icon-sm"
                     aria-controls={contentId}
-                    aria-label="Toggle furniture list"
+                    aria-label="Toggle furniture in room"
                   />
                 }
               >

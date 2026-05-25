@@ -49,7 +49,10 @@ async function didSelectFurniture(page: Page, itemId: string) {
     .waitForFunction(
       (expectedId) => {
         const testWindow = globalThis as typeof globalThis & {
-          __ROOM_LAYOUT_TEST__?: { getState: () => BrowserSceneState }
+          __ROOM_LAYOUT_TEST__?: {
+            getState: () => BrowserSceneState
+            setOverlaysHidden: (hidden: boolean) => void
+          }
         }
 
         return (
@@ -70,7 +73,10 @@ export async function readSceneState(page: Page): Promise<BrowserSceneState> {
 
   const rawState = await page.evaluate(() => {
     const testWindow = globalThis as typeof globalThis & {
-      __ROOM_LAYOUT_TEST__?: { getState: () => BrowserSceneState }
+      __ROOM_LAYOUT_TEST__?: {
+        getState: () => BrowserSceneState
+        setOverlaysHidden: (hidden: boolean) => void
+      }
     }
 
     return testWindow.__ROOM_LAYOUT_TEST__?.getState() ?? null
@@ -81,6 +87,28 @@ export async function readSceneState(page: Page): Promise<BrowserSceneState> {
   }
 
   return rawState
+}
+
+export async function setOverlaysHidden(page: Page, hidden: boolean) {
+  await page.waitForFunction(() => {
+    return '__ROOM_LAYOUT_TEST__' in globalThis
+  })
+
+  await page.evaluate((nextHidden) => {
+    const testWindow = globalThis as typeof globalThis & {
+      __ROOM_LAYOUT_TEST__?: {
+        getState: () => BrowserSceneState
+        setOverlaysHidden: (hidden: boolean) => void
+      }
+    }
+
+    testWindow.__ROOM_LAYOUT_TEST__?.setOverlaysHidden(nextHidden)
+  }, hidden)
+
+  await expect(page.locator('main')).toHaveAttribute(
+    'data-test-overlays-hidden',
+    hidden ? 'true' : 'false',
+  )
 }
 
 export async function readPoliteAnnouncement(page: Page) {
@@ -295,17 +323,32 @@ export async function selectFurnitureById(page: Page, itemId: string) {
 }
 
 export async function rotateSelectionRight(page: Page) {
-  await page.getByRole('button', { name: 'Rotate Right' }).click()
+  await page.getByRole('button', { name: 'Rotate clockwise' }).click()
 
   return readSceneState(page)
 }
 
 export async function deleteSelectedFurniture(page: Page) {
-  await page.getByRole('button', { name: 'Delete' }).click()
+  await page.getByRole('button', { name: 'Remove item' }).click()
   await page
-    .getByRole('alertdialog', { name: /delete furniture/i })
-    .getByRole('button', { name: 'Delete' })
+    .getByRole('alertdialog', { name: /remove item from room/i })
+    .getByRole('button', { name: 'Remove item' })
     .click()
+
+  return readSceneState(page)
+}
+
+export async function updateSelectedItemField(
+  page: Page,
+  label:
+    | 'Left/right position (m)'
+    | 'Front/back position (m)'
+    | 'Rotation (deg)',
+  value: string,
+) {
+  const input = page.getByLabel(label)
+  await input.fill(value)
+  await input.press('Enter')
 
   return readSceneState(page)
 }
@@ -319,6 +362,9 @@ export async function dragSelectedFurniture(
   startOffset?: {
     x: number
     y: number
+  },
+  options?: {
+    hideOverlays?: boolean
   },
 ) {
   const sceneState = await readSceneState(page)
@@ -337,11 +383,21 @@ export async function dragSelectedFurniture(
   const startY =
     canvasBounds.y + selectedItem.pointerTarget.y + (startOffset?.y ?? 0)
 
-  await page.mouse.move(startX, startY)
-  await page.mouse.down()
-  await page.mouse.move(startX + delta.x, startY + delta.y, { steps: 8 })
-  await page.mouse.up()
-  await page.mouse.move(1, 1)
+  if (options?.hideOverlays) {
+    await setOverlaysHidden(page, true)
+  }
+
+  try {
+    await page.mouse.move(startX, startY)
+    await page.mouse.down()
+    await page.mouse.move(startX + delta.x, startY + delta.y, { steps: 8 })
+    await page.mouse.up()
+    await page.mouse.move(1, 1)
+  } finally {
+    if (options?.hideOverlays) {
+      await setOverlaysHidden(page, false)
+    }
+  }
 
   return readSceneState(page)
 }
