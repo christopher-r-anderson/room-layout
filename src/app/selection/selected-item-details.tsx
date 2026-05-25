@@ -36,8 +36,9 @@ const FIELD_CONFIG: {
   {
     key: 'rotationDegrees',
     label: 'Rotation (deg)',
-    helpText: 'Press Escape to cancel your draft rotation value.',
-  },
+    helpText:
+      'Press Enter or leave the field to apply the exact rotation. Press Escape to cancel your draft rotation value.',
+  }
 ]
 
 function normalizeDegrees(value: number) {
