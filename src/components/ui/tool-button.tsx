@@ -54,7 +54,7 @@ export function ToolButton({
               'aria-disabled:active:translate-y-0 aria-disabled:cursor-not-allowed aria-disabled:opacity-50',
               className,
             )}
-            onPointerDown={onPointerDown}
+            onPointerDown={disabled ? undefined : onPointerDown}
             onClick={(event) => {
               event.preventDefault()
               if (!disabled) {
