@@ -1,4 +1,5 @@
 import { useRef } from 'react'
+import type { UpdateSelectedItemDetailsResult } from '@/app/selected-item-details.types'
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
 import { SelectedItemActions } from './selected-item-actions'
 import { SelectedItemDetails } from './selected-item-details'
@@ -22,17 +23,7 @@ export function SelectedItemControls({
     field: DetailField
     fieldLabel: string
     value: number
-  }) => {
-    ok: boolean
-    item?: FurnitureItem
-    message?: string
-    reason?:
-      | 'no-selection'
-      | 'dragging'
-      | 'blocked-collision'
-      | 'blocked-bounds'
-      | 'no-op'
-  }
+  }) => UpdateSelectedItemDetailsResult
   selectedFurniture: FurnitureItem | null
   startupOverlayActive: boolean
 }) {

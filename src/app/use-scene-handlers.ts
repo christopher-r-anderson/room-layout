@@ -14,6 +14,7 @@ import type {
 } from '@/scene/objects/furniture.types'
 import type { FurnitureCatalogEntry } from '@/scene/objects/furniture-catalog'
 import type { HistoryAvailability } from './history/history.types'
+import type { UpdateSelectedItemDetailsResult } from './selected-item-details.types'
 import type { InteractionSource } from './scene-interaction.types'
 import {
   runStartupAssetErrorTransition,
@@ -143,12 +144,7 @@ interface SceneHandlers {
     field: 'positionX' | 'positionZ' | 'rotationDegrees'
     fieldLabel: string
     value: number
-  }) => {
-    ok: boolean
-    item?: FurnitureItem
-    message?: string
-    reason?: Exclude<UpdateSelectionTransformResult, { ok: true }>['reason']
-  }
+  }) => UpdateSelectedItemDetailsResult
   handleConfirmDeleteSelection: () => SceneReadModel | null
   handleUndo: () => void
   handleRedo: () => void
@@ -643,7 +639,7 @@ export function useSceneHandlers({
       field: 'positionX' | 'positionZ' | 'rotationDegrees'
       fieldLabel: string
       value: number
-    }) => {
+    }): UpdateSelectedItemDetailsResult => {
       const activeItem = selectedFurniture
 
       clearEditorMessage()
@@ -681,7 +677,7 @@ export function useSceneHandlers({
       })
 
       if (result.ok) {
-        setSelectedSource('inspector')
+        setSelectedSource('panel-keyboard')
         syncSceneReadModel({ requestOutlinerFocus: false })
         announcePolite(`${result.item.name} details updated.`)
 

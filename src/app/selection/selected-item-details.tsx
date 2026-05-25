@@ -1,5 +1,6 @@
 import { useId, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import type { UpdateSelectedItemDetailsResult } from '@/app/selected-item-details.types'
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
 
 type DetailField = 'positionX' | 'positionZ' | 'rotationDegrees'
@@ -14,18 +15,6 @@ type FieldOverride =
       value: string
       sourceItem: FurnitureItem
     }
-
-interface UpdateSelectedItemDetailsResult {
-  ok: boolean
-  item?: FurnitureItem
-  message?: string
-  reason?:
-    | 'no-selection'
-    | 'dragging'
-    | 'blocked-collision'
-    | 'blocked-bounds'
-    | 'no-op'
-}
 
 const FIELD_CONFIG: {
   key: DetailField
@@ -167,7 +156,7 @@ export function SelectedItemDetails({
       value: parsedValue,
     })
 
-    if (result.ok && result.item) {
+    if (result.ok) {
       const nextDrafts = createDrafts(result.item)
 
       setFieldOverrides((currentOverrides) => ({
@@ -190,12 +179,10 @@ export function SelectedItemDetails({
       return
     }
 
-    if (result.message) {
-      setErrors((currentErrors) => ({
-        ...currentErrors,
-        [field]: result.message,
-      }))
-    }
+    setErrors((currentErrors) => ({
+      ...currentErrors,
+      [field]: result.message,
+    }))
   }
 
   return (
