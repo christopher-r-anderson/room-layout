@@ -23,6 +23,56 @@ const FURNITURE_ITEM: FurnitureItem = {
 }
 
 describe('SelectedItemDetails', () => {
+  it('does not commit rounded display values on blur when the field was not edited', async () => {
+    const user = userEvent.setup()
+    const onUpdateSelectedItemDetails = vi.fn()
+
+    render(
+      <SelectedItemDetails
+        disabled={false}
+        selectedFurniture={{
+          ...FURNITURE_ITEM,
+          position: [1.24, 0, 0],
+        }}
+        consumeBlurCommitSuppression={() => false}
+        onUpdateSelectedItemDetails={onUpdateSelectedItemDetails}
+      />,
+    )
+
+    const xInput = screen.getByLabelText('Left/right position (m)')
+
+    await user.click(xInput)
+    await user.tab()
+
+    expect(xInput).toHaveValue('1.2')
+    expect(onUpdateSelectedItemDetails).not.toHaveBeenCalled()
+  })
+
+  it('does not commit unchanged values on Enter when the field was not edited', async () => {
+    const user = userEvent.setup()
+    const onUpdateSelectedItemDetails = vi.fn()
+
+    render(
+      <SelectedItemDetails
+        disabled={false}
+        selectedFurniture={{
+          ...FURNITURE_ITEM,
+          position: [1.24, 0, 0],
+        }}
+        consumeBlurCommitSuppression={() => false}
+        onUpdateSelectedItemDetails={onUpdateSelectedItemDetails}
+      />,
+    )
+
+    const xInput = screen.getByLabelText('Left/right position (m)')
+
+    await user.click(xInput)
+    await user.keyboard('{Enter}')
+
+    expect(xInput).toHaveValue('1.2')
+    expect(onUpdateSelectedItemDetails).not.toHaveBeenCalled()
+  })
+
   it('restores the committed field value when Escape is pressed', async () => {
     const user = userEvent.setup()
     const onUpdateSelectedItemDetails = vi.fn()

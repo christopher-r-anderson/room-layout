@@ -101,6 +101,7 @@ class SceneAssetErrorBoundary extends Component<
 function App() {
   const sceneRef = useRef<SceneRef | null>(null)
   const roomViewRef = useRef<HTMLElement | null>(null)
+  const roomViewFocusFrameRef = useRef<number | null>(null)
   const previewedIdRef = useRef<string | null>(null)
   const overlayState = useOverlayState()
   const [floorFinishId, setFloorFinishId] = useState('')
@@ -213,8 +214,23 @@ function App() {
       return
     }
 
-    roomViewRef.current?.focus()
+    if (roomViewFocusFrameRef.current !== null) {
+      cancelAnimationFrame(roomViewFocusFrameRef.current)
+    }
+
+    roomViewFocusFrameRef.current = requestAnimationFrame(() => {
+      roomViewFocusFrameRef.current = null
+      roomViewRef.current?.focus()
+    })
   }, [startup.editorInteractionsEnabled])
+
+  useEffect(() => {
+    return () => {
+      if (roomViewFocusFrameRef.current !== null) {
+        cancelAnimationFrame(roomViewFocusFrameRef.current)
+      }
+    }
+  }, [])
 
   const sync = useSceneSync({
     sceneRef,
