@@ -147,6 +147,9 @@ test('keeps selected and preview states independent across hover and selection c
   const couchOutlinerButton = page.getByRole('button', {
     name: /^Leather Couch/i,
   })
+  // React's synthetic enter/leave handling in this surface responds to the
+  // over/out transition here
+  // dispatchEvent('pointerenter') does not update preview state
   await couchOutlinerButton.dispatchEvent('pointerover')
 
   await expect
