@@ -149,7 +149,7 @@ export function SelectedItemDetails({
     const rawValue = getFieldValue(field).trim()
     const parsedValue = Number(rawValue)
 
-    if (rawValue.length === 0 || Number.isNaN(parsedValue)) {
+    if (rawValue.length === 0 || !Number.isFinite(parsedValue)) {
       setErrors((currentErrors) => ({
         ...currentErrors,
         [field]: `${fieldLabel} must be a valid number.`,
