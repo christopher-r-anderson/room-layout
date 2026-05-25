@@ -39,10 +39,27 @@ vi.mock('@react-three/fiber', () => ({
 
 vi.mock('./furniture-operations', () => ({
   addFurnitureToHistory: mockAddFurnitureToHistory,
-  areFurnitureCollectionsEqual: (
-    left: FurnitureItem[],
-    right: FurnitureItem[],
-  ) => JSON.stringify(left) === JSON.stringify(right),
+  areFurnitureCollectionsEqual: (left: FurnitureItem[], right: FurnitureItem[]) =>
+    left.length === right.length &&
+    left.every((item, index) => {
+      const other = right[index]
+      return (
+        other !== undefined &&
+        item.id === other.id &&
+        item.catalogId === other.catalogId &&
+        item.name === other.name &&
+        item.kind === other.kind &&
+        item.collectionId === other.collectionId &&
+        item.nodeName === other.nodeName &&
+        item.sourcePath === other.sourcePath &&
+        item.footprintSize.width === other.footprintSize.width &&
+        item.footprintSize.depth === other.footprintSize.depth &&
+        item.position[0] === other.position[0] &&
+        item.position[1] === other.position[1] &&
+        item.position[2] === other.position[2] &&
+        item.rotationY === other.rotationY
+      )
+    }),
   buildFurnitureItemsFromInstances: mockBuildFurnitureItemsFromInstances,
   createFurnitureInstanceId: (sequenceNumber: number) =>
     `furniture-instance-${String(sequenceNumber)}`,
