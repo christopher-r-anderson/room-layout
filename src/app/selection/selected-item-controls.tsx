@@ -30,6 +30,14 @@ export function SelectedItemControls({
 }) {
   const suppressNextBlurCommitRef = useRef(false)
 
+  const handleOpenDeleteDialog = () => {
+    try {
+      onOpenDeleteDialog()
+    } finally {
+      suppressNextBlurCommitRef.current = false
+    }
+  }
+
   if (!selectedFurniture) {
     return null
   }
@@ -45,7 +53,7 @@ export function SelectedItemControls({
     >
       <SelectedItemActions
         disabled={controlsDisabled}
-        onOpenDeleteDialog={onOpenDeleteDialog}
+        onOpenDeleteDialog={handleOpenDeleteDialog}
         onPrepareDelete={() => {
           suppressNextBlurCommitRef.current = true
         }}

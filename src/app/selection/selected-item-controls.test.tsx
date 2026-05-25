@@ -70,6 +70,46 @@ describe('SelectedItemControls', () => {
     expect(onOpenDeleteDialog).toHaveBeenCalledTimes(1)
   })
 
+  it('clears delete blur suppression when remove is clicked without a focused detail input', async () => {
+    const user = userEvent.setup()
+    const onOpenDeleteDialog = vi.fn()
+    const onUpdateSelectedItemDetails = vi.fn(() => ({
+      ok: true as const,
+      item: {
+        ...FURNITURE_ITEM,
+        position: [1.4, 0, 0] as [number, number, number],
+      },
+    }))
+
+    render(
+      <SelectedItemControls
+        editorInteractionsEnabled
+        isCatalogDrawerOpen={false}
+        onInvalidSelectedItemDetailValue={vi.fn(() => 'Invalid value')}
+        onOpenDeleteDialog={onOpenDeleteDialog}
+        onRotateSelection={vi.fn()}
+        onUpdateSelectedItemDetails={onUpdateSelectedItemDetails}
+        selectedFurniture={FURNITURE_ITEM}
+        startupOverlayActive={false}
+      />,
+    )
+
+    await user.click(screen.getByRole('button', { name: 'Remove item' }))
+
+    const xInput = screen.getByLabelText('Left/right position (m)')
+    await user.clear(xInput)
+    await user.type(xInput, '1.4')
+    await user.tab()
+
+    expect(onOpenDeleteDialog).toHaveBeenCalledTimes(1)
+    expect(onUpdateSelectedItemDetails).toHaveBeenCalledTimes(1)
+    expect(onUpdateSelectedItemDetails).toHaveBeenCalledWith({
+      field: 'positionX',
+      fieldLabel: 'Left/right position (m)',
+      value: 1.4,
+    })
+  })
+
   it('marks selected item controls inert while the startup overlay is active', () => {
     const { container } = render(
       <SelectedItemControls
