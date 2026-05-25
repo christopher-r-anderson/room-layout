@@ -4,6 +4,9 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+overrides:
+  postprocessing: 6.39.1
+
 importers:
 
   .:
@@ -2346,7 +2349,7 @@ packages:
   n8ao@1.10.1:
     resolution: {integrity: sha512-hhI1pC+BfOZBV1KMwynBrVlIm8wqLxj/abAWhF2nZ0qQKyzTSQa1QtLVS2veRiuoBQXojxobcnp0oe+PUoxf/w==}
     peerDependencies:
-      postprocessing: '>=6.30.0'
+      postprocessing: 6.39.1
       three: '>=0.137'
 
   nanoid@3.3.12:
