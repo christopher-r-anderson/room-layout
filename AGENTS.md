@@ -65,6 +65,12 @@ Types consumed by more than one layer (e.g. a feature folder and `hooks/`) belon
 - For geometry, transform, and other floating-point-derived values, prefer tolerant assertions like `toBeCloseTo` over exact equality unless exact integers are the product contract.
 - Avoid over-testing tunable constants unless they are intentional product contracts.
 - Use Playwright browser tests for startup/loading flows, retry/error handling, editor history flows, and other browser-realistic interaction coverage.
+- For Playwright scene-only tests where overlay chrome is incidental, prefer the shared overlay-hidden harness helpers in `e2e/support/editor-harness.ts` over ad hoc CSS injection or one-off DOM hacks.
+- Use the overlay-hidden test mode only when the assertion is about scene/canvas behavior and the overlays are not part of the contract under test.
+- Do not hide overlays in tests that are meant to validate overlay/outliner/dialog/toolbar behavior, focus order, accessibility semantics, announcements, or real pointer hit-target/layout interactions. Those tests should exercise the real UI.
+- Do not use overlay-hidden mode to paper over real regressions in interactive layout or hit-target overlap. If the UI itself is the feature under test, keep it visible and fix the product or the test intent instead.
+- When a test only needs to establish or change state and pointer semantics are irrelevant, prefer keyboard activation/focus paths over mouse clicks. This keeps tests aligned with the accessible contract and avoids coupling them to incidental layout.
+- Keep pointer-driven test steps only when the product behavior being verified is specifically about pointer input, hover, drag, pointer capture, context menus, collision, or hit-testing.
 - When changing accessibility semantics, focus management, or announcements, run `e2e/editor-a11y-audits.spec.ts` in Chromium and keep it out of the perf lane.
 - Keep browser perf trace scenarios in Playwright separate from correctness-oriented browser tests.
 - Prefer trace capture and scripted browser scenarios over Playwright runner timing output when evaluating real interaction flows.
@@ -121,6 +127,8 @@ This project uses a 3-tier testing architecture to balance test speed, coverage,
 2. **Avoid jsdom for canvas:** Tier 1.5 uses jsdom for component structure and event dispatch, but real pointer event validation (raycasting, collision) happens in E2E.
 3. **Use tolerant assertions for geometry:** Floating-point values use `toBeCloseTo()`, not exact equality.
 4. **Test frame-dependent logic with `advanceFrames()`:** In Tier 1.5, use RTTR's frame advancement to test `useFrame` effects.
+5. **Use real UI only when it matters:** For scene-only browser tests, the overlay-hidden harness is acceptable; for overlay/accessibility/layout contracts, keep the real UI visible.
+6. **Prefer the least-coupled interaction path:** If mouse behavior is not the subject of the test, use keyboard focus/activation instead of pointer clicks.
 
 ### Test Commands
 

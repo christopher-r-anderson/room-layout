@@ -53,6 +53,15 @@ The repository now uses Playwright for real-browser editor coverage and scripted
 - Use `pnpm test:browser:perf` for scripted Chromium interaction measurements that reuse the same harness helpers without acting as a strict correctness gate.
 - Browser accessibility audits run through Playwright + axe in the chromium lane (baseline shell, catalog drawer, remove-item dialog, and room-contents/selected-item states).
 
+### Browser Test Guidance
+
+- For scene-only Playwright tests where overlay UI is not part of the contract, use the shared overlay-hidden harness helpers in `e2e/support/editor-harness.ts` instead of CSS injection or custom DOM overrides.
+- Overlay-hidden mode is appropriate when you are verifying canvas/scene behavior and the overlay is only incidental to reaching that state.
+- Do not hide the UI in tests that are about the visible editor itself: outliner behavior, selected-item controls, dialogs, toolbar actions, accessibility semantics, focus order, announcements, or true layout/hit-target interactions.
+- Do not use overlay-hidden mode to mask a legitimate UI overlap bug. If the test is meant to prove real pointer accessibility or layout behavior, the full UI must stay visible.
+- When a test only needs to select an item or establish state and mouse behavior is not under test, prefer keyboard focus/activation over pointer clicks. This makes the test less brittle and better aligned with the app's accessible interaction model.
+- Keep mouse or pointer actions in the test only when pointer semantics are the feature under test, such as hover preview, drag, collision, pointer capture, context-menu suppression, or hit-testing.
+
 ## ✨ Accessibility
 
 Accessibility is an explicit goal for this project, especially for no-mouse editor workflows.

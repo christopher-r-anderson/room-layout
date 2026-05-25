@@ -38,7 +38,7 @@ const FIELD_CONFIG: {
     label: 'Rotation (deg)',
     helpText:
       'Press Enter or leave the field to apply the exact rotation. Press Escape to cancel your draft rotation value.',
-  }
+  },
 ]
 
 function normalizeDegrees(value: number) {
@@ -78,11 +78,13 @@ export function SelectedItemDetails({
   disabled,
   selectedFurniture,
   consumeBlurCommitSuppression,
+  onInvalidSelectedItemDetailValue,
   onUpdateSelectedItemDetails,
 }: {
   disabled: boolean
   selectedFurniture: FurnitureItem
   consumeBlurCommitSuppression: () => boolean
+  onInvalidSelectedItemDetailValue?: (fieldLabel: string) => string
   onUpdateSelectedItemDetails: (
     input: UpdateSelectedItemDetailsInput,
   ) => UpdateSelectedItemDetailsResult
@@ -149,9 +151,13 @@ export function SelectedItemDetails({
     const parsedValue = Number(rawValue)
 
     if (rawValue.length === 0 || !Number.isFinite(parsedValue)) {
+      const message =
+        onInvalidSelectedItemDetailValue?.(fieldLabel) ??
+        `${fieldLabel} must be a valid number.`
+
       setErrors((currentErrors) => ({
         ...currentErrors,
-        [field]: `${fieldLabel} must be a valid number.`,
+        [field]: message,
       }))
       return
     }

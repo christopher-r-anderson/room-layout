@@ -39,12 +39,14 @@ vi.mock('@react-three/fiber', () => ({
 
 vi.mock('./furniture-operations', () => ({
   addFurnitureToHistory: mockAddFurnitureToHistory,
-  areFurnitureCollectionsEqual: (left: FurnitureItem[], right: FurnitureItem[]) =>
+  areFurnitureCollectionsEqual: (
+    left: FurnitureItem[],
+    right: FurnitureItem[],
+  ) =>
     left.length === right.length &&
     left.every((item, index) => {
       const other = right[index]
       return (
-        other !== undefined &&
         item.id === other.id &&
         item.catalogId === other.catalogId &&
         item.name === other.name &&

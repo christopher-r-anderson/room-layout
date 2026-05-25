@@ -28,6 +28,7 @@ describe('SelectedItemControls', () => {
       <SelectedItemControls
         editorInteractionsEnabled
         isCatalogDrawerOpen={false}
+        onInvalidSelectedItemDetailValue={vi.fn(() => 'Invalid value')}
         onOpenDeleteDialog={vi.fn()}
         onRotateSelection={vi.fn()}
         onUpdateSelectedItemDetails={vi.fn()}
@@ -50,6 +51,7 @@ describe('SelectedItemControls', () => {
       <SelectedItemControls
         editorInteractionsEnabled
         isCatalogDrawerOpen={false}
+        onInvalidSelectedItemDetailValue={vi.fn(() => 'Invalid value')}
         onOpenDeleteDialog={onOpenDeleteDialog}
         onRotateSelection={vi.fn()}
         onUpdateSelectedItemDetails={onUpdateSelectedItemDetails}
@@ -66,5 +68,29 @@ describe('SelectedItemControls', () => {
 
     expect(onUpdateSelectedItemDetails).not.toHaveBeenCalled()
     expect(onOpenDeleteDialog).toHaveBeenCalledTimes(1)
+  })
+
+  it('marks selected item controls inert while the startup overlay is active', () => {
+    const { container } = render(
+      <SelectedItemControls
+        editorInteractionsEnabled
+        isCatalogDrawerOpen={false}
+        onInvalidSelectedItemDetailValue={vi.fn(() => 'Invalid value')}
+        onOpenDeleteDialog={vi.fn()}
+        onRotateSelection={vi.fn()}
+        onUpdateSelectedItemDetails={vi.fn()}
+        selectedFurniture={FURNITURE_ITEM}
+        startupOverlayActive
+      />,
+    )
+
+    expect(container.firstChild).toHaveAttribute('inert', '')
+    expect(container.firstChild).toHaveAttribute('aria-hidden', 'true')
+    expect(
+      screen.getByRole('button', {
+        name: 'Rotate counterclockwise',
+        hidden: true,
+      }),
+    ).toHaveAttribute('aria-disabled', 'true')
   })
 })

@@ -515,7 +515,9 @@ function App() {
           use the arrow keys to preview items in the room and Enter or Space to
           select the previewed item. You can also use the furniture in room
           panel and selected item actions and details to rotate, remove, or type
-          exact placement changes without dragging.
+          exact placement changes without dragging. When focus is in the
+          furniture in room panel, press Shift+Tab to return to selected item
+          actions and details.
         </p>
         <section
           aria-describedby="scene-instructions"
@@ -586,6 +588,9 @@ function App() {
             <SelectedItemControls
               editorInteractionsEnabled={startup.editorInteractionsEnabled}
               isCatalogDrawerOpen={dialogState.isCatalogDrawerOpen}
+              onInvalidSelectedItemDetailValue={
+                handlers.handleInvalidSelectedItemDetailValue
+              }
               onOpenDeleteDialog={handlers.handleOpenDeleteDialog}
               onRotateSelection={handlers.handleRotateSelection}
               onUpdateSelectedItemDetails={

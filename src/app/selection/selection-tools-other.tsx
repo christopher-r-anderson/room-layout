@@ -22,7 +22,7 @@ export function SelectionToolsOther({
     : 'No item selected'
 
   return (
-    <ButtonGroup aria-label="Selection Other Actions">
+    <ButtonGroup aria-label="Selected item actions">
       <ToolButton
         action={() => {
           onRotateSelection(1)

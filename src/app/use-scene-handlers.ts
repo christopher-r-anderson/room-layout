@@ -143,6 +143,7 @@ interface SceneHandlers {
     options?: { source?: MoveSource },
   ) => MoveSelectionResult
   handleRotateSelection: (direction: -1 | 1) => void
+  handleInvalidSelectedItemDetailValue: (fieldLabel: string) => string
   handleUpdateSelectedItemDetails: (
     input: UpdateSelectedItemDetailsInput,
   ) => UpdateSelectedItemDetailsResult
@@ -545,7 +546,7 @@ export function useSceneHandlers({
         }
       }
 
-      if (source === 'canvas-keyboard') {
+      if (source === 'canvas-keyboard' || source === 'panel-keyboard') {
         const freshReadModel = syncSceneReadModel({
           requestOutlinerFocus: false,
           announceSelectionChange: false,
@@ -554,10 +555,16 @@ export function useSceneHandlers({
           const item = freshReadModel?.items.find((i) => i.id === id)
           if (item) {
             announcePolite(
-              `${item.name} selected. Press Tab to reach selected item actions and details.`,
+              source === 'panel-keyboard'
+                ? `${item.name} selected. Press Shift+Tab to reach selected item actions and details.`
+                : `${item.name} selected. Press Tab to reach selected item actions and details.`,
             )
           }
-        } else if (result.ok && result.status === 'cleared') {
+        } else if (
+          source === 'canvas-keyboard' &&
+          result.ok &&
+          result.status === 'cleared'
+        ) {
           announcePolite('Selection cleared.')
         }
       } else {
@@ -633,6 +640,20 @@ export function useSceneHandlers({
       announcePolite,
       selectedFurniture,
     ],
+  )
+
+  const handleInvalidSelectedItemDetailValue = useCallback(
+    (fieldLabel: string) => {
+      clearEditorMessage()
+
+      const message = formatSelectedItemDetailsInvalidValueMessage(fieldLabel)
+
+      setEditorMessage(message)
+      announceAssertive(message)
+
+      return message
+    },
+    [announceAssertive, clearEditorMessage, setEditorMessage],
   )
 
   const handleUpdateSelectedItemDetails = useCallback(
@@ -1104,6 +1125,7 @@ export function useSceneHandlers({
     handleSelectById,
     handleMoveSelection,
     handleRotateSelection,
+    handleInvalidSelectedItemDetailValue,
     handleUpdateSelectedItemDetails,
     handleConfirmDeleteSelection,
     handleUndo,
@@ -1172,4 +1194,8 @@ function formatSelectedItemDetailsBlockedMessage(
     case 'no-op':
       return ''
   }
+}
+
+function formatSelectedItemDetailsInvalidValueMessage(fieldLabel: string) {
+  return `${fieldLabel} must be a valid number.`
 }

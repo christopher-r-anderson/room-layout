@@ -3,6 +3,7 @@ import { expectNoA11yViolations } from './support/axe'
 import {
   openEditor,
   readSceneState,
+  selectOutlinerItemByKeyboard,
   waitForItemCount,
 } from './support/editor-harness'
 
@@ -39,10 +40,7 @@ test('axe audit passes for baseline and outliner/selected item editor states', a
   await pickerDialog.getByRole('button', { name: 'Add Item' }).click()
   await expect(pickerDialog).toBeHidden()
 
-  const outlinerSelectionButton = page.getByRole('button', {
-    name: /^Leather Couch/i,
-  })
-  await outlinerSelectionButton.click()
+  await selectOutlinerItemByKeyboard(page, /^Leather Couch/i)
   await expectNoA11yViolations(page, 'outliner visible with selected item')
 
   const deleteButton = page.getByRole('button', {

@@ -111,6 +111,19 @@ export async function setOverlaysHidden(page: Page, hidden: boolean) {
   )
 }
 
+export async function withOverlaysHidden<T>(
+  page: Page,
+  callback: () => Promise<T>,
+): Promise<T> {
+  await setOverlaysHidden(page, true)
+
+  try {
+    return await callback()
+  } finally {
+    await setOverlaysHidden(page, false)
+  }
+}
+
 export async function readPoliteAnnouncement(page: Page) {
   const text = await page.locator('.sr-only [aria-live="polite"]').textContent()
 
@@ -281,45 +294,73 @@ export async function addFurniture(page: Page, name = 'Leather Couch') {
   return nextState
 }
 
-export async function selectFurnitureById(page: Page, itemId: string) {
-  const canvas = page.locator('canvas')
-  let lastSelectedId: string | null = null
+export async function selectOutlinerItemByKeyboard(
+  page: Page,
+  name: string | RegExp,
+) {
+  const button = page.getByRole('button', { name })
+  await button.focus()
+  await expect(button).toBeFocused()
+  await page.keyboard.press('Enter')
 
-  for (let attempt = 1; attempt <= POINTER_SELECTION_ATTEMPTS; attempt += 1) {
-    const sceneState = await readSceneState(page)
+  return button
+}
 
-    if (sceneState.selectedId === itemId) {
-      return sceneState
+export async function selectFurnitureById(
+  page: Page,
+  itemId: string,
+  options?: {
+    hideOverlays?: boolean
+  },
+) {
+  const run = async () => {
+    const canvas = page.locator('canvas')
+    let lastSelectedId: string | null = null
+
+    for (let attempt = 1; attempt <= POINTER_SELECTION_ATTEMPTS; attempt += 1) {
+      const sceneState = await readSceneState(page)
+
+      if (sceneState.selectedId === itemId) {
+        return sceneState
+      }
+
+      const item = sceneState.items.find((candidate) => candidate.id === itemId)
+
+      if (!item?.pointerTarget) {
+        throw new Error(
+          `furniture item ${itemId} does not have a pointer target`,
+        )
+      }
+
+      const canvasBounds = await getCanvasBounds(page)
+      const clickX = Math.min(
+        Math.max(item.pointerTarget.x, 1),
+        Math.max(canvasBounds.width - 1, 1),
+      )
+      const clickY = Math.min(
+        Math.max(item.pointerTarget.y, 1),
+        Math.max(canvasBounds.height - 1, 1),
+      )
+
+      await canvas.click({ position: { x: clickX, y: clickY } })
+
+      if (await didSelectFurniture(page, itemId)) {
+        return readSceneState(page)
+      }
+
+      lastSelectedId = (await readSceneState(page)).selectedId
     }
 
-    const item = sceneState.items.find((candidate) => candidate.id === itemId)
-
-    if (!item?.pointerTarget) {
-      throw new Error(`furniture item ${itemId} does not have a pointer target`)
-    }
-
-    const canvasBounds = await getCanvasBounds(page)
-    const clickX = Math.min(
-      Math.max(item.pointerTarget.x, 1),
-      Math.max(canvasBounds.width - 1, 1),
+    throw new Error(
+      `click at pointerTarget did not select furniture ${itemId} after ${String(POINTER_SELECTION_ATTEMPTS)} attempts (last selectedId=${lastSelectedId ?? 'null'})`,
     )
-    const clickY = Math.min(
-      Math.max(item.pointerTarget.y, 1),
-      Math.max(canvasBounds.height - 1, 1),
-    )
-
-    await canvas.click({ position: { x: clickX, y: clickY } })
-
-    if (await didSelectFurniture(page, itemId)) {
-      return readSceneState(page)
-    }
-
-    lastSelectedId = (await readSceneState(page)).selectedId
   }
 
-  throw new Error(
-    `click at pointerTarget did not select furniture ${itemId} after ${String(POINTER_SELECTION_ATTEMPTS)} attempts (last selectedId=${lastSelectedId ?? 'null'})`,
-  )
+  if (options?.hideOverlays) {
+    return withOverlaysHidden(page, run)
+  }
+
+  return run()
 }
 
 export async function rotateSelectionRight(page: Page) {
@@ -367,39 +408,37 @@ export async function dragSelectedFurniture(
     hideOverlays?: boolean
   },
 ) {
-  const sceneState = await readSceneState(page)
-  const selectedItem = sceneState.items.find(
-    (item) => item.id === sceneState.selectedId,
-  )
+  const run = async () => {
+    const sceneState = await readSceneState(page)
+    const selectedItem = sceneState.items.find(
+      (item) => item.id === sceneState.selectedId,
+    )
 
-  if (!selectedItem?.pointerTarget) {
-    throw new Error('selected furniture item does not have a pointer target')
-  }
+    if (!selectedItem?.pointerTarget) {
+      throw new Error('selected furniture item does not have a pointer target')
+    }
 
-  const canvasBounds = await getCanvasBounds(page)
+    const canvasBounds = await getCanvasBounds(page)
 
-  const startX =
-    canvasBounds.x + selectedItem.pointerTarget.x + (startOffset?.x ?? 0)
-  const startY =
-    canvasBounds.y + selectedItem.pointerTarget.y + (startOffset?.y ?? 0)
+    const startX =
+      canvasBounds.x + selectedItem.pointerTarget.x + (startOffset?.x ?? 0)
+    const startY =
+      canvasBounds.y + selectedItem.pointerTarget.y + (startOffset?.y ?? 0)
 
-  if (options?.hideOverlays) {
-    await setOverlaysHidden(page, true)
-  }
-
-  try {
     await page.mouse.move(startX, startY)
     await page.mouse.down()
     await page.mouse.move(startX + delta.x, startY + delta.y, { steps: 8 })
     await page.mouse.up()
     await page.mouse.move(1, 1)
-  } finally {
-    if (options?.hideOverlays) {
-      await setOverlaysHidden(page, false)
-    }
+
+    return readSceneState(page)
   }
 
-  return readSceneState(page)
+  if (options?.hideOverlays) {
+    return withOverlaysHidden(page, run)
+  }
+
+  return run()
 }
 
 export async function delayFurnitureAssetRequests(page: Page) {

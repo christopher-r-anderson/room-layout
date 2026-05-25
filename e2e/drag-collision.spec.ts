@@ -22,10 +22,6 @@ test('blocks pointer dragging one furniture item through another', async ({
   page,
 }) => {
   await openEditor(page)
-  await page.addStyleTag({
-    content:
-      '[aria-label="Copy Scene URL to clipboard"], [role="group"][aria-label="Camera"] { pointer-events: none !important; }',
-  })
 
   const addedCouchState = await addFurniture(page, 'Leather Couch')
   const couchId = addedCouchState.items[0]?.id
@@ -35,10 +31,15 @@ test('blocks pointer dragging one furniture item through another', async ({
   }
 
   // Keep the interaction lane away from right-side overlay controls.
-  const movedLeftState = await dragSelectedFurniture(page, {
-    x: -220,
-    y: 0,
-  })
+  const movedLeftState = await dragSelectedFurniture(
+    page,
+    {
+      x: -220,
+      y: 0,
+    },
+    undefined,
+    { hideOverlays: true },
+  )
   const movedLeftCouch = getItemById(movedLeftState, couchId)
 
   expect(movedLeftCouch.position).not.toEqual(
@@ -56,7 +57,7 @@ test('blocks pointer dragging one furniture item through another', async ({
     )
   }
 
-  await selectFurnitureById(page, armchair.id)
+  await selectFurnitureById(page, armchair.id, { hideOverlays: true })
 
   const selectedState = await readSceneState(page)
   const selectedCouch = getItemById(selectedState, couchId)
@@ -77,7 +78,12 @@ test('blocks pointer dragging one furniture item through another', async ({
 
   const approachBaselineCouch = getItemById(selectedState, couchId)
 
-  const approachState = await dragSelectedFurniture(page, firstTowardCouch)
+  const approachState = await dragSelectedFurniture(
+    page,
+    firstTowardCouch,
+    undefined,
+    { hideOverlays: true },
+  )
   const approachCouch = getItemById(approachState, couchId)
   const approachArmchair = getItemById(approachState, armchair.id)
 
@@ -98,7 +104,12 @@ test('blocks pointer dragging one furniture item through another', async ({
     y: (approachCouch.pointerTarget.y - approachArmchair.pointerTarget.y) * 0.9,
   }
 
-  const collisionState = await dragSelectedFurniture(page, secondTowardCouch)
+  const collisionState = await dragSelectedFurniture(
+    page,
+    secondTowardCouch,
+    undefined,
+    { hideOverlays: true },
+  )
   const collisionCouch = getItemById(collisionState, couchId)
   const collisionArmchair = getItemById(collisionState, armchair.id)
   const approachDeltaX =

@@ -35,6 +35,7 @@ describe('SelectedItemDetails', () => {
           position: [1.24, 0, 0],
         }}
         consumeBlurCommitSuppression={() => false}
+        onInvalidSelectedItemDetailValue={vi.fn()}
         onUpdateSelectedItemDetails={onUpdateSelectedItemDetails}
       />,
     )
@@ -60,6 +61,7 @@ describe('SelectedItemDetails', () => {
           position: [1.24, 0, 0],
         }}
         consumeBlurCommitSuppression={() => false}
+        onInvalidSelectedItemDetailValue={vi.fn()}
         onUpdateSelectedItemDetails={onUpdateSelectedItemDetails}
       />,
     )
@@ -82,6 +84,7 @@ describe('SelectedItemDetails', () => {
         disabled={false}
         selectedFurniture={FURNITURE_ITEM}
         consumeBlurCommitSuppression={() => false}
+        onInvalidSelectedItemDetailValue={vi.fn()}
         onUpdateSelectedItemDetails={onUpdateSelectedItemDetails}
       />,
     )
@@ -98,6 +101,9 @@ describe('SelectedItemDetails', () => {
 
   it('shows inline validation for invalid numeric drafts without committing', async () => {
     const user = userEvent.setup()
+    const onInvalidSelectedItemDetailValue = vi.fn(
+      (fieldLabel: string) => `${fieldLabel} must be a valid number.`,
+    )
     const onUpdateSelectedItemDetails = vi.fn()
 
     render(
@@ -105,6 +111,7 @@ describe('SelectedItemDetails', () => {
         disabled={false}
         selectedFurniture={FURNITURE_ITEM}
         consumeBlurCommitSuppression={() => false}
+        onInvalidSelectedItemDetailValue={onInvalidSelectedItemDetailValue}
         onUpdateSelectedItemDetails={onUpdateSelectedItemDetails}
       />,
     )
@@ -117,6 +124,9 @@ describe('SelectedItemDetails', () => {
     expect(
       screen.getByText('Left/right position (m) must be a valid number.'),
     ).toBeVisible()
+    expect(onInvalidSelectedItemDetailValue).toHaveBeenCalledWith(
+      'Left/right position (m)',
+    )
     expect(onUpdateSelectedItemDetails).not.toHaveBeenCalled()
   })
 
@@ -129,6 +139,7 @@ describe('SelectedItemDetails', () => {
         disabled={false}
         selectedFurniture={FURNITURE_ITEM}
         consumeBlurCommitSuppression={() => false}
+        onInvalidSelectedItemDetailValue={vi.fn()}
         onUpdateSelectedItemDetails={onUpdateSelectedItemDetails}
       />,
     )
@@ -160,6 +171,7 @@ describe('SelectedItemDetails', () => {
         disabled={false}
         selectedFurniture={FURNITURE_ITEM}
         consumeBlurCommitSuppression={() => false}
+        onInvalidSelectedItemDetailValue={vi.fn()}
         onUpdateSelectedItemDetails={onUpdateSelectedItemDetails}
       />,
     )
@@ -185,6 +197,7 @@ describe('SelectedItemDetails', () => {
         disabled={false}
         selectedFurniture={FURNITURE_ITEM}
         consumeBlurCommitSuppression={() => false}
+        onInvalidSelectedItemDetailValue={vi.fn()}
         onUpdateSelectedItemDetails={onUpdateSelectedItemDetails}
       />,
     )
@@ -198,6 +211,7 @@ describe('SelectedItemDetails', () => {
           rotationY: Math.PI / 2,
         }}
         consumeBlurCommitSuppression={() => false}
+        onInvalidSelectedItemDetailValue={vi.fn()}
         onUpdateSelectedItemDetails={onUpdateSelectedItemDetails}
       />,
     )
@@ -215,6 +229,7 @@ describe('SelectedItemDetails', () => {
         disabled={false}
         selectedFurniture={FURNITURE_ITEM}
         consumeBlurCommitSuppression={() => false}
+        onInvalidSelectedItemDetailValue={vi.fn()}
         onUpdateSelectedItemDetails={onUpdateSelectedItemDetails}
       />,
     )
@@ -232,6 +247,7 @@ describe('SelectedItemDetails', () => {
           position: [2.4, 0, 0],
         }}
         consumeBlurCommitSuppression={() => false}
+        onInvalidSelectedItemDetailValue={vi.fn()}
         onUpdateSelectedItemDetails={onUpdateSelectedItemDetails}
       />,
     )
@@ -253,6 +269,7 @@ describe('SelectedItemDetails', () => {
         disabled={false}
         selectedFurniture={FURNITURE_ITEM}
         consumeBlurCommitSuppression={() => false}
+        onInvalidSelectedItemDetailValue={vi.fn()}
         onUpdateSelectedItemDetails={onUpdateSelectedItemDetails}
       />,
     )
@@ -272,6 +289,7 @@ describe('SelectedItemDetails', () => {
           position: [1.2, 0, 0],
         }}
         consumeBlurCommitSuppression={() => false}
+        onInvalidSelectedItemDetailValue={vi.fn()}
         onUpdateSelectedItemDetails={onUpdateSelectedItemDetails}
       />,
     )
@@ -282,6 +300,7 @@ describe('SelectedItemDetails', () => {
         disabled={false}
         selectedFurniture={{ ...FURNITURE_ITEM }}
         consumeBlurCommitSuppression={() => false}
+        onInvalidSelectedItemDetailValue={vi.fn()}
         onUpdateSelectedItemDetails={onUpdateSelectedItemDetails}
       />,
     )

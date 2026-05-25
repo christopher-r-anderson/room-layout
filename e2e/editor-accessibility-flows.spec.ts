@@ -9,6 +9,7 @@ import {
   readAssertiveAnnouncement,
   readPoliteAnnouncement,
   readSceneState,
+  selectOutlinerItemByKeyboard,
   updateSelectedItemField,
   waitForFirstItemPosition,
   waitForItemCount,
@@ -21,8 +22,7 @@ test('applies Arrow, Shift+Arrow, and Alt+Arrow movement steps in no-mouse flow'
   await openEditor(page)
   await addFurniture(page, 'Leather Couch')
 
-  const outlinerButton = page.getByRole('button', { name: /^Leather Couch/i })
-  await outlinerButton.click()
+  await selectOutlinerItemByKeyboard(page, /^Leather Couch/i)
 
   const initialState = await readSceneState(page)
   const initialX = initialState.items[0].position[0]
@@ -51,7 +51,7 @@ test('keeps announcements deterministic and reconciles focus on undo selection l
   const addedState = await addFurniture(page, 'Leather Couch')
   const initialPosition = addedState.items[0].position
 
-  await page.getByRole('button', { name: /^Leather Couch/i }).click()
+  await selectOutlinerItemByKeyboard(page, /^Leather Couch/i)
 
   await focusRoomView(page)
   await page.keyboard.press('ArrowRight')
@@ -92,10 +92,15 @@ test('keeps undo and redo parity across command and drag movement paths', async 
 
   expect(commandPosition).not.toEqual(initialPosition)
 
-  const afterDragMove = await dragSelectedFurniture(page, {
-    x: 150,
-    y: 30,
-  })
+  const afterDragMove = await dragSelectedFurniture(
+    page,
+    {
+      x: 150,
+      y: 30,
+    },
+    undefined,
+    { hideOverlays: true },
+  )
   const dragPosition = afterDragMove.items[0].position
 
   expect(dragPosition).not.toEqual(commandPosition)
@@ -233,6 +238,49 @@ test('Tab from the room view reaches selected item actions and then details', as
   await expect(page.getByLabel('Left/right position (m)')).toBeFocused()
 })
 
+test('outliner keyboard selection keeps focus in the panel and reaches selected item actions with Shift+Tab', async ({
+  page,
+}) => {
+  await openEditor(page)
+  await addFurniture(page, 'Leather Couch')
+  await addFurniture(page, 'End Table')
+
+  const couchButton = page.getByRole('button', { name: /^Leather Couch/i })
+  const rotateCounterclockwiseButton = page.getByRole('button', {
+    name: 'Rotate counterclockwise',
+  })
+
+  await couchButton.focus()
+  await page.keyboard.press('Enter')
+
+  await waitForPoliteAnnouncement(
+    page,
+    'Leather Couch selected. Press Shift+Tab to reach selected item actions and details.',
+  )
+  await expect(couchButton).toBeFocused()
+
+  await page.keyboard.press('Tab')
+  await expect(rotateCounterclockwiseButton).not.toBeFocused()
+
+  let reachedSelectedItemActions = false
+
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    const isFocused = await rotateCounterclockwiseButton.evaluate(
+      (node) => node === node.ownerDocument.activeElement,
+    )
+
+    if (isFocused) {
+      reachedSelectedItemActions = true
+      break
+    }
+
+    await page.keyboard.press('Shift+Tab')
+  }
+
+  expect(reachedSelectedItemActions).toBe(true)
+  await expect(rotateCounterclockwiseButton).toBeFocused()
+})
+
 test('invalid selected item detail edits show inline feedback and do not move the item', async ({
   page,
 }) => {
@@ -256,6 +304,29 @@ test('invalid selected item detail edits show inline feedback and do not move th
   await expect
     .poll(async () => (await readSceneState(page)).items[0]?.position[0])
     .toBeCloseTo(initialX, 6)
+})
+
+test('malformed selected item detail edits announce failure and keep the draft visible', async ({
+  page,
+}) => {
+  await openEditor(page)
+  await addFurniture(page, 'Leather Couch')
+
+  const xInput = page.getByLabel('Left/right position (m)')
+  const detailsPanel = page.getByRole('region', {
+    name: 'Selected item details',
+  })
+
+  await xInput.fill('1.2x')
+  await xInput.press('Enter')
+
+  await expect(xInput).toHaveValue('1.2x')
+  await expect(
+    detailsPanel.getByText('Left/right position (m) must be a valid number.'),
+  ).toBeVisible()
+  await expect
+    .poll(async () => readAssertiveAnnouncement(page))
+    .toBe('Left/right position (m) must be a valid number.')
 })
 
 test('selected item controls are suppressed from tab order while the catalog drawer is open', async ({

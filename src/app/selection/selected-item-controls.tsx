@@ -10,6 +10,7 @@ import { SelectedItemDetails } from './selected-item-details'
 export function SelectedItemControls({
   editorInteractionsEnabled,
   isCatalogDrawerOpen,
+  onInvalidSelectedItemDetailValue,
   onOpenDeleteDialog,
   onRotateSelection,
   onUpdateSelectedItemDetails,
@@ -18,6 +19,7 @@ export function SelectedItemControls({
 }: {
   editorInteractionsEnabled: boolean
   isCatalogDrawerOpen: boolean
+  onInvalidSelectedItemDetailValue: (fieldLabel: string) => string
   onOpenDeleteDialog: () => void
   onRotateSelection: (direction: -1 | 1) => void
   onUpdateSelectedItemDetails: (
@@ -62,6 +64,7 @@ export function SelectedItemControls({
           suppressNextBlurCommitRef.current = false
           return true
         }}
+        onInvalidSelectedItemDetailValue={onInvalidSelectedItemDetailValue}
         onUpdateSelectedItemDetails={onUpdateSelectedItemDetails}
       />
     </div>

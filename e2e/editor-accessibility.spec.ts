@@ -3,6 +3,7 @@ import {
   addFurniture,
   openEditor,
   readSceneState,
+  selectOutlinerItemByKeyboard,
   updateSelectedItemField,
   waitForPoliteAnnouncement,
   waitForItemCount,
@@ -14,9 +15,7 @@ test('supports outliner selection and selected item details without the canvas',
   await openEditor(page)
   await addFurniture(page, 'Leather Couch')
   await addFurniture(page, 'End Table')
-
-  const couchButton = page.getByRole('button', { name: /^Leather Couch/i })
-  await couchButton.click()
+  await selectOutlinerItemByKeyboard(page, /^Leather Couch/i)
 
   await expect
     .poll(async () => (await readSceneState(page)).selectedName)
