@@ -136,7 +136,7 @@ describe('SceneOutliner', () => {
     )
   })
 
-  it('applies preview styling to the previewed non-selected item', () => {
+  it('applies preview styling to the previewed non-selected item', async () => {
     render(
       <Outliner
         readModel={READ_MODEL}
@@ -149,12 +149,14 @@ describe('SceneOutliner', () => {
       />,
     )
 
-    const previewedButton = screen.getByRole('button', { name: /end table/i })
-    // item-2 is previewed (not selected) — should have accent bg class
-    expect(previewedButton.className).toMatch(/bg-accent/)
+    await waitFor(() => {
+      const previewedButton = screen.getByRole('button', { name: /end table/i })
+      // item-2 is previewed (not selected) — should have accent bg class
+      expect(previewedButton.className).toMatch(/bg-accent/)
+    })
   })
 
-  it('does not apply preview styling to the selected item even if it matches previewedId', () => {
+  it('does not apply preview styling to the selected item even if it matches previewedId', async () => {
     render(
       <Outliner
         readModel={READ_MODEL}
@@ -167,11 +169,13 @@ describe('SceneOutliner', () => {
       />,
     )
 
-    const selectedButton = screen.getByRole('button', {
-      name: /leather couch/i,
+    await waitFor(() => {
+      const selectedButton = screen.getByRole('button', {
+        name: /leather couch/i,
+      })
+      // item-1 is selected AND previewed — selected style wins, no accent class
+      expect(selectedButton.className).not.toMatch(/bg-accent/)
     })
-    // item-1 is selected AND previewed — selected style wins, no accent class
-    expect(selectedButton.className).not.toMatch(/bg-accent/)
   })
 
   it('focuses the preferred item when expanded', async () => {
