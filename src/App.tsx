@@ -35,6 +35,7 @@ import { clearSceneDraft, saveSceneDraft } from './app/url-scene/scene-draft'
 import { isFreshSceneState } from './app/startup/scene-defaults'
 import { sortSpatially } from './lib/three/spatial-sort'
 import { SelectedItemControls } from './app/selection/selected-item-controls'
+import { findFirstFocusableControl } from './app/overlay/focusable-controls'
 
 interface BrowserSceneState {
   assetsReady: boolean
@@ -363,10 +364,9 @@ function App() {
     focusRequest: sync.outlinerFocusRequest,
     onFocusHandled: sync.handleOutlinerFocusHandled,
     onNavigateBackToSelectionControls: useCallback(() => {
-      const firstFocusableControl =
-        selectedItemControlsRef.current?.querySelector<HTMLElement>(
-          'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
-        )
+      const firstFocusableControl = findFirstFocusableControl(
+        selectedItemControlsRef.current,
+      )
 
       if (!firstFocusableControl) {
         return false

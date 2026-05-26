@@ -13,6 +13,7 @@ import type { SceneReadModel } from '@/scene/scene.types'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { SelectedItemControls } from '../selection/selected-item-controls'
 import { EditorOverlay } from './editor-overlay'
+import { findFirstFocusableControl } from './focusable-controls'
 
 vi.mock('@/components/ui/select', () => {
   function collectItemValues(
@@ -311,10 +312,9 @@ describe('EditorOverlay integration', () => {
                 focusRequest: null,
                 onFocusHandled: vi.fn(),
                 onNavigateBackToSelectionControls: () => {
-                  const firstFocusableControl =
-                    selectedItemControlsRef.current?.querySelector<HTMLElement>(
-                      'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
-                    )
+                  const firstFocusableControl = findFirstFocusableControl(
+                    selectedItemControlsRef.current,
+                  )
 
                   if (!firstFocusableControl) {
                     return false
