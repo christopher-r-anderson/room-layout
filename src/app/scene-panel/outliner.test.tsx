@@ -165,6 +165,35 @@ describe('SceneOutliner', () => {
     expect(event.defaultPrevented).toBe(true)
   })
 
+  it('does not hand Shift+Tab back for non-first outliner items', () => {
+    const onNavigateBackToSelectionControls = vi.fn(() => true)
+
+    render(
+      <Outliner
+        readModel={READ_MODEL}
+        disabled={false}
+        focusRequest={null}
+        onFocusHandled={vi.fn()}
+        onNavigateBackToSelectionControls={onNavigateBackToSelectionControls}
+        onSelectById={vi.fn()}
+        onPreviewChange={vi.fn()}
+      />,
+    )
+
+    const secondItem = screen.getByRole('button', { name: /end table/i })
+    const event = new KeyboardEvent('keydown', {
+      bubbles: true,
+      cancelable: true,
+      key: 'Tab',
+      shiftKey: true,
+    })
+
+    fireEvent(secondItem, event)
+
+    expect(onNavigateBackToSelectionControls).not.toHaveBeenCalled()
+    expect(event.defaultPrevented).toBe(false)
+  })
+
   it('applies preview styling to the previewed non-selected item', async () => {
     render(
       <Outliner

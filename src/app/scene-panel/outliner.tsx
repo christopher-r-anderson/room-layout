@@ -152,7 +152,7 @@ export function Outliner({
             ) : (
               <ScrollArea className="max-h-40">
                 <ul className="space-y-2" aria-label="Furniture items">
-                  {readModel.items.map((item) => {
+                  {readModel.items.map((item, itemIndex) => {
                     const isSelected = item.id === readModel.selectedId
                     const isPreviewed = item.id === previewedId && !isSelected
 
@@ -200,7 +200,8 @@ export function Outliner({
                               disabled ||
                               event.key !== 'Tab' ||
                               !event.shiftKey ||
-                              !onNavigateBackToSelectionControls
+                              !onNavigateBackToSelectionControls ||
+                              itemIndex !== 0
                             ) {
                               return
                             }

@@ -264,6 +264,8 @@ describe('EditorOverlay integration', () => {
     function TestHarness() {
       const [isEnvironmentDialogOpen, setIsEnvironmentDialogOpen] =
         React.useState(false)
+      const [isKeyboardShortcutsDialogOpen, setIsKeyboardShortcutsDialogOpen] =
+        React.useState(false)
       const selectedItemControlsRef = React.useRef<HTMLDivElement | null>(null)
 
       return (
@@ -342,6 +344,9 @@ describe('EditorOverlay integration', () => {
                 onConfirmDeleteSelection: vi.fn(),
                 isEnvironmentDialogOpen,
                 onEnvironmentDialogOpenChange: setIsEnvironmentDialogOpen,
+                isKeyboardShortcutsDialogOpen,
+                onKeyboardShortcutsDialogOpenChange:
+                  setIsKeyboardShortcutsDialogOpen,
                 isNewSceneDialogOpen: false,
                 onCloseNewSceneDialog: vi.fn(),
                 onOpenNewSceneDialog: vi.fn(),
