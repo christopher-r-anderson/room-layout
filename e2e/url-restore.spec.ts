@@ -84,13 +84,14 @@ async function readDraftFromStorage(
   }
 }
 
-async function ensureEnvironmentPanelExpanded(page: Page) {
+async function ensureEnvironmentDialogOpen(page: Page) {
   const wallFinishTrigger = page.getByLabel('Wall Finish')
   if (await wallFinishTrigger.isVisible()) {
     return
   }
 
-  await page.getByRole('button', { name: 'Toggle environment panel' }).click()
+  await page.getByRole('button', { name: 'Environment' }).click()
+  await expect(page.getByRole('dialog', { name: 'Environment' })).toBeVisible()
   await expect(wallFinishTrigger).toBeVisible()
 }
 
@@ -395,7 +396,7 @@ test('copy-URL-then-load round-trip: app serializer output is accepted by restor
 
   await openEditor(page)
 
-  await ensureEnvironmentPanelExpanded(page)
+  await ensureEnvironmentDialogOpen(page)
 
   // Change environment options so round-trip includes non-default finishes.
   await page.getByLabel('Wall Finish').click()
@@ -403,6 +404,9 @@ test('copy-URL-then-load round-trip: app serializer output is accepted by restor
 
   await page.getByLabel('Floor Finish').click()
   await page.getByRole('option', { name: 'Granite' }).click()
+
+  await page.keyboard.press('Escape')
+  await expect(page.getByRole('dialog', { name: 'Environment' })).toBeHidden()
 
   // Add one item via the real UI so the app owns the scene state
   await addFurniture(page, 'Leather Armchair')

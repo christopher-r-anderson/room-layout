@@ -35,6 +35,7 @@ import { clearSceneDraft, saveSceneDraft } from './app/url-scene/scene-draft'
 import { isFreshSceneState } from './app/startup/scene-defaults'
 import { sortSpatially } from './lib/three/spatial-sort'
 import { SelectedItemControls } from './app/selection/selected-item-controls'
+import { findFirstFocusableControl } from './app/overlay/focusable-controls'
 
 interface BrowserSceneState {
   assetsReady: boolean
@@ -101,6 +102,7 @@ class SceneAssetErrorBoundary extends Component<
 function App() {
   const sceneRef = useRef<SceneRef | null>(null)
   const roomViewRef = useRef<HTMLElement | null>(null)
+  const selectedItemControlsRef = useRef<HTMLDivElement | null>(null)
   const roomViewFocusFrameRef = useRef<number | null>(null)
   const previewedIdRef = useRef<string | null>(null)
   const overlayState = useOverlayState()
@@ -361,6 +363,18 @@ function App() {
     onRedo: handlers.handleRedo,
     focusRequest: sync.outlinerFocusRequest,
     onFocusHandled: sync.handleOutlinerFocusHandled,
+    onNavigateBackToSelectionControls: useCallback(() => {
+      const firstFocusableControl = findFirstFocusableControl(
+        selectedItemControlsRef.current,
+      )
+
+      if (!firstFocusableControl) {
+        return false
+      }
+
+      firstFocusableControl.focus()
+      return true
+    }, []),
     onSelectById: handlers.handleSelectById,
     readModel: overlayState.sceneReadModel,
     sceneInteractionsDisabled:
@@ -377,12 +391,16 @@ function App() {
     pendingDeleteFurniture: dialogState.pendingDeleteFurniture,
     onCloseDeleteDialog: dialogState.closeDialog,
     onConfirmDeleteSelection: handlers.handleConfirmDeleteSelection,
+    isEnvironmentDialogOpen: dialogState.isEnvironmentDialogOpen,
+    onEnvironmentDialogOpenChange: dialogState.setEnvironmentOpen,
     isNewSceneDialogOpen: dialogState.isNewSceneDialogOpen,
     onCloseNewSceneDialog: dialogState.closeDialog,
     onOpenNewSceneDialog: handlers.handleOpenNewSceneDialog,
     onConfirmNewScene: handlers.handleConfirmNewScene,
     isInfoDialogOpen: dialogState.isInfoDialogOpen,
     onInfoDialogOpenChange: dialogState.setInfoOpen,
+    isKeyboardShortcutsDialogOpen: dialogState.isKeyboardShortcutsDialogOpen,
+    onKeyboardShortcutsDialogOpenChange: dialogState.setKeyboardShortcutsOpen,
     onPreviewChange: handleOutlinerPreviewChange,
     previewedId,
   })
@@ -586,6 +604,7 @@ function App() {
         {testOverlaysHidden ? null : (
           <>
             <SelectedItemControls
+              containerRef={selectedItemControlsRef}
               editorInteractionsEnabled={startup.editorInteractionsEnabled}
               isCatalogDrawerOpen={dialogState.isCatalogDrawerOpen}
               onInvalidSelectedItemDetailValue={

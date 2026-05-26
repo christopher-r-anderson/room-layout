@@ -1,7 +1,14 @@
 import { useCallback, useState } from 'react'
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
 
-type ActiveDialog = 'catalog' | 'delete' | 'info' | 'new-scene' | null
+type ActiveDialog =
+  | 'catalog'
+  | 'delete'
+  | 'environment'
+  | 'keyboard-shortcuts'
+  | 'info'
+  | 'new-scene'
+  | null
 
 interface UseDialogStateOptions {
   editorInteractionsEnabled: boolean
@@ -14,18 +21,24 @@ interface DialogState {
   activeDialog: ActiveDialog
   isCatalogDrawerOpen: boolean
   isDeleteDialogOpen: boolean
+  isEnvironmentDialogOpen: boolean
   isInfoDialogOpen: boolean
+  isKeyboardShortcutsDialogOpen: boolean
   isNewSceneDialogOpen: boolean
   isModalOpen: boolean
   pendingDeleteFurniture: FurnitureItem | null
   openCatalog: () => boolean
   openDelete: () => boolean
+  openEnvironment: () => boolean
   openInfo: () => boolean
+  openKeyboardShortcuts: () => boolean
   openNewScene: () => boolean
   closeDialog: () => void
   closeAllDialogs: () => void
   setCatalogOpen: (open: boolean) => boolean
+  setEnvironmentOpen: (open: boolean) => boolean
   setInfoOpen: (open: boolean) => boolean
+  setKeyboardShortcutsOpen: (open: boolean) => boolean
 }
 
 export function useDialogState({
@@ -40,7 +53,9 @@ export function useDialogState({
 
   const isCatalogDrawerOpen = activeDialog === 'catalog'
   const isDeleteDialogOpen = activeDialog === 'delete'
+  const isEnvironmentDialogOpen = activeDialog === 'environment'
   const isInfoDialogOpen = activeDialog === 'info'
+  const isKeyboardShortcutsDialogOpen = activeDialog === 'keyboard-shortcuts'
   const isNewSceneDialogOpen = activeDialog === 'new-scene'
   const isModalOpen = activeDialog !== null
 
@@ -70,6 +85,28 @@ export function useDialogState({
     setActiveDialog('info')
     return true
   }, [activeDialog, startupOverlayActive])
+
+  const openKeyboardShortcuts = useCallback(() => {
+    if (startupOverlayActive || activeDialog !== null) {
+      return false
+    }
+
+    setActiveDialog('keyboard-shortcuts')
+    return true
+  }, [activeDialog, startupOverlayActive])
+
+  const openEnvironment = useCallback(() => {
+    if (
+      !editorInteractionsEnabled ||
+      startupOverlayActive ||
+      activeDialog !== null
+    ) {
+      return false
+    }
+
+    setActiveDialog('environment')
+    return true
+  }, [activeDialog, editorInteractionsEnabled, startupOverlayActive])
 
   const openDelete = useCallback(() => {
     if (
@@ -122,21 +159,51 @@ export function useDialogState({
     [closeDialog, openInfo],
   )
 
+  const setEnvironmentOpen = useCallback(
+    (open: boolean) => {
+      if (!open) {
+        closeDialog()
+        return true
+      }
+
+      return openEnvironment()
+    },
+    [closeDialog, openEnvironment],
+  )
+
+  const setKeyboardShortcutsOpen = useCallback(
+    (open: boolean) => {
+      if (!open) {
+        closeDialog()
+        return true
+      }
+
+      return openKeyboardShortcuts()
+    },
+    [closeDialog, openKeyboardShortcuts],
+  )
+
   return {
     activeDialog,
     isCatalogDrawerOpen,
     isDeleteDialogOpen,
+    isEnvironmentDialogOpen,
     isInfoDialogOpen,
+    isKeyboardShortcutsDialogOpen,
     isNewSceneDialogOpen,
     isModalOpen,
     pendingDeleteFurniture,
     openCatalog,
     openDelete,
+    openEnvironment,
     openInfo,
+    openKeyboardShortcuts,
     openNewScene,
     closeDialog,
     closeAllDialogs,
     setCatalogOpen,
+    setEnvironmentOpen,
     setInfoOpen,
+    setKeyboardShortcutsOpen,
   }
 }

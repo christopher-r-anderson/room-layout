@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
 
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { useState } from 'react'
 import { describe, expect, it } from 'vitest'
 import { KeyboardShortcutsHelp } from './keyboard-shortcuts-help'
 
@@ -9,12 +10,18 @@ describe('KeyboardShortcutsHelp', () => {
   it('opens and dismisses keyboard shortcut guidance', async () => {
     const user = userEvent.setup()
 
-    render(<KeyboardShortcutsHelp />)
+    function TestHarness() {
+      const [open, setOpen] = useState(false)
+      return <KeyboardShortcutsHelp open={open} onOpenChange={setOpen} />
+    }
 
-    await user.click(
-      screen.getByRole('button', { name: 'Toggle keyboard shortcuts help' }),
-    )
+    render(<TestHarness />)
 
+    await user.click(screen.getByRole('button', { name: 'Keyboard shortcuts' }))
+
+    const dialog = screen.getByRole('dialog', { name: 'Keyboard Shortcuts' })
+
+    expect(dialog).toBeVisible()
     expect(
       screen.getByRole('heading', { name: 'Keyboard Shortcuts' }),
     ).toBeVisible()
@@ -30,10 +37,12 @@ describe('KeyboardShortcutsHelp', () => {
       ),
     ).toBeVisible()
 
-    await user.click(screen.getByRole('button', { name: 'Dismiss' }))
+    await user.click(
+      within(dialog).getAllByRole('button', { name: 'Close' })[0],
+    )
 
     expect(
-      screen.queryByRole('heading', { name: 'Keyboard Shortcuts' }),
+      screen.queryByRole('dialog', { name: 'Keyboard Shortcuts' }),
     ).not.toBeInTheDocument()
   })
 })

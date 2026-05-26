@@ -5,10 +5,10 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
-import { IconInfoCircle } from '@tabler/icons-react'
+import { IconHomeCog } from '@tabler/icons-react'
 import type { ComponentProps } from 'react'
 
-export function ProjectInfoButton({
+export function EnvironmentButton({
   className,
   ...props
 }: ComponentProps<typeof Button>) {
@@ -18,19 +18,20 @@ export function ProjectInfoButton({
         <TooltipTrigger
           render={
             <Button
+              type="button"
               variant="secondary"
-              size="icon"
-              aria-controls="project-info-dialog"
+              size="default"
+              aria-controls="environment-dialog"
               aria-haspopup="dialog"
-              aria-label="Open project and asset info"
-              className="rounded-md"
+              className="pointer-events-auto"
               {...props}
             >
-              <IconInfoCircle size={20} aria-hidden="true" />
+              <IconHomeCog size={16} aria-hidden="true" />
+              Environment
             </Button>
           }
         />
-        <TooltipContent side="bottom">Project and asset info</TooltipContent>
+        <TooltipContent side="bottom">Room finishes</TooltipContent>
       </Tooltip>
     </div>
   )

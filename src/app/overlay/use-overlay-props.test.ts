@@ -43,6 +43,7 @@ interface OverlayOptions {
   onRedo: () => void
   focusRequest: SceneOutlinerFocusRequest | null
   onFocusHandled: () => void
+  onNavigateBackToSelectionControls: () => boolean
   onSelectById: PanelSelectById
   readModel: SceneReadModel
   sceneInteractionsDisabled: boolean
@@ -60,12 +61,16 @@ interface OverlayOptions {
   pendingDeleteFurniture: FurnitureItem | null
   onCloseDeleteDialog: () => void
   onConfirmDeleteSelection: () => void
+  isEnvironmentDialogOpen: boolean
+  onEnvironmentDialogOpenChange: (open: boolean) => void
   isNewSceneDialogOpen: boolean
   onCloseNewSceneDialog: () => void
   onOpenNewSceneDialog: () => void
   onConfirmNewScene: () => void
   isInfoDialogOpen: boolean
   onInfoDialogOpenChange: (open: boolean) => void
+  isKeyboardShortcutsDialogOpen: boolean
+  onKeyboardShortcutsDialogOpenChange: (open: boolean) => void
   onPreviewChange: (
     id: string | null,
     source: 'outliner-hover' | 'outliner-focus',
@@ -90,6 +95,7 @@ function createOptions(overrides?: Partial<OverlayOptions>): OverlayOptions {
     onRedo: vi.fn(),
     focusRequest: null,
     onFocusHandled: vi.fn(),
+    onNavigateBackToSelectionControls: vi.fn(() => true),
     onSelectById: vi.fn(),
     readModel: {
       selectedId: selectedFurniture.id,
@@ -113,12 +119,16 @@ function createOptions(overrides?: Partial<OverlayOptions>): OverlayOptions {
     pendingDeleteFurniture: selectedFurniture,
     onCloseDeleteDialog: vi.fn(),
     onConfirmDeleteSelection: vi.fn(),
+    isEnvironmentDialogOpen: false,
+    onEnvironmentDialogOpenChange: vi.fn(),
     isNewSceneDialogOpen: false,
     onCloseNewSceneDialog: vi.fn(),
     onOpenNewSceneDialog: vi.fn(),
     onConfirmNewScene: vi.fn(),
     isInfoDialogOpen: false,
     onInfoDialogOpenChange: vi.fn(),
+    isKeyboardShortcutsDialogOpen: false,
+    onKeyboardShortcutsDialogOpenChange: vi.fn(),
     onPreviewChange: vi.fn(),
     previewedId: null,
     ...overrides,
@@ -137,8 +147,10 @@ describe('useOverlayProps', () => {
       catalogIdToAdd: 'table-1',
       isCatalogDrawerOpen: true,
       isDeleteDialogOpen: true,
+      isEnvironmentDialogOpen: true,
       isNewSceneDialogOpen: true,
       isInfoDialogOpen: true,
+      isKeyboardShortcutsDialogOpen: true,
       sceneInteractionsDisabled: true,
     })
 
@@ -160,6 +172,8 @@ describe('useOverlayProps', () => {
     expect(result.current.sceneProps).toEqual({
       focusRequest: null,
       onFocusHandled: options.onFocusHandled,
+      onNavigateBackToSelectionControls:
+        options.onNavigateBackToSelectionControls,
       onSelectById: options.onSelectById,
       readModel: options.readModel,
       sceneInteractionsDisabled: true,
@@ -177,12 +191,17 @@ describe('useOverlayProps', () => {
       pendingDeleteFurniture: options.pendingDeleteFurniture,
       onCloseDeleteDialog: options.onCloseDeleteDialog,
       onConfirmDeleteSelection: options.onConfirmDeleteSelection,
+      isEnvironmentDialogOpen: true,
+      onEnvironmentDialogOpenChange: options.onEnvironmentDialogOpenChange,
       isNewSceneDialogOpen: true,
       onCloseNewSceneDialog: options.onCloseNewSceneDialog,
       onOpenNewSceneDialog: options.onOpenNewSceneDialog,
       onConfirmNewScene: options.onConfirmNewScene,
       isInfoDialogOpen: true,
       onInfoDialogOpenChange: options.onInfoDialogOpenChange,
+      isKeyboardShortcutsDialogOpen: true,
+      onKeyboardShortcutsDialogOpenChange:
+        options.onKeyboardShortcutsDialogOpenChange,
     })
   })
 

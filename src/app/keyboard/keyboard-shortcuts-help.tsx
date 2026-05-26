@@ -1,15 +1,21 @@
-import { useState } from 'react'
 import { IconKeyboard } from '@tabler/icons-react'
 import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
 import { Kbd, KbdGroup } from '@/components/ui/kbd'
 import {
-  Popover,
-  PopoverContent,
-  PopoverDescription,
-  PopoverHeader,
-  PopoverTitle,
-  PopoverTrigger,
-} from '@/components/ui/popover'
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
+import { ScrollArea } from '@/components/ui/scroll-area'
 
 type ShortcutCombo = string[]
 
@@ -183,97 +189,109 @@ function renderShortcutCombos(combos: ShortcutCombo[]) {
   )
 }
 
-export function KeyboardShortcutsHelp() {
-  const [open, setOpen] = useState(false)
+interface KeyboardShortcutsHelpProps {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+}
 
+export function KeyboardShortcutsHelp({
+  open,
+  onOpenChange,
+}: KeyboardShortcutsHelpProps) {
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger
-        render={
-          <Button
-            type="button"
-            variant="secondary"
-            size="sm"
-            aria-label="Toggle keyboard shortcuts help"
-            className="pointer-events-auto"
-          />
-        }
-      >
-        <IconKeyboard />
-        Keyboard Help
-      </PopoverTrigger>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <Tooltip>
+        <TooltipTrigger
+          render={
+            <DialogTrigger
+              render={
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="icon"
+                  aria-controls="keyboard-shortcuts-dialog"
+                  aria-haspopup="dialog"
+                  aria-label="Keyboard shortcuts"
+                  className="pointer-events-auto rounded-md"
+                >
+                  <IconKeyboard size={20} aria-hidden="true" />
+                </Button>
+              }
+            />
+          }
+        />
+        <TooltipContent side="bottom">Keyboard shortcuts</TooltipContent>
+      </Tooltip>
 
-      <PopoverContent
-        align="end"
-        className="w-88 max-w-[calc(100vw-1rem)] gap-3"
+      <DialogContent
+        id="keyboard-shortcuts-dialog"
+        className="max-h-[calc(100dvh-2rem)] gap-3 sm:max-w-4xl"
       >
-        <PopoverHeader>
-          <PopoverTitle>Keyboard Shortcuts</PopoverTitle>
-          <PopoverDescription>
+        <DialogHeader>
+          <DialogTitle>Keyboard Shortcuts</DialogTitle>
+          <DialogDescription>
             Quick reference for room-view, camera, selected item, and scene
             shortcuts. Most shortcuts below work only while the 3D room view is
-            focused.
-          </PopoverDescription>
-        </PopoverHeader>
+            focused. Use the visible toolbar buttons for Add Furniture,
+            Environment, sharing, and project info.
+          </DialogDescription>
+        </DialogHeader>
 
-        <table className="w-full text-xs">
-          <caption className="sr-only">
-            Keyboard shortcuts quick reference
-          </caption>
-          {SHORTCUT_SECTIONS.map((section) => (
-            <tbody
-              key={section.sectionTitle}
-              className="border-b border-transparent"
-            >
-              <tr>
-                <th
-                  colSpan={3}
-                  className="text-left align-top font-semibold text-foreground py-2 pb-1 px-0"
-                >
-                  {section.sectionTitle}
-                </th>
-              </tr>
-              {section.groups.flatMap((shortcutGroup) =>
-                shortcutGroup.rows.map((shortcutRow, rowIndex) => (
-                  <tr key={`${shortcutGroup.groupLabel}-${shortcutRow.label}`}>
-                    {rowIndex === 0 ? (
+        <ScrollArea className="max-h-[min(75vh,calc(100dvh-10rem))]">
+          <div className="grid gap-4 pb-2 pr-3">
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <caption className="sr-only">
+                  Keyboard shortcuts quick reference
+                </caption>
+                {SHORTCUT_SECTIONS.map((section) => (
+                  <tbody
+                    key={section.sectionTitle}
+                    className="border-b border-transparent"
+                  >
+                    <tr>
                       <th
-                        scope="rowgroup"
-                        rowSpan={shortcutGroup.rows.length}
-                        className="w-18 pr-2 pb-1 text-left align-top text-foreground font-semibold"
+                        colSpan={3}
+                        className="px-0 py-2 pb-1 text-left align-top font-semibold text-foreground"
                       >
-                        {shortcutGroup.groupLabel}
+                        {section.sectionTitle}
                       </th>
-                    ) : null}
-                    <th
-                      scope="row"
-                      className="pr-3 pb-1 text-left align-top font-normal text-foreground whitespace-nowrap"
-                    >
-                      {shortcutRow.label}
-                    </th>
-                    <td className="pb-1 text-right">
-                      {renderShortcutCombos(shortcutRow.combos)}
-                    </td>
-                  </tr>
-                )),
-              )}
-            </tbody>
-          ))}
-        </table>
+                    </tr>
+                    {section.groups.flatMap((shortcutGroup) =>
+                      shortcutGroup.rows.map((shortcutRow, rowIndex) => (
+                        <tr
+                          key={`${shortcutGroup.groupLabel}-${shortcutRow.label}`}
+                        >
+                          {rowIndex === 0 ? (
+                            <th
+                              scope="rowgroup"
+                              rowSpan={shortcutGroup.rows.length}
+                              className="w-18 pr-2 pb-1 text-left align-top font-semibold text-foreground"
+                            >
+                              {shortcutGroup.groupLabel}
+                            </th>
+                          ) : null}
+                          <th
+                            scope="row"
+                            className="pr-3 pb-1 text-left align-top font-normal whitespace-nowrap text-foreground"
+                          >
+                            {shortcutRow.label}
+                          </th>
+                          <td className="pb-1 text-right">
+                            {renderShortcutCombos(shortcutRow.combos)}
+                          </td>
+                        </tr>
+                      )),
+                    )}
+                  </tbody>
+                ))}
+              </table>
+            </div>
+          </div>
+        </ScrollArea>
 
-        <div className="flex justify-end">
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              setOpen(false)
-            }}
-          >
-            Dismiss
-          </Button>
-        </div>
-      </PopoverContent>
-    </Popover>
+        <DialogFooter showCloseButton />
+      </DialogContent>
+    </Dialog>
   )
 }

@@ -6,6 +6,7 @@ import type {
 } from '@/app/selected-item-details.types'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
+import { cn } from '@/lib/utils'
 
 type FieldOverride =
   | {
@@ -75,12 +76,14 @@ function createDrafts(item: FurnitureItem) {
 }
 
 export function SelectedItemDetails({
+  className,
   disabled,
   selectedFurniture,
   consumeBlurCommitSuppression,
   onInvalidSelectedItemDetailValue,
   onUpdateSelectedItemDetails,
 }: {
+  className?: string
   disabled: boolean
   selectedFurniture: FurnitureItem
   consumeBlurCommitSuppression: () => boolean
@@ -198,7 +201,10 @@ export function SelectedItemDetails({
   }
 
   return (
-    <section className="pointer-events-auto" aria-labelledby={titleId}>
+    <section
+      className={cn('pointer-events-auto', className)}
+      aria-labelledby={titleId}
+    >
       <Card
         className="w-full bg-background/90 shadow-sm backdrop-blur-sm"
         size="sm"

@@ -35,6 +35,7 @@ export function Outliner({
   disabled,
   focusRequest,
   onFocusHandled,
+  onNavigateBackToSelectionControls,
   onSelectById,
   previewedId,
   onPreviewChange,
@@ -43,6 +44,7 @@ export function Outliner({
   disabled: boolean
   focusRequest: SceneOutlinerFocusRequest | null
   onFocusHandled: () => void
+  onNavigateBackToSelectionControls?: () => boolean
   onSelectById: PanelSelectById
   previewedId?: string | null
   onPreviewChange: (
@@ -150,7 +152,7 @@ export function Outliner({
             ) : (
               <ScrollArea className="max-h-40">
                 <ul className="space-y-2" aria-label="Furniture items">
-                  {readModel.items.map((item) => {
+                  {readModel.items.map((item, itemIndex) => {
                     const isSelected = item.id === readModel.selectedId
                     const isPreviewed = item.id === previewedId && !isSelected
 
@@ -191,6 +193,21 @@ export function Outliner({
                           onBlur={() => {
                             if (!disabled) {
                               onPreviewChange(null, 'outliner-focus')
+                            }
+                          }}
+                          onKeyDown={(event) => {
+                            if (
+                              disabled ||
+                              event.key !== 'Tab' ||
+                              !event.shiftKey ||
+                              !onNavigateBackToSelectionControls ||
+                              itemIndex !== 0
+                            ) {
+                              return
+                            }
+
+                            if (onNavigateBackToSelectionControls()) {
+                              event.preventDefault()
                             }
                           }}
                           onPointerEnter={() => {

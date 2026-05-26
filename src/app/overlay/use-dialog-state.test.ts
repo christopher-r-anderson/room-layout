@@ -1,40 +1,3 @@
-it('enforces the new scene freshness guard at the dialog boundary', () => {
-  const { result, rerender } = renderHook(
-    (props: DialogStateHookProps & { canStartNewScene: boolean }) =>
-      useDialogState({
-        editorInteractionsEnabled: props.editorInteractionsEnabled,
-        startupOverlayActive: props.startupOverlayActive,
-        selectedFurniture: props.selectedFurniture,
-        canStartNewScene: props.canStartNewScene,
-      }),
-    {
-      initialProps: {
-        editorInteractionsEnabled: true,
-        startupOverlayActive: false,
-        selectedFurniture: null,
-        canStartNewScene: false,
-      },
-    },
-  )
-
-  // Should not open when canStartNewScene is false
-  act(() => {
-    expect(result.current.openNewScene()).toBe(false)
-  })
-  expect(result.current.isNewSceneDialogOpen).toBe(false)
-
-  // Should open when canStartNewScene is true
-  rerender({
-    editorInteractionsEnabled: true,
-    startupOverlayActive: false,
-    selectedFurniture: null,
-    canStartNewScene: true,
-  })
-  act(() => {
-    expect(result.current.openNewScene()).toBe(true)
-  })
-  expect(result.current.isNewSceneDialogOpen).toBe(true)
-})
 // @vitest-environment jsdom
 
 import { act, renderHook } from '@testing-library/react'
@@ -147,9 +110,29 @@ describe('useDialogState', () => {
     expect(result.current.isCatalogDrawerOpen).toBe(true)
 
     act(() => {
+      expect(result.current.openEnvironment()).toBe(false)
       expect(result.current.openInfo()).toBe(false)
       expect(result.current.openDelete()).toBe(false)
     })
+    expect(result.current.isEnvironmentDialogOpen).toBe(false)
+    expect(result.current.isInfoDialogOpen).toBe(false)
+    expect(result.current.isDeleteDialogOpen).toBe(false)
+
+    act(() => {
+      result.current.closeDialog()
+    })
+
+    act(() => {
+      result.current.openEnvironment()
+    })
+    expect(result.current.isEnvironmentDialogOpen).toBe(true)
+
+    act(() => {
+      expect(result.current.openCatalog()).toBe(false)
+      expect(result.current.openInfo()).toBe(false)
+      expect(result.current.openDelete()).toBe(false)
+    })
+    expect(result.current.isCatalogDrawerOpen).toBe(false)
     expect(result.current.isInfoDialogOpen).toBe(false)
     expect(result.current.isDeleteDialogOpen).toBe(false)
 
@@ -164,9 +147,11 @@ describe('useDialogState', () => {
 
     act(() => {
       expect(result.current.openCatalog()).toBe(false)
+      expect(result.current.openEnvironment()).toBe(false)
       expect(result.current.openDelete()).toBe(false)
     })
     expect(result.current.isCatalogDrawerOpen).toBe(false)
+    expect(result.current.isEnvironmentDialogOpen).toBe(false)
     expect(result.current.isDeleteDialogOpen).toBe(false)
 
     act(() => {
@@ -180,9 +165,11 @@ describe('useDialogState', () => {
 
     act(() => {
       expect(result.current.openCatalog()).toBe(false)
+      expect(result.current.openEnvironment()).toBe(false)
       expect(result.current.openInfo()).toBe(false)
     })
     expect(result.current.isCatalogDrawerOpen).toBe(false)
+    expect(result.current.isEnvironmentDialogOpen).toBe(false)
     expect(result.current.isInfoDialogOpen).toBe(false)
 
     act(() => {
@@ -197,6 +184,7 @@ describe('useDialogState', () => {
     act(() => {
       expect(result.current.openDelete()).toBe(false)
       expect(result.current.openCatalog()).toBe(false)
+      expect(result.current.openEnvironment()).toBe(false)
     })
     expect(result.current.isModalOpen).toBe(false)
 
@@ -206,6 +194,7 @@ describe('useDialogState', () => {
       selectedFurniture: LEATHER_COUCH,
     })
     act(() => {
+      expect(result.current.openEnvironment()).toBe(false)
       expect(result.current.openInfo()).toBe(false)
     })
     expect(result.current.isModalOpen).toBe(false)
@@ -219,5 +208,72 @@ describe('useDialogState', () => {
       expect(result.current.openDelete()).toBe(false)
     })
     expect(result.current.isDeleteDialogOpen).toBe(false)
+  })
+
+  it('enforces the new scene freshness guard at the dialog boundary', () => {
+    const { result, rerender } = renderHook(
+      (props: DialogStateHookProps & { canStartNewScene: boolean }) =>
+        useDialogState({
+          editorInteractionsEnabled: props.editorInteractionsEnabled,
+          startupOverlayActive: props.startupOverlayActive,
+          selectedFurniture: props.selectedFurniture,
+          canStartNewScene: props.canStartNewScene,
+        }),
+      {
+        initialProps: {
+          editorInteractionsEnabled: true,
+          startupOverlayActive: false,
+          selectedFurniture: null,
+          canStartNewScene: false,
+        },
+      },
+    )
+
+    act(() => {
+      expect(result.current.openNewScene()).toBe(false)
+    })
+    expect(result.current.isNewSceneDialogOpen).toBe(false)
+
+    rerender({
+      editorInteractionsEnabled: true,
+      startupOverlayActive: false,
+      selectedFurniture: null,
+      canStartNewScene: true,
+    })
+    act(() => {
+      expect(result.current.openNewScene()).toBe(true)
+    })
+    expect(result.current.isNewSceneDialogOpen).toBe(true)
+  })
+
+  it('supports boolean open-change handlers for environment and info dialogs', () => {
+    const { result } = renderHook(() =>
+      useDialogState({
+        editorInteractionsEnabled: true,
+        startupOverlayActive: false,
+        selectedFurniture: LEATHER_COUCH,
+        canStartNewScene: true,
+      }),
+    )
+
+    act(() => {
+      expect(result.current.setEnvironmentOpen(true)).toBe(true)
+    })
+    expect(result.current.isEnvironmentDialogOpen).toBe(true)
+
+    act(() => {
+      expect(result.current.setEnvironmentOpen(false)).toBe(true)
+    })
+    expect(result.current.isEnvironmentDialogOpen).toBe(false)
+
+    act(() => {
+      expect(result.current.setInfoOpen(true)).toBe(true)
+    })
+    expect(result.current.isInfoDialogOpen).toBe(true)
+
+    act(() => {
+      expect(result.current.setEnvironmentOpen(true)).toBe(false)
+    })
+    expect(result.current.isEnvironmentDialogOpen).toBe(false)
   })
 })

@@ -160,20 +160,20 @@ test('keyboard shortcuts help is reachable and dismissible by keyboard, and is e
   await openEditor(page)
 
   // Reach the trigger via Tab and activate it with Enter.
-  const helpTrigger = page.locator(
-    'button[aria-label="Toggle keyboard shortcuts help"]',
+  const helpTrigger = page.getByRole('button', { name: 'Keyboard shortcuts' })
+  const inertHelpTrigger = page.locator(
+    'button[aria-label="Keyboard shortcuts"]',
   )
+  const shortcutsDialog = page.getByRole('dialog', {
+    name: 'Keyboard Shortcuts',
+  })
   await helpTrigger.focus()
   await page.keyboard.press('Enter')
-  await expect(
-    page.getByRole('heading', { name: 'Keyboard Shortcuts' }),
-  ).toBeVisible()
+  await expect(shortcutsDialog).toBeVisible()
 
   // Escape dismisses and returns focus to the trigger.
   await page.keyboard.press('Escape')
-  await expect(
-    page.getByRole('heading', { name: 'Keyboard Shortcuts' }),
-  ).toBeHidden()
+  await expect(shortcutsDialog).toBeHidden()
   await expect(helpTrigger).toBeFocused()
 
   // While the catalog drawer is open the help trigger must not be reachable
@@ -186,7 +186,7 @@ test('keyboard shortcuts help is reachable and dismissible by keyboard, and is e
   // trigger must never receive focus.
   for (let i = 0; i < 10; i++) {
     await page.keyboard.press('Tab')
-    await expect(helpTrigger).not.toBeFocused()
+    await expect(inertHelpTrigger).not.toBeFocused()
   }
 
   await page.keyboard.press('Escape')
@@ -226,6 +226,10 @@ test('Tab from the room view reaches selected item actions and then details', as
   await openEditor(page)
   await addFurniture(page, 'Leather Couch')
 
+  await expect(
+    page.getByText('Selected item details appear here when an item is active.'),
+  ).toBeHidden()
+
   await focusRoomView(page)
   await page.keyboard.press('Tab')
   await expect(
@@ -259,25 +263,7 @@ test('outliner keyboard selection keeps focus in the panel and reaches selected 
   )
   await expect(couchButton).toBeFocused()
 
-  await page.keyboard.press('Tab')
-  await expect(rotateCounterclockwiseButton).not.toBeFocused()
-
-  let reachedSelectedItemActions = false
-
-  for (let attempt = 0; attempt < 20; attempt += 1) {
-    const isFocused = await rotateCounterclockwiseButton.evaluate(
-      (node) => node === node.ownerDocument.activeElement,
-    )
-
-    if (isFocused) {
-      reachedSelectedItemActions = true
-      break
-    }
-
-    await page.keyboard.press('Shift+Tab')
-  }
-
-  expect(reachedSelectedItemActions).toBe(true)
+  await page.keyboard.press('Shift+Tab')
   await expect(rotateCounterclockwiseButton).toBeFocused()
 })
 
@@ -348,4 +334,46 @@ test('selected item controls are suppressed from tab order while the catalog dra
     await page.keyboard.press('Tab')
     await expect(selectedItemControls).toHaveAttribute('inert', '')
   }
+})
+
+test.describe('narrow viewport overlay order', () => {
+  test.use({ viewport: { width: 390, height: 844 } })
+
+  test('keeps Add Furniture early in tab order and restores focus from the Environment dialog', async ({
+    page,
+  }) => {
+    await openEditor(page)
+
+    const roomView = page.getByRole('region', {
+      name: 'Interactive 3D room editor',
+    })
+    const addFurnitureButton = page.getByRole('button', {
+      name: 'Add Furniture',
+    })
+    const environmentButton = page.getByRole('button', {
+      name: 'Environment',
+    })
+    const undoButton = page.getByRole('button', { name: 'Undo' })
+
+    await page.keyboard.press('Tab')
+    await expect(roomView).toBeFocused()
+
+    await page.keyboard.press('Tab')
+    await expect(addFurnitureButton).toBeFocused()
+
+    await page.keyboard.press('Tab')
+    await expect(environmentButton).toBeFocused()
+
+    await page.keyboard.press('Enter')
+
+    const environmentDialog = page.getByRole('dialog', { name: 'Environment' })
+    await expect(environmentDialog).toBeVisible()
+
+    await page.keyboard.press('Escape')
+    await expect(environmentDialog).toBeHidden()
+    await expect(environmentButton).toBeFocused()
+
+    await page.keyboard.press('Tab')
+    await expect(undoButton).toBeFocused()
+  })
 })

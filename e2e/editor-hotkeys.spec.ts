@@ -245,10 +245,11 @@ test('supports keyboard-driven furniture picker flow', async ({ page }) => {
   const armchairRadio = page.locator(
     'input[name="furniture-catalog"][value="armchair-1"]',
   )
+  const couchRadioControl = page.getByRole('radio', { name: 'Leather Couch' })
 
   await expect(couchRadio).toBeChecked()
 
-  await page.keyboard.press('Tab')
+  await couchRadioControl.focus()
   await page.keyboard.press('ArrowDown')
   await expect(armchairRadio).toBeChecked()
 
