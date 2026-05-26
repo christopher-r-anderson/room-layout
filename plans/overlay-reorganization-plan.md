@@ -22,16 +22,16 @@ Reorganize the overlay toward a consumer ecommerce 3D-planner layout, but rebase
      - `selected-item-controls.tsx` owns shared blur-suppression and gating between selected-item actions/details
 2. Phase 1: Lock the contract-test set before layout work. _blocks all later phases_
    - Mark the existing blocker suites as contract tests that should not be rewritten to fit regressions:
-     - `/home/splict/src/room-layout/src/app/selection/selected-item-controls.test.tsx`
-     - `/home/splict/src/room-layout/src/app/selection/selected-item-details.test.tsx`
-     - `/home/splict/src/room-layout/src/app/keyboard/use-keyboard-shortcuts.test.tsx`
-     - `/home/splict/src/room-layout/src/app/use-scene-handlers.test.ts`
-     - `/home/splict/src/room-layout/src/app/selection/selection-tools-other.test.tsx`
-     - `/home/splict/src/room-layout/e2e/editor-accessibility-flows.spec.ts`
-     - `/home/splict/src/room-layout/e2e/editor-accessibility.spec.ts`
-     - `/home/splict/src/room-layout/e2e/editor-dialogs.spec.ts`
-     - `/home/splict/src/room-layout/e2e/editor-hotkeys.spec.ts`
-     - `/home/splict/src/room-layout/e2e/editor-a11y-audits.spec.ts`
+     - `src/app/selection/selected-item-controls.test.tsx`
+     - `src/app/selection/selected-item-details.test.tsx`
+     - `src/app/keyboard/use-keyboard-shortcuts.test.tsx`
+     - `src/app/use-scene-handlers.test.ts`
+     - `src/app/selection/selection-tools-other.test.tsx`
+     - `e2e/editor-accessibility-flows.spec.ts`
+     - `e2e/editor-accessibility.spec.ts`
+     - `e2e/editor-dialogs.spec.ts`
+     - `e2e/editor-hotkeys.spec.ts`
+     - `e2e/editor-a11y-audits.spec.ts`
    - Tighten any missing assertions before moving layout, especially for:
      - `Tab` from room view reaching selected-item actions and then details
      - `Shift+Tab` from room-contents-panel-origin selection reaching selected-item controls
