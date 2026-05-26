@@ -227,7 +227,8 @@ export function KeyboardShortcutsHelp() {
           <DialogDescription>
             Quick reference for room-view, camera, selected item, and scene
             shortcuts. Most shortcuts below work only while the 3D room view is
-            focused.
+            focused. Use the visible toolbar buttons for Add Furniture,
+            Environment, sharing, and project info.
           </DialogDescription>
         </DialogHeader>
 

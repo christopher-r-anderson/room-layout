@@ -75,12 +75,14 @@ function createDrafts(item: FurnitureItem) {
 }
 
 export function SelectedItemDetails({
+  className,
   disabled,
   selectedFurniture,
   consumeBlurCommitSuppression,
   onInvalidSelectedItemDetailValue,
   onUpdateSelectedItemDetails,
 }: {
+  className?: string
   disabled: boolean
   selectedFurniture: FurnitureItem
   consumeBlurCommitSuppression: () => boolean
@@ -198,7 +200,12 @@ export function SelectedItemDetails({
   }
 
   return (
-    <section className="pointer-events-auto" aria-labelledby={titleId}>
+    <section
+      className={
+        className ? `pointer-events-auto ${className}` : 'pointer-events-auto'
+      }
+      aria-labelledby={titleId}
+    >
       <Card
         className="w-full bg-background/90 shadow-sm backdrop-blur-sm"
         size="sm"

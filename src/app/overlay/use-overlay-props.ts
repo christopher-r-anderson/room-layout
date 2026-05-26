@@ -23,6 +23,7 @@ interface UseOverlayPropsOptions {
   onRedo: () => void
   focusRequest: EditorSceneProps['focusRequest']
   onFocusHandled: EditorSceneProps['onFocusHandled']
+  onNavigateBackToSelectionControls: EditorSceneProps['onNavigateBackToSelectionControls']
   onSelectById: EditorSceneProps['onSelectById']
   readModel: EditorSceneProps['readModel']
   sceneInteractionsDisabled: EditorSceneProps['sceneInteractionsDisabled']
@@ -36,6 +37,8 @@ interface UseOverlayPropsOptions {
   pendingDeleteFurniture: EditorDialogsProps['pendingDeleteFurniture']
   onCloseDeleteDialog: EditorDialogsProps['onCloseDeleteDialog']
   onConfirmDeleteSelection: EditorDialogsProps['onConfirmDeleteSelection']
+  isEnvironmentDialogOpen: EditorDialogsProps['isEnvironmentDialogOpen']
+  onEnvironmentDialogOpenChange: EditorDialogsProps['onEnvironmentDialogOpenChange']
   isNewSceneDialogOpen: EditorDialogsProps['isNewSceneDialogOpen']
   onCloseNewSceneDialog: EditorDialogsProps['onCloseNewSceneDialog']
   onOpenNewSceneDialog: EditorDialogsProps['onOpenNewSceneDialog']
@@ -70,6 +73,7 @@ export function useOverlayProps({
   onRedo,
   focusRequest,
   onFocusHandled,
+  onNavigateBackToSelectionControls,
   onSelectById,
   readModel,
   sceneInteractionsDisabled,
@@ -83,6 +87,8 @@ export function useOverlayProps({
   pendingDeleteFurniture,
   onCloseDeleteDialog,
   onConfirmDeleteSelection,
+  isEnvironmentDialogOpen,
+  onEnvironmentDialogOpenChange,
   isNewSceneDialogOpen,
   onCloseNewSceneDialog,
   onOpenNewSceneDialog,
@@ -132,6 +138,7 @@ export function useOverlayProps({
     () => ({
       focusRequest,
       onFocusHandled,
+      onNavigateBackToSelectionControls,
       onSelectById,
       readModel,
       sceneInteractionsDisabled,
@@ -139,6 +146,7 @@ export function useOverlayProps({
     [
       focusRequest,
       onFocusHandled,
+      onNavigateBackToSelectionControls,
       onSelectById,
       readModel,
       sceneInteractionsDisabled,
@@ -170,6 +178,8 @@ export function useOverlayProps({
       pendingDeleteFurniture,
       onCloseDeleteDialog,
       onConfirmDeleteSelection,
+      isEnvironmentDialogOpen,
+      onEnvironmentDialogOpenChange,
       isNewSceneDialogOpen,
       onCloseNewSceneDialog,
       onOpenNewSceneDialog,
@@ -182,6 +192,8 @@ export function useOverlayProps({
       pendingDeleteFurniture,
       onCloseDeleteDialog,
       onConfirmDeleteSelection,
+      isEnvironmentDialogOpen,
+      onEnvironmentDialogOpenChange,
       isNewSceneDialogOpen,
       onCloseNewSceneDialog,
       onOpenNewSceneDialog,

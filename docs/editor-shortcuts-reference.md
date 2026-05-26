@@ -52,6 +52,7 @@ For implementation details and architecture, see [Keyboard Shortcuts](./keyboard
 
 - Camera motion shortcuts are continuous while held.
 - Most room-view shortcuts only work while the 3D room view has DOM focus.
+- Add Furniture and Environment are toolbar actions without dedicated keyboard shortcuts; reach them through the normal tab order.
 - On common alternate keyboard layouts where number-row digits require Shift, camera presets also work with Shift+1/2/3/4 on the same physical number-row keys.
 - Selected-item actions require an active selection.
 - Typed selected-item details commit on Enter or blur and cancel the local draft on Escape.

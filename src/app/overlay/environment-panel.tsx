@@ -37,7 +37,7 @@ function loadStoredExpandedState() {
   return loadBooleanPreference(ENVIRONMENT_PANEL_EXPANDED_PREFERENCE_KEY, true)
 }
 
-interface EnvironmentPanelProps {
+export interface EnvironmentControlsProps {
   floorFinishId: string
   floorFinishLoading: boolean
   floorFinishes: FloorFinishOption[]
@@ -45,6 +45,111 @@ interface EnvironmentPanelProps {
   wallFinishId: string
   wallFinishes: WallFinishOption[]
   onWallFinishChange: (finishId: string) => void
+}
+
+type EnvironmentPanelProps = EnvironmentControlsProps
+
+export function EnvironmentControls({
+  floorFinishId,
+  floorFinishLoading,
+  floorFinishes,
+  onFloorFinishChange,
+  wallFinishId,
+  wallFinishes,
+  onWallFinishChange,
+}: EnvironmentControlsProps) {
+  const wallFinishLabel =
+    wallFinishes.find((option) => option.id === wallFinishId)?.label ??
+    wallFinishId
+  const floorFinishLabel =
+    floorFinishes.find((option) => option.id === floorFinishId)?.label ??
+    floorFinishId
+
+  return (
+    <div className="space-y-3">
+      <div className="space-y-2">
+        <label
+          id="wall-finish-label"
+          htmlFor="wall-finish-trigger"
+          className="text-xs text-muted-foreground"
+        >
+          Wall Finish
+        </label>
+        <Select
+          value={wallFinishId}
+          onValueChange={(value) => {
+            if (value === null) {
+              return
+            }
+            onWallFinishChange(value)
+          }}
+        >
+          <SelectTrigger
+            id="wall-finish-trigger"
+            aria-labelledby="wall-finish-label wall-finish-trigger"
+            className="w-full"
+          >
+            <SelectValue>{wallFinishLabel}</SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              {wallFinishes.map((item) => (
+                <SelectItem key={item.id} value={item.id} label={item.label}>
+                  {item.label}
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-2">
+        <label
+          id="floor-finish-label"
+          htmlFor="floor-finish-trigger"
+          className="flex items-center justify-between gap-2 text-xs text-muted-foreground"
+        >
+          <span>Floor Finish</span>
+          {floorFinishLoading ? (
+            <span className="inline-flex items-center gap-1" aria-hidden="true">
+              <IconLoader
+                size={12}
+                className="animate-spin"
+                aria-hidden="true"
+              />
+            </span>
+          ) : null}
+        </label>
+        <Select
+          value={floorFinishId}
+          onValueChange={(value) => {
+            if (value === null) {
+              return
+            }
+            onFloorFinishChange(value)
+          }}
+        >
+          <SelectTrigger
+            id="floor-finish-trigger"
+            aria-labelledby="floor-finish-label floor-finish-trigger"
+            aria-busy={floorFinishLoading}
+            className="w-full"
+          >
+            <SelectValue>{floorFinishLabel}</SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              {floorFinishes.map((item) => (
+                <SelectItem key={item.id} value={item.id} label={item.label}>
+                  {item.label}
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          </SelectContent>
+        </Select>
+      </div>
+    </div>
+  )
 }
 
 export function EnvironmentPanel({
@@ -63,13 +168,6 @@ export function EnvironmentPanel({
   useEffect(() => {
     saveBooleanPreference(ENVIRONMENT_PANEL_EXPANDED_PREFERENCE_KEY, isExpanded)
   }, [isExpanded])
-
-  const wallFinishLabel =
-    wallFinishes.find((option) => option.id === wallFinishId)?.label ??
-    wallFinishId
-  const floorFinishLabel =
-    floorFinishes.find((option) => option.id === floorFinishId)?.label ??
-    floorFinishId
 
   return (
     <Card
@@ -101,100 +199,15 @@ export function EnvironmentPanel({
         </CardHeader>
 
         <CollapsibleContent render={<CardContent id={contentId} />}>
-          <div className="space-y-3">
-            <div className="space-y-2">
-              <label
-                id="wall-finish-label"
-                htmlFor="wall-finish-trigger"
-                className="text-xs text-muted-foreground"
-              >
-                Wall Finish
-              </label>
-              <Select
-                value={wallFinishId}
-                onValueChange={(value) => {
-                  if (value === null) {
-                    return
-                  }
-                  onWallFinishChange(value)
-                }}
-              >
-                <SelectTrigger
-                  id="wall-finish-trigger"
-                  aria-labelledby="wall-finish-label wall-finish-trigger"
-                  className="w-full"
-                >
-                  <SelectValue>{wallFinishLabel}</SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    {wallFinishes.map((item) => (
-                      <SelectItem
-                        key={item.id}
-                        value={item.id}
-                        label={item.label}
-                      >
-                        {item.label}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <label
-                id="floor-finish-label"
-                htmlFor="floor-finish-trigger"
-                className="flex items-center justify-between gap-2 text-xs text-muted-foreground"
-              >
-                <span>Floor Finish</span>
-                {floorFinishLoading ? (
-                  <span
-                    className="inline-flex items-center gap-1"
-                    aria-hidden="true"
-                  >
-                    <IconLoader
-                      size={12}
-                      className="animate-spin"
-                      aria-hidden="true"
-                    />
-                  </span>
-                ) : null}
-              </label>
-              <Select
-                value={floorFinishId}
-                onValueChange={(value) => {
-                  if (value === null) {
-                    return
-                  }
-                  onFloorFinishChange(value)
-                }}
-              >
-                <SelectTrigger
-                  id="floor-finish-trigger"
-                  aria-labelledby="floor-finish-label floor-finish-trigger"
-                  aria-busy={floorFinishLoading}
-                  className="w-full"
-                >
-                  <SelectValue>{floorFinishLabel}</SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    {floorFinishes.map((item) => (
-                      <SelectItem
-                        key={item.id}
-                        value={item.id}
-                        label={item.label}
-                      >
-                        {item.label}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+          <EnvironmentControls
+            floorFinishId={floorFinishId}
+            floorFinishLoading={floorFinishLoading}
+            floorFinishes={floorFinishes}
+            onFloorFinishChange={onFloorFinishChange}
+            wallFinishId={wallFinishId}
+            wallFinishes={wallFinishes}
+            onWallFinishChange={onWallFinishChange}
+          />
         </CollapsibleContent>
       </Collapsible>
     </Card>

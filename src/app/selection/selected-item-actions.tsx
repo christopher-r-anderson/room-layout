@@ -3,12 +3,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { SelectionToolsOther } from './selection-tools-other'
 
 export function SelectedItemActions({
+  className,
   disabled,
   onOpenDeleteDialog,
   onPrepareDelete,
   onRotateSelection,
   selectedFurniture,
 }: {
+  className?: string
   disabled: boolean
   onOpenDeleteDialog: () => void
   onPrepareDelete: () => void
@@ -16,7 +18,12 @@ export function SelectedItemActions({
   selectedFurniture: FurnitureItem
 }) {
   return (
-    <section className="pointer-events-auto" aria-label="Selected item actions">
+    <section
+      className={
+        className ? `pointer-events-auto ${className}` : 'pointer-events-auto'
+      }
+      aria-label="Selected item actions"
+    >
       <Card
         className="w-full bg-background/90 shadow-sm backdrop-blur-sm"
         size="sm"

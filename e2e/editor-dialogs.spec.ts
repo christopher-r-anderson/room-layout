@@ -52,10 +52,24 @@ test('project info dialog preserves repository metadata and returns focus', asyn
   await closeWithEscapeAndRestoreFocus(page, infoDialog, infoButton)
 })
 
-test('sheet and delete confirmation keep accessible contracts and return focus', async ({
+test('environment, sheet, and confirmation dialogs keep accessible contracts and return focus', async ({
   page,
 }) => {
   await openEditor(page)
+
+  const environmentButton = page.getByRole('button', { name: 'Environment' })
+  await environmentButton.click()
+
+  const environmentDialog = page.getByRole('dialog', { name: 'Environment' })
+  await expect(environmentDialog).toBeVisible()
+  await expect(
+    environmentDialog.getByText(/choose the wall and floor finishes/i),
+  ).toBeVisible()
+  await closeWithEscapeAndRestoreFocus(
+    page,
+    environmentDialog,
+    environmentButton,
+  )
 
   const pickerTrigger = page.getByRole('button', { name: 'Add Furniture' })
   await pickerTrigger.click()
@@ -99,7 +113,7 @@ test('sheet and delete confirmation keep accessible contracts and return focus',
   await expect(newSceneButton).toBeFocused()
 })
 
-test('catalog, delete, and info dialogs stay mutually exclusive', async ({
+test('catalog, environment, delete, and info dialogs stay mutually exclusive', async ({
   page,
 }) => {
   await openEditor(page)
@@ -115,11 +129,13 @@ test('catalog, delete, and info dialogs stay mutually exclusive', async ({
   await selectFurnitureById(page, firstItemId)
 
   const catalogButton = page.getByRole('button', { name: 'Add Furniture' })
+  const environmentButton = page.getByRole('button', { name: 'Environment' })
   const deleteButton = page.getByRole('button', { name: 'Remove item' })
   const infoButton = page.getByRole('button', {
     name: 'Open project and asset info',
   })
   const catalogDialog = page.getByRole('dialog', { name: 'Add furniture' })
+  const environmentDialog = page.getByRole('dialog', { name: 'Environment' })
   const deleteDialog = page.getByRole('alertdialog', {
     name: /remove item from room/i,
   })
@@ -133,6 +149,23 @@ test('catalog, delete, and info dialogs stay mutually exclusive', async ({
 
   await page.keyboard.press('Escape')
   await expect(catalogDialog).toBeHidden()
+
+  await environmentButton.click()
+  await expect(environmentDialog).toBeVisible()
+
+  await page.keyboard.press('Delete')
+  await expect(deleteDialog).toBeHidden()
+
+  await page.keyboard.press('Control+n')
+  await expect(
+    page.getByRole('alertdialog', { name: /start over with a new scene/i }),
+  ).toBeHidden()
+
+  await closeWithEscapeAndRestoreFocus(
+    page,
+    environmentDialog,
+    environmentButton,
+  )
 
   await deleteButton.click()
   await expect(deleteDialog).toBeVisible()

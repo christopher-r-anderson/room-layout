@@ -101,6 +101,7 @@ class SceneAssetErrorBoundary extends Component<
 function App() {
   const sceneRef = useRef<SceneRef | null>(null)
   const roomViewRef = useRef<HTMLElement | null>(null)
+  const selectedItemControlsRef = useRef<HTMLDivElement | null>(null)
   const roomViewFocusFrameRef = useRef<number | null>(null)
   const previewedIdRef = useRef<string | null>(null)
   const overlayState = useOverlayState()
@@ -361,6 +362,19 @@ function App() {
     onRedo: handlers.handleRedo,
     focusRequest: sync.outlinerFocusRequest,
     onFocusHandled: sync.handleOutlinerFocusHandled,
+    onNavigateBackToSelectionControls: useCallback(() => {
+      const firstFocusableControl =
+        selectedItemControlsRef.current?.querySelector<HTMLElement>(
+          'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        )
+
+      if (!firstFocusableControl) {
+        return false
+      }
+
+      firstFocusableControl.focus()
+      return true
+    }, []),
     onSelectById: handlers.handleSelectById,
     readModel: overlayState.sceneReadModel,
     sceneInteractionsDisabled:
@@ -377,6 +391,8 @@ function App() {
     pendingDeleteFurniture: dialogState.pendingDeleteFurniture,
     onCloseDeleteDialog: dialogState.closeDialog,
     onConfirmDeleteSelection: handlers.handleConfirmDeleteSelection,
+    isEnvironmentDialogOpen: dialogState.isEnvironmentDialogOpen,
+    onEnvironmentDialogOpenChange: dialogState.setEnvironmentOpen,
     isNewSceneDialogOpen: dialogState.isNewSceneDialogOpen,
     onCloseNewSceneDialog: dialogState.closeDialog,
     onOpenNewSceneDialog: handlers.handleOpenNewSceneDialog,
@@ -586,6 +602,7 @@ function App() {
         {testOverlaysHidden ? null : (
           <>
             <SelectedItemControls
+              containerRef={selectedItemControlsRef}
               editorInteractionsEnabled={startup.editorInteractionsEnabled}
               isCatalogDrawerOpen={dialogState.isCatalogDrawerOpen}
               onInvalidSelectedItemDetailValue={

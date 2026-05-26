@@ -35,6 +35,7 @@ export function Outliner({
   disabled,
   focusRequest,
   onFocusHandled,
+  onNavigateBackToSelectionControls,
   onSelectById,
   previewedId,
   onPreviewChange,
@@ -43,6 +44,7 @@ export function Outliner({
   disabled: boolean
   focusRequest: SceneOutlinerFocusRequest | null
   onFocusHandled: () => void
+  onNavigateBackToSelectionControls?: () => boolean
   onSelectById: PanelSelectById
   previewedId?: string | null
   onPreviewChange: (
@@ -191,6 +193,20 @@ export function Outliner({
                           onBlur={() => {
                             if (!disabled) {
                               onPreviewChange(null, 'outliner-focus')
+                            }
+                          }}
+                          onKeyDown={(event) => {
+                            if (
+                              disabled ||
+                              event.key !== 'Tab' ||
+                              !event.shiftKey ||
+                              !onNavigateBackToSelectionControls
+                            ) {
+                              return
+                            }
+
+                            if (onNavigateBackToSelectionControls()) {
+                              event.preventDefault()
                             }
                           }}
                           onPointerEnter={() => {

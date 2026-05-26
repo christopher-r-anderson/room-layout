@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { SceneReadModel } from '@/scene/scene.types'
@@ -134,6 +134,35 @@ describe('SceneOutliner', () => {
       expect.any(String),
       'panel-keyboard',
     )
+  })
+
+  it('hands Shift+Tab back to selected item controls when requested', () => {
+    const onNavigateBackToSelectionControls = vi.fn(() => true)
+
+    render(
+      <Outliner
+        readModel={READ_MODEL}
+        disabled={false}
+        focusRequest={null}
+        onFocusHandled={vi.fn()}
+        onNavigateBackToSelectionControls={onNavigateBackToSelectionControls}
+        onSelectById={vi.fn()}
+        onPreviewChange={vi.fn()}
+      />,
+    )
+
+    const firstItem = screen.getByRole('button', { name: /leather couch/i })
+    const event = new KeyboardEvent('keydown', {
+      bubbles: true,
+      cancelable: true,
+      key: 'Tab',
+      shiftKey: true,
+    })
+
+    fireEvent(firstItem, event)
+
+    expect(onNavigateBackToSelectionControls).toHaveBeenCalledTimes(1)
+    expect(event.defaultPrevented).toBe(true)
   })
 
   it('applies preview styling to the previewed non-selected item', async () => {

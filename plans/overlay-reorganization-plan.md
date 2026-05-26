@@ -3,6 +3,7 @@
 Reorganize the overlay toward a consumer ecommerce 3D-planner layout, but rebase the work to the current branch state: selected-item controls are already extracted into `App.tsx`, source-aware Tab/Shift+Tab hinting is already implemented, and the selected-item focus contract is already encoded in tests. The refactor should therefore preserve the existing selected-item DOM/focus architecture, reposition non-selected overlay surfaces to better match the visual layout and DOM order, add the Environment button/dialog shell in this scope without changing its internal selector content model, and require that desktop changes do not regress current small-screen tab order, focus-return behavior, or accessible DOM order.
 
 **Steps**
+
 1. Phase 0: Freeze the current branch accessibility contract and rebase ownership before any UI moves.
    - Treat the following as hard product behavior that already exists and must not regress:
      - `SelectedItemControls` stays mounted in `App.tsx` after the room view and before `EditorOverlay`
@@ -19,7 +20,7 @@ Reorganize the overlay toward a consumer ecommerce 3D-planner layout, but rebase
      - `use-scene-sync.ts` owns outliner focus handoff
      - `use-preview-controller.ts` owns preview-source arbitration
      - `selected-item-controls.tsx` owns shared blur-suppression and gating between selected-item actions/details
-2. Phase 1: Lock the contract-test set before layout work. *blocks all later phases*
+2. Phase 1: Lock the contract-test set before layout work. _blocks all later phases_
    - Mark the existing blocker suites as contract tests that should not be rewritten to fit regressions:
      - `/home/splict/src/room-layout/src/app/selection/selected-item-controls.test.tsx`
      - `/home/splict/src/room-layout/src/app/selection/selected-item-details.test.tsx`
@@ -40,7 +41,7 @@ Reorganize the overlay toward a consumer ecommerce 3D-planner layout, but rebase
      - selected-item action labels and `aria-keyshortcuts`
      - shell inert behavior while catalog drawer or startup overlay is active
      - current small-screen keyboard order, focus-return behavior, and accessible DOM order not regressing
-3. Phase 2: Define the execution matrix and acceptance criteria. *depends on 1*
+3. Phase 2: Define the execution matrix and acceptance criteria. _depends on 1_
    - Build a contract-to-code matrix that includes `App.tsx`, `use-preview-controller.ts`, `use-scene-handlers.ts`, `use-scene-sync.ts`, `selected-item-controls.tsx`, `selected-item-details.tsx`, and `use-keyboard-shortcuts.ts`.
    - Document the DOM-order rule for this refactor:
      - selected-item DOM order in `App.tsx` is already correct and must remain
@@ -51,7 +52,7 @@ Reorganize the overlay toward a consumer ecommerce 3D-planner layout, but rebase
      - current focus-return behavior remains correct under the inherited narrow layout
      - accessible DOM order remains coherent even without a separate mobile-specific DOM
      - any mobile-impacting regressions discovered during desktop reorganization must be addressed now or escalated before implementation proceeds
-4. Phase 3: Reorganize non-selected overlay regions and DOM order in `editor-overlay.tsx`. *depends on 1-2*
+4. Phase 3: Reorganize non-selected overlay regions and DOM order in `editor-overlay.tsx`. _depends on 1-2_
    - Treat this phase as both visual repositioning and DOM-order cleanup for non-selected overlay surfaces.
    - Rebuild `/home/splict/src/room-layout/src/app/overlay/editor-overlay.tsx` into explicit desktop regions whose DOM order broadly matches their visual order:
      - top-left primary scene-building actions
@@ -66,7 +67,7 @@ Reorganize the overlay toward a consumer ecommerce 3D-planner layout, but rebase
    - Keep `CopySceneUrlButton`, `KeyboardShortcutsHelp`, and `ProjectInfoDialog` grouped in the top-right utility cluster.
    - Keep `Outliner` in the lower-left.
    - Keep `CameraTools` on the right edge for now, with future compaction out of scope.
-5. Phase 4: Convert Environment from an always-mounted panel into a first-class dialog-driven surface. *depends on 3*
+5. Phase 4: Convert Environment from an always-mounted panel into a first-class dialog-driven surface. _depends on 3_
    - Make the implementation decision explicit: default to a dialog, and only switch to a drawer if a documented blocker appears during implementation (for example, unusable content sizing or focus behavior under the inherited small-screen layout).
    - Treat Environment as part of the existing one-active-modal-at-a-time matrix. It should participate in the same mutual-exclusion rules currently enforced by `use-dialog-state.ts` for catalog, delete, info, and new-scene; it should not coexist with another active modal surface.
    - Expand dialog-state plumbing explicitly:
@@ -83,7 +84,7 @@ Reorganize the overlay toward a consumer ecommerce 3D-planner layout, but rebase
      - keep the same floor/wall selectors and loading behavior
      - do not switch to swatches/thumbnails or change option semantics
    - Ensure the Environment dialog uses the same modal focus trap, trigger focus return, and shell inert behavior as the other dialogs.
-6. Phase 5: Preserve selected-item architecture while visually integrating it with the new layout. *depends on 3-4*
+6. Phase 5: Preserve selected-item architecture while visually integrating it with the new layout. _depends on 3-4_
    - Do not plan a new extraction/decoupling effort that has already landed.
    - Keep `SelectedItemControls` in `App.tsx` and preserve its logical DOM order after the room view.
    - Reposition `SelectedItemDetails` visually toward the lower-right inspector area while preserving the existing coordinator wiring in `/home/splict/src/room-layout/src/app/selection/selected-item-controls.tsx` unless a minimal internal split is needed purely for layout.
@@ -92,7 +93,7 @@ Reorganize the overlay toward a consumer ecommerce 3D-planner layout, but rebase
      - keep `controlsSuppressed` gating intact
      - keep selected-item actions/details relative DOM order intact
      - keep delete-dialog handler routing and focus-return logic intact
-7. Phase 6: Reconcile copy, docs, and product wording with the new overlay. *depends on 3-5*
+7. Phase 6: Reconcile copy, docs, and product wording with the new overlay. _depends on 3-5_
    - Update in-app wording that changes because of region or trigger changes:
      - `/home/splict/src/room-layout/src/app/use-scene-handlers.ts`
      - `/home/splict/src/room-layout/src/App.tsx`
@@ -102,7 +103,7 @@ Reorganize the overlay toward a consumer ecommerce 3D-planner layout, but rebase
      - `/home/splict/src/room-layout/docs/keyboard-shortcuts.md`
      - `/home/splict/src/room-layout/docs/editor-shortcuts-reference.md`
    - Preserve the documented contract that the room contents panel remains the primary accessible DOM representation and the room view remains a focused enhancement, not a replacement.
-8. Phase 7: Final contract validation and follow-up boundaries. *depends on 1-6*
+8. Phase 7: Final contract validation and follow-up boundaries. _depends on 1-6_
    - Re-run the contract suites and compare behavior against the planning docs, not just against updated snapshots/selectors.
    - Any failing contract test should default to being treated as a product regression until the team explicitly decides otherwise.
    - Defer these follow-ups to separate work once the reorganized layout is stable:
@@ -113,6 +114,7 @@ Reorganize the overlay toward a consumer ecommerce 3D-planner layout, but rebase
      - dedicated mobile-specific layout work if later needed
 
 **Relevant files**
+
 - `/home/splict/src/room-layout/plans/canvas-navigation-plan.md` — hard contract for room-view focus, preview ownership, source-aware selection, and Tab/Shift+Tab guidance.
 - `/home/splict/src/room-layout/plans/details-editor-and-tab-flow.md` — hard contract for selected-item DOM order, delete origin/focus behavior, and editable-details interaction rules.
 - `/home/splict/src/room-layout/src/App.tsx` — composition root; already owns room-view focus, selected-item DOM order, and distinct delete-origin wiring.
@@ -150,6 +152,7 @@ Reorganize the overlay toward a consumer ecommerce 3D-planner layout, but rebase
 - `/home/splict/src/room-layout/docs/editor-shortcuts-reference.md` — shortcut/location wording that may need overlay updates.
 
 **Verification**
+
 1. Contract baseline before layout work:
    - `pnpm test:run -- src/app/selection/selected-item-controls.test.tsx`
    - `pnpm test:run -- src/app/selection/selected-item-details.test.tsx`
@@ -181,6 +184,7 @@ Reorganize the overlay toward a consumer ecommerce 3D-planner layout, but rebase
    - small-screen tab order, focus return, and accessible DOM order remain usable without a separate mobile DOM
 
 **Decisions**
+
 - Rebased to current branch state: selected-item extraction/App-level DOM order, source-aware hinting, and much of the selected-item contract are already implemented and should be preserved, not re-architected.
 - Phase 3 changes both visual layout and DOM order for non-selected overlay surfaces inside `editor-overlay.tsx`; selected-item DOM order in `App.tsx` remains intact.
 - The Environment change in scope is now concrete: convert it to a dialog-triggered modal surface now, with dialog as the default decision. Only switch to drawer if a documented blocker appears during implementation.
@@ -192,6 +196,7 @@ Reorganize the overlay toward a consumer ecommerce 3D-planner layout, but rebase
 - Excluded from scope: floating selected-item actions toolbar implementation, compact details redesign, Environment content redesign, camera feature redesign, and separate mobile-only DOM/layout architecture.
 
 **Further Considerations**
+
 1. If extracting the environment form content from `EnvironmentPanel` reveals too much shell/form coupling, prefer a narrow helper extraction for the selectors and loading indicators rather than keeping the collapsible card nested inside a dialog.
 2. If visually moving selected-item details while preserving its current coordinator proves awkward, prefer a minimal preserve-and-reposition internal refactor over a broader architectural rewrite.
 3. After this reorg stabilizes, a separate follow-up can decide whether the outliner should be relabeled consumer-facing as `Items in room` everywhere, but that copy change should not be bundled with the contract-sensitive layout pass unless it becomes necessary for clarity.

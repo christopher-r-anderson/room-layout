@@ -8,7 +8,7 @@ This project demonstrates core web 3D concepts relevant to retail and product ex
 
 ## 🏁 Goals
 
-Current editor UI highlights include a visual furniture picker, history tools, a room-contents panel, selected-item actions/details, keyboard movement/rotation shortcuts, startup loading and retryable error overlays, and project/asset information dialogs.
+Current editor UI highlights include a visual furniture picker, an Environment dialog for room finishes, history tools, a room-contents panel, selected-item actions/details, keyboard movement/rotation shortcuts, startup loading and retryable error overlays, and project/asset information dialogs.
 
 ## 🔋 Tech Stack
 
@@ -124,7 +124,8 @@ In addition to this README, project-specific guides are available:
 - Wait for the startup loading overlay to finish before interacting with the room.
 - Drag selected furniture along the floor; movement stays within room bounds and avoids collisions.
 - Rotate the selected item with `,` / `.` or the rotate buttons.
-- Add another furniture instance from the bottom-centered `Add Furniture` trigger and modal picker.
+- Add another furniture instance from the upper-left `Add Furniture` trigger and modal picker.
+- Open the `Environment` dialog from the upper-left toolbar to change wall and floor finishes.
 - Remove the selected item from the selected item actions or with `Delete` / `Backspace`, then confirm the dialog.
 - You can fully edit without canvas dragging via the Furniture in room panel and selected item details fields.
 - Typed selected-item details commit on `Enter` or blur and cancel the local draft with `Escape`.
@@ -136,7 +137,7 @@ In addition to this README, project-specific guides are available:
 ## 📚 Catalog
 
 The editor loads its furniture catalog from a runtime manifest (`public/catalog-manifest.json`), allowing catalog updates without rebuilding the app.
-The same manifest also defines environment material options (floor texture sets and wall colors) used by the Environment panel.
+The same manifest also defines environment material options (floor texture sets and wall colors) used by the Environment dialog.
 
 ### Manifest Updates
 
