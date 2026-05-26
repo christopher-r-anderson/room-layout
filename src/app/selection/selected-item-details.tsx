@@ -6,6 +6,7 @@ import type {
 } from '@/app/selected-item-details.types'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
+import { cn } from '@/lib/utils'
 
 type FieldOverride =
   | {
@@ -201,9 +202,7 @@ export function SelectedItemDetails({
 
   return (
     <section
-      className={
-        className ? `pointer-events-auto ${className}` : 'pointer-events-auto'
-      }
+      className={cn('pointer-events-auto', className)}
       aria-labelledby={titleId}
     >
       <Card

@@ -1,6 +1,7 @@
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { SelectionToolsOther } from './selection-tools-other'
+import { cn } from '@/lib/utils'
 
 export function SelectedItemActions({
   className,
@@ -19,9 +20,7 @@ export function SelectedItemActions({
 }) {
   return (
     <section
-      className={
-        className ? `pointer-events-auto ${className}` : 'pointer-events-auto'
-      }
+      className={cn('pointer-events-auto', className)}
       aria-label="Selected item actions"
     >
       <Card

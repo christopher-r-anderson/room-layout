@@ -203,7 +203,10 @@ export function EditorOverlay({
                 <h1 className="px-1 text-base/6 font-semibold text-foreground">
                   Room Layout
                 </h1>
-                <div inert={catalog.isCatalogDrawerOpen}>
+                <div
+                  inert={catalog.isCatalogDrawerOpen}
+                  aria-hidden={catalog.isCatalogDrawerOpen}
+                >
                   <KeyboardShortcutsHelp
                     open={dialogs.isKeyboardShortcutsDialogOpen}
                     onOpenChange={dialogs.onKeyboardShortcutsDialogOpenChange}
