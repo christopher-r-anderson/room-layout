@@ -167,9 +167,7 @@ describe('EnvironmentDialog', () => {
     const dialog = screen.getByRole('dialog', { name: 'Environment' })
     expect(dialog).toBeVisible()
 
-    await user.click(
-      within(dialog).getAllByRole('button', { name: 'Close' })[0],
-    )
+    await user.keyboard('{Escape}')
 
     await waitFor(() => {
       expect(
