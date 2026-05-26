@@ -14,17 +14,16 @@ test('axe audit passes for baseline and outliner/selected item editor states', a
   await expectNoA11yViolations(page, 'editor shell loaded')
 
   const keyboardHelpTrigger = page.getByRole('button', {
-    name: 'Toggle keyboard shortcuts help',
+    name: 'Keyboard shortcuts',
   })
   await keyboardHelpTrigger.click()
-  await expect(
-    page.getByRole('heading', { name: 'Keyboard Shortcuts' }),
-  ).toBeVisible()
-  await expectNoA11yViolations(page, 'keyboard shortcuts popover open')
+  const keyboardShortcutsDialog = page.getByRole('dialog', {
+    name: 'Keyboard Shortcuts',
+  })
+  await expect(keyboardShortcutsDialog).toBeVisible()
+  await expectNoA11yViolations(page, 'keyboard shortcuts dialog open')
   await page.keyboard.press('Escape')
-  await expect(
-    page.getByRole('heading', { name: 'Keyboard Shortcuts' }),
-  ).toBeHidden()
+  await expect(keyboardShortcutsDialog).toBeHidden()
 
   await page.getByRole('button', { name: 'Add Furniture' }).click()
   const pickerDialog = page.getByRole('dialog', { name: 'Add furniture' })

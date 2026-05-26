@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 
 import { render, screen } from '@testing-library/react'
+import { within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import { KeyboardShortcutsHelp } from './keyboard-shortcuts-help'
@@ -11,10 +12,11 @@ describe('KeyboardShortcutsHelp', () => {
 
     render(<KeyboardShortcutsHelp />)
 
-    await user.click(
-      screen.getByRole('button', { name: 'Toggle keyboard shortcuts help' }),
-    )
+    await user.click(screen.getByRole('button', { name: 'Keyboard shortcuts' }))
 
+    const dialog = screen.getByRole('dialog', { name: 'Keyboard Shortcuts' })
+
+    expect(dialog).toBeVisible()
     expect(
       screen.getByRole('heading', { name: 'Keyboard Shortcuts' }),
     ).toBeVisible()
@@ -30,10 +32,12 @@ describe('KeyboardShortcutsHelp', () => {
       ),
     ).toBeVisible()
 
-    await user.click(screen.getByRole('button', { name: 'Dismiss' }))
+    await user.click(
+      within(dialog).getAllByRole('button', { name: 'Close' })[0],
+    )
 
     expect(
-      screen.queryByRole('heading', { name: 'Keyboard Shortcuts' }),
+      screen.queryByRole('dialog', { name: 'Keyboard Shortcuts' }),
     ).not.toBeInTheDocument()
   })
 })

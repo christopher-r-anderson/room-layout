@@ -160,20 +160,20 @@ test('keyboard shortcuts help is reachable and dismissible by keyboard, and is e
   await openEditor(page)
 
   // Reach the trigger via Tab and activate it with Enter.
-  const helpTrigger = page.locator(
-    'button[aria-label="Toggle keyboard shortcuts help"]',
+  const helpTrigger = page.getByRole('button', { name: 'Keyboard shortcuts' })
+  const inertHelpTrigger = page.locator(
+    'button[aria-label="Keyboard shortcuts"]',
   )
+  const shortcutsDialog = page.getByRole('dialog', {
+    name: 'Keyboard Shortcuts',
+  })
   await helpTrigger.focus()
   await page.keyboard.press('Enter')
-  await expect(
-    page.getByRole('heading', { name: 'Keyboard Shortcuts' }),
-  ).toBeVisible()
+  await expect(shortcutsDialog).toBeVisible()
 
   // Escape dismisses and returns focus to the trigger.
   await page.keyboard.press('Escape')
-  await expect(
-    page.getByRole('heading', { name: 'Keyboard Shortcuts' }),
-  ).toBeHidden()
+  await expect(shortcutsDialog).toBeHidden()
   await expect(helpTrigger).toBeFocused()
 
   // While the catalog drawer is open the help trigger must not be reachable
@@ -186,7 +186,7 @@ test('keyboard shortcuts help is reachable and dismissible by keyboard, and is e
   // trigger must never receive focus.
   for (let i = 0; i < 10; i++) {
     await page.keyboard.press('Tab')
-    await expect(helpTrigger).not.toBeFocused()
+    await expect(inertHelpTrigger).not.toBeFocused()
   }
 
   await page.keyboard.press('Escape')

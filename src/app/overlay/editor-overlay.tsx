@@ -168,6 +168,9 @@ export function EditorOverlay({
                 <h1 className="px-1 text-base/6 font-semibold text-foreground">
                   Room Layout
                 </h1>
+                <div inert={catalog.isCatalogDrawerOpen}>
+                  <KeyboardShortcutsHelp />
+                </div>
                 <ProjectInfoDialog
                   open={dialogs.isInfoDialogOpen}
                   onOpenChange={dialogs.onInfoDialogOpenChange}
@@ -234,9 +237,6 @@ export function EditorOverlay({
               onAddFurniture={catalog.onAddFurniture}
               onCatalogIdToAddChange={catalog.onCatalogIdToAddChange}
             />
-            <div inert={catalog.isCatalogDrawerOpen}>
-              <KeyboardShortcutsHelp />
-            </div>
           </div>
         </div>
       </div>
