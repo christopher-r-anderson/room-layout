@@ -45,6 +45,8 @@ interface UseOverlayPropsOptions {
   onConfirmNewScene: EditorDialogsProps['onConfirmNewScene']
   isInfoDialogOpen: EditorDialogsProps['isInfoDialogOpen']
   onInfoDialogOpenChange: EditorDialogsProps['onInfoDialogOpenChange']
+  isKeyboardShortcutsDialogOpen: EditorDialogsProps['isKeyboardShortcutsDialogOpen']
+  onKeyboardShortcutsDialogOpenChange: EditorDialogsProps['onKeyboardShortcutsDialogOpenChange']
   onPreviewChange: EditorPreviewProps['onPreviewChange']
   previewedId: EditorPreviewProps['previewedId']
 }
@@ -95,6 +97,8 @@ export function useOverlayProps({
   onConfirmNewScene,
   isInfoDialogOpen,
   onInfoDialogOpenChange,
+  isKeyboardShortcutsDialogOpen,
+  onKeyboardShortcutsDialogOpenChange,
   onPreviewChange,
   previewedId,
 }: UseOverlayPropsOptions): EditorOverlayPropsShape {
@@ -186,6 +190,8 @@ export function useOverlayProps({
       onConfirmNewScene,
       isInfoDialogOpen,
       onInfoDialogOpenChange,
+      isKeyboardShortcutsDialogOpen,
+      onKeyboardShortcutsDialogOpenChange,
     }),
     [
       isDeleteDialogOpen,
@@ -200,6 +206,8 @@ export function useOverlayProps({
       onConfirmNewScene,
       isInfoDialogOpen,
       onInfoDialogOpenChange,
+      isKeyboardShortcutsDialogOpen,
+      onKeyboardShortcutsDialogOpenChange,
     ],
   )
 

@@ -72,6 +72,8 @@ export interface EditorDialogsProps {
   onConfirmDeleteSelection: () => void
   isEnvironmentDialogOpen: boolean
   onEnvironmentDialogOpenChange: (open: boolean) => void
+  isKeyboardShortcutsDialogOpen: boolean
+  onKeyboardShortcutsDialogOpenChange: (open: boolean) => void
   isNewSceneDialogOpen: boolean
   onCloseNewSceneDialog: () => void
   onOpenNewSceneDialog: () => void
@@ -202,7 +204,10 @@ export function EditorOverlay({
                   Room Layout
                 </h1>
                 <div inert={catalog.isCatalogDrawerOpen}>
-                  <KeyboardShortcutsHelp />
+                  <KeyboardShortcutsHelp
+                    open={dialogs.isKeyboardShortcutsDialogOpen}
+                    onOpenChange={dialogs.onKeyboardShortcutsDialogOpenChange}
+                  />
                 </div>
                 <ProjectInfoDialog
                   open={dialogs.isInfoDialogOpen}

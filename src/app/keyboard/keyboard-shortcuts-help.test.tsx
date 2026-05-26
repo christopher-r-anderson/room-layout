@@ -2,6 +2,7 @@
 
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { useState } from 'react'
 import { describe, expect, it } from 'vitest'
 import { KeyboardShortcutsHelp } from './keyboard-shortcuts-help'
 
@@ -9,7 +10,12 @@ describe('KeyboardShortcutsHelp', () => {
   it('opens and dismisses keyboard shortcut guidance', async () => {
     const user = userEvent.setup()
 
-    render(<KeyboardShortcutsHelp />)
+    function TestHarness() {
+      const [open, setOpen] = useState(false)
+      return <KeyboardShortcutsHelp open={open} onOpenChange={setOpen} />
+    }
+
+    render(<TestHarness />)
 
     await user.click(screen.getByRole('button', { name: 'Keyboard shortcuts' }))
 

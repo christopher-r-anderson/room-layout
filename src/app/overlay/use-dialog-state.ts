@@ -5,6 +5,7 @@ type ActiveDialog =
   | 'catalog'
   | 'delete'
   | 'environment'
+  | 'keyboard-shortcuts'
   | 'info'
   | 'new-scene'
   | null
@@ -22,6 +23,7 @@ interface DialogState {
   isDeleteDialogOpen: boolean
   isEnvironmentDialogOpen: boolean
   isInfoDialogOpen: boolean
+  isKeyboardShortcutsDialogOpen: boolean
   isNewSceneDialogOpen: boolean
   isModalOpen: boolean
   pendingDeleteFurniture: FurnitureItem | null
@@ -29,12 +31,14 @@ interface DialogState {
   openDelete: () => boolean
   openEnvironment: () => boolean
   openInfo: () => boolean
+  openKeyboardShortcuts: () => boolean
   openNewScene: () => boolean
   closeDialog: () => void
   closeAllDialogs: () => void
   setCatalogOpen: (open: boolean) => boolean
   setEnvironmentOpen: (open: boolean) => boolean
   setInfoOpen: (open: boolean) => boolean
+  setKeyboardShortcutsOpen: (open: boolean) => boolean
 }
 
 export function useDialogState({
@@ -51,6 +55,7 @@ export function useDialogState({
   const isDeleteDialogOpen = activeDialog === 'delete'
   const isEnvironmentDialogOpen = activeDialog === 'environment'
   const isInfoDialogOpen = activeDialog === 'info'
+  const isKeyboardShortcutsDialogOpen = activeDialog === 'keyboard-shortcuts'
   const isNewSceneDialogOpen = activeDialog === 'new-scene'
   const isModalOpen = activeDialog !== null
 
@@ -78,6 +83,15 @@ export function useDialogState({
     }
 
     setActiveDialog('info')
+    return true
+  }, [activeDialog, startupOverlayActive])
+
+  const openKeyboardShortcuts = useCallback(() => {
+    if (startupOverlayActive || activeDialog !== null) {
+      return false
+    }
+
+    setActiveDialog('keyboard-shortcuts')
     return true
   }, [activeDialog, startupOverlayActive])
 
@@ -157,12 +171,25 @@ export function useDialogState({
     [closeDialog, openEnvironment],
   )
 
+  const setKeyboardShortcutsOpen = useCallback(
+    (open: boolean) => {
+      if (!open) {
+        closeDialog()
+        return true
+      }
+
+      return openKeyboardShortcuts()
+    },
+    [closeDialog, openKeyboardShortcuts],
+  )
+
   return {
     activeDialog,
     isCatalogDrawerOpen,
     isDeleteDialogOpen,
     isEnvironmentDialogOpen,
     isInfoDialogOpen,
+    isKeyboardShortcutsDialogOpen,
     isNewSceneDialogOpen,
     isModalOpen,
     pendingDeleteFurniture,
@@ -170,11 +197,13 @@ export function useDialogState({
     openDelete,
     openEnvironment,
     openInfo,
+    openKeyboardShortcuts,
     openNewScene,
     closeDialog,
     closeAllDialogs,
     setCatalogOpen,
     setEnvironmentOpen,
     setInfoOpen,
+    setKeyboardShortcutsOpen,
   }
 }

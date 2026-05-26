@@ -69,6 +69,8 @@ interface OverlayOptions {
   onConfirmNewScene: () => void
   isInfoDialogOpen: boolean
   onInfoDialogOpenChange: (open: boolean) => void
+  isKeyboardShortcutsDialogOpen: boolean
+  onKeyboardShortcutsDialogOpenChange: (open: boolean) => void
   onPreviewChange: (
     id: string | null,
     source: 'outliner-hover' | 'outliner-focus',
@@ -125,6 +127,8 @@ function createOptions(overrides?: Partial<OverlayOptions>): OverlayOptions {
     onConfirmNewScene: vi.fn(),
     isInfoDialogOpen: false,
     onInfoDialogOpenChange: vi.fn(),
+    isKeyboardShortcutsDialogOpen: false,
+    onKeyboardShortcutsDialogOpenChange: vi.fn(),
     onPreviewChange: vi.fn(),
     previewedId: null,
     ...overrides,
@@ -146,6 +150,7 @@ describe('useOverlayProps', () => {
       isEnvironmentDialogOpen: true,
       isNewSceneDialogOpen: true,
       isInfoDialogOpen: true,
+      isKeyboardShortcutsDialogOpen: true,
       sceneInteractionsDisabled: true,
     })
 
@@ -194,6 +199,9 @@ describe('useOverlayProps', () => {
       onConfirmNewScene: options.onConfirmNewScene,
       isInfoDialogOpen: true,
       onInfoDialogOpenChange: options.onInfoDialogOpenChange,
+      isKeyboardShortcutsDialogOpen: true,
+      onKeyboardShortcutsDialogOpenChange:
+        options.onKeyboardShortcutsDialogOpenChange,
     })
   })
 

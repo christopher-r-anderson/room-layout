@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { IconKeyboard } from '@tabler/icons-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -190,11 +189,17 @@ function renderShortcutCombos(combos: ShortcutCombo[]) {
   )
 }
 
-export function KeyboardShortcutsHelp() {
-  const [open, setOpen] = useState(false)
+interface KeyboardShortcutsHelpProps {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+}
 
+export function KeyboardShortcutsHelp({
+  open,
+  onOpenChange,
+}: KeyboardShortcutsHelpProps) {
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <Tooltip>
         <TooltipTrigger
           render={

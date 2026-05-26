@@ -399,6 +399,8 @@ function App() {
     onConfirmNewScene: handlers.handleConfirmNewScene,
     isInfoDialogOpen: dialogState.isInfoDialogOpen,
     onInfoDialogOpenChange: dialogState.setInfoOpen,
+    isKeyboardShortcutsDialogOpen: dialogState.isKeyboardShortcutsDialogOpen,
+    onKeyboardShortcutsDialogOpenChange: dialogState.setKeyboardShortcutsOpen,
     onPreviewChange: handleOutlinerPreviewChange,
     previewedId,
   })
