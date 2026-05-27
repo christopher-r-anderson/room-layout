@@ -163,7 +163,7 @@ interface SceneHandlers {
   handleSceneAssetError: (error: Error) => void
   handleSceneAssetsReady: () => void
   handleRetryAssetLoading: () => void
-  handleCopySceneUrl: () => Promise<boolean>
+  handleShareSceneUrl: () => Promise<'shared' | 'copied' | null>
   restoreOutcomeRef: RefObject<RestoreOutcome | null>
   restoreAttemptCountRef: RefObject<number>
 }
@@ -1053,7 +1053,7 @@ export function useSceneHandlers({
     clearAssertiveAnnouncement,
   ])
 
-  const handleCopySceneUrl = useCallback(async () => {
+  const handleShareSceneUrl = useCallback(async () => {
     const url = serializeSceneToUrl(
       sceneReadModel.items,
       window.location.href,
@@ -1070,18 +1070,50 @@ export function useSceneHandlers({
     if (!url) {
       setEditorMessage('Scene is too large to share as a URL.')
       announceAssertive('Scene is too large to share as a URL.')
-      return false
+      return null
+    }
+
+    const shareData = {
+      title: 'Room Layout',
+      url,
+    }
+
+    let canUseNativeShare = typeof navigator.share === 'function'
+
+    if (canUseNativeShare && typeof navigator.canShare === 'function') {
+      try {
+        canUseNativeShare = navigator.canShare({ url: shareData.url })
+      } catch {
+        canUseNativeShare = false
+      }
+    }
+
+    if (canUseNativeShare) {
+      try {
+        await navigator.share(shareData)
+        clearEditorMessage()
+        announcePolite('Room layout shared.')
+        return 'shared'
+      } catch (error) {
+        if (error instanceof DOMException && error.name === 'AbortError') {
+          return null
+        }
+
+        setEditorMessage('Could not open share options.')
+        announceAssertive('Could not open share options.')
+        return null
+      }
     }
 
     try {
       await navigator.clipboard.writeText(url)
       clearEditorMessage()
       announcePolite('Scene URL copied to clipboard.')
-      return true
+      return 'copied'
     } catch {
       setEditorMessage('Could not copy URL to clipboard.')
       announceAssertive('Could not copy URL to clipboard.')
-      return false
+      return null
     }
   }, [
     sceneReadModel.items,
@@ -1130,7 +1162,7 @@ export function useSceneHandlers({
     handleSceneAssetError,
     handleSceneAssetsReady,
     handleRetryAssetLoading,
-    handleCopySceneUrl,
+    handleShareSceneUrl,
     restoreOutcomeRef,
     restoreAttemptCountRef,
   }

@@ -623,7 +623,7 @@ function App() {
               editorInteractionsEnabled={startup.editorInteractionsEnabled}
               newSceneDisabled={sceneIsAtDefaults}
               statusMessage={overlayState.editorMessage}
-              onCopySceneUrl={handlers.handleCopySceneUrl}
+              onShareSceneUrl={() => handlers.handleShareSceneUrl()}
               camera={cameraProps}
               startup={startupProps}
               history={historyProps}

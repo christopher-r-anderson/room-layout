@@ -145,22 +145,22 @@ vi.mock('../keyboard/keyboard-shortcuts-help', () => ({
   ),
 }))
 
-vi.mock('./copy-scene-url-button', () => ({
-  CopySceneUrlButton: ({
+vi.mock('./share-scene-button', () => ({
+  ShareSceneButton: ({
     disabled,
-    onCopySceneUrl,
+    onShareSceneUrl,
   }: {
     disabled: boolean
-    onCopySceneUrl: () => Promise<boolean>
+    onShareSceneUrl: () => Promise<'shared' | 'copied' | null>
   }) => (
     <button
       type="button"
       disabled={disabled}
       onClick={() => {
-        void onCopySceneUrl()
+        void onShareSceneUrl()
       }}
     >
-      Copy Scene URL
+      Share
     </button>
   ),
 }))
@@ -292,7 +292,9 @@ describe('EditorOverlay integration', () => {
               editorInteractionsEnabled={true}
               newSceneDisabled={false}
               statusMessage={null}
-              onCopySceneUrl={vi.fn(() => Promise.resolve(true))}
+              onShareSceneUrl={vi.fn(() =>
+                Promise.resolve<'shared' | 'copied' | null>('copied'),
+              )}
               camera={{
                 onSetCameraPreset: vi.fn(),
                 onFocusSelected: vi.fn(),
