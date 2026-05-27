@@ -50,12 +50,11 @@ export function SelectedItemControls({
   return (
     <div
       ref={containerRef}
-      className="pointer-events-none absolute inset-2 top-16 z-10 flex flex-col gap-2 md:grid md:grid-cols-[minmax(0,20rem)_minmax(0,1fr)] md:grid-rows-[auto_1fr] md:items-start"
       inert={controlsSuppressed}
       aria-hidden={controlsSuppressed}
     >
       <SelectedItemActions
-        className="md:max-w-80"
+        className="absolute translate-x-1/2 top-1/3"
         disabled={controlsDisabled}
         onOpenDeleteDialog={handleOpenDeleteDialog}
         onPrepareDelete={() => {
@@ -65,7 +64,7 @@ export function SelectedItemControls({
         selectedFurniture={selectedFurniture}
       />
       <SelectedItemDetails
-        className="md:col-start-2 md:row-start-2 md:self-end md:justify-self-end md:w-80"
+        className="absolute bottom-30 md:bottom-2 left-2 right-2 md:left-auto md:w-auto"
         key={selectedFurniture.id}
         disabled={controlsDisabled}
         selectedFurniture={selectedFurniture}

@@ -125,14 +125,16 @@ export async function withOverlaysHidden<T>(
 }
 
 export async function readPoliteAnnouncement(page: Page) {
-  const text = await page.locator('.sr-only [aria-live="polite"]').textContent()
+  const text = await page
+    .locator('[data-announcer-root] [data-announcer-channel="polite"]')
+    .textContent()
 
   return text?.trim() ?? ''
 }
 
 export async function readAssertiveAnnouncement(page: Page) {
   const text = await page
-    .locator('.sr-only [aria-live="assertive"]')
+    .locator('[data-announcer-root] [data-announcer-channel="assertive"]')
     .textContent()
 
   return text?.trim() ?? ''
@@ -382,8 +384,8 @@ export async function deleteSelectedFurniture(page: Page) {
 export async function updateSelectedItemField(
   page: Page,
   label:
-    | 'Left/right position (m)'
-    | 'Front/back position (m)'
+    | 'Distance from left wall (m)'
+    | 'Distance from back wall (m)'
     | 'Rotation (deg)',
   value: string,
 ) {

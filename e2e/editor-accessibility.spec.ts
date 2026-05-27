@@ -30,11 +30,7 @@ test('supports outliner selection and selected item details without the canvas',
     throw new Error('expected a selected furniture item before details edit')
   }
 
-  await updateSelectedItemField(
-    page,
-    'Left/right position (m)',
-    (selectedBeforeMove.position[0] + 0.5).toFixed(1),
-  )
+  await updateSelectedItemField(page, 'Distance from left wall (m)', '1.4')
 
   await expect
     .poll(async () => {
@@ -42,7 +38,7 @@ test('supports outliner selection and selected item details without the canvas',
       return sceneState.items.find((item) => item.id === sceneState.selectedId)
         ?.position[0]
     })
-    .toBeCloseTo(selectedBeforeMove.position[0] + 0.5, 6)
+    .toBeCloseTo(-0.5, 6)
 
   await page.getByRole('button', { name: 'Remove item' }).click()
   await page

@@ -26,6 +26,7 @@ import { NewSceneButton } from './new-scene-button'
 import type { PanelSelectById } from '../scene-interaction.types'
 import { EnvironmentDialog } from './environment-dialog'
 import { EnvironmentButton } from './environment-button'
+import { SelectedItemDetailsPlaceholder } from '../selection/selected-item-details'
 
 export interface EditorCameraProps {
   onSetCameraPreset: (preset: CameraPreset) => void
@@ -250,9 +251,7 @@ export function EditorOverlay({
               aria-hidden="true"
               className="hidden md:flex md:min-h-32 md:items-end md:justify-end"
             >
-              <div className="rounded-md border border-dashed border-border/60 bg-background/40 px-3 py-2 text-xs text-muted-foreground backdrop-blur-[2px]">
-                Selected item details appear here when an item is active.
-              </div>
+              <SelectedItemDetailsPlaceholder />
             </div>
           ) : null}
         </div>

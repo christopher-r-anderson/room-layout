@@ -23,10 +23,7 @@ export function SelectedItemActions({
       className={cn('pointer-events-auto', className)}
       aria-label="Selected item actions"
     >
-      <Card
-        className="w-full bg-background/90 shadow-sm backdrop-blur-sm"
-        size="sm"
-      >
+      <Card className="bg-background/90 shadow-sm backdrop-blur-sm" size="sm">
         <CardHeader>
           <CardTitle>Selected item actions</CardTitle>
           <p className="text-xs/relaxed text-muted-foreground">

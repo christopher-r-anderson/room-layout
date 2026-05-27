@@ -42,6 +42,26 @@ describe('SelectedItemControls', () => {
     ).not.toBeInTheDocument()
   })
 
+  it('renders the selected item actions card when an item is active', () => {
+    render(
+      <SelectedItemControls
+        editorInteractionsEnabled
+        isCatalogDrawerOpen={false}
+        onInvalidSelectedItemDetailValue={vi.fn(() => 'Invalid value')}
+        onOpenDeleteDialog={vi.fn()}
+        onRotateSelection={vi.fn()}
+        onUpdateSelectedItemDetails={vi.fn()}
+        selectedFurniture={FURNITURE_ITEM}
+        startupOverlayActive={false}
+      />,
+    )
+
+    expect(
+      screen.getByRole('region', { name: 'Selected item actions' }),
+    ).toBeVisible()
+    expect(screen.getByRole('button', { name: 'Remove item' })).toBeVisible()
+  })
+
   it('suppresses blur commits when the remove dialog is opening', async () => {
     const user = userEvent.setup()
     const onOpenDeleteDialog = vi.fn()
@@ -60,7 +80,7 @@ describe('SelectedItemControls', () => {
       />,
     )
 
-    const xInput = screen.getByLabelText('Left/right position (m)')
+    const xInput = screen.getByLabelText('Distance from left wall (m)')
 
     await user.clear(xInput)
     await user.type(xInput, '1.4')
@@ -77,7 +97,7 @@ describe('SelectedItemControls', () => {
       ok: true as const,
       item: {
         ...FURNITURE_ITEM,
-        position: [1.4, 0, 0] as [number, number, number],
+        position: [-0.5, 0, 0] as [number, number, number],
       },
     }))
 
@@ -96,7 +116,7 @@ describe('SelectedItemControls', () => {
 
     await user.click(screen.getByRole('button', { name: 'Remove item' }))
 
-    const xInput = screen.getByLabelText('Left/right position (m)')
+    const xInput = screen.getByLabelText('Distance from left wall (m)')
     await user.clear(xInput)
     await user.type(xInput, '1.4')
     await user.tab()
@@ -105,7 +125,7 @@ describe('SelectedItemControls', () => {
     expect(onUpdateSelectedItemDetails).toHaveBeenCalledTimes(1)
     expect(onUpdateSelectedItemDetails).toHaveBeenCalledWith({
       field: 'positionX',
-      fieldLabel: 'Left/right position (m)',
+      fieldLabel: 'Distance from left wall (m)',
       value: 1.4,
     })
   })

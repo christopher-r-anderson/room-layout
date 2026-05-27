@@ -143,7 +143,11 @@ function SelectedItemDetailsInputHarness(props: {
   }, [])
 
   return (
-    <input ref={inputRef} type="text" aria-label="Left/right position (m)" />
+    <input
+      ref={inputRef}
+      type="text"
+      aria-label="Distance from left wall (m)"
+    />
   )
 }
 

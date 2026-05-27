@@ -38,6 +38,7 @@ import {
   type SceneDraftState,
 } from './url-scene/scene-draft'
 import { toast } from 'sonner'
+import { resolvePositionFromWallClearances } from '@/lib/three/wall-clearance'
 
 // ---------------------------------------------------------------------------
 // Dependency slices accepted from outer hooks
@@ -644,16 +645,9 @@ export function useSceneHandlers({
 
   const handleInvalidSelectedItemDetailValue = useCallback(
     (fieldLabel: string) => {
-      clearEditorMessage()
-
-      const message = formatSelectedItemDetailsInvalidValueMessage(fieldLabel)
-
-      setEditorMessage(message)
-      announceAssertive(message)
-
-      return message
+      return formatSelectedItemDetailsInvalidValueMessage(fieldLabel)
     },
-    [announceAssertive, clearEditorMessage, setEditorMessage],
+    [],
   )
 
   const handleUpdateSelectedItemDetails = useCallback(
@@ -662,16 +656,11 @@ export function useSceneHandlers({
     ): UpdateSelectedItemDetailsResult => {
       const activeItem = selectedFurniture
 
-      clearEditorMessage()
-
       if (!activeItem) {
         const message = formatSelectedItemDetailsBlockedMessage(
           input.fieldLabel,
           'no-selection',
         )
-
-        setEditorMessage(message)
-        announceAssertive(message)
 
         return {
           ok: false,
@@ -682,9 +671,11 @@ export function useSceneHandlers({
 
       const nextPosition: [number, number, number] | undefined =
         input.field === 'positionX'
-          ? [input.value, activeItem.position[1], activeItem.position[2]]
+          ? resolvePositionFromWallClearances(activeItem, { left: input.value })
           : input.field === 'positionZ'
-            ? [activeItem.position[0], activeItem.position[1], input.value]
+            ? resolvePositionFromWallClearances(activeItem, {
+                back: input.value,
+              })
             : undefined
       const nextRotationY =
         input.field === 'rotationDegrees'
@@ -719,9 +710,6 @@ export function useSceneHandlers({
         result.reason,
       )
 
-      setEditorMessage(message)
-      announceAssertive(message)
-
       return {
         ok: false,
         reason: result.reason,
@@ -729,11 +717,8 @@ export function useSceneHandlers({
       }
     },
     [
-      announceAssertive,
       announcePolite,
-      clearEditorMessage,
       selectedFurniture,
-      setEditorMessage,
       setSelectedSource,
       setSelectionTransform,
       syncSceneReadModel,
@@ -1158,7 +1143,8 @@ function formatCoordinate(value: number) {
 
 function normalizeDegreesRadians(valueDegrees: number) {
   const normalizedDegrees = ((valueDegrees % 360) + 360) % 360
-  return (normalizedDegrees * Math.PI) / 180
+  const counterclockwiseDegrees = (360 - normalizedDegrees) % 360
+  return (counterclockwiseDegrees * Math.PI) / 180
 }
 
 function formatMoveBlockedMessage(

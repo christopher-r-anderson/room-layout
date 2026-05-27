@@ -366,13 +366,13 @@ describe('useSceneHandlers', () => {
     act(() => {
       updateResult = result.current.handleUpdateSelectedItemDetails({
         field: 'positionX',
-        fieldLabel: 'Left/right position (m)',
+        fieldLabel: 'Distance from left wall (m)',
         value: 1.2,
       })
     })
 
     expect(mockCommands.setSelectionTransform).toHaveBeenCalledWith({
-      position: [1.2, 0, 0],
+      position: [-1.3, 0, 0],
       rotationY: undefined,
     })
     expect(setSelectedSource).toHaveBeenCalledWith('panel-keyboard')
@@ -479,22 +479,135 @@ describe('useSceneHandlers', () => {
     act(() => {
       updateResult = result.current.handleUpdateSelectedItemDetails({
         field: 'positionX',
-        fieldLabel: 'Left/right position (m)',
+        fieldLabel: 'Distance from left wall (m)',
         value: 3,
       })
     })
 
-    expect(mockOverlayState.setEditorMessage).toHaveBeenCalledWith(
-      'Left/right position (m) must stay inside the room.',
-    )
-    expect(mockAnnouncements.announceAssertive).toHaveBeenCalledWith(
-      'Left/right position (m) must stay inside the room.',
-    )
+    expect(mockOverlayState.setEditorMessage).not.toHaveBeenCalled()
+    expect(mockAnnouncements.announceAssertive).not.toHaveBeenCalled()
     expect(updateResult).toEqual({
       ok: false,
       reason: 'blocked-bounds',
-      message: 'Left/right position (m) must stay inside the room.',
+      message: 'Distance from left wall (m) must stay inside the room.',
     })
+  })
+
+  it('converts clockwise-positive detail rotation input back to scene radians', () => {
+    const selectedFurniture = makeItem('1')
+    const updatedFurniture = {
+      ...selectedFurniture,
+      rotationY: (23 * Math.PI) / 12,
+    }
+    const setSelectedSource = vi.fn()
+    const mockCommands = {
+      addFurniture: vi.fn(() => true),
+      clearSelection: vi.fn(),
+      confirmDeleteSelection: vi.fn(),
+      focusSelected: vi.fn(),
+      moveSelection: vi.fn(),
+      setSelectionTransform: vi.fn(() => ({
+        ok: true as const,
+        item: updatedFurniture,
+      })),
+      redo: vi.fn(),
+      rotateSelection: vi.fn(),
+      selectById: vi.fn(),
+      setCameraPreset: vi.fn(),
+      undo: vi.fn(),
+    }
+
+    const mockSync = {
+      syncSceneReadModel: vi.fn(() => ({
+        items: [updatedFurniture],
+        selectedId: updatedFurniture.id,
+      })),
+      requestOutlinerFocusByIndex: vi.fn(),
+      focusRoomView: vi.fn(),
+    }
+
+    const mockAnnouncements = {
+      announcePolite: vi.fn(),
+      announceAssertive: vi.fn(),
+      clearAssertiveAnnouncement: vi.fn(),
+      queueMovementAnnouncement: vi.fn(),
+    }
+
+    const mockDialogState = {
+      closeDialog: vi.fn(),
+      closeAllDialogs: vi.fn(),
+      openDelete: vi.fn(),
+      openNewScene: vi.fn(),
+      setCatalogOpen: vi.fn(),
+      pendingDeleteFurniture: null,
+    }
+
+    const mockOverlayState = {
+      clearPreview: vi.fn(),
+      clearEditorMessage: vi.fn(),
+      setEditorMessage: vi.fn(),
+      handleHistoryChange: vi.fn(),
+      selectedSource: null,
+      setSelectedSource,
+      selectedFurniture,
+      sceneReadModel: {
+        items: [selectedFurniture],
+        selectedId: selectedFurniture.id,
+      },
+    }
+
+    const mockStartup = {
+      activeFloorFinishId: '',
+      activeWallFinishId: '',
+      catalog: [],
+      defaultFloorFinishId: 'wood-floor',
+      defaultWallFinishId: 'light-gray',
+      editorInteractionsEnabled: true,
+      floorFinishIds: [],
+      handleAssetError: vi.fn(),
+      handleAssetsReady: vi.fn(),
+      retryAssetLoading: vi.fn(),
+      resetEditorShellState: vi.fn(),
+      restoreInitialLayout: vi.fn(),
+      setFloorFinishId: vi.fn(),
+      setWallFinishId: vi.fn(),
+      wallFinishIds: [],
+    }
+
+    const { result } = renderHook(() =>
+      useSceneHandlers({
+        commands: mockCommands,
+        sync: mockSync,
+        announcements: mockAnnouncements,
+        dialogState: mockDialogState,
+        overlayState: mockOverlayState,
+        startup: mockStartup,
+      }),
+    )
+
+    act(() => {
+      result.current.handleUpdateSelectedItemDetails({
+        field: 'rotationDegrees',
+        fieldLabel: 'Rotation (deg)',
+        value: 15,
+      })
+    })
+
+    expect(mockCommands.setSelectionTransform).toHaveBeenCalledTimes(1)
+    const transformCalls = mockCommands.setSelectionTransform.mock
+      .calls as unknown as [
+      {
+        position?: [number, number, number]
+        rotationY?: number
+      },
+    ][]
+    const firstTransformCall = transformCalls[0]?.[0]
+
+    expect(firstTransformCall).toMatchObject({
+      position: undefined,
+    })
+    expect(firstTransformCall.rotationY).toBeCloseTo((23 * Math.PI) / 12)
+    expect(setSelectedSource).toHaveBeenCalledWith('panel-keyboard')
   })
 
   it('announces invalid typed detail values with field-specific copy', () => {
@@ -587,18 +700,14 @@ describe('useSceneHandlers', () => {
 
     act(() => {
       message = result.current.handleInvalidSelectedItemDetailValue(
-        'Left/right position (m)',
+        'Distance from left wall (m)',
       )
     })
 
-    expect(message).toBe('Left/right position (m) must be a valid number.')
-    expect(clearEditorMessage).toHaveBeenCalledTimes(1)
-    expect(setEditorMessage).toHaveBeenCalledWith(
-      'Left/right position (m) must be a valid number.',
-    )
-    expect(announceAssertive).toHaveBeenCalledWith(
-      'Left/right position (m) must be a valid number.',
-    )
+    expect(message).toBe('Distance from left wall (m) must be a valid number.')
+    expect(clearEditorMessage).not.toHaveBeenCalled()
+    expect(setEditorMessage).not.toHaveBeenCalled()
+    expect(announceAssertive).not.toHaveBeenCalled()
   })
 
   it('sets selectedSource to canvas-pointer for canvas pointer selections', () => {
