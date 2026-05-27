@@ -387,6 +387,18 @@ describe('EditorOverlay integration', () => {
 
     expect(rotateCounterclockwiseButton).toHaveFocus()
 
+    await user.tab()
+    expect(
+      screen.getByRole('button', { name: 'Rotate clockwise' }),
+    ).toHaveFocus()
+
+    await user.tab()
+    expect(screen.getByRole('button', { name: 'Remove item' })).toHaveFocus()
+
+    await user.tab()
+
+    expect(screen.getByLabelText('Distance from left wall (m)')).toHaveFocus()
+
     const environmentTrigger = screen.getByRole('button', {
       name: 'Environment',
     })

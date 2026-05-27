@@ -22,7 +22,6 @@ import type {
 } from './objects/furniture-catalog'
 import {
   areFurnitureCollectionsEqual,
-  rotateSelectedFurnitureInHistory,
   updateFurniturePositionInHistory,
 } from './internal/furniture-operations'
 import {
@@ -149,19 +148,6 @@ export function Scene({
     [],
   )
 
-  const rotateSelectedFurniture = useCallback(
-    (deltaRadians: number) => {
-      setHistory((currentHistory) => {
-        return rotateSelectedFurnitureInHistory({
-          history: currentHistory,
-          selectedId,
-          deltaRadians,
-          bounds: ROOM_BOUNDS,
-        })
-      })
-    },
-    [selectedId],
-  )
   const {
     clearDragState,
     dragState,
@@ -245,7 +231,6 @@ export function Scene({
     history,
     instanceIdRef,
     objectRefs,
-    rotateSelectedFurniture,
     selectFurniture,
     selectedId,
     setHistory,

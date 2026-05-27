@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { createRef, type RefObject } from 'react'
+import { createRef, useEffect, type RefObject } from 'react'
 import { act, renderHook } from '@testing-library/react'
 import { describe, expect, it, beforeEach, vi } from 'vitest'
 import { Object3D, PerspectiveCamera } from 'three'
@@ -13,7 +13,7 @@ import {
 import { useSceneImperativeApi } from './use-scene-imperative-api'
 import { redoSceneHistory, undoSceneHistory } from './scene-history-state'
 import type { LayoutBounds } from '@/lib/three/furniture-layout'
-import type { CameraKeyName, SceneRef } from '../scene.types'
+import type { CameraKeyName, SceneReadModel, SceneRef } from '../scene.types'
 import type {
   FurnitureInstance,
   FurnitureItem,
@@ -66,6 +66,32 @@ vi.mock('./furniture-operations', () => ({
   createFurnitureInstanceId: (sequenceNumber: number) =>
     `furniture-instance-${String(sequenceNumber)}`,
   deleteSelectionFromHistory: mockDeleteSelectionFromHistory,
+  rotateSelectedFurnitureInHistory: ({
+    history,
+    selectedId,
+    deltaRadians,
+  }: {
+    history: ReturnType<typeof createHistoryState<FurnitureItem[]>>
+    selectedId: string | null
+    deltaRadians: number
+  }) => {
+    if (!selectedId) {
+      return history
+    }
+
+    const nextFurniture = history.present.map((item) => {
+      if (item.id !== selectedId) {
+        return item
+      }
+
+      return {
+        ...item,
+        rotationY: item.rotationY + deltaRadians,
+      }
+    })
+
+    return commitHistoryPresent(history, nextFurniture)
+  },
 }))
 
 vi.mock('./scene-snapshot', () => ({
@@ -110,7 +136,6 @@ function defaultOptions(
     history: createHistoryState<FurnitureItem[]>([]),
     instanceIdRef: { current: 0 },
     objectRefs: { current: new Map<string, Object3D>() },
-    rotateSelectedFurniture: vi.fn(),
     selectFurniture: vi.fn(),
     selectedId: null,
     setHistory: vi.fn(),
@@ -178,8 +203,13 @@ describe('useSceneImperativeApi', () => {
     expect(options.selectFurniture).not.toHaveBeenCalled()
   })
 
-  it('rotateSelection forwards delta to rotateSelectedFurniture', () => {
-    const options = defaultOptions()
+  it('rotateSelection commits the rotated item to history', () => {
+    const item = createFurnitureItem('item-1')
+    const options = defaultOptions({
+      furniture: [item],
+      history: createHistoryState([item]),
+      selectedId: 'item-1',
+    })
     const sceneRef = getSceneRef(options)
     renderHook(() => {
       useSceneImperativeApi(options)
@@ -189,7 +219,39 @@ describe('useSceneImperativeApi', () => {
       sceneRef.current?.rotateSelection(Math.PI / 4)
     })
 
-    expect(options.rotateSelectedFurniture).toHaveBeenCalledWith(Math.PI / 4)
+    expect(options.setHistory).toHaveBeenCalledTimes(1)
+
+    const committedHistory = vi.mocked(options.setHistory).mock.calls[0][0]
+    expect(typeof committedHistory).not.toBe('function')
+
+    if (typeof committedHistory === 'function') {
+      throw new Error('expected committed history object')
+    }
+
+    expect(committedHistory.present[0]?.rotationY).toBeCloseTo(Math.PI / 4)
+  })
+
+  it('rotateSelection updates the read model immediately after a successful rotation', () => {
+    const item = createFurnitureItem('item-1')
+    const options = defaultOptions({
+      furniture: [item],
+      history: createHistoryState([item]),
+      selectedId: 'item-1',
+    })
+    const sceneRef = getSceneRef(options)
+    renderHook(() => {
+      useSceneImperativeApi(options)
+    })
+
+    act(() => {
+      sceneRef.current?.rotateSelection(Math.PI / 12)
+    })
+
+    const readModel = sceneRef.current?.getReadModel()
+
+    expect(readModel?.selectedId).toBe('item-1')
+    expect(readModel?.items).toHaveLength(1)
+    expect(readModel?.items.at(0)?.rotationY).toBeCloseTo(Math.PI / 12)
   })
 
   it('selectById returns not-found for unknown ids and selected for known ids', () => {
@@ -283,6 +345,55 @@ describe('useSceneImperativeApi', () => {
 
     expect(readModel).toEqual({
       selectedId: 'item-2',
+      items: [updatedItem],
+    })
+  })
+
+  it('updates getReadModel before earlier passive effects observe a rerendered furniture change', () => {
+    const initialItem = createFurnitureItem('item-1')
+    const initialOptions = defaultOptions({
+      furniture: [initialItem],
+      history: createHistoryState([initialItem]),
+      selectedId: 'item-1',
+    })
+    const observedReadModels: SceneReadModel[] = []
+
+    const { rerender } = renderHook(
+      ({ currentOptions }) => {
+        useEffect(() => {
+          const sceneRef = getSceneRef(currentOptions)
+          const readModel = sceneRef.current?.getReadModel()
+
+          if (readModel) {
+            observedReadModels.push(readModel)
+          }
+        }, [currentOptions])
+
+        useSceneImperativeApi(currentOptions)
+      },
+      {
+        initialProps: {
+          currentOptions: initialOptions,
+        },
+      },
+    )
+
+    const updatedItem = {
+      ...initialItem,
+      position: [-2.5, 0, -1.5] as [number, number, number],
+    }
+
+    rerender({
+      currentOptions: {
+        ...initialOptions,
+        furniture: [updatedItem],
+        history: createHistoryState([updatedItem]),
+      },
+    })
+
+    expect(observedReadModels).toHaveLength(2)
+    expect(observedReadModels[1]).toEqual({
+      selectedId: 'item-1',
       items: [updatedItem],
     })
   })

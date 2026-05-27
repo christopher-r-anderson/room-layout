@@ -1,6 +1,6 @@
 import {
-  useEffect,
   useImperativeHandle,
+  useLayoutEffect,
   useRef,
   type Dispatch,
   type RefObject,
@@ -18,6 +18,7 @@ import {
   buildFurnitureItemsFromInstances,
   createFurnitureInstanceId,
   deleteSelectionFromHistory,
+  rotateSelectedFurnitureInHistory,
 } from './furniture-operations'
 import {
   resolveAbsoluteFurnitureTransform,
@@ -52,7 +53,6 @@ interface UseSceneImperativeApiOptions {
   history: HistoryState<FurnitureItem[]>
   instanceIdRef: RefObject<number>
   objectRefs: RefObject<Map<string, Object3D>>
-  rotateSelectedFurniture: (deltaRadians: number) => void
   selectFurniture: (id: string | null) => void
   selectedId: string | null
   setHistory: Dispatch<SetStateAction<HistoryState<FurnitureItem[]>>>
@@ -76,7 +76,6 @@ export function useSceneImperativeApi({
   history,
   instanceIdRef,
   objectRefs,
-  rotateSelectedFurniture,
   selectFurniture,
   selectedId,
   setHistory,
@@ -90,19 +89,19 @@ export function useSceneImperativeApi({
   const dragStateRef = useRef(dragState)
   const cameraKeyStateRef = useRef<CameraKeyState>(new Set())
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     historyRef.current = history
   }, [history])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     selectedIdRef.current = selectedId
   }, [selectedId])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     furnitureRef.current = furniture
   }, [furniture])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     dragStateRef.current = dragState
   }, [dragState])
 
@@ -402,7 +401,16 @@ export function useSceneImperativeApi({
         }
       },
       rotateSelection: (deltaRadians: number) => {
-        rotateSelectedFurniture(deltaRadians)
+        const nextHistory = rotateSelectedFurnitureInHistory({
+          history: historyRef.current,
+          selectedId: selectedIdRef.current,
+          deltaRadians,
+          bounds,
+        })
+
+        historyRef.current = nextHistory
+        furnitureRef.current = nextHistory.present
+        setHistory(nextHistory)
       },
       addFurniture: (catalogId: string) => {
         const operationResult = addFurnitureToHistory({
@@ -568,7 +576,6 @@ export function useSceneImperativeApi({
       collections,
       objectRefs,
       furniture,
-      rotateSelectedFurniture,
       selectFurniture,
       selectedId,
       setHistory,

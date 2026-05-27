@@ -81,16 +81,13 @@ test('keeps undo and redo parity across command and drag movement paths', async 
   const addedState = await addFurniture(page, 'Leather Couch')
   const initialPosition = addedState.items[0].position
 
-  await updateSelectedItemField(
-    page,
-    'Left/right position (m)',
-    (initialPosition[0] + 0.5).toFixed(1),
-  )
+  await updateSelectedItemField(page, 'Distance from left wall (m)', '1.4')
 
   const afterCommandMove = await readSceneState(page)
   const commandPosition = afterCommandMove.items[0].position
 
   expect(commandPosition).not.toEqual(initialPosition)
+  expect(commandPosition[0]).toBeCloseTo(-0.5, 6)
 
   const afterDragMove = await dragSelectedFurniture(
     page,
@@ -227,7 +224,7 @@ test('Tab from the room view reaches selected item actions and then details', as
   await addFurniture(page, 'Leather Couch')
 
   await expect(
-    page.getByText('Selected item details appear here when an item is active.'),
+    page.getByText('Select an item to fine-tune placement.'),
   ).toBeHidden()
 
   await focusRoomView(page)
@@ -239,7 +236,7 @@ test('Tab from the room view reaches selected item actions and then details', as
   await page.keyboard.press('Tab')
   await page.keyboard.press('Tab')
   await page.keyboard.press('Tab')
-  await expect(page.getByLabel('Left/right position (m)')).toBeFocused()
+  await expect(page.getByLabel('Distance from left wall (m)')).toBeFocused()
 })
 
 test('outliner keyboard selection keeps focus in the panel and reaches selected item actions with Shift+Tab', async ({
@@ -274,18 +271,19 @@ test('invalid selected item detail edits show inline feedback and do not move th
   const initialState = await addFurniture(page, 'Leather Couch')
   const initialX = initialState.items[0].position[0]
 
-  const xInput = page.getByLabel('Left/right position (m)')
+  const xInput = page.getByLabel('Distance from left wall (m)')
   await xInput.fill('99')
   await xInput.press('Enter')
 
   const detailsPanel = page.getByRole('region', {
-    name: 'Selected item details',
+    name: 'Placement',
   })
+  const visualSupportMessage = detailsPanel.locator('p[aria-hidden="true"]')
 
   await expect(
-    detailsPanel.getByText(
-      'Left/right position (m) must stay inside the room.',
-    ),
+    visualSupportMessage.filter({
+      hasText: 'Distance from left wall (m) must stay inside the room.',
+    }),
   ).toBeVisible()
   await expect
     .poll(async () => (await readSceneState(page)).items[0]?.position[0])
@@ -298,21 +296,31 @@ test('malformed selected item detail edits announce failure and keep the draft v
   await openEditor(page)
   await addFurniture(page, 'Leather Couch')
 
-  const xInput = page.getByLabel('Left/right position (m)')
+  const xInput = page.getByLabel('Distance from left wall (m)')
   const detailsPanel = page.getByRole('region', {
-    name: 'Selected item details',
+    name: 'Placement',
   })
+  const visualSupportMessage = detailsPanel.locator('p[aria-hidden="true"]')
+  const localAssertiveAnnouncement = detailsPanel.locator(
+    '[aria-live="assertive"]',
+  )
+  const globalAssertiveBefore = await readAssertiveAnnouncement(page)
 
   await xInput.fill('1.2x')
   await xInput.press('Enter')
 
   await expect(xInput).toHaveValue('1.2x')
   await expect(
-    detailsPanel.getByText('Left/right position (m) must be a valid number.'),
+    visualSupportMessage.filter({
+      hasText: 'Distance from left wall (m) must be a valid number.',
+    }),
   ).toBeVisible()
+  await expect(localAssertiveAnnouncement).toHaveText(
+    'Distance from left wall (m) must be a valid number.',
+  )
   await expect
     .poll(async () => readAssertiveAnnouncement(page))
-    .toBe('Left/right position (m) must be a valid number.')
+    .toBe(globalAssertiveBefore)
 })
 
 test('selected item controls are suppressed from tab order while the catalog drawer is open', async ({
@@ -321,18 +329,22 @@ test('selected item controls are suppressed from tab order while the catalog dra
   await openEditor(page)
   await addFurniture(page, 'Leather Couch')
 
-  const selectedItemControls = page
-    .locator('div[inert][aria-hidden="true"]')
-    .filter({ hasText: 'Selected item actions' })
+  const selectedItemActions = page.locator(
+    'section[aria-label="Selected item actions"]',
+  )
+  const suppressedControlsRoot = page.locator(
+    'xpath=//div[@inert and @aria-hidden="true"][.//section[@aria-label="Selected item actions"]]',
+  )
 
   await page.getByRole('button', { name: 'Add Furniture' }).click()
   const drawerDialog = page.getByRole('dialog', { name: 'Add furniture' })
   await expect(drawerDialog).toBeVisible()
-  await expect(selectedItemControls).toBeVisible()
+  await expect(selectedItemActions).toBeVisible()
+  await expect(suppressedControlsRoot).toHaveCount(1)
 
   for (let i = 0; i < 10; i += 1) {
     await page.keyboard.press('Tab')
-    await expect(selectedItemControls).toHaveAttribute('inert', '')
+    await expect(suppressedControlsRoot).toHaveAttribute('inert', '')
   }
 })
 

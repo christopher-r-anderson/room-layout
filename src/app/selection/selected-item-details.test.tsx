@@ -40,12 +40,12 @@ describe('SelectedItemDetails', () => {
       />,
     )
 
-    const xInput = screen.getByLabelText('Left/right position (m)')
+    const xInput = screen.getByLabelText('Distance from left wall (m)')
 
     await user.click(xInput)
     await user.tab()
 
-    expect(xInput).toHaveValue('1.24')
+    expect(xInput).toHaveValue('3.14')
     expect(onUpdateSelectedItemDetails).not.toHaveBeenCalled()
   })
 
@@ -66,12 +66,12 @@ describe('SelectedItemDetails', () => {
       />,
     )
 
-    const xInput = screen.getByLabelText('Left/right position (m)')
+    const xInput = screen.getByLabelText('Distance from left wall (m)')
 
     await user.click(xInput)
     await user.keyboard('{Enter}')
 
-    expect(xInput).toHaveValue('1.24')
+    expect(xInput).toHaveValue('3.14')
     expect(onUpdateSelectedItemDetails).not.toHaveBeenCalled()
   })
 
@@ -89,13 +89,13 @@ describe('SelectedItemDetails', () => {
       />,
     )
 
-    const xInput = screen.getByLabelText('Left/right position (m)')
+    const xInput = screen.getByLabelText('Distance from left wall (m)')
 
     await user.clear(xInput)
     await user.type(xInput, '1.8')
     await user.keyboard('{Escape}')
 
-    expect(xInput).toHaveValue('0.0')
+    expect(xInput).toHaveValue('1.9')
     expect(onUpdateSelectedItemDetails).not.toHaveBeenCalled()
   })
 
@@ -116,18 +116,75 @@ describe('SelectedItemDetails', () => {
       />,
     )
 
-    const xInput = screen.getByLabelText('Left/right position (m)')
+    const xInput = screen.getByLabelText('Distance from left wall (m)')
 
     await user.clear(xInput)
     await user.tab()
 
     expect(
-      screen.getByText('Left/right position (m) must be a valid number.'),
+      screen.getAllByText(
+        'Distance from left wall (m) must be a valid number.',
+      )[0],
     ).toBeVisible()
     expect(onInvalidSelectedItemDetailValue).toHaveBeenCalledWith(
-      'Left/right position (m)',
+      'Distance from left wall (m)',
     )
     expect(onUpdateSelectedItemDetails).not.toHaveBeenCalled()
+  })
+
+  it('shows keyboard help visually on focus without exposing it as an alert', async () => {
+    const user = userEvent.setup()
+
+    render(
+      <SelectedItemDetails
+        disabled={false}
+        selectedFurniture={FURNITURE_ITEM}
+        consumeBlurCommitSuppression={() => false}
+        onInvalidSelectedItemDetailValue={vi.fn()}
+        onUpdateSelectedItemDetails={vi.fn()}
+      />,
+    )
+
+    await user.click(screen.getByLabelText('Rotation (deg)'))
+
+    const visualSupportMessage = screen
+      .getAllByText(
+        'Press Enter or leave the field to apply the rotation. Press Escape to cancel.',
+      )
+      .find((element) => element.getAttribute('aria-hidden') === 'true')
+
+    expect(visualSupportMessage).toBeVisible()
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  })
+
+  it('announces validation failures as an alert separate from the visual support row', async () => {
+    const user = userEvent.setup()
+
+    render(
+      <SelectedItemDetails
+        disabled={false}
+        selectedFurniture={FURNITURE_ITEM}
+        consumeBlurCommitSuppression={() => false}
+        onInvalidSelectedItemDetailValue={vi.fn()}
+        onUpdateSelectedItemDetails={vi.fn()}
+      />,
+    )
+
+    const xInput = screen.getByLabelText('Distance from left wall (m)')
+
+    await user.clear(xInput)
+    await user.keyboard('{Enter}')
+
+    const liveErrorMessage = document.querySelector('[aria-live="assertive"]')
+
+    expect(
+      screen.getAllByText(
+        'Distance from left wall (m) must be a valid number.',
+      )[0],
+    ).toBeVisible()
+    expect(liveErrorMessage).toHaveTextContent(
+      'Distance from left wall (m) must be a valid number.',
+    )
   })
 
   it('rejects malformed numeric strings instead of truncating them', async () => {
@@ -144,14 +201,16 @@ describe('SelectedItemDetails', () => {
       />,
     )
 
-    const xInput = screen.getByLabelText('Left/right position (m)')
+    const xInput = screen.getByLabelText('Distance from left wall (m)')
 
     await user.clear(xInput)
     await user.type(xInput, '1.2x')
     await user.keyboard('{Enter}')
 
     expect(
-      screen.getByText('Left/right position (m) must be a valid number.'),
+      screen.getAllByText(
+        'Distance from left wall (m) must be a valid number.',
+      )[0],
     ).toBeVisible()
     expect(onUpdateSelectedItemDetails).not.toHaveBeenCalled()
   })
@@ -162,7 +221,7 @@ describe('SelectedItemDetails', () => {
       ok: true as const,
       item: {
         ...FURNITURE_ITEM,
-        position: [1.2, 0, 0] as [number, number, number],
+        position: [-0.7, 0, 0] as [number, number, number],
       },
     }))
 
@@ -176,7 +235,7 @@ describe('SelectedItemDetails', () => {
       />,
     )
 
-    const xInput = screen.getByLabelText('Left/right position (m)')
+    const xInput = screen.getByLabelText('Distance from left wall (m)')
 
     await user.clear(xInput)
     await user.type(xInput, '1.2')
@@ -184,7 +243,7 @@ describe('SelectedItemDetails', () => {
 
     expect(onUpdateSelectedItemDetails).toHaveBeenCalledWith({
       field: 'positionX',
-      fieldLabel: 'Left/right position (m)',
+      fieldLabel: 'Distance from left wall (m)',
       value: 1.2,
     })
     expect(xInput).toHaveValue('1.2')
@@ -216,9 +275,69 @@ describe('SelectedItemDetails', () => {
       />,
     )
 
-    expect(screen.getByLabelText('Left/right position (m)')).toHaveValue('1.5')
-    expect(screen.getByLabelText('Front/back position (m)')).toHaveValue('-0.5')
-    expect(screen.getByLabelText('Rotation (deg)')).toHaveValue('90')
+    expect(screen.getByLabelText('Distance from left wall (m)')).toHaveValue(
+      '4.025',
+    )
+    expect(screen.getByLabelText('Distance from back wall (m)')).toHaveValue(
+      '1.4',
+    )
+    expect(screen.getByLabelText('Rotation (deg)')).toHaveValue('270')
+  })
+
+  it('shows 0.0 instead of -0.0 for near-wall floating-point clearances', () => {
+    render(
+      <SelectedItemDetails
+        disabled={false}
+        selectedFurniture={{
+          ...FURNITURE_ITEM,
+          position: [-1.9004, 0, -2.5254],
+        }}
+        consumeBlurCommitSuppression={() => false}
+        onInvalidSelectedItemDetailValue={vi.fn()}
+        onUpdateSelectedItemDetails={vi.fn()}
+      />,
+    )
+
+    expect(screen.getByLabelText('Distance from left wall (m)')).toHaveValue(
+      '0.0',
+    )
+    expect(screen.getByLabelText('Distance from back wall (m)')).toHaveValue(
+      '0.0',
+    )
+  })
+
+  it('shows clockwise-positive display values for negative scene rotation', () => {
+    render(
+      <SelectedItemDetails
+        disabled={false}
+        selectedFurniture={{
+          ...FURNITURE_ITEM,
+          rotationY: -Math.PI / 12,
+        }}
+        consumeBlurCommitSuppression={() => false}
+        onInvalidSelectedItemDetailValue={vi.fn()}
+        onUpdateSelectedItemDetails={vi.fn()}
+      />,
+    )
+
+    expect(screen.getByLabelText('Rotation (deg)')).toHaveValue('15')
+  })
+
+  it('normalizes epsilon clockwise rotations back to 0 instead of 360', () => {
+    render(
+      <SelectedItemDetails
+        disabled={false}
+        selectedFurniture={{
+          ...FURNITURE_ITEM,
+          rotationY: 1.7e-15,
+        }}
+        consumeBlurCommitSuppression={() => false}
+        onInvalidSelectedItemDetailValue={vi.fn()}
+        onUpdateSelectedItemDetails={vi.fn()}
+      />,
+    )
+
+    expect(screen.getByLabelText('Rotation (deg)')).toHaveValue('0')
   })
 
   it('does not stomp an in-progress draft when the same selected item changes externally', async () => {
@@ -234,7 +353,7 @@ describe('SelectedItemDetails', () => {
       />,
     )
 
-    const xInput = screen.getByLabelText('Left/right position (m)')
+    const xInput = screen.getByLabelText('Distance from left wall (m)')
 
     await user.clear(xInput)
     await user.type(xInput, '1.8')
@@ -261,7 +380,7 @@ describe('SelectedItemDetails', () => {
       ok: true as const,
       item: {
         ...FURNITURE_ITEM,
-        position: [1.2, 0, 0] as [number, number, number],
+        position: [-0.7, 0, 0] as [number, number, number],
       },
     }))
     const { rerender } = render(
@@ -274,7 +393,7 @@ describe('SelectedItemDetails', () => {
       />,
     )
 
-    const xInput = screen.getByLabelText('Left/right position (m)')
+    const xInput = screen.getByLabelText('Distance from left wall (m)')
 
     await user.clear(xInput)
     await user.type(xInput, '1.2')
@@ -286,7 +405,7 @@ describe('SelectedItemDetails', () => {
         disabled={false}
         selectedFurniture={{
           ...FURNITURE_ITEM,
-          position: [1.2, 0, 0],
+          position: [-0.7, 0, 0],
         }}
         consumeBlurCommitSuppression={() => false}
         onInvalidSelectedItemDetailValue={vi.fn()}
@@ -304,6 +423,6 @@ describe('SelectedItemDetails', () => {
         onUpdateSelectedItemDetails={onUpdateSelectedItemDetails}
       />,
     )
-    expect(xInput).toHaveValue('0.0')
+    expect(xInput).toHaveValue('1.9')
   })
 })

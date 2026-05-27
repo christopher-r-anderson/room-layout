@@ -33,6 +33,10 @@ Focus state is tracked as `roomViewHasFocus`, and `ShortcutContext` includes tha
 
 Global shortcuts (Undo, Redo, New Scene) remain active regardless of room-view focus.
 
+The selected-item Placement panel uses consumer-facing wall clearances from the furniture footprint edge to the left and back walls instead of signed center-origin offsets. The scene domain still stores positions around the room-centered origin, so panel formatting and typed-value parsing intentionally convert between those two representations.
+
+The selected-item Placement panel also uses a consumer-facing clockwise-positive degree display (`0..359`). The scene domain still stores rotation in its existing counterclockwise radian convention, so panel formatting and typed-value parsing intentionally convert between those two representations.
+
 ### Canvas Browse and Dual-Purpose Arrow Keys
 
 Arrow keys serve two roles depending on selection state:
