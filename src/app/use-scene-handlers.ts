@@ -654,6 +654,8 @@ export function useSceneHandlers({
     (
       input: UpdateSelectedItemDetailsInput,
     ): UpdateSelectedItemDetailsResult => {
+      clearEditorMessage()
+
       const activeItem = selectedFurniture
 
       if (!activeItem) {
@@ -718,6 +720,7 @@ export function useSceneHandlers({
     },
     [
       announcePolite,
+      clearEditorMessage,
       selectedFurniture,
       setSelectedSource,
       setSelectionTransform,
