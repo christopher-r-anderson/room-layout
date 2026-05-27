@@ -51,6 +51,7 @@ export function SelectedItemControls({
     <div
       ref={containerRef}
       inert={controlsSuppressed}
+      className="absolute pointer-events-none w-full h-full z-10"
       aria-hidden={controlsSuppressed}
     >
       <SelectedItemActions
