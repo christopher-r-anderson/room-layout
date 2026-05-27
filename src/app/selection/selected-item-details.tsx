@@ -113,11 +113,12 @@ function formatMeters(value: number) {
 
 function formatDegrees(valueRadians: number) {
   const degrees = normalizeDegrees((valueRadians * 180) / Math.PI)
-  const clockwiseDegrees = normalizeDegrees(360 - degrees)
+  const clockwiseDegrees = Number((360 - degrees).toFixed(1))
+  const normalizedClockwiseDegrees = normalizeDegrees(clockwiseDegrees)
 
-  return Number.isInteger(clockwiseDegrees)
-    ? String(clockwiseDegrees)
-    : clockwiseDegrees.toFixed(1).replace(/\.0$/, '')
+  return Number.isInteger(normalizedClockwiseDegrees)
+    ? String(normalizedClockwiseDegrees)
+    : normalizedClockwiseDegrees.toFixed(1).replace(/\.0$/, '')
 }
 
 function createDrafts(item: FurnitureItem) {

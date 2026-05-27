@@ -323,6 +323,23 @@ describe('SelectedItemDetails', () => {
     expect(screen.getByLabelText('Rotation (deg)')).toHaveValue('15')
   })
 
+  it('normalizes epsilon clockwise rotations back to 0 instead of 360', () => {
+    render(
+      <SelectedItemDetails
+        disabled={false}
+        selectedFurniture={{
+          ...FURNITURE_ITEM,
+          rotationY: 1.7e-15,
+        }}
+        consumeBlurCommitSuppression={() => false}
+        onInvalidSelectedItemDetailValue={vi.fn()}
+        onUpdateSelectedItemDetails={vi.fn()}
+      />,
+    )
+
+    expect(screen.getByLabelText('Rotation (deg)')).toHaveValue('0')
+  })
+
   it('does not stomp an in-progress draft when the same selected item changes externally', async () => {
     const user = userEvent.setup()
     const onUpdateSelectedItemDetails = vi.fn()
