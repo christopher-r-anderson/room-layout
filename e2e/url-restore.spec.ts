@@ -1,11 +1,11 @@
 /**
- * Browser tests for the URL scene restore, copy-URL, and draft storage features.
+ * Browser tests for the URL scene restore, share/copy URL, and draft storage features.
  *
  * Covers:
  *  - Successful restore from a valid `?scene=` param
  *  - Invalid payload shows error message and leaves scene empty
  *  - One-shot guard: restore only fires once across asset retry
- *  - Copy Scene URL button writes to clipboard and announces success
+ *  - Share button falls back to clipboard copy and announces success
  *  - Selection is cleared after restore
  *  - Full round-trip: copy URL in app → navigate to it → scene restored
  *  - Draft auto-save to localStorage on furniture changes
@@ -93,6 +93,19 @@ async function ensureEnvironmentDialogOpen(page: Page) {
   await page.getByRole('button', { name: 'Environment' }).click()
   await expect(page.getByRole('dialog', { name: 'Environment' })).toBeVisible()
   await expect(wallFinishTrigger).toBeVisible()
+}
+
+async function forceClipboardShareFallback(page: Page) {
+  await page.addInitScript(() => {
+    Object.defineProperty(window.navigator, 'share', {
+      configurable: true,
+      value: undefined,
+    })
+    Object.defineProperty(window.navigator, 'canShare', {
+      configurable: true,
+      value: undefined,
+    })
+  })
 }
 
 const VALID_ITEM = {
@@ -277,31 +290,32 @@ test('one-shot guard: restore only fires once across asset-error retry', async (
 })
 
 // ---------------------------------------------------------------------------
-// Copy URL tests
+// Share/copy URL tests
 // ---------------------------------------------------------------------------
 
-test('Copy Scene URL button is visible in the toolbar', async ({ page }) => {
+test('Share button is visible in the toolbar', async ({ page }) => {
   await openEditor(page)
   await expect(
-    page.getByRole('button', { name: 'Copy Scene URL to clipboard' }),
+    page.getByRole('button', { name: 'Share room layout' }),
   ).toBeVisible()
 })
 
-test('Copy Scene URL announces success after click when clipboard is available', async ({
+test('Share button falls back to clipboard copy when native share is unavailable', async ({
   page,
   context,
 }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write'])
+  await forceClipboardShareFallback(page)
   await openEditor(page)
 
   const copyBtn = page.getByRole('button', {
-    name: 'Copy Scene URL to clipboard',
+    name: 'Share room layout',
   })
   await copyBtn.click()
 
   await waitForPoliteAnnouncement(page, 'Scene URL copied to clipboard.')
   await expect(copyBtn).toContainText('Copied')
-  await expect(copyBtn).toContainText('Copy Scene URL', { timeout: 3_000 })
+  await expect(copyBtn).toContainText('Share', { timeout: 3_000 })
 })
 
 test('invalid shared link falls back to local draft when available', async ({
@@ -393,6 +407,7 @@ test('copy-URL-then-load round-trip: app serializer output is accepted by restor
 }) => {
   // Grant clipboard permissions before any interaction
   await context.grantPermissions(['clipboard-read', 'clipboard-write'])
+  await forceClipboardShareFallback(page)
 
   await openEditor(page)
 
@@ -411,9 +426,9 @@ test('copy-URL-then-load round-trip: app serializer output is accepted by restor
   // Add one item via the real UI so the app owns the scene state
   await addFurniture(page, 'Leather Armchair')
 
-  // Use the app's own Copy Scene URL button - this exercises the real serializer
+  // Use the app's own Share button with clipboard fallback - this exercises the real serializer
   const copyBtn = page.getByRole('button', {
-    name: 'Copy Scene URL to clipboard',
+    name: 'Share room layout',
   })
   await copyBtn.click()
   await waitForPoliteAnnouncement(page, 'Scene URL copied to clipboard.')
@@ -556,11 +571,12 @@ test('handles clipboard API failure gracefully when permission denied', async ({
   page,
 }) => {
   // Do NOT grant clipboard permissions - this simulates a denied permission
+  await forceClipboardShareFallback(page)
   await openEditor(page)
   await addFurniture(page, 'Leather Armchair')
 
   const copyBtn = page.getByRole('button', {
-    name: 'Copy Scene URL to clipboard',
+    name: 'Share room layout',
   })
   await copyBtn.click()
 

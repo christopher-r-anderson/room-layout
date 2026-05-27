@@ -21,7 +21,7 @@ import { HistoryTools } from '../history/history-tools'
 import { Outliner } from '../scene-panel/outliner'
 import type { SceneOutlinerFocusRequest } from '../scene-panel.types'
 import type { StartupErrorKind } from '../startup/use-startup-state'
-import { CopySceneUrlButton } from './copy-scene-url-button'
+import { ShareSceneButton } from './share-scene-button'
 import { NewSceneButton } from './new-scene-button'
 import type { PanelSelectById } from '../scene-interaction.types'
 import { EnvironmentDialog } from './environment-dialog'
@@ -95,7 +95,7 @@ interface EditorOverlayProps {
   editorInteractionsEnabled: boolean
   newSceneDisabled: boolean
   statusMessage: string | null
-  onCopySceneUrl: () => Promise<boolean>
+  onShareSceneUrl: () => Promise<'shared' | 'copied' | null>
   camera: EditorCameraProps
   startup: EditorStartupProps
   history: EditorHistoryProps
@@ -116,7 +116,7 @@ export function EditorOverlay({
   editorInteractionsEnabled,
   newSceneDisabled,
   statusMessage,
-  onCopySceneUrl,
+  onShareSceneUrl,
   camera,
   startup,
   history,
@@ -200,11 +200,12 @@ export function EditorOverlay({
 
           <div className="pointer-events-auto flex justify-start md:justify-end">
             <div className="rounded-md border border-border/70 bg-background/75 p-2 backdrop-blur-[2px]">
-              <div className="flex items-center justify-end gap-2">
+              <div className="flex flex-col items-end gap-2">
                 <h1 className="px-1 text-base/6 font-semibold text-foreground">
                   Room Layout
                 </h1>
                 <div
+                  className="flex items-center justify-end gap-2"
                   inert={catalog.isCatalogDrawerOpen}
                   aria-hidden={catalog.isCatalogDrawerOpen}
                 >
@@ -212,18 +213,16 @@ export function EditorOverlay({
                     open={dialogs.isKeyboardShortcutsDialogOpen}
                     onOpenChange={dialogs.onKeyboardShortcutsDialogOpenChange}
                   />
+                  <ProjectInfoDialog
+                    open={dialogs.isInfoDialogOpen}
+                    onOpenChange={dialogs.onInfoDialogOpenChange}
+                    triggerButton={<ProjectInfoButton />}
+                  />
+                  <ShareSceneButton
+                    disabled={!editorInteractionsEnabled}
+                    onShareSceneUrl={onShareSceneUrl}
+                  />
                 </div>
-                <ProjectInfoDialog
-                  open={dialogs.isInfoDialogOpen}
-                  onOpenChange={dialogs.onInfoDialogOpenChange}
-                  triggerButton={<ProjectInfoButton />}
-                />
-              </div>
-              <div className="mt-2 flex flex-wrap justify-end gap-2">
-                <CopySceneUrlButton
-                  disabled={!editorInteractionsEnabled}
-                  onCopySceneUrl={onCopySceneUrl}
-                />
               </div>
             </div>
           </div>
