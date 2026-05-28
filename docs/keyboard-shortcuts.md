@@ -41,14 +41,14 @@ The selected-item Placement panel also uses a consumer-facing clockwise-positive
 
 Arrow keys serve two roles depending on selection state:
 
-- **With selection:** Arrow keys move the selected item (move-\* shortcuts).
-- **Without selection:** Arrow keys preview the next/previous item in spatial order (canvas-browse-\* shortcuts).
+- **With selection:** Arrow keys move the selected item (`move-*` shortcuts).
+- **Without selection:** Arrow keys preview the next/previous item in spatial order (`canvas-browse-*` shortcuts).
 
 This dual-purpose dispatch works via shortcut loop fallthrough:
 
 - `move-*` shortcuts use `suppressionMode: 'on-execute'` and `requiresSelection: true`.
 - When no selection exists, the move shortcut matches but cannot execute — it falls through.
-- `canvas-browse-*` shortcuts are defined after move-\* shortcuts and only fire when `hasSelection` is false.
+- `canvas-browse-*` shortcuts are defined after `move-*` shortcuts and only fire when `hasSelection` is false.
 
 Home, End, Enter, and Space are canvas-browse-only (no selection) shortcuts.
 
