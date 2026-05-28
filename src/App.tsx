@@ -532,6 +532,7 @@ function App() {
         aria-busy={startup.startupLoadingActive}
         data-test-overlays-hidden={testOverlaysHidden ? 'true' : 'false'}
       >
+        <h1 className="sr-only">Room Layout</h1>
         <p id="scene-instructions" className="sr-only">
           Interactive 3D room editor. Tab to focus the room-view region, then
           use the arrow keys to preview items in the room and Enter or Space to
