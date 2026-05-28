@@ -16,6 +16,7 @@ export function TopHeaderMobile({
   floorFinishLoading,
   floorFinishes,
   history,
+  mobileMoreContentId,
   mobileMoreTriggerId,
   startOverDisabled,
   onFloorFinishChange,
@@ -73,6 +74,9 @@ export function TopHeaderMobile({
               variant="secondary"
               size="toolbar-icon"
               aria-label="More actions"
+              aria-controls={mobileMoreContentId}
+              aria-expanded={dialogs.isMobileMoreOpen}
+              aria-haspopup="dialog"
               onClick={() => {
                 dialogs.onMobileMoreOpenChange(true, {
                   returnFocusTarget: 'mobile-more',
@@ -109,6 +113,7 @@ export function TopHeaderMobile({
       />
 
       <HeaderMoreActionsDrawer
+        contentId={mobileMoreContentId}
         startOverDisabled={!editorInteractionsEnabled || startOverDisabled}
         open={dialogs.isMobileMoreOpen}
         onOpenChange={(open) => {

@@ -86,6 +86,7 @@ export function TopHeader({
   ...props
 }: TopHeaderProps) {
   const layoutMode = useHeaderLayoutMode()
+  const mobileMoreContentId = useId()
   const mobileMoreTriggerId = useId()
   const desktopEnvironmentTriggerId = useId()
   const desktopInfoTriggerId = useId()
@@ -142,6 +143,7 @@ export function TopHeader({
         <TopHeaderMobile
           {...props}
           dialogs={dialogs}
+          mobileMoreContentId={mobileMoreContentId}
           mobileMoreTriggerId={mobileMoreTriggerId}
           onOpenEnvironmentFromMobileMore={() => {
             openFromMobileMore(() => {

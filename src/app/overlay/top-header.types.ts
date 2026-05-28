@@ -87,6 +87,7 @@ export interface TopHeaderMobileProps
       | 'onShareSceneUrl'
     >,
     TopHeaderEnvironmentProps {
+  mobileMoreContentId: string
   mobileMoreTriggerId: string
   onOpenEnvironmentFromMobileMore: () => void
   onOpenKeyboardShortcutsFromMobileMore: () => void

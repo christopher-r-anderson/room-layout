@@ -14,6 +14,7 @@ import {
 } from '@tabler/icons-react'
 
 export function HeaderMoreActionsDrawer({
+  contentId,
   startOverDisabled,
   onOpenChange,
   onOpenEnvironment,
@@ -23,6 +24,7 @@ export function HeaderMoreActionsDrawer({
   onCloseAutoFocus,
   open,
 }: {
+  contentId: string
   startOverDisabled: boolean
   onOpenChange: (open: boolean) => void
   onOpenEnvironment: () => void
@@ -40,6 +42,7 @@ export function HeaderMoreActionsDrawer({
       }}
     >
       <DrawerContent
+        id={contentId}
         onCloseAutoFocus={(event) => {
           event.preventDefault()
           onCloseAutoFocus?.()
