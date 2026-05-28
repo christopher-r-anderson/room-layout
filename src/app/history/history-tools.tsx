@@ -1,6 +1,7 @@
 import { ButtonGroup } from '@/components/ui/button-group'
 import { IconArrowBackUp, IconArrowForwardUp } from '@tabler/icons-react'
 import { ToolButton } from '@/components/ui/tool-button'
+import type { ComponentProps } from 'react'
 
 export function HistoryTools({
   canRedo,
@@ -8,12 +9,18 @@ export function HistoryTools({
   editorInteractionsEnabled,
   onRedo,
   onUndo,
+  buttonClassName,
+  buttonLabelVisibility,
+  buttonSize,
 }: {
   canRedo: boolean
   canUndo: boolean
   editorInteractionsEnabled: boolean
   onRedo: () => void
   onUndo: () => void
+  buttonClassName?: string
+  buttonLabelVisibility?: ComponentProps<typeof ToolButton>['labelVisibility']
+  buttonSize?: ComponentProps<typeof ToolButton>['size']
 }) {
   const undoDisabled = !canUndo || !editorInteractionsEnabled
   const redoDisabled = !canRedo || !editorInteractionsEnabled
@@ -32,7 +39,10 @@ export function HistoryTools({
         disabledMessage={undoDisabledMessage}
         shortcuts="Control+Z"
         label="Undo"
+        labelVisibility={buttonLabelVisibility}
         icon={<IconArrowBackUp />}
+        size={buttonSize}
+        className={buttonClassName}
       />
       <ToolButton
         action={onRedo}
@@ -40,7 +50,10 @@ export function HistoryTools({
         disabledMessage={redoDisabledMessage}
         shortcuts="Control+Shift+Z Control+Y"
         label="Redo"
+        labelVisibility={buttonLabelVisibility}
         icon={<IconArrowForwardUp />}
+        size={buttonSize}
+        className={buttonClassName}
       />
     </ButtonGroup>
   )

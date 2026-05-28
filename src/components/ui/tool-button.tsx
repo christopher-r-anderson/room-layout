@@ -1,6 +1,7 @@
 import {
   cloneElement,
   useId,
+  type ComponentProps,
   type HTMLAttributes,
   type PointerEventHandler,
   type ReactElement,
@@ -11,26 +12,34 @@ import { Button } from './button'
 import { KbdShortcutDisplay } from './keyboard-shortcut-display'
 
 export function ToolButton({
+  id,
   action,
   disabled,
   disabledMessage,
   shortcuts,
   label,
   visibleLabel,
+  labelVisibility = 'responsive',
   shortcutHint,
   icon,
+  size = 'default',
+  variant = 'secondary',
   className,
   tooltipSide,
   onPointerDown,
 }: {
+  id?: string
   action: () => void
   disabled: boolean
   disabledMessage: string
   shortcuts: string
   label: string
   visibleLabel?: string
+  labelVisibility?: 'responsive' | 'always' | 'sr-only'
   shortcutHint?: string
   icon: ReactElement<HTMLAttributes<HTMLElement>>
+  size?: ComponentProps<typeof Button>['size']
+  variant?: ComponentProps<typeof Button>['variant']
   className?: string
   tooltipSide?: 'top' | 'right' | 'bottom' | 'left'
   onPointerDown?: PointerEventHandler<HTMLButtonElement>
@@ -39,13 +48,22 @@ export function ToolButton({
   const ariaHiddenIcon = cloneElement(icon, {
     'aria-hidden': 'true',
   })
+  const visibleLabelClassName =
+    labelVisibility === 'always'
+      ? undefined
+      : labelVisibility === 'sr-only'
+        ? 'sr-only'
+        : 'sr-only sm:not-sr-only'
+
   return (
     <Tooltip>
       <TooltipTrigger
         render={
           <Button
+            id={id}
             type="button"
-            variant="secondary"
+            variant={variant}
+            size={size}
             aria-keyshortcuts={shortcuts}
             aria-label={label}
             aria-describedby={shortcutHint ? shortcutHintId : undefined}
@@ -63,7 +81,7 @@ export function ToolButton({
             }}
           >
             {ariaHiddenIcon}
-            <span className="sr-only sm:not-sr-only">
+            <span className={visibleLabelClassName}>
               {visibleLabel ?? label}
             </span>
           </Button>

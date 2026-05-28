@@ -29,15 +29,14 @@ export function NewSceneConfirmationDialog({
     >
       <AlertDialogContent size="sm" id="confirm-new-scene-dialog">
         <AlertDialogHeader>
-          <AlertDialogTitle>Start over with a new scene?</AlertDialogTitle>
+          <AlertDialogTitle>Start over?</AlertDialogTitle>
           <AlertDialogDescription>
-            This clears your current changes and resets the room to the default
-            scene.
+            This clears your current changes and restores the default room.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel onClick={onClose}>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={onConfirm}>New Scene</AlertDialogAction>
+          <AlertDialogAction onClick={onConfirm}>Start Over</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { HistoryTools } from './history-tools'
@@ -58,5 +58,25 @@ describe('HistoryTools', () => {
 
     expect(onUndo).not.toHaveBeenCalled()
     expect(onRedo).not.toHaveBeenCalled()
+  })
+
+  it('forwards toolbar sizing and explicit label visibility to the tool buttons', () => {
+    render(
+      <HistoryTools
+        canRedo
+        canUndo
+        buttonLabelVisibility="always"
+        buttonSize="toolbar"
+        editorInteractionsEnabled
+        onRedo={vi.fn()}
+        onUndo={vi.fn()}
+      />,
+    )
+
+    const undoButton = screen.getByRole('button', { name: 'Undo' })
+    const undoLabel = within(undoButton).getByText('Undo')
+
+    expect(undoLabel.className).not.toContain('sr-only')
+    expect(undoButton.className).toContain('h-9')
   })
 })

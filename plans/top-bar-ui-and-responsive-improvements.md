@@ -60,11 +60,11 @@ Implement the split top-header redesign in five reviewable commits, but make the
        - because mobile and desktop Environment use distinct dialog keys, the desktop dialog must never momentarily mount from a still-open mobile key
      - define desktop More keyboard policy now:
        - desktop More remains outside `isModalOpen`
-       - while desktop More is open, global app shortcuts (`Undo`, `Redo`, `New Scene`) are suppressed through a separate flag, not through the modal-gating path
-       - opening Keyboard Shortcuts or Project Info from desktop More should first dismiss the menu, then open the dialog
+     - while desktop More is open, global app shortcuts (`Undo`, `Redo`, `Start Over`) are suppressed through a separate flag, not through the modal-gating path
+     - opening Keyboard Shortcuts or Project Info from desktop More should first dismiss the menu, then open the dialog
      - adapt Share so it no longer hard-codes `hidden sm:inline`; mobile label behavior should later be controlled by the active header layout/CSS
      - rewrite Add Furniture as a stable primary action, removing the hover-expand behavior
-     - preserve accessible names such as `Start a new scene` even if the control moves into overflow
+   - preserve accessible names such as `Start over` even if the control moves into overflow
    - Done when:
      - keyboard shortcuts can be launched from an external More action
      - project info remains compatible with More launch without unnecessary new abstraction
@@ -96,17 +96,17 @@ Implement the split top-header redesign in five reviewable commits, but make the
        - Build row contains `Add Furniture`, then `Environment`
        - Edit row contains `Undo`, then `Redo`
        - mobile narrow-viewport tab sequence after the room view is now explicitly: `Share` -> `More` -> `Add Furniture` -> `Environment` -> `Undo` -> `Redo`
-       - More drawer contains `New Scene`, `Keyboard shortcuts`, `Project info`
-       - Environment opens as a drawer
+     - More drawer contains `Start Over`, `Keyboard shortcuts`, `Project info`
+     - Environment opens as a drawer
      - desktop header contract:
        - active at `48rem / 768px` and above
        - DOM/visual order: Build, Edit, Project
        - Build contains `Add Furniture`, `Environment`
-       - Edit contains `Undo`, `Redo`, `New Scene`
-       - Project contains `Room Layout`, `Share`, `More`
-       - desktop More contains `Keyboard shortcuts`, `Project info`
-       - opening a dialog from desktop More dismisses the menu first
-       - Environment opens as a dialog
+     - Edit contains `Undo`, `Redo`, `Start Over`
+     - Project contains `Room Layout`, `Share`, `More`
+     - desktop More contains `Keyboard shortcuts`, `Project info`
+     - opening a dialog from desktop More dismisses the menu first
+     - Environment opens as a dialog
      - keep sub-threshold label-collapse and wrapping behavior in CSS/container queries inside each variant rather than in JS
    - Done when:
      - both header variants render independently with the right grouping
@@ -188,10 +188,12 @@ Implement the split top-header redesign in five reviewable commits, but make the
      - dialogs launched from mobile More return focus to the More trigger through dialog-state metadata plus header-owned refs
      - mobile-only open surfaces close when crossing to desktop at 48rem
      - opening Keyboard Shortcuts or Project Info from desktop More dismisses the menu before the dialog opens
-   - Confirm mobile More contents are exactly `New Scene`, `Keyboard shortcuts`, `Project info`.
-   - Confirm desktop More excludes `New Scene`.
-   - Confirm `Share` stays visible on mobile.
-   - Confirm the new mobile tab sequence after the room view is: `Share`, `More`, `Add Furniture`, `Environment`, `Undo`, `Redo`.
+
+- Confirm mobile More contents are exactly `Start Over`, `Keyboard shortcuts`, `Project info`.
+- Confirm desktop More excludes `Start Over`.
+- Confirm `Share` stays visible on mobile.
+- Confirm the new mobile tab sequence after the room view is: `Share`, `More`, `Add Furniture`, `Environment`, `Undo`, `Redo`.
+
 2. Commit 1 checklist
    - Install shadcn `dropdown-menu` and normalize the generated primitive to repo conventions.
    - Add `use-header-layout-mode.ts`.
@@ -302,7 +304,7 @@ Implement the split top-header redesign in five reviewable commits, but make the
 - Keep the structural fork at `48rem / 768px`.
 - Use CSS/container queries inside each variant for fine label/wrapping behavior; do not add extra JS thresholds for 24rem/64rem rules.
 - Keep Add Furniture, Environment, Undo, Redo, and Share visible in both modes.
-- Put New Scene in mobile More only and keep it inline on desktop.
+- Put Start Over in mobile More only and keep it inline on desktop.
 - Put Keyboard shortcuts and Project info in overflow in both modes.
 - Treat mobile More as part of the global modal/exclusivity model through a first-class active-dialog key.
 - Treat desktop More as non-modal and outside `isModalOpen`, but suppress global shortcuts while it is open.

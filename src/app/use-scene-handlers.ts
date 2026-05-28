@@ -18,6 +18,7 @@ import type {
 } from '@/scene/objects/furniture.types'
 import type { FurnitureCatalogEntry } from '@/scene/objects/furniture-catalog'
 import type { HistoryAvailability } from './history/history.types'
+import type { DialogOpenOptions } from './overlay/use-dialog-state'
 import type { InteractionSource } from './scene-interaction.types'
 import {
   runStartupAssetErrorTransition,
@@ -84,7 +85,7 @@ interface DialogState {
   closeDialog: () => void
   closeAllDialogs: () => void
   openDelete: () => boolean
-  openNewScene: () => boolean
+  openNewScene: (options?: DialogOpenOptions) => boolean
   setCatalogOpen: (open: boolean) => boolean
   pendingDeleteFurniture: FurnitureItem | null
 }
@@ -156,7 +157,7 @@ interface SceneHandlers {
   handleCatalogDrawerOpenChange: (open: boolean) => void
   handleOpenDeleteDialog: () => void
   handleOpenDeleteDialogFromRoomView: () => void
-  handleOpenNewSceneDialog: () => void
+  handleOpenNewSceneDialog: (options?: DialogOpenOptions) => void
   handleConfirmNewScene: () => void
   handleSceneHistoryChange: (availability: HistoryAvailability) => void
   handleSceneSelectionChange: (item: FurnitureItem | null) => void
@@ -831,13 +832,16 @@ export function useSceneHandlers({
     }
   }, [openDelete, clearEditorMessage])
 
-  const handleOpenNewSceneDialog = useCallback(() => {
-    const opened = openNewScene()
+  const handleOpenNewSceneDialog = useCallback(
+    (options?: DialogOpenOptions) => {
+      const opened = openNewScene(options)
 
-    if (opened) {
-      clearEditorMessage()
-    }
-  }, [openNewScene, clearEditorMessage])
+      if (opened) {
+        clearEditorMessage()
+      }
+    },
+    [openNewScene, clearEditorMessage],
+  )
 
   const handleConfirmNewScene = useCallback(() => {
     closeDialog()
@@ -852,8 +856,8 @@ export function useSceneHandlers({
       announceSelectionChange: false,
       requestOutlinerFocus: false,
     })
-    announcePolite('New scene started. Your changes were cleared.')
-    toast.success('New scene started. Your changes were cleared.')
+    announcePolite('Started over. Your changes were cleared.')
+    toast.success('Started over. Your changes were cleared.')
   }, [
     closeDialog,
     clearPreview,

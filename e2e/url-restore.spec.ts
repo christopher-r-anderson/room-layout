@@ -504,7 +504,7 @@ test('draft persists across page reload', async ({ page }) => {
   // but the scene is still populated from the saved draft
 })
 
-test('new scene clears the saved draft so reload stays fresh', async ({
+test('start over clears the saved draft so reload stays fresh', async ({
   page,
 }) => {
   await openEditor(page)
@@ -516,15 +516,15 @@ test('new scene clears the saved draft so reload stays fresh', async ({
   expect(draftBeforeReset?.items.length).toBe(1)
 
   const newSceneButton = page.getByRole('button', {
-    name: 'Start a new scene',
+    name: 'Start over',
   })
   await newSceneButton.click()
 
   const newSceneDialog = page.getByRole('alertdialog', {
-    name: /start over with a new scene/i,
+    name: /start over\?/i,
   })
   await expect(newSceneDialog).toBeVisible()
-  await newSceneDialog.getByRole('button', { name: 'New Scene' }).click()
+  await newSceneDialog.getByRole('button', { name: 'Start Over' }).click()
 
   const resetState = await waitForEditorReady(page)
   expect(resetState.itemCount).toBe(0)

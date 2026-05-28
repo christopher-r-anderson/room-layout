@@ -16,6 +16,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import type { ComponentProps, ReactElement } from 'react'
 
 type ShortcutCombo = string[]
 
@@ -155,10 +156,10 @@ const SHORTCUT_SECTIONS: ShortcutSection[] = [
         groupLabel: 'Scene',
         rows: [
           {
-            label: 'New Scene',
+            label: 'Start Over',
             combos: [
-              ['Ctrl', 'N'],
-              ['Cmd', 'N'],
+              ['Ctrl', 'Alt', 'N'],
+              ['Cmd', 'Opt', 'N'],
             ],
           },
         ],
@@ -189,39 +190,51 @@ function renderShortcutCombos(combos: ShortcutCombo[]) {
   )
 }
 
-interface KeyboardShortcutsHelpProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
+function KeyboardShortcutsTriggerButton(props: ComponentProps<typeof Button>) {
+  return (
+    <Button
+      type="button"
+      variant="secondary"
+      size="icon"
+      aria-controls="keyboard-shortcuts-dialog"
+      aria-haspopup="dialog"
+      aria-label="Keyboard shortcuts"
+      className="pointer-events-auto rounded-md"
+      {...props}
+    >
+      <IconKeyboard size={20} aria-hidden="true" />
+    </Button>
+  )
 }
 
-export function KeyboardShortcutsHelp({
+interface KeyboardShortcutsDialogProps {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  triggerButton?: ReactElement | null
+}
+
+export function KeyboardShortcutsDialog({
   open,
   onOpenChange,
-}: KeyboardShortcutsHelpProps) {
+  triggerButton,
+}: KeyboardShortcutsDialogProps) {
+  const resolvedTriggerButton =
+    triggerButton === undefined ? (
+      <KeyboardShortcutsTriggerButton />
+    ) : (
+      triggerButton
+    )
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <Tooltip>
-        <TooltipTrigger
-          render={
-            <DialogTrigger
-              render={
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="icon"
-                  aria-controls="keyboard-shortcuts-dialog"
-                  aria-haspopup="dialog"
-                  aria-label="Keyboard shortcuts"
-                  className="pointer-events-auto rounded-md"
-                >
-                  <IconKeyboard size={20} aria-hidden="true" />
-                </Button>
-              }
-            />
-          }
-        />
-        <TooltipContent side="bottom">Keyboard shortcuts</TooltipContent>
-      </Tooltip>
+      {resolvedTriggerButton ? (
+        <Tooltip>
+          <TooltipTrigger
+            render={<DialogTrigger render={resolvedTriggerButton} />}
+          />
+          <TooltipContent side="bottom">Keyboard shortcuts</TooltipContent>
+        </Tooltip>
+      ) : null}
 
       <DialogContent
         id="keyboard-shortcuts-dialog"
@@ -232,8 +245,8 @@ export function KeyboardShortcutsHelp({
           <DialogDescription>
             Quick reference for room-view, camera, selected item, and scene
             shortcuts. Most shortcuts below work only while the 3D room view is
-            focused. Use the visible toolbar buttons for Add Furniture,
-            Environment, sharing, and project info.
+            focused. Use the top controls for Add Furniture, Environment,
+            sharing, and other scene actions.
           </DialogDescription>
         </DialogHeader>
 
@@ -294,4 +307,13 @@ export function KeyboardShortcutsHelp({
       </DialogContent>
     </Dialog>
   )
+}
+
+interface KeyboardShortcutsHelpProps {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+}
+
+export function KeyboardShortcutsHelp(props: KeyboardShortcutsHelpProps) {
+  return <KeyboardShortcutsDialog {...props} />
 }

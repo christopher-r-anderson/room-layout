@@ -276,10 +276,10 @@ function ContentEditableHarness(props: {
 
 const newSceneShortcutVariants: {
   label: string
-  init: Pick<KeyboardEventInit, 'ctrlKey' | 'metaKey'>
+  init: Pick<KeyboardEventInit, 'altKey' | 'ctrlKey' | 'metaKey'>
 }[] = [
-  { label: 'Ctrl+N', init: { ctrlKey: true } },
-  { label: 'Meta+N', init: { metaKey: true } },
+  { label: 'Ctrl+Alt+N', init: { ctrlKey: true, altKey: true } },
+  { label: 'Meta+Alt+N', init: { metaKey: true, altKey: true } },
 ]
 
 function fireNewSceneShortcuts(target: Window | HTMLElement): KeyboardEvent[] {
@@ -954,7 +954,7 @@ describe('useKeyboardShortcuts', () => {
     expect(onSetCameraPreset).not.toHaveBeenCalled()
   })
 
-  it('dispatches new scene and suppresses browser default for Ctrl+N and Meta+N', () => {
+  it('dispatches start over and prevents default for Ctrl+Alt+N and Meta+Alt+N', () => {
     const onNewSceneIntent = vi.fn()
 
     render(
@@ -987,7 +987,7 @@ describe('useKeyboardShortcuts', () => {
     renderCase: (onNewSceneIntent: () => void) => Window | HTMLElement
   }>([
     {
-      name: 'new scene start is disabled',
+      name: 'start over is disabled',
       renderCase: (onNewSceneIntent) => {
         render(
           <KeyboardShortcutHarness
@@ -1092,7 +1092,7 @@ describe('useKeyboardShortcuts', () => {
       },
     },
   ])(
-    'suppresses browser default for new scene and does not dispatch when $name',
+    'does not dispatch start over or prevent default when $name',
     ({ renderCase }) => {
       const onNewSceneIntent = vi.fn()
       const target = renderCase(onNewSceneIntent)
@@ -1100,7 +1100,7 @@ describe('useKeyboardShortcuts', () => {
 
       expect(onNewSceneIntent).not.toHaveBeenCalled()
       for (const event of events) {
-        expect(event.defaultPrevented).toBe(true)
+        expect(event.defaultPrevented).toBe(false)
       }
     },
   )

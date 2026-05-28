@@ -391,7 +391,9 @@ function App() {
     pendingDeleteFurniture: dialogState.pendingDeleteFurniture,
     onCloseDeleteDialog: dialogState.closeDialog,
     onConfirmDeleteSelection: handlers.handleConfirmDeleteSelection,
+    environmentDialogLayout: dialogState.environmentDialogLayout,
     isEnvironmentDialogOpen: dialogState.isEnvironmentDialogOpen,
+    isMobileMoreOpen: dialogState.isMobileMoreOpen,
     onEnvironmentDialogOpenChange: dialogState.setEnvironmentOpen,
     isNewSceneDialogOpen: dialogState.isNewSceneDialogOpen,
     onCloseNewSceneDialog: dialogState.closeDialog,
@@ -401,6 +403,8 @@ function App() {
     onInfoDialogOpenChange: dialogState.setInfoOpen,
     isKeyboardShortcutsDialogOpen: dialogState.isKeyboardShortcutsDialogOpen,
     onKeyboardShortcutsDialogOpenChange: dialogState.setKeyboardShortcutsOpen,
+    onMobileMoreOpenChange: dialogState.setMobileMoreOpen,
+    returnFocusTarget: dialogState.returnFocusTarget,
     onPreviewChange: handleOutlinerPreviewChange,
     previewedId,
   })
@@ -622,6 +626,7 @@ function App() {
             <EditorOverlay
               editorInteractionsEnabled={startup.editorInteractionsEnabled}
               newSceneDisabled={sceneIsAtDefaults}
+              onHeaderLayoutModeChange={dialogState.syncLayoutMode}
               statusMessage={overlayState.editorMessage}
               onShareSceneUrl={() => handlers.handleShareSceneUrl()}
               camera={cameraProps}

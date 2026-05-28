@@ -65,6 +65,7 @@ describe('useDialogState', () => {
     })
 
     expect(result.current.isDeleteDialogOpen).toBe(true)
+    expect(result.current.returnFocusTarget).toBeNull()
     expect(result.current.pendingDeleteFurniture).toEqual(LEATHER_COUCH)
 
     rerender({ selectedFurniture: END_TABLE })
@@ -126,6 +127,9 @@ describe('useDialogState', () => {
       result.current.openEnvironment()
     })
     expect(result.current.isEnvironmentDialogOpen).toBe(true)
+    expect(result.current.isEnvironmentDesktopDialogOpen).toBe(true)
+    expect(result.current.environmentDialogLayout).toBe('desktop')
+    expect(result.current.returnFocusTarget).toBe('environment-inline')
 
     act(() => {
       expect(result.current.openCatalog()).toBe(false)
@@ -144,6 +148,7 @@ describe('useDialogState', () => {
       result.current.openInfo()
     })
     expect(result.current.isInfoDialogOpen).toBe(true)
+    expect(result.current.returnFocusTarget).toBe('info-inline')
 
     act(() => {
       expect(result.current.openCatalog()).toBe(false)
@@ -162,6 +167,7 @@ describe('useDialogState', () => {
       result.current.openDelete()
     })
     expect(result.current.isDeleteDialogOpen).toBe(true)
+    expect(result.current.returnFocusTarget).toBeNull()
 
     act(() => {
       expect(result.current.openCatalog()).toBe(false)
@@ -210,7 +216,7 @@ describe('useDialogState', () => {
     expect(result.current.isDeleteDialogOpen).toBe(false)
   })
 
-  it('enforces the new scene freshness guard at the dialog boundary', () => {
+  it('enforces the start over freshness guard at the dialog boundary', () => {
     const { result, rerender } = renderHook(
       (props: DialogStateHookProps & { canStartNewScene: boolean }) =>
         useDialogState({
@@ -260,6 +266,7 @@ describe('useDialogState', () => {
       expect(result.current.setEnvironmentOpen(true)).toBe(true)
     })
     expect(result.current.isEnvironmentDialogOpen).toBe(true)
+    expect(result.current.isEnvironmentDesktopDialogOpen).toBe(true)
 
     act(() => {
       expect(result.current.setEnvironmentOpen(false)).toBe(true)
@@ -275,5 +282,197 @@ describe('useDialogState', () => {
       expect(result.current.setEnvironmentOpen(true)).toBe(false)
     })
     expect(result.current.isEnvironmentDialogOpen).toBe(false)
+  })
+
+  it('clears layout-specific dialog keys when switching to an incompatible layout mode', () => {
+    const { result } = renderHook(() =>
+      useDialogState({
+        editorInteractionsEnabled: true,
+        startupOverlayActive: false,
+        selectedFurniture: LEATHER_COUCH,
+        canStartNewScene: true,
+      }),
+    )
+
+    act(() => {
+      expect(
+        result.current.openEnvironment({
+          layout: 'desktop',
+          returnFocusTarget: 'environment-inline',
+        }),
+      ).toBe(true)
+    })
+
+    expect(result.current.isEnvironmentDialogOpen).toBe(true)
+    expect(result.current.isEnvironmentDesktopDialogOpen).toBe(true)
+    expect(result.current.environmentDialogLayout).toBe('desktop')
+    expect(result.current.returnFocusTarget).toBe('environment-inline')
+
+    act(() => {
+      result.current.syncLayoutMode('mobile')
+    })
+
+    expect(result.current.isEnvironmentDialogOpen).toBe(false)
+    expect(result.current.activeDialog).toBeNull()
+    expect(result.current.returnFocusTarget).toBeNull()
+
+    act(() => {
+      expect(
+        result.current.openEnvironment({
+          layout: 'mobile',
+          returnFocusTarget: 'mobile-more',
+        }),
+      ).toBe(true)
+    })
+
+    expect(result.current.isEnvironmentDialogOpen).toBe(true)
+    expect(result.current.isEnvironmentMobileDialogOpen).toBe(true)
+    expect(result.current.environmentDialogLayout).toBe('mobile')
+    expect(result.current.returnFocusTarget).toBe('mobile-more')
+
+    act(() => {
+      result.current.syncLayoutMode('desktop')
+    })
+
+    expect(result.current.isEnvironmentDialogOpen).toBe(false)
+    expect(result.current.activeDialog).toBeNull()
+    expect(result.current.returnFocusTarget).toBeNull()
+
+    act(() => {
+      expect(result.current.openMobileMore()).toBe(true)
+    })
+
+    expect(result.current.isMobileMoreOpen).toBe(true)
+    expect(result.current.returnFocusTarget).toBe('mobile-more')
+
+    act(() => {
+      result.current.syncLayoutMode('desktop')
+    })
+
+    expect(result.current.isMobileMoreOpen).toBe(false)
+    expect(result.current.activeDialog).toBeNull()
+    expect(result.current.returnFocusTarget).toBeNull()
+  })
+
+  it('allows mobile More to hand off directly into another dialog in the same turn', () => {
+    const { result } = renderHook(() =>
+      useDialogState({
+        editorInteractionsEnabled: true,
+        startupOverlayActive: false,
+        selectedFurniture: LEATHER_COUCH,
+        canStartNewScene: true,
+      }),
+    )
+
+    act(() => {
+      expect(result.current.openMobileMore()).toBe(true)
+    })
+
+    expect(result.current.isMobileMoreOpen).toBe(true)
+
+    act(() => {
+      expect(
+        result.current.setMobileMoreOpen(false, {
+          returnFocusTarget: 'mobile-more',
+        }),
+      ).toBe(true)
+      expect(
+        result.current.setKeyboardShortcutsOpen(true, {
+          returnFocusTarget: 'mobile-more',
+        }),
+      ).toBe(true)
+    })
+
+    expect(result.current.isKeyboardShortcutsDialogOpen).toBe(true)
+    expect(result.current.isMobileMoreOpen).toBe(false)
+    expect(result.current.returnFocusTarget).toBe('mobile-more')
+  })
+
+  it('remaps return focus targets for header dialogs across layout changes', () => {
+    const { result } = renderHook(() =>
+      useDialogState({
+        editorInteractionsEnabled: true,
+        startupOverlayActive: false,
+        selectedFurniture: LEATHER_COUCH,
+        canStartNewScene: true,
+      }),
+    )
+
+    act(() => {
+      expect(
+        result.current.openKeyboardShortcuts({
+          returnFocusTarget: 'mobile-more',
+        }),
+      ).toBe(true)
+    })
+    act(() => {
+      result.current.syncLayoutMode('desktop')
+    })
+    expect(result.current.isKeyboardShortcutsDialogOpen).toBe(true)
+    expect(result.current.returnFocusTarget).toBe('keyboard-inline')
+    act(() => {
+      result.current.closeDialog()
+    })
+
+    act(() => {
+      expect(
+        result.current.openInfo({ returnFocusTarget: 'mobile-more' }),
+      ).toBe(true)
+    })
+    act(() => {
+      result.current.syncLayoutMode('desktop')
+    })
+    expect(result.current.isInfoDialogOpen).toBe(true)
+    expect(result.current.returnFocusTarget).toBe('info-inline')
+    act(() => {
+      result.current.closeDialog()
+    })
+
+    act(() => {
+      expect(
+        result.current.openNewScene({ returnFocusTarget: 'mobile-more' }),
+      ).toBe(true)
+    })
+    act(() => {
+      result.current.syncLayoutMode('desktop')
+    })
+    expect(result.current.isNewSceneDialogOpen).toBe(true)
+    expect(result.current.returnFocusTarget).toBe('new-scene-inline')
+    act(() => {
+      result.current.closeDialog()
+    })
+
+    act(() => {
+      expect(result.current.openKeyboardShortcuts()).toBe(true)
+    })
+    act(() => {
+      result.current.syncLayoutMode('mobile')
+    })
+    expect(result.current.isKeyboardShortcutsDialogOpen).toBe(true)
+    expect(result.current.returnFocusTarget).toBe('mobile-more')
+    act(() => {
+      result.current.closeDialog()
+    })
+
+    act(() => {
+      expect(result.current.openInfo()).toBe(true)
+    })
+    act(() => {
+      result.current.syncLayoutMode('mobile')
+    })
+    expect(result.current.isInfoDialogOpen).toBe(true)
+    expect(result.current.returnFocusTarget).toBe('mobile-more')
+    act(() => {
+      result.current.closeDialog()
+    })
+
+    act(() => {
+      expect(result.current.openNewScene()).toBe(true)
+    })
+    act(() => {
+      result.current.syncLayoutMode('mobile')
+    })
+    expect(result.current.isNewSceneDialogOpen).toBe(true)
+    expect(result.current.returnFocusTarget).toBe('mobile-more')
   })
 })

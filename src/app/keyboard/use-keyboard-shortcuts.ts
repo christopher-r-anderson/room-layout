@@ -12,6 +12,7 @@ import {
 
 export type RotationDirection = -1 | 1
 export type SuppressionMode = 'always-on-match' | 'on-execute'
+type ShortcutScope = 'global-app'
 
 interface ShortcutContext {
   targetIsEditingTarget: boolean
@@ -25,6 +26,7 @@ interface ShortcutContext {
 interface ShortcutDefinition {
   id: string
   match: KeyCombo | KeyCombo[]
+  scope?: ShortcutScope
   allowMatchInEditingTarget?: boolean
   requiresRoomViewFocus?: boolean
   requiresSelection?: boolean
@@ -126,6 +128,7 @@ export function useKeyboardShortcuts({
     {
       id: 'undo',
       match: { key: 'z', ctrlOrMeta: true },
+      scope: 'global-app',
       suppressionMode: 'always-on-match',
       execute: onUndo,
     },
@@ -135,16 +138,15 @@ export function useKeyboardShortcuts({
         { key: 'z', ctrlOrMeta: true, shift: true },
         { key: 'y', ctrlOrMeta: true },
       ],
+      scope: 'global-app',
       suppressionMode: 'always-on-match',
       execute: onRedo,
     },
     {
       id: 'new-scene',
-      match: { key: 'n', ctrlOrMeta: true },
-      allowMatchInEditingTarget: true,
-      suppressionMode: 'always-on-match',
-      canExecute: (context) =>
-        context.canStartNewScene && !context.targetIsEditingTarget,
+      match: { key: 'n', ctrlOrMeta: true, alt: true },
+      scope: 'global-app',
+      canExecute: (context) => context.canStartNewScene,
       execute: onNewSceneIntent,
     },
     {

@@ -61,16 +61,26 @@ interface OverlayOptions {
   pendingDeleteFurniture: FurnitureItem | null
   onCloseDeleteDialog: () => void
   onConfirmDeleteSelection: () => void
+  environmentDialogLayout: 'desktop' | 'mobile' | null
   isEnvironmentDialogOpen: boolean
-  onEnvironmentDialogOpenChange: (open: boolean) => void
+  isMobileMoreOpen: boolean
+  onEnvironmentDialogOpenChange: (open: boolean) => boolean
   isNewSceneDialogOpen: boolean
   onCloseNewSceneDialog: () => void
   onOpenNewSceneDialog: () => void
   onConfirmNewScene: () => void
   isInfoDialogOpen: boolean
-  onInfoDialogOpenChange: (open: boolean) => void
+  onInfoDialogOpenChange: (open: boolean) => boolean
   isKeyboardShortcutsDialogOpen: boolean
-  onKeyboardShortcutsDialogOpenChange: (open: boolean) => void
+  onKeyboardShortcutsDialogOpenChange: (open: boolean) => boolean
+  onMobileMoreOpenChange: (open: boolean) => boolean
+  returnFocusTarget:
+    | 'environment-inline'
+    | 'info-inline'
+    | 'keyboard-inline'
+    | 'mobile-more'
+    | 'new-scene-inline'
+    | null
   onPreviewChange: (
     id: string | null,
     source: 'outliner-hover' | 'outliner-focus',
@@ -119,16 +129,20 @@ function createOptions(overrides?: Partial<OverlayOptions>): OverlayOptions {
     pendingDeleteFurniture: selectedFurniture,
     onCloseDeleteDialog: vi.fn(),
     onConfirmDeleteSelection: vi.fn(),
+    environmentDialogLayout: null,
     isEnvironmentDialogOpen: false,
-    onEnvironmentDialogOpenChange: vi.fn(),
+    isMobileMoreOpen: false,
+    onEnvironmentDialogOpenChange: vi.fn(() => true),
     isNewSceneDialogOpen: false,
     onCloseNewSceneDialog: vi.fn(),
     onOpenNewSceneDialog: vi.fn(),
     onConfirmNewScene: vi.fn(),
     isInfoDialogOpen: false,
-    onInfoDialogOpenChange: vi.fn(),
+    onInfoDialogOpenChange: vi.fn(() => true),
     isKeyboardShortcutsDialogOpen: false,
-    onKeyboardShortcutsDialogOpenChange: vi.fn(),
+    onKeyboardShortcutsDialogOpenChange: vi.fn(() => true),
+    onMobileMoreOpenChange: vi.fn(() => true),
+    returnFocusTarget: null,
     onPreviewChange: vi.fn(),
     previewedId: null,
     ...overrides,
@@ -147,10 +161,13 @@ describe('useOverlayProps', () => {
       catalogIdToAdd: 'table-1',
       isCatalogDrawerOpen: true,
       isDeleteDialogOpen: true,
+      environmentDialogLayout: 'desktop',
       isEnvironmentDialogOpen: true,
+      isMobileMoreOpen: true,
       isNewSceneDialogOpen: true,
       isInfoDialogOpen: true,
       isKeyboardShortcutsDialogOpen: true,
+      returnFocusTarget: 'mobile-more',
       sceneInteractionsDisabled: true,
     })
 
@@ -191,7 +208,9 @@ describe('useOverlayProps', () => {
       pendingDeleteFurniture: options.pendingDeleteFurniture,
       onCloseDeleteDialog: options.onCloseDeleteDialog,
       onConfirmDeleteSelection: options.onConfirmDeleteSelection,
+      environmentDialogLayout: 'desktop',
       isEnvironmentDialogOpen: true,
+      isMobileMoreOpen: true,
       onEnvironmentDialogOpenChange: options.onEnvironmentDialogOpenChange,
       isNewSceneDialogOpen: true,
       onCloseNewSceneDialog: options.onCloseNewSceneDialog,
@@ -202,6 +221,8 @@ describe('useOverlayProps', () => {
       isKeyboardShortcutsDialogOpen: true,
       onKeyboardShortcutsDialogOpenChange:
         options.onKeyboardShortcutsDialogOpenChange,
+      onMobileMoreOpenChange: options.onMobileMoreOpenChange,
+      returnFocusTarget: 'mobile-more',
     })
   })
 

@@ -37,7 +37,9 @@ interface UseOverlayPropsOptions {
   pendingDeleteFurniture: EditorDialogsProps['pendingDeleteFurniture']
   onCloseDeleteDialog: EditorDialogsProps['onCloseDeleteDialog']
   onConfirmDeleteSelection: EditorDialogsProps['onConfirmDeleteSelection']
+  environmentDialogLayout: EditorDialogsProps['environmentDialogLayout']
   isEnvironmentDialogOpen: EditorDialogsProps['isEnvironmentDialogOpen']
+  isMobileMoreOpen: EditorDialogsProps['isMobileMoreOpen']
   onEnvironmentDialogOpenChange: EditorDialogsProps['onEnvironmentDialogOpenChange']
   isNewSceneDialogOpen: EditorDialogsProps['isNewSceneDialogOpen']
   onCloseNewSceneDialog: EditorDialogsProps['onCloseNewSceneDialog']
@@ -47,6 +49,8 @@ interface UseOverlayPropsOptions {
   onInfoDialogOpenChange: EditorDialogsProps['onInfoDialogOpenChange']
   isKeyboardShortcutsDialogOpen: EditorDialogsProps['isKeyboardShortcutsDialogOpen']
   onKeyboardShortcutsDialogOpenChange: EditorDialogsProps['onKeyboardShortcutsDialogOpenChange']
+  onMobileMoreOpenChange: EditorDialogsProps['onMobileMoreOpenChange']
+  returnFocusTarget: EditorDialogsProps['returnFocusTarget']
   onPreviewChange: EditorPreviewProps['onPreviewChange']
   previewedId: EditorPreviewProps['previewedId']
 }
@@ -89,7 +93,9 @@ export function useOverlayProps({
   pendingDeleteFurniture,
   onCloseDeleteDialog,
   onConfirmDeleteSelection,
+  environmentDialogLayout,
   isEnvironmentDialogOpen,
+  isMobileMoreOpen,
   onEnvironmentDialogOpenChange,
   isNewSceneDialogOpen,
   onCloseNewSceneDialog,
@@ -99,6 +105,8 @@ export function useOverlayProps({
   onInfoDialogOpenChange,
   isKeyboardShortcutsDialogOpen,
   onKeyboardShortcutsDialogOpenChange,
+  onMobileMoreOpenChange,
+  returnFocusTarget,
   onPreviewChange,
   previewedId,
 }: UseOverlayPropsOptions): EditorOverlayPropsShape {
@@ -182,7 +190,9 @@ export function useOverlayProps({
       pendingDeleteFurniture,
       onCloseDeleteDialog,
       onConfirmDeleteSelection,
+      environmentDialogLayout,
       isEnvironmentDialogOpen,
+      isMobileMoreOpen,
       onEnvironmentDialogOpenChange,
       isNewSceneDialogOpen,
       onCloseNewSceneDialog,
@@ -192,13 +202,17 @@ export function useOverlayProps({
       onInfoDialogOpenChange,
       isKeyboardShortcutsDialogOpen,
       onKeyboardShortcutsDialogOpenChange,
+      onMobileMoreOpenChange,
+      returnFocusTarget,
     }),
     [
       isDeleteDialogOpen,
       pendingDeleteFurniture,
       onCloseDeleteDialog,
       onConfirmDeleteSelection,
+      environmentDialogLayout,
       isEnvironmentDialogOpen,
+      isMobileMoreOpen,
       onEnvironmentDialogOpenChange,
       isNewSceneDialogOpen,
       onCloseNewSceneDialog,
@@ -208,6 +222,8 @@ export function useOverlayProps({
       onInfoDialogOpenChange,
       isKeyboardShortcutsDialogOpen,
       onKeyboardShortcutsDialogOpenChange,
+      onMobileMoreOpenChange,
+      returnFocusTarget,
     ],
   )
 

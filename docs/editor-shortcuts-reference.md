@@ -42,11 +42,11 @@ For implementation details and architecture, see [Keyboard Shortcuts](./keyboard
 
 ## Scene and History
 
-| Action    | Shortcut                                    | Mode  |
-| --------- | ------------------------------------------- | ----- |
-| Undo      | Ctrl+Z / Cmd+Z                              | Press |
-| Redo      | Ctrl+Shift+Z / Ctrl+Y / Cmd+Shift+Z / Cmd+Y | Press |
-| New Scene | Ctrl+N / Cmd+N                              | Press |
+| Action     | Shortcut                                    | Mode  |
+| ---------- | ------------------------------------------- | ----- |
+| Undo       | Ctrl+Z / Cmd+Z                              | Press |
+| Redo       | Ctrl+Shift+Z / Ctrl+Y / Cmd+Shift+Z / Cmd+Y | Press |
+| Start Over | Ctrl+Alt+N / Cmd+Option+N                   | Press |
 
 ## Notes
 
