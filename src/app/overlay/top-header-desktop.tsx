@@ -30,7 +30,10 @@ export function TopHeaderDesktop({
   wallFinishes,
 }: TopHeaderDesktopProps) {
   return (
-    <div className="pointer-events-auto flex flex-wrap items-center justify-between gap-x-0 gap-y-2">
+    <div
+      data-top-header-root
+      className="pointer-events-auto flex flex-wrap items-center justify-between gap-x-0 gap-y-2"
+    >
       <div
         role="toolbar"
         aria-label="Scene building actions"

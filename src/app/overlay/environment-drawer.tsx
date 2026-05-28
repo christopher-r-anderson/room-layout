@@ -26,15 +26,14 @@ export function EnvironmentDrawer({
       open={open}
       onOpenChange={(nextOpen) => {
         onOpenChange(nextOpen)
-
-        if (!nextOpen) {
-          queueMicrotask(() => {
-            onCloseAutoFocus?.()
-          })
-        }
       }}
     >
-      <DrawerContent>
+      <DrawerContent
+        onCloseAutoFocus={(event) => {
+          event.preventDefault()
+          onCloseAutoFocus?.()
+        }}
+      >
         <DrawerHeader>
           <DrawerTitle>Environment</DrawerTitle>
           <DrawerDescription>

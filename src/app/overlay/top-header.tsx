@@ -8,13 +8,75 @@ import { TopHeaderMobile } from './top-header-mobile'
 import type { TopHeaderProps } from './top-header.types'
 import type { DialogReturnFocusTarget } from './use-dialog-state'
 
+const HEADER_CONTROL_SELECTOR =
+  'button, input, select, textarea, [tabindex]:not([tabindex="-1"])'
+
+function isEnabledHeaderControl(element: HTMLElement) {
+  if (element.matches('[disabled], [aria-disabled="true"]')) {
+    return false
+  }
+
+  if (element.closest('[aria-hidden="true"], [inert]')) {
+    return false
+  }
+
+  return true
+}
+
+function findHeaderFocusFallback(target: HTMLElement) {
+  const headerRoot = target.closest<HTMLElement>('[data-top-header-root]')
+
+  if (!headerRoot) {
+    return null
+  }
+
+  const controls = Array.from(
+    headerRoot.querySelectorAll<HTMLElement>(HEADER_CONTROL_SELECTOR),
+  )
+
+  if (controls.length === 0) {
+    return null
+  }
+
+  const targetIndex = controls.indexOf(target)
+
+  if (targetIndex === -1) {
+    return controls.find(isEnabledHeaderControl) ?? null
+  }
+
+  for (let index = targetIndex + 1; index < controls.length; index += 1) {
+    const candidate = controls[index]
+
+    if (isEnabledHeaderControl(candidate)) {
+      return candidate
+    }
+  }
+
+  for (let index = targetIndex - 1; index >= 0; index -= 1) {
+    const candidate = controls[index]
+
+    if (isEnabledHeaderControl(candidate)) {
+      return candidate
+    }
+  }
+
+  return null
+}
+
 function focusControlById(id: string) {
   queueMicrotask(() => {
     const element = document.getElementById(id)
 
-    if (element instanceof HTMLElement) {
-      element.focus()
+    if (!(element instanceof HTMLElement)) {
+      return
     }
+
+    if (isEnabledHeaderControl(element)) {
+      element.focus()
+      return
+    }
+
+    findHeaderFocusFallback(element)?.focus()
   })
 }
 

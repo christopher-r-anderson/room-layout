@@ -4,6 +4,7 @@ import {
   openEditor,
   readSceneState,
   selectFurnitureById,
+  waitForItemCount,
 } from './support/editor-harness'
 
 async function closeWithEscapeAndRestoreFocus(
@@ -183,6 +184,33 @@ test('catalog, environment, delete, and info dialogs stay mutually exclusive', a
   await expect(deleteDialog).toBeHidden()
 
   await closeWithEscapeAndRestoreFocus(page, infoDialog, infoButton)
+})
+
+test('confirming desktop start over moves focus to the next enabled header control', async ({
+  page,
+}) => {
+  await openEditor(page)
+  await addFurniture(page, 'Leather Couch')
+
+  const startOverButton = page.getByRole('button', {
+    name: 'Start over',
+  })
+
+  await startOverButton.click()
+
+  const startOverDialog = page.getByRole('alertdialog', {
+    name: /start over\?/i,
+  })
+  await expect(startOverDialog).toBeVisible()
+
+  await startOverDialog.getByRole('button', { name: 'Start Over' }).click()
+
+  await expect(startOverDialog).toBeHidden()
+  await waitForItemCount(page, 0)
+  await expect(startOverButton).toHaveAttribute('aria-disabled', 'true')
+  await expect(
+    page.getByRole('button', { name: 'Keyboard shortcuts' }),
+  ).toBeFocused()
 })
 
 test.describe('narrow viewport more actions', () => {

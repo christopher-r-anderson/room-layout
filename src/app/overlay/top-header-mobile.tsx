@@ -30,7 +30,7 @@ export function TopHeaderMobile({
   focusControlById,
 }: TopHeaderMobileProps) {
   return (
-    <div className="pointer-events-auto">
+    <div data-top-header-root className="pointer-events-auto">
       <div
         role="toolbar"
         aria-label="Mobile header actions"
