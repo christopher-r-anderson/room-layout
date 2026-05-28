@@ -81,6 +81,7 @@ export function useDialogState({
   selectedFurniture,
   canStartNewScene,
 }: UseDialogStateOptions): DialogState {
+  const layoutModeRef = useRef<'mobile' | 'desktop'>('desktop')
   const [dialogState, setDialogState] = useState<{
     activeDialog: ActiveDialog
     returnFocusTarget: DialogReturnFocusTarget
@@ -254,7 +255,11 @@ export function useDialogState({
       }
 
       openDialog('new-scene', {
-        returnFocusTarget: options?.returnFocusTarget ?? 'new-scene-inline',
+        returnFocusTarget:
+          options?.returnFocusTarget ??
+          (layoutModeRef.current === 'mobile'
+            ? 'mobile-more'
+            : 'new-scene-inline'),
       })
       return true
     },
@@ -368,6 +373,8 @@ export function useDialogState({
 
   const syncLayoutMode = useCallback(
     (layout: 'mobile' | 'desktop') => {
+      layoutModeRef.current = layout
+
       setDialogState((current) => {
         const shouldCloseForDesktop =
           layout === 'desktop' &&

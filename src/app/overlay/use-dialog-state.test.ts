@@ -475,4 +475,26 @@ describe('useDialogState', () => {
     expect(result.current.isNewSceneDialogOpen).toBe(true)
     expect(result.current.returnFocusTarget).toBe('mobile-more')
   })
+
+  it('defaults shortcut-opened start over to the mobile more trigger on narrow layouts', () => {
+    const { result } = renderHook(() =>
+      useDialogState({
+        editorInteractionsEnabled: true,
+        startupOverlayActive: false,
+        selectedFurniture: LEATHER_COUCH,
+        canStartNewScene: true,
+      }),
+    )
+
+    act(() => {
+      result.current.syncLayoutMode('mobile')
+    })
+
+    act(() => {
+      expect(result.current.openNewScene()).toBe(true)
+    })
+
+    expect(result.current.isNewSceneDialogOpen).toBe(true)
+    expect(result.current.returnFocusTarget).toBe('mobile-more')
+  })
 })
