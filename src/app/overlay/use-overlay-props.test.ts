@@ -65,10 +65,10 @@ interface OverlayOptions {
   isEnvironmentDialogOpen: boolean
   isMobileMoreOpen: boolean
   onEnvironmentDialogOpenChange: (open: boolean) => boolean
-  isNewSceneDialogOpen: boolean
-  onCloseNewSceneDialog: () => void
-  onOpenNewSceneDialog: () => void
-  onConfirmNewScene: () => void
+  isStartOverDialogOpen: boolean
+  onCloseStartOverDialog: () => void
+  onOpenStartOverDialog: () => void
+  onConfirmStartOver: () => void
   isInfoDialogOpen: boolean
   onInfoDialogOpenChange: (open: boolean) => boolean
   isKeyboardShortcutsDialogOpen: boolean
@@ -79,7 +79,7 @@ interface OverlayOptions {
     | 'info-inline'
     | 'keyboard-inline'
     | 'mobile-more'
-    | 'new-scene-inline'
+    | 'start-over-inline'
     | null
   onPreviewChange: (
     id: string | null,
@@ -133,10 +133,10 @@ function createOptions(overrides?: Partial<OverlayOptions>): OverlayOptions {
     isEnvironmentDialogOpen: false,
     isMobileMoreOpen: false,
     onEnvironmentDialogOpenChange: vi.fn(() => true),
-    isNewSceneDialogOpen: false,
-    onCloseNewSceneDialog: vi.fn(),
-    onOpenNewSceneDialog: vi.fn(),
-    onConfirmNewScene: vi.fn(),
+    isStartOverDialogOpen: false,
+    onCloseStartOverDialog: vi.fn(),
+    onOpenStartOverDialog: vi.fn(),
+    onConfirmStartOver: vi.fn(),
     isInfoDialogOpen: false,
     onInfoDialogOpenChange: vi.fn(() => true),
     isKeyboardShortcutsDialogOpen: false,
@@ -164,7 +164,7 @@ describe('useOverlayProps', () => {
       environmentDialogLayout: 'desktop',
       isEnvironmentDialogOpen: true,
       isMobileMoreOpen: true,
-      isNewSceneDialogOpen: true,
+      isStartOverDialogOpen: true,
       isInfoDialogOpen: true,
       isKeyboardShortcutsDialogOpen: true,
       returnFocusTarget: 'mobile-more',
@@ -212,10 +212,10 @@ describe('useOverlayProps', () => {
       isEnvironmentDialogOpen: true,
       isMobileMoreOpen: true,
       onEnvironmentDialogOpenChange: options.onEnvironmentDialogOpenChange,
-      isNewSceneDialogOpen: true,
-      onCloseNewSceneDialog: options.onCloseNewSceneDialog,
-      onOpenNewSceneDialog: options.onOpenNewSceneDialog,
-      onConfirmNewScene: options.onConfirmNewScene,
+      isStartOverDialogOpen: true,
+      onCloseStartOverDialog: options.onCloseStartOverDialog,
+      onOpenStartOverDialog: options.onOpenStartOverDialog,
+      onConfirmStartOver: options.onConfirmStartOver,
       isInfoDialogOpen: true,
       onInfoDialogOpenChange: options.onInfoDialogOpenChange,
       isKeyboardShortcutsDialogOpen: true,

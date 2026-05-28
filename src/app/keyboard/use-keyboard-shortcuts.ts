@@ -19,7 +19,7 @@ interface ShortcutContext {
   targetIsInDialog: boolean
   isModalOpen: boolean
   hasSelection: boolean
-  canStartNewScene: boolean
+  canStartOver: boolean
   roomViewHasFocus: boolean
 }
 
@@ -39,11 +39,11 @@ interface UseKeyboardShortcutsOptions {
   enabled: boolean
   hasSelection: boolean
   isModalOpen: boolean
-  canStartNewScene: boolean
+  canStartOver: boolean
   roomViewHasFocus: boolean
   onUndo: () => void
   onRedo: () => void
-  onNewSceneIntent: () => void
+  onStartOverIntent: () => void
   onOpenDeleteDialog: () => void
   onFocusSelected: () => void
   onMoveSelection: (delta: { x: number; z: number }) => void
@@ -110,11 +110,11 @@ export function useKeyboardShortcuts({
   enabled,
   hasSelection,
   isModalOpen,
-  canStartNewScene,
+  canStartOver,
   roomViewHasFocus,
   onUndo,
   onRedo,
-  onNewSceneIntent,
+  onStartOverIntent,
   onOpenDeleteDialog,
   onFocusSelected,
   onMoveSelection,
@@ -143,11 +143,11 @@ export function useKeyboardShortcuts({
       execute: onRedo,
     },
     {
-      id: 'new-scene',
+      id: 'start-over',
       match: { key: 'n', ctrlOrMeta: true, alt: true },
       scope: 'global-app',
-      canExecute: (context) => context.canStartNewScene,
-      execute: onNewSceneIntent,
+      canExecute: (context) => context.canStartOver,
+      execute: onStartOverIntent,
     },
     {
       id: 'delete',
@@ -438,7 +438,7 @@ export function useKeyboardShortcuts({
       targetIsInDialog: isDialogTarget(target),
       isModalOpen,
       hasSelection,
-      canStartNewScene,
+      canStartOver,
       roomViewHasFocus,
     }
 

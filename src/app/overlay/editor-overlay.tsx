@@ -79,10 +79,10 @@ export interface EditorDialogsProps {
     open: boolean,
     options?: DialogOpenOptions,
   ) => boolean
-  isNewSceneDialogOpen: boolean
-  onCloseNewSceneDialog: () => void
-  onOpenNewSceneDialog: (options?: DialogOpenOptions) => void
-  onConfirmNewScene: () => void
+  isStartOverDialogOpen: boolean
+  onCloseStartOverDialog: () => void
+  onOpenStartOverDialog: (options?: DialogOpenOptions) => void
+  onConfirmStartOver: () => void
   isInfoDialogOpen: boolean
   onInfoDialogOpenChange: (
     open: boolean,
@@ -105,7 +105,7 @@ export interface EditorPreviewProps {
 
 interface EditorOverlayProps {
   editorInteractionsEnabled: boolean
-  newSceneDisabled: boolean
+  startOverDisabled: boolean
   onHeaderLayoutModeChange: (layout: 'mobile' | 'desktop') => void
   statusMessage: string | null
   onShareSceneUrl: () => Promise<'shared' | 'copied' | null>
@@ -127,7 +127,7 @@ interface EditorOverlayProps {
 
 export function EditorOverlay({
   editorInteractionsEnabled,
-  newSceneDisabled,
+  startOverDisabled,
   onHeaderLayoutModeChange,
   statusMessage,
   onShareSceneUrl,
@@ -173,7 +173,7 @@ export function EditorOverlay({
             onRedo: history.onRedo,
             onUndo: history.onUndo,
           }}
-          newSceneDisabled={newSceneDisabled}
+          startOverDisabled={startOverDisabled}
           onLayoutModeChange={onHeaderLayoutModeChange}
           onShareSceneUrl={onShareSceneUrl}
           onFloorFinishChange={onFloorFinishChange}

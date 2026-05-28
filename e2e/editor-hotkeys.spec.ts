@@ -211,15 +211,15 @@ test('applies keyboard shortcuts for rotate, history, and delete confirmation', 
   )
 
   await page.keyboard.press('Control+Alt+n')
-  const newSceneDialog = page.getByRole('alertdialog', {
+  const startOverDialog = page.getByRole('alertdialog', {
     name: /start over\?/i,
   })
-  await expect(newSceneDialog).toBeVisible()
+  await expect(startOverDialog).toBeVisible()
 
-  await newSceneDialog.getByRole('button', { name: 'Start Over' }).click()
-  const afterNewScene = await waitForItemCount(page, 0)
-  expect(afterNewScene.floorFinishId).toBe('wood-floor')
-  expect(afterNewScene.wallFinishId).toBe('light-gray')
+  await startOverDialog.getByRole('button', { name: 'Start Over' }).click()
+  const afterStartOver = await waitForItemCount(page, 0)
+  expect(afterStartOver.floorFinishId).toBe('wood-floor')
+  expect(afterStartOver.wallFinishId).toBe('light-gray')
 
   await page.keyboard.press('Control+Alt+n')
   await expect(

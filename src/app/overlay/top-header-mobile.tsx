@@ -17,11 +17,11 @@ export function TopHeaderMobile({
   floorFinishes,
   history,
   mobileMoreTriggerId,
-  newSceneDisabled,
+  startOverDisabled,
   onFloorFinishChange,
   onOpenEnvironmentFromMobileMore,
   onOpenKeyboardShortcutsFromMobileMore,
-  onOpenNewSceneFromMobileMore,
+  onOpenStartOverFromMobileMore,
   onOpenProjectInfoFromMobileMore,
   onShareSceneUrl,
   onWallFinishChange,
@@ -109,7 +109,7 @@ export function TopHeaderMobile({
       />
 
       <HeaderMoreActionsDrawer
-        newSceneDisabled={!editorInteractionsEnabled || newSceneDisabled}
+        startOverDisabled={!editorInteractionsEnabled || startOverDisabled}
         open={dialogs.isMobileMoreOpen}
         onOpenChange={(open) => {
           dialogs.onMobileMoreOpenChange(open, {
@@ -121,7 +121,7 @@ export function TopHeaderMobile({
         }}
         onOpenEnvironment={onOpenEnvironmentFromMobileMore}
         onOpenKeyboardShortcuts={onOpenKeyboardShortcutsFromMobileMore}
-        onOpenNewScene={onOpenNewSceneFromMobileMore}
+        onOpenStartOver={onOpenStartOverFromMobileMore}
         onOpenProjectInfo={onOpenProjectInfoFromMobileMore}
       />
     </div>

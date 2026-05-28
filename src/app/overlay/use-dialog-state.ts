@@ -9,7 +9,7 @@ export type ActiveDialog =
   | 'keyboard-shortcuts'
   | 'info'
   | 'more-mobile'
-  | 'new-scene'
+  | 'start-over'
   | null
 
 export type EnvironmentDialogLayout = 'desktop' | 'mobile'
@@ -19,7 +19,7 @@ export type DialogReturnFocusTarget =
   | 'info-inline'
   | 'keyboard-inline'
   | 'mobile-more'
-  | 'new-scene-inline'
+  | 'start-over-inline'
   | null
 
 export interface DialogOpenOptions {
@@ -34,7 +34,7 @@ interface UseDialogStateOptions {
   editorInteractionsEnabled: boolean
   startupOverlayActive: boolean
   selectedFurniture: FurnitureItem | null
-  canStartNewScene: boolean
+  canStartOver: boolean
 }
 
 interface DialogState {
@@ -48,7 +48,7 @@ interface DialogState {
   isInfoDialogOpen: boolean
   isKeyboardShortcutsDialogOpen: boolean
   isMobileMoreOpen: boolean
-  isNewSceneDialogOpen: boolean
+  isStartOverDialogOpen: boolean
   isModalOpen: boolean
   pendingDeleteFurniture: FurnitureItem | null
   returnFocusTarget: DialogReturnFocusTarget
@@ -58,7 +58,7 @@ interface DialogState {
   openInfo: (options?: DialogOpenOptions) => boolean
   openKeyboardShortcuts: (options?: DialogOpenOptions) => boolean
   openMobileMore: (options?: DialogOpenOptions) => boolean
-  openNewScene: (options?: DialogOpenOptions) => boolean
+  openStartOver: (options?: DialogOpenOptions) => boolean
   closeDialog: () => void
   closeAllDialogs: () => void
   setCatalogOpen: (open: boolean) => boolean
@@ -79,7 +79,7 @@ export function useDialogState({
   editorInteractionsEnabled,
   startupOverlayActive,
   selectedFurniture,
-  canStartNewScene,
+  canStartOver,
 }: UseDialogStateOptions): DialogState {
   const layoutModeRef = useRef<'mobile' | 'desktop'>('desktop')
   const [dialogState, setDialogState] = useState<{
@@ -119,7 +119,7 @@ export function useDialogState({
   const isInfoDialogOpen = activeDialog === 'info'
   const isKeyboardShortcutsDialogOpen = activeDialog === 'keyboard-shortcuts'
   const isMobileMoreOpen = activeDialog === 'more-mobile'
-  const isNewSceneDialogOpen = activeDialog === 'new-scene'
+  const isStartOverDialogOpen = activeDialog === 'start-over'
   const isModalOpen = activeDialog !== null
 
   const openDialog = useCallback(
@@ -244,26 +244,26 @@ export function useDialogState({
     [openDialog, startupOverlayActive],
   )
 
-  const openNewScene = useCallback(
+  const openStartOver = useCallback(
     (options?: DialogOpenOptions) => {
       if (
         !editorInteractionsEnabled ||
         dialogStateRef.current.activeDialog !== null ||
-        !canStartNewScene
+        !canStartOver
       ) {
         return false
       }
 
-      openDialog('new-scene', {
+      openDialog('start-over', {
         returnFocusTarget:
           options?.returnFocusTarget ??
           (layoutModeRef.current === 'mobile'
             ? 'mobile-more'
-            : 'new-scene-inline'),
+            : 'start-over-inline'),
       })
       return true
     },
-    [canStartNewScene, editorInteractionsEnabled, openDialog],
+    [canStartOver, editorInteractionsEnabled, openDialog],
   )
 
   const setCatalogOpen = useCallback(
@@ -347,8 +347,8 @@ export function useDialogState({
           return 'info-inline'
         }
 
-        if (current.activeDialog === 'new-scene') {
-          return 'new-scene-inline'
+        if (current.activeDialog === 'start-over') {
+          return 'start-over-inline'
         }
 
         return current.returnFocusTarget
@@ -361,7 +361,7 @@ export function useDialogState({
       if (
         current.activeDialog === 'keyboard-shortcuts' ||
         current.activeDialog === 'info' ||
-        current.activeDialog === 'new-scene'
+        current.activeDialog === 'start-over'
       ) {
         return 'mobile-more'
       }
@@ -425,7 +425,7 @@ export function useDialogState({
     isInfoDialogOpen,
     isKeyboardShortcutsDialogOpen,
     isMobileMoreOpen,
-    isNewSceneDialogOpen,
+    isStartOverDialogOpen,
     isModalOpen,
     pendingDeleteFurniture,
     returnFocusTarget,
@@ -435,7 +435,7 @@ export function useDialogState({
     openInfo,
     openKeyboardShortcuts,
     openMobileMore,
-    openNewScene,
+    openStartOver,
     closeDialog,
     closeAllDialogs,
     setCatalogOpen,

@@ -169,8 +169,8 @@ vi.mock('../selection/delete-confirmation-dialog', () => ({
   DeleteConfirmationDialog: () => null,
 }))
 
-vi.mock('../selection/new-scene-confirmation-dialog', () => ({
-  NewSceneConfirmationDialog: () => null,
+vi.mock('../selection/start-over-confirmation-dialog', () => ({
+  StartOverConfirmationDialog: () => null,
 }))
 
 vi.mock('../startup/initialization-progress', () => ({
@@ -243,7 +243,7 @@ describe('EditorOverlay integration', () => {
         | 'info-inline'
         | 'keyboard-inline'
         | 'mobile-more'
-        | 'new-scene-inline'
+        | 'start-over-inline'
         | null
       >(null)
       const selectedItemControlsRef = React.useRef<HTMLDivElement | null>(null)
@@ -258,7 +258,7 @@ describe('EditorOverlay integration', () => {
               | 'info-inline'
               | 'keyboard-inline'
               | 'mobile-more'
-              | 'new-scene-inline'
+              | 'start-over-inline'
               | null
           },
         ) => {
@@ -281,7 +281,7 @@ describe('EditorOverlay integration', () => {
               | 'info-inline'
               | 'keyboard-inline'
               | 'mobile-more'
-              | 'new-scene-inline'
+              | 'start-over-inline'
               | null
           },
         ) => {
@@ -314,7 +314,7 @@ describe('EditorOverlay integration', () => {
 
             <EditorOverlay
               editorInteractionsEnabled={true}
-              newSceneDisabled={false}
+              startOverDisabled={false}
               onHeaderLayoutModeChange={vi.fn()}
               statusMessage={null}
               onShareSceneUrl={vi.fn(() =>
@@ -377,10 +377,10 @@ describe('EditorOverlay integration', () => {
                 isKeyboardShortcutsDialogOpen,
                 onKeyboardShortcutsDialogOpenChange:
                   handleKeyboardShortcutsOpenChange,
-                isNewSceneDialogOpen: false,
-                onCloseNewSceneDialog: vi.fn(),
-                onOpenNewSceneDialog: vi.fn(),
-                onConfirmNewScene: vi.fn(),
+                isStartOverDialogOpen: false,
+                onCloseStartOverDialog: vi.fn(),
+                onOpenStartOverDialog: vi.fn(),
+                onConfirmStartOver: vi.fn(),
                 isInfoDialogOpen: false,
                 onInfoDialogOpenChange: vi.fn(() => true),
                 onMobileMoreOpenChange: vi.fn(() => true),

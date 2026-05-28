@@ -32,9 +32,9 @@ export interface TopHeaderDialogsProps {
   isInfoDialogOpen: boolean
   isKeyboardShortcutsDialogOpen: boolean
   isMobileMoreOpen: boolean
-  isNewSceneDialogOpen: boolean
-  onCloseNewSceneDialog: () => void
-  onConfirmNewScene: () => void
+  isStartOverDialogOpen: boolean
+  onCloseStartOverDialog: () => void
+  onConfirmStartOver: () => void
   onEnvironmentDialogOpenChange: (
     open: boolean,
     options?: EnvironmentDialogOpenOptions,
@@ -51,7 +51,7 @@ export interface TopHeaderDialogsProps {
     open: boolean,
     options?: DialogOpenOptions,
   ) => boolean
-  onOpenNewSceneDialog: (options?: DialogOpenOptions) => void
+  onOpenStartOverDialog: (options?: DialogOpenOptions) => void
   returnFocusTarget: DialogReturnFocusTarget
 }
 
@@ -70,7 +70,7 @@ export interface TopHeaderProps extends TopHeaderEnvironmentProps {
   dialogs: TopHeaderDialogsProps
   editorInteractionsEnabled: boolean
   history: TopHeaderHistoryProps
-  newSceneDisabled: boolean
+  startOverDisabled: boolean
   onLayoutModeChange?: (layout: 'mobile' | 'desktop') => void
   onShareSceneUrl: () => Promise<'shared' | 'copied' | null>
 }
@@ -83,14 +83,14 @@ export interface TopHeaderMobileProps
       | 'dialogs'
       | 'editorInteractionsEnabled'
       | 'history'
-      | 'newSceneDisabled'
+      | 'startOverDisabled'
       | 'onShareSceneUrl'
     >,
     TopHeaderEnvironmentProps {
   mobileMoreTriggerId: string
   onOpenEnvironmentFromMobileMore: () => void
   onOpenKeyboardShortcutsFromMobileMore: () => void
-  onOpenNewSceneFromMobileMore: () => void
+  onOpenStartOverFromMobileMore: () => void
   onOpenProjectInfoFromMobileMore: () => void
   focusControlById: (id: string) => void
 }
@@ -103,12 +103,12 @@ export interface TopHeaderDesktopProps
       | 'dialogs'
       | 'editorInteractionsEnabled'
       | 'history'
-      | 'newSceneDisabled'
+      | 'startOverDisabled'
       | 'onShareSceneUrl'
     >,
     TopHeaderEnvironmentProps {
   desktopEnvironmentTriggerId: string
   desktopInfoTriggerId: string
   desktopKeyboardTriggerId: string
-  newSceneTriggerId: string
+  startOverTriggerId: string
 }

@@ -92,7 +92,7 @@ Camera preset shortcuts intentionally keep strict modifier matching. To support 
 - `targetIsInDialog`
 - `isModalOpen`
 - `hasSelection`
-- `canStartNewScene`
+- `canStartOver`
 
 Use built-in flags first:
 

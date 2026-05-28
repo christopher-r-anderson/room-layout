@@ -41,10 +41,10 @@ interface UseOverlayPropsOptions {
   isEnvironmentDialogOpen: EditorDialogsProps['isEnvironmentDialogOpen']
   isMobileMoreOpen: EditorDialogsProps['isMobileMoreOpen']
   onEnvironmentDialogOpenChange: EditorDialogsProps['onEnvironmentDialogOpenChange']
-  isNewSceneDialogOpen: EditorDialogsProps['isNewSceneDialogOpen']
-  onCloseNewSceneDialog: EditorDialogsProps['onCloseNewSceneDialog']
-  onOpenNewSceneDialog: EditorDialogsProps['onOpenNewSceneDialog']
-  onConfirmNewScene: EditorDialogsProps['onConfirmNewScene']
+  isStartOverDialogOpen: EditorDialogsProps['isStartOverDialogOpen']
+  onCloseStartOverDialog: EditorDialogsProps['onCloseStartOverDialog']
+  onOpenStartOverDialog: EditorDialogsProps['onOpenStartOverDialog']
+  onConfirmStartOver: EditorDialogsProps['onConfirmStartOver']
   isInfoDialogOpen: EditorDialogsProps['isInfoDialogOpen']
   onInfoDialogOpenChange: EditorDialogsProps['onInfoDialogOpenChange']
   isKeyboardShortcutsDialogOpen: EditorDialogsProps['isKeyboardShortcutsDialogOpen']
@@ -97,10 +97,10 @@ export function useOverlayProps({
   isEnvironmentDialogOpen,
   isMobileMoreOpen,
   onEnvironmentDialogOpenChange,
-  isNewSceneDialogOpen,
-  onCloseNewSceneDialog,
-  onOpenNewSceneDialog,
-  onConfirmNewScene,
+  isStartOverDialogOpen,
+  onCloseStartOverDialog,
+  onOpenStartOverDialog,
+  onConfirmStartOver,
   isInfoDialogOpen,
   onInfoDialogOpenChange,
   isKeyboardShortcutsDialogOpen,
@@ -194,10 +194,10 @@ export function useOverlayProps({
       isEnvironmentDialogOpen,
       isMobileMoreOpen,
       onEnvironmentDialogOpenChange,
-      isNewSceneDialogOpen,
-      onCloseNewSceneDialog,
-      onOpenNewSceneDialog,
-      onConfirmNewScene,
+      isStartOverDialogOpen,
+      onCloseStartOverDialog,
+      onOpenStartOverDialog,
+      onConfirmStartOver,
       isInfoDialogOpen,
       onInfoDialogOpenChange,
       isKeyboardShortcutsDialogOpen,
@@ -214,10 +214,10 @@ export function useOverlayProps({
       isEnvironmentDialogOpen,
       isMobileMoreOpen,
       onEnvironmentDialogOpenChange,
-      isNewSceneDialogOpen,
-      onCloseNewSceneDialog,
-      onOpenNewSceneDialog,
-      onConfirmNewScene,
+      isStartOverDialogOpen,
+      onCloseStartOverDialog,
+      onOpenStartOverDialog,
+      onConfirmStartOver,
       isInfoDialogOpen,
       onInfoDialogOpenChange,
       isKeyboardShortcutsDialogOpen,

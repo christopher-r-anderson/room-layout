@@ -176,7 +176,7 @@ function App() {
     editorInteractionsEnabled: startup.editorInteractionsEnabled,
     startupOverlayActive: startup.startupOverlayActive,
     selectedFurniture: overlayState.selectedFurniture,
-    canStartNewScene: !sceneIsAtDefaults,
+    canStartOver: !sceneIsAtDefaults,
   })
 
   const commands = useSceneCommands({
@@ -395,10 +395,10 @@ function App() {
     isEnvironmentDialogOpen: dialogState.isEnvironmentDialogOpen,
     isMobileMoreOpen: dialogState.isMobileMoreOpen,
     onEnvironmentDialogOpenChange: dialogState.setEnvironmentOpen,
-    isNewSceneDialogOpen: dialogState.isNewSceneDialogOpen,
-    onCloseNewSceneDialog: dialogState.closeDialog,
-    onOpenNewSceneDialog: handlers.handleOpenNewSceneDialog,
-    onConfirmNewScene: handlers.handleConfirmNewScene,
+    isStartOverDialogOpen: dialogState.isStartOverDialogOpen,
+    onCloseStartOverDialog: dialogState.closeDialog,
+    onOpenStartOverDialog: handlers.handleOpenStartOverDialog,
+    onConfirmStartOver: handlers.handleConfirmStartOver,
     isInfoDialogOpen: dialogState.isInfoDialogOpen,
     onInfoDialogOpenChange: dialogState.setInfoOpen,
     isKeyboardShortcutsDialogOpen: dialogState.isKeyboardShortcutsDialogOpen,
@@ -498,11 +498,11 @@ function App() {
     enabled: startup.editorInteractionsEnabled,
     hasSelection: overlayState.selectedFurniture !== null,
     isModalOpen: dialogState.isModalOpen,
-    canStartNewScene: !sceneIsAtDefaults,
+    canStartOver: !sceneIsAtDefaults,
     roomViewHasFocus,
     onUndo: handlers.handleUndo,
     onRedo: handlers.handleRedo,
-    onNewSceneIntent: handlers.handleOpenNewSceneDialog,
+    onStartOverIntent: handlers.handleOpenStartOverDialog,
     onOpenDeleteDialog: handlers.handleOpenDeleteDialogFromRoomView,
     onFocusSelected: handlers.handleFocusSelected,
     onMoveSelection: (delta) => {
@@ -625,7 +625,7 @@ function App() {
 
             <EditorOverlay
               editorInteractionsEnabled={startup.editorInteractionsEnabled}
-              newSceneDisabled={sceneIsAtDefaults}
+              startOverDisabled={sceneIsAtDefaults}
               onHeaderLayoutModeChange={dialogState.syncLayoutMode}
               statusMessage={overlayState.editorMessage}
               onShareSceneUrl={() => handlers.handleShareSceneUrl()}

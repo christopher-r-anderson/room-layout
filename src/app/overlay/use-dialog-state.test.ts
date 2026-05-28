@@ -53,7 +53,7 @@ describe('useDialogState', () => {
           editorInteractionsEnabled: true,
           startupOverlayActive: false,
           selectedFurniture,
-          canStartNewScene: true,
+          canStartOver: true,
         }),
       {
         initialProps,
@@ -98,7 +98,7 @@ describe('useDialogState', () => {
           editorInteractionsEnabled,
           startupOverlayActive,
           selectedFurniture,
-          canStartNewScene: true,
+          canStartOver: true,
         }),
       {
         initialProps,
@@ -218,38 +218,38 @@ describe('useDialogState', () => {
 
   it('enforces the start over freshness guard at the dialog boundary', () => {
     const { result, rerender } = renderHook(
-      (props: DialogStateHookProps & { canStartNewScene: boolean }) =>
+      (props: DialogStateHookProps & { canStartOver: boolean }) =>
         useDialogState({
           editorInteractionsEnabled: props.editorInteractionsEnabled,
           startupOverlayActive: props.startupOverlayActive,
           selectedFurniture: props.selectedFurniture,
-          canStartNewScene: props.canStartNewScene,
+          canStartOver: props.canStartOver,
         }),
       {
         initialProps: {
           editorInteractionsEnabled: true,
           startupOverlayActive: false,
           selectedFurniture: null,
-          canStartNewScene: false,
+          canStartOver: false,
         },
       },
     )
 
     act(() => {
-      expect(result.current.openNewScene()).toBe(false)
+      expect(result.current.openStartOver()).toBe(false)
     })
-    expect(result.current.isNewSceneDialogOpen).toBe(false)
+    expect(result.current.isStartOverDialogOpen).toBe(false)
 
     rerender({
       editorInteractionsEnabled: true,
       startupOverlayActive: false,
       selectedFurniture: null,
-      canStartNewScene: true,
+      canStartOver: true,
     })
     act(() => {
-      expect(result.current.openNewScene()).toBe(true)
+      expect(result.current.openStartOver()).toBe(true)
     })
-    expect(result.current.isNewSceneDialogOpen).toBe(true)
+    expect(result.current.isStartOverDialogOpen).toBe(true)
   })
 
   it('supports boolean open-change handlers for environment and info dialogs', () => {
@@ -258,7 +258,7 @@ describe('useDialogState', () => {
         editorInteractionsEnabled: true,
         startupOverlayActive: false,
         selectedFurniture: LEATHER_COUCH,
-        canStartNewScene: true,
+        canStartOver: true,
       }),
     )
 
@@ -290,7 +290,7 @@ describe('useDialogState', () => {
         editorInteractionsEnabled: true,
         startupOverlayActive: false,
         selectedFurniture: LEATHER_COUCH,
-        canStartNewScene: true,
+        canStartOver: true,
       }),
     )
 
@@ -360,7 +360,7 @@ describe('useDialogState', () => {
         editorInteractionsEnabled: true,
         startupOverlayActive: false,
         selectedFurniture: LEATHER_COUCH,
-        canStartNewScene: true,
+        canStartOver: true,
       }),
     )
 
@@ -394,7 +394,7 @@ describe('useDialogState', () => {
         editorInteractionsEnabled: true,
         startupOverlayActive: false,
         selectedFurniture: LEATHER_COUCH,
-        canStartNewScene: true,
+        canStartOver: true,
       }),
     )
 
@@ -430,14 +430,14 @@ describe('useDialogState', () => {
 
     act(() => {
       expect(
-        result.current.openNewScene({ returnFocusTarget: 'mobile-more' }),
+        result.current.openStartOver({ returnFocusTarget: 'mobile-more' }),
       ).toBe(true)
     })
     act(() => {
       result.current.syncLayoutMode('desktop')
     })
-    expect(result.current.isNewSceneDialogOpen).toBe(true)
-    expect(result.current.returnFocusTarget).toBe('new-scene-inline')
+    expect(result.current.isStartOverDialogOpen).toBe(true)
+    expect(result.current.returnFocusTarget).toBe('start-over-inline')
     act(() => {
       result.current.closeDialog()
     })
@@ -467,12 +467,12 @@ describe('useDialogState', () => {
     })
 
     act(() => {
-      expect(result.current.openNewScene()).toBe(true)
+      expect(result.current.openStartOver()).toBe(true)
     })
     act(() => {
       result.current.syncLayoutMode('mobile')
     })
-    expect(result.current.isNewSceneDialogOpen).toBe(true)
+    expect(result.current.isStartOverDialogOpen).toBe(true)
     expect(result.current.returnFocusTarget).toBe('mobile-more')
   })
 
@@ -482,7 +482,7 @@ describe('useDialogState', () => {
         editorInteractionsEnabled: true,
         startupOverlayActive: false,
         selectedFurniture: LEATHER_COUCH,
-        canStartNewScene: true,
+        canStartOver: true,
       }),
     )
 
@@ -491,10 +491,10 @@ describe('useDialogState', () => {
     })
 
     act(() => {
-      expect(result.current.openNewScene()).toBe(true)
+      expect(result.current.openStartOver()).toBe(true)
     })
 
-    expect(result.current.isNewSceneDialogOpen).toBe(true)
+    expect(result.current.isStartOverDialogOpen).toBe(true)
     expect(result.current.returnFocusTarget).toBe('mobile-more')
   })
 })

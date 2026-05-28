@@ -10,11 +10,11 @@ function KeyboardShortcutHarness(props: {
   enabled: boolean
   hasSelection: boolean
   isModalOpen: boolean
-  canStartNewScene?: boolean
+  canStartOver?: boolean
   roomViewHasFocus?: boolean
   onUndo: () => void
   onRedo: () => void
-  onNewSceneIntent: () => void
+  onStartOverIntent: () => void
   onOpenDeleteDialog: () => void
   onFocusSelected: () => void
   onMoveSelection: (delta: { x: number; z: number }) => void
@@ -26,7 +26,7 @@ function KeyboardShortcutHarness(props: {
 }) {
   useKeyboardShortcuts({
     ...props,
-    canStartNewScene: props.canStartNewScene ?? true,
+    canStartOver: props.canStartOver ?? true,
     roomViewHasFocus: props.roomViewHasFocus ?? true,
     onSetCameraPreset: props.onSetCameraPreset ?? vi.fn(),
     onCanvasBrowse: props.onCanvasBrowse ?? vi.fn(),
@@ -47,11 +47,11 @@ function DialogEscapeHarness(props: {
     enabled: props.enabled,
     hasSelection: props.hasSelection,
     isModalOpen: false,
-    canStartNewScene: true,
+    canStartOver: true,
     roomViewHasFocus: true,
     onUndo: vi.fn(),
     onRedo: vi.fn(),
-    onNewSceneIntent: vi.fn(),
+    onStartOverIntent: vi.fn(),
     onOpenDeleteDialog: vi.fn(),
     onFocusSelected: vi.fn(),
     onMoveSelection: vi.fn(),
@@ -79,9 +79,9 @@ function TextInputHarness(props: {
   enabled: boolean
   onUndo: () => void
   onRedo: () => void
-  onNewSceneIntent?: () => void
+  onStartOverIntent?: () => void
   isModalOpen?: boolean
-  canStartNewScene?: boolean
+  canStartOver?: boolean
 }) {
   const inputRef = useRef<HTMLInputElement | null>(null)
 
@@ -89,11 +89,11 @@ function TextInputHarness(props: {
     enabled: props.enabled,
     hasSelection: false,
     isModalOpen: props.isModalOpen ?? false,
-    canStartNewScene: props.canStartNewScene ?? true,
+    canStartOver: props.canStartOver ?? true,
     roomViewHasFocus: true,
     onUndo: props.onUndo,
     onRedo: props.onRedo,
-    onNewSceneIntent: props.onNewSceneIntent ?? vi.fn(),
+    onStartOverIntent: props.onStartOverIntent ?? vi.fn(),
     onOpenDeleteDialog: vi.fn(),
     onFocusSelected: vi.fn(),
     onMoveSelection: vi.fn(),
@@ -123,11 +123,11 @@ function SelectedItemDetailsInputHarness(props: {
     enabled: props.enabled,
     hasSelection: true,
     isModalOpen: false,
-    canStartNewScene: true,
+    canStartOver: true,
     roomViewHasFocus: true,
     onUndo: vi.fn(),
     onRedo: vi.fn(),
-    onNewSceneIntent: vi.fn(),
+    onStartOverIntent: vi.fn(),
     onOpenDeleteDialog: props.onOpenDeleteDialog,
     onFocusSelected: vi.fn(),
     onMoveSelection: props.onMoveSelection,
@@ -151,22 +151,22 @@ function SelectedItemDetailsInputHarness(props: {
   )
 }
 
-function DialogNewSceneHarness(props: {
+function DialogStartOverHarness(props: {
   enabled: boolean
   isModalOpen: boolean
-  canStartNewScene?: boolean
+  canStartOver?: boolean
   includeTextInput?: boolean
-  onNewSceneIntent: () => void
+  onStartOverIntent: () => void
 }) {
   useKeyboardShortcuts({
     enabled: props.enabled,
     hasSelection: false,
     isModalOpen: props.isModalOpen,
-    canStartNewScene: props.canStartNewScene ?? true,
+    canStartOver: props.canStartOver ?? true,
     roomViewHasFocus: true,
     onUndo: vi.fn(),
     onRedo: vi.fn(),
-    onNewSceneIntent: props.onNewSceneIntent,
+    onStartOverIntent: props.onStartOverIntent,
     onOpenDeleteDialog: vi.fn(),
     onFocusSelected: vi.fn(),
     onMoveSelection: vi.fn(),
@@ -198,11 +198,11 @@ function PreHandledEscapeHarness(props: {
     enabled: props.enabled,
     hasSelection: props.hasSelection,
     isModalOpen: false,
-    canStartNewScene: true,
+    canStartOver: true,
     roomViewHasFocus: true,
     onUndo: vi.fn(),
     onRedo: vi.fn(),
-    onNewSceneIntent: vi.fn(),
+    onStartOverIntent: vi.fn(),
     onOpenDeleteDialog: vi.fn(),
     onFocusSelected: vi.fn(),
     onMoveSelection: vi.fn(),
@@ -234,7 +234,7 @@ function PreHandledEscapeHarness(props: {
 
 function ContentEditableHarness(props: {
   enabled: boolean
-  onNewSceneIntent: () => void
+  onStartOverIntent: () => void
 }) {
   const editableRef = useRef<HTMLDivElement | null>(null)
 
@@ -242,11 +242,11 @@ function ContentEditableHarness(props: {
     enabled: props.enabled,
     hasSelection: false,
     isModalOpen: false,
-    canStartNewScene: true,
+    canStartOver: true,
     roomViewHasFocus: true,
     onUndo: vi.fn(),
     onRedo: vi.fn(),
-    onNewSceneIntent: props.onNewSceneIntent,
+    onStartOverIntent: props.onStartOverIntent,
     onOpenDeleteDialog: vi.fn(),
     onFocusSelected: vi.fn(),
     onMoveSelection: vi.fn(),
@@ -274,7 +274,7 @@ function ContentEditableHarness(props: {
   )
 }
 
-const newSceneShortcutVariants: {
+const startOverShortcutVariants: {
   label: string
   init: Pick<KeyboardEventInit, 'altKey' | 'ctrlKey' | 'metaKey'>
 }[] = [
@@ -282,8 +282,8 @@ const newSceneShortcutVariants: {
   { label: 'Meta+Alt+N', init: { metaKey: true, altKey: true } },
 ]
 
-function fireNewSceneShortcuts(target: Window | HTMLElement): KeyboardEvent[] {
-  return newSceneShortcutVariants.map((variant) => {
+function fireStartOverShortcuts(target: Window | HTMLElement): KeyboardEvent[] {
+  return startOverShortcutVariants.map((variant) => {
     const event = new KeyboardEvent('keydown', {
       bubbles: true,
       cancelable: true,
@@ -308,7 +308,7 @@ describe('useKeyboardShortcuts', () => {
         isModalOpen={false}
         onUndo={vi.fn()}
         onRedo={vi.fn()}
-        onNewSceneIntent={vi.fn()}
+        onStartOverIntent={vi.fn()}
         onOpenDeleteDialog={onOpenDeleteDialog}
         onFocusSelected={vi.fn()}
         onMoveSelection={vi.fn()}
@@ -327,7 +327,7 @@ describe('useKeyboardShortcuts', () => {
         isModalOpen
         onUndo={vi.fn()}
         onRedo={vi.fn()}
-        onNewSceneIntent={vi.fn()}
+        onStartOverIntent={vi.fn()}
         onOpenDeleteDialog={onOpenDeleteDialog}
         onFocusSelected={vi.fn()}
         onMoveSelection={vi.fn()}
@@ -351,7 +351,7 @@ describe('useKeyboardShortcuts', () => {
         isModalOpen={false}
         onUndo={vi.fn()}
         onRedo={vi.fn()}
-        onNewSceneIntent={vi.fn()}
+        onStartOverIntent={vi.fn()}
         onOpenDeleteDialog={onOpenDeleteDialog}
         onFocusSelected={vi.fn()}
         onMoveSelection={vi.fn()}
@@ -374,7 +374,7 @@ describe('useKeyboardShortcuts', () => {
         isModalOpen={false}
         onUndo={onUndo}
         onRedo={vi.fn()}
-        onNewSceneIntent={vi.fn()}
+        onStartOverIntent={vi.fn()}
         onOpenDeleteDialog={vi.fn()}
         onFocusSelected={vi.fn()}
         onMoveSelection={vi.fn()}
@@ -411,7 +411,7 @@ describe('useKeyboardShortcuts', () => {
         isModalOpen={false}
         onUndo={onUndo}
         onRedo={onRedo}
-        onNewSceneIntent={vi.fn()}
+        onStartOverIntent={vi.fn()}
         onOpenDeleteDialog={vi.fn()}
         onFocusSelected={vi.fn()}
         onMoveSelection={onMoveSelection}
@@ -445,7 +445,7 @@ describe('useKeyboardShortcuts', () => {
         isModalOpen={false}
         onUndo={onUndo}
         onRedo={onRedo}
-        onNewSceneIntent={vi.fn()}
+        onStartOverIntent={vi.fn()}
         onOpenDeleteDialog={vi.fn()}
         onFocusSelected={vi.fn()}
         onMoveSelection={vi.fn()}
@@ -490,7 +490,7 @@ describe('useKeyboardShortcuts', () => {
         isModalOpen
         onUndo={onUndo}
         onRedo={onRedo}
-        onNewSceneIntent={vi.fn()}
+        onStartOverIntent={vi.fn()}
         onOpenDeleteDialog={vi.fn()}
         onFocusSelected={vi.fn()}
         onMoveSelection={vi.fn()}
@@ -519,7 +519,7 @@ describe('useKeyboardShortcuts', () => {
         isModalOpen={false}
         onUndo={vi.fn()}
         onRedo={vi.fn()}
-        onNewSceneIntent={vi.fn()}
+        onStartOverIntent={vi.fn()}
         onOpenDeleteDialog={vi.fn()}
         onFocusSelected={vi.fn()}
         onMoveSelection={onMoveSelection}
@@ -551,7 +551,7 @@ describe('useKeyboardShortcuts', () => {
         isModalOpen={false}
         onUndo={vi.fn()}
         onRedo={vi.fn()}
-        onNewSceneIntent={vi.fn()}
+        onStartOverIntent={vi.fn()}
         onOpenDeleteDialog={vi.fn()}
         onFocusSelected={onFocusSelected}
         onMoveSelection={onMoveSelection}
@@ -576,7 +576,7 @@ describe('useKeyboardShortcuts', () => {
         isModalOpen={false}
         onUndo={vi.fn()}
         onRedo={vi.fn()}
-        onNewSceneIntent={vi.fn()}
+        onStartOverIntent={vi.fn()}
         onOpenDeleteDialog={vi.fn()}
         onFocusSelected={vi.fn()}
         onMoveSelection={vi.fn()}
@@ -604,7 +604,7 @@ describe('useKeyboardShortcuts', () => {
         isModalOpen={false}
         onUndo={vi.fn()}
         onRedo={vi.fn()}
-        onNewSceneIntent={vi.fn()}
+        onStartOverIntent={vi.fn()}
         onOpenDeleteDialog={vi.fn()}
         onFocusSelected={vi.fn()}
         onMoveSelection={vi.fn()}
@@ -671,7 +671,7 @@ describe('useKeyboardShortcuts', () => {
         isModalOpen={false}
         onUndo={vi.fn()}
         onRedo={vi.fn()}
-        onNewSceneIntent={vi.fn()}
+        onStartOverIntent={vi.fn()}
         onOpenDeleteDialog={vi.fn()}
         onFocusSelected={vi.fn()}
         onMoveSelection={vi.fn()}
@@ -732,7 +732,7 @@ describe('useKeyboardShortcuts', () => {
         isModalOpen
         onUndo={vi.fn()}
         onRedo={vi.fn()}
-        onNewSceneIntent={vi.fn()}
+        onStartOverIntent={vi.fn()}
         onOpenDeleteDialog={vi.fn()}
         onFocusSelected={vi.fn()}
         onMoveSelection={vi.fn()}
@@ -758,7 +758,7 @@ describe('useKeyboardShortcuts', () => {
         isModalOpen={false}
         onUndo={vi.fn()}
         onRedo={vi.fn()}
-        onNewSceneIntent={vi.fn()}
+        onStartOverIntent={vi.fn()}
         onOpenDeleteDialog={vi.fn()}
         onFocusSelected={onFocusSelected}
         onMoveSelection={vi.fn()}
@@ -782,7 +782,7 @@ describe('useKeyboardShortcuts', () => {
         isModalOpen
         onUndo={vi.fn()}
         onRedo={vi.fn()}
-        onNewSceneIntent={vi.fn()}
+        onStartOverIntent={vi.fn()}
         onOpenDeleteDialog={vi.fn()}
         onFocusSelected={onFocusSelected}
         onMoveSelection={vi.fn()}
@@ -841,7 +841,7 @@ describe('useKeyboardShortcuts', () => {
         roomViewHasFocus={false}
         onUndo={vi.fn()}
         onRedo={vi.fn()}
-        onNewSceneIntent={vi.fn()}
+        onStartOverIntent={vi.fn()}
         onOpenDeleteDialog={vi.fn()}
         onFocusSelected={vi.fn()}
         onMoveSelection={vi.fn()}
@@ -867,7 +867,7 @@ describe('useKeyboardShortcuts', () => {
         roomViewHasFocus={true}
         onUndo={vi.fn()}
         onRedo={vi.fn()}
-        onNewSceneIntent={vi.fn()}
+        onStartOverIntent={vi.fn()}
         onOpenDeleteDialog={vi.fn()}
         onFocusSelected={vi.fn()}
         onMoveSelection={vi.fn()}
@@ -926,7 +926,7 @@ describe('useKeyboardShortcuts', () => {
         isModalOpen={false}
         onUndo={vi.fn()}
         onRedo={vi.fn()}
-        onNewSceneIntent={vi.fn()}
+        onStartOverIntent={vi.fn()}
         onOpenDeleteDialog={vi.fn()}
         onFocusSelected={vi.fn()}
         onMoveSelection={vi.fn()}
@@ -955,17 +955,17 @@ describe('useKeyboardShortcuts', () => {
   })
 
   it('dispatches start over and prevents default for Ctrl+Alt+N and Meta+Alt+N', () => {
-    const onNewSceneIntent = vi.fn()
+    const onStartOverIntent = vi.fn()
 
     render(
       <KeyboardShortcutHarness
         enabled
         hasSelection={false}
         isModalOpen={false}
-        canStartNewScene
+        canStartOver
         onUndo={vi.fn()}
         onRedo={vi.fn()}
-        onNewSceneIntent={onNewSceneIntent}
+        onStartOverIntent={onStartOverIntent}
         onOpenDeleteDialog={vi.fn()}
         onFocusSelected={vi.fn()}
         onMoveSelection={vi.fn()}
@@ -974,9 +974,9 @@ describe('useKeyboardShortcuts', () => {
       />,
     )
 
-    const events = fireNewSceneShortcuts(window)
+    const events = fireStartOverShortcuts(window)
 
-    expect(onNewSceneIntent).toHaveBeenCalledTimes(2)
+    expect(onStartOverIntent).toHaveBeenCalledTimes(2)
     for (const event of events) {
       expect(event.defaultPrevented).toBe(true)
     }
@@ -984,20 +984,20 @@ describe('useKeyboardShortcuts', () => {
 
   it.each<{
     name: string
-    renderCase: (onNewSceneIntent: () => void) => Window | HTMLElement
+    renderCase: (onStartOverIntent: () => void) => Window | HTMLElement
   }>([
     {
       name: 'start over is disabled',
-      renderCase: (onNewSceneIntent) => {
+      renderCase: (onStartOverIntent) => {
         render(
           <KeyboardShortcutHarness
             enabled
             hasSelection={false}
             isModalOpen={false}
-            canStartNewScene={false}
+            canStartOver={false}
             onUndo={vi.fn()}
             onRedo={vi.fn()}
-            onNewSceneIntent={onNewSceneIntent}
+            onStartOverIntent={onStartOverIntent}
             onOpenDeleteDialog={vi.fn()}
             onFocusSelected={vi.fn()}
             onMoveSelection={vi.fn()}
@@ -1011,16 +1011,16 @@ describe('useKeyboardShortcuts', () => {
     },
     {
       name: 'a modal is open',
-      renderCase: (onNewSceneIntent) => {
+      renderCase: (onStartOverIntent) => {
         render(
           <KeyboardShortcutHarness
             enabled
             hasSelection={false}
             isModalOpen
-            canStartNewScene
+            canStartOver
             onUndo={vi.fn()}
             onRedo={vi.fn()}
-            onNewSceneIntent={onNewSceneIntent}
+            onStartOverIntent={onStartOverIntent}
             onOpenDeleteDialog={vi.fn()}
             onFocusSelected={vi.fn()}
             onMoveSelection={vi.fn()}
@@ -1034,13 +1034,13 @@ describe('useKeyboardShortcuts', () => {
     },
     {
       name: 'the target is inside dialog content',
-      renderCase: (onNewSceneIntent) => {
+      renderCase: (onStartOverIntent) => {
         const view = render(
-          <DialogNewSceneHarness
+          <DialogStartOverHarness
             enabled
             isModalOpen
-            canStartNewScene
-            onNewSceneIntent={onNewSceneIntent}
+            canStartOver
+            onStartOverIntent={onStartOverIntent}
           />,
         )
 
@@ -1049,14 +1049,14 @@ describe('useKeyboardShortcuts', () => {
     },
     {
       name: 'the target is a dialog text input',
-      renderCase: (onNewSceneIntent) => {
+      renderCase: (onStartOverIntent) => {
         const view = render(
-          <DialogNewSceneHarness
+          <DialogStartOverHarness
             enabled
             isModalOpen
-            canStartNewScene
+            canStartOver
             includeTextInput
-            onNewSceneIntent={onNewSceneIntent}
+            onStartOverIntent={onStartOverIntent}
           />,
         )
 
@@ -1065,13 +1065,13 @@ describe('useKeyboardShortcuts', () => {
     },
     {
       name: 'the target is a regular text input',
-      renderCase: (onNewSceneIntent) => {
+      renderCase: (onStartOverIntent) => {
         const view = render(
           <TextInputHarness
             enabled
             onUndo={vi.fn()}
             onRedo={vi.fn()}
-            onNewSceneIntent={onNewSceneIntent}
+            onStartOverIntent={onStartOverIntent}
           />,
         )
 
@@ -1080,11 +1080,11 @@ describe('useKeyboardShortcuts', () => {
     },
     {
       name: 'the target is contenteditable',
-      renderCase: (onNewSceneIntent) => {
+      renderCase: (onStartOverIntent) => {
         const view = render(
           <ContentEditableHarness
             enabled
-            onNewSceneIntent={onNewSceneIntent}
+            onStartOverIntent={onStartOverIntent}
           />,
         )
 
@@ -1094,11 +1094,11 @@ describe('useKeyboardShortcuts', () => {
   ])(
     'does not dispatch start over or prevent default when $name',
     ({ renderCase }) => {
-      const onNewSceneIntent = vi.fn()
-      const target = renderCase(onNewSceneIntent)
-      const events = fireNewSceneShortcuts(target)
+      const onStartOverIntent = vi.fn()
+      const target = renderCase(onStartOverIntent)
+      const events = fireStartOverShortcuts(target)
 
-      expect(onNewSceneIntent).not.toHaveBeenCalled()
+      expect(onStartOverIntent).not.toHaveBeenCalled()
       for (const event of events) {
         expect(event.defaultPrevented).toBe(false)
       }
@@ -1113,7 +1113,7 @@ describe('useKeyboardShortcuts', () => {
         isModalOpen={false}
         onUndo={vi.fn()}
         onRedo={vi.fn()}
-        onNewSceneIntent={vi.fn()}
+        onStartOverIntent={vi.fn()}
         onOpenDeleteDialog={vi.fn()}
         onFocusSelected={vi.fn()}
         onMoveSelection={vi.fn()}
@@ -1157,7 +1157,7 @@ describe('useKeyboardShortcuts', () => {
         isModalOpen
         onUndo={onUndo}
         onRedo={vi.fn()}
-        onNewSceneIntent={vi.fn()}
+        onStartOverIntent={vi.fn()}
         onOpenDeleteDialog={vi.fn()}
         onFocusSelected={vi.fn()}
         onMoveSelection={vi.fn()}
@@ -1191,7 +1191,7 @@ describe('useKeyboardShortcuts', () => {
         isModalOpen={false}
         onUndo={vi.fn()}
         onRedo={vi.fn()}
-        onNewSceneIntent={vi.fn()}
+        onStartOverIntent={vi.fn()}
         onOpenDeleteDialog={vi.fn()}
         onFocusSelected={vi.fn()}
         onMoveSelection={onMoveSelection}
@@ -1224,7 +1224,7 @@ describe('useKeyboardShortcuts', () => {
         isModalOpen={false}
         onUndo={vi.fn()}
         onRedo={vi.fn()}
-        onNewSceneIntent={vi.fn()}
+        onStartOverIntent={vi.fn()}
         onOpenDeleteDialog={vi.fn()}
         onFocusSelected={vi.fn()}
         onMoveSelection={onMoveSelection}
@@ -1262,7 +1262,7 @@ describe('useKeyboardShortcuts', () => {
         roomViewHasFocus
         onUndo={vi.fn()}
         onRedo={vi.fn()}
-        onNewSceneIntent={vi.fn()}
+        onStartOverIntent={vi.fn()}
         onOpenDeleteDialog={vi.fn()}
         onFocusSelected={vi.fn()}
         onMoveSelection={vi.fn()}
@@ -1303,7 +1303,7 @@ describe('useKeyboardShortcuts', () => {
         roomViewHasFocus={false}
         onUndo={vi.fn()}
         onRedo={vi.fn()}
-        onNewSceneIntent={vi.fn()}
+        onStartOverIntent={vi.fn()}
         onOpenDeleteDialog={vi.fn()}
         onFocusSelected={vi.fn()}
         onMoveSelection={vi.fn()}
@@ -1333,7 +1333,7 @@ describe('useKeyboardShortcuts', () => {
         roomViewHasFocus
         onUndo={vi.fn()}
         onRedo={vi.fn()}
-        onNewSceneIntent={vi.fn()}
+        onStartOverIntent={vi.fn()}
         onOpenDeleteDialog={vi.fn()}
         onFocusSelected={vi.fn()}
         onMoveSelection={onMoveSelection}
@@ -1368,7 +1368,7 @@ describe('useKeyboardShortcuts', () => {
         roomViewHasFocus={false}
         onUndo={vi.fn()}
         onRedo={vi.fn()}
-        onNewSceneIntent={vi.fn()}
+        onStartOverIntent={vi.fn()}
         onOpenDeleteDialog={onOpenDeleteDialog}
         onFocusSelected={onFocusSelected}
         onMoveSelection={onMoveSelection}

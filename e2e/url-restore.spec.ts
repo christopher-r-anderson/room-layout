@@ -515,16 +515,16 @@ test('start over clears the saved draft so reload stays fresh', async ({
   expect(draftBeforeReset).not.toBeNull()
   expect(draftBeforeReset?.items.length).toBe(1)
 
-  const newSceneButton = page.getByRole('button', {
+  const startOverButton = page.getByRole('button', {
     name: 'Start over',
   })
-  await newSceneButton.click()
+  await startOverButton.click()
 
-  const newSceneDialog = page.getByRole('alertdialog', {
+  const startOverDialog = page.getByRole('alertdialog', {
     name: /start over\?/i,
   })
-  await expect(newSceneDialog).toBeVisible()
-  await newSceneDialog.getByRole('button', { name: 'Start Over' }).click()
+  await expect(startOverDialog).toBeVisible()
+  await startOverDialog.getByRole('button', { name: 'Start Over' }).click()
 
   const resetState = await waitForEditorReady(page)
   expect(resetState.itemCount).toBe(0)

@@ -14,20 +14,20 @@ import {
 } from '@tabler/icons-react'
 
 export function HeaderMoreActionsDrawer({
-  newSceneDisabled,
+  startOverDisabled,
   onOpenChange,
   onOpenEnvironment,
   onOpenKeyboardShortcuts,
-  onOpenNewScene,
+  onOpenStartOver,
   onOpenProjectInfo,
   onCloseAutoFocus,
   open,
 }: {
-  newSceneDisabled: boolean
+  startOverDisabled: boolean
   onOpenChange: (open: boolean) => void
   onOpenEnvironment: () => void
   onOpenKeyboardShortcuts: () => void
-  onOpenNewScene: () => void
+  onOpenStartOver: () => void
   onOpenProjectInfo: () => void
   onCloseAutoFocus?: () => void
   open: boolean
@@ -69,8 +69,8 @@ export function HeaderMoreActionsDrawer({
             variant="secondary"
             size="toolbar"
             className="justify-start"
-            disabled={newSceneDisabled}
-            onClick={onOpenNewScene}
+            disabled={startOverDisabled}
+            onClick={onOpenStartOver}
           >
             <IconRotate2 aria-hidden="true" />
             <span>Start Over</span>

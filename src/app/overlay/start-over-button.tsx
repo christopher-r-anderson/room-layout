@@ -2,11 +2,11 @@ import { IconRotate2 } from '@tabler/icons-react'
 import { ToolButton } from '@/components/ui/tool-button'
 import type { ComponentProps } from 'react'
 
-export function NewSceneButton({
+export function StartOverButton({
   buttonId,
   disabled,
   disabledMessage,
-  onOpenNewSceneDialog,
+  onOpenStartOverDialog,
   className = 'pointer-events-auto',
   labelVisibility,
   size,
@@ -14,7 +14,7 @@ export function NewSceneButton({
   buttonId?: string
   disabled: boolean
   disabledMessage: string
-  onOpenNewSceneDialog: () => void
+  onOpenStartOverDialog: () => void
   className?: string
   labelVisibility?: ComponentProps<typeof ToolButton>['labelVisibility']
   size?: ComponentProps<typeof ToolButton>['size']
@@ -22,7 +22,7 @@ export function NewSceneButton({
   return (
     <ToolButton
       id={buttonId}
-      action={onOpenNewSceneDialog}
+      action={onOpenStartOverDialog}
       disabled={disabled}
       disabledMessage={disabledMessage}
       shortcuts="Control+Alt+N Meta+Alt+N"

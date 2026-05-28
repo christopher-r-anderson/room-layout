@@ -1,7 +1,7 @@
 import { useEffect, useId } from 'react'
 import { KeyboardShortcutsDialog } from '@/app/keyboard/keyboard-shortcuts-help'
 import { ProjectInfoDialog } from '@/app/project-info/project-info-dialog'
-import { NewSceneConfirmationDialog } from '@/app/selection/new-scene-confirmation-dialog'
+import { StartOverConfirmationDialog } from '@/app/selection/start-over-confirmation-dialog'
 import { useHeaderLayoutMode } from './use-header-layout-mode'
 import { TopHeaderDesktop } from './top-header-desktop'
 import { TopHeaderMobile } from './top-header-mobile'
@@ -28,7 +28,7 @@ export function TopHeader({
   const desktopEnvironmentTriggerId = useId()
   const desktopInfoTriggerId = useId()
   const desktopKeyboardTriggerId = useId()
-  const newSceneTriggerId = useId()
+  const startOverTriggerId = useId()
 
   useEffect(() => {
     onLayoutModeChange?.(layoutMode)
@@ -55,8 +55,8 @@ export function TopHeader({
       return
     }
 
-    if (target === 'new-scene-inline') {
-      focusControlById(newSceneTriggerId)
+    if (target === 'start-over-inline') {
+      focusControlById(startOverTriggerId)
     }
   }
 
@@ -96,9 +96,9 @@ export function TopHeader({
               })
             })
           }}
-          onOpenNewSceneFromMobileMore={() => {
+          onOpenStartOverFromMobileMore={() => {
             openFromMobileMore(() => {
-              dialogs.onOpenNewSceneDialog({
+              dialogs.onOpenStartOverDialog({
                 returnFocusTarget: 'mobile-more',
               })
             })
@@ -119,7 +119,7 @@ export function TopHeader({
           desktopEnvironmentTriggerId={desktopEnvironmentTriggerId}
           desktopInfoTriggerId={desktopInfoTriggerId}
           desktopKeyboardTriggerId={desktopKeyboardTriggerId}
-          newSceneTriggerId={newSceneTriggerId}
+          startOverTriggerId={startOverTriggerId}
         />
       )}
 
@@ -151,14 +151,14 @@ export function TopHeader({
         </>
       ) : null}
 
-      <NewSceneConfirmationDialog
-        open={dialogs.isNewSceneDialogOpen}
+      <StartOverConfirmationDialog
+        open={dialogs.isStartOverDialogOpen}
         onClose={() => {
-          dialogs.onCloseNewSceneDialog()
+          dialogs.onCloseStartOverDialog()
           focusActiveReturnTarget()
         }}
         onConfirm={() => {
-          dialogs.onConfirmNewScene()
+          dialogs.onConfirmStartOver()
           focusActiveReturnTarget()
         }}
       />

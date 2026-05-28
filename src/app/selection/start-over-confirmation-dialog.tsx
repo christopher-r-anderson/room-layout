@@ -9,7 +9,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 
-export function NewSceneConfirmationDialog({
+export function StartOverConfirmationDialog({
   onClose,
   onConfirm,
   open,
@@ -27,7 +27,7 @@ export function NewSceneConfirmationDialog({
         }
       }}
     >
-      <AlertDialogContent size="sm" id="confirm-new-scene-dialog">
+      <AlertDialogContent size="sm" id="confirm-start-over-dialog">
         <AlertDialogHeader>
           <AlertDialogTitle>Start over?</AlertDialogTitle>
           <AlertDialogDescription>

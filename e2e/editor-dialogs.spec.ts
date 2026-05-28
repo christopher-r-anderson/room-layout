@@ -95,22 +95,22 @@ test('environment, sheet, and confirmation dialogs keep accessible contracts and
   await expect(deleteDialog).toBeHidden()
   await expect(deleteButton).toBeFocused()
 
-  const newSceneButton = page.getByRole('button', {
+  const startOverButton = page.getByRole('button', {
     name: 'Start over',
   })
-  await newSceneButton.click()
+  await startOverButton.click()
 
-  const newSceneDialog = page.getByRole('alertdialog', {
+  const startOverDialog = page.getByRole('alertdialog', {
     name: /start over\?/i,
   })
-  await expect(newSceneDialog).toBeVisible()
+  await expect(startOverDialog).toBeVisible()
   await expect(
-    newSceneDialog.getByText(/restores the default room/i),
+    startOverDialog.getByText(/restores the default room/i),
   ).toBeVisible()
 
-  await newSceneDialog.getByRole('button', { name: 'Cancel' }).click()
-  await expect(newSceneDialog).toBeHidden()
-  await expect(newSceneButton).toBeFocused()
+  await startOverDialog.getByRole('button', { name: 'Cancel' }).click()
+  await expect(startOverDialog).toBeHidden()
+  await expect(startOverButton).toBeFocused()
 })
 
 test('catalog, environment, delete, and info dialogs stay mutually exclusive', async ({

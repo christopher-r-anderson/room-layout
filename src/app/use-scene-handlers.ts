@@ -85,7 +85,7 @@ interface DialogState {
   closeDialog: () => void
   closeAllDialogs: () => void
   openDelete: () => boolean
-  openNewScene: (options?: DialogOpenOptions) => boolean
+  openStartOver: (options?: DialogOpenOptions) => boolean
   setCatalogOpen: (open: boolean) => boolean
   pendingDeleteFurniture: FurnitureItem | null
 }
@@ -157,8 +157,8 @@ interface SceneHandlers {
   handleCatalogDrawerOpenChange: (open: boolean) => void
   handleOpenDeleteDialog: () => void
   handleOpenDeleteDialogFromRoomView: () => void
-  handleOpenNewSceneDialog: (options?: DialogOpenOptions) => void
-  handleConfirmNewScene: () => void
+  handleOpenStartOverDialog: (options?: DialogOpenOptions) => void
+  handleConfirmStartOver: () => void
   handleSceneHistoryChange: (availability: HistoryAvailability) => void
   handleSceneSelectionChange: (item: FurnitureItem | null) => void
   handleSceneAssetError: (error: Error) => void
@@ -429,7 +429,7 @@ export function useSceneHandlers({
     closeDialog,
     closeAllDialogs,
     openDelete,
-    openNewScene,
+    openStartOver,
     setCatalogOpen,
     pendingDeleteFurniture,
   } = dialogState
@@ -832,18 +832,18 @@ export function useSceneHandlers({
     }
   }, [openDelete, clearEditorMessage])
 
-  const handleOpenNewSceneDialog = useCallback(
+  const handleOpenStartOverDialog = useCallback(
     (options?: DialogOpenOptions) => {
-      const opened = openNewScene(options)
+      const opened = openStartOver(options)
 
       if (opened) {
         clearEditorMessage()
       }
     },
-    [openNewScene, clearEditorMessage],
+    [openStartOver, clearEditorMessage],
   )
 
-  const handleConfirmNewScene = useCallback(() => {
+  const handleConfirmStartOver = useCallback(() => {
     closeDialog()
     clearPreview()
     clearEditorMessage()
@@ -1159,8 +1159,8 @@ export function useSceneHandlers({
     handleCatalogDrawerOpenChange,
     handleOpenDeleteDialog,
     handleOpenDeleteDialogFromRoomView,
-    handleOpenNewSceneDialog,
-    handleConfirmNewScene,
+    handleOpenStartOverDialog,
+    handleConfirmStartOver,
     handleSceneHistoryChange,
     handleSceneSelectionChange,
     handleSceneAssetError,

@@ -6,7 +6,7 @@ import { ProjectInfoDialog } from '@/app/project-info/project-info-dialog'
 import { IconInfoCircle, IconKeyboard } from '@tabler/icons-react'
 import { EnvironmentDialog } from './environment-dialog'
 import { EnvironmentButton } from './environment-button'
-import { NewSceneButton } from './new-scene-button'
+import { StartOverButton } from './start-over-button'
 import { ShareSceneButton } from './share-scene-button'
 import type { TopHeaderDesktopProps } from './top-header.types'
 
@@ -21,8 +21,8 @@ export function TopHeaderDesktop({
   floorFinishLoading,
   floorFinishes,
   history,
-  newSceneDisabled,
-  newSceneTriggerId,
+  startOverDisabled,
+  startOverTriggerId,
   onFloorFinishChange,
   onShareSceneUrl,
   onWallFinishChange,
@@ -87,18 +87,18 @@ export function TopHeaderDesktop({
           onRedo={history.onRedo}
           onUndo={history.onUndo}
         />
-        <NewSceneButton
-          buttonId={newSceneTriggerId}
-          disabled={!editorInteractionsEnabled || newSceneDisabled}
+        <StartOverButton
+          buttonId={startOverTriggerId}
+          disabled={!editorInteractionsEnabled || startOverDisabled}
           disabledMessage={
             !editorInteractionsEnabled
               ? 'Editor interactions are unavailable while loading'
               : 'Scene already matches defaults'
           }
           labelVisibility="always"
-          onOpenNewSceneDialog={() => {
-            dialogs.onOpenNewSceneDialog({
-              returnFocusTarget: 'new-scene-inline',
+          onOpenStartOverDialog={() => {
+            dialogs.onOpenStartOverDialog({
+              returnFocusTarget: 'start-over-inline',
             })
           }}
           size="toolbar"
