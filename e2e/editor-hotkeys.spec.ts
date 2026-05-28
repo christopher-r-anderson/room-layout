@@ -131,7 +131,7 @@ test('applies keyboard shortcuts for rotate, history, and delete confirmation', 
   await page.locator('body').press('.')
   await page.locator('body').press('Control+z')
   await page.locator('body').press('Delete')
-  await page.locator('body').press('Control+n')
+  await page.locator('body').press('Control+Alt+n')
 
   const whileInfoOpen = await readSceneState(page)
   expect(whileInfoOpen.items[0].rotationY).toBeCloseTo(initialItem.rotationY, 6)
@@ -139,7 +139,7 @@ test('applies keyboard shortcuts for rotate, history, and delete confirmation', 
     page.getByRole('alertdialog', { name: /remove item from room/i }),
   ).toBeHidden()
   await expect(
-    page.getByRole('alertdialog', { name: /start over with a new scene/i }),
+    page.getByRole('alertdialog', { name: /start over\?/i }),
   ).toBeHidden()
 
   await page.keyboard.press('Escape')
@@ -152,7 +152,7 @@ test('applies keyboard shortcuts for rotate, history, and delete confirmation', 
 
   await page.locator('body').press('.')
   await page.locator('body').press('Delete')
-  await page.locator('body').press('Control+n')
+  await page.locator('body').press('Control+Alt+n')
 
   const whileSheetOpen = await readSceneState(page)
   expect(whileSheetOpen.items[0].rotationY).toBeCloseTo(
@@ -163,7 +163,7 @@ test('applies keyboard shortcuts for rotate, history, and delete confirmation', 
     page.getByRole('alertdialog', { name: /remove item from room/i }),
   ).toBeHidden()
   await expect(
-    page.getByRole('alertdialog', { name: /start over with a new scene/i }),
+    page.getByRole('alertdialog', { name: /start over\?/i }),
   ).toBeHidden()
 
   await page.keyboard.press('Escape')
@@ -210,20 +210,20 @@ test('applies keyboard shortcuts for rotate, history, and delete confirmation', 
     6,
   )
 
-  await page.keyboard.press('Control+n')
-  const newSceneDialog = page.getByRole('alertdialog', {
-    name: /start over with a new scene/i,
+  await page.keyboard.press('Control+Alt+n')
+  const startOverDialog = page.getByRole('alertdialog', {
+    name: /start over\?/i,
   })
-  await expect(newSceneDialog).toBeVisible()
+  await expect(startOverDialog).toBeVisible()
 
-  await newSceneDialog.getByRole('button', { name: 'New Scene' }).click()
-  const afterNewScene = await waitForItemCount(page, 0)
-  expect(afterNewScene.floorFinishId).toBe('wood-floor')
-  expect(afterNewScene.wallFinishId).toBe('light-gray')
+  await startOverDialog.getByRole('button', { name: 'Start Over' }).click()
+  const afterStartOver = await waitForItemCount(page, 0)
+  expect(afterStartOver.floorFinishId).toBe('wood-floor')
+  expect(afterStartOver.wallFinishId).toBe('light-gray')
 
-  await page.keyboard.press('Control+n')
+  await page.keyboard.press('Control+Alt+n')
   await expect(
-    page.getByRole('alertdialog', { name: /start over with a new scene/i }),
+    page.getByRole('alertdialog', { name: /start over\?/i }),
   ).toBeHidden()
 })
 

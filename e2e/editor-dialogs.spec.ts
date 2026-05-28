@@ -4,6 +4,7 @@ import {
   openEditor,
   readSceneState,
   selectFurnitureById,
+  waitForItemCount,
 } from './support/editor-harness'
 
 async function closeWithEscapeAndRestoreFocus(
@@ -95,22 +96,22 @@ test('environment, sheet, and confirmation dialogs keep accessible contracts and
   await expect(deleteDialog).toBeHidden()
   await expect(deleteButton).toBeFocused()
 
-  const newSceneButton = page.getByRole('button', {
-    name: 'Start a new scene',
+  const startOverButton = page.getByRole('button', {
+    name: 'Start over',
   })
-  await newSceneButton.click()
+  await startOverButton.click()
 
-  const newSceneDialog = page.getByRole('alertdialog', {
-    name: /start over with a new scene/i,
+  const startOverDialog = page.getByRole('alertdialog', {
+    name: /start over\?/i,
   })
-  await expect(newSceneDialog).toBeVisible()
+  await expect(startOverDialog).toBeVisible()
   await expect(
-    newSceneDialog.getByText(/resets the room to the default scene/i),
+    startOverDialog.getByText(/restores the default room/i),
   ).toBeVisible()
 
-  await newSceneDialog.getByRole('button', { name: 'Cancel' }).click()
-  await expect(newSceneDialog).toBeHidden()
-  await expect(newSceneButton).toBeFocused()
+  await startOverDialog.getByRole('button', { name: 'Cancel' }).click()
+  await expect(startOverDialog).toBeHidden()
+  await expect(startOverButton).toBeFocused()
 })
 
 test('catalog, environment, delete, and info dialogs stay mutually exclusive', async ({
@@ -156,9 +157,9 @@ test('catalog, environment, delete, and info dialogs stay mutually exclusive', a
   await page.keyboard.press('Delete')
   await expect(deleteDialog).toBeHidden()
 
-  await page.keyboard.press('Control+n')
+  await page.keyboard.press('Control+Alt+n')
   await expect(
-    page.getByRole('alertdialog', { name: /start over with a new scene/i }),
+    page.getByRole('alertdialog', { name: /start over\?/i }),
   ).toBeHidden()
 
   await closeWithEscapeAndRestoreFocus(
@@ -183,4 +184,124 @@ test('catalog, environment, delete, and info dialogs stay mutually exclusive', a
   await expect(deleteDialog).toBeHidden()
 
   await closeWithEscapeAndRestoreFocus(page, infoDialog, infoButton)
+})
+
+test('confirming desktop start over moves focus to the next enabled header control', async ({
+  page,
+}) => {
+  await openEditor(page)
+  await addFurniture(page, 'Leather Couch')
+
+  const startOverButton = page.getByRole('button', {
+    name: 'Start over',
+  })
+
+  await startOverButton.click()
+
+  const startOverDialog = page.getByRole('alertdialog', {
+    name: /start over\?/i,
+  })
+  await expect(startOverDialog).toBeVisible()
+
+  await startOverDialog.getByRole('button', { name: 'Start Over' }).click()
+
+  await expect(startOverDialog).toBeHidden()
+  await waitForItemCount(page, 0)
+  await expect(startOverButton).toHaveAttribute('aria-disabled', 'true')
+  await expect(
+    page.getByRole('button', { name: 'Keyboard shortcuts' }),
+  ).toBeFocused()
+})
+
+test.describe('narrow viewport more actions', () => {
+  test.use({ viewport: { width: 390, height: 844 } })
+
+  test('mobile More opens environment, keyboard shortcuts, and project info dialogs', async ({
+    page,
+  }) => {
+    await openEditor(page)
+
+    const moreButton = page.getByRole('button', { name: 'More actions' })
+    const moreDialog = page.getByRole('dialog', { name: 'More actions' })
+
+    await moreButton.click()
+    await expect(moreDialog).toBeVisible()
+
+    await moreDialog.getByRole('button', { name: 'Environment' }).click()
+
+    const environmentDialog = page.getByRole('dialog', { name: 'Environment' })
+    await expect(environmentDialog).toBeVisible()
+
+    await page.keyboard.press('Escape')
+    await expect(environmentDialog).toBeHidden()
+    await expect(moreButton).toBeFocused()
+
+    await moreButton.click()
+    await expect(moreDialog).toBeVisible()
+
+    await moreDialog.getByRole('button', { name: 'Keyboard shortcuts' }).click()
+
+    const shortcutsDialog = page.getByRole('dialog', {
+      name: 'Keyboard Shortcuts',
+    })
+    await expect(shortcutsDialog).toBeVisible()
+
+    await page.keyboard.press('Escape')
+    await expect(shortcutsDialog).toBeHidden()
+    await expect(moreButton).toBeFocused()
+
+    await moreButton.click()
+    await expect(moreDialog).toBeVisible()
+
+    await moreDialog.getByRole('button', { name: 'Project info' }).click()
+
+    const infoDialog = page.getByRole('dialog', {
+      name: /project & asset info/i,
+    })
+    await expect(infoDialog).toBeVisible()
+
+    await page.keyboard.press('Escape')
+    await expect(infoDialog).toBeHidden()
+    await expect(moreButton).toBeFocused()
+  })
+
+  test('start over restores focus to a visible control after responsive header resizes', async ({
+    page,
+  }) => {
+    await openEditor(page)
+    await addFurniture(page, 'Leather Couch')
+
+    const moreButton = page.getByRole('button', { name: 'More actions' })
+    await moreButton.click()
+
+    const moreDialog = page.getByRole('dialog', { name: 'More actions' })
+    await expect(moreDialog).toBeVisible()
+
+    await moreDialog.getByRole('button', { name: 'Start Over' }).click()
+
+    const startOverDialog = page.getByRole('alertdialog', {
+      name: /start over\?/i,
+    })
+    await expect(startOverDialog).toBeVisible()
+
+    await page.setViewportSize({ width: 1024, height: 844 })
+
+    const desktopStartOverButton = page.locator(
+      '[aria-keyshortcuts="Control+Alt+N Meta+Alt+N"]',
+    )
+    await expect(desktopStartOverButton).toBeVisible()
+
+    await startOverDialog.getByRole('button', { name: 'Cancel' }).click()
+    await expect(startOverDialog).toBeHidden()
+    await expect(desktopStartOverButton).toBeFocused()
+
+    await desktopStartOverButton.click()
+    await expect(startOverDialog).toBeVisible()
+
+    await page.setViewportSize({ width: 390, height: 844 })
+
+    await startOverDialog.getByRole('button', { name: 'Cancel' }).click()
+    await expect(startOverDialog).toBeHidden()
+    await expect(moreButton).toBeFocused()
+  })
 })

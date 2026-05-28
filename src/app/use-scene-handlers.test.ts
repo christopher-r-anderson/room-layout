@@ -127,7 +127,7 @@ describe('useSceneHandlers', () => {
       closeDialog: vi.fn(),
       closeAllDialogs: vi.fn(),
       openDelete: vi.fn(),
-      openNewScene: vi.fn(),
+      openStartOver: vi.fn(),
       setCatalogOpen: vi.fn(),
       pendingDeleteFurniture: null,
     }
@@ -220,7 +220,7 @@ describe('useSceneHandlers', () => {
       closeDialog: vi.fn(),
       closeAllDialogs: vi.fn(),
       openDelete: vi.fn(),
-      openNewScene: vi.fn(),
+      openStartOver: vi.fn(),
       setCatalogOpen: vi.fn(),
       pendingDeleteFurniture: null,
     }
@@ -322,7 +322,7 @@ describe('useSceneHandlers', () => {
       closeDialog: vi.fn(),
       closeAllDialogs: vi.fn(),
       openDelete: vi.fn(),
-      openNewScene: vi.fn(),
+      openStartOver: vi.fn(),
       setCatalogOpen: vi.fn(),
       pendingDeleteFurniture: null,
     }
@@ -715,7 +715,7 @@ describe('useSceneHandlers', () => {
       closeDialog: vi.fn(),
       closeAllDialogs: vi.fn(),
       openDelete: vi.fn(),
-      openNewScene: vi.fn(),
+      openStartOver: vi.fn(),
       setCatalogOpen: vi.fn(),
       pendingDeleteFurniture: null,
     }
@@ -829,7 +829,7 @@ describe('useSceneHandlers', () => {
       closeDialog: vi.fn(),
       closeAllDialogs: vi.fn(),
       openDelete: vi.fn(),
-      openNewScene: vi.fn(),
+      openStartOver: vi.fn(),
       setCatalogOpen: vi.fn(),
       pendingDeleteFurniture: null,
     }
@@ -942,7 +942,7 @@ describe('useSceneHandlers', () => {
       closeDialog: vi.fn(),
       closeAllDialogs: vi.fn(),
       openDelete: vi.fn(),
-      openNewScene: vi.fn(),
+      openStartOver: vi.fn(),
       setCatalogOpen: vi.fn(),
       pendingDeleteFurniture: null,
     }
@@ -1053,7 +1053,7 @@ describe('useSceneHandlers', () => {
       closeDialog: vi.fn(),
       closeAllDialogs: vi.fn(),
       openDelete: vi.fn(),
-      openNewScene: vi.fn(),
+      openStartOver: vi.fn(),
       setCatalogOpen: vi.fn(),
       pendingDeleteFurniture: null,
     }
@@ -1146,7 +1146,7 @@ describe('useSceneHandlers', () => {
       closeDialog: vi.fn(),
       closeAllDialogs: vi.fn(),
       openDelete: vi.fn(),
-      openNewScene: vi.fn(),
+      openStartOver: vi.fn(),
       setCatalogOpen: vi.fn(),
       pendingDeleteFurniture: null,
     }
@@ -1231,7 +1231,7 @@ describe('useSceneHandlers', () => {
       closeDialog: vi.fn(),
       closeAllDialogs: vi.fn(),
       openDelete: vi.fn(),
-      openNewScene: vi.fn(),
+      openStartOver: vi.fn(),
       setCatalogOpen: vi.fn(),
       pendingDeleteFurniture: null,
     }
@@ -1325,7 +1325,7 @@ describe('useSceneHandlers', () => {
       closeDialog: vi.fn(),
       closeAllDialogs: vi.fn(),
       openDelete: vi.fn(),
-      openNewScene: vi.fn(),
+      openStartOver: vi.fn(),
       setCatalogOpen: vi.fn(),
       pendingDeleteFurniture: null,
     }
@@ -1418,7 +1418,7 @@ describe('useSceneHandlers', () => {
       closeDialog: vi.fn(),
       closeAllDialogs: vi.fn(),
       openDelete: vi.fn(),
-      openNewScene: vi.fn(),
+      openStartOver: vi.fn(),
       setCatalogOpen: vi.fn(),
       pendingDeleteFurniture: null,
     }
@@ -1512,7 +1512,7 @@ describe('useSceneHandlers', () => {
       closeDialog: vi.fn(),
       closeAllDialogs: vi.fn(),
       openDelete: vi.fn(),
-      openNewScene: vi.fn(),
+      openStartOver: vi.fn(),
       setCatalogOpen: vi.fn(),
       pendingDeleteFurniture: null,
     }
@@ -1606,7 +1606,7 @@ describe('useSceneHandlers', () => {
       closeDialog: vi.fn(),
       closeAllDialogs: vi.fn(),
       openDelete: vi.fn(),
-      openNewScene: vi.fn(),
+      openStartOver: vi.fn(),
       setCatalogOpen: vi.fn(),
       pendingDeleteFurniture: null,
     }
@@ -1704,7 +1704,7 @@ describe('useSceneHandlers', () => {
       closeDialog: vi.fn(),
       closeAllDialogs: vi.fn(),
       openDelete: vi.fn(),
-      openNewScene: vi.fn(),
+      openStartOver: vi.fn(),
       setCatalogOpen: vi.fn(),
       pendingDeleteFurniture: null,
     }
@@ -1789,7 +1789,7 @@ describe('useSceneHandlers', () => {
       closeDialog: vi.fn(),
       closeAllDialogs: vi.fn(),
       openDelete: vi.fn(),
-      openNewScene: vi.fn(),
+      openStartOver: vi.fn(),
       setCatalogOpen: vi.fn(),
       pendingDeleteFurniture: null,
     }
@@ -1884,7 +1884,7 @@ describe('useSceneHandlers', () => {
       closeDialog: vi.fn(),
       closeAllDialogs: vi.fn(),
       openDelete: vi.fn(() => true),
-      openNewScene: vi.fn(),
+      openStartOver: vi.fn(),
       setCatalogOpen: vi.fn(),
       pendingDeleteFurniture: item,
     }

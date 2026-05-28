@@ -37,16 +37,20 @@ interface UseOverlayPropsOptions {
   pendingDeleteFurniture: EditorDialogsProps['pendingDeleteFurniture']
   onCloseDeleteDialog: EditorDialogsProps['onCloseDeleteDialog']
   onConfirmDeleteSelection: EditorDialogsProps['onConfirmDeleteSelection']
+  environmentDialogLayout: EditorDialogsProps['environmentDialogLayout']
   isEnvironmentDialogOpen: EditorDialogsProps['isEnvironmentDialogOpen']
+  isMobileMoreOpen: EditorDialogsProps['isMobileMoreOpen']
   onEnvironmentDialogOpenChange: EditorDialogsProps['onEnvironmentDialogOpenChange']
-  isNewSceneDialogOpen: EditorDialogsProps['isNewSceneDialogOpen']
-  onCloseNewSceneDialog: EditorDialogsProps['onCloseNewSceneDialog']
-  onOpenNewSceneDialog: EditorDialogsProps['onOpenNewSceneDialog']
-  onConfirmNewScene: EditorDialogsProps['onConfirmNewScene']
+  isStartOverDialogOpen: EditorDialogsProps['isStartOverDialogOpen']
+  onCloseStartOverDialog: EditorDialogsProps['onCloseStartOverDialog']
+  onOpenStartOverDialog: EditorDialogsProps['onOpenStartOverDialog']
+  onConfirmStartOver: EditorDialogsProps['onConfirmStartOver']
   isInfoDialogOpen: EditorDialogsProps['isInfoDialogOpen']
   onInfoDialogOpenChange: EditorDialogsProps['onInfoDialogOpenChange']
   isKeyboardShortcutsDialogOpen: EditorDialogsProps['isKeyboardShortcutsDialogOpen']
   onKeyboardShortcutsDialogOpenChange: EditorDialogsProps['onKeyboardShortcutsDialogOpenChange']
+  onMobileMoreOpenChange: EditorDialogsProps['onMobileMoreOpenChange']
+  returnFocusTarget: EditorDialogsProps['returnFocusTarget']
   onPreviewChange: EditorPreviewProps['onPreviewChange']
   previewedId: EditorPreviewProps['previewedId']
 }
@@ -89,16 +93,20 @@ export function useOverlayProps({
   pendingDeleteFurniture,
   onCloseDeleteDialog,
   onConfirmDeleteSelection,
+  environmentDialogLayout,
   isEnvironmentDialogOpen,
+  isMobileMoreOpen,
   onEnvironmentDialogOpenChange,
-  isNewSceneDialogOpen,
-  onCloseNewSceneDialog,
-  onOpenNewSceneDialog,
-  onConfirmNewScene,
+  isStartOverDialogOpen,
+  onCloseStartOverDialog,
+  onOpenStartOverDialog,
+  onConfirmStartOver,
   isInfoDialogOpen,
   onInfoDialogOpenChange,
   isKeyboardShortcutsDialogOpen,
   onKeyboardShortcutsDialogOpenChange,
+  onMobileMoreOpenChange,
+  returnFocusTarget,
   onPreviewChange,
   previewedId,
 }: UseOverlayPropsOptions): EditorOverlayPropsShape {
@@ -182,32 +190,40 @@ export function useOverlayProps({
       pendingDeleteFurniture,
       onCloseDeleteDialog,
       onConfirmDeleteSelection,
+      environmentDialogLayout,
       isEnvironmentDialogOpen,
+      isMobileMoreOpen,
       onEnvironmentDialogOpenChange,
-      isNewSceneDialogOpen,
-      onCloseNewSceneDialog,
-      onOpenNewSceneDialog,
-      onConfirmNewScene,
+      isStartOverDialogOpen,
+      onCloseStartOverDialog,
+      onOpenStartOverDialog,
+      onConfirmStartOver,
       isInfoDialogOpen,
       onInfoDialogOpenChange,
       isKeyboardShortcutsDialogOpen,
       onKeyboardShortcutsDialogOpenChange,
+      onMobileMoreOpenChange,
+      returnFocusTarget,
     }),
     [
       isDeleteDialogOpen,
       pendingDeleteFurniture,
       onCloseDeleteDialog,
       onConfirmDeleteSelection,
+      environmentDialogLayout,
       isEnvironmentDialogOpen,
+      isMobileMoreOpen,
       onEnvironmentDialogOpenChange,
-      isNewSceneDialogOpen,
-      onCloseNewSceneDialog,
-      onOpenNewSceneDialog,
-      onConfirmNewScene,
+      isStartOverDialogOpen,
+      onCloseStartOverDialog,
+      onOpenStartOverDialog,
+      onConfirmStartOver,
       isInfoDialogOpen,
       onInfoDialogOpenChange,
       isKeyboardShortcutsDialogOpen,
       onKeyboardShortcutsDialogOpenChange,
+      onMobileMoreOpenChange,
+      returnFocusTarget,
     ],
   )
 

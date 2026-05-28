@@ -1,15 +1,25 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 import { IconCheck, IconShare3 } from '@tabler/icons-react'
+import type { ComponentProps } from 'react'
 
 interface ShareSceneButtonProps {
   disabled?: boolean
   onShareSceneUrl: () => Promise<'shared' | 'copied' | null>
+  className?: string
+  labelVisibility?: 'responsive' | 'always' | 'sr-only'
+  size?: ComponentProps<typeof Button>['size']
+  variant?: ComponentProps<typeof Button>['variant']
 }
 
 export function ShareSceneButton({
   disabled = false,
   onShareSceneUrl,
+  className,
+  labelVisibility = 'responsive',
+  size = 'default',
+  variant = 'default',
 }: ShareSceneButtonProps) {
   const [shareResult, setShareResult] = useState<'shared' | 'copied' | null>(
     null,
@@ -56,24 +66,30 @@ export function ShareSceneButton({
       : shareResult === 'copied'
         ? 'Copied'
         : 'Share'
+  const visibleLabelClassName =
+    labelVisibility === 'always'
+      ? undefined
+      : labelVisibility === 'sr-only'
+        ? 'sr-only'
+        : 'hidden sm:inline'
 
   return (
     <Button
-      variant="default"
-      size="default"
+      variant={variant}
+      size={size}
       disabled={disabled || isPending}
       onClick={() => {
         void handleClick()
       }}
       aria-label="Share room layout"
-      className="pointer-events-auto"
+      className={cn('pointer-events-auto', className)}
     >
       {shareResult === null ? (
         <IconShare3 aria-hidden="true" size={16} />
       ) : (
         <IconCheck aria-hidden="true" size={16} />
       )}
-      <span className="hidden sm:inline">{label}</span>
+      <span className={visibleLabelClassName}>{label}</span>
     </Button>
   )
 }

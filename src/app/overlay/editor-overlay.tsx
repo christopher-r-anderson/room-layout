@@ -4,29 +4,25 @@ import type {
   FloorFinishOption,
   WallFinishOption,
 } from '@/lib/three/environment-materials'
+import type {
+  DialogOpenOptions,
+  DialogReturnFocusTarget,
+  EnvironmentDialogLayout,
+  EnvironmentDialogOpenOptions,
+} from './use-dialog-state'
 import type { CameraPreset, SceneReadModel } from '@/scene/scene.types'
 import { CameraTools } from '../camera/camera-tools'
 import { DeleteConfirmationDialog } from '../selection/delete-confirmation-dialog'
-import { NewSceneConfirmationDialog } from '../selection/new-scene-confirmation-dialog'
 import type { HistoryAvailability } from '../history/history.types'
 import { StatusMessage } from './status-message'
 import { InitializationError } from '../startup/initialization-error'
-import { CatalogDrawer } from '../catalog/catalog-drawer'
-import { ProjectInfoDialog } from '../project-info/project-info-dialog'
 import { InitializationProgress } from '../startup/initialization-progress'
-import { ProjectInfoButton } from '../project-info/project-info-button'
-import { CatalogAddButton } from '../catalog/catalog-add-button'
-import { KeyboardShortcutsHelp } from '../keyboard/keyboard-shortcuts-help'
-import { HistoryTools } from '../history/history-tools'
 import { Outliner } from '../scene-panel/outliner'
 import type { SceneOutlinerFocusRequest } from '../scene-panel.types'
 import type { StartupErrorKind } from '../startup/use-startup-state'
-import { ShareSceneButton } from './share-scene-button'
-import { NewSceneButton } from './new-scene-button'
 import type { PanelSelectById } from '../scene-interaction.types'
-import { EnvironmentDialog } from './environment-dialog'
-import { EnvironmentButton } from './environment-button'
 import { SelectedItemDetailsPlaceholder } from '../selection/selected-item-details'
+import { TopHeader } from './top-header'
 
 export interface EditorCameraProps {
   onSetCameraPreset: (preset: CameraPreset) => void
@@ -67,20 +63,36 @@ export interface EditorCatalogProps {
 }
 
 export interface EditorDialogsProps {
+  environmentDialogLayout: EnvironmentDialogLayout | null
   isDeleteDialogOpen: boolean
   pendingDeleteFurniture: FurnitureItem | null
   onCloseDeleteDialog: () => void
   onConfirmDeleteSelection: () => void
   isEnvironmentDialogOpen: boolean
-  onEnvironmentDialogOpenChange: (open: boolean) => void
+  isMobileMoreOpen: boolean
+  onEnvironmentDialogOpenChange: (
+    open: boolean,
+    options?: EnvironmentDialogOpenOptions,
+  ) => boolean
   isKeyboardShortcutsDialogOpen: boolean
-  onKeyboardShortcutsDialogOpenChange: (open: boolean) => void
-  isNewSceneDialogOpen: boolean
-  onCloseNewSceneDialog: () => void
-  onOpenNewSceneDialog: () => void
-  onConfirmNewScene: () => void
+  onKeyboardShortcutsDialogOpenChange: (
+    open: boolean,
+    options?: DialogOpenOptions,
+  ) => boolean
+  isStartOverDialogOpen: boolean
+  onCloseStartOverDialog: () => void
+  onOpenStartOverDialog: (options?: DialogOpenOptions) => void
+  onConfirmStartOver: () => void
   isInfoDialogOpen: boolean
-  onInfoDialogOpenChange: (open: boolean) => void
+  onInfoDialogOpenChange: (
+    open: boolean,
+    options?: DialogOpenOptions,
+  ) => boolean
+  onMobileMoreOpenChange: (
+    open: boolean,
+    options?: DialogOpenOptions,
+  ) => boolean
+  returnFocusTarget: DialogReturnFocusTarget
 }
 
 export interface EditorPreviewProps {
@@ -93,7 +105,8 @@ export interface EditorPreviewProps {
 
 interface EditorOverlayProps {
   editorInteractionsEnabled: boolean
-  newSceneDisabled: boolean
+  startOverDisabled: boolean
+  onHeaderLayoutModeChange: (layout: 'mobile' | 'desktop') => void
   statusMessage: string | null
   onShareSceneUrl: () => Promise<'shared' | 'copied' | null>
   camera: EditorCameraProps
@@ -114,7 +127,8 @@ interface EditorOverlayProps {
 
 export function EditorOverlay({
   editorInteractionsEnabled,
-  newSceneDisabled,
+  startOverDisabled,
+  onHeaderLayoutModeChange,
   statusMessage,
   onShareSceneUrl,
   camera,
@@ -139,94 +153,34 @@ export function EditorOverlay({
         inert={startup.startupOverlayActive}
         aria-hidden={startup.startupOverlayActive}
       >
-        <div className="grid gap-2 md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] md:items-start">
-          <div
-            role="toolbar"
-            aria-label="Scene building actions"
-            className="pointer-events-auto flex flex-wrap items-center gap-2"
-          >
-            <CatalogDrawer
-              open={catalog.isCatalogDrawerOpen}
-              onOpenChange={catalog.onCatalogDrawerOpenChange}
-              triggerButton={
-                <CatalogAddButton className="pointer-events-auto" />
-              }
-              catalog={catalog.catalog}
-              catalogIdToAdd={catalog.catalogIdToAdd}
-              editorInteractionsEnabled={editorInteractionsEnabled}
-              onAddFurniture={catalog.onAddFurniture}
-              onCatalogIdToAddChange={catalog.onCatalogIdToAddChange}
-            />
-            <EnvironmentDialog
-              open={dialogs.isEnvironmentDialogOpen}
-              onOpenChange={dialogs.onEnvironmentDialogOpenChange}
-              triggerButton={<EnvironmentButton />}
-              floorFinishId={floorFinishId}
-              floorFinishLoading={floorFinishLoading}
-              floorFinishes={floorFinishes}
-              onFloorFinishChange={onFloorFinishChange}
-              wallFinishId={wallFinishId}
-              wallFinishes={wallFinishes}
-              onWallFinishChange={onWallFinishChange}
-            />
-          </div>
-
-          <div className="pointer-events-auto flex justify-start md:justify-center">
-            <div className="rounded-md border border-border/70 bg-background/75 p-2 backdrop-blur-[2px]">
-              <div
-                className="flex flex-wrap items-center justify-center gap-2"
-                role="toolbar"
-                aria-label="History and scene actions"
-              >
-                <HistoryTools
-                  canRedo={history.historyAvailability.canRedo}
-                  canUndo={history.historyAvailability.canUndo}
-                  editorInteractionsEnabled={editorInteractionsEnabled}
-                  onRedo={history.onRedo}
-                  onUndo={history.onUndo}
-                />
-                <NewSceneButton
-                  disabled={!editorInteractionsEnabled || newSceneDisabled}
-                  disabledMessage={
-                    !editorInteractionsEnabled
-                      ? 'Editor interactions are unavailable while loading'
-                      : 'Scene already matches defaults'
-                  }
-                  onOpenNewSceneDialog={dialogs.onOpenNewSceneDialog}
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="pointer-events-auto flex justify-start md:justify-end">
-            <div className="rounded-md border border-border/70 bg-background/75 p-2 backdrop-blur-[2px]">
-              <div className="flex flex-col items-end gap-2">
-                <h1 className="px-1 text-base/6 font-semibold text-foreground">
-                  Room Layout
-                </h1>
-                <div
-                  className="flex items-center justify-end gap-2"
-                  inert={catalog.isCatalogDrawerOpen}
-                  aria-hidden={catalog.isCatalogDrawerOpen}
-                >
-                  <KeyboardShortcutsHelp
-                    open={dialogs.isKeyboardShortcutsDialogOpen}
-                    onOpenChange={dialogs.onKeyboardShortcutsDialogOpenChange}
-                  />
-                  <ProjectInfoDialog
-                    open={dialogs.isInfoDialogOpen}
-                    onOpenChange={dialogs.onInfoDialogOpenChange}
-                    triggerButton={<ProjectInfoButton />}
-                  />
-                  <ShareSceneButton
-                    disabled={!editorInteractionsEnabled}
-                    onShareSceneUrl={onShareSceneUrl}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <TopHeader
+          catalog={{
+            catalog: catalog.catalog,
+            catalogIdToAdd: catalog.catalogIdToAdd,
+            isCatalogDrawerOpen: catalog.isCatalogDrawerOpen,
+            onAddFurniture: catalog.onAddFurniture,
+            onCatalogDrawerOpenChange: catalog.onCatalogDrawerOpenChange,
+            onCatalogIdToAddChange: catalog.onCatalogIdToAddChange,
+          }}
+          dialogs={dialogs}
+          editorInteractionsEnabled={editorInteractionsEnabled}
+          floorFinishId={floorFinishId}
+          floorFinishLoading={floorFinishLoading}
+          floorFinishes={floorFinishes}
+          history={{
+            canRedo: history.historyAvailability.canRedo,
+            canUndo: history.historyAvailability.canUndo,
+            onRedo: history.onRedo,
+            onUndo: history.onUndo,
+          }}
+          startOverDisabled={startOverDisabled}
+          onLayoutModeChange={onHeaderLayoutModeChange}
+          onShareSceneUrl={onShareSceneUrl}
+          onFloorFinishChange={onFloorFinishChange}
+          wallFinishId={wallFinishId}
+          wallFinishes={wallFinishes}
+          onWallFinishChange={onWallFinishChange}
+        />
 
         <div className="grid gap-2 md:grid-cols-[minmax(0,20rem)_minmax(0,1fr)] md:items-end">
           <div className="flex min-w-0 flex-col gap-2 overflow-y-auto md:max-w-80">
@@ -282,12 +236,6 @@ export function EditorOverlay({
         onClose={dialogs.onCloseDeleteDialog}
         onConfirm={dialogs.onConfirmDeleteSelection}
       />
-      <NewSceneConfirmationDialog
-        open={dialogs.isNewSceneDialogOpen}
-        onClose={dialogs.onCloseNewSceneDialog}
-        onConfirm={dialogs.onConfirmNewScene}
-      />
-
       <InitializationProgress visible={startup.startupLoadingActive} />
       {startup.assetError ? (
         <InitializationError

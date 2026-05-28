@@ -15,6 +15,10 @@ import { SelectedItemControls } from '../selection/selected-item-controls'
 import { EditorOverlay } from './editor-overlay'
 import { findFirstFocusableControl } from './focusable-controls'
 
+vi.mock('./use-header-layout-mode', () => ({
+  useHeaderLayoutMode: () => 'desktop' as const,
+}))
+
 vi.mock('@/components/ui/select', () => {
   function collectItemValues(
     node: React.ReactNode,
@@ -133,50 +137,16 @@ vi.mock('../project-info/project-info-dialog', () => ({
   ProjectInfoDialog: ({
     triggerButton,
   }: {
-    triggerButton: React.ReactNode
-  }) => <>{triggerButton}</>,
+    triggerButton?: React.ReactNode
+  }) => <>{triggerButton ?? null}</>,
 }))
 
 vi.mock('../keyboard/keyboard-shortcuts-help', () => ({
-  KeyboardShortcutsHelp: () => (
-    <button type="button" aria-label="Keyboard shortcuts">
-      Keyboard shortcuts
-    </button>
-  ),
-}))
-
-vi.mock('./share-scene-button', () => ({
-  ShareSceneButton: ({
-    disabled,
-    onShareSceneUrl,
+  KeyboardShortcutsDialog: ({
+    triggerButton,
   }: {
-    disabled: boolean
-    onShareSceneUrl: () => Promise<'shared' | 'copied' | null>
-  }) => (
-    <button
-      type="button"
-      disabled={disabled}
-      onClick={() => {
-        void onShareSceneUrl()
-      }}
-    >
-      Share
-    </button>
-  ),
-}))
-
-vi.mock('./new-scene-button', () => ({
-  NewSceneButton: ({
-    disabled,
-    onOpenNewSceneDialog,
-  }: {
-    disabled: boolean
-    onOpenNewSceneDialog: () => void
-  }) => (
-    <button type="button" disabled={disabled} onClick={onOpenNewSceneDialog}>
-      New Scene
-    </button>
-  ),
+    triggerButton?: React.ReactNode
+  }) => <>{triggerButton ?? null}</>,
 }))
 
 vi.mock('../camera/camera-tools', () => ({
@@ -199,8 +169,8 @@ vi.mock('../selection/delete-confirmation-dialog', () => ({
   DeleteConfirmationDialog: () => null,
 }))
 
-vi.mock('../selection/new-scene-confirmation-dialog', () => ({
-  NewSceneConfirmationDialog: () => null,
+vi.mock('../selection/start-over-confirmation-dialog', () => ({
+  StartOverConfirmationDialog: () => null,
 }))
 
 vi.mock('../startup/initialization-progress', () => ({
@@ -264,9 +234,63 @@ describe('EditorOverlay integration', () => {
     function TestHarness() {
       const [isEnvironmentDialogOpen, setIsEnvironmentDialogOpen] =
         React.useState(false)
+      const [environmentDialogLayout, setEnvironmentDialogLayout] =
+        React.useState<'desktop' | 'mobile' | null>(null)
       const [isKeyboardShortcutsDialogOpen, setIsKeyboardShortcutsDialogOpen] =
         React.useState(false)
+      const [returnFocusTarget, setReturnFocusTarget] = React.useState<
+        | 'environment-inline'
+        | 'info-inline'
+        | 'keyboard-inline'
+        | 'mobile-more'
+        | 'start-over-inline'
+        | null
+      >(null)
       const selectedItemControlsRef = React.useRef<HTMLDivElement | null>(null)
+
+      const handleEnvironmentDialogOpenChange = React.useCallback(
+        (
+          open: boolean,
+          options?: {
+            layout?: 'desktop' | 'mobile'
+            returnFocusTarget?:
+              | 'environment-inline'
+              | 'info-inline'
+              | 'keyboard-inline'
+              | 'mobile-more'
+              | 'start-over-inline'
+              | null
+          },
+        ) => {
+          setIsEnvironmentDialogOpen(open)
+          setEnvironmentDialogLayout(
+            open ? (options?.layout ?? 'desktop') : null,
+          )
+          setReturnFocusTarget(options?.returnFocusTarget ?? null)
+          return true
+        },
+        [],
+      )
+
+      const handleKeyboardShortcutsOpenChange = React.useCallback(
+        (
+          open: boolean,
+          options?: {
+            returnFocusTarget?:
+              | 'environment-inline'
+              | 'info-inline'
+              | 'keyboard-inline'
+              | 'mobile-more'
+              | 'start-over-inline'
+              | null
+          },
+        ) => {
+          setIsKeyboardShortcutsDialogOpen(open)
+          setReturnFocusTarget(options?.returnFocusTarget ?? null)
+          return true
+        },
+        [],
+      )
 
       return (
         <TooltipProvider>
@@ -290,7 +314,8 @@ describe('EditorOverlay integration', () => {
 
             <EditorOverlay
               editorInteractionsEnabled={true}
-              newSceneDisabled={false}
+              startOverDisabled={false}
+              onHeaderLayoutModeChange={vi.fn()}
               statusMessage={null}
               onShareSceneUrl={vi.fn(() =>
                 Promise.resolve<'shared' | 'copied' | null>('copied'),
@@ -340,21 +365,26 @@ describe('EditorOverlay integration', () => {
                 onCatalogDrawerOpenChange: vi.fn(),
               }}
               dialogs={{
+                environmentDialogLayout,
                 isDeleteDialogOpen: false,
                 pendingDeleteFurniture: null,
                 onCloseDeleteDialog: vi.fn(),
                 onConfirmDeleteSelection: vi.fn(),
                 isEnvironmentDialogOpen,
-                onEnvironmentDialogOpenChange: setIsEnvironmentDialogOpen,
+                isMobileMoreOpen: false,
+                onEnvironmentDialogOpenChange:
+                  handleEnvironmentDialogOpenChange,
                 isKeyboardShortcutsDialogOpen,
                 onKeyboardShortcutsDialogOpenChange:
-                  setIsKeyboardShortcutsDialogOpen,
-                isNewSceneDialogOpen: false,
-                onCloseNewSceneDialog: vi.fn(),
-                onOpenNewSceneDialog: vi.fn(),
-                onConfirmNewScene: vi.fn(),
+                  handleKeyboardShortcutsOpenChange,
+                isStartOverDialogOpen: false,
+                onCloseStartOverDialog: vi.fn(),
+                onOpenStartOverDialog: vi.fn(),
+                onConfirmStartOver: vi.fn(),
                 isInfoDialogOpen: false,
-                onInfoDialogOpenChange: vi.fn(),
+                onInfoDialogOpenChange: vi.fn(() => true),
+                onMobileMoreOpenChange: vi.fn(() => true),
+                returnFocusTarget,
               }}
               preview={{
                 previewedId: null,

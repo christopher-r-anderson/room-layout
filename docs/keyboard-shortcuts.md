@@ -21,7 +21,7 @@ Each shortcut runs through three phases:
 2. **Suppress:** Browser default is prevented based on `suppressionMode`.
 3. **Execute:** Action runs only if execution gates pass.
 
-This allows browser-native combos (for example Ctrl+N) to be suppressed while still blocking app execution in contexts like text input.
+This model also supports suppressing browser-native combos when needed while still blocking app execution in contexts like text input.
 
 ### Room-View Focus Scoping
 
@@ -31,7 +31,7 @@ The 3D room view is a focusable room-view wrapper element with `tabIndex={0}` an
 
 Focus state is tracked as `roomViewHasFocus`, and `ShortcutContext` includes that field so shortcut execution can apply room-view focus rules consistently.
 
-Global shortcuts (Undo, Redo, New Scene) remain active regardless of room-view focus.
+Global shortcuts (Undo, Redo, Start Over) remain active regardless of room-view focus.
 
 The selected-item Placement panel uses consumer-facing wall clearances from the furniture footprint edge to the left and back walls instead of signed center-origin offsets. The scene domain still stores positions around the room-centered origin, so panel formatting and typed-value parsing intentionally convert between those two representations.
 
@@ -41,14 +41,14 @@ The selected-item Placement panel also uses a consumer-facing clockwise-positive
 
 Arrow keys serve two roles depending on selection state:
 
-- **With selection:** Arrow keys move the selected item (move-\* shortcuts).
-- **Without selection:** Arrow keys preview the next/previous item in spatial order (canvas-browse-\* shortcuts).
+- **With selection:** Arrow keys move the selected item (`move-*` shortcuts).
+- **Without selection:** Arrow keys preview the next/previous item in spatial order (`canvas-browse-*` shortcuts).
 
 This dual-purpose dispatch works via shortcut loop fallthrough:
 
 - `move-*` shortcuts use `suppressionMode: 'on-execute'` and `requiresSelection: true`.
 - When no selection exists, the move shortcut matches but cannot execute — it falls through.
-- `canvas-browse-*` shortcuts are defined after move-\* shortcuts and only fire when `hasSelection` is false.
+- `canvas-browse-*` shortcuts are defined after `move-*` shortcuts and only fire when `hasSelection` is false.
 
 Home, End, Enter, and Space are canvas-browse-only (no selection) shortcuts.
 
@@ -92,7 +92,7 @@ Camera preset shortcuts intentionally keep strict modifier matching. To support 
 - `targetIsInDialog`
 - `isModalOpen`
 - `hasSelection`
-- `canStartNewScene`
+- `canStartOver`
 
 Use built-in flags first:
 
@@ -102,16 +102,16 @@ Use built-in flags first:
 
 ### Browser-Native Combo Pattern
 
-Use this pattern when browser default should be suppressed but app execution should still be blocked in editing targets:
+Use this pattern only when a shortcut intentionally overrides a browser-native combo and app execution should still be blocked in editing targets:
 
 ```typescript
 {
-  id: 'new-scene',
-  match: { key: 'n', ctrlOrMeta: true },
+  id: 'example-browser-native',
+  match: { key: 'p', ctrlOrMeta: true },
   allowMatchInEditingTarget: true,
   suppressionMode: 'always-on-match',
   canExecute: (context) =>
-    context.canStartNewScene && !context.targetIsEditingTarget,
+    context.someCapability && !context.targetIsEditingTarget,
 }
 ```
 
