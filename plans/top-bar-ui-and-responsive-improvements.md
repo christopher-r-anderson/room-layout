@@ -189,10 +189,10 @@ Implement the split top-header redesign in five reviewable commits, but make the
      - mobile-only open surfaces close when crossing to desktop at 48rem
      - opening Keyboard Shortcuts or Project Info from desktop More dismisses the menu before the dialog opens
 
-- Confirm mobile More contents are exactly `Start Over`, `Keyboard shortcuts`, `Project info`.
+- Confirm mobile More contents are exactly `Start Over`, `Environment`, `Keyboard shortcuts`, `Project info`.
 - Confirm desktop More excludes `Start Over`.
 - Confirm `Share` stays visible on mobile.
-- Confirm the new mobile tab sequence after the room view is: `Share`, `More`, `Add Furniture`, `Environment`, `Undo`, `Redo`.
+- Confirm the new mobile tab sequence after the room view is: `Add Furniture`, `Undo`, `Redo`, `Share`, `More`.
 
 2. Commit 1 checklist
    - Install shadcn `dropdown-menu` and normalize the generated primitive to repo conventions.
