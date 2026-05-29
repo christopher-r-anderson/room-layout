@@ -57,6 +57,7 @@ export function TopHeaderMobile({
               size="toolbar"
               aria-controls="room-drawer"
               aria-expanded={isRoomOpen}
+              aria-haspopup="dialog"
               onClick={() => {
                 dialogs.onRoomSurfaceOpenChange(!isRoomOpen, {
                   layout: 'mobile',
