@@ -21,11 +21,11 @@ Each shortcut runs through three phases:
 2. **Suppress:** Browser default is prevented based on `suppressionMode`.
 3. **Execute:** Action runs only if execution gates pass.
 
-This model also supports suppressing browser-native combos when needed while still blocking app execution in contexts like text input.
+This model also supports suppressing browser-native combos when needed while keeping app execution blocked in contexts like text input.
 
 ### Room-View Focus Scoping
 
-Room-view-scoped shortcuts require the 3D room view to have DOM focus before they can execute. In the current implementation, that includes object movement, rotation, deletion, clear-selection (`Escape`), canvas browse, and camera preset keys. This gating is controlled by `requiresRoomViewFocus` in `useKeyboardShortcuts`, so selected-item detail inputs stay isolated from room-view shortcuts while typing.
+Room-view-scoped shortcuts require the 3D room view to have DOM focus before they can execute. That includes object movement, rotation, deletion, clear-selection (`Escape`), canvas browse, and camera preset keys. This gating is controlled by `requiresRoomViewFocus` in `useKeyboardShortcuts`, so selected-item detail inputs stay isolated from room-view shortcuts while typing.
 
 The 3D room view is a focusable room-view wrapper element with `tabIndex={0}` and visible focus styling. Clicking the canvas or pressing Tab to it acquires focus.
 
@@ -33,9 +33,9 @@ Focus state is tracked as `roomViewHasFocus`, and `ShortcutContext` includes tha
 
 Global shortcuts (Undo, Redo, Start Over) remain active regardless of room-view focus.
 
-The selected-item Placement panel uses consumer-facing wall clearances from the furniture footprint edge to the left and back walls instead of signed center-origin offsets. The scene domain still stores positions around the room-centered origin, so panel formatting and typed-value parsing intentionally convert between those two representations.
+The selected-item Placement panel uses consumer-facing wall clearances from the furniture footprint edge to the left and back walls instead of signed center-origin offsets. The scene domain stores positions around the room-centered origin, so panel formatting and typed-value parsing intentionally convert between those two representations.
 
-The selected-item Placement panel also uses a consumer-facing clockwise-positive degree display (`0..359`). The scene domain still stores rotation in its existing counterclockwise radian convention, so panel formatting and typed-value parsing intentionally convert between those two representations.
+The selected-item Placement panel also uses a consumer-facing clockwise-positive degree display (`0..359`). The scene domain stores rotation in its existing counterclockwise radian convention, so panel formatting and typed-value parsing intentionally convert between those two representations.
 
 ### Canvas Browse and Dual-Purpose Arrow Keys
 
@@ -90,7 +90,7 @@ Camera preset shortcuts intentionally keep strict modifier matching. To support 
 
 - `targetIsEditingTarget`
 - `targetIsInDialog`
-- `isModalOpen`
+- `isBlockingOverlayOpen`
 - `hasSelection`
 - `canStartOver`
 
@@ -102,7 +102,7 @@ Use built-in flags first:
 
 ### Browser-Native Combo Pattern
 
-Use this pattern only when a shortcut intentionally overrides a browser-native combo and app execution should still be blocked in editing targets:
+Use this pattern only when a shortcut intentionally overrides a browser-native combo and app execution should remain blocked in editing targets:
 
 ```typescript
 {
@@ -115,10 +115,12 @@ Use this pattern only when a shortcut intentionally overrides a browser-native c
 }
 ```
 
-### Modal and Dialog Rules
+### Blocking Overlay and Dialog Rules
 
-- `isModalOpen` blocks execution for all shortcuts.
-- `always-on-match` can still suppress browser defaults while modal-gated.
+- `isBlockingOverlayOpen` indicates whether a blocking overlay is open.
+- Blocking overlays block execution for all shortcuts.
+- The non-blocking Room surface does not set that blocking signal, so shortcuts continue to work when Room is open unless focus is inside a control that already suppresses them.
+- `always-on-match` can suppress browser defaults while the blocking-overlay gate is active.
 - Escape inside dialogs is not intercepted by clear-selection, so dialogs can handle close behavior natively.
 
 ## Held Camera Key Model
@@ -145,7 +147,7 @@ Unlike discrete shortcuts, this path does not use `suppressionMode`.
 ### Held-Key Gating and Safety
 
 - `keydown` is ignored in editing targets and dialogs.
-- `keyup` still updates state so release events clear correctly.
+- `keyup` updates state so release events clear correctly.
 - State is reset on window blur and hook cleanup to avoid stuck keys.
 
 ### Frame Behavior
@@ -160,6 +162,6 @@ Unlike discrete shortcuts, this path does not use `suppressionMode`.
 
 `ToolButton` can attach keyboard metadata to controls using `shortcuts` (ARIA keyshortcuts format), and the shared UI renders consistent key hints via `KbdShortcutDisplay`.
 
-Non-shortcut toolbar actions such as `Add Furniture` and `Environment` remain normal focusable buttons in the overlay. They are intentionally discovered through tab order rather than global key bindings.
+Non-shortcut toolbar actions such as `Add Furniture` and `Room` remain normal focusable buttons in the overlay. They are intentionally discovered through tab order rather than global key bindings.
 
 Selected-item detail inputs commit their local draft on `Enter` or blur, and `Escape` restores the last committed value. Those fields rely on the shared editing-target checks so room-view shortcuts do not fire while focus is inside a detail input.

@@ -6,18 +6,15 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from '@/components/ui/drawer'
-import {
-  IconHomeCog,
-  IconInfoCircle,
-  IconKeyboard,
-  IconRotate2,
-} from '@tabler/icons-react'
+import { IconInfoCircle, IconKeyboard, IconRotate2 } from '@tabler/icons-react'
+import { ShareSceneButton } from './share-scene-button'
 
 export function HeaderMoreActionsDrawer({
   contentId,
+  shareDisabled,
   startOverDisabled,
   onOpenChange,
-  onOpenEnvironment,
+  onShareSceneUrl,
   onOpenKeyboardShortcuts,
   onOpenStartOver,
   onOpenProjectInfo,
@@ -25,9 +22,10 @@ export function HeaderMoreActionsDrawer({
   open,
 }: {
   contentId: string
+  shareDisabled: boolean
   startOverDisabled: boolean
   onOpenChange: (open: boolean) => void
-  onOpenEnvironment: () => void
+  onShareSceneUrl: () => Promise<'shared' | 'copied' | null>
   onOpenKeyboardShortcuts: () => void
   onOpenStartOver: () => void
   onOpenProjectInfo: () => void
@@ -56,16 +54,14 @@ export function HeaderMoreActionsDrawer({
         </DrawerHeader>
 
         <div className="grid gap-2 px-4 pb-4">
-          <Button
-            type="button"
-            variant="secondary"
+          <ShareSceneButton
+            disabled={shareDisabled}
+            labelVisibility="always"
+            onShareSceneUrl={onShareSceneUrl}
             size="toolbar"
+            variant="secondary"
             className="justify-start"
-            onClick={onOpenEnvironment}
-          >
-            <IconHomeCog aria-hidden="true" />
-            <span>Environment</span>
-          </Button>
+          />
           <Button
             type="button"
             variant="secondary"

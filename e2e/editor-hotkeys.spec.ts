@@ -440,6 +440,31 @@ test('WASD is suppressed in modal dialogs but enabled in the editor', async ({
   ).toBeGreaterThan(0.2)
 })
 
+test('WASD camera controls stay enabled while the desktop Room sidebar is open', async ({
+  page,
+}) => {
+  await openEditor(page)
+
+  const roomButton = page.locator('button[aria-controls="room-surface"]')
+  await roomButton.click()
+
+  const roomSurface = page.getByRole('complementary', { name: 'Room' })
+  await expect(roomSurface).toBeVisible()
+
+  const initialCameraPosition = (await readSceneState(page)).cameraPosition
+
+  await focusRoomView(page)
+  await page.keyboard.down('Shift')
+
+  try {
+    await holdKeyUntilCameraMoves(page, 'KeyW', initialCameraPosition)
+  } finally {
+    await page.keyboard.up('Shift')
+  }
+
+  await expect(roomSurface).toBeVisible()
+})
+
 test('canvas browse: arrow keys cycle preview when nothing is selected, Enter selects previewed item', async ({
   page,
 }) => {

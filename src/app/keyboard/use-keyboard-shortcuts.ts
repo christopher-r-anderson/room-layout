@@ -16,7 +16,7 @@ export type SuppressionMode = 'always-on-match' | 'on-execute'
 interface ShortcutContext {
   targetIsEditingTarget: boolean
   targetIsInDialog: boolean
-  isModalOpen: boolean
+  isBlockingOverlayOpen: boolean
   hasSelection: boolean
   canStartOver: boolean
   roomViewHasFocus: boolean
@@ -36,7 +36,7 @@ interface ShortcutDefinition {
 interface UseKeyboardShortcutsOptions {
   enabled: boolean
   hasSelection: boolean
-  isModalOpen: boolean
+  isBlockingOverlayOpen: boolean
   canStartOver: boolean
   roomViewHasFocus: boolean
   onUndo: () => void
@@ -89,7 +89,7 @@ function canExecuteShortcut(
   shortcut: ShortcutDefinition,
   context: ShortcutContext,
 ): boolean {
-  if (context.isModalOpen) {
+  if (context.isBlockingOverlayOpen) {
     return false
   }
 
@@ -107,7 +107,7 @@ function canExecuteShortcut(
 export function useKeyboardShortcuts({
   enabled,
   hasSelection,
-  isModalOpen,
+  isBlockingOverlayOpen,
   canStartOver,
   roomViewHasFocus,
   onUndo,
@@ -431,7 +431,7 @@ export function useKeyboardShortcuts({
         targetIsContentEditable,
       ),
       targetIsInDialog: isDialogTarget(target),
-      isModalOpen,
+      isBlockingOverlayOpen,
       hasSelection,
       canStartOver,
       roomViewHasFocus,

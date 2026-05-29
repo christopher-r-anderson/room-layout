@@ -1,3 +1,4 @@
+import { useLayoutEffect, useRef, useState } from 'react'
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
 import type { FurnitureCatalogEntry } from '@/scene/objects/furniture-catalog'
 import type {
@@ -7,8 +8,8 @@ import type {
 import type {
   DialogOpenOptions,
   DialogReturnFocusTarget,
-  EnvironmentDialogLayout,
-  EnvironmentDialogOpenOptions,
+  RoomSurfaceLayout,
+  RoomSurfaceOpenOptions,
 } from './use-dialog-state'
 import type { CameraPreset, SceneReadModel } from '@/scene/scene.types'
 import { CameraTools } from '../camera/camera-tools'
@@ -63,16 +64,17 @@ export interface EditorCatalogProps {
 }
 
 export interface EditorDialogsProps {
-  environmentDialogLayout: EnvironmentDialogLayout | null
+  roomSurfaceLayout: RoomSurfaceLayout | null
   isDeleteDialogOpen: boolean
+  isBlockingOverlayOpen: boolean
   pendingDeleteFurniture: FurnitureItem | null
   onCloseDeleteDialog: () => void
   onConfirmDeleteSelection: () => void
-  isEnvironmentDialogOpen: boolean
+  isRoomSurfaceOpen: boolean
   isMobileMoreOpen: boolean
-  onEnvironmentDialogOpenChange: (
+  onRoomSurfaceOpenChange: (
     open: boolean,
-    options?: EnvironmentDialogOpenOptions,
+    options?: RoomSurfaceOpenOptions,
   ) => boolean
   isKeyboardShortcutsDialogOpen: boolean
   onKeyboardShortcutsDialogOpenChange: (
@@ -146,6 +148,51 @@ export function EditorOverlay({
   wallFinishes,
   onWallFinishChange,
 }: EditorOverlayProps) {
+  const cameraAnchorRef = useRef<HTMLDivElement | null>(null)
+  const [cameraAnchorHeight, setCameraAnchorHeight] = useState(0)
+  const isDesktopRoomOpen =
+    dialogs.isRoomSurfaceOpen && dialogs.roomSurfaceLayout === 'desktop'
+  const isMobileRoomOpen =
+    dialogs.isRoomSurfaceOpen && dialogs.roomSurfaceLayout === 'mobile'
+
+  useLayoutEffect(() => {
+    const element = cameraAnchorRef.current
+
+    if (!element) {
+      return
+    }
+
+    const updateHeight = () => {
+      setCameraAnchorHeight(element.getBoundingClientRect().height)
+    }
+
+    updateHeight()
+
+    if (typeof ResizeObserver === 'undefined') {
+      window.addEventListener('resize', updateHeight)
+
+      return () => {
+        window.removeEventListener('resize', updateHeight)
+      }
+    }
+
+    const observer = new ResizeObserver(() => {
+      updateHeight()
+    })
+
+    observer.observe(element)
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [])
+
+  const centeredBottom =
+    cameraAnchorHeight > 0
+      ? `calc(50% - ${String(cameraAnchorHeight / 2)}px)`
+      : '50%'
+  const mobileOpenBottom = 'calc(50dvh + 0.5rem)'
+
   return (
     <>
       <div
@@ -211,7 +258,14 @@ export function EditorOverlay({
       </div>
 
       <div
-        className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2"
+        ref={cameraAnchorRef}
+        data-camera-anchor
+        className={`pointer-events-none absolute transition-[bottom,right] duration-200 ${
+          isDesktopRoomOpen ? 'right-94' : 'right-2'
+        }`}
+        style={{
+          bottom: isMobileRoomOpen ? mobileOpenBottom : centeredBottom,
+        }}
         inert={startup.startupOverlayActive}
         aria-hidden={startup.startupOverlayActive}
       >

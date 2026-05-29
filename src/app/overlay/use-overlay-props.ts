@@ -34,13 +34,14 @@ interface UseOverlayPropsOptions {
   onCatalogIdToAddChange: EditorCatalogProps['onCatalogIdToAddChange']
   onCatalogDrawerOpenChange: EditorCatalogProps['onCatalogDrawerOpenChange']
   isDeleteDialogOpen: EditorDialogsProps['isDeleteDialogOpen']
+  isBlockingOverlayOpen: EditorDialogsProps['isBlockingOverlayOpen']
   pendingDeleteFurniture: EditorDialogsProps['pendingDeleteFurniture']
   onCloseDeleteDialog: EditorDialogsProps['onCloseDeleteDialog']
   onConfirmDeleteSelection: EditorDialogsProps['onConfirmDeleteSelection']
-  environmentDialogLayout: EditorDialogsProps['environmentDialogLayout']
-  isEnvironmentDialogOpen: EditorDialogsProps['isEnvironmentDialogOpen']
+  roomSurfaceLayout: EditorDialogsProps['roomSurfaceLayout']
+  isRoomSurfaceOpen: EditorDialogsProps['isRoomSurfaceOpen']
   isMobileMoreOpen: EditorDialogsProps['isMobileMoreOpen']
-  onEnvironmentDialogOpenChange: EditorDialogsProps['onEnvironmentDialogOpenChange']
+  onRoomSurfaceOpenChange: EditorDialogsProps['onRoomSurfaceOpenChange']
   isStartOverDialogOpen: EditorDialogsProps['isStartOverDialogOpen']
   onCloseStartOverDialog: EditorDialogsProps['onCloseStartOverDialog']
   onOpenStartOverDialog: EditorDialogsProps['onOpenStartOverDialog']
@@ -90,13 +91,14 @@ export function useOverlayProps({
   onCatalogIdToAddChange,
   onCatalogDrawerOpenChange,
   isDeleteDialogOpen,
+  isBlockingOverlayOpen,
   pendingDeleteFurniture,
   onCloseDeleteDialog,
   onConfirmDeleteSelection,
-  environmentDialogLayout,
-  isEnvironmentDialogOpen,
+  roomSurfaceLayout,
+  isRoomSurfaceOpen,
   isMobileMoreOpen,
-  onEnvironmentDialogOpenChange,
+  onRoomSurfaceOpenChange,
   isStartOverDialogOpen,
   onCloseStartOverDialog,
   onOpenStartOverDialog,
@@ -187,13 +189,14 @@ export function useOverlayProps({
   const dialogsProps = useMemo<EditorDialogsProps>(
     () => ({
       isDeleteDialogOpen,
+      isBlockingOverlayOpen,
       pendingDeleteFurniture,
       onCloseDeleteDialog,
       onConfirmDeleteSelection,
-      environmentDialogLayout,
-      isEnvironmentDialogOpen,
+      roomSurfaceLayout,
+      isRoomSurfaceOpen,
       isMobileMoreOpen,
-      onEnvironmentDialogOpenChange,
+      onRoomSurfaceOpenChange,
       isStartOverDialogOpen,
       onCloseStartOverDialog,
       onOpenStartOverDialog,
@@ -207,13 +210,14 @@ export function useOverlayProps({
     }),
     [
       isDeleteDialogOpen,
+      isBlockingOverlayOpen,
       pendingDeleteFurniture,
       onCloseDeleteDialog,
       onConfirmDeleteSelection,
-      environmentDialogLayout,
-      isEnvironmentDialogOpen,
+      roomSurfaceLayout,
+      isRoomSurfaceOpen,
       isMobileMoreOpen,
-      onEnvironmentDialogOpenChange,
+      onRoomSurfaceOpenChange,
       isStartOverDialogOpen,
       onCloseStartOverDialog,
       onOpenStartOverDialog,

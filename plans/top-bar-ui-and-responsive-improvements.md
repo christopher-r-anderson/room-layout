@@ -50,7 +50,7 @@ Implement the split top-header redesign in five reviewable commits, but make the
        - `environment-desktop`
        - `more-mobile`
        - existing keys for catalog, delete, keyboard shortcuts, info, new-scene remain intact
-     - add dialog-state metadata for focus return, for example a semantic `returnFocusTarget` token such as `mobile-more`, `environment-inline`, `keyboard-inline`, `info-inline`
+     - add dialog-state metadata for focus return, for example a semantic `returnFocusTarget` token such as `mobile-more`, `room-inline`, `keyboard-inline`, `info-inline`
      - make the actual DOM ref ownership live in the header components; `TopHeader` resolves the token to a concrete ref and passes an explicit focus-return callback/ref into launched shells
      - define resize behavior in state now:
        - if the layout mode changes to desktop while `activeDialog` is `environment-mobile` or `more-mobile`, close that mobile-only surface before the desktop header presents any desktop-only shell
@@ -73,12 +73,12 @@ Implement the split top-header redesign in five reviewable commits, but make the
      - `/home/splict/src/room-layout/src/app/overlay/top-header-mobile.tsx`
      - `/home/splict/src/room-layout/src/app/overlay/top-header-desktop.tsx`
      - `/home/splict/src/room-layout/src/app/overlay/header-more-actions-drawer.tsx`
-     - `/home/splict/src/room-layout/src/app/overlay/environment-drawer.tsx`
-     - `/home/splict/src/room-layout/src/app/overlay/environment-drawer.test.tsx`
+     - `/home/splict/src/room-layout/src/app/overlay/room-drawer.tsx`
+     - `/home/splict/src/room-layout/src/app/overlay/room-drawer.test.tsx`
    - Files to modify:
      - `/home/splict/src/room-layout/src/app/overlay/environment-dialog.tsx`
      - `/home/splict/src/room-layout/src/app/overlay/environment-dialog.test.tsx`
-     - `/home/splict/src/room-layout/src/app/overlay/environment-panel.tsx` only to continue exporting the existing `EnvironmentControls` cleanly
+     - `/home/splict/src/room-layout/src/app/overlay/environment-panel.tsx` only to continue exporting the existing `RoomControls` cleanly
    - Work:
      - treat Environment as already-extracted content and build a new mobile drawer shell over it while keeping the current dialog shell for desktop
      - mobile header contract:
@@ -102,7 +102,7 @@ Implement the split top-header redesign in five reviewable commits, but make the
      - Environment uses drawer on mobile and dialog on desktop
      - mobile More contents and desktop inline utility controls are correct
      - the mobile tab sequence is explicitly represented in the header DOM order
-     - no second extraction of Environment controls was needed because the existing `EnvironmentControls` surface was reused
+     - no second extraction of Environment controls was needed because the existing `RoomControls` surface was reused
      - the new mobile drawer shell has focused component-level test coverage
 4. Commit 4: EditorOverlay integration while preserving existing top-overlay contracts. _depends on 3_
    - Goal: switch the live overlay to the new header while preserving the current inerting, focus-order, exclusivity, and focus-return behaviors already covered by tests.
@@ -132,7 +132,7 @@ Implement the split top-header redesign in five reviewable commits, but make the
    - Files to modify:
      - `/home/splict/src/room-layout/src/app/overlay/editor-overlay.test.tsx`
      - `/home/splict/src/room-layout/src/app/overlay/environment-dialog.test.tsx`
-     - `/home/splict/src/room-layout/src/app/overlay/environment-drawer.test.tsx`
+     - `/home/splict/src/room-layout/src/app/overlay/room-drawer.test.tsx`
      - `/home/splict/src/room-layout/src/app/keyboard/keyboard-shortcuts-help.test.tsx`
      - `/home/splict/src/room-layout/src/app/keyboard/use-keyboard-shortcuts.test.tsx`
      - `/home/splict/src/room-layout/e2e/editor-accessibility-flows.spec.ts`
@@ -145,7 +145,7 @@ Implement the split top-header redesign in five reviewable commits, but make the
    - Test contract to add or update:
      - extend `editor-overlay.test.tsx` rather than inventing a separate harness where possible
      - extend `environment-dialog.test.tsx` for desktop shell focus return and external-trigger launch behavior
-     - add `environment-drawer.test.tsx` for mobile shell behavior and More-trigger focus return path
+     - add `room-drawer.test.tsx` for mobile shell behavior and More-trigger focus return path
      - extend `keyboard-shortcuts-help.test.tsx` or split it so the decoupled trigger/content path has focused component tests
      - extend `use-keyboard-shortcuts.test.tsx` only where header-trigger changes alter shortcut gating or focus ownership expectations
      - extend `editor-accessibility-flows.spec.ts` for the new mobile narrow-viewport order, Environment focus return, and mobile More-trigger focus return
@@ -197,7 +197,7 @@ Implement the split top-header redesign in five reviewable commits, but make the
 
 - Build `TopHeader`, `TopHeaderMobile`, `TopHeaderDesktop`.
 - Build `HeaderMoreActionsDrawer`.
-- Build mobile `EnvironmentDrawer` shell over the existing controls.
+- Build mobile `RoomDrawer` shell over the existing controls.
 - Keep sub-layout compaction in CSS/container queries, not additional JS thresholds.
 - Add focused component tests for the new drawer shell.
 
@@ -242,11 +242,11 @@ Implement the split top-header redesign in five reviewable commits, but make the
 - `/home/splict/src/room-layout/src/app/overlay/share-scene-button.tsx` — remove global `sm` label hiding and support layout-owned visibility.
 - `/home/splict/src/room-layout/src/app/overlay/new-scene-button.tsx` — preserve accessible naming across inline and overflow uses.
 - `/home/splict/src/room-layout/src/app/history/history-tools.tsx` — Edit-zone grouping and sizing.
-- `/home/splict/src/room-layout/src/app/overlay/environment-panel.tsx` — continues to export the already-existing `EnvironmentControls` surface.
+- `/home/splict/src/room-layout/src/app/overlay/environment-panel.tsx` — continues to export the already-existing `RoomControls` surface.
 - `/home/splict/src/room-layout/src/app/overlay/environment-dialog.tsx` — desktop Environment shell.
 - `/home/splict/src/room-layout/src/app/overlay/environment-dialog.test.tsx` — desktop shell/focus-return coverage.
-- `/home/splict/src/room-layout/src/app/overlay/environment-drawer.tsx` — mobile Environment shell.
-- `/home/splict/src/room-layout/src/app/overlay/environment-drawer.test.tsx` — mobile shell/focus-return coverage.
+- `/home/splict/src/room-layout/src/app/overlay/room-drawer.tsx` — mobile Environment shell.
+- `/home/splict/src/room-layout/src/app/overlay/room-drawer.test.tsx` — mobile shell/focus-return coverage.
 - `/home/splict/src/room-layout/src/app/overlay/top-header.tsx` — single active header coordinator.
 - `/home/splict/src/room-layout/src/app/overlay/top-header-mobile.tsx` — mobile header DOM.
 - `/home/splict/src/room-layout/src/app/overlay/top-header-desktop.tsx` — desktop header DOM.
@@ -270,7 +270,7 @@ Implement the split top-header redesign in five reviewable commits, but make the
    - run `pnpm test:run -- src/app/keyboard/use-keyboard-shortcuts.test.tsx`
 3. Commit 3 validation.
    - run `pnpm test:run -- src/app/overlay/environment-dialog.test.tsx`
-   - run `pnpm test:run -- src/app/overlay/environment-drawer.test.tsx`
+   - run `pnpm test:run -- src/app/overlay/room-drawer.test.tsx`
    - run focused render/integration tests for new header shells if added
 4. Commit 4 validation.
    - run `pnpm test:run -- src/app/overlay/editor-overlay.test.tsx`

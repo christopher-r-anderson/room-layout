@@ -3,9 +3,9 @@ import { CatalogDrawer } from '@/app/catalog/catalog-drawer'
 import { CatalogAddButton } from '@/app/catalog/catalog-add-button'
 import { HistoryTools } from '@/app/history/history-tools'
 import { IconDotsVertical } from '@tabler/icons-react'
-import { EnvironmentDrawer } from './environment-drawer'
+import { RoomButton } from './room-button'
+import { RoomDrawer } from './room-drawer'
 import { HeaderMoreActionsDrawer } from './header-more-actions-drawer'
-import { ShareSceneButton } from './share-scene-button'
 import type { TopHeaderMobileProps } from './top-header.types'
 
 export function TopHeaderMobile({
@@ -16,11 +16,11 @@ export function TopHeaderMobile({
   floorFinishLoading,
   floorFinishes,
   history,
+  mobileRoomTriggerId,
   mobileMoreContentId,
   mobileMoreTriggerId,
   startOverDisabled,
   onFloorFinishChange,
-  onOpenEnvironmentFromMobileMore,
   onOpenKeyboardShortcutsFromMobileMore,
   onOpenStartOverFromMobileMore,
   onOpenProjectInfoFromMobileMore,
@@ -30,6 +30,9 @@ export function TopHeaderMobile({
   wallFinishes,
   focusControlById,
 }: TopHeaderMobileProps) {
+  const isRoomOpen =
+    dialogs.isRoomSurfaceOpen && dialogs.roomSurfaceLayout === 'mobile'
+
   return (
     <div data-top-header-root className="pointer-events-auto">
       <div
@@ -37,19 +40,34 @@ export function TopHeaderMobile({
         aria-label="Mobile header actions"
         className="rounded-xl border border-border/70 bg-background/75 p-2 backdrop-blur-[2px]"
       >
-        <div className="flex items-center gap-2">
-          <CatalogDrawer
-            open={catalog.isCatalogDrawerOpen}
-            onOpenChange={catalog.onCatalogDrawerOpenChange}
-            triggerButton={<CatalogAddButton />}
-            catalog={catalog.catalog}
-            catalogIdToAdd={catalog.catalogIdToAdd}
-            editorInteractionsEnabled={editorInteractionsEnabled}
-            onAddFurniture={catalog.onAddFurniture}
-            onCatalogIdToAddChange={catalog.onCatalogIdToAddChange}
-          />
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2">
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
+            <CatalogDrawer
+              open={catalog.isCatalogDrawerOpen}
+              onOpenChange={catalog.onCatalogDrawerOpenChange}
+              triggerButton={<CatalogAddButton />}
+              catalog={catalog.catalog}
+              catalogIdToAdd={catalog.catalogIdToAdd}
+              editorInteractionsEnabled={editorInteractionsEnabled}
+              onAddFurniture={catalog.onAddFurniture}
+              onCatalogIdToAddChange={catalog.onCatalogIdToAddChange}
+            />
+            <RoomButton
+              id={mobileRoomTriggerId}
+              size="toolbar"
+              aria-controls="room-drawer"
+              aria-expanded={isRoomOpen}
+              aria-haspopup="dialog"
+              onClick={() => {
+                dialogs.onRoomSurfaceOpenChange(!isRoomOpen, {
+                  layout: 'mobile',
+                  returnFocusTarget: 'room-inline',
+                })
+              }}
+            />
+          </div>
           <div
-            className="ml-auto flex items-center gap-2"
+            className="flex items-center gap-2 justify-self-end"
             inert={catalog.isCatalogDrawerOpen}
             aria-hidden={catalog.isCatalogDrawerOpen}
           >
@@ -61,12 +79,6 @@ export function TopHeaderMobile({
               editorInteractionsEnabled={editorInteractionsEnabled}
               onRedo={history.onRedo}
               onUndo={history.onUndo}
-            />
-            <ShareSceneButton
-              disabled={!editorInteractionsEnabled}
-              labelVisibility="sr-only"
-              onShareSceneUrl={onShareSceneUrl}
-              size="toolbar-icon"
             />
             <Button
               id={mobileMoreTriggerId}
@@ -89,20 +101,20 @@ export function TopHeaderMobile({
         </div>
       </div>
 
-      <EnvironmentDrawer
+      <RoomDrawer
         open={
-          dialogs.isEnvironmentDialogOpen &&
-          dialogs.environmentDialogLayout === 'mobile'
+          dialogs.isRoomSurfaceOpen && dialogs.roomSurfaceLayout === 'mobile'
         }
         onOpenChange={(open) => {
-          dialogs.onEnvironmentDialogOpenChange(open, {
+          dialogs.onRoomSurfaceOpenChange(open, {
             layout: 'mobile',
-            returnFocusTarget: 'mobile-more',
+            returnFocusTarget: 'room-inline',
           })
         }}
         onCloseAutoFocus={() => {
-          focusControlById(mobileMoreTriggerId)
+          focusControlById(mobileRoomTriggerId)
         }}
+        restoreFocusOnClose={!dialogs.isBlockingOverlayOpen}
         floorFinishId={floorFinishId}
         floorFinishLoading={floorFinishLoading}
         floorFinishes={floorFinishes}
@@ -114,6 +126,7 @@ export function TopHeaderMobile({
 
       <HeaderMoreActionsDrawer
         contentId={mobileMoreContentId}
+        shareDisabled={!editorInteractionsEnabled}
         startOverDisabled={!editorInteractionsEnabled || startOverDisabled}
         open={dialogs.isMobileMoreOpen}
         onOpenChange={(open) => {
@@ -124,7 +137,7 @@ export function TopHeaderMobile({
         onCloseAutoFocus={() => {
           focusControlById(mobileMoreTriggerId)
         }}
-        onOpenEnvironment={onOpenEnvironmentFromMobileMore}
+        onShareSceneUrl={onShareSceneUrl}
         onOpenKeyboardShortcuts={onOpenKeyboardShortcutsFromMobileMore}
         onOpenStartOver={onOpenStartOverFromMobileMore}
         onOpenProjectInfo={onOpenProjectInfoFromMobileMore}

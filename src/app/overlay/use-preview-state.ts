@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 
 interface UsePreviewStateOptions {
   isDragging: boolean
-  isModalOpen: boolean
+  isBlockingOverlayOpen: boolean
   editorInteractionsEnabled: boolean
   itemIds: readonly string[]
 }
@@ -15,7 +15,7 @@ interface PreviewState {
 
 export function usePreviewState({
   isDragging,
-  isModalOpen,
+  isBlockingOverlayOpen,
   editorInteractionsEnabled,
   itemIds,
 }: UsePreviewStateOptions): PreviewState {
@@ -39,7 +39,9 @@ export function usePreviewState({
   }, [])
 
   const derivedPreviewedId =
-    isDragging || isModalOpen || !editorInteractionsEnabled ? null : previewedId
+    isDragging || isBlockingOverlayOpen || !editorInteractionsEnabled
+      ? null
+      : previewedId
 
   return { previewedId: derivedPreviewedId, setPreview, clearPreview }
 }

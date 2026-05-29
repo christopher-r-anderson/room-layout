@@ -86,9 +86,10 @@ export function TopHeader({
   ...props
 }: TopHeaderProps) {
   const layoutMode = useHeaderLayoutMode()
+  const mobileRoomTriggerId = useId()
   const mobileMoreContentId = useId()
   const mobileMoreTriggerId = useId()
-  const desktopEnvironmentTriggerId = useId()
+  const desktopRoomTriggerId = useId()
   const desktopInfoTriggerId = useId()
   const desktopKeyboardTriggerId = useId()
   const startOverTriggerId = useId()
@@ -113,8 +114,10 @@ export function TopHeader({
       return
     }
 
-    if (target === 'environment-inline') {
-      focusControlById(desktopEnvironmentTriggerId)
+    if (target === 'room-inline') {
+      focusControlById(
+        layoutMode === 'mobile' ? mobileRoomTriggerId : desktopRoomTriggerId,
+      )
       return
     }
 
@@ -143,16 +146,9 @@ export function TopHeader({
         <TopHeaderMobile
           {...props}
           dialogs={dialogs}
+          mobileRoomTriggerId={mobileRoomTriggerId}
           mobileMoreContentId={mobileMoreContentId}
           mobileMoreTriggerId={mobileMoreTriggerId}
-          onOpenEnvironmentFromMobileMore={() => {
-            openFromMobileMore(() => {
-              dialogs.onEnvironmentDialogOpenChange(true, {
-                layout: 'mobile',
-                returnFocusTarget: 'mobile-more',
-              })
-            })
-          }}
           onOpenKeyboardShortcutsFromMobileMore={() => {
             openFromMobileMore(() => {
               dialogs.onKeyboardShortcutsDialogOpenChange(true, {
@@ -180,7 +176,7 @@ export function TopHeader({
         <TopHeaderDesktop
           {...props}
           dialogs={dialogs}
-          desktopEnvironmentTriggerId={desktopEnvironmentTriggerId}
+          desktopRoomTriggerId={desktopRoomTriggerId}
           desktopInfoTriggerId={desktopInfoTriggerId}
           desktopKeyboardTriggerId={desktopKeyboardTriggerId}
           startOverTriggerId={startOverTriggerId}

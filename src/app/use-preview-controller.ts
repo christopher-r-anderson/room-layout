@@ -11,7 +11,7 @@ type PreviewSource =
 type OutlinerPreviewSource = 'outliner-hover' | 'outliner-focus'
 
 interface UsePreviewControllerOptions {
-  isModalOpen: boolean
+  isBlockingOverlayOpen: boolean
   editorInteractionsEnabled: boolean
   itemIds: readonly string[]
 }
@@ -29,7 +29,7 @@ interface PreviewController {
 }
 
 export function usePreviewController({
-  isModalOpen,
+  isBlockingOverlayOpen,
   editorInteractionsEnabled,
   itemIds,
 }: UsePreviewControllerOptions): PreviewController {
@@ -39,7 +39,7 @@ export function usePreviewController({
 
   const { previewedId, setPreview, clearPreview } = usePreviewState({
     isDragging,
-    isModalOpen,
+    isBlockingOverlayOpen,
     editorInteractionsEnabled,
     itemIds,
   })
@@ -136,7 +136,7 @@ export function usePreviewController({
   )
 
   useEffect(() => {
-    if (!isDragging && !isModalOpen && editorInteractionsEnabled) {
+    if (!isDragging && !isBlockingOverlayOpen && editorInteractionsEnabled) {
       return
     }
 
@@ -148,7 +148,7 @@ export function usePreviewController({
     clearPreview,
     editorInteractionsEnabled,
     isDragging,
-    isModalOpen,
+    isBlockingOverlayOpen,
   ])
 
   useEffect(() => {

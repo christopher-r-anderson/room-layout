@@ -8,7 +8,7 @@ This project demonstrates core web 3D concepts relevant to retail and product ex
 
 ## 🏁 Goals
 
-Current editor UI highlights include a visual furniture picker, an Environment dialog for room finishes, history tools, a room-contents panel, selected-item actions/details, keyboard movement/rotation shortcuts, startup loading and retryable error overlays, and project/asset information dialogs.
+Current editor UI highlights include a visual furniture picker, a Room surface for wall/floor styling, history tools, a room-contents panel, selected-item actions/details, keyboard movement/rotation shortcuts, startup loading and retryable error overlays, and project/asset information dialogs.
 
 ## 🔋 Tech Stack
 
@@ -117,6 +117,7 @@ In addition to this README, project-specific guides are available:
 
 - [Editor Shortcuts Reference](docs/editor-shortcuts-reference.md): End-user shortcut map for camera, object, and scene actions.
 - [Keyboard Shortcuts (Engineering)](docs/keyboard-shortcuts.md): Input architecture, matching/suppression/execution rules, and held-key camera behavior.
+- [Overlay Interaction Model](docs/overlay-interaction-model.md): Blocking overlays vs the non-blocking Room surface, including focus and breakpoint behavior.
 
 ## 🖦 Usage
 
@@ -125,7 +126,7 @@ In addition to this README, project-specific guides are available:
 - Drag selected furniture along the floor; movement stays within room bounds and avoids collisions.
 - Rotate the selected item with `,` / `.` or the rotate buttons.
 - Add another furniture instance from the upper-left `Add Furniture` trigger and modal picker.
-- Open the `Environment` dialog from the upper-left toolbar to change wall and floor finishes.
+- Open the `Room` surface from the upper-left toolbar to change wall and floor finishes while keeping the scene visible.
 - Remove the selected item from the selected item actions or with `Delete` / `Backspace`, then confirm the dialog.
 - You can fully edit without canvas dragging via the Furniture in room panel and selected item details fields.
 - Typed selected-item details commit on `Enter` or blur and cancel the local draft with `Escape`.
@@ -137,7 +138,7 @@ In addition to this README, project-specific guides are available:
 ## 📚 Catalog
 
 The editor loads its furniture catalog from a runtime manifest (`public/catalog-manifest.json`), allowing catalog updates without rebuilding the app.
-The same manifest also defines environment material options (floor texture sets and wall colors) used by the Environment dialog.
+The same manifest also defines environment material options (floor texture sets and wall colors) used by the Room surface.
 
 ### Manifest Updates
 
@@ -147,10 +148,13 @@ To add or modify furniture/environment options:
 2. **Prepare assets**:
    - Place GLTF model files in `public/models/`
    - Place preview images in `public/catalog-previews/`
+   - Place environment preview images in `public/environment/previews/` when a room finish should render with a thumbnail
 3. **Validate**:
    - Node names in GLTF files must match the `nodeName` values in the catalog
    - All paths in the manifest must be relative (e.g., `"models/foo.glb"`)
    - Environment texture paths (`diffusePath`, `normalPath`) must also be relative and should point to `.ktx2` assets
+   - Floor finish preview paths (`previewPath`) are optional, but when present they must also be relative
+   - Wall finishes do not support `previewPath`; Room swatches are derived from `color`
    - Wall finish colors must use `#RRGGBB` format
    - Footprint dimensions must be positive numbers
    - Floor finishes must provide `tileSizeMeters` with positive `width` and `depth`
@@ -160,12 +164,13 @@ Floor textures tile from physical dimensions rather than hardcoded UV repeat val
 - `repeat.x = roomWidthMeters / tileSizeMeters.width`
 - `repeat.y = roomDepthMeters / tileSizeMeters.depth`
 
-### Floor Texture Pipeline (KTX2)
+### Floor Texture Pipeline (KTX2 + Previews)
 
 The editor is configured for KTX2 floor textures using Basis Universal compression:
 
 - Diffuse/albedo: ETC1S at 2K (`*_diff_2k.ktx2`)
 - Normal maps: UASTC at 1K with normal-map encoding (`*_nor_gl_1k.ktx2`)
+- Catalog previews: tiled diffuse WebP at 640x480 (`public/environment/previews/*.webp`)
 
 Export textures with:
 
@@ -176,9 +181,11 @@ pnpm textures:export
 Requirements for export:
 
 - KTX-Software `toktx` (v4.4.2 or newer recommended)
-- ImageMagick (`convert` or `magick`) for normal-map downscaling
+- ImageMagick (`convert` or `magick`) for normal-map downscaling and preview generation
 
 Basis decoder files (`public/basis/`) are automatically copied into the project during `pnpm install` and again before `pnpm build`, so Vite can include them from `public/` even though the generated directory is gitignored.
+
+Exported environment textures and previews are intentionally committed instead of gitignored. Unlike the Basis decoder sync, producing them depends on external tools (`toktx`, ImageMagick) that are not part of the Node install/build pipeline, and the app/runtime manifest expects those assets to exist in `public/` without requiring every clone or deploy target to regenerate them first.
 
 For detailed manifest format and validation rules, see [public/catalog-manifest-schema.md](./public/catalog-manifest-schema.md).
 
@@ -194,7 +201,7 @@ Asset preloading occurs in the background during startup. If an asset fails to p
 
 ### URL Scene Sharing
 
-The editor supports sharing a room layout via URL. Use the **Copy Scene URL** button in the toolbar to copy the current layout to the clipboard as a shareable link.
+The editor supports sharing a room layout via URL. Use the desktop toolbar share action, or open `More` on mobile, to open the native share sheet when the platform supports it or fall back to copying the scene URL to the clipboard.
 
 #### Query parameter format
 

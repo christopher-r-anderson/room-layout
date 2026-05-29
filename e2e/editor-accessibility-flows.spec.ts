@@ -351,7 +351,7 @@ test('selected item controls are suppressed from tab order while the catalog dra
 test.describe('narrow viewport overlay order', () => {
   test.use({ viewport: { width: 390, height: 844 } })
 
-  test('keeps Add Furniture early in tab order and restores focus from More-launched Environment on mobile', async ({
+  test('keeps Add Furniture early in tab order and restores focus from the Room drawer on mobile', async ({
     page,
   }) => {
     await openEditor(page)
@@ -362,9 +362,9 @@ test.describe('narrow viewport overlay order', () => {
     const addFurnitureButton = page.getByRole('button', {
       name: 'Add Furniture',
     })
+    const roomButton = page.locator('button[aria-controls="room-drawer"]')
     const undoButton = page.getByRole('button', { name: 'Undo' })
     const redoButton = page.getByRole('button', { name: 'Redo' })
-    const shareButton = page.getByRole('button', { name: 'Share room layout' })
     const moreButton = page.getByRole('button', { name: 'More actions' })
 
     await page.keyboard.press('Tab')
@@ -374,29 +374,33 @@ test.describe('narrow viewport overlay order', () => {
     await expect(addFurnitureButton).toBeFocused()
 
     await page.keyboard.press('Tab')
+    await expect(roomButton).toBeFocused()
+
+    await page.keyboard.press('Tab')
     await expect(undoButton).toBeFocused()
 
     await page.keyboard.press('Tab')
     await expect(redoButton).toBeFocused()
 
     await page.keyboard.press('Tab')
-    await expect(shareButton).toBeFocused()
-
-    await page.keyboard.press('Tab')
     await expect(moreButton).toBeFocused()
+
+    await page.keyboard.press('Shift+Tab')
+    await expect(redoButton).toBeFocused()
+
+    await page.keyboard.press('Shift+Tab')
+    await expect(undoButton).toBeFocused()
+
+    await page.keyboard.press('Shift+Tab')
+    await expect(roomButton).toBeFocused()
 
     await page.keyboard.press('Enter')
 
-    const moreDialog = page.getByRole('dialog', { name: 'More actions' })
-    await expect(moreDialog).toBeVisible()
-
-    await moreDialog.getByRole('button', { name: 'Environment' }).click()
-
-    const environmentDialog = page.getByRole('dialog', { name: 'Environment' })
-    await expect(environmentDialog).toBeVisible()
-
+    const roomDialog = page.getByRole('dialog', { name: 'Room' })
+    await expect(roomDialog).toBeVisible()
+    await roomDialog.getByRole('tab', { name: 'Walls' }).focus()
     await page.keyboard.press('Escape')
-    await expect(environmentDialog).toBeHidden()
-    await expect(moreButton).toBeFocused()
+    await expect(roomDialog).toBeHidden()
+    await expect(roomButton).toBeFocused()
   })
 })

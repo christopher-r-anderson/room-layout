@@ -84,15 +84,16 @@ async function readDraftFromStorage(
   }
 }
 
-async function ensureEnvironmentDialogOpen(page: Page) {
-  const wallFinishTrigger = page.getByLabel('Wall Finish')
-  if (await wallFinishTrigger.isVisible()) {
-    return
+async function ensureRoomSurfaceOpen(page: Page) {
+  const roomSurface = page.getByRole('complementary', { name: 'Room' })
+  if (await roomSurface.isVisible()) {
+    return roomSurface
   }
 
-  await page.getByRole('button', { name: 'Environment' }).click()
-  await expect(page.getByRole('dialog', { name: 'Environment' })).toBeVisible()
-  await expect(wallFinishTrigger).toBeVisible()
+  await page.locator('button[aria-controls="room-surface"]').click()
+  await expect(roomSurface).toBeVisible()
+
+  return roomSurface
 }
 
 async function forceClipboardShareFallback(page: Page) {
@@ -411,17 +412,16 @@ test('copy-URL-then-load round-trip: app serializer output is accepted by restor
 
   await openEditor(page)
 
-  await ensureEnvironmentDialogOpen(page)
+  const roomSurface = await ensureRoomSurfaceOpen(page)
 
-  // Change environment options so round-trip includes non-default finishes.
-  await page.getByLabel('Wall Finish').click()
-  await page.getByRole('option', { name: 'Sage Green' }).click()
+  // Change room options so round-trip includes non-default finishes.
+  await roomSurface.locator('label').filter({ hasText: 'Sage Green' }).click()
 
-  await page.getByLabel('Floor Finish').click()
-  await page.getByRole('option', { name: 'Granite' }).click()
+  await roomSurface.getByRole('tab', { name: 'Floor' }).click()
+  await roomSurface.locator('label').filter({ hasText: 'Granite' }).click()
 
-  await page.keyboard.press('Escape')
-  await expect(page.getByRole('dialog', { name: 'Environment' })).toBeHidden()
+  await page.locator('button[aria-controls="room-surface"]').click()
+  await expect(roomSurface).toBeHidden()
 
   // Add one item via the real UI so the app owns the scene state
   await addFurniture(page, 'Leather Armchair')
