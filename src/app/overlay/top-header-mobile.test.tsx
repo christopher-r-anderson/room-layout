@@ -18,12 +18,12 @@ vi.mock('@/app/history/history-tools', () => ({
   HistoryTools: () => <div />,
 }))
 
-vi.mock('./environment-drawer', () => ({
-  EnvironmentDrawer: () => null,
+vi.mock('./room-drawer', () => ({
+  RoomDrawer: () => null,
 }))
 
 vi.mock('./share-scene-button', () => ({
-  ShareSceneButton: () => <button type="button">Share scene</button>,
+  ShareSceneButton: () => <button type="button">Share room layout</button>,
 }))
 
 function createFloorOptions(): FloorFinishOption[] {
@@ -55,15 +55,16 @@ function createProps(
       onCatalogDrawerOpenChange: vi.fn(),
     },
     dialogs: {
-      environmentDialogLayout: null,
-      isEnvironmentDialogOpen: false,
+      roomSurfaceLayout: null,
+      isBlockingOverlayOpen: false,
+      isRoomSurfaceOpen: false,
       isInfoDialogOpen: false,
       isKeyboardShortcutsDialogOpen: false,
       isMobileMoreOpen: false,
       isStartOverDialogOpen: false,
       onCloseStartOverDialog: vi.fn(),
       onConfirmStartOver: vi.fn(),
-      onEnvironmentDialogOpenChange: vi.fn(() => true),
+      onRoomSurfaceOpenChange: vi.fn(() => true),
       onInfoDialogOpenChange: vi.fn(() => true),
       onKeyboardShortcutsDialogOpenChange: vi.fn(() => true),
       onMobileMoreOpenChange: vi.fn(() => true),
@@ -81,10 +82,10 @@ function createProps(
       onUndo: vi.fn(),
     },
     mobileMoreContentId: 'mobile-more-content',
+    mobileRoomTriggerId: 'mobile-room-trigger',
     mobileMoreTriggerId: 'mobile-more-trigger',
     startOverDisabled: false,
     onFloorFinishChange: vi.fn(),
-    onOpenEnvironmentFromMobileMore: vi.fn(),
     onOpenKeyboardShortcutsFromMobileMore: vi.fn(),
     onOpenProjectInfoFromMobileMore: vi.fn(),
     onOpenStartOverFromMobileMore: vi.fn(),
@@ -151,5 +152,29 @@ describe('TopHeaderMobile', () => {
     expect(onMobileMoreOpenChange).toHaveBeenCalledWith(true, {
       returnFocusTarget: 'mobile-more',
     })
+  })
+
+  it('keeps share inside the More actions drawer instead of the mobile header row', () => {
+    const baseProps = createProps()
+
+    const { container } = render(
+      <TopHeaderMobile
+        {...createProps({
+          dialogs: {
+            ...baseProps.dialogs,
+            isMobileMoreOpen: true,
+          },
+        })}
+      />,
+    )
+
+    const mobileHeaderRoot = container.querySelector('[data-top-header-root]')
+
+    expect(mobileHeaderRoot).not.toContainElement(
+      screen.getByRole('button', { name: 'Share room layout' }),
+    )
+    expect(
+      screen.getByRole('button', { name: 'Share room layout' }),
+    ).toBeVisible()
   })
 })

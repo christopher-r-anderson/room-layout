@@ -40,7 +40,9 @@ describe('KeyboardShortcutsHelp', () => {
       ),
     ).toBeVisible()
     expect(
-      screen.getByText(/Use the top controls for Add Furniture, Environment/i),
+      screen.getByText(
+        /Use the header controls for Add Furniture and Room, then open More on mobile/i,
+      ),
     ).toBeVisible()
 
     await user.click(

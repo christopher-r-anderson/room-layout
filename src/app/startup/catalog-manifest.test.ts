@@ -44,6 +44,7 @@ const VALID_MANIFEST = {
       {
         id: 'wood-floor',
         label: 'Wood',
+        previewPath: 'environment/previews/wood-floor.webp',
         diffusePath: 'environment/textures/wood-floor_diff_2k.ktx2',
         normalPath: 'environment/textures/wood-floor_nor_gl_1k.ktx2',
         tileSizeMeters: { width: 0.5, depth: 0.5 },
@@ -155,6 +156,7 @@ describe('fetchCatalogManifest', () => {
         {
           id: 'wood-floor',
           label: 'Wood',
+          previewPath: '/__base__/environment/previews/wood-floor.webp',
           diffusePath: '/__base__/environment/textures/wood-floor_diff_2k.ktx2',
           normalPath:
             '/__base__/environment/textures/wood-floor_nor_gl_1k.ktx2',
@@ -168,6 +170,29 @@ describe('fetchCatalogManifest', () => {
           color: 0xf5f5f5,
         },
       ])
+    })
+
+    it('accepts floor finishes without previewPath', async () => {
+      const manifestWithoutEnvironmentPreviews = {
+        ...VALID_MANIFEST,
+        environment: {
+          ...VALID_MANIFEST.environment,
+          floorFinishes: [
+            {
+              ...VALID_MANIFEST.environment.floorFinishes[0],
+              previewPath: undefined,
+            },
+          ],
+        },
+      }
+
+      mockFetchOk(manifestWithoutEnvironmentPreviews)
+
+      const result = await fetchCatalogManifest()
+
+      expect(result.environment.floorFinishes[0]).not.toHaveProperty(
+        'previewPath',
+      )
     })
 
     it('fetches from catalog-manifest.json by default', async () => {
@@ -332,6 +357,48 @@ describe('fetchCatalogManifest', () => {
             {
               ...VALID_MANIFEST.environment.floorFinishes[0],
               tileSizeMeters: { width: 0, depth: 0.5 },
+            },
+          ],
+        },
+      }
+
+      mockFetchOk(badManifest)
+
+      await expect(fetchCatalogManifest()).rejects.toBeInstanceOf(
+        ManifestValidationError,
+      )
+    })
+
+    it('throws ManifestValidationError when floor previewPath is protocol-relative', async () => {
+      const badManifest = {
+        ...VALID_MANIFEST,
+        environment: {
+          ...VALID_MANIFEST.environment,
+          floorFinishes: [
+            {
+              ...VALID_MANIFEST.environment.floorFinishes[0],
+              previewPath: '//cdn.example.com/floor.webp',
+            },
+          ],
+        },
+      }
+
+      mockFetchOk(badManifest)
+
+      await expect(fetchCatalogManifest()).rejects.toBeInstanceOf(
+        ManifestValidationError,
+      )
+    })
+
+    it('throws ManifestValidationError when wall previewPath is provided', async () => {
+      const badManifest = {
+        ...VALID_MANIFEST,
+        environment: {
+          ...VALID_MANIFEST.environment,
+          wallFinishes: [
+            {
+              ...VALID_MANIFEST.environment.wallFinishes[0],
+              previewPath: 'environment/previews/light-gray.webp',
             },
           ],
         },

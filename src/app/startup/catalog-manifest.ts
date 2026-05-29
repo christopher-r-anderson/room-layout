@@ -235,6 +235,24 @@ function parseHexColor(value: unknown, path: string): number {
   return Number.parseInt(value.slice(1), 16)
 }
 
+function normalizeOptionalPreviewPath(
+  value: unknown,
+  path: string,
+): string | undefined {
+  if (value === undefined) {
+    return undefined
+  }
+
+  const normalizedPreviewPath = normalizeRelativeAssetPath(value)
+  if (normalizedPreviewPath === null) {
+    throw new ManifestValidationError(
+      `${path}: "previewPath" must be a relative path`,
+    )
+  }
+
+  return resolvePublicAssetPath(normalizedPreviewPath)
+}
+
 function validateAndNormalizeFloorFinish(
   raw: unknown,
   index: number,
@@ -304,11 +322,17 @@ function validateAndNormalizeFloorFinish(
     )
   }
 
+  const previewPath = normalizeOptionalPreviewPath(
+    entry.previewPath,
+    `environment.floorFinishes[${String(index)}] ("${entry.id}")`,
+  )
+
   return {
     id: entry.id,
     label: entry.label,
     diffusePath: resolvePublicAssetPath(normalizedDiffusePath),
     normalPath: resolvePublicAssetPath(normalizedNormalPath),
+    ...(previewPath ? { previewPath } : {}),
     tileSizeMeters: {
       width: tileSizeMeters.width,
       depth: tileSizeMeters.depth,
@@ -337,6 +361,12 @@ function validateAndNormalizeWallFinish(
   if (typeof entry.label !== 'string' || entry.label.trim() === '') {
     throw new ManifestValidationError(
       `environment.wallFinishes[${String(index)}] ("${entry.id}"): "label" must be a non-empty string`,
+    )
+  }
+
+  if (entry.previewPath !== undefined) {
+    throw new ManifestValidationError(
+      `environment.wallFinishes[${String(index)}] ("${entry.id}"): "previewPath" is not supported; wall swatches are derived from "color"`,
     )
   }
 

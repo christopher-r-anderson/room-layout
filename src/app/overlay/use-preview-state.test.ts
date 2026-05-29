@@ -8,7 +8,7 @@ function defaultOptions(
 ) {
   return {
     isDragging: false,
-    isModalOpen: false,
+    isBlockingOverlayOpen: false,
     editorInteractionsEnabled: true,
     itemIds: ['item-1', 'item-2'],
     ...overrides,
@@ -60,7 +60,7 @@ describe('usePreviewState', () => {
       expect(result.current.previewedId).toBeNull()
     })
 
-    it('clears when isModalOpen becomes true', () => {
+    it('clears when isBlockingOverlayOpen becomes true', () => {
       const { result, rerender } = renderHook((opts) => usePreviewState(opts), {
         initialProps: defaultOptions(),
       })
@@ -69,7 +69,7 @@ describe('usePreviewState', () => {
         result.current.setPreview('item-1')
       })
 
-      rerender(defaultOptions({ isModalOpen: true }))
+      rerender(defaultOptions({ isBlockingOverlayOpen: true }))
 
       expect(result.current.previewedId).toBeNull()
     })

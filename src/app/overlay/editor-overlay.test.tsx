@@ -226,20 +226,20 @@ function createWallOptions(): WallFinishOption[] {
 }
 
 describe('EditorOverlay integration', () => {
-  it('wires outliner reverse-tab handoff and environment focus return across the shell', async () => {
+  it('wires outliner reverse-tab handoff and room focus return across the shell', async () => {
     const user = userEvent.setup()
     const selectedFurniture = createSelectedFurniture()
     const readModel = createReadModel(selectedFurniture)
 
     function TestHarness() {
-      const [isEnvironmentDialogOpen, setIsEnvironmentDialogOpen] =
-        React.useState(false)
-      const [environmentDialogLayout, setEnvironmentDialogLayout] =
-        React.useState<'desktop' | 'mobile' | null>(null)
+      const [isRoomSurfaceOpen, setIsRoomSurfaceOpen] = React.useState(false)
+      const [roomSurfaceLayout, setRoomSurfaceLayout] = React.useState<
+        'desktop' | 'mobile' | null
+      >(null)
       const [isKeyboardShortcutsDialogOpen, setIsKeyboardShortcutsDialogOpen] =
         React.useState(false)
       const [returnFocusTarget, setReturnFocusTarget] = React.useState<
-        | 'environment-inline'
+        | 'room-inline'
         | 'info-inline'
         | 'keyboard-inline'
         | 'mobile-more'
@@ -248,13 +248,13 @@ describe('EditorOverlay integration', () => {
       >(null)
       const selectedItemControlsRef = React.useRef<HTMLDivElement | null>(null)
 
-      const handleEnvironmentDialogOpenChange = React.useCallback(
+      const handleRoomSurfaceOpenChange = React.useCallback(
         (
           open: boolean,
           options?: {
             layout?: 'desktop' | 'mobile'
             returnFocusTarget?:
-              | 'environment-inline'
+              | 'room-inline'
               | 'info-inline'
               | 'keyboard-inline'
               | 'mobile-more'
@@ -262,10 +262,8 @@ describe('EditorOverlay integration', () => {
               | null
           },
         ) => {
-          setIsEnvironmentDialogOpen(open)
-          setEnvironmentDialogLayout(
-            open ? (options?.layout ?? 'desktop') : null,
-          )
+          setIsRoomSurfaceOpen(open)
+          setRoomSurfaceLayout(open ? (options?.layout ?? 'desktop') : null)
           setReturnFocusTarget(options?.returnFocusTarget ?? null)
           return true
         },
@@ -277,7 +275,7 @@ describe('EditorOverlay integration', () => {
           open: boolean,
           options?: {
             returnFocusTarget?:
-              | 'environment-inline'
+              | 'room-inline'
               | 'info-inline'
               | 'keyboard-inline'
               | 'mobile-more'
@@ -365,15 +363,15 @@ describe('EditorOverlay integration', () => {
                 onCatalogDrawerOpenChange: vi.fn(),
               }}
               dialogs={{
-                environmentDialogLayout,
+                roomSurfaceLayout,
                 isDeleteDialogOpen: false,
+                isBlockingOverlayOpen: false,
                 pendingDeleteFurniture: null,
                 onCloseDeleteDialog: vi.fn(),
                 onConfirmDeleteSelection: vi.fn(),
-                isEnvironmentDialogOpen,
+                isRoomSurfaceOpen,
                 isMobileMoreOpen: false,
-                onEnvironmentDialogOpenChange:
-                  handleEnvironmentDialogOpenChange,
+                onRoomSurfaceOpenChange: handleRoomSurfaceOpenChange,
                 isKeyboardShortcutsDialogOpen,
                 onKeyboardShortcutsDialogOpenChange:
                   handleKeyboardShortcutsOpenChange,
@@ -431,27 +429,35 @@ describe('EditorOverlay integration', () => {
 
     expect(screen.getByLabelText('Distance from left wall (m)')).toHaveFocus()
 
-    const environmentTrigger = screen.getByRole('button', {
-      name: 'Environment',
-    })
+    const environmentTrigger = screen.getByRole('button', { name: 'Room' })
 
     await user.click(environmentTrigger)
 
-    const environmentDialog = screen.getByRole('dialog', {
-      name: 'Environment',
+    const environmentDialog = screen.getByRole('complementary', {
+      name: 'Room',
     })
     expect(environmentDialog).toBeVisible()
 
+    expect(screen.getByRole('group', { name: 'Camera' })).toBeVisible()
+    expect(document.querySelector('[data-camera-anchor]')).toHaveClass(
+      'right-94',
+    )
+
     await user.click(
-      within(environmentDialog).getAllByRole('button', { name: 'Close' })[0],
+      within(environmentDialog).getByRole('button', {
+        name: 'Close room panel',
+      }),
     )
 
     await waitFor(() => {
       expect(
-        screen.queryByRole('dialog', { name: 'Environment' }),
+        screen.queryByRole('complementary', { name: 'Room' }),
       ).not.toBeInTheDocument()
     })
 
     expect(environmentTrigger).toHaveFocus()
+    expect(document.querySelector('[data-camera-anchor]')).toHaveClass(
+      'right-2',
+    )
   })
 })

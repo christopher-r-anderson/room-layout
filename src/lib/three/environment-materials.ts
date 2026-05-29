@@ -3,6 +3,7 @@ export interface FloorFinishOption {
   label: string
   diffusePath: string
   normalPath: string
+  previewPath?: string
   tileSizeMeters: {
     width: number
     depth: number

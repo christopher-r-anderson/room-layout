@@ -201,7 +201,7 @@ function App() {
     handleDragStateChange,
     clearPreviewOnCanvasMiss,
   } = usePreviewController({
-    isModalOpen: dialogState.isModalOpen,
+    isBlockingOverlayOpen: dialogState.isBlockingOverlayOpen,
     editorInteractionsEnabled: startup.editorInteractionsEnabled,
     itemIds,
   })
@@ -236,7 +236,7 @@ function App() {
 
   const sync = useSceneSync({
     sceneRef,
-    isModalOpen: dialogState.isModalOpen,
+    isBlockingOverlayOpen: dialogState.isBlockingOverlayOpen,
     handleSceneReadModelChange: overlayState.handleSceneReadModelChange,
     announcePolite: announcements.announcePolite,
   })
@@ -378,7 +378,7 @@ function App() {
     onSelectById: handlers.handleSelectById,
     readModel: overlayState.sceneReadModel,
     sceneInteractionsDisabled:
-      !startup.editorInteractionsEnabled || dialogState.isModalOpen,
+      !startup.editorInteractionsEnabled || dialogState.isBlockingOverlayOpen,
     onSetCameraPreset: handlers.handleSetCameraPreset,
     onFocusSelected: handlers.handleFocusSelected,
     catalogIdToAdd: overlayState.catalogIdToAdd,
@@ -391,10 +391,11 @@ function App() {
     pendingDeleteFurniture: dialogState.pendingDeleteFurniture,
     onCloseDeleteDialog: dialogState.closeDialog,
     onConfirmDeleteSelection: handlers.handleConfirmDeleteSelection,
-    environmentDialogLayout: dialogState.environmentDialogLayout,
-    isEnvironmentDialogOpen: dialogState.isEnvironmentDialogOpen,
+    isBlockingOverlayOpen: dialogState.isBlockingOverlayOpen,
+    roomSurfaceLayout: dialogState.roomSurfaceLayout,
+    isRoomSurfaceOpen: dialogState.isRoomSurfaceOpen,
     isMobileMoreOpen: dialogState.isMobileMoreOpen,
-    onEnvironmentDialogOpenChange: dialogState.setEnvironmentOpen,
+    onRoomSurfaceOpenChange: dialogState.setRoomSurfaceOpen,
     isStartOverDialogOpen: dialogState.isStartOverDialogOpen,
     onCloseStartOverDialog: dialogState.closeDialog,
     onOpenStartOverDialog: handlers.handleOpenStartOverDialog,
@@ -497,7 +498,7 @@ function App() {
   useKeyboardShortcuts({
     enabled: startup.editorInteractionsEnabled,
     hasSelection: overlayState.selectedFurniture !== null,
-    isModalOpen: dialogState.isModalOpen,
+    isBlockingOverlayOpen: dialogState.isBlockingOverlayOpen,
     canStartOver: !sceneIsAtDefaults,
     roomViewHasFocus,
     onUndo: handlers.handleUndo,
@@ -520,7 +521,7 @@ function App() {
 
   useCameraKeyState({
     enabled: startup.editorInteractionsEnabled,
-    isModalOpen: dialogState.isModalOpen,
+    isBlockingOverlayOpen: dialogState.isBlockingOverlayOpen,
     roomViewHasFocus,
     sceneRef,
   })

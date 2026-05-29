@@ -4,18 +4,16 @@ import type { FurnitureItem } from '@/scene/objects/furniture.types'
 export type ActiveDialog =
   | 'catalog'
   | 'delete'
-  | 'environment-desktop'
-  | 'environment-mobile'
   | 'keyboard-shortcuts'
   | 'info'
   | 'more-mobile'
   | 'start-over'
   | null
 
-export type EnvironmentDialogLayout = 'desktop' | 'mobile'
+export type RoomSurfaceLayout = 'desktop' | 'mobile'
 
 export type DialogReturnFocusTarget =
-  | 'environment-inline'
+  | 'room-inline'
   | 'info-inline'
   | 'keyboard-inline'
   | 'mobile-more'
@@ -26,8 +24,8 @@ export interface DialogOpenOptions {
   returnFocusTarget?: DialogReturnFocusTarget
 }
 
-export interface EnvironmentDialogOpenOptions extends DialogOpenOptions {
-  layout?: EnvironmentDialogLayout
+export interface RoomSurfaceOpenOptions extends DialogOpenOptions {
+  layout?: RoomSurfaceLayout
 }
 
 interface UseDialogStateOptions {
@@ -39,22 +37,22 @@ interface UseDialogStateOptions {
 
 interface DialogState {
   activeDialog: ActiveDialog
-  environmentDialogLayout: EnvironmentDialogLayout | null
+  roomSurfaceLayout: RoomSurfaceLayout | null
   isCatalogDrawerOpen: boolean
   isDeleteDialogOpen: boolean
-  isEnvironmentDialogOpen: boolean
-  isEnvironmentDesktopDialogOpen: boolean
-  isEnvironmentMobileDialogOpen: boolean
+  isRoomSurfaceOpen: boolean
+  isDesktopRoomSurfaceOpen: boolean
+  isMobileRoomSurfaceOpen: boolean
   isInfoDialogOpen: boolean
   isKeyboardShortcutsDialogOpen: boolean
   isMobileMoreOpen: boolean
   isStartOverDialogOpen: boolean
-  isModalOpen: boolean
+  isBlockingOverlayOpen: boolean
   pendingDeleteFurniture: FurnitureItem | null
   returnFocusTarget: DialogReturnFocusTarget
   openCatalog: () => boolean
   openDelete: () => boolean
-  openEnvironment: (options?: EnvironmentDialogOpenOptions) => boolean
+  openRoomSurface: (options?: RoomSurfaceOpenOptions) => boolean
   openInfo: (options?: DialogOpenOptions) => boolean
   openKeyboardShortcuts: (options?: DialogOpenOptions) => boolean
   openMobileMore: (options?: DialogOpenOptions) => boolean
@@ -62,9 +60,9 @@ interface DialogState {
   closeDialog: () => void
   closeAllDialogs: () => void
   setCatalogOpen: (open: boolean) => boolean
-  setEnvironmentOpen: (
+  setRoomSurfaceOpen: (
     open: boolean,
-    options?: EnvironmentDialogOpenOptions,
+    options?: RoomSurfaceOpenOptions,
   ) => boolean
   setInfoOpen: (open: boolean, options?: DialogOpenOptions) => boolean
   setKeyboardShortcutsOpen: (
@@ -84,19 +82,22 @@ export function useDialogState({
   const layoutModeRef = useRef<'mobile' | 'desktop'>('desktop')
   const [dialogState, setDialogState] = useState<{
     activeDialog: ActiveDialog
+    roomSurfaceLayout: RoomSurfaceLayout | null
     returnFocusTarget: DialogReturnFocusTarget
   }>({
     activeDialog: null,
+    roomSurfaceLayout: null,
     returnFocusTarget: null,
   })
   const dialogStateRef = useRef(dialogState)
   const [pendingDeleteFurniture, setPendingDeleteFurniture] =
     useState<FurnitureItem | null>(null)
-  const { activeDialog, returnFocusTarget } = dialogState
+  const { activeDialog, roomSurfaceLayout, returnFocusTarget } = dialogState
 
   const setDialogStateSnapshot = useCallback(
     (nextState: {
       activeDialog: ActiveDialog
+      roomSurfaceLayout: RoomSurfaceLayout | null
       returnFocusTarget: DialogReturnFocusTarget
     }) => {
       dialogStateRef.current = nextState
@@ -107,20 +108,14 @@ export function useDialogState({
 
   const isCatalogDrawerOpen = activeDialog === 'catalog'
   const isDeleteDialogOpen = activeDialog === 'delete'
-  const isEnvironmentDesktopDialogOpen = activeDialog === 'environment-desktop'
-  const isEnvironmentMobileDialogOpen = activeDialog === 'environment-mobile'
-  const isEnvironmentDialogOpen =
-    isEnvironmentDesktopDialogOpen || isEnvironmentMobileDialogOpen
-  const environmentDialogLayout = isEnvironmentMobileDialogOpen
-    ? 'mobile'
-    : isEnvironmentDesktopDialogOpen
-      ? 'desktop'
-      : null
+  const isDesktopRoomSurfaceOpen = roomSurfaceLayout === 'desktop'
+  const isMobileRoomSurfaceOpen = roomSurfaceLayout === 'mobile'
+  const isRoomSurfaceOpen = roomSurfaceLayout !== null
   const isInfoDialogOpen = activeDialog === 'info'
   const isKeyboardShortcutsDialogOpen = activeDialog === 'keyboard-shortcuts'
   const isMobileMoreOpen = activeDialog === 'more-mobile'
   const isStartOverDialogOpen = activeDialog === 'start-over'
-  const isModalOpen = activeDialog !== null
+  const isBlockingOverlayOpen = activeDialog !== null
 
   const openDialog = useCallback(
     (
@@ -129,16 +124,49 @@ export function useDialogState({
     ) => {
       setDialogStateSnapshot({
         activeDialog: nextActiveDialog,
+        roomSurfaceLayout: null,
         returnFocusTarget: options?.returnFocusTarget ?? null,
       })
     },
     [setDialogStateSnapshot],
   )
 
+  const showRoomSurface = useCallback(
+    (options?: RoomSurfaceOpenOptions) => {
+      setDialogStateSnapshot({
+        activeDialog: null,
+        roomSurfaceLayout: options?.layout ?? layoutModeRef.current,
+        returnFocusTarget: options?.returnFocusTarget ?? 'room-inline',
+      })
+    },
+    [setDialogStateSnapshot],
+  )
+
   const closeDialog = useCallback(() => {
-    setDialogStateSnapshot({ activeDialog: null, returnFocusTarget: null })
+    setDialogStateSnapshot({
+      activeDialog: null,
+      roomSurfaceLayout: null,
+      returnFocusTarget: null,
+    })
     setPendingDeleteFurniture(null)
   }, [setDialogStateSnapshot])
+
+  const closeRoomSurface = useCallback(() => {
+    setDialogState((current) => {
+      if (current.roomSurfaceLayout === null) {
+        return current
+      }
+
+      const nextState = {
+        ...current,
+        roomSurfaceLayout: null,
+        returnFocusTarget: null,
+      }
+
+      dialogStateRef.current = nextState
+      return nextState
+    })
+  }, [])
 
   const closeAllDialogs = useCallback(() => {
     closeDialog()
@@ -190,8 +218,8 @@ export function useDialogState({
     [openDialog, startupOverlayActive],
   )
 
-  const openEnvironment = useCallback(
-    (options?: EnvironmentDialogOpenOptions) => {
+  const openRoomSurface = useCallback(
+    (options?: RoomSurfaceOpenOptions) => {
       if (
         !editorInteractionsEnabled ||
         startupOverlayActive ||
@@ -200,17 +228,10 @@ export function useDialogState({
         return false
       }
 
-      openDialog(
-        options?.layout === 'mobile'
-          ? 'environment-mobile'
-          : 'environment-desktop',
-        {
-          returnFocusTarget: options?.returnFocusTarget ?? 'environment-inline',
-        },
-      )
+      showRoomSurface(options)
       return true
     },
-    [editorInteractionsEnabled, openDialog, startupOverlayActive],
+    [editorInteractionsEnabled, showRoomSurface, startupOverlayActive],
   )
 
   const openDelete = useCallback(() => {
@@ -290,16 +311,16 @@ export function useDialogState({
     [closeDialog, openInfo],
   )
 
-  const setEnvironmentOpen = useCallback(
-    (open: boolean, options?: EnvironmentDialogOpenOptions) => {
+  const setRoomSurfaceOpen = useCallback(
+    (open: boolean, options?: RoomSurfaceOpenOptions) => {
       if (!open) {
-        closeDialog()
+        closeRoomSurface()
         return true
       }
 
-      return openEnvironment(options)
+      return openRoomSurface(options)
     },
-    [closeDialog, openEnvironment],
+    [closeRoomSurface, openRoomSurface],
   )
 
   const setKeyboardShortcutsOpen = useCallback(
@@ -330,10 +351,15 @@ export function useDialogState({
     (
       current: {
         activeDialog: ActiveDialog
+        roomSurfaceLayout: RoomSurfaceLayout | null
         returnFocusTarget: DialogReturnFocusTarget
       },
       layout: 'mobile' | 'desktop',
     ) => {
+      if (current.roomSurfaceLayout !== null) {
+        return 'room-inline'
+      }
+
       if (layout === 'desktop') {
         if (current.returnFocusTarget !== 'mobile-more') {
           return current.returnFocusTarget
@@ -377,24 +403,27 @@ export function useDialogState({
 
       setDialogState((current) => {
         const shouldCloseForDesktop =
-          layout === 'desktop' &&
-          (current.activeDialog === 'environment-mobile' ||
-            current.activeDialog === 'more-mobile')
-        const shouldCloseForMobile =
-          layout === 'mobile' && current.activeDialog === 'environment-desktop'
+          layout === 'desktop' && current.activeDialog === 'more-mobile'
 
-        if (!shouldCloseForDesktop && !shouldCloseForMobile) {
+        if (!shouldCloseForDesktop) {
           const nextReturnFocusTarget = mapReturnFocusTargetForLayout(
             current,
             layout,
           )
 
-          if (nextReturnFocusTarget === current.returnFocusTarget) {
+          const nextRoomSurfaceLayout =
+            current.roomSurfaceLayout === null ? null : layout
+
+          if (
+            nextReturnFocusTarget === current.returnFocusTarget &&
+            nextRoomSurfaceLayout === current.roomSurfaceLayout
+          ) {
             return current
           }
 
           const nextState = {
             ...current,
+            roomSurfaceLayout: nextRoomSurfaceLayout,
             returnFocusTarget: nextReturnFocusTarget,
           }
 
@@ -404,6 +433,7 @@ export function useDialogState({
 
         const nextState = {
           activeDialog: null,
+          roomSurfaceLayout: null,
           returnFocusTarget: null,
         }
 
@@ -416,22 +446,22 @@ export function useDialogState({
 
   return {
     activeDialog,
-    environmentDialogLayout,
+    roomSurfaceLayout,
     isCatalogDrawerOpen,
     isDeleteDialogOpen,
-    isEnvironmentDialogOpen,
-    isEnvironmentDesktopDialogOpen,
-    isEnvironmentMobileDialogOpen,
+    isRoomSurfaceOpen,
+    isDesktopRoomSurfaceOpen,
+    isMobileRoomSurfaceOpen,
     isInfoDialogOpen,
     isKeyboardShortcutsDialogOpen,
     isMobileMoreOpen,
     isStartOverDialogOpen,
-    isModalOpen,
+    isBlockingOverlayOpen,
     pendingDeleteFurniture,
     returnFocusTarget,
     openCatalog,
     openDelete,
-    openEnvironment,
+    openRoomSurface,
     openInfo,
     openKeyboardShortcuts,
     openMobileMore,
@@ -439,7 +469,7 @@ export function useDialogState({
     closeDialog,
     closeAllDialogs,
     setCatalogOpen,
-    setEnvironmentOpen,
+    setRoomSurfaceOpen,
     setInfoOpen,
     setKeyboardShortcutsOpen,
     setMobileMoreOpen,

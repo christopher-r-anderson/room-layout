@@ -58,13 +58,14 @@ interface OverlayOptions {
   onCatalogIdToAddChange: (catalogId: string) => void
   onCatalogDrawerOpenChange: (open: boolean) => void
   isDeleteDialogOpen: boolean
+  isBlockingOverlayOpen: boolean
   pendingDeleteFurniture: FurnitureItem | null
   onCloseDeleteDialog: () => void
   onConfirmDeleteSelection: () => void
-  environmentDialogLayout: 'desktop' | 'mobile' | null
-  isEnvironmentDialogOpen: boolean
+  roomSurfaceLayout: 'desktop' | 'mobile' | null
+  isRoomSurfaceOpen: boolean
   isMobileMoreOpen: boolean
-  onEnvironmentDialogOpenChange: (open: boolean) => boolean
+  onRoomSurfaceOpenChange: (open: boolean) => boolean
   isStartOverDialogOpen: boolean
   onCloseStartOverDialog: () => void
   onOpenStartOverDialog: () => void
@@ -75,7 +76,7 @@ interface OverlayOptions {
   onKeyboardShortcutsDialogOpenChange: (open: boolean) => boolean
   onMobileMoreOpenChange: (open: boolean) => boolean
   returnFocusTarget:
-    | 'environment-inline'
+    | 'room-inline'
     | 'info-inline'
     | 'keyboard-inline'
     | 'mobile-more'
@@ -126,13 +127,14 @@ function createOptions(overrides?: Partial<OverlayOptions>): OverlayOptions {
     onCatalogIdToAddChange: vi.fn(),
     onCatalogDrawerOpenChange: vi.fn(),
     isDeleteDialogOpen: false,
+    isBlockingOverlayOpen: false,
     pendingDeleteFurniture: selectedFurniture,
     onCloseDeleteDialog: vi.fn(),
     onConfirmDeleteSelection: vi.fn(),
-    environmentDialogLayout: null,
-    isEnvironmentDialogOpen: false,
+    roomSurfaceLayout: null,
+    isRoomSurfaceOpen: false,
     isMobileMoreOpen: false,
-    onEnvironmentDialogOpenChange: vi.fn(() => true),
+    onRoomSurfaceOpenChange: vi.fn(() => true),
     isStartOverDialogOpen: false,
     onCloseStartOverDialog: vi.fn(),
     onOpenStartOverDialog: vi.fn(),
@@ -161,8 +163,8 @@ describe('useOverlayProps', () => {
       catalogIdToAdd: 'table-1',
       isCatalogDrawerOpen: true,
       isDeleteDialogOpen: true,
-      environmentDialogLayout: 'desktop',
-      isEnvironmentDialogOpen: true,
+      roomSurfaceLayout: 'desktop',
+      isRoomSurfaceOpen: true,
       isMobileMoreOpen: true,
       isStartOverDialogOpen: true,
       isInfoDialogOpen: true,
@@ -205,13 +207,14 @@ describe('useOverlayProps', () => {
     })
     expect(result.current.dialogsProps).toEqual({
       isDeleteDialogOpen: true,
+      isBlockingOverlayOpen: false,
       pendingDeleteFurniture: options.pendingDeleteFurniture,
       onCloseDeleteDialog: options.onCloseDeleteDialog,
       onConfirmDeleteSelection: options.onConfirmDeleteSelection,
-      environmentDialogLayout: 'desktop',
-      isEnvironmentDialogOpen: true,
+      roomSurfaceLayout: 'desktop',
+      isRoomSurfaceOpen: true,
       isMobileMoreOpen: true,
-      onEnvironmentDialogOpenChange: options.onEnvironmentDialogOpenChange,
+      onRoomSurfaceOpenChange: options.onRoomSurfaceOpenChange,
       isStartOverDialogOpen: true,
       onCloseStartOverDialog: options.onCloseStartOverDialog,
       onOpenStartOverDialog: options.onOpenStartOverDialog,

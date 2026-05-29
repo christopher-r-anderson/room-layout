@@ -7,7 +7,7 @@ function defaultOptions(
   overrides: Partial<Parameters<typeof usePreviewController>[0]> = {},
 ) {
   return {
-    isModalOpen: false,
+    isBlockingOverlayOpen: false,
     editorInteractionsEnabled: true,
     itemIds: ['item-1', 'item-2'],
     ...overrides,

@@ -193,13 +193,13 @@ describe('useCameraKeyState', () => {
     expect(sceneRef.current.setCameraKeyState).not.toHaveBeenCalled()
   })
 
-  it('suppresses camera motion whenever a modal is open', () => {
+  it('suppresses camera motion whenever a blocking overlay is open', () => {
     const sceneRef = createSceneRef()
 
     renderHook(() => {
       useCameraKeyState({
         enabled: true,
-        isModalOpen: true,
+        isBlockingOverlayOpen: true,
         roomViewHasFocus: true,
         sceneRef,
       })
@@ -211,20 +211,20 @@ describe('useCameraKeyState', () => {
     expect(sceneRef.current.setCameraKeyState).not.toHaveBeenCalled()
   })
 
-  it('clears held camera keys when a modal opens', () => {
+  it('clears held camera keys when a blocking overlay opens', () => {
     const sceneRef = createSceneRef()
 
     const { rerender } = renderHook(
       ({
         enabled,
-        isModalOpen,
+        isBlockingOverlayOpen,
       }: {
         enabled: boolean
-        isModalOpen: boolean
+        isBlockingOverlayOpen: boolean
       }) => {
         useCameraKeyState({
           enabled,
-          isModalOpen,
+          isBlockingOverlayOpen,
           roomViewHasFocus: true,
           sceneRef,
         })
@@ -232,7 +232,7 @@ describe('useCameraKeyState', () => {
       {
         initialProps: {
           enabled: true,
-          isModalOpen: false,
+          isBlockingOverlayOpen: false,
         },
       },
     )
@@ -240,7 +240,7 @@ describe('useCameraKeyState', () => {
     fireEvent.keyDown(window, { code: 'KeyW', key: 'w' })
     rerender({
       enabled: true,
-      isModalOpen: true,
+      isBlockingOverlayOpen: true,
     })
 
     expect(sceneRef.setCameraKeyState.mock.calls).toHaveLength(2)

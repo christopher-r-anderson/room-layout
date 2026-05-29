@@ -245,8 +245,8 @@ export function KeyboardShortcutsDialog({
           <DialogDescription>
             Quick reference for room-view, camera, selected item, and scene
             shortcuts. Most shortcuts below work only while the 3D room view is
-            focused. Use the top controls for Add Furniture, Environment,
-            sharing, and other scene actions.
+            focused. Use the header controls for Add Furniture and Room, then
+            open More on mobile for sharing and the other scene actions.
           </DialogDescription>
         </DialogHeader>
 

@@ -9,7 +9,7 @@ import { useKeyboardShortcuts } from './use-keyboard-shortcuts'
 function KeyboardShortcutHarness(props: {
   enabled: boolean
   hasSelection: boolean
-  isModalOpen: boolean
+  isBlockingOverlayOpen: boolean
   canStartOver?: boolean
   roomViewHasFocus?: boolean
   onUndo: () => void
@@ -46,7 +46,7 @@ function DialogEscapeHarness(props: {
   useKeyboardShortcuts({
     enabled: props.enabled,
     hasSelection: props.hasSelection,
-    isModalOpen: false,
+    isBlockingOverlayOpen: false,
     canStartOver: true,
     roomViewHasFocus: true,
     onUndo: vi.fn(),
@@ -80,7 +80,7 @@ function TextInputHarness(props: {
   onUndo: () => void
   onRedo: () => void
   onStartOverIntent?: () => void
-  isModalOpen?: boolean
+  isBlockingOverlayOpen?: boolean
   canStartOver?: boolean
 }) {
   const inputRef = useRef<HTMLInputElement | null>(null)
@@ -88,7 +88,7 @@ function TextInputHarness(props: {
   useKeyboardShortcuts({
     enabled: props.enabled,
     hasSelection: false,
-    isModalOpen: props.isModalOpen ?? false,
+    isBlockingOverlayOpen: props.isBlockingOverlayOpen ?? false,
     canStartOver: props.canStartOver ?? true,
     roomViewHasFocus: true,
     onUndo: props.onUndo,
@@ -122,7 +122,7 @@ function SelectedItemDetailsInputHarness(props: {
   useKeyboardShortcuts({
     enabled: props.enabled,
     hasSelection: true,
-    isModalOpen: false,
+    isBlockingOverlayOpen: false,
     canStartOver: true,
     roomViewHasFocus: true,
     onUndo: vi.fn(),
@@ -153,7 +153,7 @@ function SelectedItemDetailsInputHarness(props: {
 
 function DialogStartOverHarness(props: {
   enabled: boolean
-  isModalOpen: boolean
+  isBlockingOverlayOpen: boolean
   canStartOver?: boolean
   includeTextInput?: boolean
   onStartOverIntent: () => void
@@ -161,7 +161,7 @@ function DialogStartOverHarness(props: {
   useKeyboardShortcuts({
     enabled: props.enabled,
     hasSelection: false,
-    isModalOpen: props.isModalOpen,
+    isBlockingOverlayOpen: props.isBlockingOverlayOpen,
     canStartOver: props.canStartOver ?? true,
     roomViewHasFocus: true,
     onUndo: vi.fn(),
@@ -197,7 +197,7 @@ function PreHandledEscapeHarness(props: {
   useKeyboardShortcuts({
     enabled: props.enabled,
     hasSelection: props.hasSelection,
-    isModalOpen: false,
+    isBlockingOverlayOpen: false,
     canStartOver: true,
     roomViewHasFocus: true,
     onUndo: vi.fn(),
@@ -241,7 +241,7 @@ function ContentEditableHarness(props: {
   useKeyboardShortcuts({
     enabled: props.enabled,
     hasSelection: false,
-    isModalOpen: false,
+    isBlockingOverlayOpen: false,
     canStartOver: true,
     roomViewHasFocus: true,
     onUndo: vi.fn(),
@@ -297,7 +297,7 @@ function fireStartOverShortcuts(target: Window | HTMLElement): KeyboardEvent[] {
 }
 
 describe('useKeyboardShortcuts', () => {
-  it('blocks delete shortcuts when a modal is open and uses the latest modal state on rerender', async () => {
+  it('blocks delete shortcuts when a blocking overlay is open and uses the latest blocking-overlay state on rerender', async () => {
     const user = userEvent.setup()
     const onOpenDeleteDialog = vi.fn()
 
@@ -305,7 +305,7 @@ describe('useKeyboardShortcuts', () => {
       <KeyboardShortcutHarness
         enabled
         hasSelection
-        isModalOpen={false}
+        isBlockingOverlayOpen={false}
         onUndo={vi.fn()}
         onRedo={vi.fn()}
         onStartOverIntent={vi.fn()}
@@ -324,7 +324,7 @@ describe('useKeyboardShortcuts', () => {
       <KeyboardShortcutHarness
         enabled
         hasSelection
-        isModalOpen
+        isBlockingOverlayOpen
         onUndo={vi.fn()}
         onRedo={vi.fn()}
         onStartOverIntent={vi.fn()}
@@ -348,7 +348,7 @@ describe('useKeyboardShortcuts', () => {
       <KeyboardShortcutHarness
         enabled
         hasSelection
-        isModalOpen={false}
+        isBlockingOverlayOpen={false}
         onUndo={vi.fn()}
         onRedo={vi.fn()}
         onStartOverIntent={vi.fn()}
@@ -371,7 +371,7 @@ describe('useKeyboardShortcuts', () => {
       <KeyboardShortcutHarness
         enabled={false}
         hasSelection
-        isModalOpen={false}
+        isBlockingOverlayOpen={false}
         onUndo={onUndo}
         onRedo={vi.fn()}
         onStartOverIntent={vi.fn()}
@@ -396,7 +396,7 @@ describe('useKeyboardShortcuts', () => {
     expect(onUndo).not.toHaveBeenCalled()
   })
 
-  it('dispatches history and rotation shortcuts when enabled and no modal is open', async () => {
+  it('dispatches history and rotation shortcuts when enabled and no blocking overlay is open', async () => {
     const user = userEvent.setup()
     const onUndo = vi.fn()
     const onRedo = vi.fn()
@@ -408,7 +408,7 @@ describe('useKeyboardShortcuts', () => {
       <KeyboardShortcutHarness
         enabled
         hasSelection
-        isModalOpen={false}
+        isBlockingOverlayOpen={false}
         onUndo={onUndo}
         onRedo={onRedo}
         onStartOverIntent={vi.fn()}
@@ -442,7 +442,7 @@ describe('useKeyboardShortcuts', () => {
       <KeyboardShortcutHarness
         enabled
         hasSelection
-        isModalOpen={false}
+        isBlockingOverlayOpen={false}
         onUndo={onUndo}
         onRedo={onRedo}
         onStartOverIntent={vi.fn()}
@@ -478,7 +478,7 @@ describe('useKeyboardShortcuts', () => {
     expect(redoEvent.defaultPrevented).toBe(true)
   })
 
-  it('does not dispatch undo/redo when modal is open', async () => {
+  it('does not dispatch undo/redo when a blocking overlay is open', async () => {
     const user = userEvent.setup()
     const onUndo = vi.fn()
     const onRedo = vi.fn()
@@ -487,7 +487,7 @@ describe('useKeyboardShortcuts', () => {
       <KeyboardShortcutHarness
         enabled
         hasSelection
-        isModalOpen
+        isBlockingOverlayOpen
         onUndo={onUndo}
         onRedo={onRedo}
         onStartOverIntent={vi.fn()}
@@ -516,7 +516,7 @@ describe('useKeyboardShortcuts', () => {
       <KeyboardShortcutHarness
         enabled
         hasSelection
-        isModalOpen={false}
+        isBlockingOverlayOpen={false}
         onUndo={vi.fn()}
         onRedo={vi.fn()}
         onStartOverIntent={vi.fn()}
@@ -539,7 +539,7 @@ describe('useKeyboardShortcuts', () => {
     expect(onClearSelection).toHaveBeenCalledTimes(1)
   })
 
-  it('dispatches focusSelected on F when selection exists and no modal/input context', async () => {
+  it('dispatches focusSelected on F when selection exists and no blocking-overlay or input context', async () => {
     const user = userEvent.setup()
     const onFocusSelected = vi.fn()
     const onMoveSelection = vi.fn()
@@ -548,7 +548,7 @@ describe('useKeyboardShortcuts', () => {
       <KeyboardShortcutHarness
         enabled
         hasSelection
-        isModalOpen={false}
+        isBlockingOverlayOpen={false}
         onUndo={vi.fn()}
         onRedo={vi.fn()}
         onStartOverIntent={vi.fn()}
@@ -565,7 +565,7 @@ describe('useKeyboardShortcuts', () => {
     expect(onMoveSelection).not.toHaveBeenCalled()
   })
 
-  it('dispatches camera preset shortcuts on 1/2/3/4 when enabled and no modal/input context', async () => {
+  it('dispatches camera preset shortcuts on 1/2/3/4 when enabled and no blocking-overlay or input context', async () => {
     const user = userEvent.setup()
     const onSetCameraPreset = vi.fn()
 
@@ -573,7 +573,7 @@ describe('useKeyboardShortcuts', () => {
       <KeyboardShortcutHarness
         enabled
         hasSelection={false}
-        isModalOpen={false}
+        isBlockingOverlayOpen={false}
         onUndo={vi.fn()}
         onRedo={vi.fn()}
         onStartOverIntent={vi.fn()}
@@ -601,7 +601,7 @@ describe('useKeyboardShortcuts', () => {
       <KeyboardShortcutHarness
         enabled
         hasSelection={false}
-        isModalOpen={false}
+        isBlockingOverlayOpen={false}
         onUndo={vi.fn()}
         onRedo={vi.fn()}
         onStartOverIntent={vi.fn()}
@@ -668,7 +668,7 @@ describe('useKeyboardShortcuts', () => {
       <KeyboardShortcutHarness
         enabled
         hasSelection={false}
-        isModalOpen={false}
+        isBlockingOverlayOpen={false}
         onUndo={vi.fn()}
         onRedo={vi.fn()}
         onStartOverIntent={vi.fn()}
@@ -721,7 +721,7 @@ describe('useKeyboardShortcuts', () => {
     expect(onSetCameraPreset).not.toHaveBeenCalled()
   })
 
-  it('does not dispatch camera preset shortcuts when modal is open', async () => {
+  it('does not dispatch camera preset shortcuts when a blocking overlay is open', async () => {
     const user = userEvent.setup()
     const onSetCameraPreset = vi.fn()
 
@@ -729,7 +729,7 @@ describe('useKeyboardShortcuts', () => {
       <KeyboardShortcutHarness
         enabled
         hasSelection={false}
-        isModalOpen
+        isBlockingOverlayOpen
         onUndo={vi.fn()}
         onRedo={vi.fn()}
         onStartOverIntent={vi.fn()}
@@ -755,7 +755,7 @@ describe('useKeyboardShortcuts', () => {
       <KeyboardShortcutHarness
         enabled
         hasSelection={false}
-        isModalOpen={false}
+        isBlockingOverlayOpen={false}
         onUndo={vi.fn()}
         onRedo={vi.fn()}
         onStartOverIntent={vi.fn()}
@@ -771,7 +771,7 @@ describe('useKeyboardShortcuts', () => {
     expect(onFocusSelected).not.toHaveBeenCalled()
   })
 
-  it('does not dispatch focusSelected on F when modal is open', async () => {
+  it('does not dispatch focusSelected on F when a blocking overlay is open', async () => {
     const user = userEvent.setup()
     const onFocusSelected = vi.fn()
 
@@ -779,7 +779,7 @@ describe('useKeyboardShortcuts', () => {
       <KeyboardShortcutHarness
         enabled
         hasSelection
-        isModalOpen
+        isBlockingOverlayOpen
         onUndo={vi.fn()}
         onRedo={vi.fn()}
         onStartOverIntent={vi.fn()}
@@ -837,7 +837,7 @@ describe('useKeyboardShortcuts', () => {
       <KeyboardShortcutHarness
         enabled
         hasSelection
-        isModalOpen={false}
+        isBlockingOverlayOpen={false}
         roomViewHasFocus={false}
         onUndo={vi.fn()}
         onRedo={vi.fn()}
@@ -863,7 +863,7 @@ describe('useKeyboardShortcuts', () => {
       <KeyboardShortcutHarness
         enabled
         hasSelection={false}
-        isModalOpen={false}
+        isBlockingOverlayOpen={false}
         roomViewHasFocus={true}
         onUndo={vi.fn()}
         onRedo={vi.fn()}
@@ -923,7 +923,7 @@ describe('useKeyboardShortcuts', () => {
       <KeyboardShortcutHarness
         enabled
         hasSelection={false}
-        isModalOpen={false}
+        isBlockingOverlayOpen={false}
         onUndo={vi.fn()}
         onRedo={vi.fn()}
         onStartOverIntent={vi.fn()}
@@ -961,7 +961,7 @@ describe('useKeyboardShortcuts', () => {
       <KeyboardShortcutHarness
         enabled
         hasSelection={false}
-        isModalOpen={false}
+        isBlockingOverlayOpen={false}
         canStartOver
         onUndo={vi.fn()}
         onRedo={vi.fn()}
@@ -993,7 +993,7 @@ describe('useKeyboardShortcuts', () => {
           <KeyboardShortcutHarness
             enabled
             hasSelection={false}
-            isModalOpen={false}
+            isBlockingOverlayOpen={false}
             canStartOver={false}
             onUndo={vi.fn()}
             onRedo={vi.fn()}
@@ -1010,13 +1010,13 @@ describe('useKeyboardShortcuts', () => {
       },
     },
     {
-      name: 'a modal is open',
+      name: 'a blocking overlay is open',
       renderCase: (onStartOverIntent) => {
         render(
           <KeyboardShortcutHarness
             enabled
             hasSelection={false}
-            isModalOpen
+            isBlockingOverlayOpen
             canStartOver
             onUndo={vi.fn()}
             onRedo={vi.fn()}
@@ -1038,7 +1038,7 @@ describe('useKeyboardShortcuts', () => {
         const view = render(
           <DialogStartOverHarness
             enabled
-            isModalOpen
+            isBlockingOverlayOpen
             canStartOver
             onStartOverIntent={onStartOverIntent}
           />,
@@ -1053,7 +1053,7 @@ describe('useKeyboardShortcuts', () => {
         const view = render(
           <DialogStartOverHarness
             enabled
-            isModalOpen
+            isBlockingOverlayOpen
             canStartOver
             includeTextInput
             onStartOverIntent={onStartOverIntent}
@@ -1110,7 +1110,7 @@ describe('useKeyboardShortcuts', () => {
       <KeyboardShortcutHarness
         enabled
         hasSelection={false}
-        isModalOpen={false}
+        isBlockingOverlayOpen={false}
         onUndo={vi.fn()}
         onRedo={vi.fn()}
         onStartOverIntent={vi.fn()}
@@ -1147,14 +1147,14 @@ describe('useKeyboardShortcuts', () => {
     }
   })
 
-  it('suppresses always-on-match shortcuts (Ctrl+Z) even when execute condition fails (modal open)', () => {
+  it('suppresses always-on-match shortcuts (Ctrl+Z) even when execute condition fails (blocking overlay open)', () => {
     const onUndo = vi.fn()
 
     render(
       <KeyboardShortcutHarness
         enabled
         hasSelection={false}
-        isModalOpen
+        isBlockingOverlayOpen
         onUndo={onUndo}
         onRedo={vi.fn()}
         onStartOverIntent={vi.fn()}
@@ -1175,9 +1175,9 @@ describe('useKeyboardShortcuts', () => {
 
     fireEvent(window, event)
 
-    // Should prevent default even though modal is open (always-on-match behavior)
+    // Should prevent default even though a blocking overlay is open (always-on-match behavior)
     expect(event.defaultPrevented).toBe(true)
-    // Should NOT execute the action because modal blocks execution
+    // Should NOT execute the action because the blocking overlay gate blocks execution
     expect(onUndo).not.toHaveBeenCalled()
   })
 
@@ -1188,7 +1188,7 @@ describe('useKeyboardShortcuts', () => {
       <KeyboardShortcutHarness
         enabled
         hasSelection
-        isModalOpen={false}
+        isBlockingOverlayOpen={false}
         onUndo={vi.fn()}
         onRedo={vi.fn()}
         onStartOverIntent={vi.fn()}
@@ -1221,7 +1221,7 @@ describe('useKeyboardShortcuts', () => {
       <KeyboardShortcutHarness
         enabled
         hasSelection={false}
-        isModalOpen={false}
+        isBlockingOverlayOpen={false}
         onUndo={vi.fn()}
         onRedo={vi.fn()}
         onStartOverIntent={vi.fn()}
@@ -1258,7 +1258,7 @@ describe('useKeyboardShortcuts', () => {
       <KeyboardShortcutHarness
         enabled
         hasSelection={false}
-        isModalOpen={false}
+        isBlockingOverlayOpen={false}
         roomViewHasFocus
         onUndo={vi.fn()}
         onRedo={vi.fn()}
@@ -1299,7 +1299,7 @@ describe('useKeyboardShortcuts', () => {
       <KeyboardShortcutHarness
         enabled
         hasSelection={false}
-        isModalOpen={false}
+        isBlockingOverlayOpen={false}
         roomViewHasFocus={false}
         onUndo={vi.fn()}
         onRedo={vi.fn()}
@@ -1329,7 +1329,7 @@ describe('useKeyboardShortcuts', () => {
       <KeyboardShortcutHarness
         enabled
         hasSelection
-        isModalOpen={false}
+        isBlockingOverlayOpen={false}
         roomViewHasFocus
         onUndo={vi.fn()}
         onRedo={vi.fn()}
@@ -1364,7 +1364,7 @@ describe('useKeyboardShortcuts', () => {
       <KeyboardShortcutHarness
         enabled
         hasSelection
-        isModalOpen={false}
+        isBlockingOverlayOpen={false}
         roomViewHasFocus={false}
         onUndo={vi.fn()}
         onRedo={vi.fn()}

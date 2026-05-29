@@ -1,8 +1,9 @@
 #!/bin/bash
 
-# Export floor textures from assets-source/ to public/environment/textures/
+# Export floor textures from assets-source/ to public/environment/
 # - Diffuse (albedo): ETC1S, 2K, sRGB, 8-bit forced
 # - Normal: UASTC + Zstd (high compression), 1K, linear, 8-bit forced
+# - Previews: tiled diffuse WebP renders at 640x480 for the catalog UI
 
 set -euo pipefail
 
@@ -11,6 +12,16 @@ REPO_ROOT="$(dirname "$SCRIPT_DIR")"
 
 SOURCE_DIR="$REPO_ROOT/assets-source/environment/textures"
 OUTPUT_DIR="$REPO_ROOT/public/environment/textures"
+PREVIEW_DIR="$REPO_ROOT/public/environment/previews"
+
+PREVIEW_WIDTH=640
+PREVIEW_HEIGHT=480
+PREVIEW_OVERSAMPLE=3
+PREVIEW_TILE_SCALE=35%
+PREVIEW_QUALITY=82
+
+PREVIEW_CANVAS_WIDTH=$((PREVIEW_WIDTH * PREVIEW_OVERSAMPLE))
+PREVIEW_CANVAS_HEIGHT=$((PREVIEW_HEIGHT * PREVIEW_OVERSAMPLE))
 
 # Tool Validation
 if ! command -v toktx &> /dev/null; then
@@ -25,6 +36,7 @@ fi
 
 CONVERT_CMD=$(command -v magick || command -v convert)
 mkdir -p "$OUTPUT_DIR"
+mkdir -p "$PREVIEW_DIR"
 
 # Mapping of Polyhaven source folders to clean output names
 declare -A TEXTURE_MAP=(
@@ -58,10 +70,12 @@ for folder in "$SOURCE_DIR"/*/; do
   # Define target paths
   diffuse_ktx2="$OUTPUT_DIR/${output_name}_diff_2k.ktx2"
   normal_ktx2="$OUTPUT_DIR/${output_name}_nor_gl_1k.ktx2"
+  preview_webp="$PREVIEW_DIR/${output_name}.webp"
   
   # Temporary files for 8-bit conversion and scaling
   diff_tmp="$OUTPUT_DIR/.${output_name}_diff_8bit.tmp.png"
   norm_tmp="$OUTPUT_DIR/.${output_name}_norm_8bit_1k.tmp.png"
+  preview_tile_tmp="$PREVIEW_DIR/.${output_name}_preview_tile.tmp.png"
 
   echo "📦 Processing: $output_name"
 
@@ -83,13 +97,25 @@ for folder in "$SOURCE_DIR"/*/; do
     --assign_oetf linear --assign_primaries none \
     "$normal_ktx2" "$norm_tmp"
 
+  # 3. PREVIEW: Tile a downscaled diffuse map into an oversampled 4:3 frame,
+  # then scale it down so the UI preview reads as a material swatch instead of
+  # a single close-up crop.
+  $CONVERT_CMD "$diffuse_png" -resize "$PREVIEW_TILE_SCALE" -depth 8 "$preview_tile_tmp"
+
+  $CONVERT_CMD -size "${PREVIEW_CANVAS_WIDTH}x${PREVIEW_CANVAS_HEIGHT}" "tile:$preview_tile_tmp" \
+    -filter Lanczos -resize "${PREVIEW_WIDTH}x${PREVIEW_HEIGHT}!" \
+    -strip -quality "$PREVIEW_QUALITY" -define webp:method=6 \
+    "$preview_webp"
+
   # Clean up temp files
-  rm -f "$diff_tmp" "$norm_tmp"
+  rm -f "$diff_tmp" "$norm_tmp" "$preview_tile_tmp"
 
   echo "  ✅ Diffuse: $(du -h "$diffuse_ktx2" | cut -f1)"
   echo "  ✅ Normal:  $(du -h "$normal_ktx2" | cut -f1)"
+  echo "  ✅ Preview: $(du -h "$preview_webp" | cut -f1)"
 done
 
 echo "------------------------------------------------"
-echo "✨ Export Complete! Files located in: $OUTPUT_DIR"
+echo "✨ Export Complete! Files located in: $OUTPUT_DIR and $PREVIEW_DIR"
 ls -lh "$OUTPUT_DIR" | grep ".ktx2"
+ls -lh "$PREVIEW_DIR" | grep ".webp"

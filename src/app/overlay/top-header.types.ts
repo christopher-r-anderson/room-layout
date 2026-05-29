@@ -2,8 +2,8 @@ import type { FurnitureCatalogEntry } from '@/scene/objects/furniture-catalog'
 import type {
   DialogOpenOptions,
   DialogReturnFocusTarget,
-  EnvironmentDialogLayout,
-  EnvironmentDialogOpenOptions,
+  RoomSurfaceLayout,
+  RoomSurfaceOpenOptions,
 } from './use-dialog-state'
 import type {
   FloorFinishOption,
@@ -27,17 +27,18 @@ export interface TopHeaderHistoryProps {
 }
 
 export interface TopHeaderDialogsProps {
-  environmentDialogLayout: EnvironmentDialogLayout | null
-  isEnvironmentDialogOpen: boolean
+  roomSurfaceLayout: RoomSurfaceLayout | null
+  isBlockingOverlayOpen: boolean
+  isRoomSurfaceOpen: boolean
   isInfoDialogOpen: boolean
   isKeyboardShortcutsDialogOpen: boolean
   isMobileMoreOpen: boolean
   isStartOverDialogOpen: boolean
   onCloseStartOverDialog: () => void
   onConfirmStartOver: () => void
-  onEnvironmentDialogOpenChange: (
+  onRoomSurfaceOpenChange: (
     open: boolean,
-    options?: EnvironmentDialogOpenOptions,
+    options?: RoomSurfaceOpenOptions,
   ) => boolean
   onInfoDialogOpenChange: (
     open: boolean,
@@ -55,7 +56,7 @@ export interface TopHeaderDialogsProps {
   returnFocusTarget: DialogReturnFocusTarget
 }
 
-export interface TopHeaderEnvironmentProps {
+export interface TopHeaderRoomProps {
   floorFinishId: string
   floorFinishLoading: boolean
   floorFinishes: FloorFinishOption[]
@@ -65,7 +66,7 @@ export interface TopHeaderEnvironmentProps {
   onWallFinishChange: (finishId: string) => void
 }
 
-export interface TopHeaderProps extends TopHeaderEnvironmentProps {
+export interface TopHeaderProps extends TopHeaderRoomProps {
   catalog: TopHeaderCatalogProps
   dialogs: TopHeaderDialogsProps
   editorInteractionsEnabled: boolean
@@ -86,10 +87,10 @@ export interface TopHeaderMobileProps
       | 'startOverDisabled'
       | 'onShareSceneUrl'
     >,
-    TopHeaderEnvironmentProps {
+    TopHeaderRoomProps {
+  mobileRoomTriggerId: string
   mobileMoreContentId: string
   mobileMoreTriggerId: string
-  onOpenEnvironmentFromMobileMore: () => void
   onOpenKeyboardShortcutsFromMobileMore: () => void
   onOpenStartOverFromMobileMore: () => void
   onOpenProjectInfoFromMobileMore: () => void
@@ -107,8 +108,8 @@ export interface TopHeaderDesktopProps
       | 'startOverDisabled'
       | 'onShareSceneUrl'
     >,
-    TopHeaderEnvironmentProps {
-  desktopEnvironmentTriggerId: string
+    TopHeaderRoomProps {
+  desktopRoomTriggerId: string
   desktopInfoTriggerId: string
   desktopKeyboardTriggerId: string
   startOverTriggerId: string
