@@ -111,13 +111,18 @@ export function SelectedItemControls({
   }
 
   useEffect(() => {
-    if (!selectedFurniture) {
-      previousFloatingCandidateStore.set(undefined)
-      return
-    }
-
     previousFloatingCandidateStore.set(undefined)
   }, [
+    previousFloatingCandidateStore,
+    selectedFurniture?.id,
+    selectedToolbarGeometry?.kind,
+    activeToolbarSource,
+    headerLayoutMode,
+    actionSize.width,
+    actionSize.height,
+    roomViewRect?.width,
+    roomViewRect?.height,
+  ])
     previousFloatingCandidateStore,
     selectedFurniture?.id,
     selectedToolbarGeometry?.kind,
