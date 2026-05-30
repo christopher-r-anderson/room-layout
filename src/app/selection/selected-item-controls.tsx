@@ -115,8 +115,7 @@ export function SelectedItemControls({
           opacity: toolbarPlacement.mode === 'hidden' ? 0 : 1,
           pointerEvents:
             toolbarPlacement.mode === 'hidden' ? 'none' : undefined,
-          visibility:
-            toolbarPlacement.mode === 'hidden' ? 'hidden' : undefined,
+          visibility: toolbarPlacement.mode === 'hidden' ? 'hidden' : undefined,
           transform: `translate3d(${String(toolbarPlacement.left)}px, ${String(toolbarPlacement.top)}px, 0)`,
         }}
       />
