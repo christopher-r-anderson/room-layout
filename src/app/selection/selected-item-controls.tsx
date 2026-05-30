@@ -123,16 +123,6 @@ export function SelectedItemControls({
     roomViewRect?.width,
     roomViewRect?.height,
   ])
-    previousFloatingCandidateStore,
-    selectedFurniture?.id,
-    selectedToolbarGeometry?.kind,
-    activeToolbarSource,
-    headerLayoutMode,
-    actionSize.width,
-    actionSize.height,
-    roomViewRect?.width,
-    roomViewRect?.height,
-  ])
 
   const controlsSuppressed = startupOverlayActive || isCatalogDrawerOpen
   const controlsDisabled = !editorInteractionsEnabled || controlsSuppressed
