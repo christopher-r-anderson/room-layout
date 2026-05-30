@@ -30,6 +30,15 @@ Lock in a known-good baseline so later phases can be diff-bisected if a regressi
 
 Single 1697-line file, three independent concerns sharing navigator/scene-ref boilerplate.
 
+**Status:** completed locally on 2026-05-30.
+
+**Completion note**
+
+- `src/app/use-scene-handlers.test.ts` now keeps only the core handler coverage.
+- Added `src/app/use-scene-handlers.share.test.ts`, `src/app/use-scene-handlers.source.test.ts`, and `src/app/use-scene-handlers.startup.test.ts`.
+- Validation passed with `pnpm typecheck && pnpm lint && pnpm test:run`.
+- Current Vitest count after the split: 68 files / 550 tests passed.
+
 **Files affected**
 
 - use-scene-handlers.test.ts — split into 4 files.
