@@ -1,8 +1,9 @@
 // @vitest-environment jsdom
 
-import { render, screen, waitFor } from '@testing-library/react'
+import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import type { RefObject } from 'react'
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
 import { SelectedItemControls } from './selected-item-controls'
 
@@ -42,6 +43,53 @@ function createRect(width: number, height: number): DOMRectReadOnly {
   }
 }
 
+function createRoomViewRef(
+  rect: DOMRectReadOnly = createRect(800, 600),
+): RefObject<HTMLElement | null> {
+  const element = document.createElement('section')
+  vi.spyOn(element, 'getBoundingClientRect').mockReturnValue(rect)
+
+  return { current: element }
+}
+
+class MockResizeObserver {
+  static instances: MockResizeObserver[] = []
+
+  private readonly callback: ResizeObserverCallback
+
+  readonly observe = vi.fn<(target: Element) => void>()
+  readonly unobserve = vi.fn<(target: Element) => void>()
+  readonly disconnect = vi.fn<() => void>()
+
+  constructor(callback: ResizeObserverCallback) {
+    this.callback = callback
+    MockResizeObserver.instances.push(this)
+  }
+
+  trigger() {
+    this.callback([], this)
+  }
+}
+
+function installResizeObserver() {
+  MockResizeObserver.instances = []
+  vi.stubGlobal('ResizeObserver', MockResizeObserver)
+}
+
+function triggerAllResizeObservers() {
+  act(() => {
+    MockResizeObserver.instances.forEach((observer) => {
+      observer.trigger()
+    })
+  })
+}
+
+afterEach(() => {
+  vi.restoreAllMocks()
+  vi.unstubAllGlobals()
+  MockResizeObserver.instances = []
+})
+
 describe('SelectedItemControls', () => {
   it('does not render when there is no selection', () => {
     render(
@@ -71,6 +119,7 @@ describe('SelectedItemControls', () => {
         onOpenDeleteDialog={vi.fn()}
         onRotateSelection={vi.fn()}
         onUpdateSelectedItemDetails={vi.fn()}
+        roomViewRef={createRoomViewRef()}
         selectedFurniture={FURNITURE_ITEM}
         startupOverlayActive={false}
       />,
@@ -82,7 +131,8 @@ describe('SelectedItemControls', () => {
     expect(screen.getByRole('button', { name: 'Remove item' })).toBeVisible()
   })
 
-  it('marks the toolbar as floating when scene geometry is available', () => {
+  it('marks the toolbar as floating when scene geometry is available', async () => {
+    installResizeObserver()
     vi.stubGlobal(
       'matchMedia',
       vi.fn(() => ({
@@ -101,12 +151,15 @@ describe('SelectedItemControls', () => {
         onOpenDeleteDialog={vi.fn()}
         onRotateSelection={vi.fn()}
         onUpdateSelectedItemDetails={vi.fn()}
+        roomViewRef={createRoomViewRef()}
         selectedFurniture={FURNITURE_ITEM}
         selectedToolbarGeometry={{
           kind: 'available',
           selectedId: FURNITURE_ITEM.id,
           source: 'render-bounds',
           canvasSize: { width: 800, height: 600 },
+          sourcePointCount: 8,
+          projectedPointCount: 4,
           points: [
             { x: 360, y: 280 },
             { x: 440, y: 280 },
@@ -118,82 +171,22 @@ describe('SelectedItemControls', () => {
       />,
     )
 
-    const toolbar = screen.getByRole('region', {
-      name: 'Selected item actions',
-    })
-    expect(toolbar).toHaveAttribute('data-selected-toolbar-mode', 'floating')
-    expect(toolbar).toHaveAttribute('data-selected-toolbar-side', 'top')
-
-    vi.unstubAllGlobals()
-  })
-
-  it('measures the actions toolbar after a selection appears', async () => {
-    vi.stubGlobal(
-      'matchMedia',
-      vi.fn(() => ({
-        matches: true,
-        addEventListener: vi.fn(),
-        removeEventListener: vi.fn(),
-      })),
-    )
-    vi.stubGlobal('ResizeObserver', undefined)
-    const getBoundingClientRect = vi
-      .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
-      .mockImplementation(function getMeasuredRect(this: HTMLElement) {
-        return this.getAttribute('aria-label') === 'Selected item actions'
-          ? createRect(164, 52)
-          : createRect(0, 0)
-      })
-
-    const commonProps = {
-      editorInteractionsEnabled: true,
-      exclusionRects: {},
-      isCatalogDrawerOpen: false,
-      onInvalidSelectedItemDetailValue: vi.fn(() => 'Invalid value'),
-      onOpenDeleteDialog: vi.fn(),
-      onRotateSelection: vi.fn(),
-      onUpdateSelectedItemDetails: vi.fn(),
-      selectedToolbarGeometry: {
-        kind: 'available' as const,
-        selectedId: FURNITURE_ITEM.id,
-        source: 'render-bounds' as const,
-        canvasSize: { width: 800, height: 600 },
-        points: [
-          { x: 360, y: 280 },
-          { x: 440, y: 280 },
-          { x: 360, y: 340 },
-          { x: 440, y: 340 },
-        ],
-      },
-      startupOverlayActive: false,
-    }
-
-    const { rerender } = render(
-      <SelectedItemControls {...commonProps} selectedFurniture={null} />,
-    )
-
-    rerender(
-      <SelectedItemControls
-        {...commonProps}
-        selectedFurniture={FURNITURE_ITEM}
-      />,
-    )
-
-    const toolbar = screen.getByRole('region', {
-      name: 'Selected item actions',
-    })
+    triggerAllResizeObservers()
 
     await waitFor(() => {
-      expect(toolbar).toHaveStyle({
-        transform: 'translate3d(318px, 216px, 0)',
+      const toolbar = screen.getByRole('region', {
+        name: 'Selected item actions',
       })
+      expect(toolbar).toHaveAttribute(
+        'data-selected-toolbar-candidate',
+        'top-center',
+      )
+      expect(toolbar).toHaveAttribute('data-selected-toolbar-mode', 'floating')
     })
-
-    getBoundingClientRect.mockRestore()
-    vi.unstubAllGlobals()
   })
 
   it('docks the toolbar when scene geometry belongs to the previous selection', () => {
+    installResizeObserver()
     vi.stubGlobal(
       'matchMedia',
       vi.fn(() => ({
@@ -208,6 +201,8 @@ describe('SelectedItemControls', () => {
       selectedId: FURNITURE_ITEM.id,
       source: 'render-bounds' as const,
       canvasSize: { width: 800, height: 600 },
+      sourcePointCount: 8,
+      projectedPointCount: 4,
       points: [
         { x: 360, y: 280 },
         { x: 440, y: 280 },
@@ -225,11 +220,14 @@ describe('SelectedItemControls', () => {
         onOpenDeleteDialog={vi.fn()}
         onRotateSelection={vi.fn()}
         onUpdateSelectedItemDetails={vi.fn()}
+        roomViewRef={createRoomViewRef()}
         selectedFurniture={FURNITURE_ITEM}
         selectedToolbarGeometry={staleGeometry}
         startupOverlayActive={false}
       />,
     )
+
+    triggerAllResizeObservers()
 
     expect(
       screen.getByRole('region', { name: 'Selected item actions' }),
@@ -253,8 +251,6 @@ describe('SelectedItemControls', () => {
     expect(
       screen.getByRole('region', { name: 'Selected item actions' }),
     ).toHaveAttribute('data-selected-toolbar-mode', 'docked')
-
-    vi.unstubAllGlobals()
   })
 
   it('marks the toolbar as docked when geometry falls back to object origin', () => {
@@ -276,12 +272,15 @@ describe('SelectedItemControls', () => {
         onOpenDeleteDialog={vi.fn()}
         onRotateSelection={vi.fn()}
         onUpdateSelectedItemDetails={vi.fn()}
+        roomViewRef={createRoomViewRef()}
         selectedFurniture={FURNITURE_ITEM}
         selectedToolbarGeometry={{
           kind: 'available',
           selectedId: FURNITURE_ITEM.id,
           source: 'object-origin',
           canvasSize: { width: 800, height: 600 },
+          sourcePointCount: 1,
+          projectedPointCount: 1,
           points: [{ x: 400, y: 300 }],
         }}
         startupOverlayActive={false}
@@ -292,7 +291,6 @@ describe('SelectedItemControls', () => {
       name: 'Selected item actions',
     })
     expect(toolbar).toHaveAttribute('data-selected-toolbar-mode', 'docked')
-    expect(toolbar).toHaveAttribute('data-selected-toolbar-side', 'docked')
 
     vi.unstubAllGlobals()
   })
@@ -316,12 +314,15 @@ describe('SelectedItemControls', () => {
         onOpenDeleteDialog={vi.fn()}
         onRotateSelection={vi.fn()}
         onUpdateSelectedItemDetails={vi.fn()}
+        roomViewRef={createRoomViewRef()}
         selectedFurniture={FURNITURE_ITEM}
         selectedToolbarGeometry={{
           kind: 'available',
           selectedId: FURNITURE_ITEM.id,
           source: 'render-bounds',
           canvasSize: { width: 800, height: 600 },
+          sourcePointCount: 8,
+          projectedPointCount: 0,
           points: [],
         }}
         startupOverlayActive={false}
@@ -337,6 +338,200 @@ describe('SelectedItemControls', () => {
     expect(toolbar).toHaveStyle({ visibility: 'hidden' })
 
     vi.unstubAllGlobals()
+  })
+
+  it('forces docked placement until the room view rect is measured', async () => {
+    installResizeObserver()
+    vi.stubGlobal(
+      'matchMedia',
+      vi.fn(() => ({
+        matches: true,
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+      })),
+    )
+
+    render(
+      <SelectedItemControls
+        editorInteractionsEnabled
+        exclusionRects={{}}
+        isCatalogDrawerOpen={false}
+        onInvalidSelectedItemDetailValue={vi.fn(() => 'Invalid value')}
+        onOpenDeleteDialog={vi.fn()}
+        onRotateSelection={vi.fn()}
+        onUpdateSelectedItemDetails={vi.fn()}
+        roomViewRef={{ current: null }}
+        selectedFurniture={FURNITURE_ITEM}
+        selectedToolbarGeometry={{
+          kind: 'available',
+          selectedId: FURNITURE_ITEM.id,
+          source: 'render-bounds',
+          canvasSize: { width: 800, height: 600 },
+          sourcePointCount: 8,
+          projectedPointCount: 4,
+          points: [
+            { x: 360, y: 280 },
+            { x: 440, y: 280 },
+            { x: 360, y: 340 },
+            { x: 440, y: 340 },
+          ],
+        }}
+        startupOverlayActive={false}
+      />,
+    )
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('region', { name: 'Selected item actions' }),
+      ).toHaveAttribute('data-selected-toolbar-mode', 'docked')
+    })
+  })
+
+  it('converts canvas-local geometry into viewport coordinates using the room view rect', async () => {
+    installResizeObserver()
+    vi.stubGlobal(
+      'matchMedia',
+      vi.fn(() => ({
+        matches: true,
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+      })),
+    )
+
+    render(
+      <SelectedItemControls
+        editorInteractionsEnabled
+        exclusionRects={{}}
+        isCatalogDrawerOpen={false}
+        onInvalidSelectedItemDetailValue={vi.fn(() => 'Invalid value')}
+        onOpenDeleteDialog={vi.fn()}
+        onRotateSelection={vi.fn()}
+        onUpdateSelectedItemDetails={vi.fn()}
+        roomViewRef={createRoomViewRef({
+          x: 100,
+          y: 50,
+          left: 100,
+          top: 50,
+          right: 900,
+          bottom: 650,
+          width: 800,
+          height: 600,
+          toJSON: () => ({}),
+        })}
+        selectedFurniture={FURNITURE_ITEM}
+        selectedToolbarGeometry={{
+          kind: 'available',
+          selectedId: FURNITURE_ITEM.id,
+          source: 'render-bounds',
+          canvasSize: { width: 400, height: 300 },
+          sourcePointCount: 8,
+          projectedPointCount: 4,
+          points: [
+            { x: 180, y: 140 },
+            { x: 220, y: 140 },
+            { x: 180, y: 170 },
+            { x: 220, y: 170 },
+          ],
+        }}
+        startupOverlayActive={false}
+      />,
+    )
+
+    triggerAllResizeObservers()
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('region', { name: 'Selected item actions' }),
+      ).toHaveStyle({
+        transform: 'translate3d(430px, 270px, 0)',
+      })
+    })
+  })
+
+  it('preserves the previous floating candidate across same-id selection refreshes', async () => {
+    installResizeObserver()
+    vi.stubGlobal(
+      'matchMedia',
+      vi.fn(() => ({
+        matches: true,
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+      })),
+    )
+
+    const roomViewRef = createRoomViewRef()
+    const initialToolbarGeometry = {
+      kind: 'available' as const,
+      selectedId: FURNITURE_ITEM.id,
+      source: 'render-bounds' as const,
+      canvasSize: { width: 800, height: 600 },
+      sourcePointCount: 8,
+      projectedPointCount: 4,
+      points: [
+        { x: 20, y: 280 },
+        { x: 120, y: 280 },
+        { x: 20, y: 360 },
+        { x: 120, y: 360 },
+      ],
+    }
+    const refreshedToolbarGeometry = {
+      ...initialToolbarGeometry,
+      points: [
+        { x: 120, y: 280 },
+        { x: 220, y: 280 },
+        { x: 120, y: 360 },
+        { x: 220, y: 360 },
+      ],
+    }
+
+    const { rerender } = render(
+      <SelectedItemControls
+        editorInteractionsEnabled
+        exclusionRects={{}}
+        isCatalogDrawerOpen={false}
+        onInvalidSelectedItemDetailValue={vi.fn(() => 'Invalid value')}
+        onOpenDeleteDialog={vi.fn()}
+        onRotateSelection={vi.fn()}
+        onUpdateSelectedItemDetails={vi.fn()}
+        roomViewRef={roomViewRef}
+        selectedFurniture={FURNITURE_ITEM}
+        selectedToolbarGeometry={initialToolbarGeometry}
+        startupOverlayActive={false}
+      />,
+    )
+
+    triggerAllResizeObservers()
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('region', { name: 'Selected item actions' }),
+      ).toHaveAttribute('data-selected-toolbar-candidate', 'top-right')
+    })
+
+    rerender(
+      <SelectedItemControls
+        editorInteractionsEnabled
+        exclusionRects={{}}
+        isCatalogDrawerOpen={false}
+        onInvalidSelectedItemDetailValue={vi.fn(() => 'Invalid value')}
+        onOpenDeleteDialog={vi.fn()}
+        onRotateSelection={vi.fn()}
+        onUpdateSelectedItemDetails={vi.fn()}
+        roomViewRef={roomViewRef}
+        selectedFurniture={{
+          ...FURNITURE_ITEM,
+          position: [0.5, 0, 0],
+        }}
+        selectedToolbarGeometry={refreshedToolbarGeometry}
+        startupOverlayActive={false}
+      />,
+    )
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('region', { name: 'Selected item actions' }),
+      ).toHaveAttribute('data-selected-toolbar-candidate', 'top-right')
+    })
   })
 
   it('suppresses blur commits when the remove dialog is opening', async () => {

@@ -77,14 +77,19 @@ function isSameToolbarGeometry(
     )
   }
 
-  if (previousGeometry.kind !== 'available' || nextGeometry.kind !== 'available') {
+  if (
+    previousGeometry.kind !== 'available' ||
+    nextGeometry.kind !== 'available'
+  ) {
     return false
   }
 
   if (
     previousGeometry.selectedId !== nextGeometry.selectedId ||
     previousGeometry.source !== nextGeometry.source ||
-    previousGeometry.sourceNodeName !== nextGeometry.sourceNodeName
+    previousGeometry.sourceNodeName !== nextGeometry.sourceNodeName ||
+    previousGeometry.sourcePointCount !== nextGeometry.sourcePointCount ||
+    previousGeometry.projectedPointCount !== nextGeometry.projectedPointCount
   ) {
     return false
   }
@@ -402,7 +407,10 @@ export function Scene({
     })
 
     const previousGeometry = lastToolbarGeometryRef.current
-    if (previousGeometry && isSameToolbarGeometry(previousGeometry, nextGeometry)) {
+    if (
+      previousGeometry &&
+      isSameToolbarGeometry(previousGeometry, nextGeometry)
+    ) {
       return
     }
 

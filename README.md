@@ -118,6 +118,7 @@ In addition to this README, project-specific guides are available:
 - [Editor Shortcuts Reference](docs/editor-shortcuts-reference.md): End-user shortcut map for camera, object, and scene actions.
 - [Keyboard Shortcuts (Engineering)](docs/keyboard-shortcuts.md): Input architecture, matching/suppression/execution rules, and held-key camera behavior.
 - [Overlay Interaction Model](docs/overlay-interaction-model.md): Blocking overlays vs the non-blocking Room surface, including focus and breakpoint behavior.
+- [Selected Toolbar Placement](docs/selected-toolbar-placement.md): Bounds source order, viewport-space placement, floating candidate scoring, and docked fallback behavior.
 
 ## 🖦 Usage
 
@@ -151,7 +152,7 @@ To add or modify furniture/environment options:
    - Place environment preview images in `public/environment/previews/` when a room finish should render with a thumbnail
 3. **Validate**:
    - Node names in GLTF files must match the `nodeName` values in the catalog
-   - `uiBoundsNodeName` is optional; when present it must name a descendant mesh/group under the catalog entry's `nodeName` root and is used only for floating selected-item toolbar placement
+   - `uiBoundsNodeName` is optional; when present it must name a descendant mesh/group under the catalog entry's `nodeName` root and provides the preferred bounds source for selected-item toolbar placement
    - All paths in the manifest must be relative (e.g., `"models/foo.glb"`)
    - Environment texture paths (`diffusePath`, `normalPath`) must also be relative and should point to `.ktx2` assets
    - Floor finish preview paths (`previewPath`) are optional, but when present they must also be relative
@@ -190,7 +191,9 @@ Exported environment textures and previews are intentionally committed instead o
 
 For detailed manifest format and validation rules, see [public/catalog-manifest-schema.md](./public/catalog-manifest-schema.md).
 
-If a catalog entry omits `uiBoundsNodeName`, the selected-item toolbar falls back to visual render bounds. If `uiBoundsNodeName` is present in the manifest but the referenced node is missing from the GLB subtree, startup fails with an asset contract error so the mismatch is fixed at the source instead of silently drifting the UI anchor.
+If a catalog entry omits `uiBoundsNodeName`, the selected-item toolbar falls back to visual render bounds. If `uiBoundsNodeName` is present in the manifest but the referenced node is missing from the GLB subtree, startup fails with an asset contract error so the mismatch is fixed at the source instead of silently drifting the selected-toolbar bounds source.
+
+Selected-toolbar placement currently supports two layers: scene-side bounds selection (`ui-bounds-node`, `render-bounds`, then `object-origin`) and app-side viewport placement that scores a small set of nearby floating candidates before falling back to deterministic docking. `uiBoundsNodeName` improves the bounds source only; it does not behave like an authored point anchor and it does not bypass overlap checks.
 
 ### Manifest Requirement
 

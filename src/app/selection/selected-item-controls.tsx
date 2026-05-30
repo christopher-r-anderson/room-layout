@@ -1,4 +1,10 @@
-import { useRef, type RefObject } from 'react'
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useSyncExternalStore,
+  type RefObject,
+} from 'react'
 import type {
   UpdateSelectedItemDetailsInput,
   UpdateSelectedItemDetailsResult,
@@ -10,7 +16,39 @@ import type { SelectedToolbarGeometry } from '@/scene/scene.types'
 import type { OverlayExclusionRectId } from '@/app/overlay/use-overlay-exclusion-rects'
 import { useHeaderLayoutMode } from '@/app/overlay/use-header-layout-mode'
 import { useElementSize } from '@/app/hooks/use-element-size'
-import { computeSelectedToolbarPlacement } from '@/lib/ui/selected-toolbar-placement'
+import { useElementRect } from '@/app/hooks/use-element-rect'
+import {
+  computeSelectedToolbarPlacement,
+  type ToolbarFloatingCandidateId,
+} from '@/lib/ui/selected-toolbar-placement'
+
+function createCandidateStore(
+  initialValue: ToolbarFloatingCandidateId | undefined,
+) {
+  let value = initialValue
+  const listeners = new Set<() => void>()
+
+  return {
+    getSnapshot: () => value,
+    subscribe: (listener: () => void) => {
+      listeners.add(listener)
+
+      return () => {
+        listeners.delete(listener)
+      }
+    },
+    set: (nextValue: ToolbarFloatingCandidateId | undefined) => {
+      if (value === nextValue) {
+        return
+      }
+
+      value = nextValue
+      listeners.forEach((listener) => {
+        listener()
+      })
+    },
+  }
+}
 
 export function SelectedItemControls({
   containerRef,
@@ -21,6 +59,7 @@ export function SelectedItemControls({
   onOpenDeleteDialog,
   onRotateSelection,
   onUpdateSelectedItemDetails,
+  roomViewRef,
   selectedDetailsRef,
   selectedFurniture,
   selectedToolbarGeometry,
@@ -36,6 +75,7 @@ export function SelectedItemControls({
   onUpdateSelectedItemDetails: (
     input: UpdateSelectedItemDetailsInput,
   ) => UpdateSelectedItemDetailsResult
+  roomViewRef?: RefObject<HTMLElement | null>
   selectedDetailsRef?: (element: HTMLElement | null) => void
   selectedFurniture: FurnitureItem | null
   selectedToolbarGeometry?: SelectedToolbarGeometry
@@ -43,10 +83,24 @@ export function SelectedItemControls({
 }) {
   const fallbackContainerRef = useRef<HTMLDivElement | null>(null)
   const suppressNextBlurCommitRef = useRef(false)
+  const previousFloatingCandidateStore = useMemo(
+    () => createCandidateStore(undefined),
+    [],
+  )
+  const previousFloatingCandidateId = useSyncExternalStore(
+    previousFloatingCandidateStore.subscribe,
+    previousFloatingCandidateStore.getSnapshot,
+    previousFloatingCandidateStore.getSnapshot,
+  )
   const headerLayoutMode = useHeaderLayoutMode()
   const { ref: actionsSizeRef, size: actionSize } = useElementSize()
+  const roomViewRect = useElementRect(roomViewRef)
   const resolvedContainerRef = containerRef ?? fallbackContainerRef
   const resolvedExclusionRects = exclusionRects ?? {}
+  const activeToolbarSource =
+    selectedToolbarGeometry?.kind === 'available'
+      ? selectedToolbarGeometry.source
+      : undefined
 
   const handleOpenDeleteDialog = () => {
     try {
@@ -56,13 +110,29 @@ export function SelectedItemControls({
     }
   }
 
-  if (!selectedFurniture) {
-    return null
-  }
+  useEffect(() => {
+    if (!selectedFurniture) {
+      previousFloatingCandidateStore.set(undefined)
+      return
+    }
+
+    previousFloatingCandidateStore.set(undefined)
+  }, [
+    previousFloatingCandidateStore,
+    selectedFurniture?.id,
+    selectedToolbarGeometry?.kind,
+    activeToolbarSource,
+    headerLayoutMode,
+    actionSize.width,
+    actionSize.height,
+    roomViewRect?.width,
+    roomViewRect?.height,
+  ])
 
   const controlsSuppressed = startupOverlayActive || isCatalogDrawerOpen
   const controlsDisabled = !editorInteractionsEnabled || controlsSuppressed
   const activeToolbarGeometry =
+    selectedFurniture !== null &&
     selectedToolbarGeometry?.kind === 'available' &&
     selectedToolbarGeometry.selectedId === selectedFurniture.id
       ? selectedToolbarGeometry
@@ -72,7 +142,34 @@ export function SelectedItemControls({
     top: 0,
     width: typeof window === 'undefined' ? 0 : window.innerWidth,
     height: typeof window === 'undefined' ? 0 : window.innerHeight,
+    right: typeof window === 'undefined' ? 0 : window.innerWidth,
+    bottom: typeof window === 'undefined' ? 0 : window.innerHeight,
   } as DOMRectReadOnly
+  const hasMeasuredRoomViewRect =
+    roomViewRect !== null && roomViewRect.width > 0 && roomViewRect.height > 0
+  const toolbarPointScale =
+    activeToolbarGeometry && hasMeasuredRoomViewRect
+      ? {
+          x:
+            activeToolbarGeometry.canvasSize.width > 0
+              ? roomViewRect.width / activeToolbarGeometry.canvasSize.width
+              : 1,
+          y:
+            activeToolbarGeometry.canvasSize.height > 0
+              ? roomViewRect.height / activeToolbarGeometry.canvasSize.height
+              : 1,
+        }
+      : null
+  const convertedToolbarPoints =
+    activeToolbarGeometry && hasMeasuredRoomViewRect && toolbarPointScale
+      ? activeToolbarGeometry.points.map((point) => ({
+          x: roomViewRect.left + point.x * toolbarPointScale.x,
+          y: roomViewRect.top + point.y * toolbarPointScale.y,
+        }))
+      : []
+  const placementContainerRect = hasMeasuredRoomViewRect
+    ? roomViewRect
+    : viewportRect
 
   const toolbarPlacement =
     activeToolbarGeometry === null
@@ -84,13 +181,36 @@ export function SelectedItemControls({
           toolbarSize: actionSize,
         })
       : computeSelectedToolbarPlacement({
-          containerRect: viewportRect,
+          containerRect: placementContainerRect,
           exclusionRects: resolvedExclusionRects,
-          forceDocked: headerLayoutMode === 'mobile',
-          points: activeToolbarGeometry.points,
+          forceDocked:
+            headerLayoutMode === 'mobile' || !hasMeasuredRoomViewRect,
+          points: convertedToolbarPoints,
+          previousFloatingCandidateId,
+          projectedPointCount: activeToolbarGeometry.projectedPointCount,
           source: activeToolbarGeometry.source,
+          sourcePointCount: activeToolbarGeometry.sourcePointCount,
           toolbarSize: actionSize,
         })
+
+  useEffect(() => {
+    if (
+      toolbarPlacement.mode === 'floating' &&
+      toolbarPlacement.candidateId &&
+      toolbarPlacement.candidateId !== previousFloatingCandidateId
+    ) {
+      previousFloatingCandidateStore.set(toolbarPlacement.candidateId)
+    }
+  }, [
+    previousFloatingCandidateId,
+    previousFloatingCandidateStore,
+    toolbarPlacement.candidateId,
+    toolbarPlacement.mode,
+  ])
+
+  if (!selectedFurniture) {
+    return null
+  }
 
   return (
     <div
@@ -106,9 +226,9 @@ export function SelectedItemControls({
         onPrepareDelete={() => {
           suppressNextBlurCommitRef.current = true
         }}
+        placementCandidateId={toolbarPlacement.candidateId}
         onRotateSelection={onRotateSelection}
         placementMode={toolbarPlacement.mode}
-        placementSide={toolbarPlacement.side}
         sectionRef={actionsSizeRef}
         selectedFurniture={selectedFurniture}
         style={{

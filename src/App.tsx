@@ -632,6 +632,7 @@ function App() {
               onUpdateSelectedItemDetails={
                 handlers.handleUpdateSelectedItemDetails
               }
+              roomViewRef={roomViewRef}
               selectedDetailsRef={overlayExclusions.registerExclusionElement(
                 'selected-details',
               )}

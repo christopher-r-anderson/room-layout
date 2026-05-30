@@ -71,6 +71,8 @@ describe('computeSelectedToolbarGeometry', () => {
     expect(result.source).toBe('ui-bounds-node')
     expect(result.sourceNodeName).toBe('Chair_UIBounds')
     expect(result.points.length).toBeGreaterThan(0)
+    expect(result.sourcePointCount).toBe(24)
+    expect(result.projectedPointCount).toBe(result.points.length)
   })
 
   it('falls back to render bounds when ui-bounds are absent', () => {
@@ -89,6 +91,8 @@ describe('computeSelectedToolbarGeometry', () => {
       return
     }
     expect(result.source).toBe('render-bounds')
+    expect(result.sourcePointCount).toBe(8)
+    expect(result.projectedPointCount).toBe(8)
     expect(result.points).toHaveLength(8)
   })
 
@@ -108,6 +112,8 @@ describe('computeSelectedToolbarGeometry', () => {
       return
     }
     expect(result.source).toBe('object-origin')
+    expect(result.sourcePointCount).toBe(1)
+    expect(result.projectedPointCount).toBe(1)
     expect(result.points).toHaveLength(1)
   })
 })

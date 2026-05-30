@@ -93,6 +93,8 @@ function projectPoints(
 
   return {
     points: screenPoints,
+    sourcePointCount: points.length,
+    projectedPointCount: screenPoints.length,
     rejectionReason,
   }
 }
@@ -141,6 +143,8 @@ export function computeSelectedToolbarGeometry({
         source: 'ui-bounds-node',
         sourceNodeName: firstUiBoundsMesh?.name,
         canvasSize,
+        sourcePointCount: projectedUiBounds.sourcePointCount,
+        projectedPointCount: projectedUiBounds.projectedPointCount,
         points: projectedUiBounds.points,
       }
     }
@@ -160,6 +164,8 @@ export function computeSelectedToolbarGeometry({
         selectedId,
         source: 'render-bounds',
         canvasSize,
+        sourcePointCount: projectedRenderBounds.sourcePointCount,
+        projectedPointCount: projectedRenderBounds.projectedPointCount,
         points: projectedRenderBounds.points,
       }
     }
@@ -184,6 +190,8 @@ export function computeSelectedToolbarGeometry({
       selectedId,
       source: 'object-origin',
       canvasSize,
+      sourcePointCount: 1,
+      projectedPointCount: 1,
       points: [projectedObjectOrigin.point],
     }
   }
