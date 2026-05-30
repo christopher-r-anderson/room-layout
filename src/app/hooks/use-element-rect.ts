@@ -72,18 +72,25 @@ export function useElementRect(ref?: RefObject<HTMLElement | null>) {
         return () => undefined
       }
 
+      let cancelled = false
+      const notify = () => {
+        if (!cancelled) {
+          onStoreChange()
+        }
+      }
+
       queueMicrotask(() => {
-        onStoreChange()
+        notify()
       })
 
       const handleViewportChange = () => {
-        onStoreChange()
+        notify()
       }
 
       let observer: ResizeObserver | null = null
       if (typeof ResizeObserver !== 'undefined') {
         observer = new ResizeObserver(() => {
-          onStoreChange()
+          notify()
         })
         observer.observe(element)
       }
@@ -94,6 +101,7 @@ export function useElementRect(ref?: RefObject<HTMLElement | null>) {
       window.visualViewport?.addEventListener('scroll', handleViewportChange)
 
       return () => {
+        cancelled = true
         observer?.disconnect()
         window.removeEventListener('resize', handleViewportChange)
         window.removeEventListener('scroll', handleViewportChange, true)

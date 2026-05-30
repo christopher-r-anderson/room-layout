@@ -93,6 +93,7 @@ test('desktop floating toolbar stays off visible chrome and remains stable acros
   const initialCandidateId = await toolbar.getAttribute(
     'data-selected-toolbar-candidate',
   )
+  expect(initialCandidateId).not.toBeNull()
   const initialPointerPoint = await getSelectedPointerTargetViewportPoint(page)
 
   expect(boxesIntersect(initialToolbarBox, headerBox)).toBe(false)

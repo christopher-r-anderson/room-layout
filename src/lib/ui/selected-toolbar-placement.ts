@@ -923,8 +923,8 @@ function isLowConfidenceGeometry({
     return true
   }
 
-  if (!sourcePointCount || sourcePointCount <= 0) {
-    return false
+  if (sourcePointCount === undefined || sourcePointCount <= 0) {
+    return true
   }
 
   const projectedRatio = projectedPointCount / sourcePointCount
