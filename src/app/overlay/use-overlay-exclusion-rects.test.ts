@@ -287,4 +287,56 @@ describe('useOverlayExclusionRects', () => {
 
     expect(observer.disconnect).toHaveBeenCalledTimes(1)
   })
+
+  it('refreshes exclusion rects when a registered overlay transition ends or is canceled', async () => {
+    installBoundingClientRectMock()
+    installResizeObserver()
+    installVisualViewport()
+
+    const { result } = renderHook(() => useOverlayExclusionRects())
+    const registerCameraTools =
+      result.current.registerExclusionElement('camera-tools')
+    const element = createMeasuredElement(createRect(12, 40, 48, 144))
+
+    act(() => {
+      registerCameraTools(element)
+    })
+
+    await waitFor(() => {
+      expect(result.current.rects['camera-tools']).toMatchObject({
+        x: 12,
+        y: 40,
+        width: 48,
+        height: 144,
+      })
+    })
+
+    setMeasuredRect(element, createRect(96, 40, 48, 144))
+    act(() => {
+      element.dispatchEvent(new Event('transitionend'))
+    })
+
+    await waitFor(() => {
+      expect(result.current.rects['camera-tools']).toMatchObject({
+        x: 96,
+        y: 40,
+        width: 48,
+        height: 144,
+      })
+    })
+
+    setMeasuredRect(element, createRect(152, 40, 48, 144))
+    act(() => {
+      element.dispatchEvent(new Event('transitioncancel'))
+    })
+
+    await waitFor(() => {
+      expect(result.current.rects['camera-tools']).toMatchObject({
+        x: 152,
+        y: 40,
+        width: 48,
+        height: 144,
+      })
+    })
+  })
 })

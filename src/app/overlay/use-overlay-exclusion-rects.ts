@@ -71,14 +71,32 @@ export function useOverlayExclusionRects() {
     })
   }, [refreshRects])
 
+  const observeElementTransitions = useCallback(
+    (element: HTMLElement) => {
+      element.addEventListener('transitionend', scheduleRefreshRects)
+      element.addEventListener('transitioncancel', scheduleRefreshRects)
+    },
+    [scheduleRefreshRects],
+  )
+
+  const unobserveElementTransitions = useCallback(
+    (element: HTMLElement) => {
+      element.removeEventListener('transitionend', scheduleRefreshRects)
+      element.removeEventListener('transitioncancel', scheduleRefreshRects)
+    },
+    [scheduleRefreshRects],
+  )
+
   useEffect(() => {
+    const elements = elementsRef.current
+
     if (typeof ResizeObserver !== 'undefined') {
       observerRef.current?.disconnect()
       observerRef.current = new ResizeObserver(() => {
         refreshRects()
       })
 
-      for (const element of elementsRef.current.values()) {
+      for (const element of elements.values()) {
         observerRef.current.observe(element)
       }
     }
@@ -94,12 +112,15 @@ export function useOverlayExclusionRects() {
 
     return () => {
       observerRef.current?.disconnect()
+      for (const element of elements.values()) {
+        unobserveElementTransitions(element)
+      }
       window.removeEventListener('resize', handleViewportChange)
       window.removeEventListener('scroll', handleViewportChange, true)
       window.visualViewport?.removeEventListener('resize', handleViewportChange)
       window.visualViewport?.removeEventListener('scroll', handleViewportChange)
     }
-  }, [refreshRects])
+  }, [refreshRects, unobserveElementTransitions])
 
   const registerExclusionElement = useCallback(
     (id: OverlayExclusionRectId) => {
@@ -117,13 +138,16 @@ export function useOverlayExclusionRects() {
 
           if (current) {
             observerRef.current?.unobserve(current)
+            unobserveElementTransitions(current)
           }
 
           elementsRef.current.set(id, element)
           observerRef.current?.observe(element)
+          observeElementTransitions(element)
         } else if (current) {
           elementsRef.current.delete(id)
           observerRef.current?.unobserve(current)
+          unobserveElementTransitions(current)
         } else {
           return
         }
@@ -134,7 +158,11 @@ export function useOverlayExclusionRects() {
       callbacksRef.current.set(id, callback)
       return callback
     },
-    [scheduleRefreshRects],
+    [
+      observeElementTransitions,
+      scheduleRefreshRects,
+      unobserveElementTransitions,
+    ],
   )
 
   return {
