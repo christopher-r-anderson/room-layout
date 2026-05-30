@@ -44,6 +44,7 @@ import { computeSelectedToolbarGeometry } from './internal/selected-toolbar-geom
 const FLOOR_PLANE_Y = 0
 const SNAP_SIZE = 0.5
 const EDGE_SNAP_THRESHOLD = 0.12
+const TOOLBAR_GEOMETRY_DEADBAND_PX = 0.5
 // These are Three.js render layers used by OutlineEffect selection, not z-order.
 const SELECTED_OUTLINE_LAYER = 10
 const PREVIEW_OUTLINE_LAYER = 11
@@ -56,6 +57,62 @@ const ROOM_BOUNDS: LayoutBounds = {
 
 function getInitialFurnitureItems(): FurnitureItem[] {
   return []
+}
+
+function approximatelyEqualPx(left: number, right: number) {
+  return Math.abs(left - right) <= TOOLBAR_GEOMETRY_DEADBAND_PX
+}
+
+function isSameToolbarGeometry(
+  previousGeometry: SelectedToolbarGeometry,
+  nextGeometry: SelectedToolbarGeometry,
+) {
+  if (
+    previousGeometry.kind === 'unavailable' &&
+    nextGeometry.kind === 'unavailable'
+  ) {
+    return (
+      previousGeometry.selectedId === nextGeometry.selectedId &&
+      previousGeometry.reason === nextGeometry.reason
+    )
+  }
+
+  if (previousGeometry.kind !== 'available' || nextGeometry.kind !== 'available') {
+    return false
+  }
+
+  if (
+    previousGeometry.selectedId !== nextGeometry.selectedId ||
+    previousGeometry.source !== nextGeometry.source ||
+    previousGeometry.sourceNodeName !== nextGeometry.sourceNodeName
+  ) {
+    return false
+  }
+
+  if (
+    !approximatelyEqualPx(
+      previousGeometry.canvasSize.width,
+      nextGeometry.canvasSize.width,
+    ) ||
+    !approximatelyEqualPx(
+      previousGeometry.canvasSize.height,
+      nextGeometry.canvasSize.height,
+    )
+  ) {
+    return false
+  }
+
+  if (previousGeometry.points.length !== nextGeometry.points.length) {
+    return false
+  }
+
+  return previousGeometry.points.every((previousPoint, index) => {
+    const nextPoint = nextGeometry.points[index]
+    return (
+      approximatelyEqualPx(previousPoint.x, nextPoint.x) &&
+      approximatelyEqualPx(previousPoint.y, nextPoint.y)
+    )
+  })
 }
 
 export function Scene({
@@ -345,10 +402,7 @@ export function Scene({
     })
 
     const previousGeometry = lastToolbarGeometryRef.current
-    if (
-      previousGeometry &&
-      JSON.stringify(previousGeometry) === JSON.stringify(nextGeometry)
-    ) {
+    if (previousGeometry && isSameToolbarGeometry(previousGeometry, nextGeometry)) {
       return
     }
 
