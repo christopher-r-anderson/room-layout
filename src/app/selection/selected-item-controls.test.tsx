@@ -297,6 +297,48 @@ describe('SelectedItemControls', () => {
     vi.unstubAllGlobals()
   })
 
+  it('hides the toolbar from rendering and accessibility when placement resolves to hidden', () => {
+    vi.stubGlobal(
+      'matchMedia',
+      vi.fn(() => ({
+        matches: true,
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+      })),
+    )
+
+    const { container } = render(
+      <SelectedItemControls
+        editorInteractionsEnabled
+        exclusionRects={{}}
+        isCatalogDrawerOpen={false}
+        onInvalidSelectedItemDetailValue={vi.fn(() => 'Invalid value')}
+        onOpenDeleteDialog={vi.fn()}
+        onRotateSelection={vi.fn()}
+        onUpdateSelectedItemDetails={vi.fn()}
+        selectedFurniture={FURNITURE_ITEM}
+        selectedToolbarGeometry={{
+          kind: 'available',
+          selectedId: FURNITURE_ITEM.id,
+          source: 'render-bounds',
+          canvasSize: { width: 800, height: 600 },
+          points: [],
+        }}
+        startupOverlayActive={false}
+      />,
+    )
+
+    const toolbar = container.querySelector<HTMLElement>(
+      'section[aria-label="Selected item actions"]',
+    )
+
+    expect(toolbar).not.toBeNull()
+    expect(toolbar).toHaveAttribute('aria-hidden', 'true')
+    expect(toolbar).toHaveStyle({ visibility: 'hidden' })
+
+    vi.unstubAllGlobals()
+  })
+
   it('suppresses blur commits when the remove dialog is opening', async () => {
     const user = userEvent.setup()
     const onOpenDeleteDialog = vi.fn()

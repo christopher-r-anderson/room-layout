@@ -35,6 +35,7 @@ export function SelectedItemActions({
       ref={sectionRef}
       className={cn('pointer-events-auto', className)}
       aria-label="Selected item actions"
+      aria-hidden={placementMode === 'hidden' ? true : undefined}
       data-selected-toolbar-mode={placementMode}
       data-selected-toolbar-side={placementSide}
       style={style}
