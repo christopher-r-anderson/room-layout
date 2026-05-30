@@ -3,8 +3,8 @@ import { SelectionToolsOther } from './selection-tools-other'
 import { cn } from '@/lib/utils'
 import type { CSSProperties, Ref } from 'react'
 import type {
+  ToolbarFloatingCandidateId,
   ToolbarPlacementMode,
-  ToolbarSide,
 } from '@/lib/ui/selected-toolbar-placement'
 
 export function SelectedItemActions({
@@ -13,8 +13,8 @@ export function SelectedItemActions({
   onOpenDeleteDialog,
   onPrepareDelete,
   onRotateSelection,
+  placementCandidateId,
   placementMode = 'floating',
-  placementSide,
   sectionRef,
   selectedFurniture,
   style,
@@ -24,8 +24,8 @@ export function SelectedItemActions({
   onOpenDeleteDialog: () => void
   onPrepareDelete: () => void
   onRotateSelection: (direction: -1 | 1) => void
+  placementCandidateId?: ToolbarFloatingCandidateId
   placementMode?: ToolbarPlacementMode
-  placementSide?: ToolbarSide
   sectionRef?: Ref<HTMLElement>
   selectedFurniture: FurnitureItem
   style?: CSSProperties
@@ -37,8 +37,8 @@ export function SelectedItemActions({
       aria-label="Selected item actions"
       aria-hidden={placementMode === 'hidden' ? true : undefined}
       inert={placementMode === 'hidden' ? true : undefined}
+      data-selected-toolbar-candidate={placementCandidateId}
       data-selected-toolbar-mode={placementMode}
-      data-selected-toolbar-side={placementSide}
       style={style}
     >
       <div className="rounded-xl border bg-background/90 p-1.5 shadow-sm backdrop-blur-sm">

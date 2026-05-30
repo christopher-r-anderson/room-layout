@@ -75,6 +75,49 @@ declare global {
 
 const ROTATION_STEP_RADIANS = Math.PI / 12
 
+function areScreenPointsEqual(
+  left: { x: number; y: number },
+  right: { x: number; y: number },
+) {
+  return left.x === right.x && left.y === right.y
+}
+
+function areSelectedToolbarGeometriesEqual(
+  currentGeometry: SelectedToolbarGeometry,
+  nextGeometry: SelectedToolbarGeometry,
+) {
+  if (
+    currentGeometry.kind === 'unavailable' &&
+    nextGeometry.kind === 'unavailable'
+  ) {
+    return (
+      currentGeometry.selectedId === nextGeometry.selectedId &&
+      currentGeometry.reason === nextGeometry.reason
+    )
+  }
+
+  if (
+    currentGeometry.kind !== 'available' ||
+    nextGeometry.kind !== 'available'
+  ) {
+    return false
+  }
+
+  return (
+    currentGeometry.selectedId === nextGeometry.selectedId &&
+    currentGeometry.source === nextGeometry.source &&
+    currentGeometry.sourceNodeName === nextGeometry.sourceNodeName &&
+    currentGeometry.canvasSize.width === nextGeometry.canvasSize.width &&
+    currentGeometry.canvasSize.height === nextGeometry.canvasSize.height &&
+    currentGeometry.sourcePointCount === nextGeometry.sourcePointCount &&
+    currentGeometry.projectedPointCount === nextGeometry.projectedPointCount &&
+    currentGeometry.points.length === nextGeometry.points.length &&
+    currentGeometry.points.every((point, index) =>
+      areScreenPointsEqual(point, nextGeometry.points[index]),
+    )
+  )
+}
+
 class SceneAssetErrorBoundary extends Component<
   {
     children: ReactNode
@@ -122,6 +165,7 @@ function App() {
     })
   const isE2ELowRenderQuality =
     import.meta.env.DEV && import.meta.env.VITE_E2E_RENDER_QUALITY === 'low'
+  const canvasShadowMode = isE2ELowRenderQuality ? false : 'percentage'
   const overlayExclusions = useOverlayExclusionRects()
 
   const startup = useStartupLifecycle({
@@ -206,7 +250,7 @@ function App() {
     previewedId,
     handleScenePreviewChange,
     handleOutlinerPreviewChange,
-    handleCanvasKeyboardPreviewChange,
+    handleCanvasKeyboardPreviewChange: applyCanvasKeyboardPreviewChange,
     handleDragStateChange,
     clearPreviewOnCanvasMiss,
   } = usePreviewController({
@@ -215,10 +259,36 @@ function App() {
     itemIds,
   })
 
-  const handleSceneDragStateChange = (dragging: boolean) => {
-    setIsSceneDragging(dragging)
-    handleDragStateChange(dragging)
-  }
+  const handleSceneDragStateChange = useCallback(
+    (dragging: boolean) => {
+      setIsSceneDragging((currentDragging) =>
+        currentDragging === dragging ? currentDragging : dragging,
+      )
+      handleDragStateChange(dragging)
+    },
+    [handleDragStateChange],
+  )
+
+  const handleSelectedToolbarGeometryChange = useCallback(
+    (nextGeometry: SelectedToolbarGeometry) => {
+      setSelectedToolbarGeometry((currentGeometry) =>
+        areSelectedToolbarGeometriesEqual(currentGeometry, nextGeometry)
+          ? currentGeometry
+          : nextGeometry,
+      )
+    },
+    [],
+  )
+
+  const handleCanvasKeyboardPreviewChange = useCallback(
+    (id: string | null) => {
+      // Keep keyboard preview reads synchronous so a quick browse+select
+      // sequence cannot observe a stale ref before effects flush.
+      previewedIdRef.current = id
+      applyCanvasKeyboardPreviewChange(id)
+    },
+    [applyCanvasKeyboardPreviewChange],
+  )
 
   const focusRoomView = useCallback(() => {
     if (!startup.editorInteractionsEnabled) {
@@ -572,6 +642,7 @@ function App() {
               position: [3, 2.5, 3],
               fov: 50,
             }}
+            frameloop="demand"
             onCreated={({ gl }) => {
               gl.outputColorSpace = SRGBColorSpace
               gl.toneMapping = NeutralToneMapping
@@ -586,7 +657,7 @@ function App() {
               clearPreviewOnCanvasMiss()
               handlers.handleClearSelection()
             }}
-            shadows={!isE2ELowRenderQuality}
+            shadows={canvasShadowMode}
           >
             <SceneAssetErrorBoundary
               key={startup.cacheInvalidationKey}
@@ -607,7 +678,9 @@ function App() {
                   previewedId={previewedId}
                   onPreviewChange={handleScenePreviewChange}
                   onDragStateChange={handleSceneDragStateChange}
-                  onSelectedToolbarGeometryChange={setSelectedToolbarGeometry}
+                  onSelectedToolbarGeometryChange={
+                    handleSelectedToolbarGeometryChange
+                  }
                   floorOption={selectedFloorOption}
                   wallOption={selectedWallOption}
                   onFloorLoadingChange={setIsFloorFinishLoading}
@@ -632,6 +705,7 @@ function App() {
               onUpdateSelectedItemDetails={
                 handlers.handleUpdateSelectedItemDetails
               }
+              roomViewRef={roomViewRef}
               selectedDetailsRef={overlayExclusions.registerExclusionElement(
                 'selected-details',
               )}

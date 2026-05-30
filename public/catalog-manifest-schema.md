@@ -82,7 +82,7 @@ The manifest is a JSON file with the following structure:
 - `kind` (`string`): Furniture kind; must be one of `armchair`, `couch`, `coffee-table`, `end-table`
 - `collectionId` (`string`): Reference to a collection `id`; must exist in the collections array
 - `nodeName` (`string`): Name of the Three.js object node in the GLTF model to clone (for example `"ChairNode"`)
-- `uiBoundsNodeName` (`string`, optional): Descendant node under `nodeName` used only to anchor the floating selected-item toolbar
+- `uiBoundsNodeName` (`string`, optional): Descendant node under `nodeName` used as the preferred bounds source for selected-item toolbar placement
 - `footprintSize` (`object`): Bounding dimensions for collision detection
 - `footprintSize.width` (`number`): Width in meters (must be `> 0`)
 - `footprintSize.depth` (`number`): Depth in meters (must be `> 0`)
@@ -152,6 +152,7 @@ If `previewPath` is omitted for a floor finish, the Room panel renders that opti
 - Manifest paths are resolved relative to the app's `import.meta.env.BASE_URL`
 - If `uiBoundsNodeName` is omitted, selected-item toolbar placement falls back to projected render bounds or object origin
 - If `uiBoundsNodeName` is present but the referenced node is missing from the loaded GLB subtree, startup fails as a hard asset contract error
+- `uiBoundsNodeName` affects toolbar bounds selection only; it is not an authored point anchor and it does not bypass overlap checks
 - Failed asset preloads also trigger the startup error overlay; operators must ensure all paths in the manifest are valid and accessible
 
 ## Example

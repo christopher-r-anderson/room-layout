@@ -30,17 +30,30 @@ const {
   mockBuildFurnitureItemsFromInstances,
   mockDeleteSelectionFromHistory,
   mockCreateSceneSnapshot,
+  mockInvalidate,
   mockUseFrame,
-} = vi.hoisted(() => ({
-  mockAddFurnitureToHistory: vi.fn(),
-  mockBuildFurnitureItemsFromInstances: vi.fn(),
-  mockDeleteSelectionFromHistory: vi.fn(),
-  mockCreateSceneSnapshot: vi.fn(),
-  mockUseFrame: vi.fn(),
-}))
+  mockUseThree,
+} = vi.hoisted(() => {
+  const mockInvalidate = vi.fn()
+  const mockUseThree = vi.fn(
+    <T>(selector: (state: { invalidate: () => void }) => T): T =>
+      selector({ invalidate: mockInvalidate }),
+  )
+
+  return {
+    mockAddFurnitureToHistory: vi.fn(),
+    mockBuildFurnitureItemsFromInstances: vi.fn(),
+    mockDeleteSelectionFromHistory: vi.fn(),
+    mockCreateSceneSnapshot: vi.fn(),
+    mockInvalidate,
+    mockUseFrame: vi.fn(),
+    mockUseThree,
+  }
+})
 
 vi.mock('@react-three/fiber', () => ({
   useFrame: mockUseFrame,
+  useThree: mockUseThree,
 }))
 
 vi.mock('./furniture-operations', () => ({
@@ -162,7 +175,9 @@ describe('useSceneImperativeApi', () => {
     mockBuildFurnitureItemsFromInstances.mockReset()
     mockDeleteSelectionFromHistory.mockReset()
     mockCreateSceneSnapshot.mockReset()
+    mockInvalidate.mockReset()
     mockUseFrame.mockReset()
+    mockUseThree.mockClear()
 
     mockAddFurnitureToHistory.mockReturnValue({
       history: createHistoryState<FurnitureItem[]>([]),
@@ -877,6 +892,31 @@ describe('useSceneImperativeApi', () => {
     )
   })
 
+  it('getSnapshot uses latest selectedId before rerender flushes', () => {
+    const options = defaultOptions({
+      furniture: [createFurnitureItem('item-1')],
+      selectedId: null,
+    })
+    const sceneRef = getSceneRef(options)
+
+    renderHook(() => {
+      useSceneImperativeApi(options)
+    })
+
+    act(() => {
+      sceneRef.current?.selectById('item-1')
+      sceneRef.current?.getSnapshot()
+    })
+
+    expect(mockCreateSceneSnapshot).toHaveBeenLastCalledWith(
+      options.furniture,
+      'item-1',
+      options.objectRefs.current,
+      options.camera,
+      options.canvasSize,
+    )
+  })
+
   it('setCameraPreset delegates to camera controls setLookAt', () => {
     const setLookAt = vi
       .fn<CameraControlsImpl['setLookAt']>()
@@ -972,11 +1012,13 @@ describe('useSceneImperativeApi', () => {
       useSceneImperativeApi(options)
     })
 
+    const frameState = { invalidate: vi.fn() }
+
     // Orbit (rotate) with W
     act(() => {
       const keyState = new Set<CameraKeyName>(['keyW'])
       sceneRef.current?.setCameraKeyState(keyState)
-      frameCallback?.({}, 0.025)
+      frameCallback?.(frameState, 0.025)
     })
     expect(rotate).toHaveBeenCalledWith(0, -1.5 * 0.025, false)
 
@@ -984,7 +1026,7 @@ describe('useSceneImperativeApi', () => {
     act(() => {
       const keyState = new Set<CameraKeyName>(['keyW', 'shift'])
       sceneRef.current?.setCameraKeyState(keyState)
-      frameCallback?.({}, 0.025)
+      frameCallback?.(frameState, 0.025)
     })
     expect(truck).toHaveBeenCalledWith(0, -3 * 0.025, false)
 
@@ -992,7 +1034,7 @@ describe('useSceneImperativeApi', () => {
     act(() => {
       const keyState = new Set<CameraKeyName>(['equal'])
       sceneRef.current?.setCameraKeyState(keyState)
-      frameCallback?.({}, 0.025)
+      frameCallback?.(frameState, 0.025)
     })
     expect(dolly).toHaveBeenCalledWith(3 * 0.025, false)
 
@@ -1000,7 +1042,7 @@ describe('useSceneImperativeApi', () => {
     act(() => {
       const keyState = new Set<CameraKeyName>(['minus'])
       sceneRef.current?.setCameraKeyState(keyState)
-      frameCallback?.({}, 0.025)
+      frameCallback?.(frameState, 0.025)
     })
     expect(dolly).toHaveBeenCalledWith(-3 * 0.025, false)
 
@@ -1008,11 +1050,12 @@ describe('useSceneImperativeApi', () => {
     act(() => {
       const keyState = new Set<CameraKeyName>(['shift', 'minus'])
       sceneRef.current?.setCameraKeyState(keyState)
-      frameCallback?.({}, 0.025)
+      frameCallback?.(frameState, 0.025)
     })
     expect(dolly).toHaveBeenCalledWith(-3 * 0.025, false)
     expect(truck).toHaveBeenCalledTimes(1)
     expect(rotate).toHaveBeenCalledTimes(1)
+    expect(frameState.invalidate).toHaveBeenCalledTimes(5)
   })
 })
 

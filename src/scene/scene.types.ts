@@ -75,6 +75,8 @@ export type SelectedToolbarGeometry =
       source: SelectedToolbarGeometrySource
       sourceNodeName?: string
       canvasSize: { width: number; height: number }
+      sourcePointCount: number
+      projectedPointCount: number
       points: ScreenPoint[]
     }
   | {
