@@ -377,6 +377,14 @@ export function Scene({
       canvasSize,
     })
 
+    const previousGeometry = lastToolbarGeometryRef.current
+    if (
+      previousGeometry &&
+      isSameToolbarGeometry(previousGeometry, nextGeometry)
+    ) {
+      return
+    }
+
     lastToolbarGeometryRef.current = nextGeometry
     onSelectedToolbarGeometryChange(nextGeometry)
   }, [

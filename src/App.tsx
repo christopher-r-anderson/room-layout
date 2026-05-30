@@ -75,6 +75,49 @@ declare global {
 
 const ROTATION_STEP_RADIANS = Math.PI / 12
 
+function areScreenPointsEqual(
+  left: { x: number; y: number },
+  right: { x: number; y: number },
+) {
+  return left.x === right.x && left.y === right.y
+}
+
+function areSelectedToolbarGeometriesEqual(
+  currentGeometry: SelectedToolbarGeometry,
+  nextGeometry: SelectedToolbarGeometry,
+) {
+  if (
+    currentGeometry.kind === 'unavailable' &&
+    nextGeometry.kind === 'unavailable'
+  ) {
+    return (
+      currentGeometry.selectedId === nextGeometry.selectedId &&
+      currentGeometry.reason === nextGeometry.reason
+    )
+  }
+
+  if (
+    currentGeometry.kind !== 'available' ||
+    nextGeometry.kind !== 'available'
+  ) {
+    return false
+  }
+
+  return (
+    currentGeometry.selectedId === nextGeometry.selectedId &&
+    currentGeometry.source === nextGeometry.source &&
+    currentGeometry.sourceNodeName === nextGeometry.sourceNodeName &&
+    currentGeometry.canvasSize.width === nextGeometry.canvasSize.width &&
+    currentGeometry.canvasSize.height === nextGeometry.canvasSize.height &&
+    currentGeometry.sourcePointCount === nextGeometry.sourcePointCount &&
+    currentGeometry.projectedPointCount === nextGeometry.projectedPointCount &&
+    currentGeometry.points.length === nextGeometry.points.length &&
+    currentGeometry.points.every((point, index) =>
+      areScreenPointsEqual(point, nextGeometry.points[index]),
+    )
+  )
+}
+
 class SceneAssetErrorBoundary extends Component<
   {
     children: ReactNode
@@ -215,10 +258,26 @@ function App() {
     itemIds,
   })
 
-  const handleSceneDragStateChange = (dragging: boolean) => {
-    setIsSceneDragging(dragging)
-    handleDragStateChange(dragging)
-  }
+  const handleSceneDragStateChange = useCallback(
+    (dragging: boolean) => {
+      setIsSceneDragging((currentDragging) =>
+        currentDragging === dragging ? currentDragging : dragging,
+      )
+      handleDragStateChange(dragging)
+    },
+    [handleDragStateChange],
+  )
+
+  const handleSelectedToolbarGeometryChange = useCallback(
+    (nextGeometry: SelectedToolbarGeometry) => {
+      setSelectedToolbarGeometry((currentGeometry) =>
+        areSelectedToolbarGeometriesEqual(currentGeometry, nextGeometry)
+          ? currentGeometry
+          : nextGeometry,
+      )
+    },
+    [],
+  )
 
   const focusRoomView = useCallback(() => {
     if (!startup.editorInteractionsEnabled) {
@@ -607,7 +666,9 @@ function App() {
                   previewedId={previewedId}
                   onPreviewChange={handleScenePreviewChange}
                   onDragStateChange={handleSceneDragStateChange}
-                  onSelectedToolbarGeometryChange={setSelectedToolbarGeometry}
+                  onSelectedToolbarGeometryChange={
+                    handleSelectedToolbarGeometryChange
+                  }
                   floorOption={selectedFloorOption}
                   wallOption={selectedWallOption}
                   onFloorLoadingChange={setIsFloorFinishLoading}

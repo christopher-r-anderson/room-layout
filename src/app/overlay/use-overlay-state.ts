@@ -33,6 +33,17 @@ const INITIAL_SCENE_READ_MODEL: SceneReadModel = {
   items: [],
 }
 
+function areHistoryAvailabilityEqual(
+  left: HistoryAvailability,
+  right: HistoryAvailability,
+) {
+  return left.canUndo === right.canUndo && left.canRedo === right.canRedo
+}
+
+function areSceneReadModelsEqual(left: SceneReadModel, right: SceneReadModel) {
+  return left.selectedId === right.selectedId && left.items === right.items
+}
+
 export function useOverlayState(): OverlayState {
   const [selectedFurniture, setSelectedFurniture] =
     useState<FurnitureItem | null>(null)
@@ -48,21 +59,33 @@ export function useOverlayState(): OverlayState {
 
   const handleHistoryChange = useCallback(
     (availability: HistoryAvailability) => {
-      setHistoryAvailability(availability)
+      setHistoryAvailability((currentAvailability) =>
+        areHistoryAvailabilityEqual(currentAvailability, availability)
+          ? currentAvailability
+          : availability,
+      )
     },
     [],
   )
 
   const handleSceneReadModelChange = useCallback(
     (readModel: SceneReadModel) => {
-      setSceneReadModel(readModel)
+      setSceneReadModel((currentReadModel) =>
+        areSceneReadModelsEqual(currentReadModel, readModel)
+          ? currentReadModel
+          : readModel,
+      )
 
       const nextSelectedFurniture = readModel.selectedId
         ? (readModel.items.find((item) => item.id === readModel.selectedId) ??
           null)
         : null
 
-      setSelectedFurniture(nextSelectedFurniture)
+      setSelectedFurniture((currentSelectedFurniture) =>
+        currentSelectedFurniture === nextSelectedFurniture
+          ? currentSelectedFurniture
+          : nextSelectedFurniture,
+      )
 
       if (readModel.selectedId === null) {
         setSelectedSource(null)
