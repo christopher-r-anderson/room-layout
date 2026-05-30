@@ -892,6 +892,31 @@ describe('useSceneImperativeApi', () => {
     )
   })
 
+  it('getSnapshot uses latest selectedId before rerender flushes', () => {
+    const options = defaultOptions({
+      furniture: [createFurnitureItem('item-1')],
+      selectedId: null,
+    })
+    const sceneRef = getSceneRef(options)
+
+    renderHook(() => {
+      useSceneImperativeApi(options)
+    })
+
+    act(() => {
+      sceneRef.current?.selectById('item-1')
+      sceneRef.current?.getSnapshot()
+    })
+
+    expect(mockCreateSceneSnapshot).toHaveBeenLastCalledWith(
+      options.furniture,
+      'item-1',
+      options.objectRefs.current,
+      options.camera,
+      options.canvasSize,
+    )
+  })
+
   it('setCameraPreset delegates to camera controls setLookAt', () => {
     const setLookAt = vi
       .fn<CameraControlsImpl['setLookAt']>()

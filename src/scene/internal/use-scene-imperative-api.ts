@@ -515,8 +515,8 @@ export function useSceneImperativeApi({
       },
       getSnapshot: () =>
         createSceneSnapshot(
-          furniture,
-          selectedId,
+          furnitureRef.current,
+          selectedIdRef.current,
           objectRefs.current,
           camera,
           canvasSize,
@@ -589,9 +589,7 @@ export function useSceneImperativeApi({
       bounds,
       collections,
       objectRefs,
-      furniture,
       selectFurniture,
-      selectedId,
       setHistory,
       setSelectedIdAndResolveObject,
       snapSize,

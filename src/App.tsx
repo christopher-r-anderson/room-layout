@@ -250,7 +250,7 @@ function App() {
     previewedId,
     handleScenePreviewChange,
     handleOutlinerPreviewChange,
-    handleCanvasKeyboardPreviewChange,
+    handleCanvasKeyboardPreviewChange: applyCanvasKeyboardPreviewChange,
     handleDragStateChange,
     clearPreviewOnCanvasMiss,
   } = usePreviewController({
@@ -278,6 +278,16 @@ function App() {
       )
     },
     [],
+  )
+
+  const handleCanvasKeyboardPreviewChange = useCallback(
+    (id: string | null) => {
+      // Keep keyboard preview reads synchronous so a quick browse+select
+      // sequence cannot observe a stale ref before effects flush.
+      previewedIdRef.current = id
+      applyCanvasKeyboardPreviewChange(id)
+    },
+    [applyCanvasKeyboardPreviewChange],
   )
 
   const focusRoomView = useCallback(() => {
