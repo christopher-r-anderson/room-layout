@@ -850,8 +850,11 @@ function resolveCandidateAnchor(
   }
 }
 
-function getCandidateAnchors(points: ScreenPoint[], bounds: PointBounds) {
-  const hull = getConvexHull(points)
+function getCandidateAnchors(
+  points: ScreenPoint[],
+  bounds: PointBounds,
+  hull: ScreenPoint[],
+) {
   const anchors: Partial<Record<Exclude<ToolbarSide, 'docked'>, ScreenPoint>> =
     {
       top: getAnchor(points, 'top') ?? undefined,
@@ -1002,7 +1005,7 @@ function createFloatingCandidates({
   previousFloatingCandidateId?: ToolbarFloatingCandidateId
   toolbarSize: { width: number; height: number }
 }) {
-  const candidates = getCandidateAnchors(points, bounds)
+  const candidates = getCandidateAnchors(points, bounds, hull)
     .map((candidate) => {
       const idealRect = createRectFromAnchor(
         candidate.anchor,
