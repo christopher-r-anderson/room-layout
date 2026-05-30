@@ -80,6 +80,16 @@ Single 1697-line file, three independent concerns sharing navigator/scene-ref bo
 
 The single biggest readability win in the branch. Pure file-move + re-exports; zero logic change.
 
+**Status:** completed locally on 2026-05-30.
+
+**Completion note**
+
+- Added `src/lib/ui/rect-utils.ts`, `src/lib/ui/convex-geometry.ts`, and `src/lib/ui/toolbar-anchors.ts`.
+- `src/lib/ui/selected-toolbar-placement.ts` now stays focused on the public API, placement scoring, and result assembly.
+- Validation passed with `pnpm fix && pnpm typecheck && pnpm lint && pnpm test:run`.
+- Browser confidence check passed with `pnpm test:e2e -- selected-toolbar-placement`.
+- Current Vitest count after the split: 68 files / 550 tests passed.
+
 **Files affected**
 
 - New: src/lib/ui/rect-utils.ts
