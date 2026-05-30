@@ -165,6 +165,7 @@ function App() {
     })
   const isE2ELowRenderQuality =
     import.meta.env.DEV && import.meta.env.VITE_E2E_RENDER_QUALITY === 'low'
+  const canvasShadowMode = isE2ELowRenderQuality ? false : 'percentage'
   const overlayExclusions = useOverlayExclusionRects()
 
   const startup = useStartupLifecycle({
@@ -631,6 +632,7 @@ function App() {
               position: [3, 2.5, 3],
               fov: 50,
             }}
+            frameloop="demand"
             onCreated={({ gl }) => {
               gl.outputColorSpace = SRGBColorSpace
               gl.toneMapping = NeutralToneMapping
@@ -645,7 +647,7 @@ function App() {
               clearPreviewOnCanvasMiss()
               handlers.handleClearSelection()
             }}
-            shadows={!isE2ELowRenderQuality}
+            shadows={canvasShadowMode}
           >
             <SceneAssetErrorBoundary
               key={startup.cacheInvalidationKey}

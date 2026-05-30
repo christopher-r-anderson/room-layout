@@ -6,7 +6,7 @@ import {
   type RefObject,
   type SetStateAction,
 } from 'react'
-import { useFrame } from '@react-three/fiber'
+import { useFrame, useThree } from '@react-three/fiber'
 import { type Object3D } from 'three'
 import type { CameraControlsImpl } from '@react-three/drei'
 import type { LayoutBounds } from '@/lib/three/furniture-layout'
@@ -84,6 +84,7 @@ export function useSceneImperativeApi({
   snapSize,
   sourceScenesByPath,
 }: UseSceneImperativeApiOptions): void {
+  const invalidate = useThree((state) => state.invalidate)
   const historyRef = useRef(history)
   const selectedIdRef = useRef(selectedId)
   const furnitureRef = useRef(furniture)
@@ -107,13 +108,17 @@ export function useSceneImperativeApi({
   }, [dragState])
 
   // Apply continuous camera motion based on held-key state.
-  useFrame((_, delta) => {
+  useFrame((state, delta) => {
     const controls = cameraControlsRef.current
     if (!controls) {
       return
     }
 
     const keyState = cameraKeyStateRef.current
+    if (keyState.size === 0) {
+      return
+    }
+
     const deltaTime = Math.min(delta, 0.05) // Cap delta to prevent large jumps after frame stalls
 
     // Camera motion constants tuned for the 6x6 meter room scale.
@@ -161,6 +166,8 @@ export function useSceneImperativeApi({
         : -DOLLY_SPEED * deltaTime
       void controls.dolly(dollyDistance, false)
     }
+
+    state.invalidate()
   })
 
   useImperativeHandle(
@@ -568,6 +575,10 @@ export function useSceneImperativeApi({
       },
       setCameraKeyState: (keyState: CameraKeyState) => {
         cameraKeyStateRef.current = keyState
+
+        if (keyState.size > 0) {
+          invalidate()
+        }
       },
     }),
     [
@@ -588,6 +599,7 @@ export function useSceneImperativeApi({
       edgeSnapThreshold,
       instanceIdRef,
       cameraControlsRef,
+      invalidate,
     ],
   )
 }
