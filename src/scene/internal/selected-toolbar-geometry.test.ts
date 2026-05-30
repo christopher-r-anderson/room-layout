@@ -96,6 +96,35 @@ describe('computeSelectedToolbarGeometry', () => {
     expect(result.points).toHaveLength(8)
   })
 
+  it('excludes off-canvas projected points from points and projectedPointCount without changing rejectionReason', () => {
+    // Place a large box far to the side so most corners project outside the canvas
+    const mesh = new Mesh(new BoxGeometry(100, 1, 1), new MeshBasicMaterial())
+    mesh.position.set(50, 0, -2)
+    mesh.updateMatrixWorld(true)
+
+    const result = computeSelectedToolbarGeometry({
+      selectedId: 'item-1',
+      object: mesh,
+      camera: createCamera(),
+      canvasSize: CANVAS_SIZE,
+    })
+
+    expect(result.kind).toBe('available')
+    if (result.kind !== 'available') {
+      return
+    }
+    expect(result.source).toBe('render-bounds')
+    expect(result.sourcePointCount).toBe(8)
+    expect(result.projectedPointCount).toBeLessThan(result.sourcePointCount)
+    expect(result.points).toHaveLength(result.projectedPointCount)
+    for (const point of result.points) {
+      expect(point.x).toBeGreaterThanOrEqual(0)
+      expect(point.x).toBeLessThanOrEqual(CANVAS_SIZE.width)
+      expect(point.y).toBeGreaterThanOrEqual(0)
+      expect(point.y).toBeLessThanOrEqual(CANVAS_SIZE.height)
+    }
+  })
+
   it('falls back to object origin when visual bounds are empty', () => {
     const object = new Object3D()
     object.position.set(0, 0, -3)

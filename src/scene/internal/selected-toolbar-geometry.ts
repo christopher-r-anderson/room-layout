@@ -88,6 +88,11 @@ function projectPoints(
       continue
     }
 
+    const { x, y } = result.point
+    if (x < 0 || x > canvasSize.width || y < 0 || y > canvasSize.height) {
+      continue
+    }
+
     screenPoints.push(result.point)
   }
 
