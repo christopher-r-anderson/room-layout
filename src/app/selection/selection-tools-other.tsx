@@ -31,7 +31,10 @@ export function SelectionToolsOther({
         disabledMessage={disabledMessage}
         shortcuts=","
         label="Rotate counterclockwise"
+        labelVisibility="sr-only"
         icon={<IconRotate3d className="-scale-x-100" />}
+        size="toolbar-icon"
+        tooltipSide="top"
       />
       <ToolButton
         action={() => {
@@ -41,7 +44,10 @@ export function SelectionToolsOther({
         disabledMessage={disabledMessage}
         shortcuts="."
         label="Rotate clockwise"
+        labelVisibility="sr-only"
         icon={<IconRotate3d />}
+        size="toolbar-icon"
+        tooltipSide="top"
       />
       <ToolButton
         action={onOpenDeleteDialog}
@@ -49,7 +55,10 @@ export function SelectionToolsOther({
         disabledMessage={disabledMessage}
         shortcuts="Delete Backspace"
         label="Remove item"
+        labelVisibility="sr-only"
         icon={<IconTrash />}
+        size="toolbar-icon"
+        tooltipSide="top"
         onPointerDown={() => {
           onPrepareDelete?.()
         }}

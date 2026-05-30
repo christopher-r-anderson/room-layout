@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from 'react'
+import { useCallback, useLayoutEffect, useRef, useState } from 'react'
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
 import type { FurnitureCatalogEntry } from '@/scene/objects/furniture-catalog'
 import type {
@@ -24,7 +24,6 @@ import type { StartupErrorKind } from '../startup/use-startup-state'
 import type { PanelSelectById } from '../scene-interaction.types'
 import { SelectedItemDetailsPlaceholder } from '../selection/selected-item-details'
 import { TopHeader } from './top-header'
-
 export interface EditorCameraProps {
   onSetCameraPreset: (preset: CameraPreset) => void
   onFocusSelected: () => void
@@ -125,6 +124,11 @@ interface EditorOverlayProps {
   wallFinishId: string
   wallFinishes: WallFinishOption[]
   onWallFinishChange: (finishId: string) => void
+  topHeaderElementRef?: (element: HTMLDivElement | null) => void
+  desktopRoomSidebarElementRef?: (element: HTMLElement | null) => void
+  mobileRoomDrawerElementRef?: (element: HTMLDivElement | null) => void
+  outlinerElementRef?: (element: HTMLDivElement | null) => void
+  cameraToolsElementRef?: (element: HTMLDivElement | null) => void
 }
 
 export function EditorOverlay({
@@ -147,6 +151,11 @@ export function EditorOverlay({
   wallFinishId,
   wallFinishes,
   onWallFinishChange,
+  topHeaderElementRef,
+  desktopRoomSidebarElementRef,
+  mobileRoomDrawerElementRef,
+  outlinerElementRef,
+  cameraToolsElementRef,
 }: EditorOverlayProps) {
   const cameraAnchorRef = useRef<HTMLDivElement | null>(null)
   const [cameraAnchorHeight, setCameraAnchorHeight] = useState(0)
@@ -192,6 +201,13 @@ export function EditorOverlay({
       ? `calc(50% - ${String(cameraAnchorHeight / 2)}px)`
       : '50%'
   const mobileOpenBottom = 'calc(50dvh + 0.5rem)'
+  const handleCameraAnchorRef = useCallback(
+    (element: HTMLDivElement | null) => {
+      cameraAnchorRef.current = element
+      cameraToolsElementRef?.(element)
+    },
+    [cameraToolsElementRef],
+  )
 
   return (
     <>
@@ -201,6 +217,9 @@ export function EditorOverlay({
         aria-hidden={startup.startupOverlayActive}
       >
         <TopHeader
+          topHeaderRef={topHeaderElementRef}
+          desktopRoomSidebarRef={desktopRoomSidebarElementRef}
+          mobileRoomDrawerRef={mobileRoomDrawerElementRef}
           catalog={{
             catalog: catalog.catalog,
             catalogIdToAdd: catalog.catalogIdToAdd,
@@ -230,7 +249,10 @@ export function EditorOverlay({
         />
 
         <div className="grid gap-2 md:grid-cols-[minmax(0,20rem)_minmax(0,1fr)] md:items-end">
-          <div className="flex min-w-0 flex-col gap-2 overflow-y-auto md:max-w-80">
+          <div
+            ref={outlinerElementRef}
+            className="flex min-w-0 flex-col gap-2 overflow-y-auto md:max-w-80"
+          >
             <StatusMessage message={statusMessage} />
             <Outliner
               readModel={scene.readModel}
@@ -258,7 +280,7 @@ export function EditorOverlay({
       </div>
 
       <div
-        ref={cameraAnchorRef}
+        ref={handleCameraAnchorRef}
         data-camera-anchor
         className={`pointer-events-none absolute transition-[bottom,right] duration-200 ${
           isDesktopRoomOpen ? 'right-94' : 'right-2'

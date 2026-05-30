@@ -1,6 +1,7 @@
 import { Group, Mesh } from 'three'
 import { getMeshes } from './get-meshes'
 import { expect, it } from 'vitest'
+import { markUiBoundsSubtree } from './ui-bounds'
 
 it('collects all meshes in a hierarchy', () => {
   const root = new Group()
@@ -24,4 +25,18 @@ it('returns empty array if no meshes exist', () => {
   const result = getMeshes(group)
 
   expect(result).toEqual([])
+})
+
+it('excludes ui-bounds meshes by default', () => {
+  const root = new Group()
+  const visualMesh = new Mesh()
+  const uiBoundsRoot = new Group()
+  const uiBoundsMesh = new Mesh()
+
+  uiBoundsRoot.add(uiBoundsMesh)
+  markUiBoundsSubtree(uiBoundsRoot)
+  root.add(visualMesh, uiBoundsRoot)
+
+  expect(getMeshes(root)).toEqual([visualMesh])
+  expect(getMeshes(root, { includeUiBounds: true })).toContain(uiBoundsMesh)
 })

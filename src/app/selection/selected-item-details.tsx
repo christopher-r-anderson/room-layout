@@ -1,4 +1,4 @@
-import { useId, useState } from 'react'
+import { useId, useState, type Ref } from 'react'
 import type {
   SelectedItemDetailField,
   UpdateSelectedItemDetailsInput,
@@ -63,16 +63,19 @@ function SelectedItemDetailsCard({
   children,
   className,
   itemName,
+  sectionRef,
   titleId,
 }: {
   ariaHidden?: boolean
   children: React.ReactNode
   className?: string
   itemName: string
+  sectionRef?: Ref<HTMLElement>
   titleId: string
 }) {
   return (
     <section
+      ref={sectionRef}
       className={cn('pointer-events-auto', className)}
       aria-hidden={ariaHidden}
       aria-labelledby={ariaHidden ? undefined : titleId}
@@ -152,6 +155,7 @@ export function SelectedItemDetails({
   className,
   disabled,
   selectedFurniture,
+  sectionRef,
   consumeBlurCommitSuppression,
   onInvalidSelectedItemDetailValue,
   onUpdateSelectedItemDetails,
@@ -159,6 +163,7 @@ export function SelectedItemDetails({
   className?: string
   disabled: boolean
   selectedFurniture: FurnitureItem
+  sectionRef?: Ref<HTMLElement>
   consumeBlurCommitSuppression: () => boolean
   onInvalidSelectedItemDetailValue?: (fieldLabel: string) => string
   onUpdateSelectedItemDetails: (
@@ -378,6 +383,7 @@ export function SelectedItemDetails({
     <SelectedItemDetailsCard
       className={className}
       itemName={selectedFurniture.name}
+      sectionRef={sectionRef}
       titleId={titleId}
     >
       <CardContent className="space-y-2.5" data-selected-item-details-root>

@@ -1,5 +1,6 @@
 import {
   BoxGeometry,
+  Group,
   Mesh,
   MeshBasicMaterial,
   Object3D,
@@ -8,6 +9,7 @@ import {
 import { describe, expect, it } from 'vitest'
 import { createSceneSnapshot } from './scene-snapshot'
 import type { FurnitureItem } from '../objects/furniture.types'
+import { markUiBoundsSubtree } from '@/lib/three/ui-bounds'
 
 const CANVAS_SIZE = {
   width: 800,
@@ -242,6 +244,40 @@ describe('createSceneSnapshot', () => {
     )
     expect(snapshot.items[0]?.pointerTarget?.y).toBeCloseTo(
       CANVAS_SIZE.height / 2,
+    )
+  })
+
+  it('ignores ui-bounds meshes when computing pointerTarget', () => {
+    const camera = createDefaultCamera()
+    const object = new Group()
+    const visualMesh = new Mesh(
+      new BoxGeometry(1, 1, 1),
+      new MeshBasicMaterial(),
+    )
+    visualMesh.position.set(0, 0, -2)
+    const uiBoundsMesh = new Mesh(
+      new BoxGeometry(10, 10, 10),
+      new MeshBasicMaterial(),
+    )
+    uiBoundsMesh.position.set(10, 0, -2)
+    markUiBoundsSubtree(uiBoundsMesh)
+    object.add(visualMesh, uiBoundsMesh)
+
+    const snapshot = createSceneSnapshot(
+      [createFurnitureItem('item-1')],
+      null,
+      new Map([['item-1', object]]),
+      camera,
+      CANVAS_SIZE,
+    )
+
+    expect(snapshot.items[0]?.pointerTarget?.x).toBeCloseTo(
+      CANVAS_SIZE.width / 2,
+      0,
+    )
+    expect(snapshot.items[0]?.pointerTarget?.y).toBeCloseTo(
+      CANVAS_SIZE.height / 2,
+      0,
     )
   })
 })

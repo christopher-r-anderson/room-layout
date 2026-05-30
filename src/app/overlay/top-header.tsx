@@ -83,6 +83,9 @@ function focusControlById(id: string) {
 export function TopHeader({
   dialogs,
   onLayoutModeChange,
+  topHeaderRef,
+  desktopRoomSidebarRef,
+  mobileRoomDrawerRef,
   ...props
 }: TopHeaderProps) {
   const layoutMode = useHeaderLayoutMode()
@@ -146,6 +149,8 @@ export function TopHeader({
         <TopHeaderMobile
           {...props}
           dialogs={dialogs}
+          topHeaderRef={topHeaderRef}
+          mobileRoomDrawerRef={mobileRoomDrawerRef}
           mobileRoomTriggerId={mobileRoomTriggerId}
           mobileMoreContentId={mobileMoreContentId}
           mobileMoreTriggerId={mobileMoreTriggerId}
@@ -176,6 +181,8 @@ export function TopHeader({
         <TopHeaderDesktop
           {...props}
           dialogs={dialogs}
+          topHeaderRef={topHeaderRef}
+          desktopRoomSidebarRef={desktopRoomSidebarRef}
           desktopRoomTriggerId={desktopRoomTriggerId}
           desktopInfoTriggerId={desktopInfoTriggerId}
           desktopKeyboardTriggerId={desktopKeyboardTriggerId}

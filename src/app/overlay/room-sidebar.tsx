@@ -8,14 +8,17 @@ import {
 } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { IconX } from '@tabler/icons-react'
+import type { Ref } from 'react'
 import { RoomControls, type RoomControlsProps } from './room-controls'
 import { ROOM_SURFACE_DESCRIPTION } from './room-copy'
 
 export function RoomSidebar({
+  containerRef,
   open,
   onClose,
   ...controls
 }: RoomControlsProps & {
+  containerRef?: Ref<HTMLElement>
   open: boolean
   onClose: () => void
 }) {
@@ -25,6 +28,7 @@ export function RoomSidebar({
 
   return (
     <aside
+      ref={containerRef}
       id="room-surface"
       aria-labelledby="room-surface-title"
       className="pointer-events-auto fixed inset-y-2 right-2 z-20 hidden md:block"

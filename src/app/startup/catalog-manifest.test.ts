@@ -145,6 +145,22 @@ describe('fetchCatalogManifest', () => {
       expect(item.footprintSize).toEqual({ width: 2.0, depth: 1.0 })
     })
 
+    it('preserves a valid uiBoundsNodeName when provided', async () => {
+      mockFetchOk({
+        ...VALID_MANIFEST,
+        catalog: [
+          {
+            ...VALID_MANIFEST.catalog[0],
+            uiBoundsNodeName: 'Couch_UIBounds',
+          },
+        ],
+      })
+
+      const result = await fetchCatalogManifest()
+
+      expect(result.catalog[0]?.uiBoundsNodeName).toBe('Couch_UIBounds')
+    })
+
     it('returns normalized environment floor and wall material options', async () => {
       mockFetchOk(VALID_MANIFEST)
 
@@ -486,6 +502,24 @@ describe('fetchCatalogManifest', () => {
           },
         ],
       }
+      mockFetchOk(badManifest)
+
+      await expect(fetchCatalogManifest()).rejects.toBeInstanceOf(
+        ManifestValidationError,
+      )
+    })
+
+    it('throws ManifestValidationError when uiBoundsNodeName is blank', async () => {
+      const badManifest = {
+        ...VALID_MANIFEST,
+        catalog: [
+          {
+            ...VALID_MANIFEST.catalog[0],
+            uiBoundsNodeName: '   ',
+          },
+        ],
+      }
+
       mockFetchOk(badManifest)
 
       await expect(fetchCatalogManifest()).rejects.toBeInstanceOf(

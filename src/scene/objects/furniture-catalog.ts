@@ -12,6 +12,7 @@ export interface FurnitureCatalogEntry {
   kind: FurnitureKind
   collectionId: FurnitureCollection['id']
   nodeName: string
+  uiBoundsNodeName?: string
   footprintSize: FootprintSize
   previewPath: string
 }

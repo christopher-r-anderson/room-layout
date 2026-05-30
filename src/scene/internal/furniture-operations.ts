@@ -46,6 +46,7 @@ function areFurnitureItemsEqual(left: FurnitureItem, right: FurnitureItem) {
     left.kind === right.kind &&
     left.collectionId === right.collectionId &&
     left.nodeName === right.nodeName &&
+    left.uiBoundsNodeName === right.uiBoundsNodeName &&
     left.sourcePath === right.sourcePath &&
     left.footprintSize.width === right.footprintSize.width &&
     left.footprintSize.depth === right.footprintSize.depth &&
@@ -110,6 +111,7 @@ function createFurnitureItem(
     kind: entry.kind,
     collectionId: entry.collectionId,
     nodeName: entry.nodeName,
+    uiBoundsNodeName: entry.uiBoundsNodeName,
     sourcePath,
     footprintSize: entry.footprintSize,
     position: overrides?.position ?? [

@@ -22,6 +22,7 @@ export interface FurnitureItem extends FurnitureInstance {
   kind: FurnitureKind
   collectionId: string
   nodeName: string
+  uiBoundsNodeName?: string
   sourcePath: string
   footprintSize: FootprintSize
 }
@@ -31,6 +32,8 @@ export interface InteractiveFurnitureProps {
   position: Vector3Tuple
   rotationY: number
   sourceScene: Object3D
+  nodeName: string
+  uiBoundsNodeName?: string
   selected: boolean
   isDragging: boolean
   onObjectReady: (id: string, object: Object3D | null) => void

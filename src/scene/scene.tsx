@@ -10,7 +10,7 @@ import { InteractiveFurniture } from './internal/objects/interactive-furniture'
 import { useGLTF } from '@react-three/drei'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { CameraControlsImpl } from '@react-three/drei'
-import { useThree } from '@react-three/fiber'
+import { useFrame, useThree } from '@react-three/fiber'
 import { type Object3D } from 'three'
 import { EffectComposer, Outline } from '@react-three/postprocessing'
 import { type LayoutBounds } from '@/lib/three/furniture-layout'
@@ -24,11 +24,13 @@ import {
   areFurnitureCollectionsEqual,
   updateFurniturePositionInHistory,
 } from './internal/furniture-operations'
+import { validateCatalogAssetNodes } from './internal/validate-catalog-asset-nodes'
 import {
   getSceneHistoryAvailability,
   type SceneHistoryAvailability,
 } from './internal/scene-history-state'
 import type { SceneRef } from './scene.types'
+import type { SelectedToolbarGeometry } from './scene.types'
 import { useSceneDrag } from './internal/use-scene-drag'
 import { useSceneImperativeApi } from './internal/use-scene-imperative-api'
 import { useSceneSelection } from './internal/use-scene-selection'
@@ -37,6 +39,7 @@ import {
   ROOM_HALF_DEPTH_METERS,
   ROOM_HALF_WIDTH_METERS,
 } from './internal/environment/room-constants'
+import { computeSelectedToolbarGeometry } from './internal/selected-toolbar-geometry'
 
 const FLOOR_PLANE_Y = 0
 const SNAP_SIZE = 0.5
@@ -67,6 +70,7 @@ export function Scene({
   previewedId = null,
   onPreviewChange,
   onDragStateChange,
+  onSelectedToolbarGeometryChange,
   floorOption = null,
   wallOption = null,
   onFloorLoadingChange,
@@ -82,6 +86,7 @@ export function Scene({
   previewedId?: string | null
   onPreviewChange?: (id: string | null) => void
   onDragStateChange?: (isDragging: boolean) => void
+  onSelectedToolbarGeometryChange?: (geometry: SelectedToolbarGeometry) => void
   floorOption?: FloorFinishOption | null
   wallOption?: WallFinishOption | null
   onFloorLoadingChange?: (isLoading: boolean) => void
@@ -108,8 +113,32 @@ export function Scene({
     )
   }, [gltfResult, collectionPaths])
 
+  const sourceScenesByCollectionId = useMemo(() => {
+    const gltfScenes = Array.isArray(gltfResult) ? gltfResult : [gltfResult]
+
+    return new Map<string, Object3D>(
+      collections.map((collection, index) => [
+        collection.id,
+        gltfScenes[index].scene,
+      ]),
+    )
+  }, [collections, gltfResult])
+
+  useMemo(() => {
+    if (collectionPaths.length === 0) {
+      return
+    }
+
+    validateCatalogAssetNodes({
+      catalog,
+      sourceScenesByCollectionId,
+    })
+  }, [catalog, collectionPaths.length, sourceScenesByCollectionId])
+
   const hasReportedAssetsReadyRef = useRef(false)
   const cameraControlsRef = useRef<CameraControlsImpl | null>(null)
+  const toolbarGeometryAccumulatorRef = useRef(0)
+  const lastToolbarGeometryRef = useRef<SelectedToolbarGeometry | null>(null)
   const [history, setHistory] = useState(() =>
     createHistoryState<FurnitureItem[]>(getInitialFurnitureItems()),
   )
@@ -274,6 +303,59 @@ export function Scene({
     previewedId !== selectedId &&
     previewMeshes.length > 0
 
+  useEffect(() => {
+    if (!onSelectedToolbarGeometryChange) {
+      return
+    }
+
+    const nextGeometry = computeSelectedToolbarGeometry({
+      selectedId,
+      object: selectedId ? (objectRefs.current.get(selectedId) ?? null) : null,
+      camera,
+      canvasSize,
+    })
+
+    lastToolbarGeometryRef.current = nextGeometry
+    onSelectedToolbarGeometryChange(nextGeometry)
+  }, [
+    camera,
+    canvasSize,
+    objectRefs,
+    onSelectedToolbarGeometryChange,
+    selectedId,
+  ])
+
+  useFrame((_, delta) => {
+    if (!onSelectedToolbarGeometryChange) {
+      return
+    }
+
+    toolbarGeometryAccumulatorRef.current += delta
+    if (toolbarGeometryAccumulatorRef.current < 1 / 24) {
+      return
+    }
+
+    toolbarGeometryAccumulatorRef.current = 0
+
+    const nextGeometry = computeSelectedToolbarGeometry({
+      selectedId,
+      object: selectedId ? (objectRefs.current.get(selectedId) ?? null) : null,
+      camera,
+      canvasSize,
+    })
+
+    const previousGeometry = lastToolbarGeometryRef.current
+    if (
+      previousGeometry &&
+      JSON.stringify(previousGeometry) === JSON.stringify(nextGeometry)
+    ) {
+      return
+    }
+
+    lastToolbarGeometryRef.current = nextGeometry
+    onSelectedToolbarGeometryChange(nextGeometry)
+  })
+
   return (
     <>
       <EffectComposer autoClear={false} multisampling={isE2ELowQuality ? 0 : 4}>
@@ -312,6 +394,8 @@ export function Scene({
           position={item.position}
           rotationY={item.rotationY}
           sourceScene={sourceScene}
+          nodeName={item.nodeName}
+          uiBoundsNodeName={item.uiBoundsNodeName}
           selected={selectedId === item.id}
           isDragging={isDragging}
           onObjectReady={registerObject}
@@ -321,7 +405,6 @@ export function Scene({
           onMoveEnd={handleDragEnd}
           onPreviewStart={handlePreviewStart}
           onPreviewEnd={handlePreviewEnd}
-          nodeName={item.nodeName}
           enableShadows={!isE2ELowQuality}
         />
       ))}

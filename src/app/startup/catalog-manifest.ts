@@ -173,6 +173,16 @@ function validateAndNormalizeCatalogEntry(
     )
   }
 
+  if (
+    entry.uiBoundsNodeName !== undefined &&
+    (typeof entry.uiBoundsNodeName !== 'string' ||
+      entry.uiBoundsNodeName.trim() === '')
+  ) {
+    throw new ManifestValidationError(
+      `catalog[${String(index)}] ("${id}"): "uiBoundsNodeName" must be a non-empty string when provided`,
+    )
+  }
+
   if (typeof entry.footprintSize !== 'object' || entry.footprintSize === null) {
     throw new ManifestValidationError(
       `catalog[${String(index)}] ("${id}"): "footprintSize" must be an object`,
@@ -217,6 +227,9 @@ function validateAndNormalizeCatalogEntry(
     kind: entry.kind as FurnitureKind,
     collectionId: entry.collectionId,
     nodeName: entry.nodeName,
+    ...(entry.uiBoundsNodeName
+      ? { uiBoundsNodeName: entry.uiBoundsNodeName.trim() }
+      : {}),
     footprintSize: {
       width: rawWidth,
       depth: rawDepth,
