@@ -11,6 +11,7 @@ import { type Object3D } from 'three'
 import type { CameraControlsImpl } from '@react-three/drei'
 import type { LayoutBounds } from '@/lib/three/furniture-layout'
 import type { HistoryState } from '@/lib/ui/editor-history'
+import { getVisualObjectBounds } from '@/lib/three/get-visual-object-bounds'
 import { CAMERA_PRESETS } from '@/lib/three/camera-presets'
 import {
   addFurnitureToHistory,
@@ -556,7 +557,9 @@ export function useSceneImperativeApi({
         if (!ctrl || !selectedIdRef.current) return
         const object = objectRefs.current.get(selectedIdRef.current)
         if (!object) return
-        void ctrl.fitToBox(object, true, {
+        const bounds = getVisualObjectBounds(object)
+        if (!bounds) return
+        void ctrl.fitToBox(bounds, true, {
           paddingTop: 0.5,
           paddingBottom: 0.5,
           paddingLeft: 0.5,

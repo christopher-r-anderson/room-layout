@@ -12,6 +12,7 @@ import type { TopHeaderDesktopProps } from './top-header.types'
 
 export function TopHeaderDesktop({
   catalog,
+  desktopRoomSidebarRef,
   desktopRoomTriggerId,
   dialogs,
   desktopInfoTriggerId,
@@ -23,6 +24,7 @@ export function TopHeaderDesktop({
   history,
   startOverDisabled,
   startOverTriggerId,
+  topHeaderRef,
   onFloorFinishChange,
   onShareSceneUrl,
   onWallFinishChange,
@@ -35,6 +37,7 @@ export function TopHeaderDesktop({
   return (
     <>
       <div
+        ref={topHeaderRef}
         data-top-header-root
         className="pointer-events-auto flex flex-wrap items-center justify-between gap-x-0 gap-y-2"
       >
@@ -158,6 +161,7 @@ export function TopHeaderDesktop({
       </div>
 
       <RoomSidebar
+        containerRef={desktopRoomSidebarRef}
         open={isRoomOpen}
         onClose={() => {
           dialogs.onRoomSurfaceOpenChange(false)

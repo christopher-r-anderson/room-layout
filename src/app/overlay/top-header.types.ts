@@ -9,6 +9,7 @@ import type {
   FloorFinishOption,
   WallFinishOption,
 } from '@/lib/three/environment-materials'
+import type { Ref } from 'react'
 
 export interface TopHeaderCatalogProps {
   catalog: FurnitureCatalogEntry[]
@@ -74,6 +75,9 @@ export interface TopHeaderProps extends TopHeaderRoomProps {
   startOverDisabled: boolean
   onLayoutModeChange?: (layout: 'mobile' | 'desktop') => void
   onShareSceneUrl: () => Promise<'shared' | 'copied' | null>
+  topHeaderRef?: Ref<HTMLDivElement>
+  desktopRoomSidebarRef?: Ref<HTMLElement>
+  mobileRoomDrawerRef?: Ref<HTMLDivElement>
 }
 
 export interface TopHeaderMobileProps
@@ -88,6 +92,8 @@ export interface TopHeaderMobileProps
       | 'onShareSceneUrl'
     >,
     TopHeaderRoomProps {
+  topHeaderRef?: Ref<HTMLDivElement>
+  mobileRoomDrawerRef?: Ref<HTMLDivElement>
   mobileRoomTriggerId: string
   mobileMoreContentId: string
   mobileMoreTriggerId: string
@@ -109,6 +115,8 @@ export interface TopHeaderDesktopProps
       | 'onShareSceneUrl'
     >,
     TopHeaderRoomProps {
+  topHeaderRef?: Ref<HTMLDivElement>
+  desktopRoomSidebarRef?: Ref<HTMLElement>
   desktopRoomTriggerId: string
   desktopInfoTriggerId: string
   desktopKeyboardTriggerId: string

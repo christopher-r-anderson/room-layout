@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 import { act } from 'react'
-import { Mesh, BoxGeometry, MeshStandardMaterial, Object3D } from 'three'
+import { Group, Mesh, BoxGeometry, MeshStandardMaterial, Object3D } from 'three'
 
 const { mockGetClonedNode } = vi.hoisted(() => ({
   mockGetClonedNode: vi.fn(),
@@ -14,6 +14,8 @@ vi.mock('@/lib/three/get-cloned-node', () => ({
 import { createR3FTestScene } from '@/test/r3f-renderer'
 import { firePointerEvent } from '@/test/pointer-helpers'
 import { InteractiveFurniture } from './interactive-furniture'
+import { getMeshes } from '@/lib/three/get-meshes'
+import { isUiBoundsObject } from '@/lib/three/ui-bounds'
 
 beforeEach(() => {
   mockGetClonedNode.mockReturnValue(
@@ -29,9 +31,10 @@ function defaultProps(
     position: [0, 0, 0] as [number, number, number],
     rotationY: 0,
     sourceScene: new Object3D(),
+    nodeName: 'test-node',
+    uiBoundsNodeName: undefined,
     selected: false,
     isDragging: false,
-    nodeName: 'test-node',
     onObjectReady: vi.fn(),
     onSelect: vi.fn(),
     onMoveStart: vi.fn(),
@@ -86,6 +89,57 @@ describe('InteractiveFurniture', () => {
       )
       const group = renderer.scene.children[0].instance
       expect(group.position.toArray()).toEqual([3, 0, 4])
+    })
+
+    it('marks and excludes ui-bounds meshes before default mesh collection', async () => {
+      const visualMesh = new Mesh(new BoxGeometry(), new MeshStandardMaterial())
+      const uiBoundsMesh = new Mesh(
+        new BoxGeometry(),
+        new MeshStandardMaterial(),
+      )
+      uiBoundsMesh.name = 'Chair_UIBounds'
+      const model = new Group()
+      model.add(visualMesh, uiBoundsMesh)
+      mockGetClonedNode.mockReturnValueOnce(model)
+
+      const renderer = await createR3FTestScene(
+        <InteractiveFurniture
+          {...defaultProps({ uiBoundsNodeName: 'Chair_UIBounds' })}
+        />,
+      )
+
+      const group = renderer.scene.children[0].instance
+      const primitive = group.children[0]
+      const markedUiBounds = primitive.getObjectByName('Chair_UIBounds')
+
+      expect(markedUiBounds).not.toBeNull()
+      expect(markedUiBounds && isUiBoundsObject(markedUiBounds)).toBe(true)
+      expect(markedUiBounds?.visible).toBe(false)
+      expect(getMeshes(primitive)).toEqual([visualMesh])
+      expect(getMeshes(primitive, { includeUiBounds: true })).toContain(
+        uiBoundsMesh,
+      )
+      expect(uiBoundsMesh.castShadow).toBe(false)
+      expect(uiBoundsMesh.receiveShadow).toBe(false)
+    })
+
+    it('throws when ui-bounds points at the cloned model root', async () => {
+      const model = new Group()
+      model.name = 'ChairRoot'
+      mockGetClonedNode.mockReturnValue(model)
+
+      await expect(
+        createR3FTestScene(
+          <InteractiveFurniture
+            {...defaultProps({
+              nodeName: 'ChairRoot',
+              uiBoundsNodeName: 'ChairRoot',
+            })}
+          />,
+        ),
+      ).rejects.toThrow(
+        'ChairRoot ui bounds node must be a descendant of cloned ChairRoot',
+      )
     })
   })
 

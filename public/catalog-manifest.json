@@ -34,6 +34,7 @@
       "kind": "armchair",
       "collectionId": "leather-collection",
       "nodeName": "armchair",
+      "uiBoundsNodeName": "armchair_ui_bounds",
       "footprintSize": { "width": 1.15, "depth": 0.95 },
       "previewPath": "catalog-previews/leather-armchair.webp"
     },

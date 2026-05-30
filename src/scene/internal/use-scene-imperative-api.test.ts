@@ -3,7 +3,13 @@
 import { createRef, useEffect, type RefObject } from 'react'
 import { act, renderHook } from '@testing-library/react'
 import { describe, expect, it, beforeEach, vi } from 'vitest'
-import { Object3D, PerspectiveCamera } from 'three'
+import {
+  BoxGeometry,
+  Mesh,
+  MeshBasicMaterial,
+  Object3D,
+  PerspectiveCamera,
+} from 'three'
 import type { CameraControlsImpl } from '@react-three/drei'
 import {
   createHistoryState,
@@ -895,8 +901,11 @@ describe('useSceneImperativeApi', () => {
     expect(setLookAt).toHaveBeenCalledTimes(1)
   })
 
-  it('focusSelected delegates to camera controls fitToBox for the selected object', () => {
-    const selectedObject = new Object3D()
+  it('focusSelected delegates to camera controls fitToBox for the selected visual bounds', () => {
+    const selectedObject = new Mesh(
+      new BoxGeometry(2, 2, 2),
+      new MeshBasicMaterial(),
+    )
     const fitToBox = vi
       .fn<CameraControlsImpl['fitToBox']>()
       .mockResolvedValue([])
@@ -921,7 +930,10 @@ describe('useSceneImperativeApi', () => {
       sceneRef.current?.focusSelected()
     })
 
-    expect(fitToBox).toHaveBeenCalledWith(selectedObject, true, {
+    expect(fitToBox).toHaveBeenCalledTimes(1)
+    expect(fitToBox.mock.calls[0]?.[0]).toHaveProperty('isBox3', true)
+    expect(fitToBox.mock.calls[0]?.[1]).toBe(true)
+    expect(fitToBox.mock.calls[0]?.[2]).toEqual({
       paddingTop: 0.5,
       paddingBottom: 0.5,
       paddingLeft: 0.5,

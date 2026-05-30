@@ -16,6 +16,7 @@ export function TopHeaderMobile({
   floorFinishLoading,
   floorFinishes,
   history,
+  mobileRoomDrawerRef,
   mobileRoomTriggerId,
   mobileMoreContentId,
   mobileMoreTriggerId,
@@ -25,6 +26,7 @@ export function TopHeaderMobile({
   onOpenStartOverFromMobileMore,
   onOpenProjectInfoFromMobileMore,
   onShareSceneUrl,
+  topHeaderRef,
   onWallFinishChange,
   wallFinishId,
   wallFinishes,
@@ -34,7 +36,11 @@ export function TopHeaderMobile({
     dialogs.isRoomSurfaceOpen && dialogs.roomSurfaceLayout === 'mobile'
 
   return (
-    <div data-top-header-root className="pointer-events-auto">
+    <div
+      ref={topHeaderRef}
+      data-top-header-root
+      className="pointer-events-auto"
+    >
       <div
         role="toolbar"
         aria-label="Mobile header actions"
@@ -102,6 +108,7 @@ export function TopHeaderMobile({
       </div>
 
       <RoomDrawer
+        contentRef={mobileRoomDrawerRef}
         open={
           dialogs.isRoomSurfaceOpen && dialogs.roomSurfaceLayout === 'mobile'
         }

@@ -51,6 +51,38 @@ export type CameraKeyName =
 
 export type CameraKeyState = Set<CameraKeyName>
 
+export interface ScreenPoint {
+  x: number
+  y: number
+}
+
+export type SelectedToolbarGeometrySource =
+  | 'ui-bounds-node'
+  | 'render-bounds'
+  | 'object-origin'
+
+export type SelectedToolbarGeometryUnavailableReason =
+  | 'no-selection'
+  | 'object-not-ready'
+  | 'no-placement-points'
+  | 'non-finite-projection'
+  | 'behind-camera'
+
+export type SelectedToolbarGeometry =
+  | {
+      kind: 'available'
+      selectedId: string
+      source: SelectedToolbarGeometrySource
+      sourceNodeName?: string
+      canvasSize: { width: number; height: number }
+      points: ScreenPoint[]
+    }
+  | {
+      kind: 'unavailable'
+      selectedId: string | null
+      reason: SelectedToolbarGeometryUnavailableReason
+    }
+
 export interface SceneReadModel {
   selectedId: string | null
   items: FurnitureItem[]

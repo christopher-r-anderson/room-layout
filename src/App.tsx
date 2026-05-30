@@ -36,6 +36,8 @@ import { isFreshSceneState } from './app/startup/scene-defaults'
 import { sortSpatially } from './lib/three/spatial-sort'
 import { SelectedItemControls } from './app/selection/selected-item-controls'
 import { findFirstFocusableControl } from './app/overlay/focusable-controls'
+import { useOverlayExclusionRects } from './app/overlay/use-overlay-exclusion-rects'
+import type { SelectedToolbarGeometry } from './scene/scene.types'
 
 interface BrowserSceneState {
   assetsReady: boolean
@@ -112,8 +114,15 @@ function App() {
   const [isSceneDragging, setIsSceneDragging] = useState(false)
   const [roomViewHasFocus, setRoomViewHasFocus] = useState(false)
   const [testOverlaysHidden, setTestOverlaysHidden] = useState(false)
+  const [selectedToolbarGeometry, setSelectedToolbarGeometry] =
+    useState<SelectedToolbarGeometry>({
+      kind: 'unavailable',
+      selectedId: null,
+      reason: 'no-selection',
+    })
   const isE2ELowRenderQuality =
     import.meta.env.DEV && import.meta.env.VITE_E2E_RENDER_QUALITY === 'low'
+  const overlayExclusions = useOverlayExclusionRects()
 
   const startup = useStartupLifecycle({
     sceneRef,
@@ -598,6 +607,7 @@ function App() {
                   previewedId={previewedId}
                   onPreviewChange={handleScenePreviewChange}
                   onDragStateChange={handleSceneDragStateChange}
+                  onSelectedToolbarGeometryChange={setSelectedToolbarGeometry}
                   floorOption={selectedFloorOption}
                   wallOption={selectedWallOption}
                   onFloorLoadingChange={setIsFloorFinishLoading}
@@ -612,6 +622,7 @@ function App() {
             <SelectedItemControls
               containerRef={selectedItemControlsRef}
               editorInteractionsEnabled={startup.editorInteractionsEnabled}
+              exclusionRects={overlayExclusions.rects}
               isCatalogDrawerOpen={dialogState.isCatalogDrawerOpen}
               onInvalidSelectedItemDetailValue={
                 handlers.handleInvalidSelectedItemDetailValue
@@ -621,7 +632,11 @@ function App() {
               onUpdateSelectedItemDetails={
                 handlers.handleUpdateSelectedItemDetails
               }
+              selectedDetailsRef={overlayExclusions.registerExclusionElement(
+                'selected-details',
+              )}
               selectedFurniture={overlayState.selectedFurniture}
+              selectedToolbarGeometry={selectedToolbarGeometry}
               startupOverlayActive={startup.startupOverlayActive}
             />
 
@@ -645,6 +660,21 @@ function App() {
               wallFinishId={activeWallFinishId}
               wallFinishes={environmentConfig?.wallFinishes ?? []}
               onWallFinishChange={setWallFinishId}
+              topHeaderElementRef={overlayExclusions.registerExclusionElement(
+                'top-header',
+              )}
+              outlinerElementRef={overlayExclusions.registerExclusionElement(
+                'outliner',
+              )}
+              cameraToolsElementRef={overlayExclusions.registerExclusionElement(
+                'camera-tools',
+              )}
+              desktopRoomSidebarElementRef={overlayExclusions.registerExclusionElement(
+                'desktop-room-sidebar',
+              )}
+              mobileRoomDrawerElementRef={overlayExclusions.registerExclusionElement(
+                'mobile-room-drawer',
+              )}
             />
           </>
         )}

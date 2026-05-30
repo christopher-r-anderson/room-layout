@@ -47,6 +47,7 @@ Replace the current centered selected-item actions card with a compact, icon-onl
    - The unavailable shape should include selected id when known and a reason such as `no-selection`, `object-not-ready`, `no-placement-points`, `non-finite-projection`, or `behind-camera`.
    - Keep geometry points unrounded for layout quality. Use a publisher deadband, approximately `0.5px`, to avoid React state churn. Any test/debug attributes may be rounded for readability.
    - Preferred source order: marked UI-bounds node, visual/render bounds excluding UI-bounds nodes, object world position if render bounds are empty, then unavailable geometry.
+   - Treat `object-origin` as a last-resort geometry success for observability/debuggability, not as a floating-quality placement source. App placement should dock for this source instead of attempting object-following placement from a single point.
    - Reject non-finite and behind-camera projections. Do not reject offscreen x/y points solely for being outside the viewport; app placement can still use them to choose a side or dock.
    - Publish geometry only for the selected object from the scene, not all furniture. Use an R3F frame hook throttled to roughly 20-30 fps and emit a final update when selection, object transform, camera transform, or canvas size changes.
    - Emit unavailable geometry on deselect or object unregister so the app can switch to no-toolbar/docked behavior deterministically.
@@ -60,6 +61,7 @@ Replace the current centered selected-item actions card with a compact, icon-onl
    - Add pure UI placement helpers under `src/lib/ui/` for convex hull, support-band anchoring, side candidate generation, rectangle intersection, viewport clamping, and deterministic docked fallback.
    - Preferred floating side order on desktop: `top`, then `bottom`, then `right`, then `left`.
    - Candidate floating placements must reject intersections with viewport padding and active exclusion rects. If every floating candidate conflicts, use the same single toolbar instance in docked mode.
+   - `object-origin` geometry must bypass floating candidate evaluation and use docked placement directly. This keeps degenerate/failed shape extraction consistent with the app's safe fallback surface.
    - On mobile layout from `useHeaderLayoutMode()`, use docked mode by default instead of object-following mode. This matches common touch-first consumer room-planner behavior where selected actions sit in a stable control area and the canvas remains easier to manipulate.
    - Docked placement should be deterministic and should not reuse the old hardcoded center. Prefer a location adjacent to the selected details area while avoiding the header and active mobile panels.
    - Keep the parent `SelectedItemControls` shell `pointer-events: none`; the toolbar and details surfaces explicitly restore `pointer-events: auto`.
@@ -77,6 +79,7 @@ Replace the current centered selected-item actions card with a compact, icon-onl
    - Add unit tests for the exclusion registry: rect registration/unregistration, ResizeObserver refresh, `visualViewport` refresh, and inactive room sidebar/drawer removal from the set.
    - Add unit tests for placement helpers: hull, support-band point, top placement, top-clips-to-bottom fallback, chrome-exclusion rejection, clamp fallback, mobile docked mode tied to the shared header layout breakpoint, empty geometry.
    - Add Three.js helper tests for UI-bounds marking/exclusion, render-bounds excluding UI nodes, pointer target unaffected by UI bounds, focus bounds unaffected by UI bounds, valid UI-bounds geometry source, object-origin fallback, and behind-camera/unavailable reasons.
+   - Add placement/component tests proving `object-origin` geometry docks instead of floating.
    - Update `interactive-furniture.test.tsx` to verify an optional UI-bounds node is marked before default `getMeshes()` shadow setup, hidden, non-shadowing, non-raycasting, and excluded from default mesh collection.
    - Update `catalog-manifest.test.ts` to preserve valid `uiBoundsNodeName`, reject malformed values, and document that missing GLB nodes are render-time asset validation failures rather than manifest shape failures.
    - Add scene validation tests for `validateCatalogAssetNodes`, including valid node, missing `nodeName`, missing provided `uiBoundsNodeName`, and `uiBoundsNodeName` outside the catalog node subtree.
@@ -112,7 +115,7 @@ Replace the current centered selected-item actions card with a compact, icon-onl
 4. Run targeted Playwright specs: `pnpm playwright test --project=chromium e2e/editor-accessibility-flows.spec.ts e2e/editor-a11y-audits.spec.ts` plus the new selected-toolbar placement/drag spec.
 5. Run `pnpm test:e2e` before merge because this changes browser-facing editor flow, focus order risk, and selection controls.
 6. Run `pnpm test:browser:perf` or at least the editor interaction perf scenario if the geometry publisher updates during camera movement.
-7. Manual verify: fallback-only item, UI-bounds item, camera orbit, object rotate, drag/move with toolbar visible, viewport resize, desktop chrome collision fallback, desktop Room sidebar exclusion, mobile Room drawer exclusion, mobile docked behavior, toolbar delete, toolbar rotate, catalog/startup suppression, and overlay-hidden test mode.
+7. Manual verify: fallback-only item with docked toolbar on `object-origin`, UI-bounds item, camera orbit, object rotate, drag/move with toolbar visible, viewport resize, desktop chrome collision fallback, desktop Room sidebar exclusion, mobile Room drawer exclusion, mobile docked behavior, toolbar delete, toolbar rotate, catalog/startup suppression, and overlay-hidden test mode.
 
 **Acceptance Criteria**
 
@@ -124,6 +127,7 @@ Replace the current centered selected-item actions card with a compact, icon-onl
 - Startup/catalog suppression still uses the existing `inert` plus `aria-hidden` root and removes controls from tab order.
 - Desktop placement follows the selected object when it can do so without colliding with viewport padding or active exclusion rects for header, outliner, details, camera controls, desktop Room sidebar, or mobile Room drawer.
 - Mobile placement docks by default according to the same breakpoint that controls the header layout and remains usable with details/outliner surfaces present.
+- `object-origin` fallback uses the docked toolbar path rather than attempting floating placement from a single projected point.
 - Asset-node validation failures for provided node names happen before assets-ready and are caught by the existing asset error flow.
 - Valid `uiBoundsNodeName` uses the marked UI-bounds geometry source; omitted field uses render-bounds fallback; malformed values or missing referenced GLB nodes fail as documented asset-contract errors.
 - UI-bounds nodes do not affect selection outlines, preview outlines, pointer targets, focus-selected camera framing, raycasting, spatial-navigation test hooks, read models, snapshots, or persistence.

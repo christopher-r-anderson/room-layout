@@ -1,5 +1,6 @@
 import { getClonedNode } from '@/lib/three/get-cloned-node'
 import { getMeshes } from '@/lib/three/get-meshes'
+import { markUiBoundsSubtree } from '@/lib/three/ui-bounds'
 import type { ThreeEvent } from '@react-three/fiber'
 import { useEffect, useRef, useState } from 'react'
 import type { Group, Object3D } from 'three'
@@ -48,17 +49,34 @@ export function InteractiveFurniture({
   onPreviewStart,
   onPreviewEnd,
   nodeName,
+  uiBoundsNodeName,
   enableShadows = true,
-}: InteractiveFurnitureProps & {
-  nodeName: string
-  enableShadows?: boolean
-}) {
+}: InteractiveFurnitureProps & { enableShadows?: boolean }) {
   const groupRef = useRef<Group>(null)
   const [model] = useState<Object3D>(() => {
     // Model/shadow flags are intentionally derived once at mount. The quality mode
     // is configured at app startup and not expected to toggle during a running session.
     const node = getClonedNode(sourceScene, nodeName)
     node.position.set(0, 0, 0)
+
+    if (uiBoundsNodeName) {
+      const uiBoundsNode = node.getObjectByName(uiBoundsNodeName)
+
+      if (!uiBoundsNode) {
+        throw new Error(
+          `${uiBoundsNodeName} ui bounds node not found under cloned ${nodeName}`,
+        )
+      }
+
+      if (uiBoundsNode === node) {
+        throw new Error(
+          `${uiBoundsNodeName} ui bounds node must be a descendant of cloned ${nodeName}`,
+        )
+      }
+
+      markUiBoundsSubtree(uiBoundsNode)
+    }
+
     for (const mesh of getMeshes(node)) {
       mesh.castShadow = enableShadows
       mesh.receiveShadow = enableShadows

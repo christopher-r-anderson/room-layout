@@ -151,6 +151,7 @@ To add or modify furniture/environment options:
    - Place environment preview images in `public/environment/previews/` when a room finish should render with a thumbnail
 3. **Validate**:
    - Node names in GLTF files must match the `nodeName` values in the catalog
+   - `uiBoundsNodeName` is optional; when present it must name a descendant mesh/group under the catalog entry's `nodeName` root and is used only for floating selected-item toolbar placement
    - All paths in the manifest must be relative (e.g., `"models/foo.glb"`)
    - Environment texture paths (`diffusePath`, `normalPath`) must also be relative and should point to `.ktx2` assets
    - Floor finish preview paths (`previewPath`) are optional, but when present they must also be relative
@@ -188,6 +189,8 @@ Basis decoder files (`public/basis/`) are automatically copied into the project 
 Exported environment textures and previews are intentionally committed instead of gitignored. Unlike the Basis decoder sync, producing them depends on external tools (`toktx`, ImageMagick) that are not part of the Node install/build pipeline, and the app/runtime manifest expects those assets to exist in `public/` without requiring every clone or deploy target to regenerate them first.
 
 For detailed manifest format and validation rules, see [public/catalog-manifest-schema.md](./public/catalog-manifest-schema.md).
+
+If a catalog entry omits `uiBoundsNodeName`, the selected-item toolbar falls back to visual render bounds. If `uiBoundsNodeName` is present in the manifest but the referenced node is missing from the GLB subtree, startup fails with an asset contract error so the mismatch is fixed at the source instead of silently drifting the UI anchor.
 
 ### Manifest Requirement
 
