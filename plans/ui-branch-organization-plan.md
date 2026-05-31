@@ -146,6 +146,17 @@ pnpm test:e2e -- selected-toolbar-placement
 
 ## Phase 3 — Single source of truth for keyboard shortcuts
 
+**Status:** completed locally on 2026-05-30.
+
+**Completion note**
+
+- Added `src/app/keyboard/keyboard-shortcuts.definitions.ts` as the shared shortcut definition source for dispatch and help metadata.
+- `src/app/keyboard/use-keyboard-shortcuts.ts` now maps executors from the shared ordered definitions instead of maintaining an inline dispatch table.
+- `src/app/keyboard/keyboard-shortcuts-help.tsx` now derives its sections and rows from the shared definitions instead of a separate static copy.
+- Validation passed with `pnpm typecheck && pnpm lint && pnpm test:run`.
+- Browser confidence checks passed with `pnpm test:e2e -- editor-hotkeys` and `pnpm test:e2e -- editor-accessibility-flows`.
+- Current Vitest count after the refactor: 68 files / 550 tests passed.
+
 **Goal:** eliminate the manual sync between use-keyboard-shortcuts.ts (47 dispatch entries) and keyboard-shortcuts-help.tsx (`SHORTCUT_SECTIONS` data).
 
 **Files affected**
