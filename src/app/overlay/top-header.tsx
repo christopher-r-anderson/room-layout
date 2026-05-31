@@ -6,7 +6,10 @@ import { useHeaderLayoutMode } from './use-header-layout-mode'
 import { TopHeaderDesktop } from './top-header-desktop'
 import { TopHeaderMobile } from './top-header-mobile'
 import type { TopHeaderProps } from './top-header.types'
-import type { DialogReturnFocusTarget } from './use-dialog-state'
+import type {
+  DialogOpenOptions,
+  DialogReturnFocusTarget,
+} from './use-dialog-state'
 
 const HEADER_CONTROL_SELECTOR =
   'button, input, select, textarea, [tabindex]:not([tabindex="-1"])'
@@ -135,11 +138,14 @@ export function TopHeader({
     }
   }
 
-  const openFromMobileMore = (action: () => void) => {
+  const openDialogFromMore = (
+    open: (options?: DialogOpenOptions) => unknown,
+    returnFocusTarget: DialogReturnFocusTarget,
+  ) => {
     dialogs.onMobileMoreOpenChange(false, { returnFocusTarget: 'mobile-more' })
 
     queueMicrotask(() => {
-      action()
+      open({ returnFocusTarget })
     })
   }
 
@@ -155,25 +161,17 @@ export function TopHeader({
           mobileMoreContentId={mobileMoreContentId}
           mobileMoreTriggerId={mobileMoreTriggerId}
           onOpenKeyboardShortcutsFromMobileMore={() => {
-            openFromMobileMore(() => {
-              dialogs.onKeyboardShortcutsDialogOpenChange(true, {
-                returnFocusTarget: 'mobile-more',
-              })
-            })
+            openDialogFromMore((options) => {
+              dialogs.onKeyboardShortcutsDialogOpenChange(true, options)
+            }, 'mobile-more')
           }}
           onOpenStartOverFromMobileMore={() => {
-            openFromMobileMore(() => {
-              dialogs.onOpenStartOverDialog({
-                returnFocusTarget: 'mobile-more',
-              })
-            })
+            openDialogFromMore(dialogs.onOpenStartOverDialog, 'mobile-more')
           }}
           onOpenProjectInfoFromMobileMore={() => {
-            openFromMobileMore(() => {
-              dialogs.onInfoDialogOpenChange(true, {
-                returnFocusTarget: 'mobile-more',
-              })
-            })
+            openDialogFromMore((options) => {
+              dialogs.onInfoDialogOpenChange(true, options)
+            }, 'mobile-more')
           }}
           focusControlById={focusControlById}
         />

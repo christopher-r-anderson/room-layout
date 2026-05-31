@@ -2,8 +2,12 @@ import { Button } from '@/components/ui/button'
 import { CatalogDrawer } from '@/app/catalog/catalog-drawer'
 import { CatalogAddButton } from '@/app/catalog/catalog-add-button'
 import { HistoryTools } from '@/app/history/history-tools'
-import { IconDotsVertical } from '@tabler/icons-react'
-import { RoomButton } from './room-button'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
+import { IconDotsVertical, IconHomeCog } from '@tabler/icons-react'
 import { RoomDrawer } from './room-drawer'
 import { HeaderMoreActionsDrawer } from './header-more-actions-drawer'
 import type { TopHeaderMobileProps } from './top-header.types'
@@ -58,19 +62,34 @@ export function TopHeaderMobile({
               onAddFurniture={catalog.onAddFurniture}
               onCatalogIdToAddChange={catalog.onCatalogIdToAddChange}
             />
-            <RoomButton
-              id={mobileRoomTriggerId}
-              size="toolbar"
-              aria-controls="room-drawer"
-              aria-expanded={isRoomOpen}
-              aria-haspopup="dialog"
-              onClick={() => {
-                dialogs.onRoomSurfaceOpenChange(!isRoomOpen, {
-                  layout: 'mobile',
-                  returnFocusTarget: 'room-inline',
-                })
-              }}
-            />
+            <div className="flex items-center">
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <Button
+                      id={mobileRoomTriggerId}
+                      type="button"
+                      variant="secondary"
+                      size="toolbar"
+                      className="pointer-events-auto"
+                      aria-controls="room-drawer"
+                      aria-expanded={isRoomOpen}
+                      aria-haspopup="dialog"
+                      onClick={() => {
+                        dialogs.onRoomSurfaceOpenChange(!isRoomOpen, {
+                          layout: 'mobile',
+                          returnFocusTarget: 'room-inline',
+                        })
+                      }}
+                    >
+                      <IconHomeCog size={16} aria-hidden="true" />
+                      Room
+                    </Button>
+                  }
+                />
+                <TooltipContent side="bottom">Room settings</TooltipContent>
+              </Tooltip>
+            </div>
           </div>
           <div
             className="flex items-center gap-2 justify-self-end"

@@ -10,88 +10,82 @@ import type {
   WallFinishOption,
 } from '@/lib/three/environment-materials'
 import type { Ref } from 'react'
-
-export interface TopHeaderCatalogProps {
-  catalog: FurnitureCatalogEntry[]
-  catalogIdToAdd: string
-  isCatalogDrawerOpen: boolean
-  onAddFurniture: () => boolean
-  onCatalogIdToAddChange: (catalogId: string) => void
-  onCatalogDrawerOpenChange: (open: boolean) => void
-}
-
-export interface TopHeaderHistoryProps {
-  canRedo: boolean
-  canUndo: boolean
-  onRedo: () => void
-  onUndo: () => void
-}
-
-export interface TopHeaderDialogsProps {
-  roomSurfaceLayout: RoomSurfaceLayout | null
-  isBlockingOverlayOpen: boolean
-  isRoomSurfaceOpen: boolean
-  isInfoDialogOpen: boolean
-  isKeyboardShortcutsDialogOpen: boolean
-  isMobileMoreOpen: boolean
-  isStartOverDialogOpen: boolean
-  onCloseStartOverDialog: () => void
-  onConfirmStartOver: () => void
-  onRoomSurfaceOpenChange: (
-    open: boolean,
-    options?: RoomSurfaceOpenOptions,
-  ) => boolean
-  onInfoDialogOpenChange: (
-    open: boolean,
-    options?: DialogOpenOptions,
-  ) => boolean
-  onKeyboardShortcutsDialogOpenChange: (
-    open: boolean,
-    options?: DialogOpenOptions,
-  ) => boolean
-  onMobileMoreOpenChange: (
-    open: boolean,
-    options?: DialogOpenOptions,
-  ) => boolean
-  onOpenStartOverDialog: (options?: DialogOpenOptions) => void
-  returnFocusTarget: DialogReturnFocusTarget
-}
-
-export interface TopHeaderRoomProps {
+export interface TopHeaderProps {
+  catalog: {
+    catalog: FurnitureCatalogEntry[]
+    catalogIdToAdd: string
+    isCatalogDrawerOpen: boolean
+    onAddFurniture: () => boolean
+    onCatalogIdToAddChange: (catalogId: string) => void
+    onCatalogDrawerOpenChange: (open: boolean) => void
+  }
+  dialogs: {
+    roomSurfaceLayout: RoomSurfaceLayout | null
+    isBlockingOverlayOpen: boolean
+    isRoomSurfaceOpen: boolean
+    isInfoDialogOpen: boolean
+    isKeyboardShortcutsDialogOpen: boolean
+    isMobileMoreOpen: boolean
+    isStartOverDialogOpen: boolean
+    onCloseStartOverDialog: () => void
+    onConfirmStartOver: () => void
+    onRoomSurfaceOpenChange: (
+      open: boolean,
+      options?: RoomSurfaceOpenOptions,
+    ) => boolean
+    onInfoDialogOpenChange: (
+      open: boolean,
+      options?: DialogOpenOptions,
+    ) => boolean
+    onKeyboardShortcutsDialogOpenChange: (
+      open: boolean,
+      options?: DialogOpenOptions,
+    ) => boolean
+    onMobileMoreOpenChange: (
+      open: boolean,
+      options?: DialogOpenOptions,
+    ) => boolean
+    onOpenStartOverDialog: (options?: DialogOpenOptions) => void
+    returnFocusTarget: DialogReturnFocusTarget
+  }
+  editorInteractionsEnabled: boolean
+  history: {
+    canRedo: boolean
+    canUndo: boolean
+    onRedo: () => void
+    onUndo: () => void
+  }
   floorFinishId: string
   floorFinishLoading: boolean
   floorFinishes: FloorFinishOption[]
   onFloorFinishChange: (finishId: string) => void
-  wallFinishId: string
-  wallFinishes: WallFinishOption[]
-  onWallFinishChange: (finishId: string) => void
-}
-
-export interface TopHeaderProps extends TopHeaderRoomProps {
-  catalog: TopHeaderCatalogProps
-  dialogs: TopHeaderDialogsProps
-  editorInteractionsEnabled: boolean
-  history: TopHeaderHistoryProps
   startOverDisabled: boolean
   onLayoutModeChange?: (layout: 'mobile' | 'desktop') => void
   onShareSceneUrl: () => Promise<'shared' | 'copied' | null>
   topHeaderRef?: Ref<HTMLDivElement>
   desktopRoomSidebarRef?: Ref<HTMLElement>
   mobileRoomDrawerRef?: Ref<HTMLDivElement>
+  wallFinishId: string
+  wallFinishes: WallFinishOption[]
+  onWallFinishChange: (finishId: string) => void
 }
 
-export interface TopHeaderMobileProps
-  extends
-    Pick<
-      TopHeaderProps,
-      | 'catalog'
-      | 'dialogs'
-      | 'editorInteractionsEnabled'
-      | 'history'
-      | 'startOverDisabled'
-      | 'onShareSceneUrl'
-    >,
-    TopHeaderRoomProps {
+export interface TopHeaderMobileProps extends Pick<
+  TopHeaderProps,
+  | 'catalog'
+  | 'dialogs'
+  | 'editorInteractionsEnabled'
+  | 'floorFinishId'
+  | 'floorFinishLoading'
+  | 'floorFinishes'
+  | 'history'
+  | 'onFloorFinishChange'
+  | 'startOverDisabled'
+  | 'onShareSceneUrl'
+  | 'onWallFinishChange'
+  | 'wallFinishId'
+  | 'wallFinishes'
+> {
   topHeaderRef?: Ref<HTMLDivElement>
   mobileRoomDrawerRef?: Ref<HTMLDivElement>
   mobileRoomTriggerId: string
@@ -103,18 +97,22 @@ export interface TopHeaderMobileProps
   focusControlById: (id: string) => void
 }
 
-export interface TopHeaderDesktopProps
-  extends
-    Pick<
-      TopHeaderProps,
-      | 'catalog'
-      | 'dialogs'
-      | 'editorInteractionsEnabled'
-      | 'history'
-      | 'startOverDisabled'
-      | 'onShareSceneUrl'
-    >,
-    TopHeaderRoomProps {
+export interface TopHeaderDesktopProps extends Pick<
+  TopHeaderProps,
+  | 'catalog'
+  | 'dialogs'
+  | 'editorInteractionsEnabled'
+  | 'floorFinishId'
+  | 'floorFinishLoading'
+  | 'floorFinishes'
+  | 'history'
+  | 'onFloorFinishChange'
+  | 'startOverDisabled'
+  | 'onShareSceneUrl'
+  | 'onWallFinishChange'
+  | 'wallFinishId'
+  | 'wallFinishes'
+> {
   topHeaderRef?: Ref<HTMLDivElement>
   desktopRoomSidebarRef?: Ref<HTMLElement>
   desktopRoomTriggerId: string

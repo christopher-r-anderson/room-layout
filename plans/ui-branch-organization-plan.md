@@ -286,6 +286,18 @@ pnpm test:e2e -- editor-accessibility
 
 ## Phase 5 — Small overlay cleanups (bundle of low-risk edits)
 
+**Status:** completed locally on 2026-05-30.
+
+**Completion note**
+
+- Inlined `RoomButton` into the desktop and mobile top-header variants and removed the extra wrapper component.
+- Added `src/app/overlay/room-surface-content.tsx` so the room drawer and room sidebar share the room-surface description/control content while keeping their distinct outer chrome.
+- Deduplicated the mobile-more dialog handoff in `src/app/overlay/top-header.tsx` with a shared microtask-preserving helper.
+- Flattened the top-header prop sub-interfaces into the consumer interfaces in `src/app/overlay/top-header.types.ts`.
+- Validation passed with `pnpm typecheck && pnpm lint && pnpm test:run && pnpm test:e2e`.
+- Current Vitest count after the cleanup: 68 files / 550 tests passed.
+- Current Playwright count after the cleanup: 74 tests passed.
+
 These can be one commit each or a single batched commit.
 
 ### 5a. Remove `RoomButton` indirection

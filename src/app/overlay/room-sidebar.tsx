@@ -9,8 +9,8 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { IconX } from '@tabler/icons-react'
 import type { Ref } from 'react'
-import { RoomControls, type RoomControlsProps } from './room-controls'
-import { ROOM_SURFACE_DESCRIPTION } from './room-copy'
+import type { RoomControlsProps } from './room-controls'
+import { RoomSurfaceContent } from './room-surface-content'
 
 export function RoomSidebar({
   containerRef,
@@ -43,26 +43,32 @@ export function RoomSidebar({
       }}
     >
       <Card className="flex h-full flex-col border-border/70 bg-background/90 shadow-lg backdrop-blur-sm">
-        <CardHeader className="flex flex-row items-start justify-between gap-3 space-y-0">
-          <div className="space-y-1">
-            <CardTitle id="room-surface-title">Room</CardTitle>
-            <CardDescription>{ROOM_SURFACE_DESCRIPTION}</CardDescription>
-          </div>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-sm"
-            aria-label="Close room panel"
-            onClick={onClose}
-          >
-            <IconX aria-hidden="true" />
-          </Button>
-        </CardHeader>
-        <CardContent className="flex min-h-0 flex-1 flex-col pt-0">
-          <ScrollArea className="min-h-0 flex-1 pr-3">
-            <RoomControls {...controls} />
-          </ScrollArea>
-        </CardContent>
+        <RoomSurfaceContent {...controls}>
+          {({ controls: roomControls, description }) => (
+            <>
+              <CardHeader className="flex flex-row items-start justify-between gap-3 space-y-0">
+                <div className="space-y-1">
+                  <CardTitle id="room-surface-title">Room</CardTitle>
+                  <CardDescription>{description}</CardDescription>
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label="Close room panel"
+                  onClick={onClose}
+                >
+                  <IconX aria-hidden="true" />
+                </Button>
+              </CardHeader>
+              <CardContent className="flex min-h-0 flex-1 flex-col pt-0">
+                <ScrollArea className="min-h-0 flex-1 pr-3">
+                  {roomControls}
+                </ScrollArea>
+              </CardContent>
+            </>
+          )}
+        </RoomSurfaceContent>
       </Card>
     </aside>
   )
