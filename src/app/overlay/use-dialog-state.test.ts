@@ -379,17 +379,17 @@ describe('useDialogState', () => {
     })
 
     act(() => {
-      expect(result.current.openMobileMore()).toBe(true)
+      expect(result.current.openHeaderMoreActions()).toBe(true)
     })
 
-    expect(result.current.isMobileMoreOpen).toBe(true)
-    expect(result.current.returnFocusTarget).toBe('mobile-more')
+    expect(result.current.isHeaderMoreActionsOpen).toBe(true)
+    expect(result.current.returnFocusTarget).toBe('header-more-actions')
 
     act(() => {
       result.current.syncLayoutMode('desktop')
     })
 
-    expect(result.current.isMobileMoreOpen).toBe(false)
+    expect(result.current.isHeaderMoreActionsOpen).toBe(false)
     expect(result.current.activeDialog).toBeNull()
     expect(result.current.returnFocusTarget).toBeNull()
   })
@@ -405,27 +405,27 @@ describe('useDialogState', () => {
     )
 
     act(() => {
-      expect(result.current.openMobileMore()).toBe(true)
+      expect(result.current.openHeaderMoreActions()).toBe(true)
     })
 
-    expect(result.current.isMobileMoreOpen).toBe(true)
+    expect(result.current.isHeaderMoreActionsOpen).toBe(true)
 
     act(() => {
       expect(
-        result.current.setMobileMoreOpen(false, {
-          returnFocusTarget: 'mobile-more',
+        result.current.setHeaderMoreActionsOpen(false, {
+          returnFocusTarget: 'header-more-actions',
         }),
       ).toBe(true)
       expect(
         result.current.setKeyboardShortcutsOpen(true, {
-          returnFocusTarget: 'mobile-more',
+          returnFocusTarget: 'header-more-actions',
         }),
       ).toBe(true)
     })
 
     expect(result.current.isKeyboardShortcutsDialogOpen).toBe(true)
-    expect(result.current.isMobileMoreOpen).toBe(false)
-    expect(result.current.returnFocusTarget).toBe('mobile-more')
+    expect(result.current.isHeaderMoreActionsOpen).toBe(false)
+    expect(result.current.returnFocusTarget).toBe('header-more-actions')
   })
 
   it('remaps return focus targets for header dialogs across layout changes', () => {
@@ -441,7 +441,7 @@ describe('useDialogState', () => {
     act(() => {
       expect(
         result.current.openKeyboardShortcuts({
-          returnFocusTarget: 'mobile-more',
+          returnFocusTarget: 'header-more-actions',
         }),
       ).toBe(true)
     })
@@ -456,7 +456,7 @@ describe('useDialogState', () => {
 
     act(() => {
       expect(
-        result.current.openInfo({ returnFocusTarget: 'mobile-more' }),
+        result.current.openInfo({ returnFocusTarget: 'header-more-actions' }),
       ).toBe(true)
     })
     act(() => {
@@ -470,7 +470,9 @@ describe('useDialogState', () => {
 
     act(() => {
       expect(
-        result.current.openStartOver({ returnFocusTarget: 'mobile-more' }),
+        result.current.openStartOver({
+          returnFocusTarget: 'header-more-actions',
+        }),
       ).toBe(true)
     })
     act(() => {
@@ -489,7 +491,7 @@ describe('useDialogState', () => {
       result.current.syncLayoutMode('mobile')
     })
     expect(result.current.isKeyboardShortcutsDialogOpen).toBe(true)
-    expect(result.current.returnFocusTarget).toBe('mobile-more')
+    expect(result.current.returnFocusTarget).toBe('header-more-actions')
     act(() => {
       result.current.closeDialog()
     })
@@ -501,7 +503,7 @@ describe('useDialogState', () => {
       result.current.syncLayoutMode('mobile')
     })
     expect(result.current.isInfoDialogOpen).toBe(true)
-    expect(result.current.returnFocusTarget).toBe('mobile-more')
+    expect(result.current.returnFocusTarget).toBe('header-more-actions')
     act(() => {
       result.current.closeDialog()
     })
@@ -513,7 +515,7 @@ describe('useDialogState', () => {
       result.current.syncLayoutMode('mobile')
     })
     expect(result.current.isStartOverDialogOpen).toBe(true)
-    expect(result.current.returnFocusTarget).toBe('mobile-more')
+    expect(result.current.returnFocusTarget).toBe('header-more-actions')
   })
 
   it('defaults shortcut-opened start over to the mobile more trigger on narrow layouts', () => {
@@ -535,6 +537,6 @@ describe('useDialogState', () => {
     })
 
     expect(result.current.isStartOverDialogOpen).toBe(true)
-    expect(result.current.returnFocusTarget).toBe('mobile-more')
+    expect(result.current.returnFocusTarget).toBe('header-more-actions')
   })
 })

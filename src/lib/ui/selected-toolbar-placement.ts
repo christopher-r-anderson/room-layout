@@ -61,6 +61,9 @@ interface FloatingCandidate {
   attachmentDistance: number
   score: number
 }
+
+// Geometry confidence thresholds decide when projected bounds are too noisy to
+// trust for floating placement.
 const OBJECT_CLEARANCE_GAP = 8 // Soft spacing penalty around the selected footprint.
 const MIN_PROJECTED_POINT_COUNT = 3 // Fewer projected points reads as unreliable geometry.
 const MIN_PROJECTED_BOUNDS_SIZE = 24 // Tiny projected bounds are treated as noise.
@@ -68,14 +71,22 @@ const MIN_RENDER_PROJECTED_RATIO = 0.5 // Render bounds need at least half their
 const MIN_UI_BOUNDS_PROJECTED_RATIO = 0.15 // Authored UI bounds can survive with less visible coverage.
 const MIN_VISIBLE_BOUNDS_RATIO = 0.2 // Dock if too little of the projected bounds is on screen.
 const MAX_BOUNDS_CONTAINER_SCALE = 1.5 // Reject implausibly oversized projected bounds.
+
+// Hard candidate gates keep the toolbar visually attached before we fall back
+// to the docked layout.
 const MAX_CROSS_AXIS_CLAMP_SHIFT = 72 // Reject candidates that need too much sideways nudging.
 const MAX_ATTACHMENT_DISTANCE = 120 // Reject candidates that feel too detached from the object.
+
+// Scoring weights trade off continuity, readable spacing, and side preference
+// once a candidate has cleared the hard rejection gates.
 const HYSTERESIS_SCORE_DELTA = 24 // Keep the previous floating side unless another is clearly better.
 const MAX_FLOATING_SCORE = 140 // Dock when every floating option is a poor fit.
 const DIAGONAL_SIDE_BIAS_START = 0.7 // Only strongly diagonal, elongated shapes get side bias.
 const DIAGONAL_SIDE_BIAS_TOP_PENALTY = 28 // Raise to make diagonal shapes leave top sooner.
 const DIAGONAL_SIDE_BIAS_BOTTOM_PENALTY = 18 // Bottom stays slightly less preferred than top.
 const DIAGONAL_SIDE_BIAS_SIDE_REWARD = 48 // Raise to make strong diagonals favor sides more often.
+const EXCLUSION_CLEARANCE_SUPPORT_BAND = 48 // Exclusion proximity only matters within the first 48px.
+const OBJECT_CLEARANCE_SUPPORT_BAND = 24 // Object clearance penalty saturates after a small visual gap.
 
 function getDiagonalSidePreference(points: ScreenPoint[]) {
   if (points.length < 2) {
@@ -251,17 +262,17 @@ function scoreCandidate(
       : Math.abs(rectCenterY - bounds.centerY)
   const exclusionClearancePenalty = Math.max(
     0,
-    48 -
+    EXCLUSION_CLEARANCE_SUPPORT_BAND -
       Math.min(
-        48,
+        EXCLUSION_CLEARANCE_SUPPORT_BAND,
         getMinimumExclusionDistance(candidate.adjustedRect, exclusionRects),
       ),
   )
   const objectClearancePenalty = Math.max(
     0,
-    24 -
+    OBJECT_CLEARANCE_SUPPORT_BAND -
       Math.min(
-        24,
+        OBJECT_CLEARANCE_SUPPORT_BAND,
         getRectDistance(candidate.adjustedRect, objectAvoidanceRect),
       ),
   )

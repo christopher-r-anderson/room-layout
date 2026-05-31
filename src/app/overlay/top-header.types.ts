@@ -25,7 +25,7 @@ export interface TopHeaderProps {
     isRoomSurfaceOpen: boolean
     isInfoDialogOpen: boolean
     isKeyboardShortcutsDialogOpen: boolean
-    isMobileMoreOpen: boolean
+    isHeaderMoreActionsOpen: boolean
     isStartOverDialogOpen: boolean
     onCloseStartOverDialog: () => void
     onConfirmStartOver: () => void
@@ -41,7 +41,7 @@ export interface TopHeaderProps {
       open: boolean,
       options?: DialogOpenOptions,
     ) => boolean
-    onMobileMoreOpenChange: (
+    onHeaderMoreActionsOpenChange: (
       open: boolean,
       options?: DialogOpenOptions,
     ) => boolean
@@ -89,11 +89,11 @@ export interface TopHeaderMobileProps extends Pick<
   topHeaderRef?: Ref<HTMLDivElement>
   mobileRoomDrawerRef?: Ref<HTMLDivElement>
   mobileRoomTriggerId: string
-  mobileMoreContentId: string
-  mobileMoreTriggerId: string
-  onOpenKeyboardShortcutsFromMobileMore: () => void
-  onOpenStartOverFromMobileMore: () => void
-  onOpenProjectInfoFromMobileMore: () => void
+  headerMoreActionsContentId: string
+  headerMoreActionsTriggerId: string
+  onOpenKeyboardShortcutsFromHeaderMoreActions: () => void
+  onOpenStartOverFromHeaderMoreActions: () => void
+  onOpenProjectInfoFromHeaderMoreActions: () => void
   focusControlById: (id: string) => void
 }
 

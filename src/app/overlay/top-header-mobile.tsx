@@ -22,13 +22,13 @@ export function TopHeaderMobile({
   history,
   mobileRoomDrawerRef,
   mobileRoomTriggerId,
-  mobileMoreContentId,
-  mobileMoreTriggerId,
+  headerMoreActionsContentId,
+  headerMoreActionsTriggerId,
   startOverDisabled,
   onFloorFinishChange,
-  onOpenKeyboardShortcutsFromMobileMore,
-  onOpenStartOverFromMobileMore,
-  onOpenProjectInfoFromMobileMore,
+  onOpenKeyboardShortcutsFromHeaderMoreActions,
+  onOpenStartOverFromHeaderMoreActions,
+  onOpenProjectInfoFromHeaderMoreActions,
   onShareSceneUrl,
   topHeaderRef,
   onWallFinishChange,
@@ -106,17 +106,17 @@ export function TopHeaderMobile({
               onUndo={history.onUndo}
             />
             <Button
-              id={mobileMoreTriggerId}
+              id={headerMoreActionsTriggerId}
               type="button"
               variant="secondary"
               size="toolbar-icon"
               aria-label="More actions"
-              aria-controls={mobileMoreContentId}
-              aria-expanded={dialogs.isMobileMoreOpen}
+              aria-controls={headerMoreActionsContentId}
+              aria-expanded={dialogs.isHeaderMoreActionsOpen}
               aria-haspopup="dialog"
               onClick={() => {
-                dialogs.onMobileMoreOpenChange(true, {
-                  returnFocusTarget: 'mobile-more',
+                dialogs.onHeaderMoreActionsOpenChange(true, {
+                  returnFocusTarget: 'header-more-actions',
                 })
               }}
             >
@@ -151,22 +151,22 @@ export function TopHeaderMobile({
       />
 
       <HeaderMoreActionsDrawer
-        contentId={mobileMoreContentId}
+        contentId={headerMoreActionsContentId}
         shareDisabled={!editorInteractionsEnabled}
         startOverDisabled={!editorInteractionsEnabled || startOverDisabled}
-        open={dialogs.isMobileMoreOpen}
+        open={dialogs.isHeaderMoreActionsOpen}
         onOpenChange={(open) => {
-          dialogs.onMobileMoreOpenChange(open, {
-            returnFocusTarget: 'mobile-more',
+          dialogs.onHeaderMoreActionsOpenChange(open, {
+            returnFocusTarget: 'header-more-actions',
           })
         }}
         onCloseAutoFocus={() => {
-          focusControlById(mobileMoreTriggerId)
+          focusControlById(headerMoreActionsTriggerId)
         }}
         onShareSceneUrl={onShareSceneUrl}
-        onOpenKeyboardShortcuts={onOpenKeyboardShortcutsFromMobileMore}
-        onOpenStartOver={onOpenStartOverFromMobileMore}
-        onOpenProjectInfo={onOpenProjectInfoFromMobileMore}
+        onOpenKeyboardShortcuts={onOpenKeyboardShortcutsFromHeaderMoreActions}
+        onOpenStartOver={onOpenStartOverFromHeaderMoreActions}
+        onOpenProjectInfo={onOpenProjectInfoFromHeaderMoreActions}
       />
     </div>
   )

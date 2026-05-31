@@ -242,7 +242,7 @@ describe('EditorOverlay integration', () => {
         | 'room-inline'
         | 'info-inline'
         | 'keyboard-inline'
-        | 'mobile-more'
+        | 'header-more-actions'
         | 'start-over-inline'
         | null
       >(null)
@@ -257,7 +257,7 @@ describe('EditorOverlay integration', () => {
               | 'room-inline'
               | 'info-inline'
               | 'keyboard-inline'
-              | 'mobile-more'
+              | 'header-more-actions'
               | 'start-over-inline'
               | null
           },
@@ -278,7 +278,7 @@ describe('EditorOverlay integration', () => {
               | 'room-inline'
               | 'info-inline'
               | 'keyboard-inline'
-              | 'mobile-more'
+              | 'header-more-actions'
               | 'start-over-inline'
               | null
           },
@@ -370,7 +370,7 @@ describe('EditorOverlay integration', () => {
                 onCloseDeleteDialog: vi.fn(),
                 onConfirmDeleteSelection: vi.fn(),
                 isRoomSurfaceOpen,
-                isMobileMoreOpen: false,
+                isHeaderMoreActionsOpen: false,
                 onRoomSurfaceOpenChange: handleRoomSurfaceOpenChange,
                 isKeyboardShortcutsDialogOpen,
                 onKeyboardShortcutsDialogOpenChange:
@@ -381,7 +381,7 @@ describe('EditorOverlay integration', () => {
                 onConfirmStartOver: vi.fn(),
                 isInfoDialogOpen: false,
                 onInfoDialogOpenChange: vi.fn(() => true),
-                onMobileMoreOpenChange: vi.fn(() => true),
+                onHeaderMoreActionsOpenChange: vi.fn(() => true),
                 returnFocusTarget,
               }}
               preview={{

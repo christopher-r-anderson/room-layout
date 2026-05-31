@@ -453,6 +453,16 @@ No E2E impact expected. Skip E2E unless tests fail.
 
 ## Phase 8 — Polish (optional, time-permitting)
 
+**Status:** completed locally on 2026-05-31.
+
+**Completion note**
+
+- Added intent comments for the selected-toolbar placement tuning constants and replaced the anonymous exclusion/object clearance score bands with named constants.
+- Aligned the mobile More dialog naming around `headerMoreActions` / `'header-more-actions'` across overlay state, top-header props, and focused overlay tests.
+- Added a header comment to `src/app/overlay/use-overlay-props.ts` documenting it as the pure memoized prop-grouping layer for `EditorOverlay`.
+- Updated `docs/keyboard-shortcuts.md` to note that shortcut metadata now comes from `src/app/keyboard/keyboard-shortcuts.definitions.ts`, keeping dispatch and help content in sync.
+- Validation passed with `pnpm fix && pnpm typecheck && pnpm lint && pnpm test:run`.
+
 Discrete, independent, each its own small commit.
 
 ### 8a. Magic-constant comments

@@ -64,7 +64,7 @@ interface OverlayOptions {
   onConfirmDeleteSelection: () => void
   roomSurfaceLayout: 'desktop' | 'mobile' | null
   isRoomSurfaceOpen: boolean
-  isMobileMoreOpen: boolean
+  isHeaderMoreActionsOpen: boolean
   onRoomSurfaceOpenChange: (open: boolean) => boolean
   isStartOverDialogOpen: boolean
   onCloseStartOverDialog: () => void
@@ -74,12 +74,12 @@ interface OverlayOptions {
   onInfoDialogOpenChange: (open: boolean) => boolean
   isKeyboardShortcutsDialogOpen: boolean
   onKeyboardShortcutsDialogOpenChange: (open: boolean) => boolean
-  onMobileMoreOpenChange: (open: boolean) => boolean
+  onHeaderMoreActionsOpenChange: (open: boolean) => boolean
   returnFocusTarget:
     | 'room-inline'
     | 'info-inline'
     | 'keyboard-inline'
-    | 'mobile-more'
+    | 'header-more-actions'
     | 'start-over-inline'
     | null
   onPreviewChange: (
@@ -133,7 +133,7 @@ function createOptions(overrides?: Partial<OverlayOptions>): OverlayOptions {
     onConfirmDeleteSelection: vi.fn(),
     roomSurfaceLayout: null,
     isRoomSurfaceOpen: false,
-    isMobileMoreOpen: false,
+    isHeaderMoreActionsOpen: false,
     onRoomSurfaceOpenChange: vi.fn(() => true),
     isStartOverDialogOpen: false,
     onCloseStartOverDialog: vi.fn(),
@@ -143,7 +143,7 @@ function createOptions(overrides?: Partial<OverlayOptions>): OverlayOptions {
     onInfoDialogOpenChange: vi.fn(() => true),
     isKeyboardShortcutsDialogOpen: false,
     onKeyboardShortcutsDialogOpenChange: vi.fn(() => true),
-    onMobileMoreOpenChange: vi.fn(() => true),
+    onHeaderMoreActionsOpenChange: vi.fn(() => true),
     returnFocusTarget: null,
     onPreviewChange: vi.fn(),
     previewedId: null,
@@ -165,11 +165,11 @@ describe('useOverlayProps', () => {
       isDeleteDialogOpen: true,
       roomSurfaceLayout: 'desktop',
       isRoomSurfaceOpen: true,
-      isMobileMoreOpen: true,
+      isHeaderMoreActionsOpen: true,
       isStartOverDialogOpen: true,
       isInfoDialogOpen: true,
       isKeyboardShortcutsDialogOpen: true,
-      returnFocusTarget: 'mobile-more',
+      returnFocusTarget: 'header-more-actions',
       sceneInteractionsDisabled: true,
     })
 
@@ -213,7 +213,7 @@ describe('useOverlayProps', () => {
       onConfirmDeleteSelection: options.onConfirmDeleteSelection,
       roomSurfaceLayout: 'desktop',
       isRoomSurfaceOpen: true,
-      isMobileMoreOpen: true,
+      isHeaderMoreActionsOpen: true,
       onRoomSurfaceOpenChange: options.onRoomSurfaceOpenChange,
       isStartOverDialogOpen: true,
       onCloseStartOverDialog: options.onCloseStartOverDialog,
@@ -224,8 +224,8 @@ describe('useOverlayProps', () => {
       isKeyboardShortcutsDialogOpen: true,
       onKeyboardShortcutsDialogOpenChange:
         options.onKeyboardShortcutsDialogOpenChange,
-      onMobileMoreOpenChange: options.onMobileMoreOpenChange,
-      returnFocusTarget: 'mobile-more',
+      onHeaderMoreActionsOpenChange: options.onHeaderMoreActionsOpenChange,
+      returnFocusTarget: 'header-more-actions',
     })
   })
 
