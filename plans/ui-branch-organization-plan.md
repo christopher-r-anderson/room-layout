@@ -227,6 +227,16 @@ pnpm test:e2e -- editor-accessibility-flows
 
 ## Phase 4 — Trim use-dialog-state.ts (420 → ~250 lines)
 
+**Status:** completed locally on 2026-05-30.
+
+**Completion note**
+
+- `src/app/overlay/use-dialog-state.ts` now uses small local helpers for repeated simple-dialog opening and boolean open-change handling.
+- `syncLayoutMode` and room-surface-specific behavior were left intact; the refactor stayed limited to the repetitive dialog open/close paths.
+- Validation passed with `pnpm typecheck && pnpm lint && pnpm test:run`.
+- Browser confidence checks passed with `pnpm test:e2e -- editor-dialogs` and `pnpm test:e2e -- editor-accessibility`.
+- Current Vitest count after the refactor: 68 files / 550 tests passed.
+
 **Strategy choice:** Use **Strategy A (helper extraction, behavior preserved)**, NOT a hook split. The 9 dialog kinds and `syncLayoutMode` are tightly coupled (mutual exclusion + return-focus remap). Splitting risks behavior drift; helper extraction is mechanical.
 
 **Files affected**
