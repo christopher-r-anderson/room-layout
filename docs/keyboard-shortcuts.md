@@ -11,6 +11,8 @@ The app uses two keyboard systems:
 - **Discrete shortcuts (press-triggered):** Defined in `src/app/keyboard/use-keyboard-shortcuts.ts`.
 - **Held camera motion (state-driven):** Captured in `src/app/keyboard/use-camera-key-state.ts`, consumed per frame in `src/scene/internal/use-scene-imperative-api.ts`.
 
+Shortcut metadata now lives in `src/app/keyboard/keyboard-shortcuts.definitions.ts`, and both the dispatcher and help dialog derive from that shared source so labels and execution rules stay in sync.
+
 The split exists because press actions and continuous camera motion have different timing and suppression needs.
 
 ## Discrete Shortcut Model

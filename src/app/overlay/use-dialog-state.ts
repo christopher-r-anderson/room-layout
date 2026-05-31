@@ -6,7 +6,7 @@ export type ActiveDialog =
   | 'delete'
   | 'keyboard-shortcuts'
   | 'info'
-  | 'more-mobile'
+  | 'header-more-actions'
   | 'start-over'
   | null
 
@@ -16,7 +16,7 @@ export type DialogReturnFocusTarget =
   | 'room-inline'
   | 'info-inline'
   | 'keyboard-inline'
-  | 'mobile-more'
+  | 'header-more-actions'
   | 'start-over-inline'
   | null
 
@@ -35,6 +35,11 @@ interface UseDialogStateOptions {
   canStartOver: boolean
 }
 
+interface SimpleDialogOpenConfig {
+  block: boolean
+  returnFocusTarget?: DialogReturnFocusTarget
+}
+
 interface DialogState {
   activeDialog: ActiveDialog
   roomSurfaceLayout: RoomSurfaceLayout | null
@@ -45,7 +50,7 @@ interface DialogState {
   isMobileRoomSurfaceOpen: boolean
   isInfoDialogOpen: boolean
   isKeyboardShortcutsDialogOpen: boolean
-  isMobileMoreOpen: boolean
+  isHeaderMoreActionsOpen: boolean
   isStartOverDialogOpen: boolean
   isBlockingOverlayOpen: boolean
   pendingDeleteFurniture: FurnitureItem | null
@@ -55,7 +60,7 @@ interface DialogState {
   openRoomSurface: (options?: RoomSurfaceOpenOptions) => boolean
   openInfo: (options?: DialogOpenOptions) => boolean
   openKeyboardShortcuts: (options?: DialogOpenOptions) => boolean
-  openMobileMore: (options?: DialogOpenOptions) => boolean
+  openHeaderMoreActions: (options?: DialogOpenOptions) => boolean
   openStartOver: (options?: DialogOpenOptions) => boolean
   closeDialog: () => void
   closeAllDialogs: () => void
@@ -69,7 +74,10 @@ interface DialogState {
     open: boolean,
     options?: DialogOpenOptions,
   ) => boolean
-  setMobileMoreOpen: (open: boolean, options?: DialogOpenOptions) => boolean
+  setHeaderMoreActionsOpen: (
+    open: boolean,
+    options?: DialogOpenOptions,
+  ) => boolean
   syncLayoutMode: (layout: 'mobile' | 'desktop') => void
 }
 
@@ -113,7 +121,7 @@ export function useDialogState({
   const isRoomSurfaceOpen = roomSurfaceLayout !== null
   const isInfoDialogOpen = activeDialog === 'info'
   const isKeyboardShortcutsDialogOpen = activeDialog === 'keyboard-shortcuts'
-  const isMobileMoreOpen = activeDialog === 'more-mobile'
+  const isHeaderMoreActionsOpen = activeDialog === 'header-more-actions'
   const isStartOverDialogOpen = activeDialog === 'start-over'
   const isBlockingOverlayOpen = activeDialog !== null
 
@@ -172,50 +180,64 @@ export function useDialogState({
     closeDialog()
   }, [closeDialog])
 
-  const openCatalog = useCallback(() => {
-    if (
-      !editorInteractionsEnabled ||
-      dialogStateRef.current.activeDialog !== null
-    ) {
-      return false
-    }
-
-    openDialog('catalog')
-    return true
-  }, [editorInteractionsEnabled, openDialog])
-
-  const openInfo = useCallback(
-    (options?: DialogOpenOptions) => {
-      if (
-        startupOverlayActive ||
-        dialogStateRef.current.activeDialog !== null
-      ) {
+  const tryOpenSimpleDialog = useCallback(
+    (
+      nextActiveDialog: Exclude<ActiveDialog, null>,
+      config: SimpleDialogOpenConfig,
+    ) => {
+      if (config.block || dialogStateRef.current.activeDialog !== null) {
         return false
       }
 
-      openDialog('info', {
-        returnFocusTarget: options?.returnFocusTarget ?? 'info-inline',
+      openDialog(nextActiveDialog, {
+        returnFocusTarget: config.returnFocusTarget,
       })
       return true
     },
-    [openDialog, startupOverlayActive],
+    [openDialog],
+  )
+
+  const setDialogOpenState = useCallback(
+    <TOptions>(
+      open: boolean,
+      onOpen: (options?: TOptions) => boolean,
+      onClose: () => void,
+      options?: TOptions,
+    ) => {
+      if (!open) {
+        onClose()
+        return true
+      }
+
+      return onOpen(options)
+    },
+    [],
+  )
+
+  const openCatalog = useCallback(() => {
+    return tryOpenSimpleDialog('catalog', {
+      block: !editorInteractionsEnabled,
+    })
+  }, [editorInteractionsEnabled, tryOpenSimpleDialog])
+
+  const openInfo = useCallback(
+    (options?: DialogOpenOptions) => {
+      return tryOpenSimpleDialog('info', {
+        block: startupOverlayActive,
+        returnFocusTarget: options?.returnFocusTarget ?? 'info-inline',
+      })
+    },
+    [startupOverlayActive, tryOpenSimpleDialog],
   )
 
   const openKeyboardShortcuts = useCallback(
     (options?: DialogOpenOptions) => {
-      if (
-        startupOverlayActive ||
-        dialogStateRef.current.activeDialog !== null
-      ) {
-        return false
-      }
-
-      openDialog('keyboard-shortcuts', {
+      return tryOpenSimpleDialog('keyboard-shortcuts', {
+        block: startupOverlayActive,
         returnFocusTarget: options?.returnFocusTarget ?? 'keyboard-inline',
       })
-      return true
     },
-    [openDialog, startupOverlayActive],
+    [startupOverlayActive, tryOpenSimpleDialog],
   )
 
   const openRoomSurface = useCallback(
@@ -248,67 +270,42 @@ export function useDialogState({
     return true
   }, [editorInteractionsEnabled, openDialog, selectedFurniture])
 
-  const openMobileMore = useCallback(
+  const openHeaderMoreActions = useCallback(
     (options?: DialogOpenOptions) => {
-      if (
-        startupOverlayActive ||
-        dialogStateRef.current.activeDialog !== null
-      ) {
-        return false
-      }
-
-      openDialog('more-mobile', {
-        returnFocusTarget: options?.returnFocusTarget ?? 'mobile-more',
+      return tryOpenSimpleDialog('header-more-actions', {
+        block: startupOverlayActive,
+        returnFocusTarget: options?.returnFocusTarget ?? 'header-more-actions',
       })
-      return true
     },
-    [openDialog, startupOverlayActive],
+    [startupOverlayActive, tryOpenSimpleDialog],
   )
 
   const openStartOver = useCallback(
     (options?: DialogOpenOptions) => {
-      if (
-        !editorInteractionsEnabled ||
-        dialogStateRef.current.activeDialog !== null ||
-        !canStartOver
-      ) {
-        return false
-      }
-
-      openDialog('start-over', {
+      return tryOpenSimpleDialog('start-over', {
+        block: !editorInteractionsEnabled || !canStartOver,
         returnFocusTarget:
           options?.returnFocusTarget ??
           (layoutModeRef.current === 'mobile'
-            ? 'mobile-more'
+            ? 'header-more-actions'
             : 'start-over-inline'),
       })
-      return true
     },
-    [canStartOver, editorInteractionsEnabled, openDialog],
+    [canStartOver, editorInteractionsEnabled, tryOpenSimpleDialog],
   )
 
   const setCatalogOpen = useCallback(
     (open: boolean) => {
-      if (!open) {
-        closeDialog()
-        return true
-      }
-
-      return openCatalog()
+      return setDialogOpenState(open, openCatalog, closeDialog)
     },
-    [closeDialog, openCatalog],
+    [closeDialog, openCatalog, setDialogOpenState],
   )
 
   const setInfoOpen = useCallback(
     (open: boolean, options?: DialogOpenOptions) => {
-      if (!open) {
-        closeDialog()
-        return true
-      }
-
-      return openInfo(options)
+      return setDialogOpenState(open, openInfo, closeDialog, options)
     },
-    [closeDialog, openInfo],
+    [closeDialog, openInfo, setDialogOpenState],
   )
 
   const setRoomSurfaceOpen = useCallback(
@@ -325,26 +322,26 @@ export function useDialogState({
 
   const setKeyboardShortcutsOpen = useCallback(
     (open: boolean, options?: DialogOpenOptions) => {
-      if (!open) {
-        closeDialog()
-        return true
-      }
-
-      return openKeyboardShortcuts(options)
+      return setDialogOpenState(
+        open,
+        openKeyboardShortcuts,
+        closeDialog,
+        options,
+      )
     },
-    [closeDialog, openKeyboardShortcuts],
+    [closeDialog, openKeyboardShortcuts, setDialogOpenState],
   )
 
-  const setMobileMoreOpen = useCallback(
+  const setHeaderMoreActionsOpen = useCallback(
     (open: boolean, options?: DialogOpenOptions) => {
-      if (!open) {
-        closeDialog()
-        return true
-      }
-
-      return openMobileMore(options)
+      return setDialogOpenState(
+        open,
+        openHeaderMoreActions,
+        closeDialog,
+        options,
+      )
     },
-    [closeDialog, openMobileMore],
+    [closeDialog, openHeaderMoreActions, setDialogOpenState],
   )
 
   const mapReturnFocusTargetForLayout = useCallback(
@@ -361,7 +358,7 @@ export function useDialogState({
       }
 
       if (layout === 'desktop') {
-        if (current.returnFocusTarget !== 'mobile-more') {
+        if (current.returnFocusTarget !== 'header-more-actions') {
           return current.returnFocusTarget
         }
 
@@ -380,7 +377,7 @@ export function useDialogState({
         return current.returnFocusTarget
       }
 
-      if (current.returnFocusTarget === 'mobile-more') {
+      if (current.returnFocusTarget === 'header-more-actions') {
         return current.returnFocusTarget
       }
 
@@ -389,7 +386,7 @@ export function useDialogState({
         current.activeDialog === 'info' ||
         current.activeDialog === 'start-over'
       ) {
-        return 'mobile-more'
+        return 'header-more-actions'
       }
 
       return current.returnFocusTarget
@@ -403,7 +400,7 @@ export function useDialogState({
 
       setDialogState((current) => {
         const shouldCloseForDesktop =
-          layout === 'desktop' && current.activeDialog === 'more-mobile'
+          layout === 'desktop' && current.activeDialog === 'header-more-actions'
 
         if (!shouldCloseForDesktop) {
           const nextReturnFocusTarget = mapReturnFocusTargetForLayout(
@@ -454,7 +451,7 @@ export function useDialogState({
     isMobileRoomSurfaceOpen,
     isInfoDialogOpen,
     isKeyboardShortcutsDialogOpen,
-    isMobileMoreOpen,
+    isHeaderMoreActionsOpen,
     isStartOverDialogOpen,
     isBlockingOverlayOpen,
     pendingDeleteFurniture,
@@ -464,7 +461,7 @@ export function useDialogState({
     openRoomSurface,
     openInfo,
     openKeyboardShortcuts,
-    openMobileMore,
+    openHeaderMoreActions,
     openStartOver,
     closeDialog,
     closeAllDialogs,
@@ -472,7 +469,7 @@ export function useDialogState({
     setRoomSurfaceOpen,
     setInfoOpen,
     setKeyboardShortcutsOpen,
-    setMobileMoreOpen,
+    setHeaderMoreActionsOpen,
     syncLayoutMode,
   }
 }

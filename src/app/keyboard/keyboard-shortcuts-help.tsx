@@ -16,9 +16,15 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import type { ComponentProps, ReactElement } from 'react'
+import { Fragment, type ComponentProps, type ReactElement } from 'react'
+import {
+  KEYBOARD_SHORTCUTS,
+  type KeyboardShortcutDefinition,
+  type ShortcutComboLabel,
+  type ShortcutKeyLabel,
+} from './keyboard-shortcuts.definitions'
 
-type ShortcutCombo = string[]
+type ShortcutCombo = ShortcutComboLabel
 
 interface ShortcutRow {
   label: string
@@ -35,155 +41,146 @@ interface ShortcutSection {
   groups: ShortcutGroup[]
 }
 
-const SHORTCUT_SECTIONS: ShortcutSection[] = [
-  {
-    sectionTitle: '3D Room View (No Selection)',
-    groups: [
-      {
-        groupLabel: 'Browse',
-        rows: [
-          {
-            label: 'Preview next item',
-            combos: [['ArrowRight'], ['ArrowDown']],
-          },
-          {
-            label: 'Preview previous item',
-            combos: [['ArrowLeft'], ['ArrowUp']],
-          },
-          { label: 'Preview first/last', combos: [['Home'], ['End']] },
-          { label: 'Select previewed item', combos: [['Enter'], ['Space']] },
-        ],
-      },
-      {
-        groupLabel: 'Selection',
-        rows: [{ label: 'Clear preview/selection', combos: [['Escape']] }],
-      },
-    ],
-  },
-  {
-    sectionTitle: 'Camera Controls',
-    groups: [
-      {
-        groupLabel: 'View Presets',
-        rows: [
-          { label: 'Corner', combos: [['1']] },
-          { label: 'Front', combos: [['2']] },
-          { label: 'Side', combos: [['3']] },
-          { label: 'Top', combos: [['4']] },
-        ],
-      },
-      {
-        groupLabel: 'Focus',
-        rows: [{ label: 'Focus selected item', combos: [['F']] }],
-      },
-      {
-        groupLabel: 'Motion (Hold)',
-        rows: [
-          { label: 'Orbit camera', combos: [['W'], ['A'], ['S'], ['D']] },
-          {
-            label: 'Pan camera',
-            combos: [
-              ['Shift', 'W'],
-              ['Shift', 'A'],
-              ['Shift', 'S'],
-              ['Shift', 'D'],
-            ],
-          },
-          { label: 'Zoom in/out', combos: [['='], ['-']] },
-        ],
-      },
-    ],
-  },
-  {
-    sectionTitle: 'Selected Item',
-    groups: [
-      {
-        groupLabel: 'Move',
-        rows: [
-          { label: 'Nudge selected item (0.5 m)', combos: [['Arrow']] },
-          { label: 'Move farther (1.0 m)', combos: [['Shift', 'Arrow']] },
-          { label: 'Move finely (0.1 m)', combos: [['Alt', 'Arrow']] },
-        ],
-      },
-      {
-        groupLabel: 'Rotate',
-        rows: [
-          { label: 'Rotate counterclockwise', combos: [[',']] },
-          { label: 'Rotate clockwise', combos: [['.']] },
-        ],
-      },
-      {
-        groupLabel: 'Actions',
-        rows: [
-          { label: 'Remove item', combos: [['Delete'], ['Backspace']] },
-          { label: 'Clear selection', combos: [['Escape']] },
-        ],
-      },
-      {
-        groupLabel: 'Details',
-        rows: [
-          { label: 'Apply typed detail value', combos: [['Enter']] },
-          { label: 'Cancel typed detail draft', combos: [['Escape']] },
-        ],
-      },
-    ],
-  },
-  {
-    sectionTitle: 'Scene/Global',
-    groups: [
-      {
-        groupLabel: 'History',
-        rows: [
-          {
-            label: 'Undo',
-            combos: [
-              ['Ctrl', 'Z'],
-              ['Cmd', 'Z'],
-            ],
-          },
-          {
-            label: 'Redo',
-            combos: [
-              ['Ctrl', 'Shift', 'Z'],
-              ['Ctrl', 'Y'],
-              ['Cmd', 'Shift', 'Z'],
-              ['Cmd', 'Y'],
-            ],
-          },
-        ],
-      },
-      {
-        groupLabel: 'Scene',
-        rows: [
-          {
-            label: 'Start Over',
-            combos: [
-              ['Ctrl', 'Alt', 'N'],
-              ['Cmd', 'Opt', 'N'],
-            ],
-          },
-        ],
-      },
-    ],
-  },
-]
+function buildShortcutSections(
+  shortcuts: readonly KeyboardShortcutDefinition[],
+): ShortcutSection[] {
+  const sections = new Map<
+    string,
+    {
+      sectionTitle: string
+      sectionOrder: number
+      groups: Map<
+        string,
+        {
+          groupLabel: string
+          groupOrder: number
+          rows: Map<
+            string,
+            {
+              label: string
+              rowOrder: number
+              combos: ShortcutCombo[]
+            }
+          >
+        }
+      >
+    }
+  >()
 
-function renderShortcutCombos(combos: ShortcutCombo[]) {
+  for (const shortcut of shortcuts) {
+    for (const helpEntry of shortcut.helpEntries) {
+      const sectionKey = [helpEntry.sectionOrder, helpEntry.sectionTitle].join(
+        ':',
+      )
+      const groupKey = [helpEntry.groupOrder, helpEntry.groupLabel].join(':')
+      const rowKey = [helpEntry.rowOrder, helpEntry.rowLabel].join(':')
+
+      let section = sections.get(sectionKey)
+      if (!section) {
+        section = {
+          sectionTitle: helpEntry.sectionTitle,
+          sectionOrder: helpEntry.sectionOrder,
+          groups: new Map(),
+        }
+        sections.set(sectionKey, section)
+      }
+
+      let group = section.groups.get(groupKey)
+      if (!group) {
+        group = {
+          groupLabel: helpEntry.groupLabel,
+          groupOrder: helpEntry.groupOrder,
+          rows: new Map(),
+        }
+        section.groups.set(groupKey, group)
+      }
+
+      if (!group.rows.has(rowKey)) {
+        group.rows.set(rowKey, {
+          label: helpEntry.rowLabel,
+          rowOrder: helpEntry.rowOrder,
+          combos: helpEntry.comboLabels,
+        })
+      }
+    }
+  }
+
+  return [...sections.values()]
+    .sort((left, right) => left.sectionOrder - right.sectionOrder)
+    .map((section) => ({
+      sectionTitle: section.sectionTitle,
+      groups: [...section.groups.values()]
+        .sort((left, right) => left.groupOrder - right.groupOrder)
+        .map((group) => ({
+          groupLabel: group.groupLabel,
+          rows: [...group.rows.values()]
+            .sort((left, right) => left.rowOrder - right.rowOrder)
+            .map(({ label, combos }) => ({ label, combos })),
+        })),
+    }))
+}
+
+const SHORTCUT_SECTIONS = buildShortcutSections(KEYBOARD_SHORTCUTS)
+
+function isAppleKeyboardPlatform() {
+  if (typeof navigator === 'undefined') {
+    return false
+  }
+
+  const platformSignals = [navigator.platform, navigator.userAgent]
+    .filter(Boolean)
+    .join(' ')
+
+  return /mac|iphone|ipad|ipod/i.test(platformSignals)
+}
+
+function renderShortcutKeyLabel(
+  shortcutKey: ShortcutKeyLabel,
+  preferAppleLabels: boolean,
+) {
+  if (typeof shortcutKey === 'string') {
+    return <Kbd>{shortcutKey}</Kbd>
+  }
+
+  if (shortcutKey.kind === 'platform') {
+    return (
+      <Kbd>
+        {preferAppleLabels ? shortcutKey.appleLabel : shortcutKey.defaultLabel}
+      </Kbd>
+    )
+  }
+
   return (
-    <div className="flex flex-wrap items-center justify-end gap-1">
-      {combos.map((shortcutCombo, comboIndex) => (
-        <div key={shortcutCombo.join('+')} className="contents">
-          <KbdGroup>
-            {shortcutCombo.map((shortcutKey, keyIndex) => (
-              <div key={shortcutKey} className="contents">
-                <Kbd>{shortcutKey}</Kbd>
-                {keyIndex < shortcutCombo.length - 1 ? <span>+</span> : null}
-              </div>
-            ))}
-          </KbdGroup>
-          {comboIndex < combos.length - 1 ? (
+    <span className="inline-flex items-center gap-1">
+      {shortcutKey.labels.map((shortcutAlternative, alternativeIndex) => (
+        <Fragment key={shortcutAlternative}>
+          <Kbd>{shortcutAlternative}</Kbd>
+          {alternativeIndex < shortcutKey.labels.length - 1 ? (
             <span className="text-muted-foreground">/</span>
           ) : null}
+        </Fragment>
+      ))}
+    </span>
+  )
+}
+
+function renderShortcutCombos(combos: ShortcutCombo[]) {
+  const preferAppleLabels = isAppleKeyboardPlatform()
+
+  return (
+    <div className="flex flex-col items-end gap-1.5">
+      {combos.map((shortcutCombo, comboIndex) => (
+        <div key={comboIndex} className="flex justify-end">
+          <KbdGroup className="justify-end">
+            {shortcutCombo.map((shortcutKey, keyIndex) => (
+              <Fragment key={keyIndex}>
+                {renderShortcutKeyLabel(shortcutKey, preferAppleLabels)}
+                {keyIndex < shortcutCombo.length - 1 ? (
+                  <span className="text-muted-foreground">+</span>
+                ) : null}
+              </Fragment>
+            ))}
+          </KbdGroup>
         </div>
       ))}
     </div>
@@ -252,54 +249,59 @@ export function KeyboardShortcutsDialog({
 
         <ScrollArea className="max-h-[min(75vh,calc(100dvh-10rem))]">
           <div className="grid gap-4 pb-2 pr-3">
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs">
-                <caption className="sr-only">
-                  Keyboard shortcuts quick reference
-                </caption>
-                {SHORTCUT_SECTIONS.map((section) => (
-                  <tbody
-                    key={section.sectionTitle}
-                    className="border-b border-transparent"
-                  >
-                    <tr>
-                      <th
-                        colSpan={3}
-                        className="px-0 py-2 pb-1 text-left align-top font-semibold text-foreground"
-                      >
-                        {section.sectionTitle}
-                      </th>
-                    </tr>
-                    {section.groups.flatMap((shortcutGroup) =>
-                      shortcutGroup.rows.map((shortcutRow, rowIndex) => (
-                        <tr
-                          key={`${shortcutGroup.groupLabel}-${shortcutRow.label}`}
-                        >
-                          {rowIndex === 0 ? (
-                            <th
-                              scope="rowgroup"
-                              rowSpan={shortcutGroup.rows.length}
-                              className="w-18 pr-2 pb-1 text-left align-top font-semibold text-foreground"
-                            >
-                              {shortcutGroup.groupLabel}
-                            </th>
-                          ) : null}
-                          <th
-                            scope="row"
-                            className="pr-3 pb-1 text-left align-top font-normal whitespace-nowrap text-foreground"
+            {SHORTCUT_SECTIONS.map((section) => (
+              <div
+                key={section.sectionTitle}
+                className="overflow-hidden rounded-2xl border border-border/70 bg-card/90 shadow-sm"
+              >
+                <div className="overflow-x-auto">
+                  <table className="w-full caption-top text-xs">
+                    <caption className="border-b border-border/70 bg-muted/35 px-4 py-3 text-left text-sm font-semibold tracking-[0.01em] text-foreground">
+                      {section.sectionTitle}
+                    </caption>
+                    <tbody>
+                      {section.groups.flatMap((shortcutGroup, groupIndex) =>
+                        shortcutGroup.rows.map((shortcutRow, rowIndex) => (
+                          <tr
+                            key={`${shortcutGroup.groupLabel}-${shortcutRow.label}`}
+                            className={[
+                              groupIndex > 0 && rowIndex === 0
+                                ? 'border-t border-border/70'
+                                : '',
+                              rowIndex % 2 === 0
+                                ? 'bg-background/65'
+                                : 'bg-muted/20',
+                              'transition-colors hover:bg-accent/35',
+                            ]
+                              .filter(Boolean)
+                              .join(' ')}
                           >
-                            {shortcutRow.label}
-                          </th>
-                          <td className="pb-1 text-right">
-                            {renderShortcutCombos(shortcutRow.combos)}
-                          </td>
-                        </tr>
-                      )),
-                    )}
-                  </tbody>
-                ))}
-              </table>
-            </div>
+                            {rowIndex === 0 ? (
+                              <th
+                                scope="rowgroup"
+                                rowSpan={shortcutGroup.rows.length}
+                                className="w-24 min-w-24 px-4 py-3 text-left align-top font-semibold text-foreground"
+                              >
+                                {shortcutGroup.groupLabel}
+                              </th>
+                            ) : null}
+                            <th
+                              scope="row"
+                              className="w-56 min-w-56 px-4 py-3 text-left align-top font-normal whitespace-nowrap text-foreground"
+                            >
+                              {shortcutRow.label}
+                            </th>
+                            <td className="px-4 py-3 text-right">
+                              {renderShortcutCombos(shortcutRow.combos)}
+                            </td>
+                          </tr>
+                        )),
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            ))}
           </div>
         </ScrollArea>
 

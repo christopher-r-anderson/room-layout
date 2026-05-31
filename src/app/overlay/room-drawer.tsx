@@ -7,8 +7,8 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from '@/components/ui/drawer'
-import { RoomControls, type RoomControlsProps } from './room-controls'
-import { ROOM_SURFACE_DESCRIPTION } from './room-copy'
+import type { RoomControlsProps } from './room-controls'
+import { RoomSurfaceContent } from './room-surface-content'
 
 export function RoomDrawer({
   contentRef,
@@ -45,13 +45,19 @@ export function RoomDrawer({
           }
         }}
       >
-        <DrawerHeader>
-          <DrawerTitle>Room</DrawerTitle>
-          <DrawerDescription>{ROOM_SURFACE_DESCRIPTION}</DrawerDescription>
-        </DrawerHeader>
-        <ScrollArea className="min-h-0 flex-1 px-4 pb-4">
-          <RoomControls {...controls} />
-        </ScrollArea>
+        <RoomSurfaceContent {...controls}>
+          {({ controls: roomControls, description }) => (
+            <>
+              <DrawerHeader>
+                <DrawerTitle>Room</DrawerTitle>
+                <DrawerDescription>{description}</DrawerDescription>
+              </DrawerHeader>
+              <ScrollArea className="min-h-0 flex-1 px-4 pb-4">
+                {roomControls}
+              </ScrollArea>
+            </>
+          )}
+        </RoomSurfaceContent>
       </DrawerContent>
     </Drawer>
   )

@@ -3,8 +3,14 @@ import { CatalogAddButton } from '@/app/catalog/catalog-add-button'
 import { HistoryTools } from '@/app/history/history-tools'
 import { KeyboardShortcutsDialog } from '@/app/keyboard/keyboard-shortcuts-help'
 import { ProjectInfoDialog } from '@/app/project-info/project-info-dialog'
-import { IconInfoCircle, IconKeyboard } from '@tabler/icons-react'
-import { RoomButton } from './room-button'
+import { Button } from '@/components/ui/button'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
+import { IconHomeCog, IconInfoCircle, IconKeyboard } from '@tabler/icons-react'
+import { ROOM_TRIGGER_TOOLTIP } from './room-copy'
 import { RoomSidebar } from './room-sidebar'
 import { StartOverButton } from './start-over-button'
 import { ShareSceneButton } from './share-scene-button'
@@ -56,26 +62,43 @@ export function TopHeaderDesktop({
             onAddFurniture={catalog.onAddFurniture}
             onCatalogIdToAddChange={catalog.onCatalogIdToAddChange}
           />
-          <RoomButton
-            id={desktopRoomTriggerId}
-            size="toolbar"
-            aria-controls="room-surface"
-            aria-expanded={isRoomOpen}
-            onClick={() => {
-              dialogs.onRoomSurfaceOpenChange(!isRoomOpen, {
-                layout: 'desktop',
-                returnFocusTarget: 'room-inline',
-              })
-            }}
-            onKeyDown={(event) => {
-              if (event.key !== 'Escape' || !isRoomOpen) {
-                return
-              }
+          <div className="flex items-center">
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <Button
+                    id={desktopRoomTriggerId}
+                    type="button"
+                    variant="secondary"
+                    size="toolbar"
+                    className="pointer-events-auto"
+                    aria-controls="room-surface"
+                    aria-expanded={isRoomOpen}
+                    onClick={() => {
+                      dialogs.onRoomSurfaceOpenChange(!isRoomOpen, {
+                        layout: 'desktop',
+                        returnFocusTarget: 'room-inline',
+                      })
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.key !== 'Escape' || !isRoomOpen) {
+                        return
+                      }
 
-              event.preventDefault()
-              dialogs.onRoomSurfaceOpenChange(false)
-            }}
-          />
+                      event.preventDefault()
+                      dialogs.onRoomSurfaceOpenChange(false)
+                    }}
+                  >
+                    <IconHomeCog size={16} aria-hidden="true" />
+                    Room
+                  </Button>
+                }
+              />
+              <TooltipContent side="bottom">
+                {ROOM_TRIGGER_TOOLTIP}
+              </TooltipContent>
+            </Tooltip>
+          </div>
         </div>
 
         <div
@@ -151,6 +174,7 @@ export function TopHeaderDesktop({
               }
             />
             <ShareSceneButton
+              className="min-w-[6.5rem]"
               disabled={!editorInteractionsEnabled}
               labelVisibility="always"
               onShareSceneUrl={onShareSceneUrl}

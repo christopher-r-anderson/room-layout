@@ -2,10 +2,15 @@ import { Button } from '@/components/ui/button'
 import { CatalogDrawer } from '@/app/catalog/catalog-drawer'
 import { CatalogAddButton } from '@/app/catalog/catalog-add-button'
 import { HistoryTools } from '@/app/history/history-tools'
-import { IconDotsVertical } from '@tabler/icons-react'
-import { RoomButton } from './room-button'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
+import { IconDotsVertical, IconHomeCog } from '@tabler/icons-react'
 import { RoomDrawer } from './room-drawer'
 import { HeaderMoreActionsDrawer } from './header-more-actions-drawer'
+import { ROOM_TRIGGER_TOOLTIP } from './room-copy'
 import type { TopHeaderMobileProps } from './top-header.types'
 
 export function TopHeaderMobile({
@@ -18,13 +23,13 @@ export function TopHeaderMobile({
   history,
   mobileRoomDrawerRef,
   mobileRoomTriggerId,
-  mobileMoreContentId,
-  mobileMoreTriggerId,
+  headerMoreActionsContentId,
+  headerMoreActionsTriggerId,
   startOverDisabled,
   onFloorFinishChange,
-  onOpenKeyboardShortcutsFromMobileMore,
-  onOpenStartOverFromMobileMore,
-  onOpenProjectInfoFromMobileMore,
+  onOpenKeyboardShortcutsFromHeaderMoreActions,
+  onOpenStartOverFromHeaderMoreActions,
+  onOpenProjectInfoFromHeaderMoreActions,
   onShareSceneUrl,
   topHeaderRef,
   onWallFinishChange,
@@ -58,19 +63,36 @@ export function TopHeaderMobile({
               onAddFurniture={catalog.onAddFurniture}
               onCatalogIdToAddChange={catalog.onCatalogIdToAddChange}
             />
-            <RoomButton
-              id={mobileRoomTriggerId}
-              size="toolbar"
-              aria-controls="room-drawer"
-              aria-expanded={isRoomOpen}
-              aria-haspopup="dialog"
-              onClick={() => {
-                dialogs.onRoomSurfaceOpenChange(!isRoomOpen, {
-                  layout: 'mobile',
-                  returnFocusTarget: 'room-inline',
-                })
-              }}
-            />
+            <div className="flex items-center">
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <Button
+                      id={mobileRoomTriggerId}
+                      type="button"
+                      variant="secondary"
+                      size="toolbar"
+                      className="pointer-events-auto"
+                      aria-controls="room-drawer"
+                      aria-expanded={isRoomOpen}
+                      aria-haspopup="dialog"
+                      onClick={() => {
+                        dialogs.onRoomSurfaceOpenChange(!isRoomOpen, {
+                          layout: 'mobile',
+                          returnFocusTarget: 'room-inline',
+                        })
+                      }}
+                    >
+                      <IconHomeCog size={16} aria-hidden="true" />
+                      Room
+                    </Button>
+                  }
+                />
+                <TooltipContent side="bottom">
+                  {ROOM_TRIGGER_TOOLTIP}
+                </TooltipContent>
+              </Tooltip>
+            </div>
           </div>
           <div
             className="flex items-center gap-2 justify-self-end"
@@ -87,17 +109,17 @@ export function TopHeaderMobile({
               onUndo={history.onUndo}
             />
             <Button
-              id={mobileMoreTriggerId}
+              id={headerMoreActionsTriggerId}
               type="button"
               variant="secondary"
               size="toolbar-icon"
               aria-label="More actions"
-              aria-controls={mobileMoreContentId}
-              aria-expanded={dialogs.isMobileMoreOpen}
+              aria-controls={headerMoreActionsContentId}
+              aria-expanded={dialogs.isHeaderMoreActionsOpen}
               aria-haspopup="dialog"
               onClick={() => {
-                dialogs.onMobileMoreOpenChange(true, {
-                  returnFocusTarget: 'mobile-more',
+                dialogs.onHeaderMoreActionsOpenChange(true, {
+                  returnFocusTarget: 'header-more-actions',
                 })
               }}
             >
@@ -132,22 +154,22 @@ export function TopHeaderMobile({
       />
 
       <HeaderMoreActionsDrawer
-        contentId={mobileMoreContentId}
+        contentId={headerMoreActionsContentId}
         shareDisabled={!editorInteractionsEnabled}
         startOverDisabled={!editorInteractionsEnabled || startOverDisabled}
-        open={dialogs.isMobileMoreOpen}
+        open={dialogs.isHeaderMoreActionsOpen}
         onOpenChange={(open) => {
-          dialogs.onMobileMoreOpenChange(open, {
-            returnFocusTarget: 'mobile-more',
+          dialogs.onHeaderMoreActionsOpenChange(open, {
+            returnFocusTarget: 'header-more-actions',
           })
         }}
         onCloseAutoFocus={() => {
-          focusControlById(mobileMoreTriggerId)
+          focusControlById(headerMoreActionsTriggerId)
         }}
         onShareSceneUrl={onShareSceneUrl}
-        onOpenKeyboardShortcuts={onOpenKeyboardShortcutsFromMobileMore}
-        onOpenStartOver={onOpenStartOverFromMobileMore}
-        onOpenProjectInfo={onOpenProjectInfoFromMobileMore}
+        onOpenKeyboardShortcuts={onOpenKeyboardShortcutsFromHeaderMoreActions}
+        onOpenStartOver={onOpenStartOverFromHeaderMoreActions}
+        onOpenProjectInfo={onOpenProjectInfoFromHeaderMoreActions}
       />
     </div>
   )

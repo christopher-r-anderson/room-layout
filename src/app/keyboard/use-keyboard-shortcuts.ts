@@ -9,9 +9,13 @@ import {
   matchesKeyCombo,
   type KeyCombo,
 } from '@/lib/ui/keyboard-shortcut-matcher'
+import {
+  USE_KEYBOARD_SHORTCUT_DEFINITIONS,
+  type KeyboardShortcutDefinition,
+  type SuppressionMode,
+} from './keyboard-shortcuts.definitions'
 
 export type RotationDirection = -1 | 1
-export type SuppressionMode = 'always-on-match' | 'on-execute'
 
 interface ShortcutContext {
   targetIsEditingTarget: boolean
@@ -28,7 +32,8 @@ interface ShortcutDefinition {
   allowMatchInEditingTarget?: boolean
   requiresRoomViewFocus?: boolean
   requiresSelection?: boolean
-  canExecute?: (context: ShortcutContext) => boolean
+  requiresNoSelection?: boolean
+  requiresStartOverCapability?: boolean
   suppressionMode?: SuppressionMode
   execute: () => void
 }
@@ -97,11 +102,139 @@ function canExecuteShortcut(
     return false
   }
 
-  if (shortcut.canExecute && !shortcut.canExecute(context)) {
+  if (shortcut.requiresNoSelection && context.hasSelection) {
+    return false
+  }
+
+  if (shortcut.requiresStartOverCapability && !context.canStartOver) {
     return false
   }
 
   return true
+}
+
+function getShortcutExecutor(
+  shortcutId: KeyboardShortcutDefinition['id'],
+  callbacks: {
+    onUndo: () => void
+    onRedo: () => void
+    onStartOverIntent: () => void
+    onOpenDeleteDialog: () => void
+    onFocusSelected: () => void
+    onMoveSelection: (delta: { x: number; z: number }) => void
+    onClearSelection: () => void
+    onRotate: (direction: RotationDirection) => void
+    onSetCameraPreset: (preset: CameraPreset) => void
+    onCanvasBrowse: (direction: 'next' | 'prev' | 'first' | 'last') => void
+    onCanvasSelectPreviewed: () => void
+  },
+) {
+  switch (shortcutId) {
+    case 'undo':
+      return callbacks.onUndo
+    case 'redo':
+      return callbacks.onRedo
+    case 'start-over':
+      return callbacks.onStartOverIntent
+    case 'delete':
+      return callbacks.onOpenDeleteDialog
+    case 'focus-selected':
+      return callbacks.onFocusSelected
+    case 'preset-corner':
+      return () => {
+        callbacks.onSetCameraPreset('corner')
+      }
+    case 'preset-front':
+      return () => {
+        callbacks.onSetCameraPreset('front')
+      }
+    case 'preset-side':
+      return () => {
+        callbacks.onSetCameraPreset('side')
+      }
+    case 'preset-top':
+      return () => {
+        callbacks.onSetCameraPreset('top')
+      }
+    case 'move-up':
+      return () => {
+        callbacks.onMoveSelection({ x: 0, z: -0.5 })
+      }
+    case 'move-up-large':
+      return () => {
+        callbacks.onMoveSelection({ x: 0, z: -1 })
+      }
+    case 'move-up-small':
+      return () => {
+        callbacks.onMoveSelection({ x: 0, z: -0.1 })
+      }
+    case 'move-down':
+      return () => {
+        callbacks.onMoveSelection({ x: 0, z: 0.5 })
+      }
+    case 'move-down-large':
+      return () => {
+        callbacks.onMoveSelection({ x: 0, z: 1 })
+      }
+    case 'move-down-small':
+      return () => {
+        callbacks.onMoveSelection({ x: 0, z: 0.1 })
+      }
+    case 'move-left':
+      return () => {
+        callbacks.onMoveSelection({ x: -0.5, z: 0 })
+      }
+    case 'move-left-large':
+      return () => {
+        callbacks.onMoveSelection({ x: -1, z: 0 })
+      }
+    case 'move-left-small':
+      return () => {
+        callbacks.onMoveSelection({ x: -0.1, z: 0 })
+      }
+    case 'move-right':
+      return () => {
+        callbacks.onMoveSelection({ x: 0.5, z: 0 })
+      }
+    case 'move-right-large':
+      return () => {
+        callbacks.onMoveSelection({ x: 1, z: 0 })
+      }
+    case 'move-right-small':
+      return () => {
+        callbacks.onMoveSelection({ x: 0.1, z: 0 })
+      }
+    case 'rotate-left':
+      return () => {
+        callbacks.onRotate(1)
+      }
+    case 'rotate-right':
+      return () => {
+        callbacks.onRotate(-1)
+      }
+    case 'canvas-browse-next':
+      return () => {
+        callbacks.onCanvasBrowse('next')
+      }
+    case 'canvas-browse-prev':
+      return () => {
+        callbacks.onCanvasBrowse('prev')
+      }
+    case 'canvas-browse-first':
+      return () => {
+        callbacks.onCanvasBrowse('first')
+      }
+    case 'canvas-browse-last':
+      return () => {
+        callbacks.onCanvasBrowse('last')
+      }
+    case 'canvas-select-previewed':
+      return callbacks.onCanvasSelectPreviewed
+    case 'clear-selection':
+      return callbacks.onClearSelection
+    default:
+      return null
+  }
 }
 
 export function useKeyboardShortcuts({
@@ -122,293 +255,38 @@ export function useKeyboardShortcuts({
   onCanvasBrowse,
   onCanvasSelectPreviewed,
 }: UseKeyboardShortcutsOptions): void {
-  const shortcutDefinitions: ShortcutDefinition[] = [
-    {
-      id: 'undo',
-      match: { key: 'z', ctrlOrMeta: true },
-      suppressionMode: 'always-on-match',
-      execute: onUndo,
-    },
-    {
-      id: 'redo',
-      match: [
-        { key: 'z', ctrlOrMeta: true, shift: true },
-        { key: 'y', ctrlOrMeta: true },
-      ],
-      suppressionMode: 'always-on-match',
-      execute: onRedo,
-    },
-    {
-      id: 'start-over',
-      match: { key: 'n', ctrlOrMeta: true, alt: true },
-      canExecute: (context) => context.canStartOver,
-      execute: onStartOverIntent,
-    },
-    {
-      id: 'delete',
-      match: [{ key: 'delete' }, { key: 'backspace' }],
-      requiresRoomViewFocus: true,
-      requiresSelection: true,
-      suppressionMode: 'on-execute',
-      execute: onOpenDeleteDialog,
-    },
-    {
-      id: 'focus-selected',
-      match: { key: 'f' },
-      requiresRoomViewFocus: true,
-      requiresSelection: true,
-      suppressionMode: 'on-execute',
-      execute: onFocusSelected,
-    },
-    {
-      id: 'preset-corner',
-      match: [
-        { key: '1' },
-        // Some common layouts (for example AZERTY) require Shift for number-row digits.
-        { code: 'Digit1', shift: true },
-        { code: 'Numpad1' },
-      ],
-      requiresRoomViewFocus: true,
-      suppressionMode: 'on-execute',
-      execute: () => {
-        onSetCameraPreset('corner')
-      },
-    },
-    {
-      id: 'preset-front',
-      match: [
-        { key: '2' },
-        { code: 'Digit2', shift: true },
-        { code: 'Numpad2' },
-      ],
-      requiresRoomViewFocus: true,
-      suppressionMode: 'on-execute',
-      execute: () => {
-        onSetCameraPreset('front')
-      },
-    },
-    {
-      id: 'preset-side',
-      match: [
-        { key: '3' },
-        { code: 'Digit3', shift: true },
-        { code: 'Numpad3' },
-      ],
-      requiresRoomViewFocus: true,
-      suppressionMode: 'on-execute',
-      execute: () => {
-        onSetCameraPreset('side')
-      },
-    },
-    {
-      id: 'preset-top',
-      match: [
-        { key: '4' },
-        { code: 'Digit4', shift: true },
-        { code: 'Numpad4' },
-      ],
-      requiresRoomViewFocus: true,
-      suppressionMode: 'on-execute',
-      execute: () => {
-        onSetCameraPreset('top')
-      },
-    },
-    {
-      id: 'move-up',
-      match: { key: 'ArrowUp' },
-      requiresRoomViewFocus: true,
-      requiresSelection: true,
-      suppressionMode: 'on-execute',
-      execute: () => {
-        onMoveSelection({ x: 0, z: -0.5 })
-      },
-    },
-    {
-      id: 'move-up-large',
-      match: { key: 'ArrowUp', shift: true },
-      requiresRoomViewFocus: true,
-      requiresSelection: true,
-      suppressionMode: 'on-execute',
-      execute: () => {
-        onMoveSelection({ x: 0, z: -1 })
-      },
-    },
-    {
-      id: 'move-up-small',
-      match: { key: 'ArrowUp', alt: true },
-      requiresRoomViewFocus: true,
-      requiresSelection: true,
-      suppressionMode: 'on-execute',
-      execute: () => {
-        onMoveSelection({ x: 0, z: -0.1 })
-      },
-    },
-    {
-      id: 'move-down',
-      match: { key: 'ArrowDown' },
-      requiresRoomViewFocus: true,
-      requiresSelection: true,
-      suppressionMode: 'on-execute',
-      execute: () => {
-        onMoveSelection({ x: 0, z: 0.5 })
-      },
-    },
-    {
-      id: 'move-down-large',
-      match: { key: 'ArrowDown', shift: true },
-      requiresRoomViewFocus: true,
-      requiresSelection: true,
-      suppressionMode: 'on-execute',
-      execute: () => {
-        onMoveSelection({ x: 0, z: 1 })
-      },
-    },
-    {
-      id: 'move-down-small',
-      match: { key: 'ArrowDown', alt: true },
-      requiresRoomViewFocus: true,
-      requiresSelection: true,
-      suppressionMode: 'on-execute',
-      execute: () => {
-        onMoveSelection({ x: 0, z: 0.1 })
-      },
-    },
-    {
-      id: 'move-left',
-      match: { key: 'ArrowLeft' },
-      requiresRoomViewFocus: true,
-      requiresSelection: true,
-      suppressionMode: 'on-execute',
-      execute: () => {
-        onMoveSelection({ x: -0.5, z: 0 })
-      },
-    },
-    {
-      id: 'move-left-large',
-      match: { key: 'ArrowLeft', shift: true },
-      requiresRoomViewFocus: true,
-      requiresSelection: true,
-      suppressionMode: 'on-execute',
-      execute: () => {
-        onMoveSelection({ x: -1, z: 0 })
-      },
-    },
-    {
-      id: 'move-left-small',
-      match: { key: 'ArrowLeft', alt: true },
-      requiresRoomViewFocus: true,
-      requiresSelection: true,
-      suppressionMode: 'on-execute',
-      execute: () => {
-        onMoveSelection({ x: -0.1, z: 0 })
-      },
-    },
-    {
-      id: 'move-right',
-      match: { key: 'ArrowRight' },
-      requiresRoomViewFocus: true,
-      requiresSelection: true,
-      suppressionMode: 'on-execute',
-      execute: () => {
-        onMoveSelection({ x: 0.5, z: 0 })
-      },
-    },
-    {
-      id: 'move-right-large',
-      match: { key: 'ArrowRight', shift: true },
-      requiresRoomViewFocus: true,
-      requiresSelection: true,
-      suppressionMode: 'on-execute',
-      execute: () => {
-        onMoveSelection({ x: 1, z: 0 })
-      },
-    },
-    {
-      id: 'move-right-small',
-      match: { key: 'ArrowRight', alt: true },
-      requiresRoomViewFocus: true,
-      requiresSelection: true,
-      suppressionMode: 'on-execute',
-      execute: () => {
-        onMoveSelection({ x: 0.1, z: 0 })
-      },
-    },
-    {
-      id: 'rotate-left',
-      match: [{ key: ',' }, { code: 'Comma' }],
-      requiresRoomViewFocus: true,
-      requiresSelection: true,
-      suppressionMode: 'on-execute',
-      execute: () => {
-        onRotate(1)
-      },
-    },
-    {
-      id: 'rotate-right',
-      match: [{ key: '.' }, { code: 'Period' }],
-      requiresRoomViewFocus: true,
-      requiresSelection: true,
-      suppressionMode: 'on-execute',
-      execute: () => {
-        onRotate(-1)
-      },
-    },
-    {
-      id: 'canvas-browse-next',
-      match: [{ key: 'ArrowRight' }, { key: 'ArrowDown' }],
-      requiresRoomViewFocus: true,
-      canExecute: (context) => !context.hasSelection,
-      suppressionMode: 'on-execute',
-      execute: () => {
-        onCanvasBrowse('next')
-      },
-    },
-    {
-      id: 'canvas-browse-prev',
-      match: [{ key: 'ArrowLeft' }, { key: 'ArrowUp' }],
-      requiresRoomViewFocus: true,
-      canExecute: (context) => !context.hasSelection,
-      suppressionMode: 'on-execute',
-      execute: () => {
-        onCanvasBrowse('prev')
-      },
-    },
-    {
-      id: 'canvas-browse-first',
-      match: { key: 'Home' },
-      requiresRoomViewFocus: true,
-      canExecute: (context) => !context.hasSelection,
-      suppressionMode: 'on-execute',
-      execute: () => {
-        onCanvasBrowse('first')
-      },
-    },
-    {
-      id: 'canvas-browse-last',
-      match: { key: 'End' },
-      requiresRoomViewFocus: true,
-      canExecute: (context) => !context.hasSelection,
-      suppressionMode: 'on-execute',
-      execute: () => {
-        onCanvasBrowse('last')
-      },
-    },
-    {
-      id: 'canvas-select-previewed',
-      match: [{ key: 'Enter' }, { key: ' ' }],
-      requiresRoomViewFocus: true,
-      canExecute: (context) => !context.hasSelection,
-      suppressionMode: 'on-execute',
-      execute: onCanvasSelectPreviewed,
-    },
-    {
-      id: 'clear-selection',
-      match: { key: 'Escape' },
-      requiresRoomViewFocus: true,
-      suppressionMode: 'on-execute',
-      execute: onClearSelection,
-    },
-  ]
+  const shortcutDefinitions: ShortcutDefinition[] =
+    USE_KEYBOARD_SHORTCUT_DEFINITIONS.map((shortcut) => {
+      const execute = getShortcutExecutor(shortcut.id, {
+        onUndo,
+        onRedo,
+        onStartOverIntent,
+        onOpenDeleteDialog,
+        onFocusSelected,
+        onMoveSelection,
+        onClearSelection,
+        onRotate,
+        onSetCameraPreset,
+        onCanvasBrowse,
+        onCanvasSelectPreviewed,
+      })
+
+      if (!execute) {
+        throw new Error(`Missing keyboard shortcut executor for ${shortcut.id}`)
+      }
+
+      return {
+        id: shortcut.id,
+        match: shortcut.match,
+        allowMatchInEditingTarget: shortcut.allowMatchInEditingTarget,
+        requiresRoomViewFocus: shortcut.requiresRoomViewFocus,
+        requiresSelection: shortcut.requiresSelection,
+        requiresNoSelection: shortcut.requiresNoSelection,
+        requiresStartOverCapability: shortcut.requiresStartOverCapability,
+        suppressionMode: shortcut.suppressionMode,
+        execute,
+      }
+    })
 
   const handleKeyDown = useEffectEvent((event: KeyboardEvent) => {
     if (!enabled) {

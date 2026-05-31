@@ -70,7 +70,7 @@ export interface EditorDialogsProps {
   onCloseDeleteDialog: () => void
   onConfirmDeleteSelection: () => void
   isRoomSurfaceOpen: boolean
-  isMobileMoreOpen: boolean
+  isHeaderMoreActionsOpen: boolean
   onRoomSurfaceOpenChange: (
     open: boolean,
     options?: RoomSurfaceOpenOptions,
@@ -89,7 +89,7 @@ export interface EditorDialogsProps {
     open: boolean,
     options?: DialogOpenOptions,
   ) => boolean
-  onMobileMoreOpenChange: (
+  onHeaderMoreActionsOpenChange: (
     open: boolean,
     options?: DialogOpenOptions,
   ) => boolean

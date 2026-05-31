@@ -1,0 +1,146 @@
+// @vitest-environment jsdom
+
+import { render, screen } from '@testing-library/react'
+import { describe, expect, it, vi } from 'vitest'
+import type {
+  FloorFinishOption,
+  WallFinishOption,
+} from '@/lib/three/environment-materials'
+import { ROOM_TRIGGER_TOOLTIP } from './room-copy'
+import { TopHeaderDesktop } from './top-header-desktop'
+import type { TopHeaderDesktopProps } from './top-header.types'
+
+vi.mock('@/app/catalog/catalog-drawer', () => ({
+  CatalogDrawer: ({ triggerButton }: { triggerButton?: React.ReactNode }) => (
+    <>{triggerButton ?? null}</>
+  ),
+}))
+
+vi.mock('@/app/catalog/catalog-add-button', () => ({
+  CatalogAddButton: () => <button type="button">Add furniture</button>,
+}))
+
+vi.mock('@/app/history/history-tools', () => ({
+  HistoryTools: () => <div />,
+}))
+
+vi.mock('@/app/keyboard/keyboard-shortcuts-help', () => ({
+  KeyboardShortcutsDialog: ({
+    triggerButton,
+  }: {
+    triggerButton?: React.ReactNode
+  }) => <>{triggerButton ?? null}</>,
+}))
+
+vi.mock('@/app/project-info/project-info-dialog', () => ({
+  ProjectInfoDialog: ({
+    triggerButton,
+  }: {
+    triggerButton?: React.ReactNode
+  }) => <>{triggerButton ?? null}</>,
+}))
+
+vi.mock('@/components/ui/tooltip', () => ({
+  Tooltip: ({ children }: { children?: React.ReactNode }) => <>{children}</>,
+  TooltipContent: ({ children }: { children?: React.ReactNode }) => (
+    <>{children}</>
+  ),
+  TooltipTrigger: ({ render }: { render: React.ReactNode }) => <>{render}</>,
+}))
+
+vi.mock('./room-sidebar', () => ({
+  RoomSidebar: () => null,
+}))
+
+vi.mock('./start-over-button', () => ({
+  StartOverButton: () => <button type="button">Start over</button>,
+}))
+
+function createFloorOptions(): FloorFinishOption[] {
+  return [
+    {
+      id: 'wood-floor',
+      label: 'Wood',
+      diffusePath: '/textures/wood.jpg',
+      normalPath: '/textures/wood-normal.png',
+      tileSizeMeters: { width: 0.5, depth: 0.5 },
+    },
+  ]
+}
+
+function createWallOptions(): WallFinishOption[] {
+  return [{ id: 'light-gray', label: 'Light Gray', color: 0xf5f5f5 }]
+}
+
+function createProps(
+  overrides: Partial<TopHeaderDesktopProps> = {},
+): TopHeaderDesktopProps {
+  return {
+    catalog: {
+      catalog: [],
+      catalogIdToAdd: '',
+      isCatalogDrawerOpen: false,
+      onAddFurniture: vi.fn(() => true),
+      onCatalogIdToAddChange: vi.fn(),
+      onCatalogDrawerOpenChange: vi.fn(),
+    },
+    dialogs: {
+      roomSurfaceLayout: null,
+      isBlockingOverlayOpen: false,
+      isRoomSurfaceOpen: false,
+      isInfoDialogOpen: false,
+      isKeyboardShortcutsDialogOpen: false,
+      isHeaderMoreActionsOpen: false,
+      isStartOverDialogOpen: false,
+      onCloseStartOverDialog: vi.fn(),
+      onConfirmStartOver: vi.fn(),
+      onRoomSurfaceOpenChange: vi.fn(() => true),
+      onInfoDialogOpenChange: vi.fn(() => true),
+      onKeyboardShortcutsDialogOpenChange: vi.fn(() => true),
+      onHeaderMoreActionsOpenChange: vi.fn(() => true),
+      onOpenStartOverDialog: vi.fn(),
+      returnFocusTarget: null,
+    },
+    desktopInfoTriggerId: 'desktop-info-trigger',
+    desktopKeyboardTriggerId: 'desktop-keyboard-trigger',
+    desktopRoomSidebarRef: undefined,
+    desktopRoomTriggerId: 'desktop-room-trigger',
+    editorInteractionsEnabled: true,
+    floorFinishId: 'wood-floor',
+    floorFinishLoading: false,
+    floorFinishes: createFloorOptions(),
+    history: {
+      canRedo: false,
+      canUndo: false,
+      onRedo: vi.fn(),
+      onUndo: vi.fn(),
+    },
+    startOverDisabled: false,
+    startOverTriggerId: 'start-over-trigger',
+    onFloorFinishChange: vi.fn(),
+    onShareSceneUrl: vi.fn(() =>
+      Promise.resolve<'shared' | 'copied' | null>(null),
+    ),
+    onWallFinishChange: vi.fn(),
+    topHeaderRef: undefined,
+    wallFinishId: 'light-gray',
+    wallFinishes: createWallOptions(),
+    ...overrides,
+  }
+}
+
+describe('TopHeaderDesktop', () => {
+  it('describes the room trigger with wall and floor copy', () => {
+    render(<TopHeaderDesktop {...createProps()} />)
+
+    expect(screen.getByText(ROOM_TRIGGER_TOOLTIP)).toBeInTheDocument()
+  })
+
+  it('reserves desktop width for the share button feedback label', () => {
+    render(<TopHeaderDesktop {...createProps()} />)
+
+    expect(
+      screen.getByRole('button', { name: 'Share room layout' }).className,
+    ).toContain('min-w-[6.5rem]')
+  })
+})

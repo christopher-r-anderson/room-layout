@@ -9,6 +9,10 @@ import type {
   EditorStartupProps,
 } from './editor-overlay'
 
+// Pure prop-grouping layer for EditorOverlay. It collects the startup, camera,
+// history, scene, catalog, dialogs, and preview bundles without adding side
+// effects or behavior beyond memoized object shaping.
+
 interface UseOverlayPropsOptions {
   assetError: boolean
   assetErrorKind: EditorStartupProps['assetErrorKind']
@@ -40,7 +44,7 @@ interface UseOverlayPropsOptions {
   onConfirmDeleteSelection: EditorDialogsProps['onConfirmDeleteSelection']
   roomSurfaceLayout: EditorDialogsProps['roomSurfaceLayout']
   isRoomSurfaceOpen: EditorDialogsProps['isRoomSurfaceOpen']
-  isMobileMoreOpen: EditorDialogsProps['isMobileMoreOpen']
+  isHeaderMoreActionsOpen: EditorDialogsProps['isHeaderMoreActionsOpen']
   onRoomSurfaceOpenChange: EditorDialogsProps['onRoomSurfaceOpenChange']
   isStartOverDialogOpen: EditorDialogsProps['isStartOverDialogOpen']
   onCloseStartOverDialog: EditorDialogsProps['onCloseStartOverDialog']
@@ -50,7 +54,7 @@ interface UseOverlayPropsOptions {
   onInfoDialogOpenChange: EditorDialogsProps['onInfoDialogOpenChange']
   isKeyboardShortcutsDialogOpen: EditorDialogsProps['isKeyboardShortcutsDialogOpen']
   onKeyboardShortcutsDialogOpenChange: EditorDialogsProps['onKeyboardShortcutsDialogOpenChange']
-  onMobileMoreOpenChange: EditorDialogsProps['onMobileMoreOpenChange']
+  onHeaderMoreActionsOpenChange: EditorDialogsProps['onHeaderMoreActionsOpenChange']
   returnFocusTarget: EditorDialogsProps['returnFocusTarget']
   onPreviewChange: EditorPreviewProps['onPreviewChange']
   previewedId: EditorPreviewProps['previewedId']
@@ -97,7 +101,7 @@ export function useOverlayProps({
   onConfirmDeleteSelection,
   roomSurfaceLayout,
   isRoomSurfaceOpen,
-  isMobileMoreOpen,
+  isHeaderMoreActionsOpen,
   onRoomSurfaceOpenChange,
   isStartOverDialogOpen,
   onCloseStartOverDialog,
@@ -107,7 +111,7 @@ export function useOverlayProps({
   onInfoDialogOpenChange,
   isKeyboardShortcutsDialogOpen,
   onKeyboardShortcutsDialogOpenChange,
-  onMobileMoreOpenChange,
+  onHeaderMoreActionsOpenChange,
   returnFocusTarget,
   onPreviewChange,
   previewedId,
@@ -195,7 +199,7 @@ export function useOverlayProps({
       onConfirmDeleteSelection,
       roomSurfaceLayout,
       isRoomSurfaceOpen,
-      isMobileMoreOpen,
+      isHeaderMoreActionsOpen,
       onRoomSurfaceOpenChange,
       isStartOverDialogOpen,
       onCloseStartOverDialog,
@@ -205,7 +209,7 @@ export function useOverlayProps({
       onInfoDialogOpenChange,
       isKeyboardShortcutsDialogOpen,
       onKeyboardShortcutsDialogOpenChange,
-      onMobileMoreOpenChange,
+      onHeaderMoreActionsOpenChange,
       returnFocusTarget,
     }),
     [
@@ -216,7 +220,7 @@ export function useOverlayProps({
       onConfirmDeleteSelection,
       roomSurfaceLayout,
       isRoomSurfaceOpen,
-      isMobileMoreOpen,
+      isHeaderMoreActionsOpen,
       onRoomSurfaceOpenChange,
       isStartOverDialogOpen,
       onCloseStartOverDialog,
@@ -226,7 +230,7 @@ export function useOverlayProps({
       onInfoDialogOpenChange,
       isKeyboardShortcutsDialogOpen,
       onKeyboardShortcutsDialogOpenChange,
-      onMobileMoreOpenChange,
+      onHeaderMoreActionsOpenChange,
       returnFocusTarget,
     ],
   )

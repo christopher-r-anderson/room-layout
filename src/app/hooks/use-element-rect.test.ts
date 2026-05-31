@@ -2,7 +2,7 @@
 
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { useElementRect } from './use-element-rect'
+import { useElementRect, useElementRectRef } from './use-element-rect'
 
 const measuredRects = new WeakMap<Element, DOMRectReadOnly>()
 const originalVisualViewport = Object.getOwnPropertyDescriptor(
@@ -196,6 +196,28 @@ describe('useElementRect', () => {
 
     await waitFor(() => {
       expect(result.current).toBeNull()
+    })
+  })
+
+  it('supports a callback ref variant that measures after mount', async () => {
+    installBoundingClientRectMock()
+    installResizeObserver()
+    installVisualViewport()
+
+    const element = createMeasuredElement(createRect(18, 24, 320, 180))
+    const { result } = renderHook(() => useElementRectRef())
+
+    act(() => {
+      result.current.ref(element)
+    })
+
+    await waitFor(() => {
+      expect(result.current.rect).toMatchObject({
+        left: 18,
+        top: 24,
+        width: 320,
+        height: 180,
+      })
     })
   })
 })

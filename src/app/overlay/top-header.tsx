@@ -6,7 +6,10 @@ import { useHeaderLayoutMode } from './use-header-layout-mode'
 import { TopHeaderDesktop } from './top-header-desktop'
 import { TopHeaderMobile } from './top-header-mobile'
 import type { TopHeaderProps } from './top-header.types'
-import type { DialogReturnFocusTarget } from './use-dialog-state'
+import type {
+  DialogOpenOptions,
+  DialogReturnFocusTarget,
+} from './use-dialog-state'
 
 const HEADER_CONTROL_SELECTOR =
   'button, input, select, textarea, [tabindex]:not([tabindex="-1"])'
@@ -90,8 +93,8 @@ export function TopHeader({
 }: TopHeaderProps) {
   const layoutMode = useHeaderLayoutMode()
   const mobileRoomTriggerId = useId()
-  const mobileMoreContentId = useId()
-  const mobileMoreTriggerId = useId()
+  const headerMoreActionsContentId = useId()
+  const headerMoreActionsTriggerId = useId()
   const desktopRoomTriggerId = useId()
   const desktopInfoTriggerId = useId()
   const desktopKeyboardTriggerId = useId()
@@ -102,8 +105,8 @@ export function TopHeader({
   }, [layoutMode, onLayoutModeChange])
 
   const focusReturnTarget = (target: DialogReturnFocusTarget) => {
-    if (target === 'mobile-more') {
-      focusControlById(mobileMoreTriggerId)
+    if (target === 'header-more-actions') {
+      focusControlById(headerMoreActionsTriggerId)
       return
     }
 
@@ -135,11 +138,16 @@ export function TopHeader({
     }
   }
 
-  const openFromMobileMore = (action: () => void) => {
-    dialogs.onMobileMoreOpenChange(false, { returnFocusTarget: 'mobile-more' })
+  const openDialogFromHeaderMoreActions = (
+    open: (options?: DialogOpenOptions) => unknown,
+    returnFocusTarget: DialogReturnFocusTarget,
+  ) => {
+    dialogs.onHeaderMoreActionsOpenChange(false, {
+      returnFocusTarget: 'header-more-actions',
+    })
 
     queueMicrotask(() => {
-      action()
+      open({ returnFocusTarget })
     })
   }
 
@@ -152,28 +160,23 @@ export function TopHeader({
           topHeaderRef={topHeaderRef}
           mobileRoomDrawerRef={mobileRoomDrawerRef}
           mobileRoomTriggerId={mobileRoomTriggerId}
-          mobileMoreContentId={mobileMoreContentId}
-          mobileMoreTriggerId={mobileMoreTriggerId}
-          onOpenKeyboardShortcutsFromMobileMore={() => {
-            openFromMobileMore(() => {
-              dialogs.onKeyboardShortcutsDialogOpenChange(true, {
-                returnFocusTarget: 'mobile-more',
-              })
-            })
+          headerMoreActionsContentId={headerMoreActionsContentId}
+          headerMoreActionsTriggerId={headerMoreActionsTriggerId}
+          onOpenKeyboardShortcutsFromHeaderMoreActions={() => {
+            openDialogFromHeaderMoreActions((options) => {
+              dialogs.onKeyboardShortcutsDialogOpenChange(true, options)
+            }, 'header-more-actions')
           }}
-          onOpenStartOverFromMobileMore={() => {
-            openFromMobileMore(() => {
-              dialogs.onOpenStartOverDialog({
-                returnFocusTarget: 'mobile-more',
-              })
-            })
+          onOpenStartOverFromHeaderMoreActions={() => {
+            openDialogFromHeaderMoreActions(
+              dialogs.onOpenStartOverDialog,
+              'header-more-actions',
+            )
           }}
-          onOpenProjectInfoFromMobileMore={() => {
-            openFromMobileMore(() => {
-              dialogs.onInfoDialogOpenChange(true, {
-                returnFocusTarget: 'mobile-more',
-              })
-            })
+          onOpenProjectInfoFromHeaderMoreActions={() => {
+            openDialogFromHeaderMoreActions((options) => {
+              dialogs.onInfoDialogOpenChange(true, options)
+            }, 'header-more-actions')
           }}
           focusControlById={focusControlById}
         />
