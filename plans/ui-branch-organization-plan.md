@@ -353,6 +353,16 @@ This is the right point for a **full E2E run** because Phase 5 touches multiple 
 
 ## Phase 6 — Hook composability: `useElementRect` ⊃ `useElementSize`
 
+**Status:** completed locally on 2026-05-31.
+
+**Completion note**
+
+- Added `useElementRectRef` in `src/app/hooks/use-element-rect.ts` so callback-ref consumers can share the rect measurement/store logic without changing the existing `useElementRect(ref)` API.
+- `src/app/hooks/use-element-size.ts` now composes on the shared rect hook with `trackPosition: false`, preserving the old size-only update behavior instead of subscribing to scroll or viewport-position churn.
+- Added callback-ref coverage in `src/app/hooks/use-element-rect.test.ts` and a no-extra-commits-on-position-only-change regression guard in `src/app/hooks/use-element-size.test.tsx`.
+- Validation passed with `pnpm fix && pnpm typecheck && pnpm lint && pnpm test:run`.
+- Current Vitest count after the refactor: 68 files / 552 tests passed.
+
 **Files affected**
 
 - use-element-rect.ts
