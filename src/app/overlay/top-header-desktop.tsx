@@ -10,6 +10,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { IconHomeCog, IconInfoCircle, IconKeyboard } from '@tabler/icons-react'
+import { ROOM_TRIGGER_TOOLTIP } from './room-copy'
 import { RoomSidebar } from './room-sidebar'
 import { StartOverButton } from './start-over-button'
 import { ShareSceneButton } from './share-scene-button'
@@ -93,7 +94,9 @@ export function TopHeaderDesktop({
                   </Button>
                 }
               />
-              <TooltipContent side="bottom">Room settings</TooltipContent>
+              <TooltipContent side="bottom">
+                {ROOM_TRIGGER_TOOLTIP}
+              </TooltipContent>
             </Tooltip>
           </div>
         </div>
@@ -171,6 +174,7 @@ export function TopHeaderDesktop({
               }
             />
             <ShareSceneButton
+              className="min-w-[6.5rem]"
               disabled={!editorInteractionsEnabled}
               labelVisibility="always"
               onShareSceneUrl={onShareSceneUrl}

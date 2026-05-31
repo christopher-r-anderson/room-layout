@@ -7,6 +7,7 @@ import type {
   FloorFinishOption,
   WallFinishOption,
 } from '@/lib/three/environment-materials'
+import { ROOM_TRIGGER_TOOLTIP } from './room-copy'
 import { TopHeaderMobile } from './top-header-mobile'
 import type { TopHeaderMobileProps } from './top-header.types'
 
@@ -24,6 +25,14 @@ vi.mock('./room-drawer', () => ({
 
 vi.mock('./share-scene-button', () => ({
   ShareSceneButton: () => <button type="button">Share room layout</button>,
+}))
+
+vi.mock('@/components/ui/tooltip', () => ({
+  Tooltip: ({ children }: { children?: React.ReactNode }) => <>{children}</>,
+  TooltipContent: ({ children }: { children?: React.ReactNode }) => (
+    <>{children}</>
+  ),
+  TooltipTrigger: ({ render }: { render: React.ReactNode }) => <>{render}</>,
 }))
 
 function createFloorOptions(): FloorFinishOption[] {
@@ -101,6 +110,12 @@ function createProps(
 }
 
 describe('TopHeaderMobile', () => {
+  it('describes the room trigger with wall and floor copy', () => {
+    render(<TopHeaderMobile {...createProps()} />)
+
+    expect(screen.getByText(ROOM_TRIGGER_TOOLTIP)).toBeInTheDocument()
+  })
+
   it('exposes dialog trigger semantics for the More actions drawer', () => {
     const baseProps = createProps()
 

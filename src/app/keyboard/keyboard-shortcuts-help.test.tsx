@@ -3,11 +3,25 @@
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import {
   KeyboardShortcutsDialog,
   KeyboardShortcutsHelp,
 } from './keyboard-shortcuts-help'
+
+function mockNavigatorPlatform(platform: string, userAgent: string) {
+  const platformSpy = vi
+    .spyOn(window.navigator, 'platform', 'get')
+    .mockReturnValue(platform)
+  const userAgentSpy = vi
+    .spyOn(window.navigator, 'userAgent', 'get')
+    .mockReturnValue(userAgent)
+
+  return () => {
+    platformSpy.mockRestore()
+    userAgentSpy.mockRestore()
+  }
+}
 
 describe('KeyboardShortcutsHelp', () => {
   it('opens and dismisses keyboard shortcut guidance', async () => {
@@ -28,7 +42,9 @@ describe('KeyboardShortcutsHelp', () => {
     expect(
       screen.getByRole('heading', { name: 'Keyboard Shortcuts' }),
     ).toBeVisible()
-    expect(screen.getByRole('table')).toBeVisible()
+    const tables = screen.getAllByRole('table')
+    expect(tables.length).toBeGreaterThan(1)
+    expect(screen.getByText('Scene/Global')).toBeVisible()
     expect(screen.getByText('Preview next item')).toBeVisible()
     expect(screen.getByText('Select previewed item')).toBeVisible()
     expect(screen.getByText('Nudge selected item (0.5 m)')).toBeVisible()
@@ -90,5 +106,43 @@ describe('KeyboardShortcutsHelp', () => {
     expect(
       screen.getByRole('dialog', { name: 'Keyboard Shortcuts' }),
     ).toBeVisible()
+  })
+
+  it('renders compact alternatives and Apple-specific modifier labels', () => {
+    const restoreNavigator = mockNavigatorPlatform(
+      'MacIntel',
+      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
+    )
+
+    try {
+      render(
+        <KeyboardShortcutsDialog
+          open
+          onOpenChange={() => undefined}
+          triggerButton={null}
+        />,
+      )
+
+      const panCameraRow = screen.getByText('Pan camera').closest('tr')
+
+      expect(panCameraRow).not.toBeNull()
+
+      if (!panCameraRow) {
+        throw new Error('Pan camera row was not rendered')
+      }
+
+      expect(within(panCameraRow).getAllByText('Shift').length).toBe(1)
+      expect(within(panCameraRow).getAllByText('/').length).toBe(3)
+      expect(within(panCameraRow).getByText('W')).toBeVisible()
+      expect(within(panCameraRow).getByText('A')).toBeVisible()
+      expect(within(panCameraRow).getByText('S')).toBeVisible()
+      expect(within(panCameraRow).getByText('D')).toBeVisible()
+      expect(screen.getAllByText('Cmd').length).toBeGreaterThan(0)
+      expect(screen.getAllByText('Opt').length).toBeGreaterThan(0)
+      expect(screen.queryByText('Ctrl')).not.toBeInTheDocument()
+      expect(screen.queryByText('Alt')).not.toBeInTheDocument()
+    } finally {
+      restoreNavigator()
+    }
   })
 })

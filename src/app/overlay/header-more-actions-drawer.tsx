@@ -49,7 +49,7 @@ export function HeaderMoreActionsDrawer({
         <DrawerHeader>
           <DrawerTitle>More actions</DrawerTitle>
           <DrawerDescription>
-            Open scene dialogs and reference information.
+            Share, start over, or reference help.
           </DrawerDescription>
         </DrawerHeader>
 

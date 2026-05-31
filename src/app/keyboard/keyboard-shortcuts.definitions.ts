@@ -7,6 +7,24 @@ export type KeyboardShortcutHandler =
   | 'use-camera-key-state'
   | 'native-input'
 
+export interface ShortcutPlatformLabel {
+  kind: 'platform'
+  appleLabel: string
+  defaultLabel: string
+}
+
+export interface ShortcutAlternativesLabel {
+  kind: 'alternatives'
+  labels: string[]
+}
+
+export type ShortcutKeyLabel =
+  | string
+  | ShortcutPlatformLabel
+  | ShortcutAlternativesLabel
+
+export type ShortcutComboLabel = ShortcutKeyLabel[]
+
 export interface ShortcutHelpEntry {
   sectionTitle: string
   sectionOrder: number
@@ -14,7 +32,7 @@ export interface ShortcutHelpEntry {
   groupOrder: number
   rowLabel: string
   rowOrder: number
-  comboLabels: string[][]
+  comboLabels: ShortcutComboLabel[]
 }
 
 export interface KeyboardShortcutDefinition {
@@ -31,6 +49,23 @@ export interface KeyboardShortcutDefinition {
 }
 
 // Order matters: dispatch precedence in useKeyboardShortcuts follows array order.
+const PRIMARY_MODIFIER_LABEL: ShortcutPlatformLabel = {
+  kind: 'platform',
+  appleLabel: 'Cmd',
+  defaultLabel: 'Ctrl',
+}
+
+const ALT_MODIFIER_LABEL: ShortcutPlatformLabel = {
+  kind: 'platform',
+  appleLabel: 'Opt',
+  defaultLabel: 'Alt',
+}
+
+const WASD_ALTERNATIVES_LABEL: ShortcutAlternativesLabel = {
+  kind: 'alternatives',
+  labels: ['W', 'A', 'S', 'D'],
+}
+
 export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
   {
     id: 'undo',
@@ -45,10 +80,7 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
         groupOrder: 1,
         rowLabel: 'Undo',
         rowOrder: 1,
-        comboLabels: [
-          ['Ctrl', 'Z'],
-          ['Cmd', 'Z'],
-        ],
+        comboLabels: [[PRIMARY_MODIFIER_LABEL, 'Z']],
       },
     ],
   },
@@ -69,10 +101,8 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
         rowLabel: 'Redo',
         rowOrder: 2,
         comboLabels: [
-          ['Ctrl', 'Shift', 'Z'],
-          ['Ctrl', 'Y'],
-          ['Cmd', 'Shift', 'Z'],
-          ['Cmd', 'Y'],
+          [PRIMARY_MODIFIER_LABEL, 'Shift', 'Z'],
+          [PRIMARY_MODIFIER_LABEL, 'Y'],
         ],
       },
     ],
@@ -90,10 +120,7 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
         groupOrder: 2,
         rowLabel: 'Start Over',
         rowOrder: 1,
-        comboLabels: [
-          ['Ctrl', 'Alt', 'N'],
-          ['Cmd', 'Opt', 'N'],
-        ],
+        comboLabels: [[PRIMARY_MODIFIER_LABEL, ALT_MODIFIER_LABEL, 'N']],
       },
     ],
   },
@@ -260,7 +287,7 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
         groupOrder: 1,
         rowLabel: 'Move finely (0.1 m)',
         rowOrder: 3,
-        comboLabels: [['Alt', 'Arrow']],
+        comboLabels: [[ALT_MODIFIER_LABEL, 'Arrow']],
       },
     ],
   },
@@ -317,7 +344,7 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
         groupOrder: 1,
         rowLabel: 'Move finely (0.1 m)',
         rowOrder: 3,
-        comboLabels: [['Alt', 'Arrow']],
+        comboLabels: [[ALT_MODIFIER_LABEL, 'Arrow']],
       },
     ],
   },
@@ -374,7 +401,7 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
         groupOrder: 1,
         rowLabel: 'Move finely (0.1 m)',
         rowOrder: 3,
-        comboLabels: [['Alt', 'Arrow']],
+        comboLabels: [[ALT_MODIFIER_LABEL, 'Arrow']],
       },
     ],
   },
@@ -431,7 +458,7 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
         groupOrder: 1,
         rowLabel: 'Move finely (0.1 m)',
         rowOrder: 3,
-        comboLabels: [['Alt', 'Arrow']],
+        comboLabels: [[ALT_MODIFIER_LABEL, 'Arrow']],
       },
     ],
   },
@@ -607,7 +634,7 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
         groupOrder: 3,
         rowLabel: 'Orbit camera',
         rowOrder: 1,
-        comboLabels: [['W'], ['A'], ['S'], ['D']],
+        comboLabels: [[WASD_ALTERNATIVES_LABEL]],
       },
     ],
   },
@@ -628,12 +655,7 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
         groupOrder: 3,
         rowLabel: 'Pan camera',
         rowOrder: 2,
-        comboLabels: [
-          ['Shift', 'W'],
-          ['Shift', 'A'],
-          ['Shift', 'S'],
-          ['Shift', 'D'],
-        ],
+        comboLabels: [['Shift', WASD_ALTERNATIVES_LABEL]],
       },
     ],
   },
