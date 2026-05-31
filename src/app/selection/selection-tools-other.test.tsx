@@ -3,24 +3,8 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
-import type { FurnitureItem } from '@/scene/objects/furniture.types'
 import { SelectionToolsOther } from './selection-tools-other'
-
-const FURNITURE_ITEM: FurnitureItem = {
-  id: 'item-1',
-  catalogId: 'couch-1',
-  name: 'Leather Couch',
-  kind: 'couch',
-  collectionId: 'leather-collection',
-  nodeName: 'couch',
-  sourcePath: '/models/leather-collection.glb',
-  footprintSize: {
-    width: 2.2,
-    depth: 0.95,
-  },
-  position: [0, 0, 0],
-  rotationY: 0,
-}
+import { FURNITURE_ITEM } from './test-fixtures'
 
 describe('SelectionToolsOther', () => {
   it('executes rotate and remove actions when selection is available', async () => {

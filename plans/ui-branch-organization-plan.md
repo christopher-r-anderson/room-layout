@@ -425,6 +425,15 @@ No E2E impact expected. Skip E2E unless tests fail.
 
 ## Phase 7 — Test fixture extraction (small, mostly mechanical)
 
+**Status:** completed locally on 2026-05-31.
+
+**Completion note**
+
+- Added `src/app/selection/test-fixtures.ts` for the shared base `FURNITURE_ITEM` used across selection and overlay tests.
+- Updated `selected-item-controls.test.tsx`, `selected-item-details.test.tsx`, `selection-tools-other.test.tsx`, and `use-overlay-state.test.ts` to import the shared fixture instead of maintaining duplicate inline copies.
+- Left `createRect`, `createRoomViewRef`, and `MockResizeObserver` local to their existing tests because they were not actually duplicated across the Phase 7 slice.
+- Focused validation passed with `pnpm exec vitest --run src/app/selection/selected-item-controls.test.tsx src/app/selection/selected-item-details.test.tsx src/app/selection/selection-tools-other.test.tsx src/app/overlay/use-overlay-state.test.ts`.
+
 **Files affected**
 
 - New: `src/app/selection/test-fixtures.ts`

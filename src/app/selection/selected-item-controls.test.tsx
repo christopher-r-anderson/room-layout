@@ -6,22 +6,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { RefObject } from 'react'
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
 import { SelectedItemControls } from './selected-item-controls'
-
-const FURNITURE_ITEM: FurnitureItem = {
-  id: 'item-1',
-  catalogId: 'couch-1',
-  name: 'Leather Couch',
-  kind: 'couch',
-  collectionId: 'leather-collection',
-  nodeName: 'couch',
-  sourcePath: '/models/leather-collection.glb',
-  footprintSize: {
-    width: 2.2,
-    depth: 0.95,
-  },
-  position: [0, 0, 0],
-  rotationY: 0,
-}
+import { FURNITURE_ITEM } from './test-fixtures'
 
 const OTHER_FURNITURE_ITEM: FurnitureItem = {
   ...FURNITURE_ITEM,
