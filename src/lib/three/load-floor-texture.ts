@@ -14,10 +14,15 @@ export interface FloorTextures {
   normal: Texture
 }
 
+function getBasisTranscoderPath(): string {
+  const baseUrl = import.meta.env.BASE_URL
+  return `${baseUrl}basis/`
+}
+
 const textureCache = new Map<string, Promise<FloorTextures>>()
 const textureLoader = new TextureLoader()
 const ktx2Loader = new KTX2Loader()
-  .setTranscoderPath('/basis/')
+  .setTranscoderPath(getBasisTranscoderPath())
   .setWorkerLimit(2)
 const ktx2SupportDetectedForRenderer = new WeakSet<WebGLRenderer>()
 
