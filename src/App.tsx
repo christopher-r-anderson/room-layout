@@ -38,6 +38,10 @@ import { SelectedItemControls } from './app/selection/selected-item-controls'
 import { findFirstFocusableControl } from './app/overlay/focusable-controls'
 import { useOverlayExclusionRects } from './app/overlay/use-overlay-exclusion-rects'
 import type { SelectedToolbarGeometry } from './scene/scene.types'
+import {
+  perfCounters,
+  type PerfCounterSnapshot,
+} from '@/lib/debug/perf-counters'
 
 interface BrowserSceneState {
   assetsReady: boolean
@@ -69,6 +73,8 @@ declare global {
     __ROOM_LAYOUT_TEST__?: {
       getState: () => BrowserSceneState
       setOverlaysHidden: (hidden: boolean) => void
+      getPerfCounters: () => PerfCounterSnapshot
+      resetPerfCounters: () => void
     }
   }
 }
@@ -271,11 +277,21 @@ function App() {
 
   const handleSelectedToolbarGeometryChange = useCallback(
     (nextGeometry: SelectedToolbarGeometry) => {
-      setSelectedToolbarGeometry((currentGeometry) =>
-        areSelectedToolbarGeometriesEqual(currentGeometry, nextGeometry)
-          ? currentGeometry
-          : nextGeometry,
-      )
+      setSelectedToolbarGeometry((currentGeometry) => {
+        if (areSelectedToolbarGeometriesEqual(currentGeometry, nextGeometry)) {
+          if (import.meta.env.DEV) {
+            perfCounters.incrToolbarSinkNoOp()
+          }
+
+          return currentGeometry
+        }
+
+        if (import.meta.env.DEV) {
+          perfCounters.incrToolbarSinkWrite()
+        }
+
+        return nextGeometry
+      })
     },
     [],
   )
@@ -523,6 +539,10 @@ function App() {
       },
       setOverlaysHidden: (hidden: boolean) => {
         setTestOverlaysHidden(hidden)
+      },
+      getPerfCounters: () => perfCounters.read(),
+      resetPerfCounters: () => {
+        perfCounters.reset()
       },
     }
 

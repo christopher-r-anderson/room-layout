@@ -40,6 +40,7 @@ import {
   ROOM_HALF_WIDTH_METERS,
 } from './internal/environment/room-constants'
 import { computeSelectedToolbarGeometry } from './internal/selected-toolbar-geometry'
+import { perfCounters } from '@/lib/debug/perf-counters'
 
 const FLOOR_PLANE_Y = 0
 const SNAP_SIZE = 0.5
@@ -386,6 +387,9 @@ export function Scene({
     }
 
     lastToolbarGeometryRef.current = nextGeometry
+    if (import.meta.env.DEV) {
+      perfCounters.incrToolbarEmission()
+    }
     onSelectedToolbarGeometryChange(nextGeometry)
   }, [
     camera,
@@ -423,6 +427,9 @@ export function Scene({
     }
 
     lastToolbarGeometryRef.current = nextGeometry
+    if (import.meta.env.DEV) {
+      perfCounters.incrToolbarEmission()
+    }
     onSelectedToolbarGeometryChange(nextGeometry)
   })
 
