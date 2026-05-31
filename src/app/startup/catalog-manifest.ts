@@ -173,6 +173,16 @@ function validateAndNormalizeCatalogEntry(
     )
   }
 
+  if (
+    entry.uiBoundsNodeName !== undefined &&
+    (typeof entry.uiBoundsNodeName !== 'string' ||
+      entry.uiBoundsNodeName.trim() === '')
+  ) {
+    throw new ManifestValidationError(
+      `catalog[${String(index)}] ("${id}"): "uiBoundsNodeName" must be a non-empty string when provided`,
+    )
+  }
+
   if (typeof entry.footprintSize !== 'object' || entry.footprintSize === null) {
     throw new ManifestValidationError(
       `catalog[${String(index)}] ("${id}"): "footprintSize" must be an object`,
@@ -217,6 +227,9 @@ function validateAndNormalizeCatalogEntry(
     kind: entry.kind as FurnitureKind,
     collectionId: entry.collectionId,
     nodeName: entry.nodeName,
+    ...(entry.uiBoundsNodeName
+      ? { uiBoundsNodeName: entry.uiBoundsNodeName.trim() }
+      : {}),
     footprintSize: {
       width: rawWidth,
       depth: rawDepth,
@@ -233,6 +246,24 @@ function parseHexColor(value: unknown, path: string): number {
   }
 
   return Number.parseInt(value.slice(1), 16)
+}
+
+function normalizeOptionalPreviewPath(
+  value: unknown,
+  path: string,
+): string | undefined {
+  if (value === undefined) {
+    return undefined
+  }
+
+  const normalizedPreviewPath = normalizeRelativeAssetPath(value)
+  if (normalizedPreviewPath === null) {
+    throw new ManifestValidationError(
+      `${path}: "previewPath" must be a relative path`,
+    )
+  }
+
+  return resolvePublicAssetPath(normalizedPreviewPath)
 }
 
 function validateAndNormalizeFloorFinish(
@@ -304,11 +335,17 @@ function validateAndNormalizeFloorFinish(
     )
   }
 
+  const previewPath = normalizeOptionalPreviewPath(
+    entry.previewPath,
+    `environment.floorFinishes[${String(index)}] ("${entry.id}")`,
+  )
+
   return {
     id: entry.id,
     label: entry.label,
     diffusePath: resolvePublicAssetPath(normalizedDiffusePath),
     normalPath: resolvePublicAssetPath(normalizedNormalPath),
+    ...(previewPath ? { previewPath } : {}),
     tileSizeMeters: {
       width: tileSizeMeters.width,
       depth: tileSizeMeters.depth,
@@ -337,6 +374,12 @@ function validateAndNormalizeWallFinish(
   if (typeof entry.label !== 'string' || entry.label.trim() === '') {
     throw new ManifestValidationError(
       `environment.wallFinishes[${String(index)}] ("${entry.id}"): "label" must be a non-empty string`,
+    )
+  }
+
+  if (entry.previewPath !== undefined) {
+    throw new ManifestValidationError(
+      `environment.wallFinishes[${String(index)}] ("${entry.id}"): "previewPath" is not supported; wall swatches are derived from "color"`,
     )
   }
 

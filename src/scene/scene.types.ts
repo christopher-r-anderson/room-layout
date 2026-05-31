@@ -20,6 +20,18 @@ export type MoveSelectionResult =
         | 'no-op'
     }
 
+export type UpdateSelectionTransformResult =
+  | { ok: true; item: FurnitureItem }
+  | {
+      ok: false
+      reason:
+        | 'no-selection'
+        | 'dragging'
+        | 'blocked-collision'
+        | 'blocked-bounds'
+        | 'no-op'
+    }
+
 export type SelectByIdResult =
   | { ok: true; status: 'selected' | 'cleared' }
   | { ok: false; status: 'not-found' | 'blocked-dragging' }
@@ -39,6 +51,40 @@ export type CameraKeyName =
 
 export type CameraKeyState = Set<CameraKeyName>
 
+export interface ScreenPoint {
+  x: number
+  y: number
+}
+
+export type SelectedToolbarGeometrySource =
+  | 'ui-bounds-node'
+  | 'render-bounds'
+  | 'object-origin'
+
+export type SelectedToolbarGeometryUnavailableReason =
+  | 'no-selection'
+  | 'object-not-ready'
+  | 'no-placement-points'
+  | 'non-finite-projection'
+  | 'behind-camera'
+
+export type SelectedToolbarGeometry =
+  | {
+      kind: 'available'
+      selectedId: string
+      source: SelectedToolbarGeometrySource
+      sourceNodeName?: string
+      canvasSize: { width: number; height: number }
+      sourcePointCount: number
+      projectedPointCount: number
+      points: ScreenPoint[]
+    }
+  | {
+      kind: 'unavailable'
+      selectedId: string | null
+      reason: SelectedToolbarGeometryUnavailableReason
+    }
+
 export interface SceneReadModel {
   selectedId: string | null
   items: FurnitureItem[]
@@ -51,6 +97,10 @@ export interface SceneRef {
     delta: { x: number; z: number },
     options?: { source?: MoveSource },
   ) => MoveSelectionResult
+  setSelectionTransform: (input: {
+    position?: [number, number, number]
+    rotationY?: number
+  }) => UpdateSelectionTransformResult
   rotateSelection: (deltaRadians: number) => void
   addFurniture: (
     catalogId: string,

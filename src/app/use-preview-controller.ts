@@ -3,11 +3,15 @@ import { usePreviewState } from './overlay/use-preview-state'
 
 const SCENE_PREVIEW_CLEAR_DELAY_MS = 50
 
-type PreviewSource = 'scene' | 'outliner-hover' | 'outliner-focus'
+type PreviewSource =
+  | 'scene'
+  | 'outliner-hover'
+  | 'outliner-focus'
+  | 'canvas-keyboard'
 type OutlinerPreviewSource = 'outliner-hover' | 'outliner-focus'
 
 interface UsePreviewControllerOptions {
-  isModalOpen: boolean
+  isBlockingOverlayOpen: boolean
   editorInteractionsEnabled: boolean
   itemIds: readonly string[]
 }
@@ -19,12 +23,13 @@ interface PreviewController {
     id: string | null,
     source: OutlinerPreviewSource,
   ) => void
+  handleCanvasKeyboardPreviewChange: (id: string | null) => void
   handleDragStateChange: (dragging: boolean) => void
   clearPreviewOnCanvasMiss: () => void
 }
 
 export function usePreviewController({
-  isModalOpen,
+  isBlockingOverlayOpen,
   editorInteractionsEnabled,
   itemIds,
 }: UsePreviewControllerOptions): PreviewController {
@@ -34,7 +39,7 @@ export function usePreviewController({
 
   const { previewedId, setPreview, clearPreview } = usePreviewState({
     isDragging,
-    isModalOpen,
+    isBlockingOverlayOpen,
     editorInteractionsEnabled,
     itemIds,
   })
@@ -110,8 +115,28 @@ export function usePreviewController({
     clearPreview()
   }, [cancelScenePreviewClear, clearPreview])
 
+  const handleCanvasKeyboardPreviewChange = useCallback(
+    (id: string | null) => {
+      cancelScenePreviewClear()
+
+      if (id !== null) {
+        previewSourceRef.current = 'canvas-keyboard'
+        setPreview(id)
+        return
+      }
+
+      if (previewSourceRef.current !== 'canvas-keyboard') {
+        return
+      }
+
+      previewSourceRef.current = null
+      clearPreview()
+    },
+    [cancelScenePreviewClear, clearPreview, setPreview],
+  )
+
   useEffect(() => {
-    if (!isDragging && !isModalOpen && editorInteractionsEnabled) {
+    if (!isDragging && !isBlockingOverlayOpen && editorInteractionsEnabled) {
       return
     }
 
@@ -123,7 +148,7 @@ export function usePreviewController({
     clearPreview,
     editorInteractionsEnabled,
     isDragging,
-    isModalOpen,
+    isBlockingOverlayOpen,
   ])
 
   useEffect(() => {
@@ -136,6 +161,7 @@ export function usePreviewController({
     previewedId,
     handleScenePreviewChange,
     handleOutlinerPreviewChange,
+    handleCanvasKeyboardPreviewChange,
     handleDragStateChange,
     clearPreviewOnCanvasMiss,
   }

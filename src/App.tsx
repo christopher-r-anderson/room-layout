@@ -4,10 +4,11 @@ import {
   Component,
   Suspense,
   type ReactNode,
+  useCallback,
   useEffect,
   useMemo,
-  useState,
   useRef,
+  useState,
 } from 'react'
 import { NeutralToneMapping, SRGBColorSpace } from 'three'
 import type { SceneRef } from './scene/scene.types'
@@ -32,6 +33,11 @@ import { TooltipProvider } from './components/ui/tooltip'
 import { Toaster } from './components/ui/sonner'
 import { clearSceneDraft, saveSceneDraft } from './app/url-scene/scene-draft'
 import { isFreshSceneState } from './app/startup/scene-defaults'
+import { sortSpatially } from './lib/three/spatial-sort'
+import { SelectedItemControls } from './app/selection/selected-item-controls'
+import { findFirstFocusableControl } from './app/overlay/focusable-controls'
+import { useOverlayExclusionRects } from './app/overlay/use-overlay-exclusion-rects'
+import type { SelectedToolbarGeometry } from './scene/scene.types'
 
 interface BrowserSceneState {
   assetsReady: boolean
@@ -62,11 +68,55 @@ declare global {
   interface Window {
     __ROOM_LAYOUT_TEST__?: {
       getState: () => BrowserSceneState
+      setOverlaysHidden: (hidden: boolean) => void
     }
   }
 }
 
 const ROTATION_STEP_RADIANS = Math.PI / 12
+
+function areScreenPointsEqual(
+  left: { x: number; y: number },
+  right: { x: number; y: number },
+) {
+  return left.x === right.x && left.y === right.y
+}
+
+function areSelectedToolbarGeometriesEqual(
+  currentGeometry: SelectedToolbarGeometry,
+  nextGeometry: SelectedToolbarGeometry,
+) {
+  if (
+    currentGeometry.kind === 'unavailable' &&
+    nextGeometry.kind === 'unavailable'
+  ) {
+    return (
+      currentGeometry.selectedId === nextGeometry.selectedId &&
+      currentGeometry.reason === nextGeometry.reason
+    )
+  }
+
+  if (
+    currentGeometry.kind !== 'available' ||
+    nextGeometry.kind !== 'available'
+  ) {
+    return false
+  }
+
+  return (
+    currentGeometry.selectedId === nextGeometry.selectedId &&
+    currentGeometry.source === nextGeometry.source &&
+    currentGeometry.sourceNodeName === nextGeometry.sourceNodeName &&
+    currentGeometry.canvasSize.width === nextGeometry.canvasSize.width &&
+    currentGeometry.canvasSize.height === nextGeometry.canvasSize.height &&
+    currentGeometry.sourcePointCount === nextGeometry.sourcePointCount &&
+    currentGeometry.projectedPointCount === nextGeometry.projectedPointCount &&
+    currentGeometry.points.length === nextGeometry.points.length &&
+    currentGeometry.points.every((point, index) =>
+      areScreenPointsEqual(point, nextGeometry.points[index]),
+    )
+  )
+}
 
 class SceneAssetErrorBoundary extends Component<
   {
@@ -96,14 +146,27 @@ class SceneAssetErrorBoundary extends Component<
 
 function App() {
   const sceneRef = useRef<SceneRef | null>(null)
+  const roomViewRef = useRef<HTMLElement | null>(null)
+  const selectedItemControlsRef = useRef<HTMLDivElement | null>(null)
+  const roomViewFocusFrameRef = useRef<number | null>(null)
   const previewedIdRef = useRef<string | null>(null)
   const overlayState = useOverlayState()
   const [floorFinishId, setFloorFinishId] = useState('')
   const [wallFinishId, setWallFinishId] = useState('')
   const [isFloorFinishLoading, setIsFloorFinishLoading] = useState(false)
   const [isSceneDragging, setIsSceneDragging] = useState(false)
+  const [roomViewHasFocus, setRoomViewHasFocus] = useState(false)
+  const [testOverlaysHidden, setTestOverlaysHidden] = useState(false)
+  const [selectedToolbarGeometry, setSelectedToolbarGeometry] =
+    useState<SelectedToolbarGeometry>({
+      kind: 'unavailable',
+      selectedId: null,
+      reason: 'no-selection',
+    })
   const isE2ELowRenderQuality =
     import.meta.env.DEV && import.meta.env.VITE_E2E_RENDER_QUALITY === 'low'
+  const canvasShadowMode = isE2ELowRenderQuality ? false : 'percentage'
+  const overlayExclusions = useOverlayExclusionRects()
 
   const startup = useStartupLifecycle({
     sceneRef,
@@ -166,7 +229,7 @@ function App() {
     editorInteractionsEnabled: startup.editorInteractionsEnabled,
     startupOverlayActive: startup.startupOverlayActive,
     selectedFurniture: overlayState.selectedFurniture,
-    canStartNewScene: !sceneIsAtDefaults,
+    canStartOver: !sceneIsAtDefaults,
   })
 
   const commands = useSceneCommands({
@@ -187,35 +250,87 @@ function App() {
     previewedId,
     handleScenePreviewChange,
     handleOutlinerPreviewChange,
+    handleCanvasKeyboardPreviewChange: applyCanvasKeyboardPreviewChange,
     handleDragStateChange,
     clearPreviewOnCanvasMiss,
   } = usePreviewController({
-    isModalOpen: dialogState.isModalOpen,
+    isBlockingOverlayOpen: dialogState.isBlockingOverlayOpen,
     editorInteractionsEnabled: startup.editorInteractionsEnabled,
     itemIds,
   })
 
-  const handleSceneDragStateChange = (dragging: boolean) => {
-    setIsSceneDragging(dragging)
-    handleDragStateChange(dragging)
-  }
+  const handleSceneDragStateChange = useCallback(
+    (dragging: boolean) => {
+      setIsSceneDragging((currentDragging) =>
+        currentDragging === dragging ? currentDragging : dragging,
+      )
+      handleDragStateChange(dragging)
+    },
+    [handleDragStateChange],
+  )
+
+  const handleSelectedToolbarGeometryChange = useCallback(
+    (nextGeometry: SelectedToolbarGeometry) => {
+      setSelectedToolbarGeometry((currentGeometry) =>
+        areSelectedToolbarGeometriesEqual(currentGeometry, nextGeometry)
+          ? currentGeometry
+          : nextGeometry,
+      )
+    },
+    [],
+  )
+
+  const handleCanvasKeyboardPreviewChange = useCallback(
+    (id: string | null) => {
+      // Keep keyboard preview reads synchronous so a quick browse+select
+      // sequence cannot observe a stale ref before effects flush.
+      previewedIdRef.current = id
+      applyCanvasKeyboardPreviewChange(id)
+    },
+    [applyCanvasKeyboardPreviewChange],
+  )
+
+  const focusRoomView = useCallback(() => {
+    if (!startup.editorInteractionsEnabled) {
+      return
+    }
+
+    if (roomViewFocusFrameRef.current !== null) {
+      cancelAnimationFrame(roomViewFocusFrameRef.current)
+    }
+
+    roomViewFocusFrameRef.current = requestAnimationFrame(() => {
+      roomViewFocusFrameRef.current = null
+      roomViewRef.current?.focus()
+    })
+  }, [startup.editorInteractionsEnabled])
+
+  useEffect(() => {
+    return () => {
+      if (roomViewFocusFrameRef.current !== null) {
+        cancelAnimationFrame(roomViewFocusFrameRef.current)
+      }
+    }
+  }, [])
 
   const sync = useSceneSync({
     sceneRef,
-    isModalOpen: dialogState.isModalOpen,
+    isBlockingOverlayOpen: dialogState.isBlockingOverlayOpen,
     handleSceneReadModelChange: overlayState.handleSceneReadModelChange,
     announcePolite: announcements.announcePolite,
   })
 
   const handlers = useSceneHandlers({
     commands,
-    sync,
+    sync: { ...sync, focusRoomView },
     announcements,
     dialogState,
     overlayState: {
       clearPreview: clearPreviewOnCanvasMiss,
       clearEditorMessage: overlayState.clearEditorMessage,
       setEditorMessage: overlayState.setEditorMessage,
+      selectedSource: overlayState.selectedSource,
+      setSelectedSource: overlayState.setSelectedSource,
       sceneReadModel: overlayState.sceneReadModel,
       selectedFurniture: overlayState.selectedFurniture,
       handleHistoryChange: overlayState.handleHistoryChange,
@@ -252,6 +367,56 @@ function App() {
     }
   }, [clearQueuedMovementAnnouncement])
 
+  const handleCanvasBrowse = useCallback(
+    (direction: 'next' | 'prev' | 'first' | 'last') => {
+      const snapshot = sceneRef.current?.getSnapshot()
+      if (!snapshot || snapshot.items.length === 0) {
+        return
+      }
+
+      const orderedIds = sortSpatially(snapshot.items)
+      if (orderedIds.length === 0) {
+        return
+      }
+
+      const currentIndex = orderedIds.indexOf(previewedIdRef.current ?? '')
+      let nextIndex: number
+
+      if (direction === 'first') {
+        nextIndex = 0
+      } else if (direction === 'last') {
+        nextIndex = orderedIds.length - 1
+      } else if (direction === 'next') {
+        nextIndex =
+          currentIndex === -1 ? 0 : (currentIndex + 1) % orderedIds.length
+      } else {
+        nextIndex =
+          currentIndex === -1
+            ? orderedIds.length - 1
+            : (currentIndex - 1 + orderedIds.length) % orderedIds.length
+      }
+
+      const nextId = orderedIds[nextIndex]
+      handleCanvasKeyboardPreviewChange(nextId)
+
+      const item = snapshot.items.find((i) => i.id === nextId)
+      if (item) {
+        announcements.announcePolite(item.name)
+      }
+    },
+    [handleCanvasKeyboardPreviewChange, announcements],
+  )
+
+  const handleCanvasSelectPreviewed = useCallback(() => {
+    const id = previewedIdRef.current
+    if (!id) {
+      return
+    }
+
+    handlers.handleSelectById(id, 'canvas-keyboard')
+    handleCanvasKeyboardPreviewChange(null)
+  }, [handlers, handleCanvasKeyboardPreviewChange])
+
   const { initializeCatalogSelection } = overlayState
   useEffect(() => {
     initializeCatalogSelection(startup.catalog)
@@ -261,7 +426,6 @@ function App() {
     startupProps,
     historyProps,
     sceneProps,
-    selectionProps,
     catalogProps,
     dialogsProps,
     previewProps,
@@ -278,14 +442,22 @@ function App() {
     onRedo: handlers.handleRedo,
     focusRequest: sync.outlinerFocusRequest,
     onFocusHandled: sync.handleOutlinerFocusHandled,
+    onNavigateBackToSelectionControls: useCallback(() => {
+      const firstFocusableControl = findFirstFocusableControl(
+        selectedItemControlsRef.current,
+      )
+
+      if (!firstFocusableControl) {
+        return false
+      }
+
+      firstFocusableControl.focus()
+      return true
+    }, []),
     onSelectById: handlers.handleSelectById,
     readModel: overlayState.sceneReadModel,
     sceneInteractionsDisabled:
-      !startup.editorInteractionsEnabled || dialogState.isModalOpen,
-    selectedFurniture: overlayState.selectedFurniture,
-    onMoveSelection: handlers.handleMoveSelection,
-    onOpenDeleteDialog: handlers.handleOpenDeleteDialog,
-    onRotateSelection: handlers.handleRotateSelection,
+      !startup.editorInteractionsEnabled || dialogState.isBlockingOverlayOpen,
     onSetCameraPreset: handlers.handleSetCameraPreset,
     onFocusSelected: handlers.handleFocusSelected,
     catalogIdToAdd: overlayState.catalogIdToAdd,
@@ -298,13 +470,23 @@ function App() {
     pendingDeleteFurniture: dialogState.pendingDeleteFurniture,
     onCloseDeleteDialog: dialogState.closeDialog,
     onConfirmDeleteSelection: handlers.handleConfirmDeleteSelection,
-    isNewSceneDialogOpen: dialogState.isNewSceneDialogOpen,
-    onCloseNewSceneDialog: dialogState.closeDialog,
-    onOpenNewSceneDialog: handlers.handleOpenNewSceneDialog,
-    onConfirmNewScene: handlers.handleConfirmNewScene,
+    isBlockingOverlayOpen: dialogState.isBlockingOverlayOpen,
+    roomSurfaceLayout: dialogState.roomSurfaceLayout,
+    isRoomSurfaceOpen: dialogState.isRoomSurfaceOpen,
+    isHeaderMoreActionsOpen: dialogState.isHeaderMoreActionsOpen,
+    onRoomSurfaceOpenChange: dialogState.setRoomSurfaceOpen,
+    isStartOverDialogOpen: dialogState.isStartOverDialogOpen,
+    onCloseStartOverDialog: dialogState.closeDialog,
+    onOpenStartOverDialog: handlers.handleOpenStartOverDialog,
+    onConfirmStartOver: handlers.handleConfirmStartOver,
     isInfoDialogOpen: dialogState.isInfoDialogOpen,
     onInfoDialogOpenChange: dialogState.setInfoOpen,
+    isKeyboardShortcutsDialogOpen: dialogState.isKeyboardShortcutsDialogOpen,
+    onKeyboardShortcutsDialogOpenChange: dialogState.setKeyboardShortcutsOpen,
+    onHeaderMoreActionsOpenChange: dialogState.setHeaderMoreActionsOpen,
+    returnFocusTarget: dialogState.returnFocusTarget,
     onPreviewChange: handleOutlinerPreviewChange,
+    previewedId,
   })
 
   useEffect(() => {
@@ -338,6 +520,9 @@ function App() {
           restoreOutcome: handlers.restoreOutcomeRef.current,
           restoreAttemptCount: handlers.restoreAttemptCountRef.current,
         }
+      },
+      setOverlaysHidden: (hidden: boolean) => {
+        setTestOverlaysHidden(hidden)
       },
     }
 
@@ -392,24 +577,31 @@ function App() {
   useKeyboardShortcuts({
     enabled: startup.editorInteractionsEnabled,
     hasSelection: overlayState.selectedFurniture !== null,
-    isModalOpen: dialogState.isModalOpen,
-    canStartNewScene: !sceneIsAtDefaults,
+    isBlockingOverlayOpen: dialogState.isBlockingOverlayOpen,
+    canStartOver: !sceneIsAtDefaults,
+    roomViewHasFocus,
     onUndo: handlers.handleUndo,
     onRedo: handlers.handleRedo,
-    onNewSceneIntent: handlers.handleOpenNewSceneDialog,
-    onOpenDeleteDialog: handlers.handleOpenDeleteDialog,
+    onStartOverIntent: handlers.handleOpenStartOverDialog,
+    onOpenDeleteDialog: handlers.handleOpenDeleteDialogFromRoomView,
     onFocusSelected: handlers.handleFocusSelected,
     onMoveSelection: (delta) => {
       handlers.handleMoveSelection(delta, { source: 'keyboard' })
     },
-    onClearSelection: handlers.handleClearSelection,
+    onClearSelection: () => {
+      handlers.handleClearSelection()
+      clearPreviewOnCanvasMiss()
+    },
     onRotate: handlers.handleRotateSelection,
     onSetCameraPreset: handlers.handleSetCameraPreset,
+    onCanvasBrowse: handleCanvasBrowse,
+    onCanvasSelectPreviewed: handleCanvasSelectPreviewed,
   })
 
   useCameraKeyState({
     enabled: startup.editorInteractionsEnabled,
-    isModalOpen: dialogState.isModalOpen,
+    isBlockingOverlayOpen: dialogState.isBlockingOverlayOpen,
+    roomViewHasFocus,
     sceneRef,
   })
 
@@ -418,16 +610,31 @@ function App() {
       <main
         className="relative size-full"
         aria-busy={startup.startupLoadingActive}
+        data-test-overlays-hidden={testOverlaysHidden ? 'true' : 'false'}
       >
+        <h1 className="sr-only">Room Layout</h1>
         <p id="scene-instructions" className="sr-only">
-          Interactive 3D room editor. Use the furniture list to select items and
-          the selected item panel to move, rotate, or delete them without
-          dragging.
+          Interactive 3D room editor. Tab to focus the room-view region, then
+          use the arrow keys to preview items in the room and Enter or Space to
+          select the previewed item. You can also use the furniture in room
+          panel and selected item actions and details to rotate, remove, or type
+          exact placement changes without dragging. When focus is in the
+          furniture in room panel, press Shift+Tab to return to selected item
+          actions and details.
         </p>
         <section
           aria-describedby="scene-instructions"
           aria-label="Interactive 3D room editor"
-          className="absolute inset-0 z-0"
+          ref={roomViewRef}
+          tabIndex={startup.editorInteractionsEnabled ? 0 : -1}
+          className="absolute inset-0 z-0 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+          onFocus={() => {
+            setRoomViewHasFocus(true)
+          }}
+          onBlur={() => {
+            setRoomViewHasFocus(false)
+          }}
+          onPointerDownCapture={focusRoomView}
         >
           <Canvas
             className="absolute inset-0 z-0"
@@ -435,6 +642,7 @@ function App() {
               position: [3, 2.5, 3],
               fov: 50,
             }}
+            frameloop="demand"
             onCreated={({ gl }) => {
               gl.outputColorSpace = SRGBColorSpace
               gl.toneMapping = NeutralToneMapping
@@ -445,10 +653,11 @@ function App() {
                 return
               }
 
+              focusRoomView()
               clearPreviewOnCanvasMiss()
               handlers.handleClearSelection()
             }}
-            shadows={!isE2ELowRenderQuality}
+            shadows={canvasShadowMode}
           >
             <SceneAssetErrorBoundary
               key={startup.cacheInvalidationKey}
@@ -460,12 +669,18 @@ function App() {
                   renderQuality={isE2ELowRenderQuality ? 'e2e-low' : 'default'}
                   catalog={startup.catalog}
                   collections={startup.collections}
+                  onCanvasPointerSelection={
+                    handlers.handleCanvasPointerSelection
+                  }
                   onSelectionChange={handlers.handleSceneSelectionChange}
                   onHistoryChange={handlers.handleSceneHistoryChange}
                   onAssetsReady={handlers.handleSceneAssetsReady}
                   previewedId={previewedId}
                   onPreviewChange={handleScenePreviewChange}
                   onDragStateChange={handleSceneDragStateChange}
+                  onSelectedToolbarGeometryChange={
+                    handleSelectedToolbarGeometryChange
+                  }
                   floorOption={selectedFloorOption}
                   wallOption={selectedWallOption}
                   onFloorLoadingChange={setIsFloorFinishLoading}
@@ -475,27 +690,68 @@ function App() {
           </Canvas>
         </section>
 
-        <EditorOverlay
-          editorInteractionsEnabled={startup.editorInteractionsEnabled}
-          newSceneDisabled={sceneIsAtDefaults}
-          statusMessage={overlayState.editorMessage}
-          onCopySceneUrl={handlers.handleCopySceneUrl}
-          camera={cameraProps}
-          startup={startupProps}
-          history={historyProps}
-          scene={sceneProps}
-          selection={selectionProps}
-          catalog={catalogProps}
-          dialogs={dialogsProps}
-          preview={previewProps}
-          floorFinishId={activeFloorFinishId}
-          floorFinishLoading={isFloorFinishLoading}
-          floorFinishes={environmentConfig?.floorFinishes ?? []}
-          onFloorFinishChange={setFloorFinishId}
-          wallFinishId={activeWallFinishId}
-          wallFinishes={environmentConfig?.wallFinishes ?? []}
-          onWallFinishChange={setWallFinishId}
-        />
+        {testOverlaysHidden ? null : (
+          <>
+            <SelectedItemControls
+              containerRef={selectedItemControlsRef}
+              editorInteractionsEnabled={startup.editorInteractionsEnabled}
+              exclusionRects={overlayExclusions.rects}
+              isCatalogDrawerOpen={dialogState.isCatalogDrawerOpen}
+              onInvalidSelectedItemDetailValue={
+                handlers.handleInvalidSelectedItemDetailValue
+              }
+              onOpenDeleteDialog={handlers.handleOpenDeleteDialog}
+              onRotateSelection={handlers.handleRotateSelection}
+              onUpdateSelectedItemDetails={
+                handlers.handleUpdateSelectedItemDetails
+              }
+              roomViewRef={roomViewRef}
+              selectedDetailsRef={overlayExclusions.registerExclusionElement(
+                'selected-details',
+              )}
+              selectedFurniture={overlayState.selectedFurniture}
+              selectedToolbarGeometry={selectedToolbarGeometry}
+              startupOverlayActive={startup.startupOverlayActive}
+            />
+
+            <EditorOverlay
+              editorInteractionsEnabled={startup.editorInteractionsEnabled}
+              startOverDisabled={sceneIsAtDefaults}
+              onHeaderLayoutModeChange={dialogState.syncLayoutMode}
+              statusMessage={overlayState.editorMessage}
+              onShareSceneUrl={() => handlers.handleShareSceneUrl()}
+              camera={cameraProps}
+              startup={startupProps}
+              history={historyProps}
+              scene={sceneProps}
+              catalog={catalogProps}
+              dialogs={dialogsProps}
+              preview={previewProps}
+              floorFinishId={activeFloorFinishId}
+              floorFinishLoading={isFloorFinishLoading}
+              floorFinishes={environmentConfig?.floorFinishes ?? []}
+              onFloorFinishChange={setFloorFinishId}
+              wallFinishId={activeWallFinishId}
+              wallFinishes={environmentConfig?.wallFinishes ?? []}
+              onWallFinishChange={setWallFinishId}
+              topHeaderElementRef={overlayExclusions.registerExclusionElement(
+                'top-header',
+              )}
+              outlinerElementRef={overlayExclusions.registerExclusionElement(
+                'outliner',
+              )}
+              cameraToolsElementRef={overlayExclusions.registerExclusionElement(
+                'camera-tools',
+              )}
+              desktopRoomSidebarElementRef={overlayExclusions.registerExclusionElement(
+                'desktop-room-sidebar',
+              )}
+              mobileRoomDrawerElementRef={overlayExclusions.registerExclusionElement(
+                'mobile-room-drawer',
+              )}
+            />
+          </>
+        )}
         <Announcer
           politeMessage={announcements.politeAnnouncement}
           assertiveMessage={announcements.assertiveAnnouncement}

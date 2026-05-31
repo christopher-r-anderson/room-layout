@@ -7,7 +7,7 @@ function defaultOptions(
   overrides: Partial<Parameters<typeof usePreviewController>[0]> = {},
 ) {
   return {
-    isModalOpen: false,
+    isBlockingOverlayOpen: false,
     editorInteractionsEnabled: true,
     itemIds: ['item-1', 'item-2'],
     ...overrides,
@@ -94,5 +94,38 @@ describe('usePreviewController', () => {
       result.current.handleOutlinerPreviewChange(null, 'outliner-focus')
     })
     expect(result.current.previewedId).toBeNull()
+  })
+
+  it('uses canvas-keyboard preview as an explicit preview source and clears it', () => {
+    const { result } = renderHook(() => usePreviewController(defaultOptions()))
+
+    act(() => {
+      result.current.handleCanvasKeyboardPreviewChange('item-2')
+    })
+    expect(result.current.previewedId).toBe('item-2')
+
+    act(() => {
+      result.current.handleCanvasKeyboardPreviewChange(null)
+    })
+    expect(result.current.previewedId).toBeNull()
+  })
+
+  it('does not clear a newer outliner preview when canvas-keyboard preview exits', () => {
+    const { result } = renderHook(() => usePreviewController(defaultOptions()))
+
+    act(() => {
+      result.current.handleCanvasKeyboardPreviewChange('item-1')
+    })
+    expect(result.current.previewedId).toBe('item-1')
+
+    act(() => {
+      result.current.handleOutlinerPreviewChange('item-2', 'outliner-focus')
+    })
+    expect(result.current.previewedId).toBe('item-2')
+
+    act(() => {
+      result.current.handleCanvasKeyboardPreviewChange(null)
+    })
+    expect(result.current.previewedId).toBe('item-2')
   })
 })

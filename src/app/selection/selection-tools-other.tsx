@@ -6,11 +6,13 @@ import { ToolButton } from '@/components/ui/tool-button'
 export function SelectionToolsOther({
   editorInteractionsEnabled,
   onOpenDeleteDialog,
+  onPrepareDelete,
   onRotateSelection,
   selectedFurniture,
 }: {
   editorInteractionsEnabled: boolean
   onOpenDeleteDialog: () => void
+  onPrepareDelete?: () => void
   onRotateSelection: (direction: -1 | 1) => void
   selectedFurniture: FurnitureItem | null
 }) {
@@ -20,15 +22,7 @@ export function SelectionToolsOther({
     : 'No item selected'
 
   return (
-    <ButtonGroup aria-label="Selection Other Actions">
-      <ToolButton
-        action={onOpenDeleteDialog}
-        disabled={controlsDisabled}
-        disabledMessage={disabledMessage}
-        shortcuts="Delete Backspace"
-        label="Delete"
-        icon={<IconTrash />}
-      />
+    <ButtonGroup aria-label="Selected item actions">
       <ToolButton
         action={() => {
           onRotateSelection(1)
@@ -36,8 +30,11 @@ export function SelectionToolsOther({
         disabled={controlsDisabled}
         disabledMessage={disabledMessage}
         shortcuts=","
-        label="Rotate Left"
+        label="Rotate counterclockwise"
+        labelVisibility="sr-only"
         icon={<IconRotate3d className="-scale-x-100" />}
+        size="toolbar-icon"
+        tooltipSide="top"
       />
       <ToolButton
         action={() => {
@@ -46,8 +43,25 @@ export function SelectionToolsOther({
         disabled={controlsDisabled}
         disabledMessage={disabledMessage}
         shortcuts="."
-        label="Rotate Right"
+        label="Rotate clockwise"
+        labelVisibility="sr-only"
         icon={<IconRotate3d />}
+        size="toolbar-icon"
+        tooltipSide="top"
+      />
+      <ToolButton
+        action={onOpenDeleteDialog}
+        disabled={controlsDisabled}
+        disabledMessage={disabledMessage}
+        shortcuts="Delete Backspace"
+        label="Remove item"
+        labelVisibility="sr-only"
+        icon={<IconTrash />}
+        size="toolbar-icon"
+        tooltipSide="top"
+        onPointerDown={() => {
+          onPrepareDelete?.()
+        }}
       />
     </ButtonGroup>
   )

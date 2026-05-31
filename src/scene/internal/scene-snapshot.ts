@@ -1,5 +1,6 @@
-import { Box3, type Camera, type Object3D, Vector3 } from 'three'
+import { type Camera, type Object3D, Vector3 } from 'three'
 import type { FurnitureItem } from '../objects/furniture.types'
+import { getVisualObjectBounds } from '@/lib/three/get-visual-object-bounds'
 
 export interface SceneSnapshotItem {
   id: string
@@ -45,9 +46,9 @@ function getPointerTargetForObject({
   object.updateWorldMatrix(true, true)
 
   const projectedPoint = new Vector3()
-  const bounds = new Box3().setFromObject(object)
+  const bounds = getVisualObjectBounds(object)
 
-  if (bounds.isEmpty()) {
+  if (!bounds) {
     projectedPoint.setFromMatrixPosition(object.matrixWorld)
   } else {
     bounds.getCenter(projectedPoint)
@@ -59,6 +60,17 @@ function getPointerTargetForObject({
     !Number.isFinite(projectedPoint.x) ||
     !Number.isFinite(projectedPoint.y) ||
     !Number.isFinite(projectedPoint.z)
+  ) {
+    return null
+  }
+
+  if (
+    projectedPoint.x < -1 ||
+    projectedPoint.x > 1 ||
+    projectedPoint.y < -1 ||
+    projectedPoint.y > 1 ||
+    projectedPoint.z < -1 ||
+    projectedPoint.z > 1
   ) {
     return null
   }

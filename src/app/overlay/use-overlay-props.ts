@@ -6,9 +6,12 @@ import type {
   EditorHistoryProps,
   EditorPreviewProps,
   EditorSceneProps,
-  EditorSelectionProps,
   EditorStartupProps,
 } from './editor-overlay'
+
+// Pure prop-grouping layer for EditorOverlay. It collects the startup, camera,
+// history, scene, catalog, dialogs, and preview bundles without adding side
+// effects or behavior beyond memoized object shaping.
 
 interface UseOverlayPropsOptions {
   assetError: boolean
@@ -24,13 +27,10 @@ interface UseOverlayPropsOptions {
   onRedo: () => void
   focusRequest: EditorSceneProps['focusRequest']
   onFocusHandled: EditorSceneProps['onFocusHandled']
+  onNavigateBackToSelectionControls: EditorSceneProps['onNavigateBackToSelectionControls']
   onSelectById: EditorSceneProps['onSelectById']
   readModel: EditorSceneProps['readModel']
   sceneInteractionsDisabled: EditorSceneProps['sceneInteractionsDisabled']
-  selectedFurniture: EditorSelectionProps['selectedFurniture']
-  onMoveSelection: EditorSelectionProps['onMoveSelection']
-  onOpenDeleteDialog: EditorSelectionProps['onOpenDeleteDialog']
-  onRotateSelection: EditorSelectionProps['onRotateSelection']
   catalogIdToAdd: EditorCatalogProps['catalogIdToAdd']
   catalog: EditorCatalogProps['catalog']
   isCatalogDrawerOpen: EditorCatalogProps['isCatalogDrawerOpen']
@@ -38,16 +38,26 @@ interface UseOverlayPropsOptions {
   onCatalogIdToAddChange: EditorCatalogProps['onCatalogIdToAddChange']
   onCatalogDrawerOpenChange: EditorCatalogProps['onCatalogDrawerOpenChange']
   isDeleteDialogOpen: EditorDialogsProps['isDeleteDialogOpen']
+  isBlockingOverlayOpen: EditorDialogsProps['isBlockingOverlayOpen']
   pendingDeleteFurniture: EditorDialogsProps['pendingDeleteFurniture']
   onCloseDeleteDialog: EditorDialogsProps['onCloseDeleteDialog']
   onConfirmDeleteSelection: EditorDialogsProps['onConfirmDeleteSelection']
-  isNewSceneDialogOpen: EditorDialogsProps['isNewSceneDialogOpen']
-  onCloseNewSceneDialog: EditorDialogsProps['onCloseNewSceneDialog']
-  onOpenNewSceneDialog: EditorDialogsProps['onOpenNewSceneDialog']
-  onConfirmNewScene: EditorDialogsProps['onConfirmNewScene']
+  roomSurfaceLayout: EditorDialogsProps['roomSurfaceLayout']
+  isRoomSurfaceOpen: EditorDialogsProps['isRoomSurfaceOpen']
+  isHeaderMoreActionsOpen: EditorDialogsProps['isHeaderMoreActionsOpen']
+  onRoomSurfaceOpenChange: EditorDialogsProps['onRoomSurfaceOpenChange']
+  isStartOverDialogOpen: EditorDialogsProps['isStartOverDialogOpen']
+  onCloseStartOverDialog: EditorDialogsProps['onCloseStartOverDialog']
+  onOpenStartOverDialog: EditorDialogsProps['onOpenStartOverDialog']
+  onConfirmStartOver: EditorDialogsProps['onConfirmStartOver']
   isInfoDialogOpen: EditorDialogsProps['isInfoDialogOpen']
   onInfoDialogOpenChange: EditorDialogsProps['onInfoDialogOpenChange']
+  isKeyboardShortcutsDialogOpen: EditorDialogsProps['isKeyboardShortcutsDialogOpen']
+  onKeyboardShortcutsDialogOpenChange: EditorDialogsProps['onKeyboardShortcutsDialogOpenChange']
+  onHeaderMoreActionsOpenChange: EditorDialogsProps['onHeaderMoreActionsOpenChange']
+  returnFocusTarget: EditorDialogsProps['returnFocusTarget']
   onPreviewChange: EditorPreviewProps['onPreviewChange']
+  previewedId: EditorPreviewProps['previewedId']
 }
 
 interface EditorOverlayPropsShape {
@@ -55,7 +65,6 @@ interface EditorOverlayPropsShape {
   cameraProps: EditorCameraProps
   historyProps: EditorHistoryProps
   sceneProps: EditorSceneProps
-  selectionProps: EditorSelectionProps
   catalogProps: EditorCatalogProps
   dialogsProps: EditorDialogsProps
   previewProps: EditorPreviewProps
@@ -75,13 +84,10 @@ export function useOverlayProps({
   onRedo,
   focusRequest,
   onFocusHandled,
+  onNavigateBackToSelectionControls,
   onSelectById,
   readModel,
   sceneInteractionsDisabled,
-  selectedFurniture,
-  onMoveSelection,
-  onOpenDeleteDialog,
-  onRotateSelection,
   catalogIdToAdd,
   catalog,
   isCatalogDrawerOpen,
@@ -89,16 +95,26 @@ export function useOverlayProps({
   onCatalogIdToAddChange,
   onCatalogDrawerOpenChange,
   isDeleteDialogOpen,
+  isBlockingOverlayOpen,
   pendingDeleteFurniture,
   onCloseDeleteDialog,
   onConfirmDeleteSelection,
-  isNewSceneDialogOpen,
-  onCloseNewSceneDialog,
-  onOpenNewSceneDialog,
-  onConfirmNewScene,
+  roomSurfaceLayout,
+  isRoomSurfaceOpen,
+  isHeaderMoreActionsOpen,
+  onRoomSurfaceOpenChange,
+  isStartOverDialogOpen,
+  onCloseStartOverDialog,
+  onOpenStartOverDialog,
+  onConfirmStartOver,
   isInfoDialogOpen,
   onInfoDialogOpenChange,
+  isKeyboardShortcutsDialogOpen,
+  onKeyboardShortcutsDialogOpenChange,
+  onHeaderMoreActionsOpenChange,
+  returnFocusTarget,
   onPreviewChange,
+  previewedId,
 }: UseOverlayPropsOptions): EditorOverlayPropsShape {
   const startupProps = useMemo<EditorStartupProps>(
     () => ({
@@ -140,6 +156,7 @@ export function useOverlayProps({
     () => ({
       focusRequest,
       onFocusHandled,
+      onNavigateBackToSelectionControls,
       onSelectById,
       readModel,
       sceneInteractionsDisabled,
@@ -147,20 +164,11 @@ export function useOverlayProps({
     [
       focusRequest,
       onFocusHandled,
+      onNavigateBackToSelectionControls,
       onSelectById,
       readModel,
       sceneInteractionsDisabled,
     ],
-  )
-
-  const selectionProps = useMemo<EditorSelectionProps>(
-    () => ({
-      selectedFurniture,
-      onMoveSelection,
-      onOpenDeleteDialog,
-      onRotateSelection,
-    }),
-    [onMoveSelection, onOpenDeleteDialog, onRotateSelection, selectedFurniture],
   )
 
   const catalogProps = useMemo<EditorCatalogProps>(
@@ -185,27 +193,45 @@ export function useOverlayProps({
   const dialogsProps = useMemo<EditorDialogsProps>(
     () => ({
       isDeleteDialogOpen,
+      isBlockingOverlayOpen,
       pendingDeleteFurniture,
       onCloseDeleteDialog,
       onConfirmDeleteSelection,
-      isNewSceneDialogOpen,
-      onCloseNewSceneDialog,
-      onOpenNewSceneDialog,
-      onConfirmNewScene,
+      roomSurfaceLayout,
+      isRoomSurfaceOpen,
+      isHeaderMoreActionsOpen,
+      onRoomSurfaceOpenChange,
+      isStartOverDialogOpen,
+      onCloseStartOverDialog,
+      onOpenStartOverDialog,
+      onConfirmStartOver,
       isInfoDialogOpen,
       onInfoDialogOpenChange,
+      isKeyboardShortcutsDialogOpen,
+      onKeyboardShortcutsDialogOpenChange,
+      onHeaderMoreActionsOpenChange,
+      returnFocusTarget,
     }),
     [
       isDeleteDialogOpen,
+      isBlockingOverlayOpen,
       pendingDeleteFurniture,
       onCloseDeleteDialog,
       onConfirmDeleteSelection,
-      isNewSceneDialogOpen,
-      onCloseNewSceneDialog,
-      onOpenNewSceneDialog,
-      onConfirmNewScene,
+      roomSurfaceLayout,
+      isRoomSurfaceOpen,
+      isHeaderMoreActionsOpen,
+      onRoomSurfaceOpenChange,
+      isStartOverDialogOpen,
+      onCloseStartOverDialog,
+      onOpenStartOverDialog,
+      onConfirmStartOver,
       isInfoDialogOpen,
       onInfoDialogOpenChange,
+      isKeyboardShortcutsDialogOpen,
+      onKeyboardShortcutsDialogOpenChange,
+      onHeaderMoreActionsOpenChange,
+      returnFocusTarget,
     ],
   )
 
@@ -215,10 +241,9 @@ export function useOverlayProps({
       cameraProps,
       historyProps,
       sceneProps,
-      selectionProps,
       catalogProps,
       dialogsProps,
-      previewProps: { onPreviewChange },
+      previewProps: { onPreviewChange, previewedId },
     }),
     [
       cameraProps,
@@ -226,8 +251,8 @@ export function useOverlayProps({
       dialogsProps,
       historyProps,
       onPreviewChange,
+      previewedId,
       sceneProps,
-      selectionProps,
       startupProps,
     ],
   )

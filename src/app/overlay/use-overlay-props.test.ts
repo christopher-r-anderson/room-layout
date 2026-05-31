@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from 'vitest'
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
 import type { FurnitureCatalogEntry } from '@/scene/objects/furniture-catalog'
 import type { SceneReadModel } from '@/scene/scene.types'
+import type { PanelSelectById } from '../scene-interaction.types'
 import type { SceneOutlinerFocusRequest } from '../scene-panel.types'
 import { useOverlayProps } from './use-overlay-props'
 
@@ -42,7 +43,8 @@ interface OverlayOptions {
   onRedo: () => void
   focusRequest: SceneOutlinerFocusRequest | null
   onFocusHandled: () => void
-  onSelectById: (id: string | null) => void
+  onNavigateBackToSelectionControls: () => boolean
+  onSelectById: PanelSelectById
   readModel: SceneReadModel
   sceneInteractionsDisabled: boolean
   selectedFurniture: FurnitureItem | null
@@ -56,19 +58,35 @@ interface OverlayOptions {
   onCatalogIdToAddChange: (catalogId: string) => void
   onCatalogDrawerOpenChange: (open: boolean) => void
   isDeleteDialogOpen: boolean
+  isBlockingOverlayOpen: boolean
   pendingDeleteFurniture: FurnitureItem | null
   onCloseDeleteDialog: () => void
   onConfirmDeleteSelection: () => void
-  isNewSceneDialogOpen: boolean
-  onCloseNewSceneDialog: () => void
-  onOpenNewSceneDialog: () => void
-  onConfirmNewScene: () => void
+  roomSurfaceLayout: 'desktop' | 'mobile' | null
+  isRoomSurfaceOpen: boolean
+  isHeaderMoreActionsOpen: boolean
+  onRoomSurfaceOpenChange: (open: boolean) => boolean
+  isStartOverDialogOpen: boolean
+  onCloseStartOverDialog: () => void
+  onOpenStartOverDialog: () => void
+  onConfirmStartOver: () => void
   isInfoDialogOpen: boolean
-  onInfoDialogOpenChange: (open: boolean) => void
+  onInfoDialogOpenChange: (open: boolean) => boolean
+  isKeyboardShortcutsDialogOpen: boolean
+  onKeyboardShortcutsDialogOpenChange: (open: boolean) => boolean
+  onHeaderMoreActionsOpenChange: (open: boolean) => boolean
+  returnFocusTarget:
+    | 'room-inline'
+    | 'info-inline'
+    | 'keyboard-inline'
+    | 'header-more-actions'
+    | 'start-over-inline'
+    | null
   onPreviewChange: (
     id: string | null,
     source: 'outliner-hover' | 'outliner-focus',
   ) => void
+  previewedId: string | null
 }
 
 function createOptions(overrides?: Partial<OverlayOptions>): OverlayOptions {
@@ -88,6 +106,7 @@ function createOptions(overrides?: Partial<OverlayOptions>): OverlayOptions {
     onRedo: vi.fn(),
     focusRequest: null,
     onFocusHandled: vi.fn(),
+    onNavigateBackToSelectionControls: vi.fn(() => true),
     onSelectById: vi.fn(),
     readModel: {
       selectedId: selectedFurniture.id,
@@ -108,16 +127,26 @@ function createOptions(overrides?: Partial<OverlayOptions>): OverlayOptions {
     onCatalogIdToAddChange: vi.fn(),
     onCatalogDrawerOpenChange: vi.fn(),
     isDeleteDialogOpen: false,
+    isBlockingOverlayOpen: false,
     pendingDeleteFurniture: selectedFurniture,
     onCloseDeleteDialog: vi.fn(),
     onConfirmDeleteSelection: vi.fn(),
-    isNewSceneDialogOpen: false,
-    onCloseNewSceneDialog: vi.fn(),
-    onOpenNewSceneDialog: vi.fn(),
-    onConfirmNewScene: vi.fn(),
+    roomSurfaceLayout: null,
+    isRoomSurfaceOpen: false,
+    isHeaderMoreActionsOpen: false,
+    onRoomSurfaceOpenChange: vi.fn(() => true),
+    isStartOverDialogOpen: false,
+    onCloseStartOverDialog: vi.fn(),
+    onOpenStartOverDialog: vi.fn(),
+    onConfirmStartOver: vi.fn(),
     isInfoDialogOpen: false,
-    onInfoDialogOpenChange: vi.fn(),
+    onInfoDialogOpenChange: vi.fn(() => true),
+    isKeyboardShortcutsDialogOpen: false,
+    onKeyboardShortcutsDialogOpenChange: vi.fn(() => true),
+    onHeaderMoreActionsOpenChange: vi.fn(() => true),
+    returnFocusTarget: null,
     onPreviewChange: vi.fn(),
+    previewedId: null,
     ...overrides,
   }
 }
@@ -134,8 +163,13 @@ describe('useOverlayProps', () => {
       catalogIdToAdd: 'table-1',
       isCatalogDrawerOpen: true,
       isDeleteDialogOpen: true,
-      isNewSceneDialogOpen: true,
+      roomSurfaceLayout: 'desktop',
+      isRoomSurfaceOpen: true,
+      isHeaderMoreActionsOpen: true,
+      isStartOverDialogOpen: true,
       isInfoDialogOpen: true,
+      isKeyboardShortcutsDialogOpen: true,
+      returnFocusTarget: 'header-more-actions',
       sceneInteractionsDisabled: true,
     })
 
@@ -157,15 +191,11 @@ describe('useOverlayProps', () => {
     expect(result.current.sceneProps).toEqual({
       focusRequest: null,
       onFocusHandled: options.onFocusHandled,
+      onNavigateBackToSelectionControls:
+        options.onNavigateBackToSelectionControls,
       onSelectById: options.onSelectById,
       readModel: options.readModel,
       sceneInteractionsDisabled: true,
-    })
-    expect(result.current.selectionProps).toEqual({
-      selectedFurniture: options.selectedFurniture,
-      onMoveSelection: options.onMoveSelection,
-      onOpenDeleteDialog: options.onOpenDeleteDialog,
-      onRotateSelection: options.onRotateSelection,
     })
     expect(result.current.catalogProps).toEqual({
       catalog: [],
@@ -177,15 +207,25 @@ describe('useOverlayProps', () => {
     })
     expect(result.current.dialogsProps).toEqual({
       isDeleteDialogOpen: true,
+      isBlockingOverlayOpen: false,
       pendingDeleteFurniture: options.pendingDeleteFurniture,
       onCloseDeleteDialog: options.onCloseDeleteDialog,
       onConfirmDeleteSelection: options.onConfirmDeleteSelection,
-      isNewSceneDialogOpen: true,
-      onCloseNewSceneDialog: options.onCloseNewSceneDialog,
-      onOpenNewSceneDialog: options.onOpenNewSceneDialog,
-      onConfirmNewScene: options.onConfirmNewScene,
+      roomSurfaceLayout: 'desktop',
+      isRoomSurfaceOpen: true,
+      isHeaderMoreActionsOpen: true,
+      onRoomSurfaceOpenChange: options.onRoomSurfaceOpenChange,
+      isStartOverDialogOpen: true,
+      onCloseStartOverDialog: options.onCloseStartOverDialog,
+      onOpenStartOverDialog: options.onOpenStartOverDialog,
+      onConfirmStartOver: options.onConfirmStartOver,
       isInfoDialogOpen: true,
       onInfoDialogOpenChange: options.onInfoDialogOpenChange,
+      isKeyboardShortcutsDialogOpen: true,
+      onKeyboardShortcutsDialogOpenChange:
+        options.onKeyboardShortcutsDialogOpenChange,
+      onHeaderMoreActionsOpenChange: options.onHeaderMoreActionsOpenChange,
+      returnFocusTarget: 'header-more-actions',
     })
   })
 
@@ -206,7 +246,6 @@ describe('useOverlayProps', () => {
     expect(result.current.startupProps).toBe(firstResult.startupProps)
     expect(result.current.historyProps).toBe(firstResult.historyProps)
     expect(result.current.sceneProps).toBe(firstResult.sceneProps)
-    expect(result.current.selectionProps).toBe(firstResult.selectionProps)
     expect(result.current.catalogProps).toBe(firstResult.catalogProps)
     expect(result.current.dialogsProps).toBe(firstResult.dialogsProps)
   })
@@ -235,7 +274,6 @@ describe('useOverlayProps', () => {
       },
     })
 
-    expect(result.current.selectionProps).not.toBe(firstResult.selectionProps)
     expect(result.current.sceneProps).not.toBe(firstResult.sceneProps)
     expect(result.current.startupProps).toBe(firstResult.startupProps)
     expect(result.current.historyProps).toBe(firstResult.historyProps)

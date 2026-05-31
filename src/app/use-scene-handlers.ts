@@ -1,4 +1,8 @@
 import { useCallback, useRef, type RefObject } from 'react'
+import type {
+  UpdateSelectedItemDetailsInput,
+  UpdateSelectedItemDetailsResult,
+} from './selected-item-details.types'
 import { isSceneStateAtDefaults } from '@/lib/three/scene-model'
 import type {
   CameraPreset,
@@ -6,6 +10,7 @@ import type {
   MoveSource,
   SceneReadModel,
   SelectByIdResult,
+  UpdateSelectionTransformResult,
 } from '@/scene/scene.types'
 import type {
   FurnitureInstance,
@@ -13,6 +18,8 @@ import type {
 } from '@/scene/objects/furniture.types'
 import type { FurnitureCatalogEntry } from '@/scene/objects/furniture-catalog'
 import type { HistoryAvailability } from './history/history.types'
+import type { DialogOpenOptions } from './overlay/use-dialog-state'
+import type { InteractionSource } from './scene-interaction.types'
 import {
   runStartupAssetErrorTransition,
   runStartupRetryTransition,
@@ -32,6 +39,7 @@ import {
   type SceneDraftState,
 } from './url-scene/scene-draft'
 import { toast } from 'sonner'
+import { resolvePositionFromWallClearances } from '@/lib/three/wall-clearance'
 
 // ---------------------------------------------------------------------------
 // Dependency slices accepted from outer hooks
@@ -46,6 +54,10 @@ interface Commands {
     delta: { x: number; z: number },
     options?: { source?: MoveSource },
   ) => MoveSelectionResult
+  setSelectionTransform?: (input: {
+    position?: [number, number, number]
+    rotationY?: number
+  }) => UpdateSelectionTransformResult
   redo: () => boolean
   rotateSelection: (direction: -1 | 1) => void
   selectById: (id: string | null) => SelectByIdResult
@@ -59,6 +71,7 @@ interface Sync {
     requestOutlinerFocus?: boolean
   }) => SceneReadModel | null
   requestOutlinerFocusByIndex: (preferredIndex: number) => void
+  focusRoomView: () => void
 }
 
 interface Announcements {
@@ -72,7 +85,7 @@ interface DialogState {
   closeDialog: () => void
   closeAllDialogs: () => void
   openDelete: () => boolean
-  openNewScene: () => boolean
+  openStartOver: (options?: DialogOpenOptions) => boolean
   setCatalogOpen: (open: boolean) => boolean
   pendingDeleteFurniture: FurnitureItem | null
 }
@@ -99,6 +112,8 @@ interface OverlayState {
   clearPreview: () => void
   clearEditorMessage: () => void
   setEditorMessage: (message: string | null) => void
+  selectedSource: InteractionSource
+  setSelectedSource: (source: InteractionSource) => void
   sceneReadModel: SceneReadModel
   selectedFurniture: FurnitureItem | null
   handleHistoryChange: (availability: HistoryAvailability) => void
@@ -119,13 +134,21 @@ interface UseSceneHandlersOptions {
 
 interface SceneHandlers {
   handleAddFurniture: () => boolean
+  handleCanvasPointerSelection: (id: string) => void
   handleFocusSelected: () => void
-  handleSelectById: (id: string | null) => SelectByIdResult
+  handleSelectById: (
+    id: string | null,
+    source?: InteractionSource,
+  ) => SelectByIdResult
   handleMoveSelection: (
     delta: { x: number; z: number },
     options?: { source?: MoveSource },
   ) => MoveSelectionResult
   handleRotateSelection: (direction: -1 | 1) => void
+  handleInvalidSelectedItemDetailValue: (fieldLabel: string) => string
+  handleUpdateSelectedItemDetails: (
+    input: UpdateSelectedItemDetailsInput,
+  ) => UpdateSelectedItemDetailsResult
   handleConfirmDeleteSelection: () => SceneReadModel | null
   handleUndo: () => void
   handleRedo: () => void
@@ -133,14 +156,15 @@ interface SceneHandlers {
   handleSetCameraPreset: (preset: CameraPreset) => void
   handleCatalogDrawerOpenChange: (open: boolean) => void
   handleOpenDeleteDialog: () => void
-  handleOpenNewSceneDialog: () => void
-  handleConfirmNewScene: () => void
+  handleOpenDeleteDialogFromRoomView: () => void
+  handleOpenStartOverDialog: (options?: DialogOpenOptions) => void
+  handleConfirmStartOver: () => void
   handleSceneHistoryChange: (availability: HistoryAvailability) => void
-  handleSceneSelectionChange: () => void
+  handleSceneSelectionChange: (item: FurnitureItem | null) => void
   handleSceneAssetError: (error: Error) => void
   handleSceneAssetsReady: () => void
   handleRetryAssetLoading: () => void
-  handleCopySceneUrl: () => Promise<boolean>
+  handleShareSceneUrl: () => Promise<'shared' | 'copied' | null>
   restoreOutcomeRef: RefObject<RestoreOutcome | null>
   restoreAttemptCountRef: RefObject<number>
 }
@@ -383,13 +407,18 @@ export function useSceneHandlers({
     confirmDeleteSelection,
     focusSelected,
     moveSelection,
+    setSelectionTransform = () => ({
+      ok: false as const,
+      reason: 'no-selection' as const,
+    }),
     redo,
     rotateSelection,
     selectById,
     setCameraPreset,
     undo,
   } = commands
-  const { syncSceneReadModel, requestOutlinerFocusByIndex } = sync
+  const { syncSceneReadModel, requestOutlinerFocusByIndex, focusRoomView } =
+    sync
   const {
     announcePolite,
     announceAssertive,
@@ -400,7 +429,7 @@ export function useSceneHandlers({
     closeDialog,
     closeAllDialogs,
     openDelete,
-    openNewScene,
+    openStartOver,
     setCatalogOpen,
     pendingDeleteFurniture,
   } = dialogState
@@ -408,6 +437,8 @@ export function useSceneHandlers({
     clearPreview,
     clearEditorMessage,
     setEditorMessage,
+    selectedSource,
+    setSelectedSource,
     handleHistoryChange,
     selectedFurniture,
     sceneReadModel,
@@ -435,9 +466,31 @@ export function useSceneHandlers({
   const restoreOutcomeRef = useRef<RestoreOutcome | null>(null)
   const restoreAttemptCountRef = useRef(0)
 
+  // When selection is triggered programmatically (e.g. handleSelectById), this
+  // ref is set to the intended source BEFORE the scene mutation fires, so that
+  // the resulting onSelectionChange callback can read the right source instead
+  // of defaulting to 'canvas-pointer'.
+  const pendingSelectionSourceRef = useRef<InteractionSource>(null)
+
+  // Tracks the last selected ID seen by handleSceneSelectionChange so we can
+  // distinguish a real selection-change event from a re-fire caused by a
+  // reference change to the same selected item (e.g. position updates).
+  const previousHandlerSelectedIdRef = useRef<string | null>(null)
+  const pendingDeleteFocusTargetRef = useRef<'room-view' | 'outliner' | null>(
+    null,
+  )
+
   const handleAddFurniture = useCallback(() => {
     clearEditorMessage()
     const added = addFurniture()
+
+    if (added) {
+      pendingSelectionSourceRef.current = 'toolbar'
+      setSelectedSource('toolbar')
+    } else {
+      pendingSelectionSourceRef.current = null
+    }
+
     const nextReadModel = syncSceneReadModel({
       announceSelectionChange: false,
       requestOutlinerFocus: false,
@@ -454,16 +507,81 @@ export function useSceneHandlers({
     }
 
     return added
-  }, [addFurniture, clearEditorMessage, syncSceneReadModel, announcePolite])
+  }, [
+    addFurniture,
+    clearEditorMessage,
+    syncSceneReadModel,
+    announcePolite,
+    setSelectedSource,
+  ])
+
+  const handleCanvasPointerSelection = useCallback(
+    (id: string) => {
+      if (!editorInteractionsEnabled) {
+        return
+      }
+
+      pendingSelectionSourceRef.current =
+        sceneReadModel.selectedId === id ? null : 'canvas-pointer'
+      setSelectedSource('canvas-pointer')
+    },
+    [editorInteractionsEnabled, sceneReadModel.selectedId, setSelectedSource],
+  )
 
   const handleSelectById = useCallback(
-    (id: string | null): SelectByIdResult => {
+    (id: string | null, source?: InteractionSource): SelectByIdResult => {
+      const selectionWillChange = sceneReadModel.selectedId !== id
       const result = selectById(id)
       clearEditorMessage()
-      syncSceneReadModel({ requestOutlinerFocus: false })
+
+      if (source) {
+        if (result.ok) {
+          if (selectionWillChange) {
+            pendingSelectionSourceRef.current = source
+          } else {
+            pendingSelectionSourceRef.current = null
+          }
+
+          setSelectedSource(source)
+        } else {
+          pendingSelectionSourceRef.current = null
+        }
+      }
+
+      if (source === 'canvas-keyboard' || source === 'panel-keyboard') {
+        const freshReadModel = syncSceneReadModel({
+          requestOutlinerFocus: false,
+          announceSelectionChange: false,
+        })
+        if (result.ok && result.status === 'selected' && id) {
+          const item = freshReadModel?.items.find((i) => i.id === id)
+          if (item) {
+            announcePolite(
+              source === 'panel-keyboard'
+                ? `${item.name} selected. Press Shift+Tab to reach selected item actions and details.`
+                : `${item.name} selected. Press Tab to reach selected item actions and details.`,
+            )
+          }
+        } else if (
+          source === 'canvas-keyboard' &&
+          result.ok &&
+          result.status === 'cleared'
+        ) {
+          announcePolite('Selection cleared.')
+        }
+      } else {
+        syncSceneReadModel({ requestOutlinerFocus: false })
+      }
       return result
     },
-    [selectById, clearEditorMessage, syncSceneReadModel],
+    [
+      sceneReadModel.selectedId,
+      selectById,
+      clearEditorMessage,
+      setSelectedSource,
+      syncSceneReadModel,
+      announcePolite,
+    ],
   )
 
   const handleMoveSelection = useCallback(
@@ -526,6 +644,91 @@ export function useSceneHandlers({
     ],
   )
 
+  const handleInvalidSelectedItemDetailValue = useCallback(
+    (fieldLabel: string) => {
+      return formatSelectedItemDetailsInvalidValueMessage(fieldLabel)
+    },
+    [],
+  )
+
+  const handleUpdateSelectedItemDetails = useCallback(
+    (
+      input: UpdateSelectedItemDetailsInput,
+    ): UpdateSelectedItemDetailsResult => {
+      clearEditorMessage()
+
+      const activeItem = selectedFurniture
+
+      if (!activeItem) {
+        const message = formatSelectedItemDetailsBlockedMessage(
+          input.fieldLabel,
+          'no-selection',
+        )
+
+        return {
+          ok: false,
+          reason: 'no-selection' as const,
+          message,
+        }
+      }
+
+      const nextPosition: [number, number, number] | undefined =
+        input.field === 'positionX'
+          ? resolvePositionFromWallClearances(activeItem, { left: input.value })
+          : input.field === 'positionZ'
+            ? resolvePositionFromWallClearances(activeItem, {
+                back: input.value,
+              })
+            : undefined
+      const nextRotationY =
+        input.field === 'rotationDegrees'
+          ? normalizeDegreesRadians(input.value)
+          : undefined
+
+      const result = setSelectionTransform({
+        position: nextPosition,
+        rotationY: nextRotationY,
+      })
+
+      if (result.ok) {
+        setSelectedSource('panel-keyboard')
+        syncSceneReadModel({ requestOutlinerFocus: false })
+        announcePolite(`${result.item.name} details updated.`)
+
+        return {
+          ok: true,
+          item: result.item,
+        }
+      }
+
+      if (result.reason === 'no-op') {
+        return {
+          ok: false,
+          reason: 'no-op',
+        }
+      }
+
+      const message = formatSelectedItemDetailsBlockedMessage(
+        input.fieldLabel,
+        result.reason,
+      )
+
+      return {
+        ok: false,
+        reason: result.reason,
+        message,
+      }
+    },
+    [
+      announcePolite,
+      clearEditorMessage,
+      selectedFurniture,
+      setSelectedSource,
+      setSelectionTransform,
+      syncSceneReadModel,
+    ],
+  )
+
   const handleConfirmDeleteSelection = useCallback(() => {
     const pendingId = pendingDeleteFurniture?.id ?? null
     const deletedIndex = pendingId
@@ -539,7 +742,20 @@ export function useSceneHandlers({
     const nextReadModel = syncSceneReadModel()
 
     if (deleted) {
-      requestOutlinerFocusByIndex(deletedIndex >= 0 ? deletedIndex : 0)
+      const pendingFocusTarget = pendingDeleteFocusTargetRef.current
+      pendingDeleteFocusTargetRef.current = null
+      const isCanvasSource =
+        selectedSource === 'canvas-keyboard' ||
+        selectedSource === 'canvas-pointer'
+      const shouldFocusRoomView =
+        pendingFocusTarget === 'room-view' ||
+        (pendingFocusTarget === null && isCanvasSource)
+
+      if (shouldFocusRoomView) {
+        focusRoomView()
+      } else {
+        requestOutlinerFocusByIndex(deletedIndex >= 0 ? deletedIndex : 0)
+      }
 
       if (deletedName) {
         announcePolite(`${deletedName} removed from room.`)
@@ -552,9 +768,11 @@ export function useSceneHandlers({
     syncSceneReadModel,
     announcePolite,
     requestOutlinerFocusByIndex,
+    focusRoomView,
     closeDialog,
     pendingDeleteFurniture,
     sceneReadModel.items,
+    selectedSource,
   ])
 
   const handleUndo = useCallback(() => {
@@ -596,19 +814,36 @@ export function useSceneHandlers({
     const opened = openDelete()
 
     if (opened) {
+      pendingDeleteFocusTargetRef.current = 'outliner'
       clearEditorMessage()
+    } else {
+      pendingDeleteFocusTargetRef.current = null
     }
   }, [openDelete, clearEditorMessage])
 
-  const handleOpenNewSceneDialog = useCallback(() => {
-    const opened = openNewScene()
+  const handleOpenDeleteDialogFromRoomView = useCallback(() => {
+    const opened = openDelete()
 
     if (opened) {
+      pendingDeleteFocusTargetRef.current = 'room-view'
       clearEditorMessage()
+    } else {
+      pendingDeleteFocusTargetRef.current = null
     }
-  }, [openNewScene, clearEditorMessage])
+  }, [openDelete, clearEditorMessage])
 
-  const handleConfirmNewScene = useCallback(() => {
+  const handleOpenStartOverDialog = useCallback(
+    (options?: DialogOpenOptions) => {
+      const opened = openStartOver(options)
+
+      if (opened) {
+        clearEditorMessage()
+      }
+    },
+    [openStartOver, clearEditorMessage],
+  )
+
+  const handleConfirmStartOver = useCallback(() => {
     closeDialog()
     clearPreview()
     clearEditorMessage()
@@ -621,8 +856,8 @@ export function useSceneHandlers({
       announceSelectionChange: false,
       requestOutlinerFocus: false,
     })
-    announcePolite('New scene started. Your changes were cleared.')
-    toast.success('New scene started. Your changes were cleared.')
+    announcePolite('Started over. Your changes were cleared.')
+    toast.success('Started over. Your changes were cleared.')
   }, [
     closeDialog,
     clearPreview,
@@ -650,13 +885,30 @@ export function useSceneHandlers({
     [editorInteractionsEnabled, handleHistoryChange, syncSceneReadModel],
   )
 
-  const handleSceneSelectionChange = useCallback(() => {
-    if (!editorInteractionsEnabled) {
-      return
-    }
+  const handleSceneSelectionChange = useCallback(
+    (item: FurnitureItem | null) => {
+      if (!editorInteractionsEnabled) {
+        return
+      }
 
-    syncSceneReadModel({ requestOutlinerFocus: false })
-  }, [editorInteractionsEnabled, syncSceneReadModel])
+      const newId = item?.id ?? null
+      const pendingSource = pendingSelectionSourceRef.current
+      pendingSelectionSourceRef.current = null
+
+      // Only update selectedSource when the selection identity changes.
+      // This guard is necessary because onSelectionChange also fires when the
+      // selected item's properties change (e.g. after a move), and we must not
+      // clobber the source that was set during the original selection event.
+      if (newId !== previousHandlerSelectedIdRef.current) {
+        previousHandlerSelectedIdRef.current = newId
+        const source = newId === null ? null : pendingSource
+        setSelectedSource(source)
+      }
+
+      syncSceneReadModel({ requestOutlinerFocus: false })
+    },
+    [editorInteractionsEnabled, setSelectedSource, syncSceneReadModel],
+  )
 
   const handleSceneAssetError = useCallback(
     (error: Error) => {
@@ -805,7 +1057,7 @@ export function useSceneHandlers({
     clearAssertiveAnnouncement,
   ])
 
-  const handleCopySceneUrl = useCallback(async () => {
+  const handleShareSceneUrl = useCallback(async () => {
     const url = serializeSceneToUrl(
       sceneReadModel.items,
       window.location.href,
@@ -822,18 +1074,50 @@ export function useSceneHandlers({
     if (!url) {
       setEditorMessage('Scene is too large to share as a URL.')
       announceAssertive('Scene is too large to share as a URL.')
-      return false
+      return null
+    }
+
+    const shareData = {
+      title: 'Room Layout',
+      url,
+    }
+
+    let canUseNativeShare = typeof navigator.share === 'function'
+
+    if (canUseNativeShare && typeof navigator.canShare === 'function') {
+      try {
+        canUseNativeShare = navigator.canShare({ url: shareData.url })
+      } catch {
+        canUseNativeShare = false
+      }
+    }
+
+    if (canUseNativeShare) {
+      try {
+        await navigator.share(shareData)
+        clearEditorMessage()
+        announcePolite('Room layout shared.')
+        return 'shared'
+      } catch (error) {
+        if (error instanceof DOMException && error.name === 'AbortError') {
+          return null
+        }
+
+        setEditorMessage('Could not open share options.')
+        announceAssertive('Could not open share options.')
+        return null
+      }
     }
 
     try {
       await navigator.clipboard.writeText(url)
       clearEditorMessage()
       announcePolite('Scene URL copied to clipboard.')
-      return true
+      return 'copied'
     } catch {
       setEditorMessage('Could not copy URL to clipboard.')
       announceAssertive('Could not copy URL to clipboard.')
-      return false
+      return null
     }
   }, [
     sceneReadModel.items,
@@ -860,10 +1144,13 @@ export function useSceneHandlers({
 
   return {
     handleAddFurniture,
+    handleCanvasPointerSelection,
     handleFocusSelected,
     handleSelectById,
     handleMoveSelection,
     handleRotateSelection,
+    handleInvalidSelectedItemDetailValue,
+    handleUpdateSelectedItemDetails,
     handleConfirmDeleteSelection,
     handleUndo,
     handleRedo,
@@ -871,14 +1158,15 @@ export function useSceneHandlers({
     handleSetCameraPreset,
     handleCatalogDrawerOpenChange,
     handleOpenDeleteDialog,
-    handleOpenNewSceneDialog,
-    handleConfirmNewScene,
+    handleOpenDeleteDialogFromRoomView,
+    handleOpenStartOverDialog,
+    handleConfirmStartOver,
     handleSceneHistoryChange,
     handleSceneSelectionChange,
     handleSceneAssetError,
     handleSceneAssetsReady,
     handleRetryAssetLoading,
-    handleCopySceneUrl,
+    handleShareSceneUrl,
     restoreOutcomeRef,
     restoreAttemptCountRef,
   }
@@ -890,6 +1178,12 @@ export function useSceneHandlers({
 
 function formatCoordinate(value: number) {
   return `${value.toFixed(1)} meters`
+}
+
+function normalizeDegreesRadians(valueDegrees: number) {
+  const normalizedDegrees = ((valueDegrees % 360) + 360) % 360
+  const counterclockwiseDegrees = (360 - normalizedDegrees) % 360
+  return (counterclockwiseDegrees * Math.PI) / 180
 }
 
 function formatMoveBlockedMessage(
@@ -907,4 +1201,26 @@ function formatMoveBlockedMessage(
     case 'no-op':
       return ''
   }
+}
+
+function formatSelectedItemDetailsBlockedMessage(
+  fieldLabel: string,
+  reason: Exclude<UpdateSelectionTransformResult, { ok: true }>['reason'],
+) {
+  switch (reason) {
+    case 'blocked-bounds':
+      return `${fieldLabel} must stay inside the room.`
+    case 'blocked-collision':
+      return `${fieldLabel} overlaps another item.`
+    case 'dragging':
+      return 'Finish dragging before editing item details.'
+    case 'no-selection':
+      return 'Select a furniture item first.'
+    case 'no-op':
+      return ''
+  }
+}
+
+function formatSelectedItemDetailsInvalidValueMessage(fieldLabel: string) {
+  return `${fieldLabel} must be a valid number.`
 }

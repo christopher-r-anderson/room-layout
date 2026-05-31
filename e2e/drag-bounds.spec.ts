@@ -15,10 +15,15 @@ test('keeps dragged furniture inside room bounds near the wall', async ({
   const addedState = await addFurniture(page, 'Leather Armchair')
   const initialItem = addedState.items[0]
 
-  await dragSelectedFurniture(page, {
-    x: 1_600,
-    y: 0,
-  })
+  await dragSelectedFurniture(
+    page,
+    {
+      x: 1_600,
+      y: 0,
+    },
+    undefined,
+    { hideOverlays: true },
+  )
 
   await waitForFirstItemX(page, 2.425, 2)
 

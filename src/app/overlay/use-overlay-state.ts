@@ -3,10 +3,12 @@ import type { HistoryAvailability } from '../history/history.types'
 import type { FurnitureCatalogEntry } from '@/scene/objects/furniture-catalog'
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
 import type { SceneReadModel } from '@/scene/scene.types'
+import type { InteractionSource } from '../scene-interaction.types'
 
 interface OverlayState {
   catalogIdToAdd: string
   clearEditorMessage: () => void
+  clearSelectedSource: () => void
   editorMessage: string | null
   handleHistoryChange: (availability: HistoryAvailability) => void
   handleSceneReadModelChange: (readModel: SceneReadModel) => void
@@ -15,8 +17,10 @@ interface OverlayState {
   resetOverlayState: () => void
   sceneReadModel: SceneReadModel
   selectedFurniture: FurnitureItem | null
+  selectedSource: InteractionSource
   setCatalogIdToAdd: (catalogId: string) => void
   setEditorMessage: (message: string | null) => void
+  setSelectedSource: (source: InteractionSource) => void
 }
 
 const INITIAL_HISTORY_AVAILABILITY: HistoryAvailability = {
@@ -27,6 +31,17 @@ const INITIAL_HISTORY_AVAILABILITY: HistoryAvailability = {
 const INITIAL_SCENE_READ_MODEL: SceneReadModel = {
   selectedId: null,
   items: [],
+}
+
+function areHistoryAvailabilityEqual(
+  left: HistoryAvailability,
+  right: HistoryAvailability,
+) {
+  return left.canUndo === right.canUndo && left.canRedo === right.canRedo
+}
+
+function areSceneReadModelsEqual(left: SceneReadModel, right: SceneReadModel) {
+  return left.selectedId === right.selectedId && left.items === right.items
 }
 
 export function useOverlayState(): OverlayState {
@@ -40,24 +55,41 @@ export function useOverlayState(): OverlayState {
   const [historyAvailability, setHistoryAvailability] = useState(
     INITIAL_HISTORY_AVAILABILITY,
   )
+  const [selectedSource, setSelectedSource] = useState<InteractionSource>(null)
 
   const handleHistoryChange = useCallback(
     (availability: HistoryAvailability) => {
-      setHistoryAvailability(availability)
+      setHistoryAvailability((currentAvailability) =>
+        areHistoryAvailabilityEqual(currentAvailability, availability)
+          ? currentAvailability
+          : availability,
+      )
     },
     [],
   )
 
   const handleSceneReadModelChange = useCallback(
     (readModel: SceneReadModel) => {
-      setSceneReadModel(readModel)
+      setSceneReadModel((currentReadModel) =>
+        areSceneReadModelsEqual(currentReadModel, readModel)
+          ? currentReadModel
+          : readModel,
+      )
 
       const nextSelectedFurniture = readModel.selectedId
         ? (readModel.items.find((item) => item.id === readModel.selectedId) ??
           null)
         : null
 
-      setSelectedFurniture(nextSelectedFurniture)
+      setSelectedFurniture((currentSelectedFurniture) =>
+        currentSelectedFurniture === nextSelectedFurniture
+          ? currentSelectedFurniture
+          : nextSelectedFurniture,
+      )
+
+      if (readModel.selectedId === null) {
+        setSelectedSource(null)
+      }
     },
     [],
   )
@@ -67,6 +99,7 @@ export function useOverlayState(): OverlayState {
     setSceneReadModel(INITIAL_SCENE_READ_MODEL)
     setEditorMessage(null)
     setHistoryAvailability(INITIAL_HISTORY_AVAILABILITY)
+    setSelectedSource(null)
   }, [])
 
   const initializeCatalogSelection = useCallback(
@@ -93,9 +126,14 @@ export function useOverlayState(): OverlayState {
     setEditorMessage(null)
   }, [])
 
+  const clearSelectedSource = useCallback(() => {
+    setSelectedSource(null)
+  }, [])
+
   return {
     catalogIdToAdd,
     clearEditorMessage,
+    clearSelectedSource,
     editorMessage,
     handleHistoryChange,
     handleSceneReadModelChange,
@@ -104,7 +142,9 @@ export function useOverlayState(): OverlayState {
     resetOverlayState,
     sceneReadModel,
     selectedFurniture,
+    selectedSource,
     setCatalogIdToAdd,
     setEditorMessage: updateEditorMessage,
+    setSelectedSource,
   }
 }

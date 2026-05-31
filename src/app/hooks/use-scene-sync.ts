@@ -4,7 +4,7 @@ import type { SceneOutlinerFocusRequest } from '../scene-panel.types'
 
 interface UseSceneReadModelSyncOptions {
   sceneRef: RefObject<SceneRef | null>
-  isModalOpen: boolean
+  isBlockingOverlayOpen: boolean
   handleSceneReadModelChange: (readModel: SceneReadModel) => void
   announcePolite: (message: string) => void
 }
@@ -21,7 +21,7 @@ interface SceneReadModelSync {
 
 export function useSceneSync({
   sceneRef,
-  isModalOpen,
+  isBlockingOverlayOpen,
   handleSceneReadModelChange,
   announcePolite,
 }: UseSceneReadModelSyncOptions): SceneReadModelSync {
@@ -30,7 +30,7 @@ export function useSceneSync({
   const previousSelectedIdRef = useRef<string | null>(null)
 
   useEffect(() => {
-    if (!isModalOpen || outlinerFocusRequest === null) {
+    if (!isBlockingOverlayOpen || outlinerFocusRequest === null) {
       return
     }
 
@@ -39,7 +39,7 @@ export function useSceneSync({
     // than replaying unexpected focus after the dialog closes.
     // eslint-disable-next-line react-hooks/set-state-in-effect -- modal visibility is the authoritative source for whether focus handoff may remain pending.
     setOutlinerFocusRequest(null)
-  }, [isModalOpen, outlinerFocusRequest])
+  }, [isBlockingOverlayOpen, outlinerFocusRequest])
 
   const syncSceneReadModel = useCallback(
     (options?: {
@@ -73,7 +73,7 @@ export function useSceneSync({
       if (
         selectionChanged &&
         options?.requestOutlinerFocus !== false &&
-        !isModalOpen &&
+        !isBlockingOverlayOpen &&
         outlinerFocusRequest === null
       ) {
         if (nextReadModel.selectedId) {
@@ -95,7 +95,7 @@ export function useSceneSync({
     [
       announcePolite,
       handleSceneReadModelChange,
-      isModalOpen,
+      isBlockingOverlayOpen,
       outlinerFocusRequest,
       sceneRef,
     ],
@@ -114,7 +114,7 @@ export function useSceneSync({
 
   return {
     syncSceneReadModel,
-    outlinerFocusRequest: isModalOpen ? null : outlinerFocusRequest,
+    outlinerFocusRequest: isBlockingOverlayOpen ? null : outlinerFocusRequest,
     handleOutlinerFocusHandled,
     requestOutlinerFocusByIndex,
   }

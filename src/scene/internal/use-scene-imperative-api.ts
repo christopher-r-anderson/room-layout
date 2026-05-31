@@ -1,24 +1,30 @@
 import {
-  useEffect,
   useImperativeHandle,
+  useLayoutEffect,
   useRef,
   type Dispatch,
   type RefObject,
   type SetStateAction,
 } from 'react'
-import { useFrame } from '@react-three/fiber'
+import { useFrame, useThree } from '@react-three/fiber'
 import { type Object3D } from 'three'
 import type { CameraControlsImpl } from '@react-three/drei'
 import type { LayoutBounds } from '@/lib/three/furniture-layout'
 import type { HistoryState } from '@/lib/ui/editor-history'
+import { getVisualObjectBounds } from '@/lib/three/get-visual-object-bounds'
 import { CAMERA_PRESETS } from '@/lib/three/camera-presets'
 import {
   addFurnitureToHistory,
+  areFurnitureCollectionsEqual,
   buildFurnitureItemsFromInstances,
   createFurnitureInstanceId,
   deleteSelectionFromHistory,
+  rotateSelectedFurnitureInHistory,
 } from './furniture-operations'
-import { resolveMovedFurniturePosition } from '@/lib/three/furniture-layout'
+import {
+  resolveAbsoluteFurnitureTransform,
+  resolveMovedFurniturePosition,
+} from '@/lib/three/furniture-layout'
 import { commitHistoryPresent } from '@/lib/ui/editor-history'
 import { createHistoryState } from '@/lib/ui/editor-history'
 import { redoSceneHistory, undoSceneHistory } from './scene-history-state'
@@ -48,7 +54,6 @@ interface UseSceneImperativeApiOptions {
   history: HistoryState<FurnitureItem[]>
   instanceIdRef: RefObject<number>
   objectRefs: RefObject<Map<string, Object3D>>
-  rotateSelectedFurniture: (deltaRadians: number) => void
   selectFurniture: (id: string | null) => void
   selectedId: string | null
   setHistory: Dispatch<SetStateAction<HistoryState<FurnitureItem[]>>>
@@ -72,7 +77,6 @@ export function useSceneImperativeApi({
   history,
   instanceIdRef,
   objectRefs,
-  rotateSelectedFurniture,
   selectFurniture,
   selectedId,
   setHistory,
@@ -80,97 +84,91 @@ export function useSceneImperativeApi({
   snapSize,
   sourceScenesByPath,
 }: UseSceneImperativeApiOptions): void {
+  const invalidate = useThree((state) => state.invalidate)
   const historyRef = useRef(history)
   const selectedIdRef = useRef(selectedId)
   const furnitureRef = useRef(furniture)
   const dragStateRef = useRef(dragState)
   const cameraKeyStateRef = useRef<CameraKeyState>(new Set())
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     historyRef.current = history
   }, [history])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     selectedIdRef.current = selectedId
   }, [selectedId])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     furnitureRef.current = furniture
   }, [furniture])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     dragStateRef.current = dragState
   }, [dragState])
 
-  // Apply continuous camera motion based on held-key state
-  try {
-    // useFrame can only be used within R3F Canvas context
-    // In test environments without Canvas, this will throw and we gracefully skip
-    useFrame((_, delta) => {
-      const controls = cameraControlsRef.current
-      if (!controls) {
-        return
-      }
-
-      const keyState = cameraKeyStateRef.current
-      const deltaTime = Math.min(delta, 0.05) // Cap delta to prevent large jumps after frame stalls
-
-      // Camera motion constants tuned for the 6x6 meter room scale.
-      const ROTATION_SPEED = 1.5 // radians per second
-      const TRUCK_SPEED = 3.0 // units per second (pan/strafe)
-      const DOLLY_SPEED = 3.0 // units per second (zoom forward/backward)
-
-      const hasShift = keyState.has('shift')
-
-      // Camera controls: WASD for orbit, Shift+WASD for pan
-      // Orbit (no shift)
-      if (keyState.has('keyW') && !hasShift) {
-        void controls.rotate(0, -ROTATION_SPEED * deltaTime, false)
-      }
-      if (keyState.has('keyS') && !hasShift) {
-        void controls.rotate(0, ROTATION_SPEED * deltaTime, false)
-      }
-      if (keyState.has('keyA') && !hasShift) {
-        void controls.rotate(-ROTATION_SPEED * deltaTime, 0, false)
-      }
-      if (keyState.has('keyD') && !hasShift) {
-        void controls.rotate(ROTATION_SPEED * deltaTime, 0, false)
-      }
-
-      // Pan (Shift+WASD)
-      if (keyState.has('keyW') && hasShift) {
-        void controls.truck(0, -TRUCK_SPEED * deltaTime, false)
-      }
-      if (keyState.has('keyS') && hasShift) {
-        void controls.truck(0, TRUCK_SPEED * deltaTime, false)
-      }
-      if (keyState.has('keyA') && hasShift) {
-        void controls.truck(-TRUCK_SPEED * deltaTime, 0, false)
-      }
-      if (keyState.has('keyD') && hasShift) {
-        void controls.truck(TRUCK_SPEED * deltaTime, 0, false)
-      }
-
-      // Zoom/dolly camera with = and - keys
-      const hasEqual = keyState.has('equal')
-      const hasMinus = keyState.has('minus')
-      if (hasEqual || hasMinus) {
-        const dollyDistance = hasEqual
-          ? DOLLY_SPEED * deltaTime
-          : -DOLLY_SPEED * deltaTime
-        void controls.dolly(dollyDistance, false)
-      }
-    })
-  } catch (error) {
-    // useFrame throws when called outside of R3F Canvas context (e.g., in tests)
-    // Gracefully ignore to allow tests to run without full R3F setup
-    if (
-      !(error instanceof Error) ||
-      !error.message.includes('Hooks can only be used within the Canvas')
-    ) {
-      throw error
+  // Apply continuous camera motion based on held-key state.
+  useFrame((state, delta) => {
+    const controls = cameraControlsRef.current
+    if (!controls) {
+      return
     }
-  }
+
+    const keyState = cameraKeyStateRef.current
+    if (keyState.size === 0) {
+      return
+    }
+
+    const deltaTime = Math.min(delta, 0.05) // Cap delta to prevent large jumps after frame stalls
+
+    // Camera motion constants tuned for the 6x6 meter room scale.
+    const ROTATION_SPEED = 1.5 // radians per second
+    const TRUCK_SPEED = 3.0 // units per second (pan/strafe)
+    const DOLLY_SPEED = 3.0 // units per second (zoom forward/backward)
+
+    const hasShift = keyState.has('shift')
+
+    // Camera controls: WASD for orbit, Shift+WASD for pan
+    // Orbit (no shift)
+    if (keyState.has('keyW') && !hasShift) {
+      void controls.rotate(0, -ROTATION_SPEED * deltaTime, false)
+    }
+    if (keyState.has('keyS') && !hasShift) {
+      void controls.rotate(0, ROTATION_SPEED * deltaTime, false)
+    }
+    if (keyState.has('keyA') && !hasShift) {
+      void controls.rotate(-ROTATION_SPEED * deltaTime, 0, false)
+    }
+    if (keyState.has('keyD') && !hasShift) {
+      void controls.rotate(ROTATION_SPEED * deltaTime, 0, false)
+    }
+
+    // Pan (Shift+WASD)
+    if (keyState.has('keyW') && hasShift) {
+      void controls.truck(0, -TRUCK_SPEED * deltaTime, false)
+    }
+    if (keyState.has('keyS') && hasShift) {
+      void controls.truck(0, TRUCK_SPEED * deltaTime, false)
+    }
+    if (keyState.has('keyA') && hasShift) {
+      void controls.truck(-TRUCK_SPEED * deltaTime, 0, false)
+    }
+    if (keyState.has('keyD') && hasShift) {
+      void controls.truck(TRUCK_SPEED * deltaTime, 0, false)
+    }
+
+    // Zoom/dolly camera with = and - keys
+    const hasEqual = keyState.has('equal')
+    const hasMinus = keyState.has('minus')
+    if (hasEqual || hasMinus) {
+      const dollyDistance = hasEqual
+        ? DOLLY_SPEED * deltaTime
+        : -DOLLY_SPEED * deltaTime
+      void controls.dolly(dollyDistance, false)
+    }
+
+    state.invalidate()
+  })
 
   useImperativeHandle(
     ref,
@@ -310,8 +308,117 @@ export function useSceneImperativeApi({
           position: resolvedPosition,
         }
       },
+      setSelectionTransform: (input) => {
+        if (dragStateRef.current) {
+          return {
+            ok: false,
+            reason: 'dragging',
+          }
+        }
+
+        const activeId = selectedIdRef.current
+
+        if (!activeId) {
+          return {
+            ok: false,
+            reason: 'no-selection',
+          }
+        }
+
+        const activeItem = furnitureRef.current.find(
+          (item) => item.id === activeId,
+        )
+
+        if (!activeItem) {
+          return {
+            ok: false,
+            reason: 'no-selection',
+          }
+        }
+
+        const nextPosition = input.position ?? activeItem.position
+        const nextRotationY = input.rotationY ?? activeItem.rotationY
+
+        if (
+          nextPosition[0] === activeItem.position[0] &&
+          nextPosition[1] === activeItem.position[1] &&
+          nextPosition[2] === activeItem.position[2] &&
+          nextRotationY === activeItem.rotationY
+        ) {
+          return {
+            ok: false,
+            reason: 'no-op',
+          }
+        }
+
+        const resolvedTransform = resolveAbsoluteFurnitureTransform({
+          movingId: activeId,
+          proposedPosition: nextPosition,
+          proposedRotationY: nextRotationY,
+          items: furnitureRef.current,
+          bounds,
+        })
+
+        if (!resolvedTransform) {
+          return {
+            ok: false,
+            reason: 'no-selection',
+          }
+        }
+
+        if (!resolvedTransform.ok) {
+          return resolvedTransform
+        }
+
+        const nextFurniture = furnitureRef.current.map((item) => {
+          if (item.id !== activeId) {
+            return item
+          }
+
+          return {
+            ...item,
+            position: resolvedTransform.position,
+            rotationY: resolvedTransform.rotationY,
+          }
+        })
+
+        const nextHistory = commitHistoryPresent(
+          historyRef.current,
+          nextFurniture,
+          areFurnitureCollectionsEqual,
+        )
+
+        historyRef.current = nextHistory
+        furnitureRef.current = nextHistory.present
+        setHistory(nextHistory)
+
+        const updatedItem = nextHistory.present.find(
+          (item) => item.id === activeId,
+        )
+
+        if (!updatedItem) {
+          return {
+            ok: false,
+            reason: 'no-selection',
+          }
+        }
+
+        return {
+          ok: true,
+          item: updatedItem,
+        }
+      },
       rotateSelection: (deltaRadians: number) => {
-        rotateSelectedFurniture(deltaRadians)
+        const nextHistory = rotateSelectedFurnitureInHistory({
+          history: historyRef.current,
+          selectedId: selectedIdRef.current,
+          deltaRadians,
+          bounds,
+        })
+
+        historyRef.current = nextHistory
+        furnitureRef.current = nextHistory.present
+        setHistory(nextHistory)
       },
       addFurniture: (catalogId: string) => {
         const operationResult = addFurnitureToHistory({
@@ -408,8 +515,8 @@ export function useSceneImperativeApi({
       },
       getSnapshot: () =>
         createSceneSnapshot(
-          furniture,
-          selectedId,
+          furnitureRef.current,
+          selectedIdRef.current,
           objectRefs.current,
           camera,
           canvasSize,
@@ -457,7 +564,9 @@ export function useSceneImperativeApi({
         if (!ctrl || !selectedIdRef.current) return
         const object = objectRefs.current.get(selectedIdRef.current)
         if (!object) return
-        void ctrl.fitToBox(object, true, {
+        const bounds = getVisualObjectBounds(object)
+        if (!bounds) return
+        void ctrl.fitToBox(bounds, true, {
           paddingTop: 0.5,
           paddingBottom: 0.5,
           paddingLeft: 0.5,
@@ -466,6 +575,10 @@ export function useSceneImperativeApi({
       },
       setCameraKeyState: (keyState: CameraKeyState) => {
         cameraKeyStateRef.current = keyState
+
+        if (keyState.size > 0) {
+          invalidate()
+        }
       },
     }),
     [
@@ -476,10 +589,7 @@ export function useSceneImperativeApi({
       bounds,
       collections,
       objectRefs,
-      furniture,
-      rotateSelectedFurniture,
       selectFurniture,
-      selectedId,
       setHistory,
       setSelectedIdAndResolveObject,
       snapSize,
@@ -487,6 +597,7 @@ export function useSceneImperativeApi({
       edgeSnapThreshold,
       instanceIdRef,
       cameraControlsRef,
+      invalidate,
     ],
   )
 }

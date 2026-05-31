@@ -1,11 +1,11 @@
 /**
- * Browser tests for the URL scene restore, copy-URL, and draft storage features.
+ * Browser tests for the URL scene restore, share/copy URL, and draft storage features.
  *
  * Covers:
  *  - Successful restore from a valid `?scene=` param
  *  - Invalid payload shows error message and leaves scene empty
  *  - One-shot guard: restore only fires once across asset retry
- *  - Copy Scene URL button writes to clipboard and announces success
+ *  - Share button falls back to clipboard copy and announces success
  *  - Selection is cleared after restore
  *  - Full round-trip: copy URL in app → navigate to it → scene restored
  *  - Draft auto-save to localStorage on furniture changes
@@ -84,14 +84,29 @@ async function readDraftFromStorage(
   }
 }
 
-async function ensureEnvironmentPanelExpanded(page: Page) {
-  const wallFinishTrigger = page.getByLabel('Wall Finish')
-  if (await wallFinishTrigger.isVisible()) {
-    return
+async function ensureRoomSurfaceOpen(page: Page) {
+  const roomSurface = page.getByRole('complementary', { name: 'Room' })
+  if (await roomSurface.isVisible()) {
+    return roomSurface
   }
 
-  await page.getByRole('button', { name: 'Toggle environment panel' }).click()
-  await expect(wallFinishTrigger).toBeVisible()
+  await page.locator('button[aria-controls="room-surface"]').click()
+  await expect(roomSurface).toBeVisible()
+
+  return roomSurface
+}
+
+async function forceClipboardShareFallback(page: Page) {
+  await page.addInitScript(() => {
+    Object.defineProperty(window.navigator, 'share', {
+      configurable: true,
+      value: undefined,
+    })
+    Object.defineProperty(window.navigator, 'canShare', {
+      configurable: true,
+      value: undefined,
+    })
+  })
 }
 
 const VALID_ITEM = {
@@ -276,31 +291,32 @@ test('one-shot guard: restore only fires once across asset-error retry', async (
 })
 
 // ---------------------------------------------------------------------------
-// Copy URL tests
+// Share/copy URL tests
 // ---------------------------------------------------------------------------
 
-test('Copy Scene URL button is visible in the toolbar', async ({ page }) => {
+test('Share button is visible in the toolbar', async ({ page }) => {
   await openEditor(page)
   await expect(
-    page.getByRole('button', { name: 'Copy Scene URL to clipboard' }),
+    page.getByRole('button', { name: 'Share room layout' }),
   ).toBeVisible()
 })
 
-test('Copy Scene URL announces success after click when clipboard is available', async ({
+test('Share button falls back to clipboard copy when native share is unavailable', async ({
   page,
   context,
 }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write'])
+  await forceClipboardShareFallback(page)
   await openEditor(page)
 
   const copyBtn = page.getByRole('button', {
-    name: 'Copy Scene URL to clipboard',
+    name: 'Share room layout',
   })
   await copyBtn.click()
 
   await waitForPoliteAnnouncement(page, 'Scene URL copied to clipboard.')
   await expect(copyBtn).toContainText('Copied')
-  await expect(copyBtn).toContainText('Copy Scene URL', { timeout: 3_000 })
+  await expect(copyBtn).toContainText('Share', { timeout: 3_000 })
 })
 
 test('invalid shared link falls back to local draft when available', async ({
@@ -392,24 +408,27 @@ test('copy-URL-then-load round-trip: app serializer output is accepted by restor
 }) => {
   // Grant clipboard permissions before any interaction
   await context.grantPermissions(['clipboard-read', 'clipboard-write'])
+  await forceClipboardShareFallback(page)
 
   await openEditor(page)
 
-  await ensureEnvironmentPanelExpanded(page)
+  const roomSurface = await ensureRoomSurfaceOpen(page)
 
-  // Change environment options so round-trip includes non-default finishes.
-  await page.getByLabel('Wall Finish').click()
-  await page.getByRole('option', { name: 'Sage Green' }).click()
+  // Change room options so round-trip includes non-default finishes.
+  await roomSurface.locator('label').filter({ hasText: 'Sage Green' }).click()
 
-  await page.getByLabel('Floor Finish').click()
-  await page.getByRole('option', { name: 'Granite' }).click()
+  await roomSurface.getByRole('tab', { name: 'Floor' }).click()
+  await roomSurface.locator('label').filter({ hasText: 'Granite' }).click()
+
+  await page.locator('button[aria-controls="room-surface"]').click()
+  await expect(roomSurface).toBeHidden()
 
   // Add one item via the real UI so the app owns the scene state
   await addFurniture(page, 'Leather Armchair')
 
-  // Use the app's own Copy Scene URL button - this exercises the real serializer
+  // Use the app's own Share button with clipboard fallback - this exercises the real serializer
   const copyBtn = page.getByRole('button', {
-    name: 'Copy Scene URL to clipboard',
+    name: 'Share room layout',
   })
   await copyBtn.click()
   await waitForPoliteAnnouncement(page, 'Scene URL copied to clipboard.')
@@ -485,7 +504,7 @@ test('draft persists across page reload', async ({ page }) => {
   // but the scene is still populated from the saved draft
 })
 
-test('new scene clears the saved draft so reload stays fresh', async ({
+test('start over clears the saved draft so reload stays fresh', async ({
   page,
 }) => {
   await openEditor(page)
@@ -496,16 +515,16 @@ test('new scene clears the saved draft so reload stays fresh', async ({
   expect(draftBeforeReset).not.toBeNull()
   expect(draftBeforeReset?.items.length).toBe(1)
 
-  const newSceneButton = page.getByRole('button', {
-    name: 'Start a new scene',
+  const startOverButton = page.getByRole('button', {
+    name: 'Start over',
   })
-  await newSceneButton.click()
+  await startOverButton.click()
 
-  const newSceneDialog = page.getByRole('alertdialog', {
-    name: /start over with a new scene/i,
+  const startOverDialog = page.getByRole('alertdialog', {
+    name: /start over\?/i,
   })
-  await expect(newSceneDialog).toBeVisible()
-  await newSceneDialog.getByRole('button', { name: 'New Scene' }).click()
+  await expect(startOverDialog).toBeVisible()
+  await startOverDialog.getByRole('button', { name: 'Start Over' }).click()
 
   const resetState = await waitForEditorReady(page)
   expect(resetState.itemCount).toBe(0)
@@ -552,11 +571,12 @@ test('handles clipboard API failure gracefully when permission denied', async ({
   page,
 }) => {
   // Do NOT grant clipboard permissions - this simulates a denied permission
+  await forceClipboardShareFallback(page)
   await openEditor(page)
   await addFurniture(page, 'Leather Armchair')
 
   const copyBtn = page.getByRole('button', {
-    name: 'Copy Scene URL to clipboard',
+    name: 'Share room layout',
   })
   await copyBtn.click()
 

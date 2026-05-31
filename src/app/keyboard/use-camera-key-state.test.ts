@@ -26,6 +26,7 @@ describe('useCameraKeyState', () => {
     renderHook(() => {
       useCameraKeyState({
         enabled: true,
+        roomViewHasFocus: true,
         sceneRef,
       })
     })
@@ -48,6 +49,7 @@ describe('useCameraKeyState', () => {
     renderHook(() => {
       useCameraKeyState({
         enabled: true,
+        roomViewHasFocus: true,
         sceneRef,
       })
     })
@@ -64,12 +66,38 @@ describe('useCameraKeyState', () => {
     expect(secondCall.size).toBe(0)
   })
 
+  it('tracks Shift+Minus as zoom-out without introducing extra camera keys', () => {
+    const sceneRef = createSceneRef()
+
+    renderHook(() => {
+      useCameraKeyState({
+        enabled: true,
+        roomViewHasFocus: true,
+        sceneRef,
+      })
+    })
+
+    fireEvent.keyDown(window, { code: 'ShiftLeft', key: 'Shift' })
+    fireEvent.keyDown(window, { code: 'Minus', key: '_' })
+
+    expect(sceneRef.setCameraKeyState).toHaveBeenCalledTimes(2)
+    const shiftState = sceneRef.setCameraKeyState.mock.calls[0][0]
+    const zoomState = sceneRef.setCameraKeyState.mock.calls[1][0]
+
+    expect(shiftState.has('shift')).toBe(true)
+    expect(shiftState.size).toBe(1)
+    expect(zoomState.has('shift')).toBe(true)
+    expect(zoomState.has('minus')).toBe(true)
+    expect(zoomState.size).toBe(2)
+  })
+
   it('keeps shift pressed until both physical shift keys are released', () => {
     const sceneRef = createSceneRef()
 
     renderHook(() => {
       useCameraKeyState({
         enabled: true,
+        roomViewHasFocus: true,
         sceneRef,
       })
     })
@@ -93,6 +121,7 @@ describe('useCameraKeyState', () => {
     renderHook(() => {
       useCameraKeyState({
         enabled: true,
+        roomViewHasFocus: true,
         sceneRef,
       })
     })
@@ -109,6 +138,7 @@ describe('useCameraKeyState', () => {
     renderHook(() => {
       useCameraKeyState({
         enabled: true,
+        roomViewHasFocus: true,
         sceneRef,
       })
     })
@@ -130,6 +160,7 @@ describe('useCameraKeyState', () => {
     renderHook(() => {
       useCameraKeyState({
         enabled: true,
+        roomViewHasFocus: true,
         sceneRef,
       })
     })
@@ -151,6 +182,7 @@ describe('useCameraKeyState', () => {
     renderHook(() => {
       useCameraKeyState({
         enabled: true,
+        roomViewHasFocus: true,
         sceneRef,
       })
     })
@@ -161,13 +193,14 @@ describe('useCameraKeyState', () => {
     expect(sceneRef.current.setCameraKeyState).not.toHaveBeenCalled()
   })
 
-  it('suppresses camera motion whenever a modal is open', () => {
+  it('suppresses camera motion whenever a blocking overlay is open', () => {
     const sceneRef = createSceneRef()
 
     renderHook(() => {
       useCameraKeyState({
         enabled: true,
-        isModalOpen: true,
+        isBlockingOverlayOpen: true,
+        roomViewHasFocus: true,
         sceneRef,
       })
     })
@@ -178,27 +211,28 @@ describe('useCameraKeyState', () => {
     expect(sceneRef.current.setCameraKeyState).not.toHaveBeenCalled()
   })
 
-  it('clears held camera keys when a modal opens', () => {
+  it('clears held camera keys when a blocking overlay opens', () => {
     const sceneRef = createSceneRef()
 
     const { rerender } = renderHook(
       ({
         enabled,
-        isModalOpen,
+        isBlockingOverlayOpen,
       }: {
         enabled: boolean
-        isModalOpen: boolean
+        isBlockingOverlayOpen: boolean
       }) => {
         useCameraKeyState({
           enabled,
-          isModalOpen,
+          isBlockingOverlayOpen,
+          roomViewHasFocus: true,
           sceneRef,
         })
       },
       {
         initialProps: {
           enabled: true,
-          isModalOpen: false,
+          isBlockingOverlayOpen: false,
         },
       },
     )
@@ -206,8 +240,47 @@ describe('useCameraKeyState', () => {
     fireEvent.keyDown(window, { code: 'KeyW', key: 'w' })
     rerender({
       enabled: true,
-      isModalOpen: true,
+      isBlockingOverlayOpen: true,
     })
+
+    expect(sceneRef.setCameraKeyState.mock.calls).toHaveLength(2)
+    expect(sceneRef.setCameraKeyState.mock.calls[0][0].has('keyW')).toBe(true)
+    expect(sceneRef.setCameraKeyState.mock.calls[1][0].size).toBe(0)
+  })
+
+  it('suppresses camera motion when room view is not focused', () => {
+    const sceneRef = createSceneRef()
+
+    renderHook(() => {
+      useCameraKeyState({
+        enabled: true,
+        roomViewHasFocus: false,
+        sceneRef,
+      })
+    })
+
+    fireEvent.keyDown(window, { code: 'KeyW', key: 'w' })
+    fireEvent.keyUp(window, { code: 'KeyW', key: 'w' })
+
+    expect(sceneRef.setCameraKeyState).not.toHaveBeenCalled()
+  })
+
+  it('clears held camera keys when room-view focus is lost', () => {
+    const sceneRef = createSceneRef()
+
+    const { rerender } = renderHook(
+      ({ roomViewHasFocus }: { roomViewHasFocus: boolean }) => {
+        useCameraKeyState({
+          enabled: true,
+          roomViewHasFocus,
+          sceneRef,
+        })
+      },
+      { initialProps: { roomViewHasFocus: true } },
+    )
+
+    fireEvent.keyDown(window, { code: 'KeyW', key: 'w' })
+    rerender({ roomViewHasFocus: false })
 
     expect(sceneRef.setCameraKeyState.mock.calls).toHaveLength(2)
     expect(sceneRef.setCameraKeyState.mock.calls[0][0].has('keyW')).toBe(true)

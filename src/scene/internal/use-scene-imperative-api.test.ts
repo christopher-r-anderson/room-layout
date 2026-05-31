@@ -1,9 +1,15 @@
 // @vitest-environment jsdom
 
-import { createRef, type RefObject } from 'react'
+import { createRef, useEffect, type RefObject } from 'react'
 import { act, renderHook } from '@testing-library/react'
 import { describe, expect, it, beforeEach, vi } from 'vitest'
-import { Object3D, PerspectiveCamera } from 'three'
+import {
+  BoxGeometry,
+  Mesh,
+  MeshBasicMaterial,
+  Object3D,
+  PerspectiveCamera,
+} from 'three'
 import type { CameraControlsImpl } from '@react-three/drei'
 import {
   createHistoryState,
@@ -13,7 +19,7 @@ import {
 import { useSceneImperativeApi } from './use-scene-imperative-api'
 import { redoSceneHistory, undoSceneHistory } from './scene-history-state'
 import type { LayoutBounds } from '@/lib/three/furniture-layout'
-import type { CameraKeyName, SceneRef } from '../scene.types'
+import type { CameraKeyName, SceneReadModel, SceneRef } from '../scene.types'
 import type {
   FurnitureInstance,
   FurnitureItem,
@@ -24,25 +30,87 @@ const {
   mockBuildFurnitureItemsFromInstances,
   mockDeleteSelectionFromHistory,
   mockCreateSceneSnapshot,
+  mockInvalidate,
   mockUseFrame,
-} = vi.hoisted(() => ({
-  mockAddFurnitureToHistory: vi.fn(),
-  mockBuildFurnitureItemsFromInstances: vi.fn(),
-  mockDeleteSelectionFromHistory: vi.fn(),
-  mockCreateSceneSnapshot: vi.fn(),
-  mockUseFrame: vi.fn(),
-}))
+  mockUseThree,
+} = vi.hoisted(() => {
+  const mockInvalidate = vi.fn()
+  const mockUseThree = vi.fn(
+    <T>(selector: (state: { invalidate: () => void }) => T): T =>
+      selector({ invalidate: mockInvalidate }),
+  )
+
+  return {
+    mockAddFurnitureToHistory: vi.fn(),
+    mockBuildFurnitureItemsFromInstances: vi.fn(),
+    mockDeleteSelectionFromHistory: vi.fn(),
+    mockCreateSceneSnapshot: vi.fn(),
+    mockInvalidate,
+    mockUseFrame: vi.fn(),
+    mockUseThree,
+  }
+})
 
 vi.mock('@react-three/fiber', () => ({
   useFrame: mockUseFrame,
+  useThree: mockUseThree,
 }))
 
 vi.mock('./furniture-operations', () => ({
   addFurnitureToHistory: mockAddFurnitureToHistory,
+  areFurnitureCollectionsEqual: (
+    left: FurnitureItem[],
+    right: FurnitureItem[],
+  ) =>
+    left.length === right.length &&
+    left.every((item, index) => {
+      const other = right[index]
+      return (
+        item.id === other.id &&
+        item.catalogId === other.catalogId &&
+        item.name === other.name &&
+        item.kind === other.kind &&
+        item.collectionId === other.collectionId &&
+        item.nodeName === other.nodeName &&
+        item.sourcePath === other.sourcePath &&
+        item.footprintSize.width === other.footprintSize.width &&
+        item.footprintSize.depth === other.footprintSize.depth &&
+        item.position[0] === other.position[0] &&
+        item.position[1] === other.position[1] &&
+        item.position[2] === other.position[2] &&
+        item.rotationY === other.rotationY
+      )
+    }),
   buildFurnitureItemsFromInstances: mockBuildFurnitureItemsFromInstances,
   createFurnitureInstanceId: (sequenceNumber: number) =>
     `furniture-instance-${String(sequenceNumber)}`,
   deleteSelectionFromHistory: mockDeleteSelectionFromHistory,
+  rotateSelectedFurnitureInHistory: ({
+    history,
+    selectedId,
+    deltaRadians,
+  }: {
+    history: ReturnType<typeof createHistoryState<FurnitureItem[]>>
+    selectedId: string | null
+    deltaRadians: number
+  }) => {
+    if (!selectedId) {
+      return history
+    }
+
+    const nextFurniture = history.present.map((item) => {
+      if (item.id !== selectedId) {
+        return item
+      }
+
+      return {
+        ...item,
+        rotationY: item.rotationY + deltaRadians,
+      }
+    })
+
+    return commitHistoryPresent(history, nextFurniture)
+  },
 }))
 
 vi.mock('./scene-snapshot', () => ({
@@ -87,7 +155,6 @@ function defaultOptions(
     history: createHistoryState<FurnitureItem[]>([]),
     instanceIdRef: { current: 0 },
     objectRefs: { current: new Map<string, Object3D>() },
-    rotateSelectedFurniture: vi.fn(),
     selectFurniture: vi.fn(),
     selectedId: null,
     setHistory: vi.fn(),
@@ -108,7 +175,9 @@ describe('useSceneImperativeApi', () => {
     mockBuildFurnitureItemsFromInstances.mockReset()
     mockDeleteSelectionFromHistory.mockReset()
     mockCreateSceneSnapshot.mockReset()
+    mockInvalidate.mockReset()
     mockUseFrame.mockReset()
+    mockUseThree.mockClear()
 
     mockAddFurnitureToHistory.mockReturnValue({
       history: createHistoryState<FurnitureItem[]>([]),
@@ -155,8 +224,13 @@ describe('useSceneImperativeApi', () => {
     expect(options.selectFurniture).not.toHaveBeenCalled()
   })
 
-  it('rotateSelection forwards delta to rotateSelectedFurniture', () => {
-    const options = defaultOptions()
+  it('rotateSelection commits the rotated item to history', () => {
+    const item = createFurnitureItem('item-1')
+    const options = defaultOptions({
+      furniture: [item],
+      history: createHistoryState([item]),
+      selectedId: 'item-1',
+    })
     const sceneRef = getSceneRef(options)
     renderHook(() => {
       useSceneImperativeApi(options)
@@ -166,7 +240,39 @@ describe('useSceneImperativeApi', () => {
       sceneRef.current?.rotateSelection(Math.PI / 4)
     })
 
-    expect(options.rotateSelectedFurniture).toHaveBeenCalledWith(Math.PI / 4)
+    expect(options.setHistory).toHaveBeenCalledTimes(1)
+
+    const committedHistory = vi.mocked(options.setHistory).mock.calls[0][0]
+    expect(typeof committedHistory).not.toBe('function')
+
+    if (typeof committedHistory === 'function') {
+      throw new Error('expected committed history object')
+    }
+
+    expect(committedHistory.present[0]?.rotationY).toBeCloseTo(Math.PI / 4)
+  })
+
+  it('rotateSelection updates the read model immediately after a successful rotation', () => {
+    const item = createFurnitureItem('item-1')
+    const options = defaultOptions({
+      furniture: [item],
+      history: createHistoryState([item]),
+      selectedId: 'item-1',
+    })
+    const sceneRef = getSceneRef(options)
+    renderHook(() => {
+      useSceneImperativeApi(options)
+    })
+
+    act(() => {
+      sceneRef.current?.rotateSelection(Math.PI / 12)
+    })
+
+    const readModel = sceneRef.current?.getReadModel()
+
+    expect(readModel?.selectedId).toBe('item-1')
+    expect(readModel?.items).toHaveLength(1)
+    expect(readModel?.items.at(0)?.rotationY).toBeCloseTo(Math.PI / 12)
   })
 
   it('selectById returns not-found for unknown ids and selected for known ids', () => {
@@ -260,6 +366,55 @@ describe('useSceneImperativeApi', () => {
 
     expect(readModel).toEqual({
       selectedId: 'item-2',
+      items: [updatedItem],
+    })
+  })
+
+  it('updates getReadModel before earlier passive effects observe a rerendered furniture change', () => {
+    const initialItem = createFurnitureItem('item-1')
+    const initialOptions = defaultOptions({
+      furniture: [initialItem],
+      history: createHistoryState([initialItem]),
+      selectedId: 'item-1',
+    })
+    const observedReadModels: SceneReadModel[] = []
+
+    const { rerender } = renderHook(
+      ({ currentOptions }) => {
+        useEffect(() => {
+          const sceneRef = getSceneRef(currentOptions)
+          const readModel = sceneRef.current?.getReadModel()
+
+          if (readModel) {
+            observedReadModels.push(readModel)
+          }
+        }, [currentOptions])
+
+        useSceneImperativeApi(currentOptions)
+      },
+      {
+        initialProps: {
+          currentOptions: initialOptions,
+        },
+      },
+    )
+
+    const updatedItem = {
+      ...initialItem,
+      position: [-2.5, 0, -1.5] as [number, number, number],
+    }
+
+    rerender({
+      currentOptions: {
+        ...initialOptions,
+        furniture: [updatedItem],
+        history: createHistoryState([updatedItem]),
+      },
+    })
+
+    expect(observedReadModels).toHaveLength(2)
+    expect(observedReadModels[1]).toEqual({
+      selectedId: 'item-1',
       items: [updatedItem],
     })
   })
@@ -424,6 +579,83 @@ describe('useSceneImperativeApi', () => {
       ok: false,
       reason: 'blocked-collision',
     })
+  })
+
+  it('setSelectionTransform commits a valid exact transform as one history step', () => {
+    const item = createFurnitureItem('item-1')
+    const options = defaultOptions({
+      furniture: [item],
+      history: createHistoryState([item]),
+      selectedId: 'item-1',
+    })
+    const sceneRef = getSceneRef(options)
+    renderHook(() => {
+      useSceneImperativeApi(options)
+    })
+
+    let result: ReturnType<SceneRef['setSelectionTransform']> | null = null
+
+    act(() => {
+      result =
+        sceneRef.current?.setSelectionTransform({
+          position: [1.25, 0, -0.75],
+          rotationY: Math.PI / 6,
+        }) ?? null
+    })
+
+    expect(result).toEqual({
+      ok: true,
+      item: {
+        ...item,
+        position: [1.25, 0, -0.75],
+        rotationY: Math.PI / 6,
+      },
+    })
+    expect(options.setHistory).toHaveBeenCalledTimes(1)
+
+    const committedHistory = vi.mocked(options.setHistory).mock.calls[0][0]
+
+    if (typeof committedHistory === 'function') {
+      throw new Error('expected committed history object')
+    }
+
+    expect(committedHistory.past).toHaveLength(1)
+    expect(committedHistory.present[0].position).toEqual([1.25, 0, -0.75])
+    expect(committedHistory.present[0].rotationY).toBeCloseTo(Math.PI / 6)
+  })
+
+  it('setSelectionTransform rejects exact transforms that fall outside room bounds', () => {
+    const item = createFurnitureItem('item-1')
+    const options = defaultOptions({
+      bounds: {
+        minX: -0.5,
+        maxX: 0.5,
+        minZ: -0.5,
+        maxZ: 0.5,
+      },
+      furniture: [item],
+      history: createHistoryState([item]),
+      selectedId: 'item-1',
+    })
+    const sceneRef = getSceneRef(options)
+    renderHook(() => {
+      useSceneImperativeApi(options)
+    })
+
+    let result: ReturnType<SceneRef['setSelectionTransform']> | null = null
+
+    act(() => {
+      result =
+        sceneRef.current?.setSelectionTransform({
+          position: [1, 0, 0],
+        }) ?? null
+    })
+
+    expect(result).toEqual({
+      ok: false,
+      reason: 'blocked-bounds',
+    })
+    expect(options.setHistory).not.toHaveBeenCalled()
   })
 
   it('undo returns false when no undo is available', () => {
@@ -660,6 +892,31 @@ describe('useSceneImperativeApi', () => {
     )
   })
 
+  it('getSnapshot uses latest selectedId before rerender flushes', () => {
+    const options = defaultOptions({
+      furniture: [createFurnitureItem('item-1')],
+      selectedId: null,
+    })
+    const sceneRef = getSceneRef(options)
+
+    renderHook(() => {
+      useSceneImperativeApi(options)
+    })
+
+    act(() => {
+      sceneRef.current?.selectById('item-1')
+      sceneRef.current?.getSnapshot()
+    })
+
+    expect(mockCreateSceneSnapshot).toHaveBeenLastCalledWith(
+      options.furniture,
+      'item-1',
+      options.objectRefs.current,
+      options.camera,
+      options.canvasSize,
+    )
+  })
+
   it('setCameraPreset delegates to camera controls setLookAt', () => {
     const setLookAt = vi
       .fn<CameraControlsImpl['setLookAt']>()
@@ -684,8 +941,11 @@ describe('useSceneImperativeApi', () => {
     expect(setLookAt).toHaveBeenCalledTimes(1)
   })
 
-  it('focusSelected delegates to camera controls fitToBox for the selected object', () => {
-    const selectedObject = new Object3D()
+  it('focusSelected delegates to camera controls fitToBox for the selected visual bounds', () => {
+    const selectedObject = new Mesh(
+      new BoxGeometry(2, 2, 2),
+      new MeshBasicMaterial(),
+    )
     const fitToBox = vi
       .fn<CameraControlsImpl['fitToBox']>()
       .mockResolvedValue([])
@@ -710,7 +970,10 @@ describe('useSceneImperativeApi', () => {
       sceneRef.current?.focusSelected()
     })
 
-    expect(fitToBox).toHaveBeenCalledWith(selectedObject, true, {
+    expect(fitToBox).toHaveBeenCalledTimes(1)
+    expect(fitToBox.mock.calls[0]?.[0]).toHaveProperty('isBox3', true)
+    expect(fitToBox.mock.calls[0]?.[1]).toBe(true)
+    expect(fitToBox.mock.calls[0]?.[2]).toEqual({
       paddingTop: 0.5,
       paddingBottom: 0.5,
       paddingLeft: 0.5,
@@ -749,11 +1012,13 @@ describe('useSceneImperativeApi', () => {
       useSceneImperativeApi(options)
     })
 
+    const frameState = { invalidate: vi.fn() }
+
     // Orbit (rotate) with W
     act(() => {
       const keyState = new Set<CameraKeyName>(['keyW'])
       sceneRef.current?.setCameraKeyState(keyState)
-      frameCallback?.({}, 0.025)
+      frameCallback?.(frameState, 0.025)
     })
     expect(rotate).toHaveBeenCalledWith(0, -1.5 * 0.025, false)
 
@@ -761,7 +1026,7 @@ describe('useSceneImperativeApi', () => {
     act(() => {
       const keyState = new Set<CameraKeyName>(['keyW', 'shift'])
       sceneRef.current?.setCameraKeyState(keyState)
-      frameCallback?.({}, 0.025)
+      frameCallback?.(frameState, 0.025)
     })
     expect(truck).toHaveBeenCalledWith(0, -3 * 0.025, false)
 
@@ -769,7 +1034,7 @@ describe('useSceneImperativeApi', () => {
     act(() => {
       const keyState = new Set<CameraKeyName>(['equal'])
       sceneRef.current?.setCameraKeyState(keyState)
-      frameCallback?.({}, 0.025)
+      frameCallback?.(frameState, 0.025)
     })
     expect(dolly).toHaveBeenCalledWith(3 * 0.025, false)
 
@@ -777,9 +1042,20 @@ describe('useSceneImperativeApi', () => {
     act(() => {
       const keyState = new Set<CameraKeyName>(['minus'])
       sceneRef.current?.setCameraKeyState(keyState)
-      frameCallback?.({}, 0.025)
+      frameCallback?.(frameState, 0.025)
     })
     expect(dolly).toHaveBeenCalledWith(-3 * 0.025, false)
+
+    // Shift+Minus still zooms and does not introduce pan/orbit side effects.
+    act(() => {
+      const keyState = new Set<CameraKeyName>(['shift', 'minus'])
+      sceneRef.current?.setCameraKeyState(keyState)
+      frameCallback?.(frameState, 0.025)
+    })
+    expect(dolly).toHaveBeenCalledWith(-3 * 0.025, false)
+    expect(truck).toHaveBeenCalledTimes(1)
+    expect(rotate).toHaveBeenCalledTimes(1)
+    expect(frameState.invalidate).toHaveBeenCalledTimes(5)
   })
 })
 

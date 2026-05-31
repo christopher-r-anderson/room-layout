@@ -25,6 +25,7 @@
       "kind": "couch",
       "collectionId": "leather-collection",
       "nodeName": "couch",
+      "uiBoundsNodeName": "couch_ui-bounds",
       "footprintSize": { "width": 2.2, "depth": 0.95 },
       "previewPath": "catalog-previews/leather-couch.webp"
     },
@@ -34,6 +35,7 @@
       "kind": "armchair",
       "collectionId": "leather-collection",
       "nodeName": "armchair",
+      "uiBoundsNodeName": "armchair_ui-bounds",
       "footprintSize": { "width": 1.15, "depth": 0.95 },
       "previewPath": "catalog-previews/leather-armchair.webp"
     },
@@ -43,7 +45,8 @@
       "kind": "end-table",
       "collectionId": "end-table",
       "nodeName": "end-table",
-      "footprintSize": { "width": 0.96, "depth": 0.96 },
+      "uiBoundsNodeName": "end-table_ui-bounds",
+      "footprintSize": { "width": 0.48, "depth": 0.48 },
       "previewPath": "catalog-previews/end-table.webp"
     },
     {
@@ -70,6 +73,7 @@
       {
         "id": "wood-floor",
         "label": "Wood",
+        "previewPath": "environment/previews/wood-floor.webp",
         "diffusePath": "environment/textures/wood-floor_diff_2k.ktx2",
         "normalPath": "environment/textures/wood-floor_nor_gl_1k.ktx2",
         "tileSizeMeters": { "width": 1.7, "depth": 1.7 }
@@ -77,6 +81,7 @@
       {
         "id": "laminate-floor",
         "label": "Laminate",
+        "previewPath": "environment/previews/laminate-floor.webp",
         "diffusePath": "environment/textures/laminate-floor_diff_2k.ktx2",
         "normalPath": "environment/textures/laminate-floor_nor_gl_1k.ktx2",
         "tileSizeMeters": { "width": 1.7, "depth": 1.7 }
@@ -84,6 +89,7 @@
       {
         "id": "granite-tile",
         "label": "Granite",
+        "previewPath": "environment/previews/granite-tile.webp",
         "diffusePath": "environment/textures/granite-tile_diff_2k.ktx2",
         "normalPath": "environment/textures/granite-tile_nor_gl_1k.ktx2",
         "tileSizeMeters": { "width": 2, "depth": 2 }
@@ -91,6 +97,7 @@
       {
         "id": "concrete-floor",
         "label": "Concrete",
+        "previewPath": "environment/previews/concrete-floor.webp",
         "diffusePath": "environment/textures/concrete-floor_diff_2k.ktx2",
         "normalPath": "environment/textures/concrete-floor_nor_gl_1k.ktx2",
         "tileSizeMeters": { "width": 4, "depth": 4 }

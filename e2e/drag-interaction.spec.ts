@@ -4,6 +4,8 @@ import {
   dragSelectedFurniture,
   openEditor,
   readSceneState,
+  selectOutlinerItemByKeyboard,
+  withOverlaysHidden,
   waitForFirstItemPosition,
 } from './support/editor-harness'
 
@@ -11,64 +13,71 @@ async function hoverFurnitureById(
   page: Parameters<typeof openEditor>[0],
   itemId: string,
 ) {
-  const state = await readSceneState(page)
-  const item = state.items.find((candidate) => candidate.id === itemId)
+  await withOverlaysHidden(page, async () => {
+    const state = await readSceneState(page)
+    const item = state.items.find((candidate) => candidate.id === itemId)
 
-  if (!item?.pointerTarget) {
-    throw new Error(`furniture item ${itemId} does not have a pointer target`)
-  }
+    if (!item?.pointerTarget) {
+      throw new Error(`furniture item ${itemId} does not have a pointer target`)
+    }
 
-  const canvasBounds = await page.locator('canvas').boundingBox()
+    const canvasBounds = await page.locator('canvas').boundingBox()
 
-  if (!canvasBounds) {
-    throw new Error('canvas bounding box was not available for interaction')
-  }
+    if (!canvasBounds) {
+      throw new Error('canvas bounding box was not available for interaction')
+    }
 
-  await page.mouse.move(
-    canvasBounds.x + item.pointerTarget.x,
-    canvasBounds.y + item.pointerTarget.y,
-  )
+    await page.mouse.move(
+      canvasBounds.x + item.pointerTarget.x,
+      canvasBounds.y + item.pointerTarget.y,
+    )
+  })
 }
 
 async function movePointerToCanvasBackground(
   page: Parameters<typeof openEditor>[0],
 ) {
-  const canvasBounds = await page.locator('canvas').boundingBox()
+  await withOverlaysHidden(page, async () => {
+    const canvasBounds = await page.locator('canvas').boundingBox()
 
-  if (!canvasBounds) {
-    throw new Error('canvas bounding box was not available for interaction')
-  }
+    if (!canvasBounds) {
+      throw new Error('canvas bounding box was not available for interaction')
+    }
 
-  await page.mouse.move(
-    canvasBounds.x + canvasBounds.width / 2,
-    canvasBounds.y + 24,
-  )
+    await page.mouse.move(
+      canvasBounds.x + canvasBounds.width / 2,
+      canvasBounds.y + 24,
+    )
+  })
 }
 
 async function clickCanvasBackground(page: Parameters<typeof openEditor>[0]) {
-  const canvasBounds = await page.locator('canvas').boundingBox()
+  await withOverlaysHidden(page, async () => {
+    const canvas = page.locator('canvas')
+    const canvasBounds = await page.locator('canvas').boundingBox()
 
-  if (!canvasBounds) {
-    throw new Error('canvas bounding box was not available for interaction')
-  }
-
-  const candidatePoints: readonly { x: number; y: number }[] = [
-    { x: canvasBounds.width / 2, y: 24 },
-    { x: 48, y: canvasBounds.height / 2 },
-    { x: canvasBounds.width - 48, y: canvasBounds.height / 2 },
-    { x: canvasBounds.width / 2, y: canvasBounds.height - 48 },
-  ]
-
-  for (const point of candidatePoints) {
-    await page.mouse.click(canvasBounds.x + point.x, canvasBounds.y + point.y)
-
-    const state = await readSceneState(page)
-    if (state.selectedId === null) {
-      return
+    if (!canvasBounds) {
+      throw new Error('canvas bounding box was not available for interaction')
     }
-  }
 
-  throw new Error('unable to find a canvas miss point that clears selection')
+    const candidatePoints: readonly { x: number; y: number }[] = [
+      { x: canvasBounds.width * 0.45, y: 40 },
+      { x: canvasBounds.width * 0.55, y: 40 },
+      { x: canvasBounds.width * 0.7, y: 72 },
+      { x: canvasBounds.width * 0.82, y: 120 },
+    ]
+
+    for (const point of candidatePoints) {
+      await canvas.click({ position: { x: point.x, y: point.y } })
+
+      const state = await readSceneState(page)
+      if (state.selectedId === null) {
+        return
+      }
+    }
+
+    throw new Error('unable to find a canvas miss point that clears selection')
+  })
 }
 
 test('drags selected furniture through the canvas and preserves history undo', async ({
@@ -76,17 +85,22 @@ test('drags selected furniture through the canvas and preserves history undo', a
 }) => {
   await openEditor(page)
 
-  const addedState = await addFurniture(page, 'Leather Couch')
+  const addedState = await addFurniture(page, 'Leather Armchair')
   const initialItem = addedState.items[0]
 
-  const draggedState = await dragSelectedFurniture(page, {
-    x: 160,
-    y: 40,
-  })
+  const draggedState = await dragSelectedFurniture(
+    page,
+    {
+      x: 1_600,
+      y: 0,
+    },
+    undefined,
+    { hideOverlays: true },
+  )
   const draggedItem = draggedState.items[0]
 
   expect(draggedState.itemCount).toBe(1)
-  expect(draggedState.selectedName).toBe('Leather Couch')
+  expect(draggedState.selectedName).toBe('Leather Armchair')
   expect(draggedItem.id).toBe(initialItem.id)
   expect(draggedItem.position).not.toEqual(initialItem.position)
 
@@ -94,7 +108,7 @@ test('drags selected furniture through the canvas and preserves history undo', a
   const afterUndo = await waitForFirstItemPosition(page, initialItem.position)
   expect(afterUndo).toMatchObject({
     itemCount: 1,
-    selectedName: 'Leather Couch',
+    selectedName: 'Leather Armchair',
   })
   expect(afterUndo.items[0]?.position).toEqual(initialItem.position)
 
@@ -102,7 +116,7 @@ test('drags selected furniture through the canvas and preserves history undo', a
   const afterRedo = await waitForFirstItemPosition(page, draggedItem.position)
   expect(afterRedo).toMatchObject({
     itemCount: 1,
-    selectedName: 'Leather Couch',
+    selectedName: 'Leather Armchair',
   })
   expect(afterRedo.items[0]?.position).toEqual(draggedItem.position)
 })
@@ -133,7 +147,10 @@ test('keeps selected and preview states independent across hover and selection c
   const couchOutlinerButton = page.getByRole('button', {
     name: /^Leather Couch/i,
   })
-  await couchOutlinerButton.hover()
+  // React's synthetic enter/leave handling in this surface responds to the
+  // over/out transition here
+  // dispatchEvent('pointerenter') does not update preview state
+  await couchOutlinerButton.dispatchEvent('pointerover')
 
   await expect
     .poll(async () => (await readSceneState(page)).previewedId)
@@ -142,13 +159,15 @@ test('keeps selected and preview states independent across hover and selection c
     .poll(async () => (await readSceneState(page)).selectedId)
     .toBe(tableId)
 
-  await movePointerToCanvasBackground(page)
+  await couchOutlinerButton.dispatchEvent('pointerout')
   await expect
     .poll(async () => (await readSceneState(page)).previewedId)
     .toBeNull()
 
-  await couchOutlinerButton.click()
-  await page.getByRole('button', { name: /^End Table/i }).hover()
+  await selectOutlinerItemByKeyboard(page, /^Leather Couch/i)
+  await page
+    .getByRole('button', { name: /^End Table/i })
+    .dispatchEvent('pointerover')
 
   await expect
     .poll(async () => (await readSceneState(page)).selectedId)

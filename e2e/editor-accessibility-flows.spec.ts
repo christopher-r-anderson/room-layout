@@ -4,10 +4,13 @@ import {
   dragSelectedFurniture,
   expectAssertiveAnnouncementUnchanged,
   expectPoliteAnnouncementUnchanged,
+  focusRoomView,
   openEditor,
   readAssertiveAnnouncement,
   readPoliteAnnouncement,
   readSceneState,
+  selectOutlinerItemByKeyboard,
+  updateSelectedItemField,
   waitForFirstItemPosition,
   waitForItemCount,
   waitForPoliteAnnouncement,
@@ -19,23 +22,23 @@ test('applies Arrow, Shift+Arrow, and Alt+Arrow movement steps in no-mouse flow'
   await openEditor(page)
   await addFurniture(page, 'Leather Couch')
 
-  const outlinerButton = page.getByRole('button', { name: /^Leather Couch/i })
-  await outlinerButton.click()
+  await selectOutlinerItemByKeyboard(page, /^Leather Couch/i)
 
   const initialState = await readSceneState(page)
   const initialX = initialState.items[0].position[0]
 
-  await page.locator('body').press('ArrowRight')
+  await focusRoomView(page)
+  await page.keyboard.press('ArrowRight')
   await expect
     .poll(async () => (await readSceneState(page)).items[0].position[0])
     .toBeCloseTo(initialX + 0.5, 6)
 
-  await page.locator('body').press('Shift+ArrowRight')
+  await page.keyboard.press('Shift+ArrowRight')
   await expect
     .poll(async () => (await readSceneState(page)).items[0].position[0])
     .toBeCloseTo(initialX + 1.5, 6)
 
-  await page.locator('body').press('Alt+ArrowRight')
+  await page.keyboard.press('Alt+ArrowRight')
   await expect
     .poll(async () => (await readSceneState(page)).items[0].position[0])
     .toBeCloseTo(initialX + 1.6, 6)
@@ -48,10 +51,11 @@ test('keeps announcements deterministic and reconciles focus on undo selection l
   const addedState = await addFurniture(page, 'Leather Couch')
   const initialPosition = addedState.items[0].position
 
-  await page.getByRole('button', { name: /^Leather Couch/i }).click()
+  await selectOutlinerItemByKeyboard(page, /^Leather Couch/i)
 
-  await page.locator('body').press('ArrowRight')
-  await page.locator('body').press('Control+z')
+  await focusRoomView(page)
+  await page.keyboard.press('ArrowRight')
+  await page.keyboard.press('Control+z')
 
   await waitForPoliteAnnouncement(page, 'Undo complete.')
 
@@ -61,11 +65,11 @@ test('keeps announcements deterministic and reconciles focus on undo selection l
 
   await waitForFirstItemPosition(page, initialPosition)
 
-  await page.locator('body').press('Control+z')
+  await page.keyboard.press('Control+z')
   await waitForItemCount(page, 0)
   await waitForPoliteAnnouncement(page, 'Undo complete.')
   await expect(
-    page.getByRole('region', { name: 'Furniture List' }),
+    page.getByRole('region', { name: 'Furniture in room' }),
   ).toBeFocused()
 })
 
@@ -77,17 +81,23 @@ test('keeps undo and redo parity across command and drag movement paths', async 
   const addedState = await addFurniture(page, 'Leather Couch')
   const initialPosition = addedState.items[0].position
 
-  await page.getByRole('button', { name: 'Move right' }).click()
+  await updateSelectedItemField(page, 'Distance from left wall (m)', '1.4')
 
   const afterCommandMove = await readSceneState(page)
   const commandPosition = afterCommandMove.items[0].position
 
   expect(commandPosition).not.toEqual(initialPosition)
+  expect(commandPosition[0]).toBeCloseTo(-0.5, 6)
 
-  const afterDragMove = await dragSelectedFurniture(page, {
-    x: 150,
-    y: 30,
-  })
+  const afterDragMove = await dragSelectedFurniture(
+    page,
+    {
+      x: 150,
+      y: 30,
+    },
+    undefined,
+    { hideOverlays: true },
+  )
   const dragPosition = afterDragMove.items[0].position
 
   expect(dragPosition).not.toEqual(commandPosition)
@@ -147,20 +157,20 @@ test('keyboard shortcuts help is reachable and dismissible by keyboard, and is e
   await openEditor(page)
 
   // Reach the trigger via Tab and activate it with Enter.
-  const helpTrigger = page.locator(
-    'button[aria-label="Toggle keyboard shortcuts help"]',
+  const helpTrigger = page.getByRole('button', { name: 'Keyboard shortcuts' })
+  const inertHelpTrigger = page.locator(
+    'button[aria-label="Keyboard shortcuts"]',
   )
+  const shortcutsDialog = page.getByRole('dialog', {
+    name: 'Keyboard Shortcuts',
+  })
   await helpTrigger.focus()
   await page.keyboard.press('Enter')
-  await expect(
-    page.getByRole('heading', { name: 'Keyboard Shortcuts' }),
-  ).toBeVisible()
+  await expect(shortcutsDialog).toBeVisible()
 
   // Escape dismisses and returns focus to the trigger.
   await page.keyboard.press('Escape')
-  await expect(
-    page.getByRole('heading', { name: 'Keyboard Shortcuts' }),
-  ).toBeHidden()
+  await expect(shortcutsDialog).toBeHidden()
   await expect(helpTrigger).toBeFocused()
 
   // While the catalog drawer is open the help trigger must not be reachable
@@ -173,7 +183,7 @@ test('keyboard shortcuts help is reachable and dismissible by keyboard, and is e
   // trigger must never receive focus.
   for (let i = 0; i < 10; i++) {
     await page.keyboard.press('Tab')
-    await expect(helpTrigger).not.toBeFocused()
+    await expect(inertHelpTrigger).not.toBeFocused()
   }
 
   await page.keyboard.press('Escape')
@@ -187,7 +197,7 @@ test('outliner collapse toggle is keyboard operable and manages focus correctly'
   await addFurniture(page, 'Leather Couch')
 
   const toggleButton = page.getByRole('button', {
-    name: 'Toggle furniture list',
+    name: 'Toggle furniture in room',
   })
   const couchButton = page.getByRole('button', { name: /^Leather Couch/i })
 
@@ -205,4 +215,192 @@ test('outliner collapse toggle is keyboard operable and manages focus correctly'
   // Re-expand via keyboard; item list reappears.
   await page.keyboard.press('Enter')
   await expect(couchButton).toBeVisible()
+})
+
+test('Tab from the room view reaches selected item actions and then details', async ({
+  page,
+}) => {
+  await openEditor(page)
+  await addFurniture(page, 'Leather Couch')
+
+  await expect(
+    page.getByText('Select an item to fine-tune placement.'),
+  ).toBeHidden()
+
+  await focusRoomView(page)
+  await page.keyboard.press('Tab')
+  await expect(
+    page.getByRole('button', { name: 'Rotate counterclockwise' }),
+  ).toBeFocused()
+
+  await page.keyboard.press('Tab')
+  await page.keyboard.press('Tab')
+  await page.keyboard.press('Tab')
+  await expect(page.getByLabel('Distance from left wall (m)')).toBeFocused()
+})
+
+test('outliner keyboard selection keeps focus in the panel and reaches selected item actions with Shift+Tab', async ({
+  page,
+}) => {
+  await openEditor(page)
+  await addFurniture(page, 'Leather Couch')
+  await addFurniture(page, 'End Table')
+
+  const couchButton = page.getByRole('button', { name: /^Leather Couch/i })
+  const rotateCounterclockwiseButton = page.getByRole('button', {
+    name: 'Rotate counterclockwise',
+  })
+
+  await couchButton.focus()
+  await page.keyboard.press('Enter')
+
+  await waitForPoliteAnnouncement(
+    page,
+    'Leather Couch selected. Press Shift+Tab to reach selected item actions and details.',
+  )
+  await expect(couchButton).toBeFocused()
+
+  await page.keyboard.press('Shift+Tab')
+  await expect(rotateCounterclockwiseButton).toBeFocused()
+})
+
+test('invalid selected item detail edits show inline feedback and do not move the item', async ({
+  page,
+}) => {
+  await openEditor(page)
+  const initialState = await addFurniture(page, 'Leather Couch')
+  const initialX = initialState.items[0].position[0]
+
+  const xInput = page.getByLabel('Distance from left wall (m)')
+  await xInput.fill('99')
+  await xInput.press('Enter')
+
+  const detailsPanel = page.getByRole('region', {
+    name: 'Placement',
+  })
+  const visualSupportMessage = detailsPanel.locator('p[aria-hidden="true"]')
+
+  await expect(
+    visualSupportMessage.filter({
+      hasText: 'Distance from left wall (m) must stay inside the room.',
+    }),
+  ).toBeVisible()
+  await expect
+    .poll(async () => (await readSceneState(page)).items[0]?.position[0])
+    .toBeCloseTo(initialX, 6)
+})
+
+test('malformed selected item detail edits announce failure and keep the draft visible', async ({
+  page,
+}) => {
+  await openEditor(page)
+  await addFurniture(page, 'Leather Couch')
+
+  const xInput = page.getByLabel('Distance from left wall (m)')
+  const detailsPanel = page.getByRole('region', {
+    name: 'Placement',
+  })
+  const visualSupportMessage = detailsPanel.locator('p[aria-hidden="true"]')
+  const localAssertiveAnnouncement = detailsPanel.locator(
+    '[aria-live="assertive"]',
+  )
+  const globalAssertiveBefore = await readAssertiveAnnouncement(page)
+
+  await xInput.fill('1.2x')
+  await xInput.press('Enter')
+
+  await expect(xInput).toHaveValue('1.2x')
+  await expect(
+    visualSupportMessage.filter({
+      hasText: 'Distance from left wall (m) must be a valid number.',
+    }),
+  ).toBeVisible()
+  await expect(localAssertiveAnnouncement).toHaveText(
+    'Distance from left wall (m) must be a valid number.',
+  )
+  await expect
+    .poll(async () => readAssertiveAnnouncement(page))
+    .toBe(globalAssertiveBefore)
+})
+
+test('selected item controls are suppressed from tab order while the catalog drawer is open', async ({
+  page,
+}) => {
+  await openEditor(page)
+  await addFurniture(page, 'Leather Couch')
+
+  const selectedItemActions = page.locator(
+    'section[aria-label="Selected item actions"]',
+  )
+  const suppressedControlsRoot = page.locator(
+    'xpath=//div[@inert and @aria-hidden="true"][.//section[@aria-label="Selected item actions"]]',
+  )
+
+  await page.getByRole('button', { name: 'Add Furniture' }).click()
+  const drawerDialog = page.getByRole('dialog', { name: 'Add furniture' })
+  await expect(drawerDialog).toBeVisible()
+  await expect(selectedItemActions).toBeVisible()
+  await expect(suppressedControlsRoot).toHaveCount(1)
+
+  for (let i = 0; i < 10; i += 1) {
+    await page.keyboard.press('Tab')
+    await expect(suppressedControlsRoot).toHaveAttribute('inert', '')
+  }
+})
+
+test.describe('narrow viewport overlay order', () => {
+  test.use({ viewport: { width: 390, height: 844 } })
+
+  test('keeps Add Furniture early in tab order and restores focus from the Room drawer on mobile', async ({
+    page,
+  }) => {
+    await openEditor(page)
+
+    const roomView = page.getByRole('region', {
+      name: 'Interactive 3D room editor',
+    })
+    const addFurnitureButton = page.getByRole('button', {
+      name: 'Add Furniture',
+    })
+    const roomButton = page.locator('button[aria-controls="room-drawer"]')
+    const undoButton = page.getByRole('button', { name: 'Undo' })
+    const redoButton = page.getByRole('button', { name: 'Redo' })
+    const moreButton = page.getByRole('button', { name: 'More actions' })
+
+    await page.keyboard.press('Tab')
+    await expect(roomView).toBeFocused()
+
+    await page.keyboard.press('Tab')
+    await expect(addFurnitureButton).toBeFocused()
+
+    await page.keyboard.press('Tab')
+    await expect(roomButton).toBeFocused()
+
+    await page.keyboard.press('Tab')
+    await expect(undoButton).toBeFocused()
+
+    await page.keyboard.press('Tab')
+    await expect(redoButton).toBeFocused()
+
+    await page.keyboard.press('Tab')
+    await expect(moreButton).toBeFocused()
+
+    await page.keyboard.press('Shift+Tab')
+    await expect(redoButton).toBeFocused()
+
+    await page.keyboard.press('Shift+Tab')
+    await expect(undoButton).toBeFocused()
+
+    await page.keyboard.press('Shift+Tab')
+    await expect(roomButton).toBeFocused()
+
+    await page.keyboard.press('Enter')
+
+    const roomDialog = page.getByRole('dialog', { name: 'Room' })
+    await expect(roomDialog).toBeVisible()
+    await roomDialog.getByRole('tab', { name: 'Walls' }).focus()
+    await page.keyboard.press('Escape')
+    await expect(roomDialog).toBeHidden()
+    await expect(roomButton).toBeFocused()
+  })
 })

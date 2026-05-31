@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { SceneReadModel } from '@/scene/scene.types'
@@ -58,7 +58,7 @@ describe('SceneOutliner', () => {
 
     expect(screen.getByText('No furniture in the room.')).toBeInTheDocument()
     expect(
-      screen.getByRole('button', { name: 'Toggle furniture list' }),
+      screen.getByRole('button', { name: 'Toggle furniture in room' }),
     ).toBeVisible()
   })
 
@@ -79,7 +79,7 @@ describe('SceneOutliner', () => {
     expect(screen.getByRole('button', { name: /leather couch/i })).toBeVisible()
 
     await user.click(
-      screen.getByRole('button', { name: 'Toggle furniture list' }),
+      screen.getByRole('button', { name: 'Toggle furniture in room' }),
     )
 
     expect(
@@ -90,7 +90,7 @@ describe('SceneOutliner', () => {
     )
   })
 
-  it('forwards selection through item buttons', async () => {
+  it('forwards selection through item buttons with pointer source', async () => {
     const user = userEvent.setup()
     const onSelectById = vi.fn()
 
@@ -107,7 +107,133 @@ describe('SceneOutliner', () => {
 
     await user.click(screen.getByRole('button', { name: /end table/i }))
 
-    expect(onSelectById).toHaveBeenCalledWith('item-2')
+    expect(onSelectById).toHaveBeenCalledWith('item-2', 'panel-pointer')
+  })
+
+  it('forwards selection with keyboard source when activated via keyboard', async () => {
+    const user = userEvent.setup()
+    const onSelectById = vi.fn()
+
+    render(
+      <Outliner
+        readModel={READ_MODEL}
+        disabled={false}
+        focusRequest={null}
+        onFocusHandled={vi.fn()}
+        onSelectById={onSelectById}
+        onPreviewChange={vi.fn()}
+      />,
+    )
+
+    // Tab to reach the first item button, then press Enter to activate
+    await user.tab()
+    await user.tab()
+    await user.keyboard('{Enter}')
+
+    expect(onSelectById).toHaveBeenCalledWith(
+      expect.any(String),
+      'panel-keyboard',
+    )
+  })
+
+  it('hands Shift+Tab back to selected item controls when requested', () => {
+    const onNavigateBackToSelectionControls = vi.fn(() => true)
+
+    render(
+      <Outliner
+        readModel={READ_MODEL}
+        disabled={false}
+        focusRequest={null}
+        onFocusHandled={vi.fn()}
+        onNavigateBackToSelectionControls={onNavigateBackToSelectionControls}
+        onSelectById={vi.fn()}
+        onPreviewChange={vi.fn()}
+      />,
+    )
+
+    const firstItem = screen.getByRole('button', { name: /leather couch/i })
+    const event = new KeyboardEvent('keydown', {
+      bubbles: true,
+      cancelable: true,
+      key: 'Tab',
+      shiftKey: true,
+    })
+
+    fireEvent(firstItem, event)
+
+    expect(onNavigateBackToSelectionControls).toHaveBeenCalledTimes(1)
+    expect(event.defaultPrevented).toBe(true)
+  })
+
+  it('does not hand Shift+Tab back for non-first outliner items', () => {
+    const onNavigateBackToSelectionControls = vi.fn(() => true)
+
+    render(
+      <Outliner
+        readModel={READ_MODEL}
+        disabled={false}
+        focusRequest={null}
+        onFocusHandled={vi.fn()}
+        onNavigateBackToSelectionControls={onNavigateBackToSelectionControls}
+        onSelectById={vi.fn()}
+        onPreviewChange={vi.fn()}
+      />,
+    )
+
+    const secondItem = screen.getByRole('button', { name: /end table/i })
+    const event = new KeyboardEvent('keydown', {
+      bubbles: true,
+      cancelable: true,
+      key: 'Tab',
+      shiftKey: true,
+    })
+
+    fireEvent(secondItem, event)
+
+    expect(onNavigateBackToSelectionControls).not.toHaveBeenCalled()
+    expect(event.defaultPrevented).toBe(false)
+  })
+
+  it('applies preview styling to the previewed non-selected item', async () => {
+    render(
+      <Outliner
+        readModel={READ_MODEL}
+        disabled={false}
+        focusRequest={null}
+        onFocusHandled={vi.fn()}
+        onSelectById={vi.fn()}
+        previewedId="item-2"
+        onPreviewChange={vi.fn()}
+      />,
+    )
+
+    await waitFor(() => {
+      const previewedButton = screen.getByRole('button', { name: /end table/i })
+      // item-2 is previewed (not selected) — should have accent bg class
+      expect(previewedButton.className).toMatch(/bg-accent/)
+    })
+  })
+
+  it('does not apply preview styling to the selected item even if it matches previewedId', async () => {
+    render(
+      <Outliner
+        readModel={READ_MODEL}
+        disabled={false}
+        focusRequest={null}
+        onFocusHandled={vi.fn()}
+        onSelectById={vi.fn()}
+        previewedId="item-1"
+        onPreviewChange={vi.fn()}
+      />,
+    )
+
+    await waitFor(() => {
+      const selectedButton = screen.getByRole('button', {
+        name: /leather couch/i,
+      })
+      // item-1 is selected AND previewed — selected style wins, no accent class
+      expect(selectedButton.className).not.toMatch(/bg-accent/)
+    })
   })
 
   it('focuses the preferred item when expanded', async () => {
@@ -147,7 +273,7 @@ describe('SceneOutliner', () => {
 
     await waitFor(() => {
       expect(
-        screen.getByRole('button', { name: 'Toggle furniture list' }),
+        screen.getByRole('button', { name: 'Toggle furniture in room' }),
       ).toHaveFocus()
     })
     expect(onFocusHandled).toHaveBeenCalledTimes(1)
@@ -190,7 +316,7 @@ describe('SceneOutliner', () => {
       />,
     )
 
-    const outlinerRegion = screen.getByLabelText('Furniture List')
+    const outlinerRegion = screen.getByLabelText('Furniture in room')
 
     await waitFor(() => {
       expect(outlinerRegion).toHaveFocus()

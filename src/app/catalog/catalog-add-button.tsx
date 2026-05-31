@@ -5,22 +5,20 @@ import type { ComponentProps } from 'react'
 
 export function CatalogAddButton({
   className,
+  size = 'toolbar',
+  variant = 'default',
   ...props
 }: ComponentProps<typeof Button>) {
   return (
     <Button
-      className={cn(
-        'group relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-full transition-all duration-300 ease-in-out hover:w-42 focus-visible:w-42',
-        className,
-      )}
+      type="button"
+      size={size}
+      variant={variant}
+      className={cn('pointer-events-auto', className)}
       {...props}
     >
-      <span className="whitespace-nowrap mx-4 opacity-0 transition-all duration-300 group-hover:opacity-100 group-focus-visible:opacity-100">
-        Add Furniture
-      </span>
-      <div className="flex absolute right-4">
-        <IconPlus />
-      </div>
+      <IconPlus aria-hidden="true" size={16} />
+      <span>Add Furniture</span>
     </Button>
   )
 }

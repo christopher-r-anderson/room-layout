@@ -4,11 +4,11 @@ A minimal interactive 3D room layout built with React Three Fiber.
 
 <https://christopher-r-anderson.github.io/room-layout/>
 
-This project demonstrates core web 3D concepts relevant to retail and product experiences, including scene composition, camera controls, collision-aware object placement, history and selection tools, outliner and selected-item inspector surfaces, keyboard movement/rotation shortcuts, catalog-driven editor workflows, and a guarded startup asset-loading flow.
+This project demonstrates core web 3D concepts relevant to retail and product experiences, including scene composition, camera controls, collision-aware object placement, history and selection tools, a room-contents panel plus selected-item actions/details, keyboard movement/rotation shortcuts, catalog-driven editor workflows, and a guarded startup asset-loading flow.
 
 ## 🏁 Goals
 
-Current editor UI highlights include a visual furniture picker, history and selection tools, outliner and selected-item inspector surfaces, keyboard movement/rotation shortcuts, startup loading and retryable error overlays, and project/asset information dialogs.
+Current editor UI highlights include a visual furniture picker, a Room surface for wall/floor styling, history tools, a room-contents panel, selected-item actions/details, keyboard movement/rotation shortcuts, startup loading and retryable error overlays, and project/asset information dialogs.
 
 ## 🔋 Tech Stack
 
@@ -51,15 +51,30 @@ The repository now uses Playwright for real-browser editor coverage and scripted
 - Use Vitest for pure utility, scene-state, and microbenchmark work.
 - Use `pnpm test:e2e` for browser-accurate UI and canvas-adjacent workflows like startup loading, retry flows, and editor history.
 - Use `pnpm test:browser:perf` for scripted Chromium interaction measurements that reuse the same harness helpers without acting as a strict correctness gate.
-- Browser accessibility audits run through Playwright + axe in the chromium lane (baseline shell, catalog drawer, delete dialog, and outliner/inspector states).
+- Browser accessibility audits run through Playwright + axe in the chromium lane (baseline shell, catalog drawer, remove-item dialog, and room-contents/selected-item states).
+
+### Browser Test Guidance
+
+- For scene-only Playwright tests where overlay UI is not part of the contract, use the shared overlay-hidden harness helpers in `e2e/support/editor-harness.ts` instead of CSS injection or custom DOM overrides.
+- Overlay-hidden mode is appropriate when you are verifying canvas/scene behavior and the overlay is only incidental to reaching that state.
+- Do not hide the UI in tests that are about the visible editor itself: outliner behavior, selected-item controls, dialogs, toolbar actions, accessibility semantics, focus order, announcements, or true layout/hit-target interactions.
+- Do not use overlay-hidden mode to mask a legitimate UI overlap bug. If the test is meant to prove real pointer accessibility or layout behavior, the full UI must stay visible.
+- When a test only needs to select an item or establish state and mouse behavior is not under test, prefer keyboard focus/activation over pointer clicks. This makes the test less brittle and better aligned with the app's accessible interaction model.
+- Keep mouse or pointer actions in the test only when pointer semantics are the feature under test, such as hover preview, drag, collision, pointer capture, context-menu suppression, or hit-testing.
 
 ## ✨ Accessibility
 
 Accessibility is an explicit goal for this project, especially for no-mouse editor workflows.
 
-- The editor supports keyboard-first interaction through outliner selection, selected-item inspector controls, and global movement/rotation/history shortcuts.
+- The editor supports keyboard-first interaction through room-contents selection, selected-item actions/details, global movement/rotation/history shortcuts, and canvas keyboard browse (spatial navigation when nothing is selected).
 - Startup, dialog, and editor feedback flows include screen-reader announcement support and deterministic focus transitions for key operations like delete and selection reconciliation.
-- Automated accessibility checks run through Playwright + axe in Chromium and currently cover baseline shell/dialog states plus outliner/inspector states.
+- All room-view-specific shortcuts (movement, rotation, deletion, and canvas browse) are scoped to the 3D room view's DOM focus, so keyboard navigation outside the canvas — for example, in the Furniture in room panel or selected-item details inputs — does not accidentally trigger object actions.
+- Canvas keyboard browse uses spatial ordering (top-to-bottom, left-to-right by screen projection) so arrow keys follow visual layout rather than an internal list order that may differ from what users see. The visible Furniture in room panel deliberately uses its own stable alpha-by-name order to remain predictable as objects move.
+- The Furniture in room panel is the primary accessible alternative to direct canvas interaction. It remains visible regardless of selection state so assistive technology users always have a stable text representation of the room contents.
+- There is no duplicate hidden DOM scene graph; the Furniture in room panel represents the room for assistive technology.
+- After canvas keyboard selection, announcements include a Tab hint to reach selected item actions and details, so screen reader users know what to do next.
+- The current selected-item actions/details are transitional surfaces for a future contextual model. Even if those controls later float visually near the selected object, they should remain after the 3D room view in logical DOM/tab order.
+- Automated accessibility checks run through Playwright + axe in Chromium and currently cover baseline shell/dialog states plus room-contents/selected-item states.
 - Automated checks are necessary but not sufficient; manual assistive-technology verification remains an ongoing task.
 
 First-time local setup:
@@ -102,24 +117,29 @@ In addition to this README, project-specific guides are available:
 
 - [Editor Shortcuts Reference](docs/editor-shortcuts-reference.md): End-user shortcut map for camera, object, and scene actions.
 - [Keyboard Shortcuts (Engineering)](docs/keyboard-shortcuts.md): Input architecture, matching/suppression/execution rules, and held-key camera behavior.
+- [Overlay Interaction Model](docs/overlay-interaction-model.md): Blocking overlays vs the non-blocking Room surface, including focus and breakpoint behavior.
+- [Selected Toolbar Placement](docs/selected-toolbar-placement.md): Bounds source order, viewport-space placement, floating candidate scoring, and docked fallback behavior.
 
 ## 🖦 Usage
 
-- Click a furniture item to select it.
+- Click a furniture item to select it, or Tab to the 3D room view and use Arrow keys to browse items spatially without selecting.
 - Wait for the startup loading overlay to finish before interacting with the room.
 - Drag selected furniture along the floor; movement stays within room bounds and avoids collisions.
 - Rotate the selected item with `,` / `.` or the rotate buttons.
-- Add another furniture instance from the bottom-centered `Add Furniture` trigger and modal picker.
-- Remove the selected item from the selection controls or with `Delete` / `Backspace`, then confirm the dialog.
-- You can fully edit without canvas dragging via the outliner and selected-item inspector surfaces.
+- Add another furniture instance from the upper-left `Add Furniture` trigger and modal picker.
+- Open the `Room` surface from the upper-left toolbar to change wall and floor finishes while keeping the scene visible.
+- Remove the selected item from the selected item actions or with `Delete` / `Backspace`, then confirm the dialog.
+- You can fully edit without canvas dragging via the Furniture in room panel and selected item details fields.
+- Typed selected-item details commit on `Enter` or blur and cancel the local draft with `Escape`.
 - Keyboard movement supports `Arrow` (0.5m), `Shift+Arrow` (1.0m), and `Alt+Arrow` (0.1m).
+- With nothing selected, `Arrow` keys browse items in spatial order, `Home`/`End` jump to first/last, and `Enter` or `Space` selects the previewed item.
 - Camera controls support held-key orbit/pan/zoom and press-based view presets. See [docs/editor-shortcuts-reference.md](docs/editor-shortcuts-reference.md).
 - If a core furniture asset fails to load at startup, use the retry action from the startup error overlay.
 
 ## 📚 Catalog
 
 The editor loads its furniture catalog from a runtime manifest (`public/catalog-manifest.json`), allowing catalog updates without rebuilding the app.
-The same manifest also defines environment material options (floor texture sets and wall colors) used by the Environment panel.
+The same manifest also defines environment material options (floor texture sets and wall colors) used by the Room surface.
 
 ### Manifest Updates
 
@@ -129,10 +149,14 @@ To add or modify furniture/environment options:
 2. **Prepare assets**:
    - Place GLTF model files in `public/models/`
    - Place preview images in `public/catalog-previews/`
+   - Place environment preview images in `public/environment/previews/` when a room finish should render with a thumbnail
 3. **Validate**:
    - Node names in GLTF files must match the `nodeName` values in the catalog
+   - `uiBoundsNodeName` is optional; when present it must name a descendant mesh/group under the catalog entry's `nodeName` root and provides the preferred bounds source for selected-item toolbar placement
    - All paths in the manifest must be relative (e.g., `"models/foo.glb"`)
    - Environment texture paths (`diffusePath`, `normalPath`) must also be relative and should point to `.ktx2` assets
+   - Floor finish preview paths (`previewPath`) are optional, but when present they must also be relative
+   - Wall finishes do not support `previewPath`; Room swatches are derived from `color`
    - Wall finish colors must use `#RRGGBB` format
    - Footprint dimensions must be positive numbers
    - Floor finishes must provide `tileSizeMeters` with positive `width` and `depth`
@@ -142,12 +166,13 @@ Floor textures tile from physical dimensions rather than hardcoded UV repeat val
 - `repeat.x = roomWidthMeters / tileSizeMeters.width`
 - `repeat.y = roomDepthMeters / tileSizeMeters.depth`
 
-### Floor Texture Pipeline (KTX2)
+### Floor Texture Pipeline (KTX2 + Previews)
 
 The editor is configured for KTX2 floor textures using Basis Universal compression:
 
 - Diffuse/albedo: ETC1S at 2K (`*_diff_2k.ktx2`)
 - Normal maps: UASTC at 1K with normal-map encoding (`*_nor_gl_1k.ktx2`)
+- Catalog previews: tiled diffuse WebP at 640x480 (`public/environment/previews/*.webp`)
 
 Export textures with:
 
@@ -158,11 +183,17 @@ pnpm textures:export
 Requirements for export:
 
 - KTX-Software `toktx` (v4.4.2 or newer recommended)
-- ImageMagick (`convert` or `magick`) for normal-map downscaling
+- ImageMagick (`convert` or `magick`) for normal-map downscaling and preview generation
 
 Basis decoder files (`public/basis/`) are automatically copied into the project during `pnpm install` and again before `pnpm build`, so Vite can include them from `public/` even though the generated directory is gitignored.
 
+Exported environment textures and previews are intentionally committed instead of gitignored. Unlike the Basis decoder sync, producing them depends on external tools (`toktx`, ImageMagick) that are not part of the Node install/build pipeline, and the app/runtime manifest expects those assets to exist in `public/` without requiring every clone or deploy target to regenerate them first.
+
 For detailed manifest format and validation rules, see [public/catalog-manifest-schema.md](./public/catalog-manifest-schema.md).
+
+If a catalog entry omits `uiBoundsNodeName`, the selected-item toolbar falls back to visual render bounds. If `uiBoundsNodeName` is present in the manifest but the referenced node is missing from the GLB subtree, startup fails with an asset contract error so the mismatch is fixed at the source instead of silently drifting the selected-toolbar bounds source.
+
+Selected-toolbar placement currently supports two layers: scene-side bounds selection (`ui-bounds-node`, `render-bounds`, then `object-origin`) and app-side viewport placement that scores a small set of nearby floating candidates before falling back to deterministic docking. `uiBoundsNodeName` improves the bounds source only; it does not behave like an authored point anchor and it does not bypass overlap checks.
 
 ### Manifest Requirement
 
@@ -176,7 +207,7 @@ Asset preloading occurs in the background during startup. If an asset fails to p
 
 ### URL Scene Sharing
 
-The editor supports sharing a room layout via URL. Use the **Copy Scene URL** button in the toolbar to copy the current layout to the clipboard as a shareable link.
+The editor supports sharing a room layout via URL. Use the desktop toolbar share action, or open `More` on mobile, to open the native share sheet when the platform supports it or fall back to copying the scene URL to the clipboard.
 
 #### Query parameter format
 

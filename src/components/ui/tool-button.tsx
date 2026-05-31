@@ -1,7 +1,9 @@
 import {
   cloneElement,
   useId,
+  type ComponentProps,
   type HTMLAttributes,
+  type PointerEventHandler,
   type ReactElement,
 } from 'react'
 import { cn } from '@/lib/utils'
@@ -10,39 +12,58 @@ import { Button } from './button'
 import { KbdShortcutDisplay } from './keyboard-shortcut-display'
 
 export function ToolButton({
+  id,
   action,
   disabled,
   disabledMessage,
   shortcuts,
   label,
   visibleLabel,
+  labelVisibility = 'responsive',
   shortcutHint,
   icon,
+  size = 'default',
+  variant = 'secondary',
   className,
   tooltipSide,
+  onPointerDown,
 }: {
+  id?: string
   action: () => void
   disabled: boolean
   disabledMessage: string
   shortcuts: string
   label: string
   visibleLabel?: string
+  labelVisibility?: 'responsive' | 'always' | 'sr-only'
   shortcutHint?: string
   icon: ReactElement<HTMLAttributes<HTMLElement>>
+  size?: ComponentProps<typeof Button>['size']
+  variant?: ComponentProps<typeof Button>['variant']
   className?: string
   tooltipSide?: 'top' | 'right' | 'bottom' | 'left'
+  onPointerDown?: PointerEventHandler<HTMLButtonElement>
 }) {
   const shortcutHintId = useId()
   const ariaHiddenIcon = cloneElement(icon, {
     'aria-hidden': 'true',
   })
+  const visibleLabelClassName =
+    labelVisibility === 'always'
+      ? undefined
+      : labelVisibility === 'sr-only'
+        ? 'sr-only'
+        : 'sr-only sm:not-sr-only'
+
   return (
     <Tooltip>
       <TooltipTrigger
         render={
           <Button
+            id={id}
             type="button"
-            variant="secondary"
+            variant={variant}
+            size={size}
             aria-keyshortcuts={shortcuts}
             aria-label={label}
             aria-describedby={shortcutHint ? shortcutHintId : undefined}
@@ -51,6 +72,7 @@ export function ToolButton({
               'aria-disabled:active:translate-y-0 aria-disabled:cursor-not-allowed aria-disabled:opacity-50',
               className,
             )}
+            onPointerDown={disabled ? undefined : onPointerDown}
             onClick={(event) => {
               event.preventDefault()
               if (!disabled) {
@@ -59,7 +81,7 @@ export function ToolButton({
             }}
           >
             {ariaHiddenIcon}
-            <span className="sr-only sm:not-sr-only">
+            <span className={visibleLabelClassName}>
               {visibleLabel ?? label}
             </span>
           </Button>

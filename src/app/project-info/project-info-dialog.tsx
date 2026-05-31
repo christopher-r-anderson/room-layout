@@ -14,6 +14,11 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import type { ReactElement } from 'react'
 
 export function ProjectInfoDialog({
@@ -23,11 +28,16 @@ export function ProjectInfoDialog({
 }: {
   onOpenChange: (open: boolean) => void
   open: boolean
-  triggerButton: ReactElement
+  triggerButton?: ReactElement | null
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogTrigger render={triggerButton} />
+      {triggerButton ? (
+        <Tooltip>
+          <TooltipTrigger render={<DialogTrigger render={triggerButton} />} />
+          <TooltipContent side="bottom">Project and asset info</TooltipContent>
+        </Tooltip>
+      ) : null}
       <DialogContent id="project-info-dialog">
         <DialogHeader>
           <DialogTitle>Project &amp; Asset Info</DialogTitle>

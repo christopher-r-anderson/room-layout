@@ -33,6 +33,10 @@ function createSceneRef(readModel: SceneReadModel) {
         ok: true as const,
         position: [0, 0, 0] as [number, number, number],
       })),
+      setSelectionTransform: vi.fn(() => ({
+        ok: false as const,
+        reason: 'no-selection' as const,
+      })),
       redo: vi.fn(() => true),
       rotateSelection: vi.fn(),
       selectById: vi.fn(() => ({
@@ -61,7 +65,7 @@ describe('useSceneSync', () => {
     const { result } = renderHook(() =>
       useSceneSync({
         sceneRef,
-        isModalOpen: false,
+        isBlockingOverlayOpen: false,
         handleSceneReadModelChange,
         announcePolite,
       }),
@@ -94,7 +98,7 @@ describe('useSceneSync', () => {
     const { result } = renderHook(() =>
       useSceneSync({
         sceneRef,
-        isModalOpen: false,
+        isBlockingOverlayOpen: false,
         handleSceneReadModelChange,
         announcePolite,
       }),
@@ -126,7 +130,7 @@ describe('useSceneSync', () => {
     const { result } = renderHook(() =>
       useSceneSync({
         sceneRef,
-        isModalOpen: false,
+        isBlockingOverlayOpen: false,
         handleSceneReadModelChange,
         announcePolite,
       }),
@@ -171,7 +175,7 @@ describe('useSceneSync', () => {
     const { result } = renderHook(() =>
       useSceneSync({
         sceneRef,
-        isModalOpen: false,
+        isBlockingOverlayOpen: false,
         handleSceneReadModelChange,
         announcePolite,
       }),
@@ -194,7 +198,7 @@ describe('useSceneSync', () => {
     })
   })
 
-  it('does not request outliner focus while a modal is open', () => {
+  it('does not request outliner focus while a blocking overlay is open', () => {
     const selectedItem = createFurnitureItem('item-1', 'Armchair')
     const readModel: SceneReadModel = {
       selectedId: selectedItem.id,
@@ -206,7 +210,7 @@ describe('useSceneSync', () => {
     const { result } = renderHook(() =>
       useSceneSync({
         sceneRef,
-        isModalOpen: true,
+        isBlockingOverlayOpen: true,
         handleSceneReadModelChange: vi.fn(),
         announcePolite: vi.fn(),
       }),
@@ -219,7 +223,7 @@ describe('useSceneSync', () => {
     expect(result.current.outlinerFocusRequest).toBeNull()
   })
 
-  it('drops pending outliner focus requests when a modal opens', () => {
+  it('drops pending outliner focus requests when a blocking overlay opens', () => {
     vi.spyOn(Date, 'now').mockReturnValue(404)
 
     const selectedItem = createFurnitureItem('item-1', 'Armchair')
@@ -231,16 +235,16 @@ describe('useSceneSync', () => {
     const sceneRef = createSceneRef(readModel)
 
     const { result, rerender } = renderHook(
-      ({ isModalOpen }: { isModalOpen: boolean }) =>
+      ({ isBlockingOverlayOpen }: { isBlockingOverlayOpen: boolean }) =>
         useSceneSync({
           sceneRef,
-          isModalOpen,
+          isBlockingOverlayOpen,
           handleSceneReadModelChange: vi.fn(),
           announcePolite: vi.fn(),
         }),
       {
         initialProps: {
-          isModalOpen: false,
+          isBlockingOverlayOpen: false,
         },
       },
     )
@@ -254,7 +258,7 @@ describe('useSceneSync', () => {
       targetSelectedId: 'item-1',
     })
 
-    rerender({ isModalOpen: true })
+    rerender({ isBlockingOverlayOpen: true })
 
     expect(result.current.outlinerFocusRequest).toBeNull()
   })
@@ -271,7 +275,7 @@ describe('useSceneSync', () => {
     const { result } = renderHook(() =>
       useSceneSync({
         sceneRef,
-        isModalOpen: false,
+        isBlockingOverlayOpen: false,
         handleSceneReadModelChange: vi.fn(),
         announcePolite: vi.fn(),
       }),
