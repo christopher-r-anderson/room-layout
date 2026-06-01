@@ -1,10 +1,6 @@
-import type { RefObject } from 'react'
-import type { SceneRef } from '@/scene/scene.types'
+import { clearSceneServices } from '@/scene/scene-commands'
 
-export function runStartupReset(options: {
-  resetOverlayState: () => void
-  sceneRef: RefObject<SceneRef | null>
-}) {
+export function runStartupReset(options: { resetOverlayState: () => void }) {
   options.resetOverlayState()
-  options.sceneRef.current = null
+  clearSceneServices()
 }

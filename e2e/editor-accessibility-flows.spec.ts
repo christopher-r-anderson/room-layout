@@ -55,6 +55,9 @@ test('keeps announcements deterministic and reconciles focus on undo selection l
 
   await focusRoomView(page)
   await page.keyboard.press('ArrowRight')
+  await expect
+    .poll(async () => (await readSceneState(page)).items[0]?.position)
+    .not.toEqual(initialPosition)
   await page.keyboard.press('Control+z')
 
   await waitForPoliteAnnouncement(page, 'Undo complete.')

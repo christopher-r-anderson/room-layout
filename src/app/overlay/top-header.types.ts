@@ -4,7 +4,7 @@ import type {
   DialogReturnFocusTarget,
   RoomSurfaceLayout,
   RoomSurfaceOpenOptions,
-} from './use-dialog-state'
+} from '@/editor-state/dialog-store'
 import type {
   FloorFinishOption,
   WallFinishOption,

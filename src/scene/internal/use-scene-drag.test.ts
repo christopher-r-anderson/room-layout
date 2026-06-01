@@ -59,7 +59,7 @@ function defaultOptions(
     furniture,
     selectFurniture: vi.fn(),
     updateFurniturePosition: vi.fn(),
-    setHistory: vi.fn(),
+    updateHistory: vi.fn(),
     bounds: {
       minX: -5,
       maxX: 5,
@@ -232,24 +232,22 @@ describe('useSceneDrag', () => {
     })
 
     expect(result.current.dragState).not.toBeNull()
-    expect(options.setHistory).not.toHaveBeenCalled()
+    expect(options.updateHistory).not.toHaveBeenCalled()
   })
 
   it('handleDragEnd clears drag state and passes a history updater callback', () => {
     const startFurniture = [createFurnitureItem('item-1')]
-    const setHistory =
+    const updateHistory =
       vi.fn<
         (
-          next:
-            | HistoryState<FurnitureItem[]>
-            | ((
-                history: HistoryState<FurnitureItem[]>,
-              ) => HistoryState<FurnitureItem[]>),
+          next: (
+            history: HistoryState<FurnitureItem[]>,
+          ) => HistoryState<FurnitureItem[]>,
         ) => void
       >()
     const options = defaultOptions({
       furniture: startFurniture,
-      setHistory,
+      updateHistory,
     })
     const { result } = renderHook(() => useSceneDrag(options))
 
@@ -262,10 +260,10 @@ describe('useSceneDrag', () => {
     })
 
     expect(result.current.dragState).toBeNull()
-    expect(setHistory).toHaveBeenCalledTimes(1)
+    expect(updateHistory).toHaveBeenCalledTimes(1)
 
-    const setHistoryArg = setHistory.mock.calls[0]?.[0]
-    expect(setHistoryArg).toEqual(expect.any(Function))
+    const updateHistoryArg = updateHistory.mock.calls[0]?.[0]
+    expect(updateHistoryArg).toEqual(expect.any(Function))
   })
 
   it('clearDragState resets dragState to null', () => {

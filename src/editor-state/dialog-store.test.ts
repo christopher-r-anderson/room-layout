@@ -1,9 +1,9 @@
 // @vitest-environment jsdom
 
 import { act, renderHook } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
-import { useDialogState } from './use-dialog-state'
+import { resetDialogStore, useDialogStateSnapshot } from './dialog-store'
 
 interface DialogStateHookProps {
   editorInteractionsEnabled: boolean
@@ -41,7 +41,11 @@ const END_TABLE: FurnitureItem = {
   sourcePath: '/models/end-table.glb',
 }
 
-describe('useDialogState', () => {
+beforeEach(() => {
+  resetDialogStore()
+})
+
+describe('dialogStore', () => {
   it('keeps the pending delete snapshot stable until the dialog closes', () => {
     const initialProps: DeleteSnapshotHookProps = {
       selectedFurniture: LEATHER_COUCH,
@@ -49,7 +53,7 @@ describe('useDialogState', () => {
 
     const { result, rerender } = renderHook(
       ({ selectedFurniture }: DeleteSnapshotHookProps) =>
-        useDialogState({
+        useDialogStateSnapshot({
           editorInteractionsEnabled: true,
           startupOverlayActive: false,
           selectedFurniture,
@@ -94,7 +98,7 @@ describe('useDialogState', () => {
         selectedFurniture,
         startupOverlayActive,
       }: DialogStateHookProps) =>
-        useDialogState({
+        useDialogStateSnapshot({
           editorInteractionsEnabled,
           startupOverlayActive,
           selectedFurniture,
@@ -247,7 +251,7 @@ describe('useDialogState', () => {
   it('enforces the start over freshness guard at the dialog boundary', () => {
     const { result, rerender } = renderHook(
       (props: DialogStateHookProps & { canStartOver: boolean }) =>
-        useDialogState({
+        useDialogStateSnapshot({
           editorInteractionsEnabled: props.editorInteractionsEnabled,
           startupOverlayActive: props.startupOverlayActive,
           selectedFurniture: props.selectedFurniture,
@@ -282,7 +286,7 @@ describe('useDialogState', () => {
 
   it('supports boolean open-change handlers for environment and info dialogs', () => {
     const { result } = renderHook(() =>
-      useDialogState({
+      useDialogStateSnapshot({
         editorInteractionsEnabled: true,
         startupOverlayActive: false,
         selectedFurniture: LEATHER_COUCH,
@@ -314,7 +318,7 @@ describe('useDialogState', () => {
 
   it('clears layout-specific dialog keys when switching to an incompatible layout mode', () => {
     const { result } = renderHook(() =>
-      useDialogState({
+      useDialogStateSnapshot({
         editorInteractionsEnabled: true,
         startupOverlayActive: false,
         selectedFurniture: LEATHER_COUCH,
@@ -396,7 +400,7 @@ describe('useDialogState', () => {
 
   it('allows mobile More to hand off directly into another dialog in the same turn', () => {
     const { result } = renderHook(() =>
-      useDialogState({
+      useDialogStateSnapshot({
         editorInteractionsEnabled: true,
         startupOverlayActive: false,
         selectedFurniture: LEATHER_COUCH,
@@ -430,7 +434,7 @@ describe('useDialogState', () => {
 
   it('remaps return focus targets for header dialogs across layout changes', () => {
     const { result } = renderHook(() =>
-      useDialogState({
+      useDialogStateSnapshot({
         editorInteractionsEnabled: true,
         startupOverlayActive: false,
         selectedFurniture: LEATHER_COUCH,
@@ -518,9 +522,40 @@ describe('useDialogState', () => {
     expect(result.current.returnFocusTarget).toBe('header-more-actions')
   })
 
+  it('preserves the synced layout mode when closing dialogs', () => {
+    const { result } = renderHook(() =>
+      useDialogStateSnapshot({
+        editorInteractionsEnabled: true,
+        startupOverlayActive: false,
+        selectedFurniture: LEATHER_COUCH,
+        canStartOver: true,
+      }),
+    )
+
+    act(() => {
+      result.current.syncLayoutMode('mobile')
+    })
+
+    act(() => {
+      expect(result.current.openInfo()).toBe(true)
+    })
+    expect(result.current.isInfoDialogOpen).toBe(true)
+
+    act(() => {
+      result.current.closeDialog()
+    })
+
+    act(() => {
+      expect(result.current.openStartOver()).toBe(true)
+    })
+
+    expect(result.current.isStartOverDialogOpen).toBe(true)
+    expect(result.current.returnFocusTarget).toBe('header-more-actions')
+  })
+
   it('defaults shortcut-opened start over to the mobile more trigger on narrow layouts', () => {
     const { result } = renderHook(() =>
-      useDialogState({
+      useDialogStateSnapshot({
         editorInteractionsEnabled: true,
         startupOverlayActive: false,
         selectedFurniture: LEATHER_COUCH,

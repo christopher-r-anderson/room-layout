@@ -1,7 +1,25 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { createHistoryState } from '@/lib/ui/editor-history'
+import {
+  resetSceneStateStore,
+  sceneStateActions,
+} from '@/editor-state/scene-state-store'
 import { usePreviewController } from './use-preview-controller'
+
+const makeItem = (id: string) => ({
+  id,
+  catalogId: 'test',
+  name: `Test Item ${id}`,
+  kind: 'armchair' as const,
+  collectionId: 'test',
+  nodeName: 'test',
+  sourcePath: 'test',
+  footprintSize: { width: 1, depth: 1 },
+  position: [0, 0, 0] as [number, number, number],
+  rotationY: 0,
+})
 
 function defaultOptions(
   overrides: Partial<Parameters<typeof usePreviewController>[0]> = {},
@@ -9,13 +27,20 @@ function defaultOptions(
   return {
     isBlockingOverlayOpen: false,
     editorInteractionsEnabled: true,
-    itemIds: ['item-1', 'item-2'],
     ...overrides,
   }
 }
 
 afterEach(() => {
   vi.useRealTimers()
+  resetSceneStateStore()
+})
+
+beforeEach(() => {
+  resetSceneStateStore()
+  sceneStateActions.setHistory(
+    createHistoryState([makeItem('item-1'), makeItem('item-2')]),
+  )
 })
 
 describe('usePreviewController', () => {
@@ -28,12 +53,12 @@ describe('usePreviewController', () => {
     expect(result.current.previewedId).toBe('item-1')
 
     act(() => {
-      result.current.handleDragStateChange(true)
+      sceneStateActions.setDragging(true)
     })
     expect(result.current.previewedId).toBeNull()
 
     act(() => {
-      result.current.handleDragStateChange(false)
+      sceneStateActions.setDragging(false)
     })
     expect(result.current.previewedId).toBeNull()
   })

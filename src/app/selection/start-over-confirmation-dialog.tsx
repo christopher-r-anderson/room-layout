@@ -1,3 +1,4 @@
+import { useRef } from 'react'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,6 +19,8 @@ export function StartOverConfirmationDialog({
   onConfirm: () => void
   open: boolean
 }) {
+  const suppressCloseAutoFocusRef = useRef(false)
+
   return (
     <AlertDialog
       open={open}
@@ -27,7 +30,18 @@ export function StartOverConfirmationDialog({
         }
       }}
     >
-      <AlertDialogContent size="sm" id="confirm-start-over-dialog">
+      <AlertDialogContent
+        size="sm"
+        id="confirm-start-over-dialog"
+        finalFocus={() => {
+          if (!suppressCloseAutoFocusRef.current) {
+            return true
+          }
+
+          suppressCloseAutoFocusRef.current = false
+          return false
+        }}
+      >
         <AlertDialogHeader>
           <AlertDialogTitle>Start over?</AlertDialogTitle>
           <AlertDialogDescription>
@@ -35,8 +49,22 @@ export function StartOverConfirmationDialog({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={onClose}>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={onConfirm}>Start Over</AlertDialogAction>
+          <AlertDialogCancel
+            onClick={() => {
+              suppressCloseAutoFocusRef.current = false
+              onClose()
+            }}
+          >
+            Cancel
+          </AlertDialogCancel>
+          <AlertDialogAction
+            onClick={() => {
+              suppressCloseAutoFocusRef.current = true
+              onConfirm()
+            }}
+          >
+            Start Over
+          </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

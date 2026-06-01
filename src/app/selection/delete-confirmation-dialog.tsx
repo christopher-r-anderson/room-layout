@@ -1,3 +1,4 @@
+import { useRef } from 'react'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,6 +22,8 @@ export function DeleteConfirmationDialog({
   open: boolean
   pendingDeleteFurniture: FurnitureItem | null
 }) {
+  const suppressCloseAutoFocusRef = useRef(false)
+
   return (
     <AlertDialog
       open={open}
@@ -28,7 +31,18 @@ export function DeleteConfirmationDialog({
         if (!o) onClose()
       }}
     >
-      <AlertDialogContent size="sm" id="confirm-delete-dialog">
+      <AlertDialogContent
+        size="sm"
+        id="confirm-delete-dialog"
+        finalFocus={() => {
+          if (!suppressCloseAutoFocusRef.current) {
+            return true
+          }
+
+          suppressCloseAutoFocusRef.current = false
+          return false
+        }}
+      >
         <AlertDialogHeader>
           <AlertDialogTitle>Remove item from room?</AlertDialogTitle>
           <AlertDialogDescription>
@@ -38,8 +52,21 @@ export function DeleteConfirmationDialog({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={onClose}>Cancel</AlertDialogCancel>
-          <AlertDialogAction variant="destructive" onClick={onConfirm}>
+          <AlertDialogCancel
+            onClick={() => {
+              suppressCloseAutoFocusRef.current = false
+              onClose()
+            }}
+          >
+            Cancel
+          </AlertDialogCancel>
+          <AlertDialogAction
+            variant="destructive"
+            onClick={() => {
+              suppressCloseAutoFocusRef.current = true
+              onConfirm()
+            }}
+          >
             Remove item
           </AlertDialogAction>
         </AlertDialogFooter>

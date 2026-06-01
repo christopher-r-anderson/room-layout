@@ -65,7 +65,7 @@ export default defineConfig([
             {
               group: ['@/scene/internal', '@/scene/internal/**'],
               message:
-                'Scene internal utilities are not part of the public API. Import only from: @/scene/scene.types, @/scene/objects/furniture.types, or @/scene/objects/furniture-catalog.',
+                'Scene internal utilities are not part of the public API. Import only from: @/scene/scene.types, @/scene/scene-commands, @/scene/objects/furniture.types, or @/scene/objects/furniture-catalog.',
             },
           ],
         },

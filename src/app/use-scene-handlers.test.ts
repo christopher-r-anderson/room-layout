@@ -2,7 +2,15 @@
 import { act, renderHook } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { useSceneHandlers } from './use-scene-handlers'
-import type { FurnitureKind } from '@/scene/objects/furniture.types'
+import {
+  editorRuntimeActions,
+  editorRuntimeStore,
+  resetEditorRuntimeStore,
+} from '@/editor-state/editor-runtime-store'
+import type {
+  FurnitureItem,
+  FurnitureKind,
+} from '@/scene/objects/furniture.types'
 
 describe('useSceneHandlers', () => {
   it('should handle adding furniture and announce success', () => {
@@ -64,11 +72,13 @@ describe('useSceneHandlers', () => {
       clearPreview: vi.fn(),
       clearEditorMessage: vi.fn(),
       setEditorMessage: vi.fn(),
-      handleHistoryChange: vi.fn(),
       selectedSource: null,
       setSelectedSource,
-      selectedFurniture: null,
-      sceneReadModel: { items: [], selectedId: null },
+      selectedFurniture: null as FurnitureItem | null,
+      sceneReadModel: {
+        items: [] as FurnitureItem[],
+        selectedId: null as string | null,
+      },
     }
 
     const mockStartup = {
@@ -89,7 +99,7 @@ describe('useSceneHandlers', () => {
       wallFinishIds: [],
     }
 
-    const { result } = renderHook(() =>
+    const { result, rerender } = renderHook(() =>
       useSceneHandlers({
         commands: mockCommands,
         sync: mockSync,
@@ -102,14 +112,20 @@ describe('useSceneHandlers', () => {
 
     act(() => {
       result.current.handleAddFurniture()
-      result.current.handleSceneSelectionChange(makeItem('1'))
+      const selectedItem = makeItem('1')
+      mockOverlayState.selectedFurniture = selectedItem
+      mockOverlayState.sceneReadModel = {
+        items: [selectedItem],
+        selectedId: selectedItem.id,
+      }
+      rerender()
     })
 
     expect(mockCommands.addFurniture).toHaveBeenCalled()
-    expect(mockSync.syncSceneReadModel).toHaveBeenCalled()
+    expect(mockSync.syncSceneReadModel).not.toHaveBeenCalled()
     expect(setSelectedSource).toHaveBeenLastCalledWith('toolbar')
     expect(mockAnnouncements.announcePolite).toHaveBeenCalledWith(
-      'Chair added to room.',
+      'Test Item added to room.',
     )
   })
 
@@ -156,7 +172,6 @@ describe('useSceneHandlers', () => {
       clearPreview: vi.fn(),
       clearEditorMessage: vi.fn(),
       setEditorMessage: vi.fn(),
-      handleHistoryChange: vi.fn(),
       selectedSource: null,
       setSelectedSource: vi.fn(),
       selectedFurniture: null,
@@ -214,6 +229,206 @@ describe('useSceneHandlers', () => {
     rotationY: 0,
   })
 
+  it('rotates the current selection without forcing a read-model sync', () => {
+    const selectedFurniture = makeItem('item-1')
+    const mockCommands = {
+      addFurniture: vi.fn(() => true),
+      clearSelection: vi.fn(),
+      confirmDeleteSelection: vi.fn(),
+      focusSelected: vi.fn(),
+      moveSelection: vi.fn(),
+      redo: vi.fn(),
+      rotateSelection: vi.fn(),
+      selectById: vi.fn(),
+      setCameraPreset: vi.fn(),
+      undo: vi.fn(),
+    }
+
+    const mockSync = {
+      syncSceneReadModel: vi.fn(() => ({
+        items: [selectedFurniture],
+        selectedId: selectedFurniture.id,
+      })),
+      requestOutlinerFocusByIndex: vi.fn(),
+      focusRoomView: vi.fn(),
+    }
+
+    const mockAnnouncements = {
+      announcePolite: vi.fn(),
+      announceAssertive: vi.fn(),
+      clearAssertiveAnnouncement: vi.fn(),
+      queueMovementAnnouncement: vi.fn(),
+    }
+
+    const mockDialogState = {
+      closeDialog: vi.fn(),
+      closeAllDialogs: vi.fn(),
+      openDelete: vi.fn(),
+      openStartOver: vi.fn(),
+      setCatalogOpen: vi.fn(),
+      pendingDeleteFurniture: null,
+    }
+
+    const mockOverlayState = {
+      clearPreview: vi.fn(),
+      clearEditorMessage: vi.fn(),
+      setEditorMessage: vi.fn(),
+      selectedSource: null,
+      setSelectedSource: vi.fn(),
+      selectedFurniture,
+      sceneReadModel: {
+        items: [selectedFurniture],
+        selectedId: selectedFurniture.id,
+      },
+    }
+
+    const mockStartup = {
+      activeFloorFinishId: '',
+      activeWallFinishId: '',
+      catalog: [],
+      defaultFloorFinishId: 'wood-floor',
+      defaultWallFinishId: 'light-gray',
+      editorInteractionsEnabled: true,
+      floorFinishIds: [],
+      handleAssetError: vi.fn(),
+      handleAssetsReady: vi.fn(),
+      retryAssetLoading: vi.fn(),
+      resetEditorShellState: vi.fn(),
+      restoreInitialLayout: vi.fn(),
+      setFloorFinishId: vi.fn(),
+      setWallFinishId: vi.fn(),
+      wallFinishIds: [],
+    }
+
+    const { result } = renderHook(() =>
+      useSceneHandlers({
+        commands: mockCommands,
+        sync: mockSync,
+        announcements: mockAnnouncements,
+        dialogState: mockDialogState,
+        overlayState: mockOverlayState,
+        startup: mockStartup,
+      }),
+    )
+
+    act(() => {
+      result.current.handleRotateSelection(1)
+    })
+
+    expect(mockCommands.rotateSelection).toHaveBeenCalledWith(1)
+    expect(mockSync.syncSceneReadModel).not.toHaveBeenCalled()
+    expect(mockAnnouncements.announcePolite).toHaveBeenCalledWith(
+      'Test Item rotated.',
+    )
+  })
+
+  it('announces movement from the command result without forcing a read-model sync', () => {
+    const selectedFurniture = makeItem('item-1')
+    const mockCommands = {
+      addFurniture: vi.fn(() => true),
+      clearSelection: vi.fn(),
+      confirmDeleteSelection: vi.fn(),
+      focusSelected: vi.fn(),
+      moveSelection: vi.fn(() => ({
+        ok: true as const,
+        position: [1.5, 0, -2.25] as [number, number, number],
+      })),
+      redo: vi.fn(),
+      rotateSelection: vi.fn(),
+      selectById: vi.fn(),
+      setCameraPreset: vi.fn(),
+      undo: vi.fn(),
+    }
+
+    const mockSync = {
+      syncSceneReadModel: vi.fn(() => ({
+        items: [selectedFurniture],
+        selectedId: selectedFurniture.id,
+      })),
+      requestOutlinerFocusByIndex: vi.fn(),
+      focusRoomView: vi.fn(),
+    }
+
+    const mockAnnouncements = {
+      announcePolite: vi.fn(),
+      announceAssertive: vi.fn(),
+      clearAssertiveAnnouncement: vi.fn(),
+      queueMovementAnnouncement: vi.fn(),
+    }
+
+    const mockDialogState = {
+      closeDialog: vi.fn(),
+      closeAllDialogs: vi.fn(),
+      openDelete: vi.fn(),
+      openStartOver: vi.fn(),
+      setCatalogOpen: vi.fn(),
+      pendingDeleteFurniture: null,
+    }
+
+    const mockOverlayState = {
+      clearPreview: vi.fn(),
+      clearEditorMessage: vi.fn(),
+      setEditorMessage: vi.fn(),
+      selectedSource: null,
+      setSelectedSource: vi.fn(),
+      selectedFurniture,
+      sceneReadModel: {
+        items: [selectedFurniture],
+        selectedId: selectedFurniture.id,
+      },
+    }
+
+    const mockStartup = {
+      activeFloorFinishId: '',
+      activeWallFinishId: '',
+      catalog: [],
+      defaultFloorFinishId: 'wood-floor',
+      defaultWallFinishId: 'light-gray',
+      editorInteractionsEnabled: true,
+      floorFinishIds: [],
+      handleAssetError: vi.fn(),
+      handleAssetsReady: vi.fn(),
+      retryAssetLoading: vi.fn(),
+      resetEditorShellState: vi.fn(),
+      restoreInitialLayout: vi.fn(),
+      setFloorFinishId: vi.fn(),
+      setWallFinishId: vi.fn(),
+      wallFinishIds: [],
+    }
+
+    const { result } = renderHook(() =>
+      useSceneHandlers({
+        commands: mockCommands,
+        sync: mockSync,
+        announcements: mockAnnouncements,
+        dialogState: mockDialogState,
+        overlayState: mockOverlayState,
+        startup: mockStartup,
+      }),
+    )
+
+    let moveResult:
+      | ReturnType<typeof result.current.handleMoveSelection>
+      | undefined
+
+    act(() => {
+      moveResult = result.current.handleMoveSelection({ x: 1.5, z: -2.25 })
+    })
+
+    expect(mockCommands.moveSelection).toHaveBeenCalledWith(
+      { x: 1.5, z: -2.25 },
+      undefined,
+    )
+    expect(mockSync.syncSceneReadModel).not.toHaveBeenCalled()
+    expect(mockAnnouncements.queueMovementAnnouncement).toHaveBeenCalledWith(
+      'Test Item moved to X 1.5 meters and Z -2.3 meters.',
+    )
+    expect(moveResult).toEqual({
+      ok: true,
+      position: [1.5, 0, -2.25],
+    })
+  })
+
   it('returns focus to room view when delete is initiated from room view', () => {
     const item = makeItem('item-1')
     const mockCommands = {
@@ -257,7 +472,6 @@ describe('useSceneHandlers', () => {
       clearPreview: vi.fn(),
       clearEditorMessage: vi.fn(),
       setEditorMessage: vi.fn(),
-      handleHistoryChange: vi.fn(),
       selectedSource: 'panel-pointer' as const,
       setSelectedSource: vi.fn(),
       selectedFurniture: item,
@@ -300,5 +514,102 @@ describe('useSceneHandlers', () => {
 
     expect(focusRoomView).toHaveBeenCalledOnce()
     expect(requestOutlinerFocusByIndex).not.toHaveBeenCalled()
+  })
+
+  it('marks runtime startup phase errored before resetting editor shell on asset failure', () => {
+    resetEditorRuntimeStore()
+    editorRuntimeActions.markAssetsReady()
+
+    const mockCommands = {
+      addFurniture: vi.fn(() => true),
+      clearSelection: vi.fn(),
+      confirmDeleteSelection: vi.fn(),
+      focusSelected: vi.fn(),
+      moveSelection: vi.fn(),
+      redo: vi.fn(),
+      rotateSelection: vi.fn(),
+      selectById: vi.fn(),
+      setCameraPreset: vi.fn(),
+      undo: vi.fn(),
+    }
+
+    const mockSync = {
+      syncSceneReadModel: vi.fn(() => ({
+        items: [],
+        selectedId: null,
+      })),
+      requestOutlinerFocusByIndex: vi.fn(),
+      focusRoomView: vi.fn(),
+    }
+
+    const mockAnnouncements = {
+      announcePolite: vi.fn(),
+      announceAssertive: vi.fn(),
+      clearAssertiveAnnouncement: vi.fn(),
+      queueMovementAnnouncement: vi.fn(),
+    }
+
+    const mockDialogState = {
+      closeDialog: vi.fn(),
+      closeAllDialogs: vi.fn(),
+      openDelete: vi.fn(),
+      openStartOver: vi.fn(),
+      setCatalogOpen: vi.fn(),
+      pendingDeleteFurniture: null,
+    }
+
+    const mockOverlayState = {
+      clearPreview: vi.fn(),
+      clearEditorMessage: vi.fn(),
+      setEditorMessage: vi.fn(),
+      selectedSource: null,
+      setSelectedSource: vi.fn(),
+      selectedFurniture: null as FurnitureItem | null,
+      sceneReadModel: {
+        items: [] as FurnitureItem[],
+        selectedId: null as string | null,
+      },
+    }
+
+    let phaseAtReset: string | null = null
+    const mockStartup = {
+      activeFloorFinishId: '',
+      activeWallFinishId: '',
+      catalog: [],
+      defaultFloorFinishId: 'wood-floor',
+      defaultWallFinishId: 'light-gray',
+      editorInteractionsEnabled: true,
+      floorFinishIds: [],
+      handleAssetError: vi.fn(),
+      handleAssetsReady: vi.fn(),
+      retryAssetLoading: vi.fn(),
+      resetEditorShellState: vi.fn(() => {
+        phaseAtReset = editorRuntimeStore.getState().startupPhase
+      }),
+      restoreInitialLayout: vi.fn(),
+      setFloorFinishId: vi.fn(),
+      setWallFinishId: vi.fn(),
+      wallFinishIds: [],
+    }
+
+    const { result } = renderHook(() =>
+      useSceneHandlers({
+        commands: mockCommands,
+        sync: mockSync,
+        announcements: mockAnnouncements,
+        dialogState: mockDialogState,
+        overlayState: mockOverlayState,
+        startup: mockStartup,
+      }),
+    )
+
+    act(() => {
+      result.current.handleSceneAssetError(new Error('asset load failed'))
+    })
+
+    expect(phaseAtReset).toBe('errored')
+    expect(editorRuntimeStore.getState().startupPhase).toBe('errored')
+
+    resetEditorRuntimeStore()
   })
 })

@@ -9,7 +9,7 @@ import type { TopHeaderProps } from './top-header.types'
 import type {
   DialogOpenOptions,
   DialogReturnFocusTarget,
-} from './use-dialog-state'
+} from '@/editor-state/dialog-store'
 
 const HEADER_CONTROL_SELECTOR =
   'button, input, select, textarea, [tabindex]:not([tabindex="-1"])'
@@ -67,7 +67,7 @@ function findHeaderFocusFallback(target: HTMLElement) {
 }
 
 function focusControlById(id: string) {
-  queueMicrotask(() => {
+  const focus = () => {
     const element = document.getElementById(id)
 
     if (!(element instanceof HTMLElement)) {
@@ -80,7 +80,37 @@ function focusControlById(id: string) {
     }
 
     findHeaderFocusFallback(element)?.focus()
-  })
+  }
+
+  if (typeof requestAnimationFrame === 'function') {
+    requestAnimationFrame(() => {
+      focus()
+    })
+    return
+  }
+
+  queueMicrotask(focus)
+}
+
+function focusNextHeaderControlById(id: string) {
+  const focus = () => {
+    const element = document.getElementById(id)
+
+    if (!(element instanceof HTMLElement)) {
+      return
+    }
+
+    findHeaderFocusFallback(element)?.focus()
+  }
+
+  if (typeof requestAnimationFrame === 'function') {
+    requestAnimationFrame(() => {
+      focus()
+    })
+    return
+  }
+
+  queueMicrotask(focus)
 }
 
 export function TopHeader({
@@ -229,6 +259,12 @@ export function TopHeader({
         }}
         onConfirm={() => {
           dialogs.onConfirmStartOver()
+
+          if (dialogs.returnFocusTarget === 'start-over-inline') {
+            focusNextHeaderControlById(startOverTriggerId)
+            return
+          }
+
           focusActiveReturnTarget()
         }}
       />

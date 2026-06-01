@@ -231,6 +231,33 @@ test('ignores unknown floor and wall finish IDs from ?scene= while still restori
   expect(state.restoreOutcome).toBe('restored')
 })
 
+test('normalizes unknown finish IDs from ?scene= so a reloaded empty room stays fresh', async ({
+  page,
+}) => {
+  await page.goto(
+    makeSceneRoute([], {
+      floorFinishId: 'unknown-floor',
+      wallFinishId: 'unknown-wall',
+    }),
+  )
+  const state = await waitForEditorReady(page)
+
+  expect(state.itemCount).toBe(0)
+  expect(state.floorFinishId).toBe('wood-floor')
+  expect(state.wallFinishId).toBe('light-gray')
+
+  await expect.poll(async () => readDraftFromStorage(page)).toBeNull()
+
+  await page.reload()
+  const reloadedState = await waitForEditorReady(page)
+
+  expect(reloadedState.itemCount).toBe(0)
+  expect(reloadedState.restoreOutcome).toBe('skipped')
+  await expect
+    .poll(async () => readPoliteAnnouncement(page))
+    .not.toBe('Restored your saved draft.')
+})
+
 test('shows no-param outcome for a URL without ?scene=', async ({ page }) => {
   await page.goto('/')
   const state = await waitForEditorReady(page)
@@ -307,15 +334,37 @@ test('Share button falls back to clipboard copy when native share is unavailable
 }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write'])
   await forceClipboardShareFallback(page)
+  await page.setViewportSize({ width: 1280, height: 900 })
   await openEditor(page)
 
   const copyBtn = page.getByRole('button', {
     name: 'Share room layout',
   })
+  const infoButton = page.getByRole('button', {
+    name: 'Open project and asset info',
+  })
+  const infoButtonBoxBefore = await infoButton.boundingBox()
+
+  if (!infoButtonBoxBefore) {
+    throw new Error('Desktop info button bounding box was not available')
+  }
+
   await copyBtn.click()
 
   await waitForPoliteAnnouncement(page, 'Scene URL copied to clipboard.')
   await expect(copyBtn).toContainText('Copied')
+
+  const infoButtonBoxAfter = await infoButton.boundingBox()
+
+  if (!infoButtonBoxAfter) {
+    throw new Error(
+      'Desktop info button bounding box was not available after share',
+    )
+  }
+
+  expect(Math.abs(infoButtonBoxAfter.x - infoButtonBoxBefore.x)).toBeLessThan(1)
+  expect(Math.abs(infoButtonBoxAfter.y - infoButtonBoxBefore.y)).toBeLessThan(1)
+
   await expect(copyBtn).toContainText('Share', { timeout: 3_000 })
 })
 

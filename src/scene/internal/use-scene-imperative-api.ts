@@ -1,35 +1,11 @@
-import {
-  useImperativeHandle,
-  useLayoutEffect,
-  useRef,
-  type Dispatch,
-  type RefObject,
-  type SetStateAction,
-} from 'react'
-import { useFrame, useThree } from '@react-three/fiber'
-import { type Object3D } from 'three'
+import { useCallback, useLayoutEffect, useRef, type RefObject } from 'react'
+import { useFrame } from '@react-three/fiber'
+import type { Object3D } from 'three'
 import type { CameraControlsImpl } from '@react-three/drei'
-import type { LayoutBounds } from '@/lib/three/furniture-layout'
-import type { HistoryState } from '@/lib/ui/editor-history'
-import { getVisualObjectBounds } from '@/lib/three/get-visual-object-bounds'
-import { CAMERA_PRESETS } from '@/lib/three/camera-presets'
-import {
-  addFurnitureToHistory,
-  areFurnitureCollectionsEqual,
-  buildFurnitureItemsFromInstances,
-  createFurnitureInstanceId,
-  deleteSelectionFromHistory,
-  rotateSelectedFurnitureInHistory,
-} from './furniture-operations'
-import {
-  resolveAbsoluteFurnitureTransform,
-  resolveMovedFurniturePosition,
-} from '@/lib/three/furniture-layout'
-import { commitHistoryPresent } from '@/lib/ui/editor-history'
+import { buildFurnitureItemsFromInstances } from './furniture-operations'
 import { createHistoryState } from '@/lib/ui/editor-history'
-import { redoSceneHistory, undoSceneHistory } from './scene-history-state'
 import { createSceneSnapshot } from './scene-snapshot'
-import type { CameraKeyState, MoveSource, SceneRef } from '../scene.types'
+import type { CameraKeyState } from '../scene.types'
 import type {
   FurnitureInstance,
   FurnitureItem,
@@ -40,72 +16,70 @@ import type {
 } from '../objects/furniture-catalog'
 
 interface UseSceneImperativeApiOptions {
-  ref: React.Ref<SceneRef>
-  bounds: LayoutBounds
-  camera: Parameters<typeof createSceneSnapshot>[3]
-  canvasSize: Parameters<typeof createSceneSnapshot>[4]
+  camera: Parameters<typeof createSceneSnapshot>[2]
+  cameraKeyStateRef: RefObject<CameraKeyState>
+  canvasSize: Parameters<typeof createSceneSnapshot>[3]
   cameraControlsRef: RefObject<CameraControlsImpl | null>
-  catalog: FurnitureCatalogEntry[]
-  clearDragState: () => void
-  collections: FurnitureCollection[]
-  dragState: { id: string } | null
-  edgeSnapThreshold: number
   furniture: FurnitureItem[]
-  history: HistoryState<FurnitureItem[]>
-  instanceIdRef: RefObject<number>
   objectRefs: RefObject<Map<string, Object3D>>
-  selectFurniture: (id: string | null) => void
-  selectedId: string | null
-  setHistory: Dispatch<SetStateAction<HistoryState<FurnitureItem[]>>>
-  setSelectedIdAndResolveObject: (id: string | null) => void
-  snapSize: number
+}
+
+type GetSnapshot = () => ReturnType<typeof createSceneSnapshot>
+
+export function getMaxRestoredInstanceSuffix(instances: FurnitureInstance[]) {
+  return instances.reduce((max, item) => {
+    const match = /^furniture-instance-(\d+)$/.exec(item.id)
+    const suffix = match ? parseInt(match[1], 10) : 0
+    return Math.max(max, suffix)
+  }, 0)
+}
+
+export function buildRestoredSceneHistory(options: {
+  instances: FurnitureInstance[]
+  catalog: FurnitureCatalogEntry[]
+  collections: FurnitureCollection[]
   sourceScenesByPath: Map<string, Object3D>
+}) {
+  const restoredItems = buildFurnitureItemsFromInstances(
+    options.instances,
+    options.catalog,
+    options.collections,
+    options.sourceScenesByPath,
+  )
+
+  return {
+    restoredItems,
+    history: createHistoryState(restoredItems),
+    instanceIdSeed: getMaxRestoredInstanceSuffix(options.instances),
+  }
 }
 
 export function useSceneImperativeApi({
-  ref,
-  bounds,
   camera,
+  cameraKeyStateRef,
   canvasSize,
   cameraControlsRef,
-  catalog,
-  clearDragState,
-  collections,
-  dragState,
-  edgeSnapThreshold,
   furniture,
-  history,
-  instanceIdRef,
   objectRefs,
-  selectFurniture,
-  selectedId,
-  setHistory,
-  setSelectedIdAndResolveObject,
-  snapSize,
-  sourceScenesByPath,
-}: UseSceneImperativeApiOptions): void {
-  const invalidate = useThree((state) => state.invalidate)
-  const historyRef = useRef(history)
-  const selectedIdRef = useRef(selectedId)
+}: UseSceneImperativeApiOptions): GetSnapshot {
   const furnitureRef = useRef(furniture)
-  const dragStateRef = useRef(dragState)
-  const cameraKeyStateRef = useRef<CameraKeyState>(new Set())
-
-  useLayoutEffect(() => {
-    historyRef.current = history
-  }, [history])
-
-  useLayoutEffect(() => {
-    selectedIdRef.current = selectedId
-  }, [selectedId])
+  const getSnapshotRef = useRef<GetSnapshot>(() =>
+    createSceneSnapshot(furniture, objectRefs.current, camera, canvasSize),
+  )
 
   useLayoutEffect(() => {
     furnitureRef.current = furniture
   }, [furniture])
 
   useLayoutEffect(() => {
-    dragStateRef.current = dragState
-  }, [dragState])
+    getSnapshotRef.current = () =>
+      createSceneSnapshot(
+        furnitureRef.current,
+        objectRefs.current,
+        camera,
+        canvasSize,
+      )
+  }, [camera, canvasSize, objectRefs])
 
   // Apply continuous camera motion based on held-key state.
   useFrame((state, delta) => {
@@ -170,434 +144,5 @@ export function useSceneImperativeApi({
     state.invalidate()
   })
 
-  useImperativeHandle(
-    ref,
-    () => ({
-      clearSelection: () => {
-        if (!dragStateRef.current) {
-          selectedIdRef.current = null
-          selectFurniture(null)
-        }
-      },
-      selectById: (id: string | null) => {
-        if (dragStateRef.current) {
-          return {
-            ok: false,
-            status: 'blocked-dragging',
-          }
-        }
-
-        if (id === null) {
-          selectedIdRef.current = null
-          setSelectedIdAndResolveObject(null)
-          return {
-            ok: true,
-            status: 'cleared',
-          }
-        }
-
-        const itemExists = furnitureRef.current.some((item) => item.id === id)
-
-        if (!itemExists) {
-          return {
-            ok: false,
-            status: 'not-found',
-          }
-        }
-
-        selectedIdRef.current = id
-        setSelectedIdAndResolveObject(id)
-
-        return {
-          ok: true,
-          status: 'selected',
-        }
-      },
-      moveSelection: (
-        delta: { x: number; z: number },
-        _options?: { source?: MoveSource },
-      ) => {
-        void _options
-
-        if (dragStateRef.current) {
-          return {
-            ok: false,
-            reason: 'dragging',
-          }
-        }
-
-        const activeId = selectedIdRef.current
-
-        if (!activeId) {
-          return {
-            ok: false,
-            reason: 'no-selection',
-          }
-        }
-
-        const activeItem = furnitureRef.current.find(
-          (item) => item.id === activeId,
-        )
-
-        if (!activeItem) {
-          return {
-            ok: false,
-            reason: 'no-selection',
-          }
-        }
-
-        const proposedPosition: [number, number, number] = [
-          activeItem.position[0] + delta.x,
-          activeItem.position[1],
-          activeItem.position[2] + delta.z,
-        ]
-
-        const resolvedPosition = resolveMovedFurniturePosition({
-          movingId: activeId,
-          proposedPosition,
-          items: furnitureRef.current,
-          edgeSnapThreshold,
-          bounds,
-        })
-
-        if (!resolvedPosition) {
-          return {
-            ok: false,
-            reason: 'blocked-collision',
-          }
-        }
-
-        const positionUnchanged =
-          resolvedPosition[0] === activeItem.position[0] &&
-          resolvedPosition[1] === activeItem.position[1] &&
-          resolvedPosition[2] === activeItem.position[2]
-
-        if (positionUnchanged) {
-          const attemptedMovement =
-            proposedPosition[0] !== activeItem.position[0] ||
-            proposedPosition[2] !== activeItem.position[2]
-
-          return {
-            ok: false,
-            reason: attemptedMovement ? 'blocked-bounds' : 'no-op',
-          }
-        }
-
-        const nextFurniture = furnitureRef.current.map((item) => {
-          if (item.id !== activeId) {
-            return item
-          }
-
-          return {
-            ...item,
-            position: resolvedPosition,
-          }
-        })
-
-        const nextHistory = commitHistoryPresent(
-          historyRef.current,
-          nextFurniture,
-        )
-
-        historyRef.current = nextHistory
-        furnitureRef.current = nextHistory.present
-        setHistory(nextHistory)
-
-        return {
-          ok: true,
-          position: resolvedPosition,
-        }
-      },
-      setSelectionTransform: (input) => {
-        if (dragStateRef.current) {
-          return {
-            ok: false,
-            reason: 'dragging',
-          }
-        }
-
-        const activeId = selectedIdRef.current
-
-        if (!activeId) {
-          return {
-            ok: false,
-            reason: 'no-selection',
-          }
-        }
-
-        const activeItem = furnitureRef.current.find(
-          (item) => item.id === activeId,
-        )
-
-        if (!activeItem) {
-          return {
-            ok: false,
-            reason: 'no-selection',
-          }
-        }
-
-        const nextPosition = input.position ?? activeItem.position
-        const nextRotationY = input.rotationY ?? activeItem.rotationY
-
-        if (
-          nextPosition[0] === activeItem.position[0] &&
-          nextPosition[1] === activeItem.position[1] &&
-          nextPosition[2] === activeItem.position[2] &&
-          nextRotationY === activeItem.rotationY
-        ) {
-          return {
-            ok: false,
-            reason: 'no-op',
-          }
-        }
-
-        const resolvedTransform = resolveAbsoluteFurnitureTransform({
-          movingId: activeId,
-          proposedPosition: nextPosition,
-          proposedRotationY: nextRotationY,
-          items: furnitureRef.current,
-          bounds,
-        })
-
-        if (!resolvedTransform) {
-          return {
-            ok: false,
-            reason: 'no-selection',
-          }
-        }
-
-        if (!resolvedTransform.ok) {
-          return resolvedTransform
-        }
-
-        const nextFurniture = furnitureRef.current.map((item) => {
-          if (item.id !== activeId) {
-            return item
-          }
-
-          return {
-            ...item,
-            position: resolvedTransform.position,
-            rotationY: resolvedTransform.rotationY,
-          }
-        })
-
-        const nextHistory = commitHistoryPresent(
-          historyRef.current,
-          nextFurniture,
-          areFurnitureCollectionsEqual,
-        )
-
-        historyRef.current = nextHistory
-        furnitureRef.current = nextHistory.present
-        setHistory(nextHistory)
-
-        const updatedItem = nextHistory.present.find(
-          (item) => item.id === activeId,
-        )
-
-        if (!updatedItem) {
-          return {
-            ok: false,
-            reason: 'no-selection',
-          }
-        }
-
-        return {
-          ok: true,
-          item: updatedItem,
-        }
-      },
-      rotateSelection: (deltaRadians: number) => {
-        const nextHistory = rotateSelectedFurnitureInHistory({
-          history: historyRef.current,
-          selectedId: selectedIdRef.current,
-          deltaRadians,
-          bounds,
-        })
-
-        historyRef.current = nextHistory
-        furnitureRef.current = nextHistory.present
-        setHistory(nextHistory)
-      },
-      addFurniture: (catalogId: string) => {
-        const operationResult = addFurnitureToHistory({
-          history: historyRef.current,
-          sourceScenesByPath,
-          catalogId,
-          nextId: createFurnitureInstanceId(instanceIdRef.current + 1),
-          catalog,
-          collections,
-          bounds,
-          edgeSnapThreshold,
-          snapSize,
-        })
-
-        historyRef.current = operationResult.history
-        furnitureRef.current = operationResult.history.present
-        setHistory(operationResult.history)
-
-        if (operationResult.incrementInstanceId) {
-          instanceIdRef.current += 1
-          selectedIdRef.current = operationResult.result.ok
-            ? operationResult.result.id
-            : null
-          setSelectedIdAndResolveObject(
-            operationResult.result.ok ? operationResult.result.id : null,
-          )
-        }
-
-        return operationResult.result
-      },
-      deleteSelection: () => {
-        const operationResult = deleteSelectionFromHistory(
-          historyRef.current,
-          selectedIdRef.current,
-        )
-
-        if (!operationResult.deleted) {
-          return false
-        }
-
-        historyRef.current = operationResult.history
-        furnitureRef.current = operationResult.history.present
-        setHistory(operationResult.history)
-
-        if (
-          operationResult.deletedId &&
-          dragStateRef.current?.id === operationResult.deletedId
-        ) {
-          clearDragState()
-        }
-
-        selectedIdRef.current = null
-        setSelectedIdAndResolveObject(null)
-
-        return true
-      },
-      undo: () => {
-        const undoResult = undoSceneHistory({
-          history: historyRef.current,
-          selectedId: selectedIdRef.current,
-          isDragging: Boolean(dragStateRef.current),
-        })
-
-        if (!undoResult.didChange) {
-          return false
-        }
-
-        historyRef.current = undoResult.history
-        furnitureRef.current = undoResult.history.present
-        selectedIdRef.current = undoResult.selectedId
-        setHistory(undoResult.history)
-        setSelectedIdAndResolveObject(undoResult.selectedId)
-
-        return true
-      },
-      redo: () => {
-        const redoResult = redoSceneHistory({
-          history: historyRef.current,
-          selectedId: selectedIdRef.current,
-          isDragging: Boolean(dragStateRef.current),
-        })
-
-        if (!redoResult.didChange) {
-          return false
-        }
-
-        historyRef.current = redoResult.history
-        furnitureRef.current = redoResult.history.present
-        selectedIdRef.current = redoResult.selectedId
-        setHistory(redoResult.history)
-        setSelectedIdAndResolveObject(redoResult.selectedId)
-
-        return true
-      },
-      getSnapshot: () =>
-        createSceneSnapshot(
-          furnitureRef.current,
-          selectedIdRef.current,
-          objectRefs.current,
-          camera,
-          canvasSize,
-        ),
-      getReadModel: () => ({
-        selectedId: selectedIdRef.current,
-        items: furnitureRef.current,
-      }),
-      restoreInitialLayout: (instances: FurnitureInstance[]) => {
-        const restoredItems = buildFurnitureItemsFromInstances(
-          instances,
-          catalog,
-          collections,
-          sourceScenesByPath,
-        )
-
-        const newHistory = createHistoryState(restoredItems)
-
-        historyRef.current = newHistory
-        furnitureRef.current = restoredItems
-        selectedIdRef.current = null
-
-        setHistory(newHistory)
-        setSelectedIdAndResolveObject(null)
-
-        // Reseed the instance-id counter so future adds don't collide.
-        const maxSuffix = instances.reduce((max, item) => {
-          const match = /^furniture-instance-(\d+)$/.exec(item.id)
-          const suffix = match ? parseInt(match[1], 10) : 0
-          return Math.max(max, suffix)
-        }, 0)
-
-        instanceIdRef.current = maxSuffix
-      },
-      setCameraPreset: (preset) => {
-        const view = CAMERA_PRESETS[preset]
-        void cameraControlsRef.current?.setLookAt(
-          ...view.position,
-          ...view.target,
-          true,
-        )
-      },
-      focusSelected: () => {
-        const ctrl = cameraControlsRef.current
-        if (!ctrl || !selectedIdRef.current) return
-        const object = objectRefs.current.get(selectedIdRef.current)
-        if (!object) return
-        const bounds = getVisualObjectBounds(object)
-        if (!bounds) return
-        void ctrl.fitToBox(bounds, true, {
-          paddingTop: 0.5,
-          paddingBottom: 0.5,
-          paddingLeft: 0.5,
-          paddingRight: 0.5,
-        })
-      },
-      setCameraKeyState: (keyState: CameraKeyState) => {
-        cameraKeyStateRef.current = keyState
-
-        if (keyState.size > 0) {
-          invalidate()
-        }
-      },
-    }),
-    [
-      camera,
-      canvasSize,
-      catalog,
-      clearDragState,
-      bounds,
-      collections,
-      objectRefs,
-      selectFurniture,
-      setHistory,
-      setSelectedIdAndResolveObject,
-      snapSize,
-      sourceScenesByPath,
-      edgeSnapThreshold,
-      instanceIdRef,
-      cameraControlsRef,
-      invalidate,
-    ],
-  )
+  return useCallback(() => getSnapshotRef.current(), [])
 }

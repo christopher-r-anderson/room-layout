@@ -2,6 +2,7 @@
 import { act, renderHook } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { useSceneHandlers } from './use-scene-handlers'
+import { selectionMetaActions } from '@/editor-state/selection-meta-store'
 
 const makeItem = (id: string) => ({
   id,
@@ -15,6 +16,24 @@ const makeItem = (id: string) => ({
   position: [0, 0, 0] as [number, number, number],
   rotationY: 0,
 })
+
+type TestItem = ReturnType<typeof makeItem>
+
+function applySceneSelection(
+  mockOverlayState: {
+    selectedFurniture: TestItem | null
+    sceneReadModel: { items: TestItem[]; selectedId: string | null }
+  },
+  rerender: () => void,
+  item: TestItem | null,
+) {
+  mockOverlayState.selectedFurniture = item
+  mockOverlayState.sceneReadModel = {
+    items: item ? [item] : [],
+    selectedId: item?.id ?? null,
+  }
+  rerender()
+}
 
 describe('useSceneHandlers', () => {
   it('commits typed selected item details through the shared transform command', () => {
@@ -70,7 +89,6 @@ describe('useSceneHandlers', () => {
       clearPreview: vi.fn(),
       clearEditorMessage: vi.fn(),
       setEditorMessage: vi.fn(),
-      handleHistoryChange: vi.fn(),
       selectedSource: null,
       setSelectedSource,
       selectedFurniture,
@@ -126,13 +144,105 @@ describe('useSceneHandlers', () => {
       rotationY: undefined,
     })
     expect(setSelectedSource).toHaveBeenCalledWith('panel-keyboard')
-    expect(mockSync.syncSceneReadModel).toHaveBeenCalledWith({
-      requestOutlinerFocus: false,
-    })
+    expect(mockSync.syncSceneReadModel).not.toHaveBeenCalled()
     expect(mockAnnouncements.announcePolite).toHaveBeenCalledWith(
       'Test Item details updated.',
     )
     expect(updateResult).toEqual({ ok: true, item: updatedFurniture })
+  })
+
+  it('keeps undo completion announcements from being overwritten by selection-loss copy', () => {
+    selectionMetaActions.clearOutlinerFocusRequest()
+
+    const selectedFurniture = makeItem('1')
+    const mockCommands = {
+      addFurniture: vi.fn(() => true),
+      clearSelection: vi.fn(),
+      confirmDeleteSelection: vi.fn(),
+      focusSelected: vi.fn(),
+      moveSelection: vi.fn(),
+      setSelectionTransform: vi.fn(),
+      redo: vi.fn(),
+      rotateSelection: vi.fn(),
+      selectById: vi.fn(),
+      setCameraPreset: vi.fn(),
+      undo: vi.fn(() => true),
+    }
+
+    const mockSync = {
+      requestOutlinerFocusByIndex: vi.fn(),
+      focusRoomView: vi.fn(),
+    }
+
+    const mockAnnouncements = {
+      announcePolite: vi.fn(),
+      announceAssertive: vi.fn(),
+      clearAssertiveAnnouncement: vi.fn(),
+      queueMovementAnnouncement: vi.fn(),
+    }
+
+    const mockDialogState = {
+      closeDialog: vi.fn(),
+      closeAllDialogs: vi.fn(),
+      openDelete: vi.fn(),
+      openStartOver: vi.fn(),
+      setCatalogOpen: vi.fn(),
+      pendingDeleteFurniture: null,
+    }
+
+    const mockOverlayState = {
+      clearPreview: vi.fn(),
+      clearEditorMessage: vi.fn(),
+      setEditorMessage: vi.fn(),
+      selectedSource: null,
+      setSelectedSource: vi.fn(),
+      selectedFurniture,
+      sceneReadModel: {
+        items: [selectedFurniture],
+        selectedId: selectedFurniture.id,
+      },
+    }
+
+    const mockStartup = {
+      activeFloorFinishId: '',
+      activeWallFinishId: '',
+      catalog: [],
+      defaultFloorFinishId: 'wood-floor',
+      defaultWallFinishId: 'light-gray',
+      editorInteractionsEnabled: true,
+      floorFinishIds: [],
+      handleAssetError: vi.fn(),
+      handleAssetsReady: vi.fn(),
+      retryAssetLoading: vi.fn(),
+      resetEditorShellState: vi.fn(),
+      restoreInitialLayout: vi.fn(),
+      setFloorFinishId: vi.fn(),
+      setWallFinishId: vi.fn(),
+      wallFinishIds: [],
+    }
+
+    const { result, rerender } = renderHook(() =>
+      useSceneHandlers({
+        commands: mockCommands,
+        sync: mockSync,
+        announcements: mockAnnouncements,
+        dialogState: mockDialogState,
+        overlayState: mockOverlayState,
+        startup: mockStartup,
+      }),
+    )
+
+    act(() => {
+      result.current.handleUndo()
+      applySceneSelection(mockOverlayState, rerender, null)
+    })
+
+    expect(mockAnnouncements.announcePolite).toHaveBeenCalledTimes(1)
+    expect(mockAnnouncements.announcePolite).toHaveBeenCalledWith(
+      'Undo complete.',
+    )
+
+    selectionMetaActions.clearOutlinerFocusRequest()
   })
 
   it('maps blocked typed detail edits to field-specific error copy', () => {
@@ -183,7 +293,6 @@ describe('useSceneHandlers', () => {
       clearPreview: vi.fn(),
       clearEditorMessage: vi.fn(),
       setEditorMessage: vi.fn(),
-      handleHistoryChange: vi.fn(),
       selectedSource: null,
       setSelectedSource: vi.fn(),
       selectedFurniture,
@@ -296,7 +405,6 @@ describe('useSceneHandlers', () => {
       clearPreview: vi.fn(),
       clearEditorMessage: vi.fn(),
       setEditorMessage: vi.fn(),
-      handleHistoryChange: vi.fn(),
       selectedSource: null,
       setSelectedSource,
       selectedFurniture,
@@ -407,7 +515,6 @@ describe('useSceneHandlers', () => {
       clearPreview: vi.fn(),
       clearEditorMessage,
       setEditorMessage,
-      handleHistoryChange: vi.fn(),
       selectedSource: null,
       setSelectedSource: vi.fn(),
       selectedFurniture,
@@ -501,7 +608,6 @@ describe('useSceneHandlers', () => {
       clearPreview: vi.fn(),
       clearEditorMessage: vi.fn(),
       setEditorMessage: vi.fn(),
-      handleHistoryChange: vi.fn(),
       selectedSource: null,
       setSelectedSource,
       selectedFurniture: null,
@@ -526,7 +632,7 @@ describe('useSceneHandlers', () => {
       wallFinishIds: [],
     }
 
-    const { result } = renderHook(() =>
+    const { result, rerender } = renderHook(() =>
       useSceneHandlers({
         commands: mockCommands,
         sync: mockSync,
@@ -539,13 +645,13 @@ describe('useSceneHandlers', () => {
 
     act(() => {
       result.current.handleCanvasPointerSelection('item-1')
-      result.current.handleSceneSelectionChange(makeItem('item-1'))
+      applySceneSelection(mockOverlayState, rerender, makeItem('item-1'))
     })
 
     expect(setSelectedSource).toHaveBeenLastCalledWith('canvas-pointer')
   })
 
-  it('does not update selectedSource when handleSceneSelectionChange fires with same item id (e.g. position update)', () => {
+  it('does not update selectedSource when selectedId rerenders with the same item id (e.g. position update)', () => {
     const mockCommands = {
       addFurniture: vi.fn(),
       clearSelection: vi.fn(),
@@ -586,7 +692,6 @@ describe('useSceneHandlers', () => {
       clearPreview: vi.fn(),
       clearEditorMessage: vi.fn(),
       setEditorMessage: vi.fn(),
-      handleHistoryChange: vi.fn(),
       selectedSource: null,
       setSelectedSource,
       selectedFurniture: null,
@@ -611,7 +716,7 @@ describe('useSceneHandlers', () => {
       wallFinishIds: [],
     }
 
-    const { result } = renderHook(() =>
+    const { result, rerender } = renderHook(() =>
       useSceneHandlers({
         commands: mockCommands,
         sync: mockSync,
@@ -624,20 +729,20 @@ describe('useSceneHandlers', () => {
 
     act(() => {
       result.current.handleCanvasPointerSelection('item-1')
-      result.current.handleSceneSelectionChange(makeItem('item-1'))
+      applySceneSelection(mockOverlayState, rerender, makeItem('item-1'))
     })
     expect(setSelectedSource).toHaveBeenCalledTimes(2)
 
     setSelectedSource.mockClear()
 
     act(() => {
-      result.current.handleSceneSelectionChange(makeItem('item-1'))
+      applySceneSelection(mockOverlayState, rerender, makeItem('item-1'))
     })
 
     expect(setSelectedSource).not.toHaveBeenCalled()
   })
 
-  it('clears selectedSource when handleSceneSelectionChange clears selection', () => {
+  it('clears selectedSource when selectedId rerenders to no selection', () => {
     const mockCommands = {
       addFurniture: vi.fn(),
       clearSelection: vi.fn(),
@@ -678,7 +783,6 @@ describe('useSceneHandlers', () => {
       clearPreview: vi.fn(),
       clearEditorMessage: vi.fn(),
       setEditorMessage: vi.fn(),
-      handleHistoryChange: vi.fn(),
       selectedSource: 'canvas-pointer' as const,
       setSelectedSource,
       selectedFurniture: makeItem('item-1'),
@@ -703,7 +807,7 @@ describe('useSceneHandlers', () => {
       wallFinishIds: [],
     }
 
-    const { result } = renderHook(() =>
+    const { result, rerender } = renderHook(() =>
       useSceneHandlers({
         commands: mockCommands,
         sync: mockSync,
@@ -716,18 +820,18 @@ describe('useSceneHandlers', () => {
 
     act(() => {
       result.current.handleCanvasPointerSelection('item-1')
-      result.current.handleSceneSelectionChange(makeItem('item-1'))
+      applySceneSelection(mockOverlayState, rerender, makeItem('item-1'))
     })
     setSelectedSource.mockClear()
 
     act(() => {
-      result.current.handleSceneSelectionChange(null)
+      applySceneSelection(mockOverlayState, rerender, null)
     })
 
     expect(setSelectedSource).toHaveBeenCalledWith(null)
   })
 
-  it('preserves programmatic selectedSource when handleSelectById fires before handleSceneSelectionChange', () => {
+  it('preserves programmatic selectedSource when handleSelectById fires before selectedId rerenders', () => {
     const mockCommands = {
       addFurniture: vi.fn(),
       clearSelection: vi.fn(),
@@ -771,7 +875,6 @@ describe('useSceneHandlers', () => {
       clearPreview: vi.fn(),
       clearEditorMessage: vi.fn(),
       setEditorMessage: vi.fn(),
-      handleHistoryChange: vi.fn(),
       selectedSource: null,
       setSelectedSource,
       selectedFurniture: null,
@@ -796,7 +899,7 @@ describe('useSceneHandlers', () => {
       wallFinishIds: [],
     }
 
-    const { result } = renderHook(() =>
+    const { result, rerender } = renderHook(() =>
       useSceneHandlers({
         commands: mockCommands,
         sync: mockSync,
@@ -809,7 +912,7 @@ describe('useSceneHandlers', () => {
 
     act(() => {
       result.current.handleSelectById('item-1', 'canvas-keyboard')
-      result.current.handleSceneSelectionChange(makeItem('item-1'))
+      applySceneSelection(mockOverlayState, rerender, makeItem('item-1'))
     })
 
     const sourceCalls = setSelectedSource.mock.calls.map((c: unknown[]) => c[0])
@@ -861,7 +964,6 @@ describe('useSceneHandlers', () => {
       clearPreview: vi.fn(),
       clearEditorMessage: vi.fn(),
       setEditorMessage: vi.fn(),
-      handleHistoryChange: vi.fn(),
       selectedSource: null,
       setSelectedSource,
       selectedFurniture: null,
@@ -886,7 +988,7 @@ describe('useSceneHandlers', () => {
       wallFinishIds: [],
     }
 
-    const { result } = renderHook(() =>
+    const { result, rerender } = renderHook(() =>
       useSceneHandlers({
         commands: mockCommands,
         sync: mockSync,
@@ -904,7 +1006,7 @@ describe('useSceneHandlers', () => {
 
     act(() => {
       result.current.handleCanvasPointerSelection('item-1')
-      result.current.handleSceneSelectionChange(makeItem('item-1'))
+      applySceneSelection(mockOverlayState, rerender, makeItem('item-1'))
     })
 
     expect(setSelectedSource).toHaveBeenCalledTimes(2)
@@ -955,7 +1057,6 @@ describe('useSceneHandlers', () => {
       clearPreview: vi.fn(),
       clearEditorMessage: vi.fn(),
       setEditorMessage: vi.fn(),
-      handleHistoryChange: vi.fn(),
       selectedSource: null,
       setSelectedSource,
       selectedFurniture: makeItem('item-1'),
@@ -980,7 +1081,7 @@ describe('useSceneHandlers', () => {
       wallFinishIds: [],
     }
 
-    const { result } = renderHook(() =>
+    const { result, rerender } = renderHook(() =>
       useSceneHandlers({
         commands: mockCommands,
         sync: mockSync,
@@ -998,7 +1099,7 @@ describe('useSceneHandlers', () => {
 
     act(() => {
       result.current.handleCanvasPointerSelection('item-2')
-      result.current.handleSceneSelectionChange(makeItem('item-2'))
+      applySceneSelection(mockOverlayState, rerender, makeItem('item-2'))
     })
 
     expect(setSelectedSource).toHaveBeenCalledTimes(2)
@@ -1052,7 +1153,6 @@ describe('useSceneHandlers', () => {
       clearPreview: vi.fn(),
       clearEditorMessage: vi.fn(),
       setEditorMessage: vi.fn(),
-      handleHistoryChange: vi.fn(),
       selectedSource: null,
       setSelectedSource: vi.fn(),
       selectedFurniture: null,
@@ -1077,7 +1177,7 @@ describe('useSceneHandlers', () => {
       wallFinishIds: [],
     }
 
-    const { result } = renderHook(() =>
+    const { result, rerender } = renderHook(() =>
       useSceneHandlers({
         commands: mockCommands,
         sync: mockSync,
@@ -1090,6 +1190,7 @@ describe('useSceneHandlers', () => {
 
     act(() => {
       result.current.handleSelectById('item-1', 'panel-keyboard')
+      applySceneSelection(mockOverlayState, rerender, selectedFurniture)
     })
 
     expect(mockAnnouncements.announcePolite).toHaveBeenCalledWith(
@@ -1138,7 +1239,6 @@ describe('useSceneHandlers', () => {
       clearPreview: vi.fn(),
       clearEditorMessage: vi.fn(),
       setEditorMessage: vi.fn(),
-      handleHistoryChange: vi.fn(),
       selectedSource: 'panel-pointer' as const,
       setSelectedSource,
       selectedFurniture: makeItem('item-1'),
@@ -1163,7 +1263,7 @@ describe('useSceneHandlers', () => {
       wallFinishIds: [],
     }
 
-    const { result } = renderHook(() =>
+    const { result, rerender } = renderHook(() =>
       useSceneHandlers({
         commands: mockCommands,
         sync: mockSync,
@@ -1183,7 +1283,7 @@ describe('useSceneHandlers', () => {
     setSelectedSource.mockClear()
 
     act(() => {
-      result.current.handleSceneSelectionChange(makeItem('item-2'))
+      applySceneSelection(mockOverlayState, rerender, makeItem('item-2'))
     })
 
     expect(setSelectedSource).toHaveBeenCalledWith(null)

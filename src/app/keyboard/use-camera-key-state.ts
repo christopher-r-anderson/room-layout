@@ -1,14 +1,12 @@
 import { useEffect, useRef } from 'react'
 import { isDialogTarget, isEditingTarget } from '@/lib/ui/keyboard-event-target'
+import { sceneCommands } from '@/scene/scene-commands'
 import type { CameraKeyName, CameraKeyState } from '@/scene/scene.types'
 
 interface UseCameraKeyStateOptions {
   enabled: boolean
   isBlockingOverlayOpen?: boolean
   roomViewHasFocus: boolean
-  sceneRef: React.RefObject<{
-    setCameraKeyState(keyState: CameraKeyState): void
-  } | null>
 }
 
 const CAMERA_KEY_IDS: Record<string, CameraKeyName> = {
@@ -65,7 +63,6 @@ export function useCameraKeyState({
   enabled,
   isBlockingOverlayOpen = false,
   roomViewHasFocus,
-  sceneRef,
 }: UseCameraKeyStateOptions): void {
   const keyStateRef = useRef<CameraKeyState>(new Set())
   const pressedShiftCodesRef = useRef<Set<string>>(new Set())
@@ -108,7 +105,7 @@ export function useCameraKeyState({
       }
 
       keyStateRef.current = new Set()
-      sceneRef.current?.setCameraKeyState(new Set())
+      sceneCommands.setCameraKeyState(new Set())
     }
 
     if (!enabled || isBlockingOverlayOpen || !roomViewHasFocus) {
@@ -135,7 +132,7 @@ export function useCameraKeyState({
           ? null
           : updateCameraKeyState(event.code, true))
       if (nextState !== null) {
-        sceneRef.current?.setCameraKeyState(nextState)
+        sceneCommands.setCameraKeyState(nextState)
       }
     }
 
@@ -147,7 +144,7 @@ export function useCameraKeyState({
           pressedShiftCodesRef.current.size > 0,
         )
         if (nextState !== null) {
-          sceneRef.current?.setCameraKeyState(nextState)
+          sceneCommands.setCameraKeyState(nextState)
         }
         return
       }
@@ -158,7 +155,7 @@ export function useCameraKeyState({
           ? null
           : updateCameraKeyState(event.code, false))
       if (nextState !== null) {
-        sceneRef.current?.setCameraKeyState(nextState)
+        sceneCommands.setCameraKeyState(nextState)
       }
     }
 
@@ -172,5 +169,5 @@ export function useCameraKeyState({
       window.removeEventListener('blur', resetKeyState)
       resetKeyState()
     }
-  }, [enabled, isBlockingOverlayOpen, roomViewHasFocus, sceneRef])
+  }, [enabled, isBlockingOverlayOpen, roomViewHasFocus])
 }

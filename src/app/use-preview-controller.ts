@@ -1,5 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { usePreviewState } from './overlay/use-preview-state'
+import { useCallback, useEffect, useRef } from 'react'
+import {
+  sceneStateActions,
+  useIsDragging,
+  usePreviewedId,
+} from '@/editor-state/scene-state-store'
 
 const SCENE_PREVIEW_CLEAR_DELAY_MS = 50
 
@@ -13,7 +17,6 @@ type OutlinerPreviewSource = 'outliner-hover' | 'outliner-focus'
 interface UsePreviewControllerOptions {
   isBlockingOverlayOpen: boolean
   editorInteractionsEnabled: boolean
-  itemIds: readonly string[]
 }
 
 interface PreviewController {
@@ -24,25 +27,28 @@ interface PreviewController {
     source: OutlinerPreviewSource,
   ) => void
   handleCanvasKeyboardPreviewChange: (id: string | null) => void
-  handleDragStateChange: (dragging: boolean) => void
   clearPreviewOnCanvasMiss: () => void
 }
 
 export function usePreviewController({
   isBlockingOverlayOpen,
   editorInteractionsEnabled,
-  itemIds,
 }: UsePreviewControllerOptions): PreviewController {
   const scenePreviewClearTimeoutRef = useRef<number | null>(null)
   const previewSourceRef = useRef<PreviewSource | null>(null)
-  const [isDragging, setIsDragging] = useState(false)
-
-  const { previewedId, setPreview, clearPreview } = usePreviewState({
-    isDragging,
+  const isDragging = useIsDragging()
+  const previewedId = usePreviewedId({
     isBlockingOverlayOpen,
     editorInteractionsEnabled,
-    itemIds,
   })
+
+  const setPreview = useCallback((id: string) => {
+    sceneStateActions.setPreviewedId(id)
+  }, [])
+
+  const clearPreview = useCallback(() => {
+    sceneStateActions.setPreviewedId(null)
+  }, [])
 
   const cancelScenePreviewClear = useCallback(() => {
     if (scenePreviewClearTimeoutRef.current === null) {
@@ -103,10 +109,6 @@ export function usePreviewController({
     [cancelScenePreviewClear, clearPreview, setPreview],
   )
 
-  const handleDragStateChange = useCallback((dragging: boolean) => {
-    setIsDragging(dragging)
-  }, [])
-
   const clearPreviewOnCanvasMiss = useCallback(() => {
     // Background clicks should clear preview immediately rather than waiting
     // for scene-leave hysteresis used to smooth pointer churn.
@@ -162,7 +164,6 @@ export function usePreviewController({
     handleScenePreviewChange,
     handleOutlinerPreviewChange,
     handleCanvasKeyboardPreviewChange,
-    handleDragStateChange,
     clearPreviewOnCanvasMiss,
   }
 }
