@@ -65,7 +65,7 @@ function persistDraft(environmentConfig: EnvironmentMaterialConfig) {
   const sceneState = getDraftSceneState()
   const startupPhase = editorRuntimeStore.getState().startupPhase
 
-  if (startupPhase === 'loading' || sceneState.isDragging) {
+  if (startupPhase !== 'ready' || sceneState.isDragging) {
     return
   }
 

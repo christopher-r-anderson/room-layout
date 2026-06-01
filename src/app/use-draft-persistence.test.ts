@@ -110,6 +110,32 @@ describe('useDraftPersistence', () => {
     expect(clearSceneDraft).not.toHaveBeenCalled()
   })
 
+  it('does not persist while startup is errored', () => {
+    renderHook(() => {
+      useDraftPersistence({ environmentConfig })
+    })
+
+    act(() => {
+      editorRuntimeActions.setAssetError({
+        kind: 'asset-load',
+        message: 'Unable to load asset',
+      })
+      sceneStateActions.setHistory(
+        createHistoryState([createFurnitureItem('item-1')]),
+      )
+    })
+
+    expect(saveSceneDraft).not.toHaveBeenCalled()
+    expect(clearSceneDraft).not.toHaveBeenCalled()
+
+    act(() => {
+      sceneStateActions.resetSceneState()
+    })
+
+    expect(saveSceneDraft).not.toHaveBeenCalled()
+    expect(clearSceneDraft).not.toHaveBeenCalled()
+  })
+
   it('saves draft changes once startup is ready', () => {
     renderHook(() => {
       useDraftPersistence({ environmentConfig })
