@@ -522,6 +522,37 @@ describe('dialogStore', () => {
     expect(result.current.returnFocusTarget).toBe('header-more-actions')
   })
 
+  it('preserves the synced layout mode when closing dialogs', () => {
+    const { result } = renderHook(() =>
+      useDialogStateSnapshot({
+        editorInteractionsEnabled: true,
+        startupOverlayActive: false,
+        selectedFurniture: LEATHER_COUCH,
+        canStartOver: true,
+      }),
+    )
+
+    act(() => {
+      result.current.syncLayoutMode('mobile')
+    })
+
+    act(() => {
+      expect(result.current.openInfo()).toBe(true)
+    })
+    expect(result.current.isInfoDialogOpen).toBe(true)
+
+    act(() => {
+      result.current.closeDialog()
+    })
+
+    act(() => {
+      expect(result.current.openStartOver()).toBe(true)
+    })
+
+    expect(result.current.isStartOverDialogOpen).toBe(true)
+    expect(result.current.returnFocusTarget).toBe('header-more-actions')
+  })
+
   it('defaults shortcut-opened start over to the mobile more trigger on narrow layouts', () => {
     const { result } = renderHook(() =>
       useDialogStateSnapshot({
