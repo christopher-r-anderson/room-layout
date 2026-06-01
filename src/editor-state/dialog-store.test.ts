@@ -3,7 +3,12 @@
 import { act, renderHook } from '@testing-library/react'
 import { beforeEach, describe, expect, it } from 'vitest'
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
-import { resetDialogStore, useDialogStateSnapshot } from './dialog-store'
+import {
+  dialogActions,
+  resetDialogStore,
+  useDialogStateSnapshot,
+  useIsBlockingOverlayOpen,
+} from './dialog-store'
 
 interface DialogStateHookProps {
   editorInteractionsEnabled: boolean
@@ -573,5 +578,44 @@ describe('dialogStore', () => {
 
     expect(result.current.isStartOverDialogOpen).toBe(true)
     expect(result.current.returnFocusTarget).toBe('header-more-actions')
+  })
+
+  it('useIsBlockingOverlayOpen reflects an active dialog', () => {
+    const { result } = renderHook(() => useIsBlockingOverlayOpen())
+
+    expect(result.current).toBe(false)
+
+    act(() => {
+      dialogActions.openDelete({
+        editorInteractionsEnabled: true,
+        selectedFurniture: LEATHER_COUCH,
+      })
+    })
+
+    expect(result.current).toBe(true)
+
+    act(() => {
+      dialogActions.closeDialog()
+    })
+
+    expect(result.current).toBe(false)
+  })
+
+  it('useIsBlockingOverlayOpen stays false for a non-blocking room surface', () => {
+    const { result } = renderHook(() => useIsBlockingOverlayOpen())
+
+    act(() => {
+      dialogActions.openRoomSurface({
+        editorInteractionsEnabled: true,
+        startupOverlayActive: false,
+        dialogOptions: {
+          layout: 'desktop',
+          returnFocusTarget: 'room-inline',
+        },
+      })
+    })
+
+    // openRoomSurface clears activeDialog (room surface is not blocking).
+    expect(result.current).toBe(false)
   })
 })

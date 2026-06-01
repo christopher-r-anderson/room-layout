@@ -10,7 +10,6 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Button } from '@/components/ui/button'
 import { buttonVariants } from '@/components/ui/button-variants'
 import { cn } from '@/lib/utils'
-import type { SceneReadModel } from '@/scene/scene.types'
 import { IconChevronDown, IconChevronRight } from '@tabler/icons-react'
 import {
   Collapsible,
@@ -18,11 +17,21 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible'
 import { loadBooleanPreference, saveBooleanPreference } from '@/lib/ui/storage'
-import type { SceneOutlinerFocusRequest } from '../scene-panel.types'
 import type {
   PanelInteractionSource,
   PanelSelectById,
 } from '../scene-interaction.types'
+import {
+  selectionMetaActions,
+  useOutlinerFocusRequest,
+} from '@/editor-state/selection-meta-store'
+import {
+  useItems,
+  usePreviewedId,
+  useSceneStateStore,
+} from '@/editor-state/scene-state-store'
+import { useEditorInteractionsEnabled } from '@/editor-state/editor-runtime-store'
+import { useIsBlockingOverlayOpen } from '@/editor-state/dialog-store'
 
 const OUTLINER_EXPANDED_PREFERENCE_KEY = 'outliner-expanded'
 
@@ -31,27 +40,28 @@ function loadStoredExpandedState() {
 }
 
 export function Outliner({
-  readModel,
-  disabled,
-  focusRequest,
-  onFocusHandled,
   onNavigateBackToSelectionControls,
   onSelectById,
-  previewedId,
   onPreviewChange,
 }: {
-  readModel: SceneReadModel
-  disabled: boolean
-  focusRequest: SceneOutlinerFocusRequest | null
-  onFocusHandled: () => void
   onNavigateBackToSelectionControls?: () => boolean
   onSelectById: PanelSelectById
-  previewedId?: string | null
   onPreviewChange: (
     id: string | null,
     source: 'outliner-hover' | 'outliner-focus',
   ) => void
 }) {
+  const items = useItems()
+  const selectedId = useSceneStateStore((state) => state.selectedId)
+  const editorInteractionsEnabled = useEditorInteractionsEnabled()
+  const isBlockingOverlayOpen = useIsBlockingOverlayOpen()
+  const derivedFocusRequest = useOutlinerFocusRequest()
+  const previewedId = usePreviewedId({
+    isBlockingOverlayOpen,
+    editorInteractionsEnabled,
+  })
+  const disabled = !editorInteractionsEnabled || isBlockingOverlayOpen
+  const focusRequest = isBlockingOverlayOpen ? null : derivedFocusRequest
   const headingId = useId()
   const contentId = useId()
   const containerRef = useRef<HTMLElement | null>(null)
@@ -71,13 +81,13 @@ export function Outliner({
     if (!isExpanded) {
       // Keep focus on a visible control when collapsed instead of targeting hidden content.
       toggleButtonRef.current?.focus()
-      onFocusHandled()
+      selectionMetaActions.clearOutlinerFocusRequest()
       return
     }
 
     if (focusRequest.focusContainer) {
       containerRef.current?.focus()
-      onFocusHandled()
+      selectionMetaActions.clearOutlinerFocusRequest()
       return
     }
 
@@ -88,22 +98,22 @@ export function Outliner({
 
       if (selectedButton) {
         selectedButton.focus()
-        onFocusHandled()
+        selectionMetaActions.clearOutlinerFocusRequest()
         return
       }
     }
 
-    if (readModel.items.length === 0) {
+    if (items.length === 0) {
       containerRef.current?.focus()
-      onFocusHandled()
+      selectionMetaActions.clearOutlinerFocusRequest()
       return
     }
 
     const nextIndex = Math.min(
       focusRequest.preferredIndex ?? 0,
-      readModel.items.length - 1,
+      items.length - 1,
     )
-    const nextItem = readModel.items[Math.max(nextIndex, 0)]
+    const nextItem = items[Math.max(nextIndex, 0)]
     const nextButton = buttonRefs.current.get(nextItem.id)
 
     if (!nextButton) {
@@ -112,8 +122,8 @@ export function Outliner({
 
     nextButton.focus()
 
-    onFocusHandled()
-  }, [disabled, focusRequest, isExpanded, onFocusHandled, readModel.items])
+    selectionMetaActions.clearOutlinerFocusRequest()
+  }, [disabled, focusRequest, isExpanded, items])
 
   return (
     <section
@@ -152,13 +162,13 @@ export function Outliner({
           </CardHeader>
 
           <CollapsibleContent render={<CardContent id={contentId} />}>
-            {readModel.items.length === 0 ? (
+            {items.length === 0 ? (
               <p className="text-muted-foreground">No furniture in the room.</p>
             ) : (
               <ScrollArea className="max-h-40">
                 <ul className="space-y-2" aria-label="Furniture items">
-                  {readModel.items.map((item, itemIndex) => {
-                    const isSelected = item.id === readModel.selectedId
+                  {items.map((item, itemIndex) => {
+                    const isSelected = item.id === selectedId
                     const isPreviewed = item.id === previewedId && !isSelected
 
                     return (

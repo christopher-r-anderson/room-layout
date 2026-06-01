@@ -21,10 +21,12 @@ import {
   sceneStateStore,
   useEditorMessage,
   useFloorFinishId,
+  useHasSelection,
   useHistoryAvailability,
+  useItems,
   useItemIds,
   usePreviewedId,
-  useSceneReadModel,
+  useSelectedId,
   useSelectedFurniture,
   useWallFinishId,
 } from './scene-state-store'
@@ -82,21 +84,28 @@ function registerDefaultSceneServices(
 }
 
 describe('sceneStateStore', () => {
-  it('derives the read model from history and selected id', () => {
-    const { result: readModel } = renderHook(() => useSceneReadModel())
+  it('derives selected furniture and selection presence from history and selected id', () => {
+    const { result: items } = renderHook(() => useItems())
+    const { result: selectedId } = renderHook(() => useSelectedId())
     const { result: selectedFurniture } = renderHook(() =>
       useSelectedFurniture(),
     )
+    const { result: hasSelection } = renderHook(() => useHasSelection())
 
     act(() => {
       seedSceneItems([FURNITURE_ITEM], { selectedId: FURNITURE_ITEM.id })
     })
 
-    expect(readModel.current).toEqual({
-      selectedId: FURNITURE_ITEM.id,
-      items: [FURNITURE_ITEM],
-    })
+    expect(items.current).toEqual([FURNITURE_ITEM])
+    expect(selectedId.current).toBe(FURNITURE_ITEM.id)
     expect(selectedFurniture.current).toEqual(FURNITURE_ITEM)
+    expect(hasSelection.current).toBe(true)
+
+    act(() => {
+      sceneStateActions.setSelectedId(null)
+    })
+
+    expect(hasSelection.current).toBe(false)
   })
 
   it('tracks history availability and editor message', () => {

@@ -1,103 +1,38 @@
 import { useCallback, useLayoutEffect, useRef, useState } from 'react'
-import type { FurnitureItem } from '@/scene/objects/furniture.types'
-import type { FurnitureCatalogEntry } from '@/scene/objects/furniture-catalog'
-import type {
-  FloorFinishOption,
-  WallFinishOption,
-} from '@/lib/three/environment-materials'
-import type {
-  DialogOpenOptions,
-  DialogReturnFocusTarget,
-  RoomSurfaceLayout,
-  RoomSurfaceOpenOptions,
+import {
+  dialogActions,
+  useIsDeleteDialogOpen,
+  useIsRoomSurfaceOpen,
+  usePendingDeleteFurniture,
+  useRoomSurfaceLayout,
 } from '@/editor-state/dialog-store'
-import type { CameraPreset, SceneReadModel } from '@/scene/scene.types'
+import {
+  useStartupLoadingActive,
+  useStartupOverlayActive,
+  useAssetError,
+} from '@/editor-state/editor-runtime-store'
+import { useSceneStateStore } from '@/editor-state/scene-state-store'
+import type { CameraPreset } from '@/scene/scene.types'
 import { CameraTools } from '../camera/camera-tools'
 import { DeleteConfirmationDialog } from '../selection/delete-confirmation-dialog'
-import type { HistoryAvailability } from '../history/history.types'
 import { StatusMessage } from './status-message'
 import { InitializationError } from '../startup/initialization-error'
 import { InitializationProgress } from '../startup/initialization-progress'
 import { Outliner } from '../scene-panel/outliner'
-import type { SceneOutlinerFocusRequest } from '../scene-panel.types'
-import type { StartupErrorKind } from '../startup/use-startup-state'
 import type { PanelSelectById } from '../scene-interaction.types'
 import { SelectedItemDetailsPlaceholder } from '../selection/selected-item-details'
 import { TopHeader } from './top-header'
-export interface EditorCameraProps {
+import type { TopHeaderShellProps } from './top-header.types'
+import { useOverlayLayout } from '../contexts/overlay-layout-context'
+
+export interface CameraToolsShellProps {
   onSetCameraPreset: (preset: CameraPreset) => void
   onFocusSelected: () => void
 }
 
-export interface EditorStartupProps {
-  assetError: boolean
-  assetErrorKind: StartupErrorKind | null
-  assetErrorMessage: string | null
-  startupLoadingActive: boolean
-  startupOverlayActive: boolean
-  onRetryAssetLoading: () => void
-}
-
-export interface EditorHistoryProps {
-  historyAvailability: HistoryAvailability
-  onUndo: () => void
-  onRedo: () => void
-}
-
-export interface EditorSceneProps {
-  focusRequest: SceneOutlinerFocusRequest | null
-  onFocusHandled: () => void
+export interface OutlinerShellProps {
   onNavigateBackToSelectionControls: () => boolean
   onSelectById: PanelSelectById
-  readModel: SceneReadModel
-  sceneInteractionsDisabled: boolean
-}
-
-export interface EditorCatalogProps {
-  catalog: FurnitureCatalogEntry[]
-  catalogIdToAdd: string
-  isCatalogDrawerOpen: boolean
-  onAddFurniture: () => boolean
-  onCatalogIdToAddChange: (catalogId: string) => void
-  onCatalogDrawerOpenChange: (open: boolean) => void
-}
-
-export interface EditorDialogsProps {
-  roomSurfaceLayout: RoomSurfaceLayout | null
-  isDeleteDialogOpen: boolean
-  isBlockingOverlayOpen: boolean
-  pendingDeleteFurniture: FurnitureItem | null
-  onCloseDeleteDialog: () => void
-  onConfirmDeleteSelection: () => void
-  isRoomSurfaceOpen: boolean
-  isHeaderMoreActionsOpen: boolean
-  onRoomSurfaceOpenChange: (
-    open: boolean,
-    options?: RoomSurfaceOpenOptions,
-  ) => boolean
-  isKeyboardShortcutsDialogOpen: boolean
-  onKeyboardShortcutsDialogOpenChange: (
-    open: boolean,
-    options?: DialogOpenOptions,
-  ) => boolean
-  isStartOverDialogOpen: boolean
-  onCloseStartOverDialog: () => void
-  onOpenStartOverDialog: (options?: DialogOpenOptions) => void
-  onConfirmStartOver: () => void
-  isInfoDialogOpen: boolean
-  onInfoDialogOpenChange: (
-    open: boolean,
-    options?: DialogOpenOptions,
-  ) => boolean
-  onHeaderMoreActionsOpenChange: (
-    open: boolean,
-    options?: DialogOpenOptions,
-  ) => boolean
-  returnFocusTarget: DialogReturnFocusTarget
-}
-
-export interface EditorPreviewProps {
-  previewedId: string | null
   onPreviewChange: (
     id: string | null,
     source: 'outliner-hover' | 'outliner-focus',
@@ -105,64 +40,65 @@ export interface EditorPreviewProps {
 }
 
 interface EditorOverlayProps {
-  editorInteractionsEnabled: boolean
   startOverDisabled: boolean
   onHeaderLayoutModeChange: (layout: 'mobile' | 'desktop') => void
-  statusMessage: string | null
-  onShareSceneUrl: () => Promise<'shared' | 'copied' | null>
-  camera: EditorCameraProps
-  startup: EditorStartupProps
-  history: EditorHistoryProps
-  scene: EditorSceneProps
-  catalog: EditorCatalogProps
-  dialogs: EditorDialogsProps
-  preview: EditorPreviewProps
-  floorFinishId: string
-  floorFinishLoading: boolean
-  floorFinishes: FloorFinishOption[]
-  onFloorFinishChange: (finishId: string) => void
-  wallFinishId: string
-  wallFinishes: WallFinishOption[]
-  onWallFinishChange: (finishId: string) => void
-  topHeaderElementRef?: (element: HTMLDivElement | null) => void
-  desktopRoomSidebarElementRef?: (element: HTMLElement | null) => void
-  mobileRoomDrawerElementRef?: (element: HTMLDivElement | null) => void
-  outlinerElementRef?: (element: HTMLDivElement | null) => void
-  cameraToolsElementRef?: (element: HTMLDivElement | null) => void
+  topHeader: TopHeaderShellProps
+  outliner: OutlinerShellProps
+  cameraTools: CameraToolsShellProps
+  onConfirmDeleteSelection: () => void
+  onRetryAssetLoading: () => void
+}
+
+export function EditorOverlayDialogs({
+  onConfirmDeleteSelection,
+  onRetryAssetLoading,
+}: {
+  onConfirmDeleteSelection: () => void
+  onRetryAssetLoading: () => void
+}) {
+  const isDeleteDialogOpen = useIsDeleteDialogOpen()
+  const pendingDeleteFurniture = usePendingDeleteFurniture()
+  const startupLoadingActive = useStartupLoadingActive()
+  const assetError = useAssetError()
+
+  return (
+    <>
+      <DeleteConfirmationDialog
+        open={isDeleteDialogOpen}
+        pendingDeleteFurniture={pendingDeleteFurniture}
+        onClose={dialogActions.closeDialog}
+        onConfirm={onConfirmDeleteSelection}
+      />
+      <InitializationProgress visible={startupLoadingActive} />
+      {assetError ? (
+        <InitializationError
+          errorKind={assetError.kind}
+          errorMessage={assetError.message}
+          onRetry={onRetryAssetLoading}
+        />
+      ) : null}
+    </>
+  )
 }
 
 export function EditorOverlay({
-  editorInteractionsEnabled,
   startOverDisabled,
   onHeaderLayoutModeChange,
-  statusMessage,
-  onShareSceneUrl,
-  camera,
-  startup,
-  history,
-  scene,
-  catalog,
-  dialogs,
-  preview,
-  floorFinishId,
-  floorFinishLoading,
-  floorFinishes,
-  onFloorFinishChange,
-  wallFinishId,
-  wallFinishes,
-  onWallFinishChange,
-  topHeaderElementRef,
-  desktopRoomSidebarElementRef,
-  mobileRoomDrawerElementRef,
-  outlinerElementRef,
-  cameraToolsElementRef,
+  topHeader,
+  outliner,
+  cameraTools,
+  onConfirmDeleteSelection,
+  onRetryAssetLoading,
 }: EditorOverlayProps) {
+  const { registerExclusionElement } = useOverlayLayout()
   const cameraAnchorRef = useRef<HTMLDivElement | null>(null)
   const [cameraAnchorHeight, setCameraAnchorHeight] = useState(0)
-  const isDesktopRoomOpen =
-    dialogs.isRoomSurfaceOpen && dialogs.roomSurfaceLayout === 'desktop'
-  const isMobileRoomOpen =
-    dialogs.isRoomSurfaceOpen && dialogs.roomSurfaceLayout === 'mobile'
+  const roomSurfaceLayout = useRoomSurfaceLayout()
+  const isRoomSurfaceOpen = useIsRoomSurfaceOpen()
+  const selectedId = useSceneStateStore((state) => state.selectedId)
+  const startupOverlayActive = useStartupOverlayActive()
+  const isDesktopRoomOpen = isRoomSurfaceOpen && roomSurfaceLayout === 'desktop'
+  const isMobileRoomOpen = isRoomSurfaceOpen && roomSurfaceLayout === 'mobile'
 
   useLayoutEffect(() => {
     const element = cameraAnchorRef.current
@@ -204,71 +140,45 @@ export function EditorOverlay({
   const handleCameraAnchorRef = useCallback(
     (element: HTMLDivElement | null) => {
       cameraAnchorRef.current = element
-      cameraToolsElementRef?.(element)
+      registerExclusionElement('camera-tools')(element)
     },
-    [cameraToolsElementRef],
+    [registerExclusionElement],
   )
 
   return (
     <>
       <div
         className="pointer-events-none absolute inset-2 flex flex-col justify-between"
-        inert={startup.startupOverlayActive}
-        aria-hidden={startup.startupOverlayActive}
+        inert={startupOverlayActive}
+        aria-hidden={startupOverlayActive}
       >
         <TopHeader
-          topHeaderRef={topHeaderElementRef}
-          desktopRoomSidebarRef={desktopRoomSidebarElementRef}
-          mobileRoomDrawerRef={mobileRoomDrawerElementRef}
-          catalog={{
-            catalog: catalog.catalog,
-            catalogIdToAdd: catalog.catalogIdToAdd,
-            isCatalogDrawerOpen: catalog.isCatalogDrawerOpen,
-            onAddFurniture: catalog.onAddFurniture,
-            onCatalogDrawerOpenChange: catalog.onCatalogDrawerOpenChange,
-            onCatalogIdToAddChange: catalog.onCatalogIdToAddChange,
-          }}
-          dialogs={dialogs}
-          editorInteractionsEnabled={editorInteractionsEnabled}
-          floorFinishId={floorFinishId}
-          floorFinishLoading={floorFinishLoading}
-          floorFinishes={floorFinishes}
-          history={{
-            canRedo: history.historyAvailability.canRedo,
-            canUndo: history.historyAvailability.canUndo,
-            onRedo: history.onRedo,
-            onUndo: history.onUndo,
-          }}
-          startOverDisabled={startOverDisabled}
+          {...topHeader}
           onLayoutModeChange={onHeaderLayoutModeChange}
-          onShareSceneUrl={onShareSceneUrl}
-          onFloorFinishChange={onFloorFinishChange}
-          wallFinishId={wallFinishId}
-          wallFinishes={wallFinishes}
-          onWallFinishChange={onWallFinishChange}
+          startOverDisabled={startOverDisabled}
+          topHeaderRef={registerExclusionElement('top-header')}
+          desktopRoomSidebarRef={registerExclusionElement(
+            'desktop-room-sidebar',
+          )}
+          mobileRoomDrawerRef={registerExclusionElement('mobile-room-drawer')}
         />
 
         <div className="grid gap-2 md:grid-cols-[minmax(0,20rem)_minmax(0,1fr)] md:items-end">
           <div
-            ref={outlinerElementRef}
+            ref={registerExclusionElement('outliner')}
             className="flex min-w-0 flex-col gap-2 overflow-y-auto md:max-w-80"
           >
-            <StatusMessage message={statusMessage} />
+            <StatusMessage />
             <Outliner
-              readModel={scene.readModel}
-              disabled={scene.sceneInteractionsDisabled}
-              focusRequest={scene.focusRequest}
-              onFocusHandled={scene.onFocusHandled}
               onNavigateBackToSelectionControls={
-                scene.onNavigateBackToSelectionControls
+                outliner.onNavigateBackToSelectionControls
               }
-              onSelectById={scene.onSelectById}
-              previewedId={preview.previewedId}
-              onPreviewChange={preview.onPreviewChange}
+              onSelectById={outliner.onSelectById}
+              onPreviewChange={outliner.onPreviewChange}
             />
           </div>
 
-          {scene.readModel.selectedId === null ? (
+          {selectedId === null ? (
             <div
               aria-hidden="true"
               className="hidden md:flex md:min-h-32 md:items-end md:justify-end"
@@ -288,38 +198,21 @@ export function EditorOverlay({
         style={{
           bottom: isMobileRoomOpen ? mobileOpenBottom : centeredBottom,
         }}
-        inert={startup.startupOverlayActive}
-        aria-hidden={startup.startupOverlayActive}
+        inert={startupOverlayActive}
+        aria-hidden={startupOverlayActive}
       >
         <div className="pointer-events-auto">
           <CameraTools
-            editorInteractionsEnabled={editorInteractionsEnabled}
-            hasSelection={scene.readModel.selectedId !== null}
-            onSetPreset={camera.onSetCameraPreset}
-            onFocusSelected={camera.onFocusSelected}
+            onSetPreset={cameraTools.onSetCameraPreset}
+            onFocusSelected={cameraTools.onFocusSelected}
           />
         </div>
       </div>
 
-      {/*
-        Currently need to manage the open state of the DeleteConfirmationDialog because close on action is currently broken with BaseUI
-        https://github.com/shadcn-ui/ui/issues/9340
-        https://github.com/shadcn-ui/ui/pull/9347
-      */}
-      <DeleteConfirmationDialog
-        open={dialogs.isDeleteDialogOpen}
-        pendingDeleteFurniture={dialogs.pendingDeleteFurniture}
-        onClose={dialogs.onCloseDeleteDialog}
-        onConfirm={dialogs.onConfirmDeleteSelection}
+      <EditorOverlayDialogs
+        onConfirmDeleteSelection={onConfirmDeleteSelection}
+        onRetryAssetLoading={onRetryAssetLoading}
       />
-      <InitializationProgress visible={startup.startupLoadingActive} />
-      {startup.assetError ? (
-        <InitializationError
-          errorKind={startup.assetErrorKind}
-          errorMessage={startup.assetErrorMessage}
-          onRetry={startup.onRetryAssetLoading}
-        />
-      ) : null}
     </>
   )
 }

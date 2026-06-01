@@ -3,14 +3,17 @@
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import React from 'react'
-import { describe, expect, it, vi } from 'vitest'
-import type {
-  FloorFinishOption,
-  WallFinishOption,
-} from '@/lib/three/environment-materials'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
-import type { SceneReadModel } from '@/scene/scene.types'
 import { TooltipProvider } from '@/components/ui/tooltip'
+import { createHistoryState } from '@/lib/ui/editor-history'
+import { dialogActions, resetDialogStore } from '@/editor-state/dialog-store'
+import {
+  editorRuntimeActions,
+  resetEditorRuntimeStore,
+} from '@/editor-state/editor-runtime-store'
+import { sceneStateActions } from '@/editor-state/scene-state-store'
+import { OverlayLayoutProvider } from '../contexts/overlay-layout-context'
 import { SelectedItemControls } from '../selection/selected-item-controls'
 import { EditorOverlay } from './editor-overlay'
 import { findFirstFocusableControl } from './focusable-controls'
@@ -150,15 +153,9 @@ vi.mock('../keyboard/keyboard-shortcuts-help', () => ({
 }))
 
 vi.mock('../camera/camera-tools', () => ({
-  CameraTools: ({
-    hasSelection,
-    onFocusSelected,
-  }: {
-    hasSelection: boolean
-    onFocusSelected: () => void
-  }) => (
+  CameraTools: ({ onFocusSelected }: { onFocusSelected: () => void }) => (
     <div role="group" aria-label="Camera">
-      <button type="button" disabled={!hasSelection} onClick={onFocusSelected}>
+      <button type="button" onClick={onFocusSelected}>
         Focus Selected
       </button>
     </div>
@@ -196,207 +193,116 @@ function createSelectedFurniture(): FurnitureItem {
   }
 }
 
-function createReadModel(item: FurnitureItem): SceneReadModel {
-  return {
-    selectedId: item.id,
-    items: [item],
-  }
-}
-
-function createFloorOptions(): FloorFinishOption[] {
-  return [
-    {
-      id: 'wood-floor',
-      label: 'Wood',
-      diffusePath: '/textures/wood.jpg',
-      normalPath: '/textures/wood-normal.png',
-      tileSizeMeters: { width: 0.5, depth: 0.5 },
-    },
-  ]
-}
-
-function createWallOptions(): WallFinishOption[] {
-  return [
-    {
-      id: 'light-gray',
-      label: 'Light Gray',
-      color: 0xf5f5f5,
-    },
-  ]
-}
+beforeEach(() => {
+  resetDialogStore()
+  resetEditorRuntimeStore()
+  sceneStateActions.resetSceneState()
+  editorRuntimeActions.markAssetsReady()
+})
 
 describe('EditorOverlay integration', () => {
   it('wires outliner reverse-tab handoff and room focus return across the shell', async () => {
     const user = userEvent.setup()
     const selectedFurniture = createSelectedFurniture()
-    const readModel = createReadModel(selectedFurniture)
+    const registerExclusionElement = vi.fn(() => vi.fn())
+
+    sceneStateActions.setHistory(createHistoryState([selectedFurniture]))
+    sceneStateActions.setSelectedId(selectedFurniture.id)
+    sceneStateActions.setFloorFinishId('wood-floor')
+    sceneStateActions.setWallFinishId('light-gray')
 
     function TestHarness() {
-      const [isRoomSurfaceOpen, setIsRoomSurfaceOpen] = React.useState(false)
-      const [roomSurfaceLayout, setRoomSurfaceLayout] = React.useState<
-        'desktop' | 'mobile' | null
-      >(null)
-      const [isKeyboardShortcutsDialogOpen, setIsKeyboardShortcutsDialogOpen] =
-        React.useState(false)
-      const [returnFocusTarget, setReturnFocusTarget] = React.useState<
-        | 'room-inline'
-        | 'info-inline'
-        | 'keyboard-inline'
-        | 'header-more-actions'
-        | 'start-over-inline'
-        | null
-      >(null)
       const selectedItemControlsRef = React.useRef<HTMLDivElement | null>(null)
-
-      const handleRoomSurfaceOpenChange = React.useCallback(
-        (
-          open: boolean,
-          options?: {
-            layout?: 'desktop' | 'mobile'
-            returnFocusTarget?:
-              | 'room-inline'
-              | 'info-inline'
-              | 'keyboard-inline'
-              | 'header-more-actions'
-              | 'start-over-inline'
-              | null
-          },
-        ) => {
-          setIsRoomSurfaceOpen(open)
-          setRoomSurfaceLayout(open ? (options?.layout ?? 'desktop') : null)
-          setReturnFocusTarget(options?.returnFocusTarget ?? null)
-          return true
-        },
-        [],
-      )
-
-      const handleKeyboardShortcutsOpenChange = React.useCallback(
-        (
-          open: boolean,
-          options?: {
-            returnFocusTarget?:
-              | 'room-inline'
-              | 'info-inline'
-              | 'keyboard-inline'
-              | 'header-more-actions'
-              | 'start-over-inline'
-              | null
-          },
-        ) => {
-          setIsKeyboardShortcutsDialogOpen(open)
-          setReturnFocusTarget(options?.returnFocusTarget ?? null)
-          return true
-        },
-        [],
-      )
 
       return (
         <TooltipProvider>
-          <div className="relative min-h-192">
-            <SelectedItemControls
-              containerRef={selectedItemControlsRef}
-              editorInteractionsEnabled={true}
-              isCatalogDrawerOpen={false}
-              onInvalidSelectedItemDetailValue={(fieldLabel) =>
-                `${fieldLabel} must be a valid number.`
-              }
-              onOpenDeleteDialog={vi.fn()}
-              onRotateSelection={vi.fn()}
-              onUpdateSelectedItemDetails={vi.fn(() => ({
-                ok: true as const,
-                item: selectedFurniture,
-              }))}
-              selectedFurniture={selectedFurniture}
-              startupOverlayActive={false}
-            />
+          <OverlayLayoutProvider
+            value={{
+              exclusionRects: [],
+              registerExclusionElement,
+              syncLayoutMode: dialogActions.syncLayoutMode,
+            }}
+          >
+            <div className="relative min-h-192">
+              <SelectedItemControls
+                containerRef={selectedItemControlsRef}
+                editorInteractionsEnabled={true}
+                isCatalogDrawerOpen={false}
+                onInvalidSelectedItemDetailValue={(fieldLabel) =>
+                  `${fieldLabel} must be a valid number.`
+                }
+                onOpenDeleteDialog={vi.fn()}
+                onRotateSelection={vi.fn()}
+                onUpdateSelectedItemDetails={vi.fn(() => ({
+                  ok: true as const,
+                  item: selectedFurniture,
+                }))}
+                selectedFurniture={selectedFurniture}
+                startupOverlayActive={false}
+              />
 
-            <EditorOverlay
-              editorInteractionsEnabled={true}
-              startOverDisabled={false}
-              onHeaderLayoutModeChange={vi.fn()}
-              statusMessage={null}
-              onShareSceneUrl={vi.fn(() =>
-                Promise.resolve<'shared' | 'copied' | null>('copied'),
-              )}
-              camera={{
-                onSetCameraPreset: vi.fn(),
-                onFocusSelected: vi.fn(),
-              }}
-              startup={{
-                assetError: false,
-                assetErrorKind: null,
-                assetErrorMessage: null,
-                startupLoadingActive: false,
-                startupOverlayActive: false,
-                onRetryAssetLoading: vi.fn(),
-              }}
-              history={{
-                historyAvailability: { canUndo: false, canRedo: false },
-                onUndo: vi.fn(),
-                onRedo: vi.fn(),
-              }}
-              scene={{
-                focusRequest: null,
-                onFocusHandled: vi.fn(),
-                onNavigateBackToSelectionControls: () => {
-                  const firstFocusableControl = findFirstFocusableControl(
-                    selectedItemControlsRef.current,
-                  )
+              <EditorOverlay
+                startOverDisabled={false}
+                onHeaderLayoutModeChange={vi.fn()}
+                topHeader={{
+                  catalog: [],
+                  environmentConfig: {
+                    defaultFloorFinishId: 'wood-floor',
+                    defaultWallFinishId: 'light-gray',
+                    floorFinishes: [
+                      {
+                        id: 'wood-floor',
+                        label: 'Wood',
+                        diffusePath: '/textures/wood.jpg',
+                        normalPath: '/textures/wood-normal.png',
+                        tileSizeMeters: { width: 0.5, depth: 0.5 },
+                      },
+                    ],
+                    wallFinishes: [
+                      {
+                        id: 'light-gray',
+                        label: 'Light Gray',
+                        color: 0xf5f5f5,
+                      },
+                    ],
+                  },
+                  catalogIdToAdd: '',
+                  onAddFurniture: vi.fn(() => true),
+                  onCatalogIdToAddChange: vi.fn(),
+                  onCatalogDrawerOpenChange: vi.fn(),
+                  onUndo: vi.fn(),
+                  onRedo: vi.fn(),
+                  onShareSceneUrl: vi.fn(() =>
+                    Promise.resolve<'shared' | 'copied' | null>('copied'),
+                  ),
+                  onOpenStartOverDialog: vi.fn(),
+                  onConfirmStartOver: vi.fn(),
+                }}
+                outliner={{
+                  onNavigateBackToSelectionControls: () => {
+                    const firstFocusableControl = findFirstFocusableControl(
+                      selectedItemControlsRef.current,
+                    )
 
-                  if (!firstFocusableControl) {
-                    return false
-                  }
+                    if (!firstFocusableControl) {
+                      return false
+                    }
 
-                  firstFocusableControl.focus()
-                  return true
-                },
-                onSelectById: vi.fn(),
-                readModel,
-                sceneInteractionsDisabled: false,
-              }}
-              catalog={{
-                catalog: [],
-                catalogIdToAdd: '',
-                isCatalogDrawerOpen: false,
-                onAddFurniture: vi.fn(() => true),
-                onCatalogIdToAddChange: vi.fn(),
-                onCatalogDrawerOpenChange: vi.fn(),
-              }}
-              dialogs={{
-                roomSurfaceLayout,
-                isDeleteDialogOpen: false,
-                isBlockingOverlayOpen: false,
-                pendingDeleteFurniture: null,
-                onCloseDeleteDialog: vi.fn(),
-                onConfirmDeleteSelection: vi.fn(),
-                isRoomSurfaceOpen,
-                isHeaderMoreActionsOpen: false,
-                onRoomSurfaceOpenChange: handleRoomSurfaceOpenChange,
-                isKeyboardShortcutsDialogOpen,
-                onKeyboardShortcutsDialogOpenChange:
-                  handleKeyboardShortcutsOpenChange,
-                isStartOverDialogOpen: false,
-                onCloseStartOverDialog: vi.fn(),
-                onOpenStartOverDialog: vi.fn(),
-                onConfirmStartOver: vi.fn(),
-                isInfoDialogOpen: false,
-                onInfoDialogOpenChange: vi.fn(() => true),
-                onHeaderMoreActionsOpenChange: vi.fn(() => true),
-                returnFocusTarget,
-              }}
-              preview={{
-                previewedId: null,
-                onPreviewChange: vi.fn(),
-              }}
-              floorFinishId="wood-floor"
-              floorFinishLoading={false}
-              floorFinishes={createFloorOptions()}
-              onFloorFinishChange={vi.fn()}
-              wallFinishId="light-gray"
-              wallFinishes={createWallOptions()}
-              onWallFinishChange={vi.fn()}
-            />
-          </div>
+                    firstFocusableControl.focus()
+                    return true
+                  },
+                  onSelectById: vi.fn(),
+                  onPreviewChange: vi.fn(),
+                }}
+                cameraTools={{
+                  onSetCameraPreset: vi.fn(),
+                  onFocusSelected: vi.fn(),
+                }}
+                onConfirmDeleteSelection={vi.fn()}
+                onRetryAssetLoading={vi.fn()}
+              />
+            </div>
+          </OverlayLayoutProvider>
         </TooltipProvider>
       )
     }

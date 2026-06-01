@@ -9,6 +9,8 @@ import {
 } from '@tabler/icons-react'
 import { ToolButton } from '@/components/ui/tool-button'
 import type { CameraPreset } from '@/scene/scene.types'
+import { useEditorInteractionsEnabled } from '@/editor-state/editor-runtime-store'
+import { useHasSelection } from '@/editor-state/scene-state-store'
 
 export function CameraTools({
   editorInteractionsEnabled,
@@ -16,12 +18,17 @@ export function CameraTools({
   onSetPreset,
   onFocusSelected,
 }: {
-  editorInteractionsEnabled: boolean
-  hasSelection: boolean
+  editorInteractionsEnabled?: boolean
+  hasSelection?: boolean
   onSetPreset: (preset: CameraPreset) => void
   onFocusSelected: () => void
 }) {
-  const presetsDisabled = !editorInteractionsEnabled
+  const runtimeEditorInteractionsEnabled = useEditorInteractionsEnabled()
+  const runtimeHasSelection = useHasSelection()
+  const resolvedEditorInteractionsEnabled =
+    editorInteractionsEnabled ?? runtimeEditorInteractionsEnabled
+  const resolvedHasSelection = hasSelection ?? runtimeHasSelection
+  const presetsDisabled = !resolvedEditorInteractionsEnabled
   const presetsDisabledMessage =
     'Editor interactions are unavailable while loading'
   const buttonClass = 'flex-row-reverse sm:justify-between'
@@ -86,9 +93,9 @@ export function CameraTools({
       />
       <ToolButton
         action={onFocusSelected}
-        disabled={!hasSelection || !editorInteractionsEnabled}
+        disabled={!resolvedHasSelection || !resolvedEditorInteractionsEnabled}
         disabledMessage={
-          !editorInteractionsEnabled
+          !resolvedEditorInteractionsEnabled
             ? presetsDisabledMessage
             : 'No item selected'
         }

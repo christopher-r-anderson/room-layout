@@ -6,11 +6,17 @@ import type {
   RoomSurfaceOpenOptions,
 } from '@/editor-state/dialog-store'
 import type {
+  EnvironmentMaterialConfig,
   FloorFinishOption,
   WallFinishOption,
 } from '@/lib/three/environment-materials'
 import type { Ref } from 'react'
 export interface TopHeaderProps {
+  catalogIdToAdd: string
+  onAddFurniture: () => boolean
+  onCatalogIdToAddChange: (catalogId: string) => void
+  onUndo: () => void
+  onRedo: () => void
   catalog: {
     catalog: FurnitureCatalogEntry[]
     catalogIdToAdd: string
@@ -62,12 +68,36 @@ export interface TopHeaderProps {
   startOverDisabled: boolean
   onLayoutModeChange?: (layout: 'mobile' | 'desktop') => void
   onShareSceneUrl: () => Promise<'shared' | 'copied' | null>
+  onOpenStartOverDialog: (options?: DialogOpenOptions) => void
+  onConfirmStartOver: () => void
   topHeaderRef?: Ref<HTMLDivElement>
   desktopRoomSidebarRef?: Ref<HTMLElement>
   mobileRoomDrawerRef?: Ref<HTMLDivElement>
   wallFinishId: string
   wallFinishes: WallFinishOption[]
   onWallFinishChange: (finishId: string) => void
+}
+
+export interface TopHeaderShellProps {
+  catalog: FurnitureCatalogEntry[]
+  environmentConfig: EnvironmentMaterialConfig | null
+  catalogIdToAdd: string
+  onAddFurniture: () => boolean
+  onCatalogIdToAddChange: (catalogId: string) => void
+  onCatalogDrawerOpenChange: (open: boolean) => void
+  onUndo: () => void
+  onRedo: () => void
+  onShareSceneUrl: () => Promise<'shared' | 'copied' | null>
+  onOpenStartOverDialog: (options?: DialogOpenOptions) => void
+  onConfirmStartOver: () => void
+}
+
+export interface TopHeaderContainerProps extends TopHeaderShellProps {
+  startOverDisabled?: boolean
+  onLayoutModeChange?: (layout: 'mobile' | 'desktop') => void
+  topHeaderRef?: Ref<HTMLDivElement>
+  desktopRoomSidebarRef?: Ref<HTMLElement>
+  mobileRoomDrawerRef?: Ref<HTMLDivElement>
 }
 
 export interface TopHeaderMobileProps extends Pick<

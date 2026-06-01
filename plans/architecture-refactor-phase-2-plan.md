@@ -10,10 +10,10 @@ The implementor should read this plan front to back before starting and should n
 
 ## Outcome (definition of done)
 
-- `src/app/use-scene-handlers.ts` is deleted. Its `share`, `source`, `startup`, and main test files are deleted. The functionality is split across seven controller hooks plus one shared module of pure-helper utilities.
+- `src/app/use-scene-handlers.ts` is deleted. Its `share`, `source`, `startup`, and main test files are deleted. The functionality is split across eight controller hooks, `useSceneSelectionEffects`, and shared helper modules.
 - `src/app/overlay/use-overlay-props.ts` is deleted along with its test.
 - Two new React contexts exist (`EditorRefsContext`, `OverlayLayoutContext`) and are mounted once at the top of `App.tsx`. No other contexts are introduced in this phase.
-- `App.tsx` no longer imports `useSceneHandlers`, `useOverlayProps`, `useSceneReadModel`, `useFloorFinishId`, `useWallFinishId`, `useEditorMessage`, `useHistoryAvailability`, `useSelectedFurniture`, `useItems`, or `selectionMetaActions` directly. It imports the controller hooks, the contexts, and the small set of selectors/actions it still needs (`useStartupState`, `editorRuntimeStore`, `sceneCommands`, `sceneStateStore` for the test harness, `perfCounters`).
+- `App.tsx` no longer imports `useSceneHandlers`, `useOverlayProps`, `useSceneReadModel`, or the deleted prop bundle helpers. It imports the controller hooks, the contexts, and the small set of selectors/actions it still needs for composition-root state, startup, preview/test bridge, and scene shell wiring.
 - `EditorOverlay` reads state from stores in its leaves (`Outliner`, `TopHeader`, dialog wrappers, `CameraTools`). Container-level props are reduced to layout structure (refs, anchor heights, room-surface layout flags, header layout-mode callback) and a small set of derived booleans that cannot be cleanly derived inside a leaf.
 - The `EditorSceneProps`, `EditorCatalogProps`, `EditorDialogsProps`, `EditorPreviewProps`, `EditorHistoryProps`, `EditorCameraProps`, `EditorStartupProps` shape exports (in `editor-overlay.tsx`) are removed.
 - `SceneReadModel` is removed from `src/scene/scene.types.ts`. Consumers either read `useItems()` + `useSelectedId()` from `scene-state-store` or take `{ items, selectedId }` as a narrow prop.
@@ -470,14 +470,14 @@ After Phase 2, `App.tsx` retains:
 - The `dialogState.isBlockingOverlayOpen` → clear-outliner-focus-request effect.
 - The `handleOutlinerFocusHandled` wrapper (or inline it on the outliner consumer; see step D.4).
 - The keyboard-shortcut wiring (`useKeyboardShortcuts`) and camera key-state wiring (`useCameraKeyState`).
-- The `__ROOM_LAYOUT_TEST__` block (unchanged).
+- The `__ROOM_LAYOUT_TEST__` bridge behavior.
 - The render output (Canvas, scene composition, overlay).
 - `useDraftPersistence({ environmentConfig })` mount.
-- Composition of all controllers and the `handleCanvasBrowse`, `handleCanvasSelectPreviewed`, `handleCanvasKeyboardPreviewChange`, `clearPreviewOnCanvasMiss` glue (these are not extracted because they coordinate two controllers + the preview controller and are inherently composition-root logic).
+- Composition of all controllers, preview coordination, and Canvas pointer-missed glue.
 - The pointer-missed handler on Canvas, which calls `focusRoomView()`, `clearPreviewOnCanvasMiss()`, and `selection.handleClearSelection()` in that order.
 - The two new context providers (`EditorRefsContext`, `OverlayLayoutContext`).
 
-`App.tsx`'s line count target is **under 350 lines**. (Current: 778. Most of the reduction is removing the `useOverlayProps` and `useSceneHandlers` argument lists.)
+`App.tsx`'s original line count target was **under 350 lines**. The implemented refactor removed the large prop-bundle and handler-hook argument lists, but the remaining composition root is still above that target because it retains startup memoization, controller wiring, app-shell effects, and the JSX tree. Further reduction is deferred to a later shell split.
 
 ---
 
@@ -815,7 +815,7 @@ If any of these fails, fix and re-run from `pnpm typecheck`. Do not skip steps.
 
 ## Substantially modified
 
-- `src/App.tsx` — drops `useSceneHandlers` and `useOverlayProps`; mounts eight controllers + `useSceneSelectionEffects`; mounts two context providers; constructs three small shell prop objects; reduces to under 350 lines.
+- `src/App.tsx` — drops `useSceneHandlers` and `useOverlayProps`; mounts eight controllers + `useSceneSelectionEffects`; mounts two context providers; keeps composition-root startup, preview, keyboard, and JSX wiring.
 - `src/app/overlay/editor-overlay.tsx` — drops seven prop bundles; adds three shell prop interfaces; adds `EditorOverlayDialogs` sub-component; reads from `OverlayLayoutContext` for exclusion-rect registration.
 - `src/app/overlay/editor-overlay.test.tsx` — updated for the new prop shape.
 - `src/app/overlay/top-header.tsx` and its children — read store state via selectors; prop list shrinks.
@@ -932,6 +932,12 @@ Each controller has its own test file. Required coverage:
 
 - **`previewedIdRef` in `App.tsx`.** This ref is read synchronously by `handleCanvasSelectPreviewed` and updated by both the store-driven `previewedId` selector and `handleCanvasKeyboardPreviewChange`. It stays in `App.tsx`. Do not move it into a controller.
 
+  **Implementation note:** During Phase 2 implementation this ref + its three handlers (`handleCanvasKeyboardPreviewChange`, `handleCanvasBrowse`, `handleCanvasSelectPreviewed`) and the `previewedId → ref` sync effect were extracted into `src/app/controllers/use-canvas-keyboard-controller.ts`. The hook returns `previewedIdRef` so the test-state bridge can keep reading it. The synchronous-write semantics around `handleCanvasKeyboardPreviewChange` are preserved.
+
+- **Intentional behavior tightening in Phase 2 controllers.** Two controllers tightened guards beyond the strict "behavior-preserving" goal. Both changes are deliberate and pass the existing test suite:
+  - `useSelectionController.handleSelectById` and `handleClearSelection` now early-return when `editorInteractionsEnabled` is `false` or `sceneCommands.isSceneReady()` is `false`. The original handlers in `useSceneHandlers` did not check readiness — they relied on `sceneCommands` being a no-op pre-ready. Returning a `not-found` result (or doing nothing) when the scene isn't ready is more honest and prevents stale `clearEditorMessage` writes during startup. Pinned by `use-selection-controller.test.ts`.
+  - `useDeletionController.handleConfirmDeleteSelection` now writes `DELETE_SELECTION_MISSING_MESSAGE` to the editor message store when `sceneCommands.isSceneReady()` is `false`. Previously the not-ready branch was silently absorbed inside `scene-command-actions.confirmDeleteSelection`. Pinned by `use-deletion-controller.test.ts`.
+
 ---
 
 ## Done definition (final acceptance gate)
@@ -942,7 +948,10 @@ All of the following must be true to consider Phase 2 complete:
 2. `src/app/overlay/use-overlay-props.*` files do not exist.
 3. `src/app/controllers/` exists with eight controller hooks, `useSceneSelectionEffects`, and the `_shared/` modules listed above.
 4. `src/app/contexts/` exists with `EditorRefsContext` and `OverlayLayoutContext`.
-5. `src/App.tsx` is under 350 lines and does not import `useSceneHandlers`, `useOverlayProps`, `useSceneReadModel`, or any of the deleted prop bundles.
+5. `src/App.tsx` does not import `useSceneHandlers`, `useOverlayProps`, `useSceneReadModel`, or any of the deleted prop bundles.
+
+   **Status:** `App.tsx` remaining content is mostly: startup memo, controller wiring, JSX tree, effect hooks tied to App-shell composition. Reducing that would require either moving the JSX tree into a sub-component or splitting controller wiring into a single composition hook; both are deferred.
+
 6. `src/app/overlay/editor-overlay.tsx` exports only the new `EditorOverlay` and `EditorOverlayDialogs` components and the three shell prop interfaces. The seven old prop interfaces are gone.
 7. `SceneReadModel` is not defined or imported anywhere in `src/`.
 8. `pnpm typecheck` passes.

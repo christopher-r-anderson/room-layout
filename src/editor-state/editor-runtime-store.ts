@@ -18,12 +18,14 @@ interface EditorRuntimeStoreState {
   assetError: EditorAssetError | null
   restoreOutcome: RestoreOutcome | null
   restoreAttemptCount: number
+  floorFinishLoading: boolean
   markLoading: () => void
   markAssetsReady: () => void
   setAssetError: (error: EditorAssetError) => void
   clearAssetError: () => void
   recordRestoreOutcome: (outcome: RestoreOutcome | null) => void
   incrementRestoreAttempt: () => void
+  setFloorFinishLoading: (loading: boolean) => void
   resetEditorRuntime: () => void
   reset: () => void
 }
@@ -33,6 +35,7 @@ const INITIAL_EDITOR_RUNTIME_STATE = {
   assetError: null,
   restoreOutcome: null,
   restoreAttemptCount: 0,
+  floorFinishLoading: false,
 }
 
 function getInitialEditorRuntimeState() {
@@ -117,9 +120,25 @@ export const editorRuntimeStore = createStore<EditorRuntimeStoreState>()(
         restoreAttemptCount: state.restoreAttemptCount + 1,
       }))
     },
+    setFloorFinishLoading: (loading) => {
+      set((state) => {
+        if (state.floorFinishLoading === loading) {
+          return state
+        }
+
+        return {
+          ...state,
+          floorFinishLoading: loading,
+        }
+      })
+    },
     resetEditorRuntime: () => {
       set((state) => {
-        if (state.startupPhase === 'loading' && state.assetError === null) {
+        if (
+          state.startupPhase === 'loading' &&
+          state.assetError === null &&
+          !state.floorFinishLoading
+        ) {
           return state
         }
 
@@ -127,6 +146,7 @@ export const editorRuntimeStore = createStore<EditorRuntimeStoreState>()(
           ...state,
           startupPhase: 'loading',
           assetError: null,
+          floorFinishLoading: false,
         }
       })
     },
@@ -165,6 +185,9 @@ export const editorRuntimeActions = {
   incrementRestoreAttempt: () => {
     editorRuntimeStore.getState().incrementRestoreAttempt()
   },
+  setFloorFinishLoading: (loading: boolean) => {
+    editorRuntimeStore.getState().setFloorFinishLoading(loading)
+  },
   resetEditorRuntime: () => {
     editorRuntimeStore.getState().resetEditorRuntime()
   },
@@ -185,6 +208,8 @@ export const useRestoreOutcome = () =>
   useEditorRuntimeStore((state) => state.restoreOutcome)
 export const useRestoreAttemptCount = () =>
   useEditorRuntimeStore((state) => state.restoreAttemptCount)
+export const useFloorFinishLoading = () =>
+  useEditorRuntimeStore((state) => state.floorFinishLoading)
 export const useEditorInteractionsEnabled = () =>
   useEditorRuntimeStore((state) => state.startupPhase === 'ready')
 export const useStartupOverlayActive = () =>
