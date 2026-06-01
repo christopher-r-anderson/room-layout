@@ -122,7 +122,7 @@ Selected id, selected name, and item count are derived elsewhere when needed. Th
 
 Phase 1 is still intentionally incomplete in a few areas:
 
-- scene mutations still execute through `SceneRef` command methods
+- scene mutations still execute through the `sceneCommands` facade backed by registered scene services
 - `scene-state-store` still mirrors scene state instead of owning mutation source of truth
 - the scene still owns local history state internally
 - `getSnapshot` still exists because pointer-target projection data is not store-backed yet
