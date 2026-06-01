@@ -10,7 +10,7 @@ import type {
   DialogReturnFocusTarget,
   RoomSurfaceLayout,
   RoomSurfaceOpenOptions,
-} from './use-dialog-state'
+} from '@/editor-state/dialog-store'
 import type { CameraPreset, SceneReadModel } from '@/scene/scene.types'
 import { CameraTools } from '../camera/camera-tools'
 import { DeleteConfirmationDialog } from '../selection/delete-confirmation-dialog'

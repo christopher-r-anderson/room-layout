@@ -15,9 +15,6 @@ export interface SceneSnapshotItem {
 }
 
 export interface SceneSnapshot {
-  selectedId: string | null
-  selectedName: string | null
-  itemCount: number
   cameraPosition: [number, number, number]
   items: SceneSnapshotItem[]
 }
@@ -83,19 +80,11 @@ function getPointerTargetForObject({
 
 export function createSceneSnapshot(
   furniture: FurnitureItem[],
-  selectedId: string | null,
   objectRefs: Map<string, Object3D>,
   camera: Camera,
   canvasSize: { width: number; height: number },
 ): SceneSnapshot {
-  const selectedFurniture = selectedId
-    ? (furniture.find((item) => item.id === selectedId) ?? null)
-    : null
-
   return {
-    selectedId,
-    selectedName: selectedFurniture?.name ?? null,
-    itemCount: furniture.length,
     cameraPosition: camera.position.toArray().map((coordinate) => {
       return roundToPrecision(coordinate, 3)
     }) as [number, number, number],

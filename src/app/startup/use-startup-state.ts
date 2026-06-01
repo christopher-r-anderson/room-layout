@@ -13,6 +13,7 @@ import {
   type FurnitureCatalogEntry,
   type FurnitureCollection,
 } from '@/scene/objects/furniture-catalog'
+import { editorRuntimeActions } from '@/editor-state/editor-runtime-store'
 import {
   fetchCatalogManifest,
   ManifestNetworkError,
@@ -172,10 +173,10 @@ function reducer(state: ReducerState, action: Action): ReducerState {
 
 interface StartupState {
   assetError: Error | null
+  assetErrorKind: StartupErrorKind | null
   assetErrorRef: RefObject<Error | null>
   assetsReady: boolean
   assetsReadyRef: RefObject<boolean>
-  assetErrorKind: StartupErrorKind | null
   catalog: FurnitureCatalogEntry[]
   collections: FurnitureCollection[]
   environmentConfig: EnvironmentMaterialConfig | null
@@ -215,6 +216,26 @@ export function useStartupState(): StartupState {
   useEffect(() => {
     assetErrorRef.current = assetError
   }, [assetError])
+
+  // Mirror startup phase into the editor runtime store so app-side consumers
+  // can read it through narrow store hooks instead of through this hook's
+  // return value.
+  useEffect(() => {
+    if (assetError && assetErrorKind) {
+      editorRuntimeActions.setAssetError({
+        kind: assetErrorKind,
+        message: assetError.message,
+      })
+      return
+    }
+
+    if (assetsReady) {
+      editorRuntimeActions.markAssetsReady()
+      return
+    }
+
+    editorRuntimeActions.markLoading()
+  }, [assetError, assetErrorKind, assetsReady])
 
   // Fetch the runtime catalog manifest and preload the resolved collections.
   useEffect(() => {
@@ -293,6 +314,7 @@ export function useStartupState(): StartupState {
     perfLog('Clearing asset cache and retrying', { collections: paths.length })
     clearFurnitureCollectionCache(paths)
     dispatch({ type: 'RETRY' })
+    editorRuntimeActions.resetEditorRuntime()
   }, [])
 
   return useMemo(

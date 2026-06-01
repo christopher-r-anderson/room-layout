@@ -1,8 +1,9 @@
 // @vitest-environment jsdom
 
 import { act, renderHook } from '@testing-library/react'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { Group } from 'three'
+import { resetSceneStateStore } from '@/editor-state/scene-state-store'
 import { createDummyMesh } from '@/test/three-fixtures'
 import { useSceneSelection } from './use-scene-selection'
 import type { FurnitureItem } from '../objects/furniture.types'
@@ -21,6 +22,10 @@ function createFurnitureItem(id: string): FurnitureItem {
     rotationY: 0,
   }
 }
+
+beforeEach(() => {
+  resetSceneStateStore()
+})
 
 describe('useSceneSelection', () => {
   it('starts with no selection state', () => {
@@ -133,32 +138,6 @@ describe('useSceneSelection', () => {
 
     expect(result.current.selectedId).toBe('item-1')
     expect(result.current.selection).toHaveLength(1)
-  })
-
-  it('calls onSelectionChange on real selection changes but not unrelated rerenders', () => {
-    const onSelectionChange = vi.fn()
-    const furniture = [createFurnitureItem('item-1')]
-
-    const { result, rerender } = renderHook(() =>
-      useSceneSelection({
-        furniture,
-        onSelectionChange,
-      }),
-    )
-
-    expect(onSelectionChange).toHaveBeenCalledTimes(1)
-    expect(onSelectionChange).toHaveBeenLastCalledWith(null)
-
-    act(() => {
-      result.current.selectFurniture('item-1')
-    })
-
-    expect(onSelectionChange).toHaveBeenCalledTimes(2)
-    expect(onSelectionChange).toHaveBeenLastCalledWith(furniture[0])
-
-    rerender()
-
-    expect(onSelectionChange).toHaveBeenCalledTimes(2)
   })
 
   it('selection derives from getMeshes(selectedObject)', () => {

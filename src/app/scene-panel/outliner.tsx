@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from 'react'
+import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
 import {
   Card,
   CardAction,
@@ -63,7 +63,7 @@ export function Outliner({
     saveBooleanPreference(OUTLINER_EXPANDED_PREFERENCE_KEY, isExpanded)
   }, [isExpanded])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!focusRequest || disabled) {
       return
     }
@@ -104,8 +104,13 @@ export function Outliner({
       readModel.items.length - 1,
     )
     const nextItem = readModel.items[Math.max(nextIndex, 0)]
+    const nextButton = buttonRefs.current.get(nextItem.id)
 
-    buttonRefs.current.get(nextItem.id)?.focus()
+    if (!nextButton) {
+      return
+    }
+
+    nextButton.focus()
 
     onFocusHandled()
   }, [disabled, focusRequest, isExpanded, onFocusHandled, readModel.items])

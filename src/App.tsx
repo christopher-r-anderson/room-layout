@@ -10,38 +10,64 @@ import {
   useRef,
   useState,
 } from 'react'
+import { flushSync } from 'react-dom'
 import { NeutralToneMapping, SRGBColorSpace } from 'three'
-import type { SceneRef } from './scene/scene.types'
 import {
   findFloorFinishOption,
   findWallFinishOption,
 } from './lib/three/environment-materials'
 import { EditorOverlay } from './app/overlay/editor-overlay'
-import { useDialogState } from './app/overlay/use-dialog-state'
+import { useDialogStateSnapshot } from './editor-state/dialog-store'
+import {
+  sceneStateActions,
+  sceneStateStore,
+  useEditorMessage,
+  useFloorFinishId,
+  useHistoryAvailability,
+  useItems,
+  useSceneReadModel,
+  useSelectedFurniture,
+  useWallFinishId,
+} from './editor-state/scene-state-store'
 import { useKeyboardShortcuts } from './app/keyboard/use-keyboard-shortcuts'
 import { useCameraKeyState } from './app/keyboard/use-camera-key-state'
-import { useOverlayState } from './app/overlay/use-overlay-state'
 import { useOverlayProps } from './app/overlay/use-overlay-props'
-import { useSceneCommands } from './app/hooks/use-scene-commands'
 import { useAnnouncements } from './app/hooks/use-announcements'
-import { useSceneSync } from './app/hooks/use-scene-sync'
 import { usePreviewController } from './app/use-preview-controller'
-import { useStartupLifecycle } from './app/use-startup-lifecycle'
-import { useSceneHandlers, type RestoreOutcome } from './app/use-scene-handlers'
+import { useSceneHandlers } from './app/use-scene-handlers'
+import {
+  editorRuntimeStore,
+  type RestoreOutcome,
+  useAssetError,
+  useEditorInteractionsEnabled,
+  useStartupLoadingActive,
+  useStartupOverlayActive,
+  useStartupPhase,
+} from './editor-state/editor-runtime-store'
 import { Announcer } from './app/scene-panel/announcer'
 import { TooltipProvider } from './components/ui/tooltip'
 import { Toaster } from './components/ui/sonner'
-import { clearSceneDraft, saveSceneDraft } from './app/url-scene/scene-draft'
 import { isFreshSceneState } from './app/startup/scene-defaults'
+import { runStartupReset } from './app/startup/reset-startup-state'
+import { useStartupState } from './app/startup/use-startup-state'
 import { sortSpatially } from './lib/three/spatial-sort'
 import { SelectedItemControls } from './app/selection/selected-item-controls'
 import { findFirstFocusableControl } from './app/overlay/focusable-controls'
 import { useOverlayExclusionRects } from './app/overlay/use-overlay-exclusion-rects'
-import type { SelectedToolbarGeometry } from './scene/scene.types'
 import {
-  perfCounters,
+  resetSelectionMetaStore,
+  selectionMetaActions,
+  useOutlinerFocusRequest,
+  useSelectedSource,
+  useToolbarGeometry,
+} from './editor-state/selection-meta-store'
+import {
   type PerfCounterSnapshot,
+  perfCounters,
 } from '@/lib/debug/perf-counters'
+import { useDraftPersistence } from './app/use-draft-persistence'
+import { createSceneCommandActions } from './app/scene-command-actions'
+import { sceneCommands } from './scene/scene-commands'
 
 interface BrowserSceneState {
   assetsReady: boolean
@@ -81,49 +107,6 @@ declare global {
 
 const ROTATION_STEP_RADIANS = Math.PI / 12
 
-function areScreenPointsEqual(
-  left: { x: number; y: number },
-  right: { x: number; y: number },
-) {
-  return left.x === right.x && left.y === right.y
-}
-
-function areSelectedToolbarGeometriesEqual(
-  currentGeometry: SelectedToolbarGeometry,
-  nextGeometry: SelectedToolbarGeometry,
-) {
-  if (
-    currentGeometry.kind === 'unavailable' &&
-    nextGeometry.kind === 'unavailable'
-  ) {
-    return (
-      currentGeometry.selectedId === nextGeometry.selectedId &&
-      currentGeometry.reason === nextGeometry.reason
-    )
-  }
-
-  if (
-    currentGeometry.kind !== 'available' ||
-    nextGeometry.kind !== 'available'
-  ) {
-    return false
-  }
-
-  return (
-    currentGeometry.selectedId === nextGeometry.selectedId &&
-    currentGeometry.source === nextGeometry.source &&
-    currentGeometry.sourceNodeName === nextGeometry.sourceNodeName &&
-    currentGeometry.canvasSize.width === nextGeometry.canvasSize.width &&
-    currentGeometry.canvasSize.height === nextGeometry.canvasSize.height &&
-    currentGeometry.sourcePointCount === nextGeometry.sourcePointCount &&
-    currentGeometry.projectedPointCount === nextGeometry.projectedPointCount &&
-    currentGeometry.points.length === nextGeometry.points.length &&
-    currentGeometry.points.every((point, index) =>
-      areScreenPointsEqual(point, nextGeometry.points[index]),
-    )
-  )
-}
-
 class SceneAssetErrorBoundary extends Component<
   {
     children: ReactNode
@@ -151,33 +134,89 @@ class SceneAssetErrorBoundary extends Component<
 }
 
 function App() {
-  const sceneRef = useRef<SceneRef | null>(null)
+  if (import.meta.env.DEV) {
+    perfCounters.incrAppRender()
+  }
   const roomViewRef = useRef<HTMLElement | null>(null)
   const selectedItemControlsRef = useRef<HTMLDivElement | null>(null)
   const roomViewFocusFrameRef = useRef<number | null>(null)
   const previewedIdRef = useRef<string | null>(null)
-  const overlayState = useOverlayState()
-  const [floorFinishId, setFloorFinishId] = useState('')
-  const [wallFinishId, setWallFinishId] = useState('')
+  const items = useItems()
+  const sceneReadModel = useSceneReadModel()
+  const selectedFurniture = useSelectedFurniture()
+  const historyAvailability = useHistoryAvailability()
+  const editorMessage = useEditorMessage()
+  const floorFinishId = useFloorFinishId()
+  const wallFinishId = useWallFinishId()
   const [isFloorFinishLoading, setIsFloorFinishLoading] = useState(false)
-  const [isSceneDragging, setIsSceneDragging] = useState(false)
+  const [catalogIdToAdd, setCatalogIdToAdd] = useState('')
   const [roomViewHasFocus, setRoomViewHasFocus] = useState(false)
   const [testOverlaysHidden, setTestOverlaysHidden] = useState(false)
-  const [selectedToolbarGeometry, setSelectedToolbarGeometry] =
-    useState<SelectedToolbarGeometry>({
-      kind: 'unavailable',
-      selectedId: null,
-      reason: 'no-selection',
-    })
+  const selectedSource = useSelectedSource()
+  const selectedToolbarGeometry = useToolbarGeometry()
+  const outlinerFocusRequest = useOutlinerFocusRequest()
   const isE2ELowRenderQuality =
     import.meta.env.DEV && import.meta.env.VITE_E2E_RENDER_QUALITY === 'low'
   const canvasShadowMode = isE2ELowRenderQuality ? false : 'percentage'
   const overlayExclusions = useOverlayExclusionRects()
 
-  const startup = useStartupLifecycle({
-    sceneRef,
-    resetOverlayState: overlayState.resetOverlayState,
-  })
+  const resetOverlayShellState = useCallback(() => {
+    sceneStateActions.resetSceneState()
+    resetSelectionMetaStore()
+  }, [])
+
+  const {
+    catalog,
+    collections,
+    environmentConfig: startupEnvironmentConfig,
+    cacheInvalidationKey,
+    handleAssetError,
+    handleAssetsReady,
+    retryAssetLoading,
+  } = useStartupState()
+  const assetError = useAssetError()
+  const editorInteractionsEnabled = useEditorInteractionsEnabled()
+  const startupLoadingActive = useStartupLoadingActive()
+  const startupOverlayActive = useStartupOverlayActive()
+  const startupPhase = useStartupPhase()
+
+  const resetEditorShellState = useCallback(() => {
+    runStartupReset({ resetOverlayState: resetOverlayShellState })
+  }, [resetOverlayShellState])
+
+  const startup = useMemo(
+    () => ({
+      assetError,
+      assetErrorKind: assetError?.kind ?? null,
+      assetsReady: startupPhase === 'ready',
+      catalog,
+      collections,
+      environmentConfig: startupEnvironmentConfig,
+      editorInteractionsEnabled,
+      cacheInvalidationKey,
+      startupLoadingActive,
+      startupOverlayActive,
+      handleAssetError,
+      handleAssetsReady,
+      retryAssetLoading,
+      resetEditorShellState,
+    }),
+    [
+      assetError,
+      startupPhase,
+      catalog,
+      collections,
+      startupEnvironmentConfig,
+      editorInteractionsEnabled,
+      cacheInvalidationKey,
+      startupLoadingActive,
+      startupOverlayActive,
+      handleAssetError,
+      handleAssetsReady,
+      retryAssetLoading,
+      resetEditorShellState,
+    ],
+  )
 
   const environmentConfig = startup.environmentConfig
 
@@ -209,6 +248,10 @@ function App() {
     [environmentConfig, activeWallFinishId],
   )
 
+  useDraftPersistence({
+    environmentConfig,
+  })
+
   const sceneIsAtDefaults = useMemo(() => {
     if (!environmentConfig) {
       return false
@@ -216,40 +259,45 @@ function App() {
 
     return isFreshSceneState(
       {
-        items: overlayState.sceneReadModel.items,
+        items,
         floorFinishId: activeFloorFinishId,
         wallFinishId: activeWallFinishId,
       },
       environmentConfig,
     )
-  }, [
-    overlayState.sceneReadModel.items,
-    environmentConfig,
-    activeFloorFinishId,
-    activeWallFinishId,
-  ])
+  }, [items, environmentConfig, activeFloorFinishId, activeWallFinishId])
 
   const announcements = useAnnouncements()
 
-  const dialogState = useDialogState({
+  const dialogState = useDialogStateSnapshot({
     editorInteractionsEnabled: startup.editorInteractionsEnabled,
     startupOverlayActive: startup.startupOverlayActive,
-    selectedFurniture: overlayState.selectedFurniture,
+    selectedFurniture,
     canStartOver: !sceneIsAtDefaults,
   })
+  const wasBlockingOverlayOpenRef = useRef(dialogState.isBlockingOverlayOpen)
 
-  const commands = useSceneCommands({
-    catalogIdToAdd: overlayState.catalogIdToAdd,
-    clearEditorMessage: overlayState.clearEditorMessage,
-    editorInteractionsEnabled: startup.editorInteractionsEnabled,
-    rotationStepRadians: ROTATION_STEP_RADIANS,
-    sceneRef,
-    setEditorMessage: overlayState.setEditorMessage,
-  })
+  const activeCatalogIdToAdd = useMemo(() => {
+    if (catalogIdToAdd) {
+      const exists = startup.catalog.some(
+        (entry) => entry.id === catalogIdToAdd,
+      )
+      if (exists) {
+        return catalogIdToAdd
+      }
+    }
 
-  const itemIds = useMemo(
-    () => overlayState.sceneReadModel.items.map((item) => item.id),
-    [overlayState.sceneReadModel.items],
+    return startup.catalog[0]?.id ?? ''
+  }, [catalogIdToAdd, startup.catalog])
+
+  const commands = useMemo(
+    () =>
+      createSceneCommandActions({
+        catalogIdToAdd: activeCatalogIdToAdd,
+        editorInteractionsEnabled: startup.editorInteractionsEnabled,
+        rotationStepRadians: ROTATION_STEP_RADIANS,
+      }),
+    [activeCatalogIdToAdd, startup.editorInteractionsEnabled],
   )
 
   const {
@@ -257,44 +305,11 @@ function App() {
     handleScenePreviewChange,
     handleOutlinerPreviewChange,
     handleCanvasKeyboardPreviewChange: applyCanvasKeyboardPreviewChange,
-    handleDragStateChange,
     clearPreviewOnCanvasMiss,
   } = usePreviewController({
     isBlockingOverlayOpen: dialogState.isBlockingOverlayOpen,
     editorInteractionsEnabled: startup.editorInteractionsEnabled,
-    itemIds,
   })
-
-  const handleSceneDragStateChange = useCallback(
-    (dragging: boolean) => {
-      setIsSceneDragging((currentDragging) =>
-        currentDragging === dragging ? currentDragging : dragging,
-      )
-      handleDragStateChange(dragging)
-    },
-    [handleDragStateChange],
-  )
-
-  const handleSelectedToolbarGeometryChange = useCallback(
-    (nextGeometry: SelectedToolbarGeometry) => {
-      setSelectedToolbarGeometry((currentGeometry) => {
-        if (areSelectedToolbarGeometriesEqual(currentGeometry, nextGeometry)) {
-          if (import.meta.env.DEV) {
-            perfCounters.incrToolbarSinkNoOp()
-          }
-
-          return currentGeometry
-        }
-
-        if (import.meta.env.DEV) {
-          perfCounters.incrToolbarSinkWrite()
-        }
-
-        return nextGeometry
-      })
-    },
-    [],
-  )
 
   const handleCanvasKeyboardPreviewChange = useCallback(
     (id: string | null) => {
@@ -329,27 +344,45 @@ function App() {
     }
   }, [])
 
-  const sync = useSceneSync({
-    sceneRef,
-    isBlockingOverlayOpen: dialogState.isBlockingOverlayOpen,
-    handleSceneReadModelChange: overlayState.handleSceneReadModelChange,
-    announcePolite: announcements.announcePolite,
-  })
+  useEffect(() => {
+    const wasBlockingOverlayOpen = wasBlockingOverlayOpenRef.current
+    wasBlockingOverlayOpenRef.current = dialogState.isBlockingOverlayOpen
+
+    if (
+      !dialogState.isBlockingOverlayOpen ||
+      wasBlockingOverlayOpen ||
+      outlinerFocusRequest === null
+    ) {
+      return
+    }
+
+    selectionMetaActions.clearOutlinerFocusRequest()
+  }, [dialogState.isBlockingOverlayOpen, outlinerFocusRequest])
+
+  const handleOutlinerFocusHandled = useCallback(() => {
+    selectionMetaActions.clearOutlinerFocusRequest()
+  }, [])
+
+  const requestOutlinerFocusByIndex = useCallback((preferredIndex: number) => {
+    selectionMetaActions.requestOutlinerFocus({
+      token: Date.now(),
+      preferredIndex,
+    })
+  }, [])
 
   const handlers = useSceneHandlers({
     commands,
-    sync: { ...sync, focusRoomView },
+    sync: { requestOutlinerFocusByIndex, focusRoomView },
     announcements,
     dialogState,
     overlayState: {
       clearPreview: clearPreviewOnCanvasMiss,
-      clearEditorMessage: overlayState.clearEditorMessage,
-      setEditorMessage: overlayState.setEditorMessage,
-      selectedSource: overlayState.selectedSource,
-      setSelectedSource: overlayState.setSelectedSource,
-      sceneReadModel: overlayState.sceneReadModel,
-      selectedFurniture: overlayState.selectedFurniture,
-      handleHistoryChange: overlayState.handleHistoryChange,
+      clearEditorMessage: sceneStateActions.clearEditorMessage,
+      setEditorMessage: sceneStateActions.setEditorMessage,
+      selectedSource,
+      setSelectedSource: selectionMetaActions.setSelectedSource,
+      sceneReadModel,
+      selectedFurniture,
     },
     startup: {
       activeFloorFinishId,
@@ -364,13 +397,9 @@ function App() {
       handleAssetsReady: startup.handleAssetsReady,
       retryAssetLoading: startup.retryAssetLoading,
       resetEditorShellState: startup.resetEditorShellState,
-      restoreInitialLayout: (instances) => {
-        if (!sceneRef.current)
-          throw new Error('sceneRef not initialized at restore')
-        sceneRef.current.restoreInitialLayout(instances)
-      },
-      setFloorFinishId,
-      setWallFinishId,
+      restoreInitialLayout: sceneCommands.restoreInitialLayout,
+      setFloorFinishId: sceneStateActions.setFloorFinishId,
+      setWallFinishId: sceneStateActions.setWallFinishId,
       wallFinishIds:
         environmentConfig?.wallFinishes.map((option) => option.id) ?? [],
     },
@@ -385,7 +414,7 @@ function App() {
 
   const handleCanvasBrowse = useCallback(
     (direction: 'next' | 'prev' | 'first' | 'last') => {
-      const snapshot = sceneRef.current?.getSnapshot()
+      const snapshot = sceneCommands.getSnapshot()
       if (!snapshot || snapshot.items.length === 0) {
         return
       }
@@ -415,7 +444,7 @@ function App() {
       const nextId = orderedIds[nextIndex]
       handleCanvasKeyboardPreviewChange(nextId)
 
-      const item = snapshot.items.find((i) => i.id === nextId)
+      const item = snapshot.items.find((sceneItem) => sceneItem.id === nextId)
       if (item) {
         announcements.announcePolite(item.name)
       }
@@ -433,11 +462,6 @@ function App() {
     handleCanvasKeyboardPreviewChange(null)
   }, [handlers, handleCanvasKeyboardPreviewChange])
 
-  const { initializeCatalogSelection } = overlayState
-  useEffect(() => {
-    initializeCatalogSelection(startup.catalog)
-  }, [startup.catalog, initializeCatalogSelection])
-
   const {
     startupProps,
     historyProps,
@@ -453,11 +477,13 @@ function App() {
     startupLoadingActive: startup.startupLoadingActive,
     startupOverlayActive: startup.startupOverlayActive,
     onRetryAssetLoading: handlers.handleRetryAssetLoading,
-    historyAvailability: overlayState.historyAvailability,
+    historyAvailability,
     onUndo: handlers.handleUndo,
     onRedo: handlers.handleRedo,
-    focusRequest: sync.outlinerFocusRequest,
-    onFocusHandled: sync.handleOutlinerFocusHandled,
+    focusRequest: dialogState.isBlockingOverlayOpen
+      ? null
+      : outlinerFocusRequest,
+    onFocusHandled: handleOutlinerFocusHandled,
     onNavigateBackToSelectionControls: useCallback(() => {
       const firstFocusableControl = findFirstFocusableControl(
         selectedItemControlsRef.current,
@@ -471,16 +497,16 @@ function App() {
       return true
     }, []),
     onSelectById: handlers.handleSelectById,
-    readModel: overlayState.sceneReadModel,
+    readModel: sceneReadModel,
     sceneInteractionsDisabled:
       !startup.editorInteractionsEnabled || dialogState.isBlockingOverlayOpen,
     onSetCameraPreset: handlers.handleSetCameraPreset,
     onFocusSelected: handlers.handleFocusSelected,
-    catalogIdToAdd: overlayState.catalogIdToAdd,
+    catalogIdToAdd: activeCatalogIdToAdd,
     catalog: startup.catalog,
     isCatalogDrawerOpen: dialogState.isCatalogDrawerOpen,
     onAddFurniture: handlers.handleAddFurniture,
-    onCatalogIdToAddChange: overlayState.setCatalogIdToAdd,
+    onCatalogIdToAddChange: setCatalogIdToAdd,
     onCatalogDrawerOpenChange: handlers.handleCatalogDrawerOpenChange,
     isDeleteDialogOpen: dialogState.isDeleteDialogOpen,
     pendingDeleteFurniture: dialogState.pendingDeleteFurniture,
@@ -516,25 +542,39 @@ function App() {
 
     window.__ROOM_LAYOUT_TEST__ = {
       getState: () => {
-        const sceneState = sceneRef.current?.getSnapshot()
-        const rawCameraPosition = sceneState?.cameraPosition
-        const cameraPosition: [number, number, number] = rawCameraPosition
-          ? [rawCameraPosition[0], rawCameraPosition[1], rawCameraPosition[2]]
-          : [0, 0, 0]
+        const storeState = sceneStateStore.getState()
+        const snapshotItems = sceneCommands.getSnapshot()?.items ?? []
+        const pointerTargetsById = new Map(
+          snapshotItems.map((item) => [item.id, item.pointerTarget] as const),
+        )
+        const cameraPosition = sceneCommands.getCameraPosition()
+        const selectedItem = storeState.selectedId
+          ? (storeState.history.present.find(
+              (item) => item.id === storeState.selectedId,
+            ) ?? null)
+          : null
 
         return {
-          assetsReady: startup.assetsReadyRef.current,
-          assetError: startup.assetErrorRef.current !== null,
+          assetsReady: editorRuntimeStore.getState().startupPhase === 'ready',
+          assetError: editorRuntimeStore.getState().assetError !== null,
           cameraPosition,
           floorFinishId: activeFloorFinishId,
           wallFinishId: activeWallFinishId,
-          selectedId: sceneState?.selectedId ?? null,
+          selectedId: storeState.selectedId,
           previewedId: previewedIdRef.current,
-          selectedName: sceneState?.selectedName ?? null,
-          itemCount: sceneState?.itemCount ?? 0,
-          items: sceneState?.items ?? [],
-          restoreOutcome: handlers.restoreOutcomeRef.current,
-          restoreAttemptCount: handlers.restoreAttemptCountRef.current,
+          selectedName: selectedItem?.name ?? null,
+          itemCount: storeState.history.present.length,
+          items: storeState.history.present.map((item) => ({
+            id: item.id,
+            catalogId: item.catalogId,
+            name: item.name,
+            position: item.position,
+            rotationY: item.rotationY,
+            pointerTarget: pointerTargetsById.get(item.id) ?? null,
+          })),
+          restoreOutcome: editorRuntimeStore.getState().restoreOutcome,
+          restoreAttemptCount:
+            editorRuntimeStore.getState().restoreAttemptCount,
         }
       },
       setOverlaysHidden: (hidden: boolean) => {
@@ -549,54 +589,11 @@ function App() {
     return () => {
       delete window.__ROOM_LAYOUT_TEST__
     }
-  }, [
-    activeFloorFinishId,
-    activeWallFinishId,
-    startup.assetErrorRef,
-    startup.assetsReadyRef,
-    handlers.restoreOutcomeRef,
-    handlers.restoreAttemptCountRef,
-  ])
-
-  useEffect(() => {
-    if (startup.startupLoadingActive || isSceneDragging) {
-      return
-    }
-
-    if (!environmentConfig) {
-      return
-    }
-
-    if (sceneIsAtDefaults) {
-      clearSceneDraft()
-      return
-    }
-
-    saveSceneDraft(overlayState.sceneReadModel.items, {
-      floorFinishId: environmentConfig.floorFinishes.some(
-        (option) => option.id === activeFloorFinishId,
-      )
-        ? activeFloorFinishId
-        : undefined,
-      wallFinishId: environmentConfig.wallFinishes.some(
-        (option) => option.id === activeWallFinishId,
-      )
-        ? activeWallFinishId
-        : undefined,
-    })
-  }, [
-    startup.startupLoadingActive,
-    isSceneDragging,
-    overlayState.sceneReadModel.items,
-    environmentConfig,
-    sceneIsAtDefaults,
-    activeFloorFinishId,
-    activeWallFinishId,
-  ])
+  }, [activeFloorFinishId, activeWallFinishId])
 
   useKeyboardShortcuts({
     enabled: startup.editorInteractionsEnabled,
-    hasSelection: overlayState.selectedFurniture !== null,
+    hasSelection: selectedFurniture !== null,
     isBlockingOverlayOpen: dialogState.isBlockingOverlayOpen,
     canStartOver: !sceneIsAtDefaults,
     roomViewHasFocus,
@@ -622,7 +619,6 @@ function App() {
     enabled: startup.editorInteractionsEnabled,
     isBlockingOverlayOpen: dialogState.isBlockingOverlayOpen,
     roomViewHasFocus,
-    sceneRef,
   })
 
   return (
@@ -649,10 +645,14 @@ function App() {
           tabIndex={startup.editorInteractionsEnabled ? 0 : -1}
           className="absolute inset-0 z-0 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
           onFocus={() => {
-            setRoomViewHasFocus(true)
+            flushSync(() => {
+              setRoomViewHasFocus(true)
+            })
           }}
           onBlur={() => {
-            setRoomViewHasFocus(false)
+            flushSync(() => {
+              setRoomViewHasFocus(false)
+            })
           }}
           onPointerDownCapture={focusRoomView}
         >
@@ -685,22 +685,15 @@ function App() {
             >
               <Suspense fallback={null}>
                 <Scene
-                  ref={sceneRef}
                   renderQuality={isE2ELowRenderQuality ? 'e2e-low' : 'default'}
                   catalog={startup.catalog}
                   collections={startup.collections}
                   onCanvasPointerSelection={
                     handlers.handleCanvasPointerSelection
                   }
-                  onSelectionChange={handlers.handleSceneSelectionChange}
-                  onHistoryChange={handlers.handleSceneHistoryChange}
                   onAssetsReady={handlers.handleSceneAssetsReady}
                   previewedId={previewedId}
                   onPreviewChange={handleScenePreviewChange}
-                  onDragStateChange={handleSceneDragStateChange}
-                  onSelectedToolbarGeometryChange={
-                    handleSelectedToolbarGeometryChange
-                  }
                   floorOption={selectedFloorOption}
                   wallOption={selectedWallOption}
                   onFloorLoadingChange={setIsFloorFinishLoading}
@@ -729,7 +722,7 @@ function App() {
               selectedDetailsRef={overlayExclusions.registerExclusionElement(
                 'selected-details',
               )}
-              selectedFurniture={overlayState.selectedFurniture}
+              selectedFurniture={selectedFurniture}
               selectedToolbarGeometry={selectedToolbarGeometry}
               startupOverlayActive={startup.startupOverlayActive}
             />
@@ -738,7 +731,7 @@ function App() {
               editorInteractionsEnabled={startup.editorInteractionsEnabled}
               startOverDisabled={sceneIsAtDefaults}
               onHeaderLayoutModeChange={dialogState.syncLayoutMode}
-              statusMessage={overlayState.editorMessage}
+              statusMessage={editorMessage}
               onShareSceneUrl={() => handlers.handleShareSceneUrl()}
               camera={cameraProps}
               startup={startupProps}
@@ -750,10 +743,10 @@ function App() {
               floorFinishId={activeFloorFinishId}
               floorFinishLoading={isFloorFinishLoading}
               floorFinishes={environmentConfig?.floorFinishes ?? []}
-              onFloorFinishChange={setFloorFinishId}
+              onFloorFinishChange={sceneStateActions.setFloorFinishId}
               wallFinishId={activeWallFinishId}
               wallFinishes={environmentConfig?.wallFinishes ?? []}
-              onWallFinishChange={setWallFinishId}
+              onWallFinishChange={sceneStateActions.setWallFinishId}
               topHeaderElementRef={overlayExclusions.registerExclusionElement(
                 'top-header',
               )}

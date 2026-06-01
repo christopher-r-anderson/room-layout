@@ -33,9 +33,10 @@
 `src/app` may import from `src/scene`; `src/scene` must never import from `src/app`. This is enforced as an ESLint error. Any import from `@/app` inside `src/scene` is a hard violation.
 
 **Scene contracts vs. scene internals.**
-Scene contracts are types and values that form the stable API between the scene domain and the app shell: `SceneRef`, `SceneReadModel`, `MoveSelectionResult`, `MoveSource`, `SelectByIdResult`, `FurnitureItem`, `FootprintSize`. App-side code must import scene contracts only from the three explicit approved modules — no barrel imports required:
+Scene contracts are types and values that form the stable API between the scene domain and the app shell: `SceneRef`, `SceneReadModel`, `MoveSelectionResult`, `MoveSource`, `SelectByIdResult`, `FurnitureItem`, `FootprintSize`, and the `sceneCommands` imperative facade. App-side code must import scene contracts only from the four explicit approved modules — no barrel imports required:
 
 - `@/scene/scene.types` — `SceneRef`, `SceneReadModel`, `MoveSelectionResult`, `MoveSource`, `SelectByIdResult`
+- `@/scene/scene-commands` — `sceneCommands` (imperative scene services facade), `clearSceneServices`, `whenSceneServicesReady`
 - `@/scene/objects/furniture.types` — `FurnitureItem`, `FootprintSize`
 - `@/scene/objects/furniture-catalog` — preload/cache helpers and catalog/collection types (implementation/data allowed by policy)
 

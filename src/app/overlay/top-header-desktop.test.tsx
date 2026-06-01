@@ -136,11 +136,15 @@ describe('TopHeaderDesktop', () => {
     expect(screen.getByText(ROOM_TRIGGER_TOOLTIP)).toBeInTheDocument()
   })
 
-  it('reserves desktop width for the share button feedback label', () => {
-    render(<TopHeaderDesktop {...createProps()} />)
+  it('keeps share as a direct visible action in the desktop header', () => {
+    const { container } = render(<TopHeaderDesktop {...createProps()} />)
 
-    expect(
-      screen.getByRole('button', { name: 'Share room layout' }).className,
-    ).toContain('min-w-[6.5rem]')
+    const desktopHeaderRoot = container.querySelector('[data-top-header-root]')
+    const shareButton = screen.getByRole('button', {
+      name: 'Share room layout',
+    })
+
+    expect(desktopHeaderRoot).toContainElement(shareButton)
+    expect(shareButton).toBeVisible()
   })
 })

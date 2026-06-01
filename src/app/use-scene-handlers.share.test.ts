@@ -80,7 +80,6 @@ function createShareHandlersHarness() {
     clearPreview: vi.fn(),
     clearEditorMessage: vi.fn(),
     setEditorMessage: vi.fn(),
-    handleHistoryChange: vi.fn(),
     selectedSource: null,
     setSelectedSource: vi.fn(),
     selectedFurniture: sceneItem,

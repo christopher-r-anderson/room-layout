@@ -142,6 +142,4 @@ This Item is pure rearrangement and rule enforcement; no behavior changes.
 
 ## Open questions deferred to per-phase plans
 
-- Whether to use `zustand` directly or a thin in-house wrapper around `useSyncExternalStore` (decided in Phase 1 plan).
-- Exact store boundaries — the four stores listed are the working proposal; the Phase 1 plan finalizes names and slices after the implementer reads the current state at the time of execution.
 - Whether the Phase 3 docked toolbar should reuse the existing floating-toolbar component or a new shared primitive (decided in Phase 3 plan).

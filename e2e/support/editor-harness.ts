@@ -358,6 +358,7 @@ export async function selectOutlinerItemByKeyboard(
   await button.focus()
   await expect(button).toBeFocused()
   await page.keyboard.press('Enter')
+  await expect(button).toHaveAttribute('aria-current', 'true')
 
   return button
 }

@@ -1,29 +1,23 @@
 import { describe, expect, it, vi } from 'vitest'
 import { runStartupReset } from './reset-startup-state'
-import type { SceneRef } from '@/scene/scene.types'
+import * as sceneCommandsModule from '@/scene/scene-commands'
 
 describe('runStartupReset', () => {
-  it('clears overlay-local state and then nulls the scene ref', () => {
-    const scene = {
-      addFurniture: vi.fn(),
-      clearSelection: vi.fn(),
-      deleteSelection: vi.fn(),
-      getSnapshot: vi.fn(),
-      redo: vi.fn(),
-      rotateSelection: vi.fn(),
-      undo: vi.fn(),
-    } as unknown as SceneRef
-    const sceneRef = { current: scene }
-    let refSeenDuringReset: SceneRef | null = null
+  it('clears overlay-local state and then clears scene services', () => {
+    const clearSceneServices = vi
+      .spyOn(sceneCommandsModule, 'clearSceneServices')
+      .mockImplementation(() => undefined)
+    let clearCalledDuringReset = false
 
     runStartupReset({
       resetOverlayState: () => {
-        refSeenDuringReset = sceneRef.current
+        clearCalledDuringReset = clearSceneServices.mock.calls.length > 0
       },
-      sceneRef,
     })
 
-    expect(refSeenDuringReset).toBe(scene)
-    expect(sceneRef.current).toBeNull()
+    expect(clearCalledDuringReset).toBe(false)
+    expect(clearSceneServices).toHaveBeenCalledTimes(1)
+
+    clearSceneServices.mockRestore()
   })
 })

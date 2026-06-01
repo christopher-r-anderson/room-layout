@@ -174,7 +174,7 @@ export function TopHeaderDesktop({
               }
             />
             <ShareSceneButton
-              className="min-w-[6.5rem]"
+              className="min-w-26"
               disabled={!editorInteractionsEnabled}
               labelVisibility="always"
               onShareSceneUrl={onShareSceneUrl}

@@ -1,4 +1,4 @@
-import { useCallback, useRef, type RefObject } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import type {
   UpdateSelectedItemDetailsInput,
   UpdateSelectedItemDetailsResult,
@@ -17,8 +17,15 @@ import type {
   FurnitureItem,
 } from '@/scene/objects/furniture.types'
 import type { FurnitureCatalogEntry } from '@/scene/objects/furniture-catalog'
-import type { HistoryAvailability } from './history/history.types'
-import type { DialogOpenOptions } from './overlay/use-dialog-state'
+import type { DialogOpenOptions } from '@/editor-state/dialog-store'
+import {
+  editorRuntimeActions,
+  type RestoreOutcome,
+} from '@/editor-state/editor-runtime-store'
+import {
+  selectionMetaActions,
+  useOutlinerFocusRequest,
+} from '@/editor-state/selection-meta-store'
 import type { InteractionSource } from './scene-interaction.types'
 import {
   runStartupAssetErrorTransition,
@@ -66,10 +73,6 @@ interface Commands {
 }
 
 interface Sync {
-  syncSceneReadModel: (options?: {
-    announceSelectionChange?: boolean
-    requestOutlinerFocus?: boolean
-  }) => SceneReadModel | null
   requestOutlinerFocusByIndex: (preferredIndex: number) => void
   focusRoomView: () => void
 }
@@ -116,7 +119,6 @@ interface OverlayState {
   setSelectedSource: (source: InteractionSource) => void
   sceneReadModel: SceneReadModel
   selectedFurniture: FurnitureItem | null
-  handleHistoryChange: (availability: HistoryAvailability) => void
 }
 
 interface UseSceneHandlersOptions {
@@ -159,17 +161,11 @@ interface SceneHandlers {
   handleOpenDeleteDialogFromRoomView: () => void
   handleOpenStartOverDialog: (options?: DialogOpenOptions) => void
   handleConfirmStartOver: () => void
-  handleSceneHistoryChange: (availability: HistoryAvailability) => void
-  handleSceneSelectionChange: (item: FurnitureItem | null) => void
   handleSceneAssetError: (error: Error) => void
   handleSceneAssetsReady: () => void
   handleRetryAssetLoading: () => void
   handleShareSceneUrl: () => Promise<'shared' | 'copied' | null>
-  restoreOutcomeRef: RefObject<RestoreOutcome | null>
-  restoreAttemptCountRef: RefObject<number>
 }
-
-export type RestoreOutcome = 'restored' | 'invalid' | 'skipped'
 
 interface RestorableState {
   items: FurnitureInstance[]
@@ -193,6 +189,18 @@ interface InvalidRestoreCase {
   editorMessage: string
   assertiveMessage: string
   toastMessage: string
+}
+
+type SelectionAnnouncementMode =
+  | 'default'
+  | 'suppress'
+  | 'added'
+  | 'canvas-keyboard'
+  | 'panel-keyboard'
+
+interface PendingSelectionChangeBehavior {
+  announceMode: SelectionAnnouncementMode
+  requestOutlinerFocus: boolean
 }
 
 function tryRestoreDraft(
@@ -417,8 +425,7 @@ export function useSceneHandlers({
     setCameraPreset,
     undo,
   } = commands
-  const { syncSceneReadModel, requestOutlinerFocusByIndex, focusRoomView } =
-    sync
+  const { requestOutlinerFocusByIndex, focusRoomView } = sync
   const {
     announcePolite,
     announceAssertive,
@@ -439,7 +446,6 @@ export function useSceneHandlers({
     setEditorMessage,
     selectedSource,
     setSelectedSource,
-    handleHistoryChange,
     selectedFurniture,
     sceneReadModel,
   } = overlayState
@@ -460,22 +466,25 @@ export function useSceneHandlers({
     setFloorFinishId,
     setWallFinishId,
   } = startup
+  const outlinerFocusRequest = useOutlinerFocusRequest()
 
   // URL/draft restore runs only once per page load, even across scene remounts.
   const restoreAttemptedRef = useRef(false)
-  const restoreOutcomeRef = useRef<RestoreOutcome | null>(null)
-  const restoreAttemptCountRef = useRef(0)
 
   // When selection is triggered programmatically (e.g. handleSelectById), this
-  // ref is set to the intended source BEFORE the scene mutation fires, so that
-  // the resulting onSelectionChange callback can read the right source instead
-  // of defaulting to 'canvas-pointer'.
+  // ref is set before the scene/store selection update lands so the selectedId
+  // reconciliation effect can attribute the next selection change correctly.
   const pendingSelectionSourceRef = useRef<InteractionSource>(null)
 
-  // Tracks the last selected ID seen by handleSceneSelectionChange so we can
-  // distinguish a real selection-change event from a re-fire caused by a
-  // reference change to the same selected item (e.g. position updates).
-  const previousHandlerSelectedIdRef = useRef<string | null>(null)
+  // Tracks the last selected ID reconciled from the scene read model so we can
+  // ignore rerenders that do not actually change selection identity.
+  const previousReconciledSelectedIdRef = useRef<string | null>(null)
+  const previousSelectionSideEffectSelectedIdRef = useRef<string | null>(
+    sceneReadModel.selectedId,
+  )
+  const pendingPostDeleteOutlinerFocusIndexRef = useRef<number | null>(null)
+  const pendingSelectionChangeBehaviorRef =
+    useRef<PendingSelectionChangeBehavior | null>(null)
   const pendingDeleteFocusTargetRef = useRef<'room-view' | 'outliner' | null>(
     null,
   )
@@ -486,34 +495,18 @@ export function useSceneHandlers({
 
     if (added) {
       pendingSelectionSourceRef.current = 'toolbar'
+      pendingSelectionChangeBehaviorRef.current = {
+        announceMode: 'added',
+        requestOutlinerFocus: false,
+      }
       setSelectedSource('toolbar')
     } else {
       pendingSelectionSourceRef.current = null
-    }
-
-    const nextReadModel = syncSceneReadModel({
-      announceSelectionChange: false,
-      requestOutlinerFocus: false,
-    })
-
-    if (added) {
-      const addedItem = nextReadModel?.items.find(
-        (item) => item.id === nextReadModel.selectedId,
-      )
-
-      if (addedItem) {
-        announcePolite(`${addedItem.name} added to room.`)
-      }
+      pendingSelectionChangeBehaviorRef.current = null
     }
 
     return added
-  }, [
-    addFurniture,
-    clearEditorMessage,
-    syncSceneReadModel,
-    announcePolite,
-    setSelectedSource,
-  ])
+  }, [addFurniture, clearEditorMessage, setSelectedSource])
 
   const handleCanvasPointerSelection = useCallback(
     (id: string) => {
@@ -521,6 +514,13 @@ export function useSceneHandlers({
         return
       }
 
+      pendingSelectionChangeBehaviorRef.current =
+        sceneReadModel.selectedId === id
+          ? null
+          : {
+              announceMode: 'default',
+              requestOutlinerFocus: false,
+            }
       pendingSelectionSourceRef.current =
         sceneReadModel.selectedId === id ? null : 'canvas-pointer'
       setSelectedSource('canvas-pointer')
@@ -533,6 +533,20 @@ export function useSceneHandlers({
       const selectionWillChange = sceneReadModel.selectedId !== id
       const result = selectById(id)
       clearEditorMessage()
+
+      if (result.ok && selectionWillChange) {
+        pendingSelectionChangeBehaviorRef.current = {
+          announceMode:
+            source === 'panel-keyboard'
+              ? 'panel-keyboard'
+              : source === 'canvas-keyboard'
+                ? 'canvas-keyboard'
+                : 'default',
+          requestOutlinerFocus: false,
+        }
+      } else {
+        pendingSelectionChangeBehaviorRef.current = null
+      }
 
       if (source) {
         if (result.ok) {
@@ -548,30 +562,6 @@ export function useSceneHandlers({
         }
       }
 
-      if (source === 'canvas-keyboard' || source === 'panel-keyboard') {
-        const freshReadModel = syncSceneReadModel({
-          requestOutlinerFocus: false,
-          announceSelectionChange: false,
-        })
-        if (result.ok && result.status === 'selected' && id) {
-          const item = freshReadModel?.items.find((i) => i.id === id)
-          if (item) {
-            announcePolite(
-              source === 'panel-keyboard'
-                ? `${item.name} selected. Press Shift+Tab to reach selected item actions and details.`
-                : `${item.name} selected. Press Tab to reach selected item actions and details.`,
-            )
-          }
-        } else if (
-          source === 'canvas-keyboard' &&
-          result.ok &&
-          result.status === 'cleared'
-        ) {
-          announcePolite('Selection cleared.')
-        }
-      } else {
-        syncSceneReadModel({ requestOutlinerFocus: false })
-      }
       return result
     },
     [
@@ -579,8 +569,6 @@ export function useSceneHandlers({
       selectById,
       clearEditorMessage,
       setSelectedSource,
-      syncSceneReadModel,
-      announcePolite,
     ],
   )
 
@@ -589,18 +577,15 @@ export function useSceneHandlers({
       delta: { x: number; z: number },
       options?: { source?: MoveSource },
     ): MoveSelectionResult => {
+      const movedItemName = selectedFurniture?.name ?? null
+
       clearEditorMessage()
       const result = moveSelection(delta, options)
 
       if (result.ok) {
-        const nextReadModel = syncSceneReadModel()
-        const movedItem = nextReadModel?.items.find(
-          (item) => item.id === nextReadModel.selectedId,
-        )
-
-        if (movedItem) {
+        if (movedItemName) {
           queueMovementAnnouncement(
-            `${movedItem.name} moved to X ${formatCoordinate(movedItem.position[0])} and Z ${formatCoordinate(movedItem.position[2])}.`,
+            `${movedItemName} moved to X ${formatCoordinate(result.position[0])} and Z ${formatCoordinate(result.position[2])}.`,
           )
         }
 
@@ -617,9 +602,9 @@ export function useSceneHandlers({
     },
     [
       moveSelection,
-      syncSceneReadModel,
       clearEditorMessage,
       queueMovementAnnouncement,
+      selectedFurniture,
     ],
   )
 
@@ -629,19 +614,12 @@ export function useSceneHandlers({
 
       clearEditorMessage()
       rotateSelection(direction)
-      syncSceneReadModel()
 
       if (rotatingName) {
         announcePolite(`${rotatingName} rotated.`)
       }
     },
-    [
-      rotateSelection,
-      clearEditorMessage,
-      syncSceneReadModel,
-      announcePolite,
-      selectedFurniture,
-    ],
+    [rotateSelection, clearEditorMessage, announcePolite, selectedFurniture],
   )
 
   const handleInvalidSelectedItemDetailValue = useCallback(
@@ -692,7 +670,6 @@ export function useSceneHandlers({
 
       if (result.ok) {
         setSelectedSource('panel-keyboard')
-        syncSceneReadModel({ requestOutlinerFocus: false })
         announcePolite(`${result.item.name} details updated.`)
 
         return {
@@ -725,7 +702,6 @@ export function useSceneHandlers({
       selectedFurniture,
       setSelectedSource,
       setSelectionTransform,
-      syncSceneReadModel,
     ],
   )
 
@@ -739,7 +715,12 @@ export function useSceneHandlers({
     closeDialog()
 
     const deleted = confirmDeleteSelection()
-    const nextReadModel = syncSceneReadModel()
+    pendingSelectionChangeBehaviorRef.current = deleted
+      ? {
+          announceMode: 'suppress',
+          requestOutlinerFocus: false,
+        }
+      : null
 
     if (deleted) {
       const pendingFocusTarget = pendingDeleteFocusTargetRef.current
@@ -752,9 +733,11 @@ export function useSceneHandlers({
         (pendingFocusTarget === null && isCanvasSource)
 
       if (shouldFocusRoomView) {
+        pendingPostDeleteOutlinerFocusIndexRef.current = null
         focusRoomView()
       } else {
-        requestOutlinerFocusByIndex(deletedIndex >= 0 ? deletedIndex : 0)
+        pendingPostDeleteOutlinerFocusIndexRef.current =
+          deletedIndex >= 0 ? deletedIndex : 0
       }
 
       if (deletedName) {
@@ -762,12 +745,10 @@ export function useSceneHandlers({
       }
     }
 
-    return nextReadModel
+    return null
   }, [
     confirmDeleteSelection,
-    syncSceneReadModel,
     announcePolite,
-    requestOutlinerFocusByIndex,
     focusRoomView,
     closeDialog,
     pendingDeleteFurniture,
@@ -777,27 +758,40 @@ export function useSceneHandlers({
 
   const handleUndo = useCallback(() => {
     const undid = undo()
-    syncSceneReadModel()
+    pendingSelectionChangeBehaviorRef.current = undid
+      ? {
+          announceMode: 'suppress',
+          requestOutlinerFocus: true,
+        }
+      : null
     clearEditorMessage()
     if (undid) {
       announcePolite('Undo complete.')
     }
-  }, [undo, syncSceneReadModel, clearEditorMessage, announcePolite])
+  }, [undo, clearEditorMessage, announcePolite])
 
   const handleRedo = useCallback(() => {
     const redid = redo()
-    syncSceneReadModel()
+    pendingSelectionChangeBehaviorRef.current = redid
+      ? {
+          announceMode: 'suppress',
+          requestOutlinerFocus: true,
+        }
+      : null
     clearEditorMessage()
     if (redid) {
       announcePolite('Redo complete.')
     }
-  }, [redo, syncSceneReadModel, clearEditorMessage, announcePolite])
+  }, [redo, clearEditorMessage, announcePolite])
 
   const handleClearSelection = useCallback(() => {
     clearSelection()
+    pendingSelectionChangeBehaviorRef.current = {
+      announceMode: 'default',
+      requestOutlinerFocus: false,
+    }
     clearEditorMessage()
-    syncSceneReadModel({ requestOutlinerFocus: false })
-  }, [clearSelection, clearEditorMessage, syncSceneReadModel])
+  }, [clearSelection, clearEditorMessage])
 
   const handleCatalogDrawerOpenChange = useCallback(
     (open: boolean) => {
@@ -852,10 +846,10 @@ export function useSceneHandlers({
     setWallFinishId(defaultWallFinishId)
     setCameraPreset('corner')
     clearSceneDraft()
-    syncSceneReadModel({
-      announceSelectionChange: false,
+    pendingSelectionChangeBehaviorRef.current = {
+      announceMode: 'suppress',
       requestOutlinerFocus: false,
-    })
+    }
     announcePolite('Started over. Your changes were cleared.')
     toast.success('Started over. Your changes were cleared.')
   }, [
@@ -868,47 +862,143 @@ export function useSceneHandlers({
     defaultFloorFinishId,
     defaultWallFinishId,
     setCameraPreset,
-    syncSceneReadModel,
     announcePolite,
   ])
 
-  const handleSceneHistoryChange = useCallback(
-    (availability: HistoryAvailability) => {
-      handleHistoryChange(availability)
+  useEffect(() => {
+    const preferredIndex = pendingPostDeleteOutlinerFocusIndexRef.current
 
-      if (!editorInteractionsEnabled) {
-        return
+    if (preferredIndex === null) {
+      return
+    }
+
+    pendingPostDeleteOutlinerFocusIndexRef.current = null
+    requestOutlinerFocusByIndex(preferredIndex)
+  }, [requestOutlinerFocusByIndex, sceneReadModel.items])
+
+  useEffect(() => {
+    if (!editorInteractionsEnabled) {
+      return
+    }
+
+    const newId = sceneReadModel.selectedId
+
+    if (newId === previousReconciledSelectedIdRef.current) {
+      return
+    }
+
+    const pendingSource = pendingSelectionSourceRef.current
+    pendingSelectionSourceRef.current = null
+    previousReconciledSelectedIdRef.current = newId
+
+    setSelectedSource(newId === null ? null : pendingSource)
+  }, [editorInteractionsEnabled, sceneReadModel.selectedId, setSelectedSource])
+
+  useEffect(() => {
+    if (!editorInteractionsEnabled) {
+      return
+    }
+
+    const newId = sceneReadModel.selectedId
+    const previousSelectedId = previousSelectionSideEffectSelectedIdRef.current
+
+    if (newId === previousSelectedId) {
+      return
+    }
+
+    const pendingBehavior = pendingSelectionChangeBehaviorRef.current ?? {
+      announceMode: 'default' as const,
+      requestOutlinerFocus: false,
+    }
+    pendingSelectionChangeBehaviorRef.current = null
+
+    if (pendingBehavior.announceMode === 'added') {
+      const selectedItem = newId
+        ? sceneReadModel.items.find((item) => item.id === newId)
+        : null
+
+      if (selectedItem) {
+        announcePolite(`${selectedItem.name} added to room.`)
       }
+    } else if (pendingBehavior.announceMode === 'panel-keyboard') {
+      const selectedItem = newId
+        ? sceneReadModel.items.find((item) => item.id === newId)
+        : null
 
-      syncSceneReadModel()
-    },
-    [editorInteractionsEnabled, handleHistoryChange, syncSceneReadModel],
-  )
-
-  const handleSceneSelectionChange = useCallback(
-    (item: FurnitureItem | null) => {
-      if (!editorInteractionsEnabled) {
-        return
+      if (selectedItem) {
+        announcePolite(
+          `${selectedItem.name} selected. Press Shift+Tab to reach selected item actions and details.`,
+        )
       }
+    } else if (pendingBehavior.announceMode === 'canvas-keyboard') {
+      if (newId) {
+        const selectedItem = sceneReadModel.items.find(
+          (item) => item.id === newId,
+        )
 
-      const newId = item?.id ?? null
-      const pendingSource = pendingSelectionSourceRef.current
-      pendingSelectionSourceRef.current = null
-
-      // Only update selectedSource when the selection identity changes.
-      // This guard is necessary because onSelectionChange also fires when the
-      // selected item's properties change (e.g. after a move), and we must not
-      // clobber the source that was set during the original selection event.
-      if (newId !== previousHandlerSelectedIdRef.current) {
-        previousHandlerSelectedIdRef.current = newId
-        const source = newId === null ? null : pendingSource
-        setSelectedSource(source)
+        if (selectedItem) {
+          announcePolite(
+            `${selectedItem.name} selected. Press Tab to reach selected item actions and details.`,
+          )
+        }
+      } else if (previousSelectedId) {
+        announcePolite('Selection cleared.')
       }
+    } else if (pendingBehavior.announceMode === 'default') {
+      if (newId) {
+        const selectedItem = sceneReadModel.items.find(
+          (item) => item.id === newId,
+        )
 
-      syncSceneReadModel({ requestOutlinerFocus: false })
-    },
-    [editorInteractionsEnabled, setSelectedSource, syncSceneReadModel],
-  )
+        if (selectedItem) {
+          announcePolite(`${selectedItem.name} selected.`)
+        }
+      } else if (previousSelectedId) {
+        announcePolite('Selection cleared.')
+      }
+    }
+
+    if (pendingBehavior.requestOutlinerFocus && outlinerFocusRequest === null) {
+      if (newId) {
+        selectionMetaActions.requestOutlinerFocus({
+          token: Date.now(),
+          targetSelectedId: newId,
+        })
+      } else if (previousSelectedId) {
+        selectionMetaActions.requestOutlinerFocus({
+          token: Date.now(),
+          focusContainer: true,
+        })
+      }
+    }
+
+    previousSelectionSideEffectSelectedIdRef.current = newId
+  }, [
+    announcePolite,
+    editorInteractionsEnabled,
+    outlinerFocusRequest,
+    sceneReadModel.items,
+    sceneReadModel.selectedId,
+  ])
+
+  useEffect(() => {
+    if (!editorInteractionsEnabled) {
+      return
+    }
+
+    if (
+      sceneReadModel.selectedId !==
+      previousSelectionSideEffectSelectedIdRef.current
+    ) {
+      return
+    }
+
+    pendingSelectionChangeBehaviorRef.current = null
+  }, [
+    editorInteractionsEnabled,
+    sceneReadModel.items,
+    sceneReadModel.selectedId,
+  ])
 
   const handleSceneAssetError = useCallback(
     (error: Error) => {
@@ -935,7 +1025,7 @@ export function useSceneHandlers({
     // - toast is visual companion only, never the only notification channel.
     if (!restoreAttemptedRef.current) {
       restoreAttemptedRef.current = true
-      restoreAttemptCountRef.current += 1
+      editorRuntimeActions.incrementRestoreAttempt()
 
       const draftState = loadSceneDraft()
       const parseResult = parseSceneUrl(window.location.href)
@@ -970,12 +1060,36 @@ export function useSceneHandlers({
         }
       }
 
+      const normalizeRestoredState = (state: RestorableState) => {
+        const normalizedFloorFinishId = floorFinishIds.includes(
+          state.floorFinishId ?? '',
+        )
+          ? state.floorFinishId
+          : defaultFloorFinishId
+        const normalizedWallFinishId = wallFinishIds.includes(
+          state.wallFinishId ?? '',
+        )
+          ? state.wallFinishId
+          : defaultWallFinishId
+
+        return {
+          ...state,
+          floorFinishId: normalizedFloorFinishId,
+          wallFinishId: normalizedWallFinishId,
+        }
+      }
+
       const applyRestoredState = (state: RestorableState) => {
-        restoreInitialLayout(state.items)
-        applyFinishIds(state.floorFinishId, state.wallFinishId)
-        saveSceneDraft(state.items, {
-          floorFinishId: state.floorFinishId,
-          wallFinishId: state.wallFinishId,
+        const normalizedState = normalizeRestoredState(state)
+
+        restoreInitialLayout(normalizedState.items)
+        applyFinishIds(
+          normalizedState.floorFinishId,
+          normalizedState.wallFinishId,
+        )
+        saveSceneDraft(normalizedState.items, {
+          floorFinishId: normalizedState.floorFinishId,
+          wallFinishId: normalizedState.wallFinishId,
         })
       }
 
@@ -994,26 +1108,25 @@ export function useSceneHandlers({
         catalog,
         validDraftState,
         applyState: applyRestoredState,
-        isFreshState: (state) =>
-          isSceneStateAtDefaults(
+        isFreshState: (state) => {
+          const normalizedState = normalizeRestoredState(state)
+
+          return isSceneStateAtDefaults(
             {
-              items: state.items,
-              floorFinishId:
-                state.floorFinishId ?? defaultSceneState.floorFinishId,
-              wallFinishId:
-                state.wallFinishId ?? defaultSceneState.wallFinishId,
+              items: normalizedState.items,
+              floorFinishId: normalizedState.floorFinishId,
+              wallFinishId: normalizedState.wallFinishId,
             },
             defaultSceneState,
-          ),
+          )
+        },
         notifications: {
           announcePolite,
           announceAssertive,
           setEditorMessage: (message) => {
             setEditorMessage(message)
           },
-          setRestoreOutcome: (outcome) => {
-            restoreOutcomeRef.current = outcome
-          },
+          setRestoreOutcome: editorRuntimeActions.recordRestoreOutcome,
           toastSuccess: (message) => toast.success(message),
           toastWarning: (message) => toast.warning(message),
           toastError: (message) => toast.error(message),
@@ -1021,15 +1134,14 @@ export function useSceneHandlers({
       })
     }
 
-    syncSceneReadModel({
-      announceSelectionChange: false,
+    pendingSelectionChangeBehaviorRef.current = {
+      announceMode: 'suppress',
       requestOutlinerFocus: false,
-    })
+    }
 
     handleAssetsReady()
   }, [
     handleAssetsReady,
-    syncSceneReadModel,
     catalog,
     defaultFloorFinishId,
     defaultWallFinishId,
@@ -1161,14 +1273,10 @@ export function useSceneHandlers({
     handleOpenDeleteDialogFromRoomView,
     handleOpenStartOverDialog,
     handleConfirmStartOver,
-    handleSceneHistoryChange,
-    handleSceneSelectionChange,
     handleSceneAssetError,
     handleSceneAssetsReady,
     handleRetryAssetLoading,
     handleShareSceneUrl,
-    restoreOutcomeRef,
-    restoreAttemptCountRef,
   }
 }
 
