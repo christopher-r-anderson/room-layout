@@ -160,6 +160,17 @@ vi.mock('../camera/camera-tools', () => ({
       </button>
     </div>
   ),
+  ConnectedCameraTools: ({
+    onFocusSelected,
+  }: {
+    onFocusSelected: () => void
+  }) => (
+    <div role="group" aria-label="Camera">
+      <button type="button" onClick={onFocusSelected}>
+        Focus Selected
+      </button>
+    </div>
+  ),
 }))
 
 vi.mock('../selection/delete-confirmation-dialog', () => ({

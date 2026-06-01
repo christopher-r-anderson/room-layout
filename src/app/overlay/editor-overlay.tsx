@@ -13,7 +13,7 @@ import {
 } from '@/editor-state/editor-runtime-store'
 import { useSceneStateStore } from '@/editor-state/scene-state-store'
 import type { CameraPreset } from '@/scene/scene.types'
-import { CameraTools } from '../camera/camera-tools'
+import { ConnectedCameraTools } from '../camera/camera-tools'
 import { DeleteConfirmationDialog } from '../selection/delete-confirmation-dialog'
 import { StatusMessage } from './status-message'
 import { InitializationError } from '../startup/initialization-error'
@@ -202,7 +202,7 @@ export function EditorOverlay({
         aria-hidden={startupOverlayActive}
       >
         <div className="pointer-events-auto">
-          <CameraTools
+          <ConnectedCameraTools
             onSetPreset={cameraTools.onSetCameraPreset}
             onFocusSelected={cameraTools.onFocusSelected}
           />

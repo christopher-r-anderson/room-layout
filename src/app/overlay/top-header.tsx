@@ -27,6 +27,7 @@ import {
   useFloorFinishLoading,
   useStartupOverlayActive,
 } from '@/editor-state/editor-runtime-store'
+import { useActiveFinishIds } from '@/app/controllers/_shared/use-active-finish-ids'
 import {
   sceneStateActions,
   useFloorFinishId,
@@ -177,16 +178,14 @@ export function TopHeader({
   const desktopInfoTriggerId = useId()
   const desktopKeyboardTriggerId = useId()
   const startOverTriggerId = useId()
-  const floorFinishId = environmentConfig?.floorFinishes.some(
-    (option) => option.id === storedFloorFinishId,
-  )
-    ? storedFloorFinishId
-    : (environmentConfig?.defaultFloorFinishId ?? '')
-  const wallFinishId = environmentConfig?.wallFinishes.some(
-    (option) => option.id === storedWallFinishId,
-  )
-    ? storedWallFinishId
-    : (environmentConfig?.defaultWallFinishId ?? '')
+  const {
+    activeFloorFinishId: floorFinishId,
+    activeWallFinishId: wallFinishId,
+  } = useActiveFinishIds({
+    environmentConfig,
+    floorFinishId: storedFloorFinishId,
+    wallFinishId: storedWallFinishId,
+  })
 
   useEffect(() => {
     onLayoutModeChange?.(layoutMode)

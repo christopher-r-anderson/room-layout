@@ -12,23 +12,20 @@ import type { CameraPreset } from '@/scene/scene.types'
 import { useEditorInteractionsEnabled } from '@/editor-state/editor-runtime-store'
 import { useHasSelection } from '@/editor-state/scene-state-store'
 
+interface CameraToolsProps {
+  editorInteractionsEnabled: boolean
+  hasSelection: boolean
+  onSetPreset: (preset: CameraPreset) => void
+  onFocusSelected: () => void
+}
+
 export function CameraTools({
   editorInteractionsEnabled,
   hasSelection,
   onSetPreset,
   onFocusSelected,
-}: {
-  editorInteractionsEnabled?: boolean
-  hasSelection?: boolean
-  onSetPreset: (preset: CameraPreset) => void
-  onFocusSelected: () => void
-}) {
-  const runtimeEditorInteractionsEnabled = useEditorInteractionsEnabled()
-  const runtimeHasSelection = useHasSelection()
-  const resolvedEditorInteractionsEnabled =
-    editorInteractionsEnabled ?? runtimeEditorInteractionsEnabled
-  const resolvedHasSelection = hasSelection ?? runtimeHasSelection
-  const presetsDisabled = !resolvedEditorInteractionsEnabled
+}: CameraToolsProps) {
+  const presetsDisabled = !editorInteractionsEnabled
   const presetsDisabledMessage =
     'Editor interactions are unavailable while loading'
   const buttonClass = 'flex-row-reverse sm:justify-between'
@@ -93,9 +90,9 @@ export function CameraTools({
       />
       <ToolButton
         action={onFocusSelected}
-        disabled={!resolvedHasSelection || !resolvedEditorInteractionsEnabled}
+        disabled={!hasSelection || !editorInteractionsEnabled}
         disabledMessage={
-          !resolvedEditorInteractionsEnabled
+          !editorInteractionsEnabled
             ? presetsDisabledMessage
             : 'No item selected'
         }
@@ -106,5 +103,22 @@ export function CameraTools({
         tooltipSide="left"
       />
     </ButtonGroup>
+  )
+}
+
+export function ConnectedCameraTools({
+  onSetPreset,
+  onFocusSelected,
+}: Omit<CameraToolsProps, 'editorInteractionsEnabled' | 'hasSelection'>) {
+  const editorInteractionsEnabled = useEditorInteractionsEnabled()
+  const hasSelection = useHasSelection()
+
+  return (
+    <CameraTools
+      editorInteractionsEnabled={editorInteractionsEnabled}
+      hasSelection={hasSelection}
+      onSetPreset={onSetPreset}
+      onFocusSelected={onFocusSelected}
+    />
   )
 }
