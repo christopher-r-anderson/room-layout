@@ -179,6 +179,13 @@ function applyDialogState(
   }
 }
 
+function getClosedDialogState(currentState: DialogStoreState): DialogCoreState {
+  return {
+    ...getInitialDialogState(),
+    layoutMode: currentState.layoutMode,
+  }
+}
+
 function mapReturnFocusTargetForLayout(
   current: DialogCoreState,
   layout: RoomSurfaceLayout,
@@ -227,7 +234,7 @@ function createDialogStore() {
     subscribeWithSelector((set, get) => ({
       ...getInitialDialogState(),
       closeDialog: () => {
-        set((state) => applyDialogState(state, getInitialDialogState()))
+        set((state) => applyDialogState(state, getClosedDialogState(state)))
       },
       closeAllDialogs: () => {
         get().closeDialog()
