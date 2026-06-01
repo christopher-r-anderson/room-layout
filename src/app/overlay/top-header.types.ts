@@ -63,8 +63,6 @@ export interface TopHeaderProps {
   startOverDisabled: boolean
   onLayoutModeChange?: (layout: 'mobile' | 'desktop') => void
   onShareSceneUrl: () => Promise<'shared' | 'copied' | null>
-  onOpenStartOverDialog: (options?: DialogOpenOptions) => void
-  onConfirmStartOver: () => void
   topHeaderRef?: Ref<HTMLDivElement>
   desktopRoomSidebarRef?: Ref<HTMLElement>
   mobileRoomDrawerRef?: Ref<HTMLDivElement>
