@@ -65,24 +65,17 @@ This logic stays in `src/scene/` and `src/scene/internal/` so the app shell does
 
 ## App-to-scene seams
 
-### `SceneRef`
+### `sceneCommands`
 
-`SceneRef` remains the imperative seam for commands that are still scene-owned.
+`SceneRef` has been removed. App-side code now uses `sceneCommands` as the imperative facade for scene-owned commands that still need mounted scene services.
 
-The surface is narrower than earlier in the refactor:
-
-- `getReadModel` is gone
-- `restoreInitialLayout` is gone
-- `getCameraPosition` exists as a dedicated read for the browser harness
-- `getSnapshot` is now limited to snapshot-specific data the store does not hold, especially projected pointer targets used by canvas browse and browser tests
+The facade includes mutation commands such as add, select, move, rotate, delete, undo, redo, camera preset, focus, and startup restore. Snapshot and camera-position reads are still available for projection-driven behavior and browser tests.
 
 ### `scene-services`
 
-Startup restore no longer goes through `SceneRef`.
+`src/scene/internal/scene-services.ts` backs `sceneCommands` with a registry owned by the mounted `Scene` component.
 
-Instead, the scene registers app-safe services through `src/scene/internal/scene-services.ts`, and app-side code reaches restore through `sceneStateActions.restoreInitialLayout(...)`.
-
-This keeps restore behavior scene-owned while removing one more broad imperative method from the public scene ref.
+Startup restore reaches the scene through `sceneCommands.restoreInitialLayout(...)`, which delegates to the registered service while keeping restore behavior scene-owned.
 
 ## Data flow
 
