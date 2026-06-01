@@ -8,6 +8,7 @@ import {
   resetEditorRuntimeStore,
   useAssetError,
   useEditorInteractionsEnabled,
+  useFloorFinishLoading,
   useRestoreAttemptCount,
   useRestoreOutcome,
   useStartupLoadingActive,
@@ -27,6 +28,7 @@ describe('editorRuntimeStore', () => {
     expect(state.assetError).toBeNull()
     expect(state.restoreOutcome).toBeNull()
     expect(state.restoreAttemptCount).toBe(0)
+    expect(state.floorFinishLoading).toBe(false)
   })
 
   it('transitions between loading, ready, and errored phases', () => {
@@ -52,6 +54,7 @@ describe('editorRuntimeStore', () => {
   it('records restore outcome and attempt count independently from startup retries', () => {
     editorRuntimeActions.incrementRestoreAttempt()
     editorRuntimeActions.recordRestoreOutcome('restored')
+    editorRuntimeActions.setFloorFinishLoading(true)
     editorRuntimeActions.setAssetError({
       kind: 'asset-load',
       message: 'asset load failed',
@@ -62,6 +65,7 @@ describe('editorRuntimeStore', () => {
     expect(editorRuntimeStore.getState().restoreOutcome).toBe('restored')
     expect(editorRuntimeStore.getState().startupPhase).toBe('loading')
     expect(editorRuntimeStore.getState().assetError).toBeNull()
+    expect(editorRuntimeStore.getState().floorFinishLoading).toBe(false)
   })
 
   it('exposes derived selectors for startup gating', () => {
@@ -72,6 +76,9 @@ describe('editorRuntimeStore', () => {
     const { result: assetError } = renderHook(() => useAssetError())
     const { result: outcome } = renderHook(() => useRestoreOutcome())
     const { result: attempts } = renderHook(() => useRestoreAttemptCount())
+    const { result: floorFinishLoading } = renderHook(() =>
+      useFloorFinishLoading(),
+    )
 
     expect(phase.current).toBe('loading')
     expect(loading.current).toBe(true)
@@ -80,10 +87,12 @@ describe('editorRuntimeStore', () => {
     expect(assetError.current).toBeNull()
     expect(outcome.current).toBeNull()
     expect(attempts.current).toBe(0)
+    expect(floorFinishLoading.current).toBe(false)
 
     act(() => {
       editorRuntimeActions.incrementRestoreAttempt()
       editorRuntimeActions.recordRestoreOutcome('invalid')
+      editorRuntimeActions.setFloorFinishLoading(true)
       editorRuntimeActions.markAssetsReady()
     })
 
@@ -93,5 +102,6 @@ describe('editorRuntimeStore', () => {
     expect(enabled.current).toBe(true)
     expect(outcome.current).toBe('invalid')
     expect(attempts.current).toBe(1)
+    expect(floorFinishLoading.current).toBe(true)
   })
 })

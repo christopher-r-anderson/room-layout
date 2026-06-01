@@ -83,8 +83,3 @@ export type SelectedToolbarGeometry =
       selectedId: string | null
       reason: SelectedToolbarGeometryUnavailableReason
     }
-
-export interface SceneReadModel {
-  selectedId: string | null
-  items: FurnitureItem[]
-}

@@ -83,8 +83,8 @@ The current steady-state flow is:
 
 1. Scene logic mutates local scene state.
 2. Scene code writes app-facing mirrors into `scene-state-store`.
-3. App selectors read store state for overlays, preview, selection-derived UI, and startup coordination.
-4. App-only side effects such as announcements and outliner focus run from `useSceneHandlers` based on store/read-model changes.
+3. App selectors and local contexts read store state for overlays, preview, selection-derived UI, and startup coordination.
+4. App-only side effects such as announcements and outliner focus run from focused controller hooks and `useSceneSelectionEffects` based on store changes.
 
 This replaced the old `useSceneSync` pattern, which mixed imperative reads and app-side reconciliation logic.
 
@@ -92,11 +92,13 @@ This replaced the old `useSceneSync` pattern, which mixed imperative reads and a
 
 Selection side effects now live in app code instead of an imperative scene sync hook.
 
-`useSceneHandlers` observes the selected id from the scene read model mirror and coordinates:
+`useSceneSelectionEffects` observes store-backed selection changes and coordinates:
 
 - announcement timing
 - source-aware selection behavior
 - outliner focus requests via `selection-meta-store`
+
+Mutation entry points are now split across focused controller hooks such as `useSelectionController`, `useMovementController`, `useHistoryController`, `useDeletionController`, and `useAssetLifecycleController`, with `App.tsx` composing those handlers into the app shell.
 
 This keeps screen-reader and focus behavior in the app shell, where those responsibilities belong.
 

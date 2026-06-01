@@ -9,7 +9,6 @@ import {
 } from '@/lib/ui/editor-history'
 import type { HistoryAvailability } from '@/app/history/history.types'
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
-import type { SceneReadModel } from '@/scene/scene.types'
 import type { EqualityChecker } from './store-types'
 
 interface SceneStateStoreState {
@@ -49,10 +48,6 @@ function areHistoryAvailabilityEqual(
   right: HistoryAvailability,
 ) {
   return left.canUndo === right.canUndo && left.canRedo === right.canRedo
-}
-
-function areSceneReadModelsEqual(left: SceneReadModel, right: SceneReadModel) {
-  return left.selectedId === right.selectedId && left.items === right.items
 }
 
 function areStringArraysEqual(
@@ -297,6 +292,8 @@ export const useItems = () =>
 export const useHistory = () => useSceneStateStore((state) => state.history)
 export const useSelectedId = () =>
   useSceneStateStore((state) => state.selectedId)
+export const useHasSelection = () =>
+  useSceneStateStore((state) => state.selectedId !== null)
 export const useInstanceIdCounter = () =>
   useSceneStateStore((state) => state.instanceIdCounter)
 export const useHistoryAvailability = () =>
@@ -327,14 +324,6 @@ export const useSelectedFurniture = () =>
       state.history.present.find((item) => item.id === state.selectedId) ?? null
     )
   })
-export const useSceneReadModel = () =>
-  useSceneStateStore(
-    (state) => ({
-      selectedId: state.selectedId,
-      items: state.history.present,
-    }),
-    areSceneReadModelsEqual,
-  )
 
 export function usePreviewedId(options: {
   isBlockingOverlayOpen: boolean

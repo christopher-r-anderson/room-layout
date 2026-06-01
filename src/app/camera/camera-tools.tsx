@@ -9,18 +9,22 @@ import {
 } from '@tabler/icons-react'
 import { ToolButton } from '@/components/ui/tool-button'
 import type { CameraPreset } from '@/scene/scene.types'
+import { useEditorInteractionsEnabled } from '@/editor-state/editor-runtime-store'
+import { useHasSelection } from '@/editor-state/scene-state-store'
+
+interface CameraToolsProps {
+  editorInteractionsEnabled: boolean
+  hasSelection: boolean
+  onSetPreset: (preset: CameraPreset) => void
+  onFocusSelected: () => void
+}
 
 export function CameraTools({
   editorInteractionsEnabled,
   hasSelection,
   onSetPreset,
   onFocusSelected,
-}: {
-  editorInteractionsEnabled: boolean
-  hasSelection: boolean
-  onSetPreset: (preset: CameraPreset) => void
-  onFocusSelected: () => void
-}) {
+}: CameraToolsProps) {
   const presetsDisabled = !editorInteractionsEnabled
   const presetsDisabledMessage =
     'Editor interactions are unavailable while loading'
@@ -99,5 +103,22 @@ export function CameraTools({
         tooltipSide="left"
       />
     </ButtonGroup>
+  )
+}
+
+export function ConnectedCameraTools({
+  onSetPreset,
+  onFocusSelected,
+}: Omit<CameraToolsProps, 'editorInteractionsEnabled' | 'hasSelection'>) {
+  const editorInteractionsEnabled = useEditorInteractionsEnabled()
+  const hasSelection = useHasSelection()
+
+  return (
+    <CameraTools
+      editorInteractionsEnabled={editorInteractionsEnabled}
+      hasSelection={hasSelection}
+      onSetPreset={onSetPreset}
+      onFocusSelected={onFocusSelected}
+    />
   )
 }

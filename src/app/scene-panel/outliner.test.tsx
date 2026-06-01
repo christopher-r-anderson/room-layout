@@ -3,13 +3,29 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { SceneReadModel } from '@/scene/scene.types'
-import { Outliner } from './outliner'
+import { createHistoryState } from '@/lib/ui/editor-history'
 import { loadBooleanPreference, saveBooleanPreference } from '@/lib/ui/storage'
+import { dialogActions, resetDialogStore } from '@/editor-state/dialog-store'
+import {
+  editorRuntimeActions,
+  resetEditorRuntimeStore,
+} from '@/editor-state/editor-runtime-store'
+import {
+  resetSceneStateStore,
+  sceneStateActions,
+} from '@/editor-state/scene-state-store'
+import {
+  resetSelectionMetaStore,
+  selectionMetaActions,
+  selectionMetaStore,
+} from '@/editor-state/selection-meta-store'
+import type { PanelInteractionSource } from '../scene-interaction.types'
+import type { ScenePanelReadModel } from '../scene-panel.types'
+import { Outliner } from './outliner'
 
 const OUTLINER_EXPANDED_PREFERENCE_KEY = 'outliner-expanded'
 
-const READ_MODEL: SceneReadModel = {
+const READ_MODEL: ScenePanelReadModel = {
   selectedId: 'item-1',
   items: [
     {
@@ -39,22 +55,50 @@ const READ_MODEL: SceneReadModel = {
   ],
 }
 
+function seedScene(readModel: ScenePanelReadModel = READ_MODEL) {
+  sceneStateActions.setHistory(createHistoryState(readModel.items))
+  sceneStateActions.setSelectedId(readModel.selectedId)
+}
+
+function renderOutliner({
+  onNavigateBackToSelectionControls,
+  onSelectById,
+  onPreviewChange,
+}: {
+  onNavigateBackToSelectionControls?: () => boolean
+  onSelectById?: (id: string, source: PanelInteractionSource) => void
+  onPreviewChange?: (
+    id: string | null,
+    source: 'outliner-hover' | 'outliner-focus',
+  ) => void
+} = {}) {
+  const handleSelectById = onSelectById ?? vi.fn()
+  const handlePreviewChange = onPreviewChange ?? vi.fn()
+
+  render(
+    <Outliner
+      onNavigateBackToSelectionControls={onNavigateBackToSelectionControls}
+      onSelectById={handleSelectById}
+      onPreviewChange={handlePreviewChange}
+    />,
+  )
+}
+
 describe('SceneOutliner', () => {
   beforeEach(() => {
     window.localStorage.clear()
+    resetDialogStore()
+    resetEditorRuntimeStore()
+    resetSceneStateStore()
+    resetSelectionMetaStore()
+    editorRuntimeActions.markAssetsReady()
+    seedScene()
   })
 
   it('renders the empty state when there are no items', () => {
-    render(
-      <Outliner
-        readModel={{ selectedId: null, items: [] }}
-        disabled={false}
-        focusRequest={null}
-        onFocusHandled={vi.fn()}
-        onSelectById={vi.fn()}
-        onPreviewChange={vi.fn()}
-      />,
-    )
+    seedScene({ selectedId: null, items: [] })
+
+    renderOutliner()
 
     expect(screen.getByText('No furniture in the room.')).toBeInTheDocument()
     expect(
@@ -65,16 +109,7 @@ describe('SceneOutliner', () => {
   it('starts expanded and collapses on toggle, saving the preference', async () => {
     const user = userEvent.setup()
 
-    render(
-      <Outliner
-        readModel={READ_MODEL}
-        disabled={false}
-        focusRequest={null}
-        onFocusHandled={vi.fn()}
-        onSelectById={vi.fn()}
-        onPreviewChange={vi.fn()}
-      />,
-    )
+    renderOutliner()
 
     expect(screen.getByRole('button', { name: /leather couch/i })).toBeVisible()
 
@@ -94,16 +129,7 @@ describe('SceneOutliner', () => {
     const user = userEvent.setup()
     const onSelectById = vi.fn()
 
-    render(
-      <Outliner
-        readModel={READ_MODEL}
-        disabled={false}
-        focusRequest={null}
-        onFocusHandled={vi.fn()}
-        onSelectById={onSelectById}
-        onPreviewChange={vi.fn()}
-      />,
-    )
+    renderOutliner({ onSelectById })
 
     await user.click(screen.getByRole('button', { name: /end table/i }))
 
@@ -114,18 +140,7 @@ describe('SceneOutliner', () => {
     const user = userEvent.setup()
     const onSelectById = vi.fn()
 
-    render(
-      <Outliner
-        readModel={READ_MODEL}
-        disabled={false}
-        focusRequest={null}
-        onFocusHandled={vi.fn()}
-        onSelectById={onSelectById}
-        onPreviewChange={vi.fn()}
-      />,
-    )
-
-    // Tab to reach the first item button, then press Enter to activate
+    renderOutliner({ onSelectById })
     await user.tab()
     await user.tab()
     await user.keyboard('{Enter}')
@@ -139,18 +154,7 @@ describe('SceneOutliner', () => {
   it('hands Shift+Tab back to selected item controls when requested', () => {
     const onNavigateBackToSelectionControls = vi.fn(() => true)
 
-    render(
-      <Outliner
-        readModel={READ_MODEL}
-        disabled={false}
-        focusRequest={null}
-        onFocusHandled={vi.fn()}
-        onNavigateBackToSelectionControls={onNavigateBackToSelectionControls}
-        onSelectById={vi.fn()}
-        onPreviewChange={vi.fn()}
-      />,
-    )
-
+    renderOutliner({ onNavigateBackToSelectionControls })
     const firstItem = screen.getByRole('button', { name: /leather couch/i })
     const event = new KeyboardEvent('keydown', {
       bubbles: true,
@@ -168,18 +172,7 @@ describe('SceneOutliner', () => {
   it('does not hand Shift+Tab back for non-first outliner items', () => {
     const onNavigateBackToSelectionControls = vi.fn(() => true)
 
-    render(
-      <Outliner
-        readModel={READ_MODEL}
-        disabled={false}
-        focusRequest={null}
-        onFocusHandled={vi.fn()}
-        onNavigateBackToSelectionControls={onNavigateBackToSelectionControls}
-        onSelectById={vi.fn()}
-        onPreviewChange={vi.fn()}
-      />,
-    )
-
+    renderOutliner({ onNavigateBackToSelectionControls })
     const secondItem = screen.getByRole('button', { name: /end table/i })
     const event = new KeyboardEvent('keydown', {
       bubbles: true,
@@ -195,133 +188,85 @@ describe('SceneOutliner', () => {
   })
 
   it('applies preview styling to the previewed non-selected item', async () => {
-    render(
-      <Outliner
-        readModel={READ_MODEL}
-        disabled={false}
-        focusRequest={null}
-        onFocusHandled={vi.fn()}
-        onSelectById={vi.fn()}
-        previewedId="item-2"
-        onPreviewChange={vi.fn()}
-      />,
-    )
+    sceneStateActions.setPreviewedId('item-2')
+
+    renderOutliner()
 
     await waitFor(() => {
       const previewedButton = screen.getByRole('button', { name: /end table/i })
-      // item-2 is previewed (not selected) — should have accent bg class
       expect(previewedButton.className).toMatch(/bg-accent/)
     })
   })
 
   it('does not apply preview styling to the selected item even if it matches previewedId', async () => {
-    render(
-      <Outliner
-        readModel={READ_MODEL}
-        disabled={false}
-        focusRequest={null}
-        onFocusHandled={vi.fn()}
-        onSelectById={vi.fn()}
-        previewedId="item-1"
-        onPreviewChange={vi.fn()}
-      />,
-    )
+    sceneStateActions.setPreviewedId('item-1')
+
+    renderOutliner()
 
     await waitFor(() => {
       const selectedButton = screen.getByRole('button', {
         name: /leather couch/i,
       })
-      // item-1 is selected AND previewed — selected style wins, no accent class
       expect(selectedButton.className).not.toMatch(/bg-accent/)
     })
   })
 
   it('focuses the preferred item when expanded', async () => {
-    const onFocusHandled = vi.fn()
+    selectionMetaActions.requestOutlinerFocus({ token: 1, preferredIndex: 1 })
 
-    render(
-      <Outliner
-        readModel={READ_MODEL}
-        disabled={false}
-        focusRequest={{ token: 1, preferredIndex: 1 }}
-        onFocusHandled={onFocusHandled}
-        onSelectById={vi.fn()}
-        onPreviewChange={vi.fn()}
-      />,
-    )
+    renderOutliner()
 
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /end table/i })).toHaveFocus()
     })
-    expect(onFocusHandled).toHaveBeenCalledTimes(1)
+    expect(selectionMetaStore.getState().outlinerFocusRequest).toBeNull()
   })
 
   it('falls back to toggle button when collapsed and focus is requested', async () => {
-    const onFocusHandled = vi.fn()
     saveBooleanPreference(OUTLINER_EXPANDED_PREFERENCE_KEY, false)
+    selectionMetaActions.requestOutlinerFocus({ token: 2, preferredIndex: 1 })
 
-    render(
-      <Outliner
-        readModel={READ_MODEL}
-        disabled={false}
-        focusRequest={{ token: 2, preferredIndex: 1 }}
-        onFocusHandled={onFocusHandled}
-        onSelectById={vi.fn()}
-        onPreviewChange={vi.fn()}
-      />,
-    )
+    renderOutliner()
 
     await waitFor(() => {
       expect(
         screen.getByRole('button', { name: 'Toggle furniture in room' }),
       ).toHaveFocus()
     })
-    expect(onFocusHandled).toHaveBeenCalledTimes(1)
+    expect(selectionMetaStore.getState().outlinerFocusRequest).toBeNull()
   })
 
   it('focuses the selected item when targetSelectedId is provided', async () => {
-    const onFocusHandled = vi.fn()
+    seedScene({
+      ...READ_MODEL,
+      selectedId: 'item-2',
+    })
+    selectionMetaActions.requestOutlinerFocus({
+      token: 2,
+      targetSelectedId: 'item-2',
+    })
 
-    render(
-      <Outliner
-        readModel={{
-          ...READ_MODEL,
-          selectedId: 'item-2',
-        }}
-        disabled={false}
-        focusRequest={{ token: 2, targetSelectedId: 'item-2' }}
-        onFocusHandled={onFocusHandled}
-        onSelectById={vi.fn()}
-        onPreviewChange={vi.fn()}
-      />,
-    )
+    renderOutliner()
 
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /end table/i })).toHaveFocus()
     })
-    expect(onFocusHandled).toHaveBeenCalledTimes(1)
+    expect(selectionMetaStore.getState().outlinerFocusRequest).toBeNull()
   })
 
   it('focuses the outliner container when requested', async () => {
-    const onFocusHandled = vi.fn()
+    selectionMetaActions.requestOutlinerFocus({
+      token: 3,
+      focusContainer: true,
+    })
 
-    render(
-      <Outliner
-        readModel={READ_MODEL}
-        disabled={false}
-        focusRequest={{ token: 3, focusContainer: true }}
-        onFocusHandled={onFocusHandled}
-        onSelectById={vi.fn()}
-        onPreviewChange={vi.fn()}
-      />,
-    )
-
+    renderOutliner()
     const outlinerRegion = screen.getByLabelText('Furniture in room')
 
     await waitFor(() => {
       expect(outlinerRegion).toHaveFocus()
     })
-    expect(onFocusHandled).toHaveBeenCalledTimes(1)
+    expect(selectionMetaStore.getState().outlinerFocusRequest).toBeNull()
   })
 
   describe('preview callbacks', () => {
@@ -329,17 +274,7 @@ describe('SceneOutliner', () => {
       const user = userEvent.setup()
       const onPreviewChange = vi.fn()
 
-      render(
-        <Outliner
-          readModel={READ_MODEL}
-          disabled={false}
-          focusRequest={null}
-          onFocusHandled={vi.fn()}
-          onSelectById={vi.fn()}
-          onPreviewChange={onPreviewChange}
-        />,
-      )
-
+      renderOutliner({ onPreviewChange })
       await user.hover(screen.getByRole('button', { name: /leather couch/i }))
 
       expect(onPreviewChange).toHaveBeenCalledWith('item-1', 'outliner-hover')
@@ -349,17 +284,7 @@ describe('SceneOutliner', () => {
       const user = userEvent.setup()
       const onPreviewChange = vi.fn()
 
-      render(
-        <Outliner
-          readModel={READ_MODEL}
-          disabled={false}
-          focusRequest={null}
-          onFocusHandled={vi.fn()}
-          onSelectById={vi.fn()}
-          onPreviewChange={onPreviewChange}
-        />,
-      )
-
+      renderOutliner({ onPreviewChange })
       await user.hover(screen.getByRole('button', { name: /leather couch/i }))
       await user.unhover(screen.getByRole('button', { name: /leather couch/i }))
 
@@ -370,19 +295,8 @@ describe('SceneOutliner', () => {
       const user = userEvent.setup()
       const onPreviewChange = vi.fn()
 
-      render(
-        <Outliner
-          readModel={READ_MODEL}
-          disabled={false}
-          focusRequest={null}
-          onFocusHandled={vi.fn()}
-          onSelectById={vi.fn()}
-          onPreviewChange={onPreviewChange}
-        />,
-      )
-
+      renderOutliner({ onPreviewChange })
       await user.tab()
-      // tab to the toggle button, then tab again to enter items
       await user.tab()
 
       expect(onPreviewChange).toHaveBeenCalledWith(
@@ -395,43 +309,27 @@ describe('SceneOutliner', () => {
       const user = userEvent.setup()
       const onPreviewChange = vi.fn()
 
-      render(
-        <Outliner
-          readModel={READ_MODEL}
-          disabled={false}
-          focusRequest={null}
-          onFocusHandled={vi.fn()}
-          onSelectById={vi.fn()}
-          onPreviewChange={onPreviewChange}
-        />,
-      )
-
+      renderOutliner({ onPreviewChange })
       await user.tab()
       await user.tab()
-      // Move focus away
       await user.tab()
 
       expect(onPreviewChange).toHaveBeenCalledWith(null, 'outliner-focus')
     })
 
-    it('does not call onPreviewChange when disabled', async () => {
+    it('does not call onPreviewChange while a blocking dialog is open', async () => {
       const user = userEvent.setup()
       const onPreviewChange = vi.fn()
+      dialogActions.openDelete({
+        editorInteractionsEnabled: true,
+        selectedFurniture: READ_MODEL.items[0] ?? null,
+      })
 
-      render(
-        <Outliner
-          readModel={READ_MODEL}
-          disabled={true}
-          focusRequest={null}
-          onFocusHandled={vi.fn()}
-          onSelectById={vi.fn()}
-          onPreviewChange={onPreviewChange}
-        />,
-      )
-
+      renderOutliner({ onPreviewChange })
       const button = screen.getByRole('button', { name: /leather couch/i })
       await user.hover(button)
 
+      expect(button).toBeDisabled()
       expect(onPreviewChange).not.toHaveBeenCalled()
     })
   })

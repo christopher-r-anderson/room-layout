@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { runStartupRestoreFlow } from './use-scene-handlers'
+import { runStartupRestoreFlow } from './restore-flow'
 import type { FurnitureCatalogEntry } from '@/scene/objects/furniture-catalog'
 
 function createCatalogEntry(id: string): FurnitureCatalogEntry {

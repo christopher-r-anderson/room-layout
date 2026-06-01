@@ -5,11 +5,35 @@ import { StartOverConfirmationDialog } from '@/app/selection/start-over-confirma
 import { useHeaderLayoutMode } from './use-header-layout-mode'
 import { TopHeaderDesktop } from './top-header-desktop'
 import { TopHeaderMobile } from './top-header-mobile'
-import type { TopHeaderProps } from './top-header.types'
+import type { TopHeaderContainerProps } from './top-header.types'
 import type {
   DialogOpenOptions,
   DialogReturnFocusTarget,
 } from '@/editor-state/dialog-store'
+import {
+  dialogActions,
+  useIsBlockingOverlayOpen,
+  useIsCatalogDrawerOpen,
+  useIsHeaderMoreActionsOpen,
+  useIsInfoDialogOpen,
+  useIsKeyboardShortcutsDialogOpen,
+  useIsRoomSurfaceOpen,
+  useIsStartOverDialogOpen,
+  useReturnFocusTarget,
+  useRoomSurfaceLayout,
+} from '@/editor-state/dialog-store'
+import {
+  useEditorInteractionsEnabled,
+  useFloorFinishLoading,
+  useStartupOverlayActive,
+} from '@/editor-state/editor-runtime-store'
+import { useActiveFinishIds } from '@/app/controllers/_shared/use-active-finish-ids'
+import {
+  sceneStateActions,
+  useFloorFinishId,
+  useHistoryAvailability,
+  useWallFinishId,
+} from '@/editor-state/scene-state-store'
 
 const HEADER_CONTROL_SELECTOR =
   'button, input, select, textarea, [tabindex]:not([tabindex="-1"])'
@@ -114,13 +138,38 @@ function focusNextHeaderControlById(id: string) {
 }
 
 export function TopHeader({
-  dialogs,
+  catalog,
+  environmentConfig,
+  catalogIdToAdd,
+  onAddFurniture,
+  onCatalogDrawerOpenChange,
+  onCatalogIdToAddChange,
+  onConfirmStartOver,
   onLayoutModeChange,
+  onOpenStartOverDialog,
+  onRedo,
+  onShareSceneUrl,
+  onUndo,
+  startOverDisabled = false,
   topHeaderRef,
   desktopRoomSidebarRef,
   mobileRoomDrawerRef,
-  ...props
-}: TopHeaderProps) {
+}: TopHeaderContainerProps) {
+  const editorInteractionsEnabled = useEditorInteractionsEnabled()
+  const startupOverlayActive = useStartupOverlayActive()
+  const historyAvailability = useHistoryAvailability()
+  const storedFloorFinishId = useFloorFinishId()
+  const storedWallFinishId = useWallFinishId()
+  const floorFinishLoading = useFloorFinishLoading()
+  const roomSurfaceLayout = useRoomSurfaceLayout()
+  const returnFocusTarget = useReturnFocusTarget()
+  const isCatalogDrawerOpen = useIsCatalogDrawerOpen()
+  const isRoomSurfaceOpen = useIsRoomSurfaceOpen()
+  const isInfoDialogOpen = useIsInfoDialogOpen()
+  const isKeyboardShortcutsDialogOpen = useIsKeyboardShortcutsDialogOpen()
+  const isHeaderMoreActionsOpen = useIsHeaderMoreActionsOpen()
+  const isStartOverDialogOpen = useIsStartOverDialogOpen()
+  const isBlockingOverlayOpen = useIsBlockingOverlayOpen()
   const layoutMode = useHeaderLayoutMode()
   const mobileRoomTriggerId = useId()
   const headerMoreActionsContentId = useId()
@@ -129,6 +178,14 @@ export function TopHeader({
   const desktopInfoTriggerId = useId()
   const desktopKeyboardTriggerId = useId()
   const startOverTriggerId = useId()
+  const {
+    activeFloorFinishId: floorFinishId,
+    activeWallFinishId: wallFinishId,
+  } = useActiveFinishIds({
+    environmentConfig,
+    floorFinishId: storedFloorFinishId,
+    wallFinishId: storedWallFinishId,
+  })
 
   useEffect(() => {
     onLayoutModeChange?.(layoutMode)
@@ -163,8 +220,8 @@ export function TopHeader({
   }
 
   const focusActiveReturnTarget = () => {
-    if (dialogs.returnFocusTarget) {
-      focusReturnTarget(dialogs.returnFocusTarget)
+    if (returnFocusTarget) {
+      focusReturnTarget(returnFocusTarget)
     }
   }
 
@@ -172,8 +229,11 @@ export function TopHeader({
     open: (options?: DialogOpenOptions) => unknown,
     returnFocusTarget: DialogReturnFocusTarget,
   ) => {
-    dialogs.onHeaderMoreActionsOpenChange(false, {
-      returnFocusTarget: 'header-more-actions',
+    dialogActions.setHeaderMoreActionsOpen(false, {
+      startupOverlayActive,
+      dialogOptions: {
+        returnFocusTarget: 'header-more-actions',
+      },
     })
 
     queueMicrotask(() => {
@@ -185,8 +245,62 @@ export function TopHeader({
     <>
       {layoutMode === 'mobile' ? (
         <TopHeaderMobile
-          {...props}
-          dialogs={dialogs}
+          catalog={{
+            catalog,
+            catalogIdToAdd,
+            isCatalogDrawerOpen,
+            onAddFurniture,
+            onCatalogIdToAddChange,
+            onCatalogDrawerOpenChange,
+          }}
+          dialogs={{
+            roomSurfaceLayout,
+            isBlockingOverlayOpen,
+            isRoomSurfaceOpen,
+            isInfoDialogOpen,
+            isKeyboardShortcutsDialogOpen,
+            isHeaderMoreActionsOpen,
+            isStartOverDialogOpen,
+            onCloseStartOverDialog: dialogActions.closeDialog,
+            onConfirmStartOver,
+            onRoomSurfaceOpenChange: (open, options) =>
+              dialogActions.setRoomSurfaceOpen(open, {
+                editorInteractionsEnabled,
+                startupOverlayActive,
+                dialogOptions: options,
+              }),
+            onInfoDialogOpenChange: (open, options) =>
+              dialogActions.setInfoOpen(open, {
+                startupOverlayActive,
+                dialogOptions: options,
+              }),
+            onKeyboardShortcutsDialogOpenChange: (open, options) =>
+              dialogActions.setKeyboardShortcutsOpen(open, {
+                startupOverlayActive,
+                dialogOptions: options,
+              }),
+            onHeaderMoreActionsOpenChange: (open, options) =>
+              dialogActions.setHeaderMoreActionsOpen(open, {
+                startupOverlayActive,
+                dialogOptions: options,
+              }),
+            onOpenStartOverDialog,
+            returnFocusTarget,
+          }}
+          editorInteractionsEnabled={editorInteractionsEnabled}
+          floorFinishId={floorFinishId}
+          floorFinishLoading={floorFinishLoading}
+          floorFinishes={environmentConfig?.floorFinishes ?? []}
+          history={{
+            canRedo: historyAvailability.canRedo,
+            canUndo: historyAvailability.canUndo,
+            onRedo,
+            onUndo,
+          }}
+          onFloorFinishChange={sceneStateActions.setFloorFinishId}
+          onWallFinishChange={sceneStateActions.setWallFinishId}
+          startOverDisabled={startOverDisabled}
+          onShareSceneUrl={onShareSceneUrl}
           topHeaderRef={topHeaderRef}
           mobileRoomDrawerRef={mobileRoomDrawerRef}
           mobileRoomTriggerId={mobileRoomTriggerId}
@@ -194,41 +308,107 @@ export function TopHeader({
           headerMoreActionsTriggerId={headerMoreActionsTriggerId}
           onOpenKeyboardShortcutsFromHeaderMoreActions={() => {
             openDialogFromHeaderMoreActions((options) => {
-              dialogs.onKeyboardShortcutsDialogOpenChange(true, options)
+              dialogActions.setKeyboardShortcutsOpen(true, {
+                startupOverlayActive,
+                dialogOptions: options,
+              })
             }, 'header-more-actions')
           }}
           onOpenStartOverFromHeaderMoreActions={() => {
             openDialogFromHeaderMoreActions(
-              dialogs.onOpenStartOverDialog,
+              onOpenStartOverDialog,
               'header-more-actions',
             )
           }}
           onOpenProjectInfoFromHeaderMoreActions={() => {
             openDialogFromHeaderMoreActions((options) => {
-              dialogs.onInfoDialogOpenChange(true, options)
+              dialogActions.setInfoOpen(true, {
+                startupOverlayActive,
+                dialogOptions: options,
+              })
             }, 'header-more-actions')
           }}
           focusControlById={focusControlById}
+          wallFinishId={wallFinishId}
+          wallFinishes={environmentConfig?.wallFinishes ?? []}
         />
       ) : (
         <TopHeaderDesktop
-          {...props}
-          dialogs={dialogs}
+          catalog={{
+            catalog,
+            catalogIdToAdd,
+            isCatalogDrawerOpen,
+            onAddFurniture,
+            onCatalogIdToAddChange,
+            onCatalogDrawerOpenChange,
+          }}
+          dialogs={{
+            roomSurfaceLayout,
+            isBlockingOverlayOpen,
+            isRoomSurfaceOpen,
+            isInfoDialogOpen,
+            isKeyboardShortcutsDialogOpen,
+            isHeaderMoreActionsOpen,
+            isStartOverDialogOpen,
+            onCloseStartOverDialog: dialogActions.closeDialog,
+            onConfirmStartOver,
+            onRoomSurfaceOpenChange: (open, options) =>
+              dialogActions.setRoomSurfaceOpen(open, {
+                editorInteractionsEnabled,
+                startupOverlayActive,
+                dialogOptions: options,
+              }),
+            onInfoDialogOpenChange: (open, options) =>
+              dialogActions.setInfoOpen(open, {
+                startupOverlayActive,
+                dialogOptions: options,
+              }),
+            onKeyboardShortcutsDialogOpenChange: (open, options) =>
+              dialogActions.setKeyboardShortcutsOpen(open, {
+                startupOverlayActive,
+                dialogOptions: options,
+              }),
+            onHeaderMoreActionsOpenChange: (open, options) =>
+              dialogActions.setHeaderMoreActionsOpen(open, {
+                startupOverlayActive,
+                dialogOptions: options,
+              }),
+            onOpenStartOverDialog,
+            returnFocusTarget,
+          }}
+          editorInteractionsEnabled={editorInteractionsEnabled}
+          floorFinishId={floorFinishId}
+          floorFinishLoading={floorFinishLoading}
+          floorFinishes={environmentConfig?.floorFinishes ?? []}
+          history={{
+            canRedo: historyAvailability.canRedo,
+            canUndo: historyAvailability.canUndo,
+            onRedo,
+            onUndo,
+          }}
+          onFloorFinishChange={sceneStateActions.setFloorFinishId}
+          onWallFinishChange={sceneStateActions.setWallFinishId}
+          startOverDisabled={startOverDisabled}
+          onShareSceneUrl={onShareSceneUrl}
           topHeaderRef={topHeaderRef}
           desktopRoomSidebarRef={desktopRoomSidebarRef}
           desktopRoomTriggerId={desktopRoomTriggerId}
           desktopInfoTriggerId={desktopInfoTriggerId}
           desktopKeyboardTriggerId={desktopKeyboardTriggerId}
           startOverTriggerId={startOverTriggerId}
+          wallFinishId={wallFinishId}
+          wallFinishes={environmentConfig?.wallFinishes ?? []}
         />
       )}
 
       {layoutMode === 'mobile' ? (
         <>
           <KeyboardShortcutsDialog
-            open={dialogs.isKeyboardShortcutsDialogOpen}
+            open={isKeyboardShortcutsDialogOpen}
             onOpenChange={(open) => {
-              dialogs.onKeyboardShortcutsDialogOpenChange(open)
+              dialogActions.setKeyboardShortcutsOpen(open, {
+                startupOverlayActive,
+              })
 
               if (!open) {
                 focusActiveReturnTarget()
@@ -238,9 +418,11 @@ export function TopHeader({
           />
 
           <ProjectInfoDialog
-            open={dialogs.isInfoDialogOpen}
+            open={isInfoDialogOpen}
             onOpenChange={(open) => {
-              dialogs.onInfoDialogOpenChange(open)
+              dialogActions.setInfoOpen(open, {
+                startupOverlayActive,
+              })
 
               if (!open) {
                 focusActiveReturnTarget()
@@ -252,15 +434,15 @@ export function TopHeader({
       ) : null}
 
       <StartOverConfirmationDialog
-        open={dialogs.isStartOverDialogOpen}
+        open={isStartOverDialogOpen}
         onClose={() => {
-          dialogs.onCloseStartOverDialog()
+          dialogActions.closeDialog()
           focusActiveReturnTarget()
         }}
         onConfirm={() => {
-          dialogs.onConfirmStartOver()
+          onConfirmStartOver()
 
-          if (dialogs.returnFocusTarget === 'start-over-inline') {
+          if (returnFocusTarget === 'start-over-inline') {
             focusNextHeaderControlById(startOverTriggerId)
             return
           }

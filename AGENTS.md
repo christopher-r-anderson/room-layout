@@ -33,9 +33,9 @@
 `src/app` may import from `src/scene`; `src/scene` must never import from `src/app`. This is enforced as an ESLint error. Any import from `@/app` inside `src/scene` is a hard violation.
 
 **Scene contracts vs. scene internals.**
-Scene contracts are types and values that form the stable API between the scene domain and the app shell: `SceneReadModel`, `MoveSelectionResult`, `MoveSource`, `SelectByIdResult`, `FurnitureItem`, `FootprintSize`, and the `sceneCommands` imperative facade. App-side code must import scene contracts only from the four explicit approved modules — no barrel imports required:
+Scene contracts are types and values that form the stable API between the scene domain and the app shell: `MoveSelectionResult`, `MoveSource`, `SelectByIdResult`, `FurnitureItem`, `FootprintSize`, and the `sceneCommands` imperative facade. App-side code must import scene contracts only from the approved modules below — no barrel imports required:
 
-- `@/scene/scene.types` — `SceneReadModel`, `MoveSelectionResult`, `MoveSource`, `SelectByIdResult`
+- `@/scene/scene.types` — `MoveSelectionResult`, `MoveSource`, `SelectByIdResult`
 - `@/scene/scene-commands` — `sceneCommands` (imperative scene services facade), `clearSceneServices`, `whenSceneServicesReady`
 - `@/scene/objects/furniture.types` — `FurnitureItem`, `FootprintSize`
 - `@/scene/objects/furniture-catalog` — preload/cache helpers and catalog/collection types (implementation/data allowed by policy)
@@ -43,7 +43,9 @@ Scene contracts are types and values that form the stable API between the scene 
 Scene internals (utilities, state management, internal hooks) are organized in `src/scene/internal/` and must not be imported from app-side code. Attempting to import from `@/scene/internal/**` is enforced as an ESLint error. The one necessary exception is `src/App.tsx` importing the `Scene` component via relative path (`./scene/scene`) as the composition root — this is not caught by the `@/scene/` lint pattern and is intentional.
 
 **Hook locality.**
-Feature-local hooks belong in their feature folder (e.g. `src/app/overlay/use-overlay-state.ts`). Cross-cutting hooks that serve multiple features belong in `src/app/hooks/`. App-composition coordinator hooks (`use-startup-lifecycle.ts`, `use-scene-handlers.ts`) live flat in `src/app/` and are consumed only by `App.tsx`.
+Feature-local hooks belong in their feature folder (e.g. `src/app/overlay/use-overlay-state.ts`). Cross-cutting hooks that serve multiple features belong in `src/app/hooks/`. App-composition coordinator hooks that remain flat in `src/app/` are consumed only by `App.tsx`.
+
+After the Phase 2 app-shell refactor, controller hooks live under `src/app/controllers/`, shared controller helpers live under `src/app/controllers/_shared/`, and cross-shell refs/layout state live in `src/app/contexts/`.
 
 **Shared type placement.**
 Types consumed by more than one layer (e.g. a feature folder and `hooks/`) belong at `src/app/` root as standalone `.types.ts` files (e.g. `scene-panel.types.ts`), not inside any single consumer folder.
