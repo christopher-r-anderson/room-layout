@@ -12,11 +12,6 @@ import type {
 } from '@/lib/three/environment-materials'
 import type { Ref } from 'react'
 export interface TopHeaderProps {
-  catalogIdToAdd: string
-  onAddFurniture: () => boolean
-  onCatalogIdToAddChange: (catalogId: string) => void
-  onUndo: () => void
-  onRedo: () => void
   catalog: {
     catalog: FurnitureCatalogEntry[]
     catalogIdToAdd: string
