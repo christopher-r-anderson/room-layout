@@ -1003,6 +1003,12 @@ export function useSceneHandlers({
   const handleSceneAssetError = useCallback(
     (error: Error) => {
       runStartupAssetErrorTransition(error, {
+        markRuntimeAssetError: (runtimeError) => {
+          editorRuntimeActions.setAssetError({
+            kind: 'asset-load',
+            message: runtimeError.message,
+          })
+        },
         closeAllDialogs,
         recordAssetError: handleAssetError,
         resetEditorShellState,

@@ -10,6 +10,9 @@ describe('startup transition sequencing', () => {
     const error = new Error('asset load failed')
 
     runStartupAssetErrorTransition(error, {
+      markRuntimeAssetError: () => {
+        steps.push('markRuntimeAssetError')
+      },
       closeAllDialogs: () => {
         steps.push('closeAllDialogs')
       },
@@ -22,6 +25,7 @@ describe('startup transition sequencing', () => {
     })
 
     expect(steps).toEqual([
+      'markRuntimeAssetError',
       'recordAssetError',
       'closeAllDialogs',
       'resetEditorShellState',

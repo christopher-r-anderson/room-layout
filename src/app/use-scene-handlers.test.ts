@@ -2,6 +2,11 @@
 import { act, renderHook } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { useSceneHandlers } from './use-scene-handlers'
+import {
+  editorRuntimeActions,
+  editorRuntimeStore,
+  resetEditorRuntimeStore,
+} from '@/editor-state/editor-runtime-store'
 import type {
   FurnitureItem,
   FurnitureKind,
@@ -509,5 +514,102 @@ describe('useSceneHandlers', () => {
 
     expect(focusRoomView).toHaveBeenCalledOnce()
     expect(requestOutlinerFocusByIndex).not.toHaveBeenCalled()
+  })
+
+  it('marks runtime startup phase errored before resetting editor shell on asset failure', () => {
+    resetEditorRuntimeStore()
+    editorRuntimeActions.markAssetsReady()
+
+    const mockCommands = {
+      addFurniture: vi.fn(() => true),
+      clearSelection: vi.fn(),
+      confirmDeleteSelection: vi.fn(),
+      focusSelected: vi.fn(),
+      moveSelection: vi.fn(),
+      redo: vi.fn(),
+      rotateSelection: vi.fn(),
+      selectById: vi.fn(),
+      setCameraPreset: vi.fn(),
+      undo: vi.fn(),
+    }
+
+    const mockSync = {
+      syncSceneReadModel: vi.fn(() => ({
+        items: [],
+        selectedId: null,
+      })),
+      requestOutlinerFocusByIndex: vi.fn(),
+      focusRoomView: vi.fn(),
+    }
+
+    const mockAnnouncements = {
+      announcePolite: vi.fn(),
+      announceAssertive: vi.fn(),
+      clearAssertiveAnnouncement: vi.fn(),
+      queueMovementAnnouncement: vi.fn(),
+    }
+
+    const mockDialogState = {
+      closeDialog: vi.fn(),
+      closeAllDialogs: vi.fn(),
+      openDelete: vi.fn(),
+      openStartOver: vi.fn(),
+      setCatalogOpen: vi.fn(),
+      pendingDeleteFurniture: null,
+    }
+
+    const mockOverlayState = {
+      clearPreview: vi.fn(),
+      clearEditorMessage: vi.fn(),
+      setEditorMessage: vi.fn(),
+      selectedSource: null,
+      setSelectedSource: vi.fn(),
+      selectedFurniture: null as FurnitureItem | null,
+      sceneReadModel: {
+        items: [] as FurnitureItem[],
+        selectedId: null as string | null,
+      },
+    }
+
+    let phaseAtReset: string | null = null
+    const mockStartup = {
+      activeFloorFinishId: '',
+      activeWallFinishId: '',
+      catalog: [],
+      defaultFloorFinishId: 'wood-floor',
+      defaultWallFinishId: 'light-gray',
+      editorInteractionsEnabled: true,
+      floorFinishIds: [],
+      handleAssetError: vi.fn(),
+      handleAssetsReady: vi.fn(),
+      retryAssetLoading: vi.fn(),
+      resetEditorShellState: vi.fn(() => {
+        phaseAtReset = editorRuntimeStore.getState().startupPhase
+      }),
+      restoreInitialLayout: vi.fn(),
+      setFloorFinishId: vi.fn(),
+      setWallFinishId: vi.fn(),
+      wallFinishIds: [],
+    }
+
+    const { result } = renderHook(() =>
+      useSceneHandlers({
+        commands: mockCommands,
+        sync: mockSync,
+        announcements: mockAnnouncements,
+        dialogState: mockDialogState,
+        overlayState: mockOverlayState,
+        startup: mockStartup,
+      }),
+    )
+
+    act(() => {
+      result.current.handleSceneAssetError(new Error('asset load failed'))
+    })
+
+    expect(phaseAtReset).toBe('errored')
+    expect(editorRuntimeStore.getState().startupPhase).toBe('errored')
+
+    resetEditorRuntimeStore()
   })
 })
