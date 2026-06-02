@@ -7,7 +7,7 @@ import {
   createHistoryState,
   type HistoryState,
 } from '@/lib/ui/editor-history'
-import type { HistoryAvailability } from '@/app/history/history.types'
+import type { HistoryAvailability } from './types/history.types'
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
 import type { EqualityChecker } from './store-types'
 

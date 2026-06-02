@@ -6,9 +6,9 @@ import type { FurnitureItem } from '@/scene/objects/furniture.types'
 import {
   dialogActions,
   resetDialogStore,
-  useDialogStateSnapshot,
   useIsBlockingOverlayOpen,
 } from './dialog-store'
+import { useDialogStateSnapshot } from '@/app/hooks/use-dialog-state-snapshot'
 
 interface DialogStateHookProps {
   editorInteractionsEnabled: boolean

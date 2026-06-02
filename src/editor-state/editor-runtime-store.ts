@@ -1,7 +1,7 @@
 import { useStoreWithEqualityFn } from 'zustand/traditional'
 import { subscribeWithSelector } from 'zustand/middleware'
 import { createStore } from 'zustand/vanilla'
-import type { StartupErrorKind } from '@/app/startup/use-startup-state'
+import type { StartupErrorKind } from './types/startup.types'
 import type { EqualityChecker } from './store-types'
 
 export type RestoreOutcome = 'restored' | 'invalid' | 'skipped'
