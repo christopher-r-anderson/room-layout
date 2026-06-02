@@ -61,7 +61,7 @@ export function DockedSelectedItemSite({
 
   return (
     <div
-      ref={isDocked ? selectedItemControlsRef : undefined}
+      ref={selectedItemControlsRef}
       inert={controlsSuppressed}
       aria-hidden={controlsSuppressed}
       className="absolute pointer-events-none inset-0 z-10"
