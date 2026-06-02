@@ -194,16 +194,16 @@ describe('useOverlayExclusionRects', () => {
     const visualViewport = installVisualViewport()
 
     const { result, unmount } = renderHook(() => useOverlayExclusionRects())
-    const registerSelectedDetails =
-      result.current.registerExclusionElement('selected-details')
+    const registerTopHeaderTest =
+      result.current.registerExclusionElement('top-header')
     const element = createMeasuredElement(createRect(10, 20, 140, 60))
 
     act(() => {
-      registerSelectedDetails(element)
+      registerTopHeaderTest(element)
     })
 
     await waitFor(() => {
-      expect(result.current.rects['selected-details']).toMatchObject({
+      expect(result.current.rects['top-header']).toMatchObject({
         x: 10,
         y: 20,
         width: 140,
@@ -219,7 +219,7 @@ describe('useOverlayExclusionRects', () => {
     })
 
     await waitFor(() => {
-      expect(result.current.rects['selected-details']).toMatchObject({
+      expect(result.current.rects['top-header']).toMatchObject({
         x: 14,
         y: 24,
         width: 150,
@@ -233,7 +233,7 @@ describe('useOverlayExclusionRects', () => {
     })
 
     await waitFor(() => {
-      expect(result.current.rects['selected-details']).toMatchObject({
+      expect(result.current.rects['top-header']).toMatchObject({
         x: 18,
         y: 28,
         width: 160,
@@ -247,7 +247,7 @@ describe('useOverlayExclusionRects', () => {
     })
 
     await waitFor(() => {
-      expect(result.current.rects['selected-details']).toMatchObject({
+      expect(result.current.rects['top-header']).toMatchObject({
         x: 22,
         y: 32,
         width: 170,
@@ -261,7 +261,7 @@ describe('useOverlayExclusionRects', () => {
     })
 
     await waitFor(() => {
-      expect(result.current.rects['selected-details']).toMatchObject({
+      expect(result.current.rects['top-header']).toMatchObject({
         x: 26,
         y: 36,
         width: 180,
@@ -275,7 +275,7 @@ describe('useOverlayExclusionRects', () => {
     })
 
     await waitFor(() => {
-      expect(result.current.rects['selected-details']).toMatchObject({
+      expect(result.current.rects['top-header']).toMatchObject({
         x: 30,
         y: 40,
         width: 190,

@@ -15,7 +15,9 @@ describe('OverlayLayoutContext', () => {
       return registerCallback
     })
     const syncLayoutMode = vi.fn()
-    const exclusionRects = [new DOMRectReadOnly(1, 2, 3, 4)]
+    const exclusionRects = {
+      'top-header': new DOMRectReadOnly(1, 2, 3, 4),
+    }
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <OverlayLayoutProvider
         value={{ exclusionRects, registerExclusionElement, syncLayoutMode }}

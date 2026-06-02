@@ -51,14 +51,16 @@ import { Toaster } from './components/ui/sonner'
 import { isFreshSceneState } from './app/startup/scene-defaults'
 import { runStartupReset } from './app/startup/reset-startup-state'
 import { useStartupState } from './app/startup/use-startup-state'
-import { SelectedItemControls } from './app/selection/selected-item-controls'
+import { FloatingSelectedItemSite } from './app/selection/floating-selected-item-site'
+import { useComputeSelectedItemPlacement } from './app/selection/use-compute-selected-item-placement'
+import { SelectedItemPlacementProvider } from './app/selection/use-selected-item-placement-context'
+import { SelectedItemInteractionProvider } from './app/selection/selected-item-interaction-context'
 import { findFirstFocusableControl } from './app/overlay/focusable-controls'
 import { useOverlayExclusionRects } from './app/overlay/use-overlay-exclusion-rects'
 import {
   resetSelectionMetaStore,
   selectionMetaActions,
   useOutlinerFocusRequest,
-  useToolbarGeometry,
 } from './editor-state/selection-meta-store'
 import { perfCounters } from '@/lib/debug/perf-counters'
 import { useDraftPersistence } from './app/use-draft-persistence'
@@ -93,6 +95,33 @@ class SceneAssetErrorBoundary extends Component<
   }
 }
 
+function SelectedItemPlacementShell({
+  isCatalogDrawerOpen,
+  startupOverlayActive,
+  children,
+}: {
+  isCatalogDrawerOpen: boolean
+  startupOverlayActive: boolean
+  children: ReactNode
+}) {
+  const { placement, actionsSizeRef } = useComputeSelectedItemPlacement({
+    isCatalogDrawerOpen,
+    startupOverlayActive,
+  })
+  const value = useMemo(
+    () => ({ placement, actionsSizeRef }),
+    [placement, actionsSizeRef],
+  )
+
+  return (
+    <SelectedItemPlacementProvider value={value}>
+      <SelectedItemInteractionProvider>
+        {children}
+      </SelectedItemInteractionProvider>
+    </SelectedItemPlacementProvider>
+  )
+}
+
 function App() {
   if (import.meta.env.DEV) {
     perfCounters.incrAppRender()
@@ -107,7 +136,6 @@ function App() {
   const [catalogIdToAdd, setCatalogIdToAdd] = useState('')
   const [roomViewHasFocus, setRoomViewHasFocus] = useState(false)
   const [testOverlaysHidden, setTestOverlaysHidden] = useState(false)
-  const selectedToolbarGeometry = useToolbarGeometry()
   const outlinerFocusRequest = useOutlinerFocusRequest()
   const isE2ELowRenderQuality =
     import.meta.env.DEV && import.meta.env.VITE_E2E_RENDER_QUALITY === 'low'
@@ -381,7 +409,7 @@ function App() {
   )
   const overlayLayout = useMemo(
     () => ({
-      exclusionRects: Object.values(overlayExclusions.rects),
+      exclusionRects: overlayExclusions.rects,
       registerExclusionElement: overlayExclusions.registerExclusionElement,
       syncLayoutMode: dialogState.syncLayoutMode,
     }),
@@ -460,152 +488,148 @@ function App() {
     <TooltipProvider>
       <EditorRefsProvider value={editorRefs}>
         <OverlayLayoutProvider value={overlayLayout}>
-          <main
-            className="relative size-full"
-            aria-busy={startup.startupLoadingActive}
-            data-test-overlays-hidden={testOverlaysHidden ? 'true' : 'false'}
+          <SelectedItemPlacementShell
+            isCatalogDrawerOpen={dialogState.isCatalogDrawerOpen}
+            startupOverlayActive={startup.startupOverlayActive}
           >
-            <h1 className="sr-only">Room Layout</h1>
-            <p id="scene-instructions" className="sr-only">
-              Interactive 3D room editor. Tab to focus the room-view region,
-              then use the arrow keys to preview items in the room and Enter or
-              Space to select the previewed item. You can also use the furniture
-              in room panel and selected item actions and details to rotate,
-              remove, or type exact placement changes without dragging. When
-              focus is in the furniture in room panel, press Shift+Tab to return
-              to selected item actions and details.
-            </p>
-            <section
-              aria-describedby="scene-instructions"
-              aria-label="Interactive 3D room editor"
-              ref={roomViewRef}
-              tabIndex={startup.editorInteractionsEnabled ? 0 : -1}
-              className="absolute inset-0 z-0 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
-              onFocus={() => {
-                flushSync(() => {
-                  setRoomViewHasFocus(true)
-                })
-              }}
-              onBlur={() => {
-                flushSync(() => {
-                  setRoomViewHasFocus(false)
-                })
-              }}
-              onPointerDownCapture={focusRoomView}
+            <main
+              className="relative size-full"
+              aria-busy={startup.startupLoadingActive}
+              data-test-overlays-hidden={testOverlaysHidden ? 'true' : 'false'}
             >
-              <Canvas
-                className="absolute inset-0 z-0"
-                camera={{
-                  position: [3, 2.5, 3],
-                  fov: 50,
+              <h1 className="sr-only">Room Layout</h1>
+              <p id="scene-instructions" className="sr-only">
+                Interactive 3D room editor. Tab to focus the room-view region,
+                then use the arrow keys to preview items in the room and Enter
+                or Space to select the previewed item. You can also use the
+                furniture in room panel and selected item actions and details to
+                rotate, remove, or type exact placement changes without
+                dragging. When focus is in the furniture in room panel, press
+                Shift+Tab to return to selected item actions and details.
+              </p>
+              <section
+                aria-describedby="scene-instructions"
+                aria-label="Interactive 3D room editor"
+                ref={roomViewRef}
+                tabIndex={startup.editorInteractionsEnabled ? 0 : -1}
+                className="absolute inset-0 z-0 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+                onFocus={() => {
+                  flushSync(() => {
+                    setRoomViewHasFocus(true)
+                  })
                 }}
-                frameloop="demand"
-                onCreated={({ gl }) => {
-                  gl.outputColorSpace = SRGBColorSpace
-                  gl.toneMapping = NeutralToneMapping
-                  gl.toneMappingExposure = isE2ELowRenderQuality ? 1 : 1.05
+                onBlur={() => {
+                  flushSync(() => {
+                    setRoomViewHasFocus(false)
+                  })
                 }}
-                onPointerMissed={() => {
-                  if (!startup.editorInteractionsEnabled) {
-                    return
-                  }
-
-                  focusRoomView()
-                  clearPreviewOnCanvasMiss()
-                  handlers.handleClearSelection()
-                }}
-                shadows={canvasShadowMode}
+                onPointerDownCapture={focusRoomView}
               >
-                <SceneAssetErrorBoundary
-                  key={startup.cacheInvalidationKey}
-                  onError={handlers.handleSceneAssetError}
+                <Canvas
+                  className="absolute inset-0 z-0"
+                  camera={{
+                    position: [3, 2.5, 3],
+                    fov: 50,
+                  }}
+                  frameloop="demand"
+                  onCreated={({ gl }) => {
+                    gl.outputColorSpace = SRGBColorSpace
+                    gl.toneMapping = NeutralToneMapping
+                    gl.toneMappingExposure = isE2ELowRenderQuality ? 1 : 1.05
+                  }}
+                  onPointerMissed={() => {
+                    if (!startup.editorInteractionsEnabled) {
+                      return
+                    }
+
+                    focusRoomView()
+                    clearPreviewOnCanvasMiss()
+                    handlers.handleClearSelection()
+                  }}
+                  shadows={canvasShadowMode}
                 >
-                  <Suspense fallback={null}>
-                    <Scene
-                      renderQuality={
-                        isE2ELowRenderQuality ? 'e2e-low' : 'default'
-                      }
-                      catalog={startup.catalog}
-                      collections={startup.collections}
-                      onCanvasPointerSelection={
-                        handlers.handleCanvasPointerSelection
-                      }
-                      onAssetsReady={handlers.handleSceneAssetsReady}
-                      previewedId={previewedId}
-                      onPreviewChange={handleScenePreviewChange}
-                      floorOption={selectedFloorOption}
-                      wallOption={selectedWallOption}
-                      onFloorLoadingChange={handleFloorLoadingChange}
-                    />
-                  </Suspense>
-                </SceneAssetErrorBoundary>
-              </Canvas>
-            </section>
+                  <SceneAssetErrorBoundary
+                    key={startup.cacheInvalidationKey}
+                    onError={handlers.handleSceneAssetError}
+                  >
+                    <Suspense fallback={null}>
+                      <Scene
+                        renderQuality={
+                          isE2ELowRenderQuality ? 'e2e-low' : 'default'
+                        }
+                        catalog={startup.catalog}
+                        collections={startup.collections}
+                        onCanvasPointerSelection={
+                          handlers.handleCanvasPointerSelection
+                        }
+                        onAssetsReady={handlers.handleSceneAssetsReady}
+                        previewedId={previewedId}
+                        onPreviewChange={handleScenePreviewChange}
+                        floorOption={selectedFloorOption}
+                        wallOption={selectedWallOption}
+                        onFloorLoadingChange={handleFloorLoadingChange}
+                      />
+                    </Suspense>
+                  </SceneAssetErrorBoundary>
+                </Canvas>
+              </section>
 
-            {testOverlaysHidden ? null : (
-              <>
-                <SelectedItemControls
-                  containerRef={selectedItemControlsRef}
-                  editorInteractionsEnabled={startup.editorInteractionsEnabled}
-                  exclusionRects={overlayExclusions.rects}
-                  isCatalogDrawerOpen={dialogState.isCatalogDrawerOpen}
-                  onInvalidSelectedItemDetailValue={
-                    handlers.handleInvalidSelectedItemDetailValue
-                  }
-                  onOpenDeleteDialog={handlers.handleOpenDeleteDialog}
-                  onRotateSelection={handlers.handleRotateSelection}
-                  onUpdateSelectedItemDetails={
-                    handlers.handleUpdateSelectedItemDetails
-                  }
-                  roomViewRef={roomViewRef}
-                  selectedDetailsRef={overlayExclusions.registerExclusionElement(
-                    'selected-details',
-                  )}
-                  selectedFurniture={selectedFurniture}
-                  selectedToolbarGeometry={selectedToolbarGeometry}
-                  startupOverlayActive={startup.startupOverlayActive}
-                />
+              {testOverlaysHidden ? null : (
+                <>
+                  <FloatingSelectedItemSite
+                    onOpenDeleteDialog={handlers.handleOpenDeleteDialog}
+                    onRotateSelection={handlers.handleRotateSelection}
+                  />
 
-                <EditorOverlay
-                  startOverDisabled={sceneIsAtDefaults}
-                  onHeaderLayoutModeChange={dialogState.syncLayoutMode}
-                  topHeader={{
-                    catalog: startup.catalog,
-                    environmentConfig,
-                    catalogIdToAdd: activeCatalogIdToAdd,
-                    onAddFurniture: handlers.handleAddFurniture,
-                    onCatalogIdToAddChange: setCatalogIdToAdd,
-                    onCatalogDrawerOpenChange:
-                      handlers.handleCatalogDrawerOpenChange,
-                    onUndo: handlers.handleUndo,
-                    onRedo: handlers.handleRedo,
-                    onShareSceneUrl: handlers.handleShareSceneUrl,
-                    onOpenStartOverDialog: handlers.handleOpenStartOverDialog,
-                    onConfirmStartOver: handlers.handleConfirmStartOver,
-                  }}
-                  outliner={{
-                    onNavigateBackToSelectionControls:
-                      handleNavigateBackToSelectionControls,
-                    onSelectById: handlers.handleSelectById,
-                    onPreviewChange: handleOutlinerPreviewChange,
-                  }}
-                  cameraTools={{
-                    onSetCameraPreset: handlers.handleSetCameraPreset,
-                    onFocusSelected: handlers.handleFocusSelected,
-                  }}
-                  onConfirmDeleteSelection={
-                    handlers.handleConfirmDeleteSelection
-                  }
-                  onRetryAssetLoading={handlers.handleRetryAssetLoading}
-                />
-              </>
-            )}
-            <Announcer
-              politeMessage={announcements.politeAnnouncement}
-              assertiveMessage={announcements.assertiveAnnouncement}
-            />
-            <Toaster />
-          </main>
+                  <EditorOverlay
+                    startOverDisabled={sceneIsAtDefaults}
+                    onHeaderLayoutModeChange={dialogState.syncLayoutMode}
+                    topHeader={{
+                      catalog: startup.catalog,
+                      environmentConfig,
+                      catalogIdToAdd: activeCatalogIdToAdd,
+                      onAddFurniture: handlers.handleAddFurniture,
+                      onCatalogIdToAddChange: setCatalogIdToAdd,
+                      onCatalogDrawerOpenChange:
+                        handlers.handleCatalogDrawerOpenChange,
+                      onUndo: handlers.handleUndo,
+                      onRedo: handlers.handleRedo,
+                      onShareSceneUrl: handlers.handleShareSceneUrl,
+                      onOpenStartOverDialog: handlers.handleOpenStartOverDialog,
+                      onConfirmStartOver: handlers.handleConfirmStartOver,
+                    }}
+                    outliner={{
+                      onNavigateBackToSelectionControls:
+                        handleNavigateBackToSelectionControls,
+                      onSelectById: handlers.handleSelectById,
+                      onPreviewChange: handleOutlinerPreviewChange,
+                    }}
+                    cameraTools={{
+                      onSetCameraPreset: handlers.handleSetCameraPreset,
+                      onFocusSelected: handlers.handleFocusSelected,
+                    }}
+                    dockedSelectedItem={{
+                      onOpenDeleteDialog: handlers.handleOpenDeleteDialog,
+                      onRotateSelection: handlers.handleRotateSelection,
+                      onInvalidSelectedItemDetailValue:
+                        handlers.handleInvalidSelectedItemDetailValue,
+                      onUpdateSelectedItemDetails:
+                        handlers.handleUpdateSelectedItemDetails,
+                    }}
+                    onConfirmDeleteSelection={
+                      handlers.handleConfirmDeleteSelection
+                    }
+                    onRetryAssetLoading={handlers.handleRetryAssetLoading}
+                  />
+                </>
+              )}
+              <Announcer
+                politeMessage={announcements.politeAnnouncement}
+                assertiveMessage={announcements.assertiveAnnouncement}
+              />
+              <Toaster />
+            </main>
+          </SelectedItemPlacementShell>
         </OverlayLayoutProvider>
       </EditorRefsProvider>
     </TooltipProvider>

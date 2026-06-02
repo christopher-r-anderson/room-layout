@@ -4,7 +4,7 @@ import { createContext, useContext, type ReactNode } from 'react'
 import type { OverlayExclusionRectId } from '@/app/overlay/use-overlay-exclusion-rects'
 
 export interface OverlayLayout {
-  exclusionRects: readonly DOMRectReadOnly[]
+  exclusionRects: Partial<Record<OverlayExclusionRectId, DOMRectReadOnly>>
   registerExclusionElement: (
     key: OverlayExclusionRectId,
   ) => (element: HTMLElement | null) => void

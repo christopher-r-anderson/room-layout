@@ -14,7 +14,10 @@ import {
 } from '@/editor-state/editor-runtime-store'
 import { sceneStateActions } from '@/editor-state/scene-state-store'
 import { OverlayLayoutProvider } from '../contexts/overlay-layout-context'
-import { SelectedItemControls } from '../selection/selected-item-controls'
+import { EditorRefsProvider } from '../contexts/editor-refs-context'
+import { FloatingSelectedItemSite } from '../selection/floating-selected-item-site'
+import { SelectedItemInteractionProvider } from '../selection/selected-item-interaction-context'
+import { SelectedItemPlacementProvider } from '../selection/use-selected-item-placement-context'
 import { EditorOverlay } from './editor-overlay'
 import { findFirstFocusableControl } from './focusable-controls'
 
@@ -224,96 +227,116 @@ describe('EditorOverlay integration', () => {
 
     function TestHarness() {
       const selectedItemControlsRef = React.useRef<HTMLDivElement | null>(null)
+      const roomViewRef = React.useRef<HTMLElement | null>(null)
+      const onUpdate = vi.fn(() => ({
+        ok: true as const,
+        item: selectedFurniture,
+      }))
+      const onInvalid = (fieldLabel: string) =>
+        `${fieldLabel} must be a valid number.`
+      const placementValue = React.useMemo(
+        () => ({
+          placement: {
+            site: 'docked' as const,
+            reason: 'mobile-layout' as const,
+            left: 0,
+            top: 0,
+          },
+          actionsSizeRef: () => undefined,
+        }),
+        [],
+      )
 
       return (
         <TooltipProvider>
-          <OverlayLayoutProvider
-            value={{
-              exclusionRects: [],
-              registerExclusionElement,
-              syncLayoutMode: dialogActions.syncLayoutMode,
-            }}
-          >
-            <div className="relative min-h-192">
-              <SelectedItemControls
-                containerRef={selectedItemControlsRef}
-                editorInteractionsEnabled={true}
-                isCatalogDrawerOpen={false}
-                onInvalidSelectedItemDetailValue={(fieldLabel) =>
-                  `${fieldLabel} must be a valid number.`
-                }
-                onOpenDeleteDialog={vi.fn()}
-                onRotateSelection={vi.fn()}
-                onUpdateSelectedItemDetails={vi.fn(() => ({
-                  ok: true as const,
-                  item: selectedFurniture,
-                }))}
-                selectedFurniture={selectedFurniture}
-                startupOverlayActive={false}
-              />
+          <EditorRefsProvider value={{ roomViewRef, selectedItemControlsRef }}>
+            <OverlayLayoutProvider
+              value={{
+                exclusionRects: {},
+                registerExclusionElement,
+                syncLayoutMode: dialogActions.syncLayoutMode,
+              }}
+            >
+              <SelectedItemInteractionProvider>
+                <SelectedItemPlacementProvider value={placementValue}>
+                  <div className="relative min-h-192">
+                    <FloatingSelectedItemSite
+                      onOpenDeleteDialog={vi.fn()}
+                      onRotateSelection={vi.fn()}
+                    />
 
-              <EditorOverlay
-                startOverDisabled={false}
-                onHeaderLayoutModeChange={vi.fn()}
-                topHeader={{
-                  catalog: [],
-                  environmentConfig: {
-                    defaultFloorFinishId: 'wood-floor',
-                    defaultWallFinishId: 'light-gray',
-                    floorFinishes: [
-                      {
-                        id: 'wood-floor',
-                        label: 'Wood',
-                        diffusePath: '/textures/wood.jpg',
-                        normalPath: '/textures/wood-normal.png',
-                        tileSizeMeters: { width: 0.5, depth: 0.5 },
-                      },
-                    ],
-                    wallFinishes: [
-                      {
-                        id: 'light-gray',
-                        label: 'Light Gray',
-                        color: 0xf5f5f5,
-                      },
-                    ],
-                  },
-                  catalogIdToAdd: '',
-                  onAddFurniture: vi.fn(() => true),
-                  onCatalogIdToAddChange: vi.fn(),
-                  onCatalogDrawerOpenChange: vi.fn(),
-                  onUndo: vi.fn(),
-                  onRedo: vi.fn(),
-                  onShareSceneUrl: vi.fn(() =>
-                    Promise.resolve<'shared' | 'copied' | null>('copied'),
-                  ),
-                  onOpenStartOverDialog: vi.fn(),
-                  onConfirmStartOver: vi.fn(),
-                }}
-                outliner={{
-                  onNavigateBackToSelectionControls: () => {
-                    const firstFocusableControl = findFirstFocusableControl(
-                      selectedItemControlsRef.current,
-                    )
+                    <EditorOverlay
+                      startOverDisabled={false}
+                      onHeaderLayoutModeChange={vi.fn()}
+                      topHeader={{
+                        catalog: [],
+                        environmentConfig: {
+                          defaultFloorFinishId: 'wood-floor',
+                          defaultWallFinishId: 'light-gray',
+                          floorFinishes: [
+                            {
+                              id: 'wood-floor',
+                              label: 'Wood',
+                              diffusePath: '/textures/wood.jpg',
+                              normalPath: '/textures/wood-normal.png',
+                              tileSizeMeters: { width: 0.5, depth: 0.5 },
+                            },
+                          ],
+                          wallFinishes: [
+                            {
+                              id: 'light-gray',
+                              label: 'Light Gray',
+                              color: 0xf5f5f5,
+                            },
+                          ],
+                        },
+                        catalogIdToAdd: '',
+                        onAddFurniture: vi.fn(() => true),
+                        onCatalogIdToAddChange: vi.fn(),
+                        onCatalogDrawerOpenChange: vi.fn(),
+                        onUndo: vi.fn(),
+                        onRedo: vi.fn(),
+                        onShareSceneUrl: vi.fn(() =>
+                          Promise.resolve<'shared' | 'copied' | null>('copied'),
+                        ),
+                        onOpenStartOverDialog: vi.fn(),
+                        onConfirmStartOver: vi.fn(),
+                      }}
+                      outliner={{
+                        onNavigateBackToSelectionControls: () => {
+                          const firstFocusableControl =
+                            findFirstFocusableControl(
+                              selectedItemControlsRef.current,
+                            )
 
-                    if (!firstFocusableControl) {
-                      return false
-                    }
+                          if (!firstFocusableControl) {
+                            return false
+                          }
 
-                    firstFocusableControl.focus()
-                    return true
-                  },
-                  onSelectById: vi.fn(),
-                  onPreviewChange: vi.fn(),
-                }}
-                cameraTools={{
-                  onSetCameraPreset: vi.fn(),
-                  onFocusSelected: vi.fn(),
-                }}
-                onConfirmDeleteSelection={vi.fn()}
-                onRetryAssetLoading={vi.fn()}
-              />
-            </div>
-          </OverlayLayoutProvider>
+                          firstFocusableControl.focus()
+                          return true
+                        },
+                        onSelectById: vi.fn(),
+                        onPreviewChange: vi.fn(),
+                      }}
+                      cameraTools={{
+                        onSetCameraPreset: vi.fn(),
+                        onFocusSelected: vi.fn(),
+                      }}
+                      dockedSelectedItem={{
+                        onOpenDeleteDialog: vi.fn(),
+                        onRotateSelection: vi.fn(),
+                        onInvalidSelectedItemDetailValue: onInvalid,
+                        onUpdateSelectedItemDetails: onUpdate,
+                      }}
+                      onConfirmDeleteSelection={vi.fn()}
+                      onRetryAssetLoading={vi.fn()}
+                    />
+                  </div>
+                </SelectedItemPlacementProvider>
+              </SelectedItemInteractionProvider>
+            </OverlayLayoutProvider>
+          </EditorRefsProvider>
         </TooltipProvider>
       )
     }

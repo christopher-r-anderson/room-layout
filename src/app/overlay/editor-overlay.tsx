@@ -20,7 +20,12 @@ import { InitializationError } from '../startup/initialization-error'
 import { InitializationProgress } from '../startup/initialization-progress'
 import { Outliner } from '../scene-panel/outliner'
 import type { PanelSelectById } from '../scene-interaction.types'
-import { SelectedItemDetailsPlaceholder } from '../selection/selected-item-details'
+import { DockedSelectedItemSite } from '../selection/docked-selected-item-site'
+import type {
+  UpdateSelectedItemDetailsInput,
+  UpdateSelectedItemDetailsResult,
+} from '../selected-item-details.types'
+import { SelectedDetailsPlaceholder } from '../selection/selected-details-view'
 import { TopHeader } from './top-header'
 import type { TopHeaderShellProps } from './top-header.types'
 import { useOverlayLayout } from '../contexts/overlay-layout-context'
@@ -39,12 +44,22 @@ export interface OutlinerShellProps {
   ) => void
 }
 
+export interface DockedSelectedItemShellProps {
+  onOpenDeleteDialog: () => void
+  onRotateSelection: (direction: -1 | 1) => void
+  onInvalidSelectedItemDetailValue: (fieldLabel: string) => string
+  onUpdateSelectedItemDetails: (
+    input: UpdateSelectedItemDetailsInput,
+  ) => UpdateSelectedItemDetailsResult
+}
+
 interface EditorOverlayProps {
   startOverDisabled: boolean
   onHeaderLayoutModeChange: (layout: 'mobile' | 'desktop') => void
   topHeader: TopHeaderShellProps
   outliner: OutlinerShellProps
   cameraTools: CameraToolsShellProps
+  dockedSelectedItem: DockedSelectedItemShellProps
   onConfirmDeleteSelection: () => void
   onRetryAssetLoading: () => void
 }
@@ -87,6 +102,7 @@ export function EditorOverlay({
   topHeader,
   outliner,
   cameraTools,
+  dockedSelectedItem,
   onConfirmDeleteSelection,
   onRetryAssetLoading,
 }: EditorOverlayProps) {
@@ -183,11 +199,13 @@ export function EditorOverlay({
               aria-hidden="true"
               className="hidden md:flex md:min-h-32 md:items-end md:justify-end"
             >
-              <SelectedItemDetailsPlaceholder />
+              <SelectedDetailsPlaceholder />
             </div>
           ) : null}
         </div>
       </div>
+
+      <DockedSelectedItemSite {...dockedSelectedItem} />
 
       <div
         ref={handleCameraAnchorRef}

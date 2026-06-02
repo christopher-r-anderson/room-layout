@@ -2,19 +2,18 @@ import type { FurnitureItem } from '@/scene/objects/furniture.types'
 import { SelectionToolsOther } from './selection-tools-other'
 import { cn } from '@/lib/utils'
 import type { CSSProperties, Ref } from 'react'
-import type {
-  ToolbarFloatingCandidateId,
-  ToolbarPlacementMode,
-} from '@/lib/ui/selected-toolbar-placement'
+import type { ToolbarFloatingCandidateId } from '@/lib/ui/selected-toolbar-placement'
 
-export function SelectedItemActions({
+export type SelectedActionsViewPlacementMode = 'floating' | 'docked'
+
+export function SelectedActionsView({
   className,
   disabled,
   onOpenDeleteDialog,
   onPrepareDelete,
   onRotateSelection,
   placementCandidateId,
-  placementMode = 'floating',
+  placementMode,
   sectionRef,
   selectedFurniture,
   style,
@@ -25,7 +24,7 @@ export function SelectedItemActions({
   onPrepareDelete: () => void
   onRotateSelection: (direction: -1 | 1) => void
   placementCandidateId?: ToolbarFloatingCandidateId
-  placementMode?: ToolbarPlacementMode
+  placementMode?: SelectedActionsViewPlacementMode
   sectionRef?: Ref<HTMLElement>
   selectedFurniture: FurnitureItem
   style?: CSSProperties
@@ -35,8 +34,6 @@ export function SelectedItemActions({
       ref={sectionRef}
       className={cn('pointer-events-auto', className)}
       aria-label="Selected item actions"
-      aria-hidden={placementMode === 'hidden' ? true : undefined}
-      inert={placementMode === 'hidden' ? true : undefined}
       data-selected-toolbar-candidate={placementCandidateId}
       data-selected-toolbar-mode={placementMode}
       style={style}

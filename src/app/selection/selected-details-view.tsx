@@ -134,7 +134,7 @@ function createDrafts(item: FurnitureItem) {
   }
 }
 
-export function SelectedItemDetailsPlaceholder({
+export function SelectedDetailsPlaceholder({
   className,
 }: {
   className?: string
@@ -151,7 +151,7 @@ export function SelectedItemDetailsPlaceholder({
   )
 }
 
-export function SelectedItemDetails({
+export function SelectedDetailsView({
   className,
   disabled,
   selectedFurniture,
