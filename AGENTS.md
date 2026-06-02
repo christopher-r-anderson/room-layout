@@ -50,6 +50,15 @@ After the Phase 2 app-shell refactor, controller hooks live under `src/app/contr
 **Shared type placement.**
 Types consumed by more than one layer (e.g. a feature folder and `hooks/`) belong at `src/app/` root as standalone `.types.ts` files (e.g. `scene-panel.types.ts`), not inside any single consumer folder.
 
+**Selected-item layout.**
+After the Phase 3 selected-item refactor, selected-item UI is split into pure views and render sites under `src/app/selection/`:
+
+- Pure views (`selected-actions-view.tsx`, `selected-details-view.tsx`) are presentation-only. They do not import stores or selection contexts; all state arrives via props.
+- Render sites (`floating-selected-item-site.tsx`, `docked-selected-item-site.tsx`) read placement and runtime state from the relevant Zustand stores and the `SelectedItemPlacementContext` / `SelectedItemInteractionContext`, and own the placement-specific wiring (ref claims, suppression, blur-suppression).
+- Placement is computed once by `useComputeSelectedItemPlacement` and exposed through `SelectedItemPlacementProvider`. Both sites consume the same placement value to decide whether to render.
+- The docked site is mounted inside `EditorOverlay` (between the outliner and the camera tools). This is a deliberate tab-order shift introduced in Phase 3: in floating mode, Tab from the room view reaches the floating actions toolbar; details inputs are reached via the overlay traversal (top header → outliner → details card → camera tools) rather than directly after the actions toolbar.
+- The docked details placement currently uses absolute positioning (Strategy B). A grid-based variant (Strategy A) is intentionally deferred.
+
 ## Conventions
 
 - Prefer object-level pointer event handling with pointer capture for object movement interactions.

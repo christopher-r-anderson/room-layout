@@ -3,16 +3,16 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
-import { SelectedItemDetails } from './selected-item-details'
+import { SelectedDetailsView } from './selected-details-view'
 import { FURNITURE_ITEM } from './test-fixtures'
 
-describe('SelectedItemDetails', () => {
+describe('SelectedDetailsView', () => {
   it('does not commit rounded display values on blur when the field was not edited', async () => {
     const user = userEvent.setup()
     const onUpdateSelectedItemDetails = vi.fn()
 
     render(
-      <SelectedItemDetails
+      <SelectedDetailsView
         disabled={false}
         selectedFurniture={{
           ...FURNITURE_ITEM,
@@ -38,7 +38,7 @@ describe('SelectedItemDetails', () => {
     const onUpdateSelectedItemDetails = vi.fn()
 
     render(
-      <SelectedItemDetails
+      <SelectedDetailsView
         disabled={false}
         selectedFurniture={{
           ...FURNITURE_ITEM,
@@ -64,7 +64,7 @@ describe('SelectedItemDetails', () => {
     const onUpdateSelectedItemDetails = vi.fn()
 
     render(
-      <SelectedItemDetails
+      <SelectedDetailsView
         disabled={false}
         selectedFurniture={FURNITURE_ITEM}
         consumeBlurCommitSuppression={() => false}
@@ -91,7 +91,7 @@ describe('SelectedItemDetails', () => {
     const onUpdateSelectedItemDetails = vi.fn()
 
     render(
-      <SelectedItemDetails
+      <SelectedDetailsView
         disabled={false}
         selectedFurniture={FURNITURE_ITEM}
         consumeBlurCommitSuppression={() => false}
@@ -120,7 +120,7 @@ describe('SelectedItemDetails', () => {
     const user = userEvent.setup()
 
     render(
-      <SelectedItemDetails
+      <SelectedDetailsView
         disabled={false}
         selectedFurniture={FURNITURE_ITEM}
         consumeBlurCommitSuppression={() => false}
@@ -145,7 +145,7 @@ describe('SelectedItemDetails', () => {
     const user = userEvent.setup()
 
     render(
-      <SelectedItemDetails
+      <SelectedDetailsView
         disabled={false}
         selectedFurniture={FURNITURE_ITEM}
         consumeBlurCommitSuppression={() => false}
@@ -176,7 +176,7 @@ describe('SelectedItemDetails', () => {
     const onUpdateSelectedItemDetails = vi.fn()
 
     render(
-      <SelectedItemDetails
+      <SelectedDetailsView
         disabled={false}
         selectedFurniture={FURNITURE_ITEM}
         consumeBlurCommitSuppression={() => false}
@@ -210,7 +210,7 @@ describe('SelectedItemDetails', () => {
     }))
 
     render(
-      <SelectedItemDetails
+      <SelectedDetailsView
         disabled={false}
         selectedFurniture={FURNITURE_ITEM}
         consumeBlurCommitSuppression={() => false}
@@ -236,7 +236,7 @@ describe('SelectedItemDetails', () => {
   it('re-syncs clean field values when the same selected item changes externally', () => {
     const onUpdateSelectedItemDetails = vi.fn()
     const { rerender } = render(
-      <SelectedItemDetails
+      <SelectedDetailsView
         disabled={false}
         selectedFurniture={FURNITURE_ITEM}
         consumeBlurCommitSuppression={() => false}
@@ -246,7 +246,7 @@ describe('SelectedItemDetails', () => {
     )
 
     rerender(
-      <SelectedItemDetails
+      <SelectedDetailsView
         disabled={false}
         selectedFurniture={{
           ...FURNITURE_ITEM,
@@ -270,7 +270,7 @@ describe('SelectedItemDetails', () => {
 
   it('shows 0.0 instead of -0.0 for near-wall floating-point clearances', () => {
     render(
-      <SelectedItemDetails
+      <SelectedDetailsView
         disabled={false}
         selectedFurniture={{
           ...FURNITURE_ITEM,
@@ -292,7 +292,7 @@ describe('SelectedItemDetails', () => {
 
   it('shows clockwise-positive display values for negative scene rotation', () => {
     render(
-      <SelectedItemDetails
+      <SelectedDetailsView
         disabled={false}
         selectedFurniture={{
           ...FURNITURE_ITEM,
@@ -309,7 +309,7 @@ describe('SelectedItemDetails', () => {
 
   it('normalizes epsilon clockwise rotations back to 0 instead of 360', () => {
     render(
-      <SelectedItemDetails
+      <SelectedDetailsView
         disabled={false}
         selectedFurniture={{
           ...FURNITURE_ITEM,
@@ -328,7 +328,7 @@ describe('SelectedItemDetails', () => {
     const user = userEvent.setup()
     const onUpdateSelectedItemDetails = vi.fn()
     const { rerender } = render(
-      <SelectedItemDetails
+      <SelectedDetailsView
         disabled={false}
         selectedFurniture={FURNITURE_ITEM}
         consumeBlurCommitSuppression={() => false}
@@ -343,7 +343,7 @@ describe('SelectedItemDetails', () => {
     await user.type(xInput, '1.8')
 
     rerender(
-      <SelectedItemDetails
+      <SelectedDetailsView
         disabled={false}
         selectedFurniture={{
           ...FURNITURE_ITEM,
@@ -368,7 +368,7 @@ describe('SelectedItemDetails', () => {
       },
     }))
     const { rerender } = render(
-      <SelectedItemDetails
+      <SelectedDetailsView
         disabled={false}
         selectedFurniture={FURNITURE_ITEM}
         consumeBlurCommitSuppression={() => false}
@@ -385,7 +385,7 @@ describe('SelectedItemDetails', () => {
     expect(xInput).toHaveValue('1.2')
 
     rerender(
-      <SelectedItemDetails
+      <SelectedDetailsView
         disabled={false}
         selectedFurniture={{
           ...FURNITURE_ITEM,
@@ -399,7 +399,7 @@ describe('SelectedItemDetails', () => {
     expect(xInput).toHaveValue('1.2')
 
     rerender(
-      <SelectedItemDetails
+      <SelectedDetailsView
         disabled={false}
         selectedFurniture={{ ...FURNITURE_ITEM }}
         consumeBlurCommitSuppression={() => false}
