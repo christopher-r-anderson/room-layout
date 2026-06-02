@@ -16,6 +16,7 @@ import {
   resetSceneStateStore,
 } from '@/editor-state/scene-state-store'
 import { DockedSelectedItemSite } from './docked-selected-item-site'
+import { FloatingSelectedItemSite } from './floating-selected-item-site'
 import { SelectedItemInteractionProvider } from './selected-item-interaction-context'
 import { SelectedItemPlacementProvider } from './use-selected-item-placement-context'
 import { FURNITURE_ITEM } from './test-fixtures'
@@ -80,6 +81,69 @@ describe('DockedSelectedItemSite', () => {
       screen.queryByRole('region', { name: 'Selected item actions' }),
     ).not.toBeInTheDocument()
     expect(selectedItemControlsRef.current).toContainElement(
+      screen.getByLabelText('Distance from left wall (m)'),
+    )
+  })
+
+  it('leaves the controls ref on floating actions when details also render', () => {
+    const roomViewRef = createRef<HTMLElement>()
+    const selectedItemControlsRef = createRef<HTMLDivElement>()
+    const registerExclusionElement = vi.fn(() => vi.fn())
+
+    render(
+      <TooltipProvider>
+        <EditorRefsProvider value={{ roomViewRef, selectedItemControlsRef }}>
+          <OverlayLayoutProvider
+            value={{
+              exclusionRects: {},
+              registerExclusionElement,
+              syncLayoutMode: vi.fn(),
+            }}
+          >
+            <SelectedItemInteractionProvider>
+              <SelectedItemPlacementProvider
+                value={{
+                  placement: {
+                    site: 'floating',
+                    candidateId: 'bottom-center',
+                    left: 12,
+                    top: 24,
+                  },
+                  actionsSizeRef: vi.fn(),
+                }}
+              >
+                <FloatingSelectedItemSite
+                  onOpenDeleteDialog={vi.fn()}
+                  onRotateSelection={vi.fn()}
+                />
+                <DockedSelectedItemSite
+                  onOpenDeleteDialog={vi.fn()}
+                  onRotateSelection={vi.fn()}
+                  onInvalidSelectedItemDetailValue={(fieldLabel) =>
+                    `${fieldLabel} must be a valid number.`
+                  }
+                  onUpdateSelectedItemDetails={() => ({
+                    ok: true,
+                    item: FURNITURE_ITEM,
+                  })}
+                />
+              </SelectedItemPlacementProvider>
+            </SelectedItemInteractionProvider>
+          </OverlayLayoutProvider>
+        </EditorRefsProvider>
+      </TooltipProvider>,
+    )
+
+    expect(
+      screen.getByRole('region', { name: 'Placement' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('region', { name: 'Selected item actions' }),
+    ).toBeInTheDocument()
+    expect(selectedItemControlsRef.current).toContainElement(
+      screen.getByRole('button', { name: 'Rotate counterclockwise' }),
+    )
+    expect(selectedItemControlsRef.current).not.toContainElement(
       screen.getByLabelText('Distance from left wall (m)'),
     )
   })

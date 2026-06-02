@@ -48,6 +48,7 @@ export function DockedSelectedItemSite({
   }
 
   const isDocked = placement.site === 'docked'
+  const shouldClaimControlsRef = placement.site !== 'floating'
   const controlsSuppressed = startupOverlayActive || isCatalogDrawerOpen
   const controlsDisabled = !editorInteractionsEnabled || controlsSuppressed
 
@@ -61,7 +62,7 @@ export function DockedSelectedItemSite({
 
   return (
     <div
-      ref={selectedItemControlsRef}
+      ref={shouldClaimControlsRef ? selectedItemControlsRef : undefined}
       inert={controlsSuppressed}
       aria-hidden={controlsSuppressed}
       className="absolute pointer-events-none inset-0 z-10"
