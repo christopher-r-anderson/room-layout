@@ -1,6 +1,6 @@
 import { ButtonGroup } from '@/components/ui/button-group'
 import { IconRotate3d, IconTrash } from '@tabler/icons-react'
-import type { FurnitureItem } from '@/scene/objects/furniture.types'
+import type { FurnitureItem } from '@/app/scene-object.types'
 import { ToolButton } from '@/components/ui/tool-button'
 
 export function SelectionToolsOther({

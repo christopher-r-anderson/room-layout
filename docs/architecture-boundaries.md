@@ -33,7 +33,7 @@ graph TD
 | Layer                        | Path                           | May import from                                                            | Must not import from                               |
 | ---------------------------- | ------------------------------ | -------------------------------------------------------------------------- | -------------------------------------------------- |
 | Composition root             | `src/App.tsx`                  | Everything                                                                 | —                                                  |
-| Editor shell                 | `src/app/`                     | `editor-state`, `scene` (contracts only), `lib`, `components/ui`           | `scene/internal`                                   |
+| Editor shell                 | `src/app/`                     | `editor-state`, `scene` (contracts only), `lib`, `components/ui`           | non-contract `scene` modules, `scene/internal`     |
 | Editor state                 | `src/editor-state/`            | `lib`, `scene` (type-only contracts from `scene.types`, `furniture.types`) | `app`, `components`                                |
 | Scene domain                 | `src/scene/`                   | `editor-state/scene-contracts`, `lib`                                      | `app`, `components`, direct store modules          |
 | Pure views (subset of shell) | Designated files in `src/app/` | `components/ui`, `lib`, type re-exports from `app/*.types.ts`              | `editor-state`, `controllers`, `contexts`, `hooks` |
@@ -47,9 +47,9 @@ The core layer boundaries are enforced via `no-restricted-imports` rules in `esl
 
 1. **Scene isolation** — `src/scene/` cannot import from `src/app/`. Can only import from `@/editor-state/scene-contracts` (all other editor-state paths are blocked).
 2. **Editor-state isolation** — `src/editor-state/` cannot import from `src/app/` or `src/components/`.
-3. **App-side scene restriction** — `src/app/` cannot import from `@/scene/internal/`.
+3. **App-side scene restriction** — `src/app/` can import scene only through the approved contract modules: `@/scene/scene.types`, `@/scene/scene-commands`, `@/scene/objects/furniture.types`, or `@/scene/objects/furniture-catalog`.
 4. **Controller boundary** — `src/app/controllers/` cannot import UI components (`@/components/`), overlay components, or view components.
-5. **Pure-view boundary** — Designated view files cannot import from `@/editor-state/`, `@/app/controllers/`, `@/app/contexts/`, or `@/app/hooks/`.
+5. **Pure-view boundary** — Designated view files cannot import from `@/editor-state/`, `@/app/controllers/`, `@/app/contexts/`, `@/app/hooks/`, or `@/scene/scene.types`.
 6. **UI primitives boundary** — `src/components/ui/` cannot import from `app`, `editor-state`, or `scene`.
 
 Test files keep flexibility where it is useful for setup, but the production scene boundary is still enforced in tests by allowing only `@/editor-state/scene-contracts` and the dedicated `@/editor-state/scene-test-support` seam.
@@ -87,6 +87,6 @@ Add to `src/scene/internal/`. Never export from scene contract modules (`scene.t
 - **Scene contracts** are the stable API between scene and app: `@/scene/scene.types`, `@/scene/scene-commands`, `@/scene/objects/furniture.types`, `@/scene/objects/furniture-catalog`.
 - **`@/editor-state/scene-contracts`** is the narrow surface the scene uses to read/write shared state. Keep it minimal.
 - **`@/editor-state/scene-test-support`** is a test-only seam for scene setup/reset helpers. It exists so scene tests can avoid direct store imports without widening the production scene contract.
-- **Pure views** are prop-driven components with no knowledge of stores or state management. They compose shadcn primitives from `@/components/ui/` and utilities from `@/lib/`.
+- **Pure views** are prop-driven components with no knowledge of stores or state management. They compose shadcn primitives from `@/components/ui/` and utilities from `@/lib/`; shared type surfaces should come from app shims such as `@/app/scene-object.types` or `@/app/selected-item-details.types`, not from `@/scene/**`.
 - **Connected containers** (e.g. `editor-overlay.tsx`, `top-header.tsx`, `outliner.tsx`, render sites) read from stores and pass state/callbacks to pure views. They are not restricted by the pure-view rule.
 - **Type re-export shims** in `src/app/*.types.ts` exist so that pure views can import shared types without touching `@/editor-state/` directly.

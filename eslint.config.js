@@ -111,9 +111,10 @@ export default defineConfig([
         {
           patterns: [
             {
-              group: ['@/scene/internal', '@/scene/internal/**'],
+              regex:
+                '^@/scene(?:$|/(?!scene\\.types$|scene-commands$|objects/(?:furniture\\.types|furniture-catalog)$).*)',
               message:
-                'Scene internal utilities are not part of the public API. Import only from: @/scene/scene.types, @/scene/scene-commands, @/scene/objects/furniture.types, or @/scene/objects/furniture-catalog.',
+                'App-side code may import scene only through the approved contract modules: @/scene/scene.types, @/scene/scene-commands, @/scene/objects/furniture.types, or @/scene/objects/furniture-catalog.',
             },
           ],
         },
@@ -255,6 +256,11 @@ export default defineConfig([
               group: ['@/app/hooks', '@/app/hooks/**'],
               message:
                 'Pure view components must not import app hooks that carry state coupling.',
+            },
+            {
+              group: ['@/scene', '@/scene/**'],
+              message:
+                'Pure view components must not import scene modules directly. Source shared types from lib or app type shims instead.',
             },
           ],
         },
