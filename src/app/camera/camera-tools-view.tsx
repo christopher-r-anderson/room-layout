@@ -8,7 +8,7 @@ import {
   IconFocus2,
 } from '@tabler/icons-react'
 import { ToolButton } from '@/components/ui/tool-button'
-import type { CameraPreset } from '@/scene/scene.types'
+import type { CameraPreset } from '@/lib/three/camera-presets'
 
 export interface CameraToolsProps {
   editorInteractionsEnabled: boolean
