@@ -39,7 +39,6 @@ export default defineConfig([
   // scene/ must import editor-state only via @/editor-state/scene-contracts.
   {
     files: ['src/scene/**/*.{ts,tsx}'],
-    ignores: ['src/scene/**/*.test.{ts,tsx}', 'src/scene/**/*.spec.{ts,tsx}'],
     rules: {
       'no-restricted-imports': [
         'error',
@@ -58,20 +57,44 @@ export default defineConfig([
                 'src/scene must not import from src/app. Dependency direction is app → scene only.',
             },
             {
-              // Block all editor-state modules except scene-contracts.
-              // When adding new store files, add them to this list.
-              group: [
-                '@/editor-state/dialog-store',
-                '@/editor-state/editor-runtime-store',
-                '@/editor-state/scene-state-store',
-                '@/editor-state/selection-meta-store',
-                '@/editor-state/store-types',
-                '@/editor-state/types',
-                '@/editor-state/types/**',
-                '@/editor-state/index',
-              ],
+              group: ['@/editor-state/**', '!@/editor-state/scene-contracts'],
               message:
                 'Scene code must import editor-state only via @/editor-state/scene-contracts.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+
+  // scene tests may use a dedicated editor-state test seam, but not direct stores.
+  {
+    files: ['src/scene/**/*.test.{ts,tsx}', 'src/scene/**/*.spec.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: '@/editor-state',
+              message:
+                'Scene tests must import editor-state via @/editor-state/scene-contracts or @/editor-state/scene-test-support only.',
+            },
+          ],
+          patterns: [
+            {
+              group: ['@/app', '@/app/**'],
+              message:
+                'src/scene must not import from src/app. Dependency direction is app → scene only.',
+            },
+            {
+              group: [
+                '@/editor-state/**',
+                '!@/editor-state/scene-contracts',
+                '!@/editor-state/scene-test-support',
+              ],
+              message:
+                'Scene tests must import editor-state via @/editor-state/scene-contracts or @/editor-state/scene-test-support only.',
             },
           ],
         },
@@ -101,7 +124,6 @@ export default defineConfig([
   // editor-state/ must not import from app/ or components/.
   {
     files: ['src/editor-state/**/*.{ts,tsx}'],
-    ignores: ['src/editor-state/**/*.test.{ts,tsx}'],
     rules: {
       'no-restricted-imports': [
         'error',
@@ -115,6 +137,33 @@ export default defineConfig([
             {
               group: ['@/components', '@/components/**'],
               message: 'src/editor-state must not import React UI components.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+
+  // UI primitives may depend on lib and sibling UI primitives, but not app, scene, or stores.
+  {
+    files: ['src/components/ui/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['@/app', '@/app/**'],
+              message: 'UI primitives must not import app-shell modules.',
+            },
+            {
+              group: ['@/editor-state', '@/editor-state/**'],
+              message: 'UI primitives must not import editor-state modules.',
+            },
+            {
+              group: ['@/scene', '@/scene/**'],
+              message:
+                'UI primitives must not import scene modules. Pass scene-derived state through app components.',
             },
           ],
         },

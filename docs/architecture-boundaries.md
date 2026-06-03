@@ -43,21 +43,22 @@ graph TD
 
 ## ESLint Enforcement
 
-All boundaries are enforced via `no-restricted-imports` rules in `eslint.config.js`. The rules are:
+The core layer boundaries are enforced via `no-restricted-imports` rules in `eslint.config.js`. The rules are:
 
 1. **Scene isolation** — `src/scene/` cannot import from `src/app/`. Can only import from `@/editor-state/scene-contracts` (all other editor-state paths are blocked).
 2. **Editor-state isolation** — `src/editor-state/` cannot import from `src/app/` or `src/components/`.
 3. **App-side scene restriction** — `src/app/` cannot import from `@/scene/internal/`.
 4. **Controller boundary** — `src/app/controllers/` cannot import UI components (`@/components/`), overlay components, or view components.
 5. **Pure-view boundary** — Designated view files cannot import from `@/editor-state/`, `@/app/controllers/`, `@/app/contexts/`, or `@/app/hooks/`.
+6. **UI primitives boundary** — `src/components/ui/` cannot import from `app`, `editor-state`, or `scene`.
 
-Test files (`*.test.{ts,tsx}`, `*.spec.{ts,tsx}`) are excluded from these restrictions where needed for test setup flexibility.
+Test files keep flexibility where it is useful for setup, but the production scene boundary is still enforced in tests by allowing only `@/editor-state/scene-contracts` and the dedicated `@/editor-state/scene-test-support` seam.
 
 ## Adding New Modules
 
 ### New store
 
-Add to `src/editor-state/`. Export from `src/editor-state/index.ts`. If the scene needs access, add specific exports to `src/editor-state/scene-contracts.ts` and add the new store path to the ESLint block list in the scene restriction (so it remains blocked for direct imports).
+Add to `src/editor-state/`. Export from `src/editor-state/index.ts`. If the scene needs access, add specific exports to `src/editor-state/scene-contracts.ts`. If a scene test needs a reset/helper seam, expose that from `src/editor-state/scene-test-support.ts` instead of widening the production contract.
 
 ### New shared type
 
@@ -77,10 +78,15 @@ Add to `src/app/controllers/`. It automatically inherits the controller boundary
 
 Add to `src/scene/internal/`. Never export from scene contract modules (`scene.types.ts`, `scene-commands.ts`, `furniture.types.ts`, `furniture-catalog.ts`).
 
+### Deferred lib boundary
+
+`src/lib/` is not yet covered by a broad import boundary rule. Some lib utilities currently depend on scene contract types such as `FurnitureItem` and `FootprintSize`, so a strict lib-wide deny rule would either break existing code or force an additional shared-types refactor first. To make this enforceable later, move those scene-derived types into a neutral shared-types module, update lib utilities to depend on that neutral surface, and then add an ESLint rule that blocks `lib` from importing `app`, `editor-state`, and `scene` directly.
+
 ## Key Conventions
 
 - **Scene contracts** are the stable API between scene and app: `@/scene/scene.types`, `@/scene/scene-commands`, `@/scene/objects/furniture.types`, `@/scene/objects/furniture-catalog`.
 - **`@/editor-state/scene-contracts`** is the narrow surface the scene uses to read/write shared state. Keep it minimal.
+- **`@/editor-state/scene-test-support`** is a test-only seam for scene setup/reset helpers. It exists so scene tests can avoid direct store imports without widening the production scene contract.
 - **Pure views** are prop-driven components with no knowledge of stores or state management. They compose shadcn primitives from `@/components/ui/` and utilities from `@/lib/`.
 - **Connected containers** (e.g. `editor-overlay.tsx`, `top-header.tsx`, `outliner.tsx`, render sites) read from stores and pass state/callbacks to pure views. They are not restricted by the pure-view rule.
 - **Type re-export shims** in `src/app/*.types.ts` exist so that pure views can import shared types without touching `@/editor-state/` directly.

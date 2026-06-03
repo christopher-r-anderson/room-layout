@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 
 import { beforeEach, describe, expect, it } from 'vitest'
-import type { SceneOutlinerFocusRequest } from '@/app/scene-panel.types'
 import type { SelectedToolbarGeometry } from '@/scene/scene.types'
+import type { SceneOutlinerFocusRequest } from './types/scene-panel.types'
 import {
   INITIAL_SELECTED_TOOLBAR_GEOMETRY,
   resetSelectionMetaStore,
