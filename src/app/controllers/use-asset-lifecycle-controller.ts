@@ -19,7 +19,7 @@ import type { FurnitureCatalogEntry } from '@/scene/objects/furniture-catalog'
 import { toast } from 'sonner'
 import { runStartupRestoreFlow } from './_shared/restore-flow'
 import type { RestorableState } from './_shared/types'
-import type { SelectionEffectsApi } from './use-scene-selection-effects'
+import type { SelectionEffectsApi } from './use-selection-effects-controller'
 
 interface AnnouncementsApi {
   announcePolite: (message: string) => void

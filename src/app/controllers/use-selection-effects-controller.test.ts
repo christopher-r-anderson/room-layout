@@ -10,7 +10,7 @@ import {
   sceneStateActions,
 } from '@/editor-state/scene-state-store'
 import { createHistoryState } from '@/lib/ui/editor-history'
-import { useSceneSelectionEffects } from './use-scene-selection-effects'
+import { useSelectionEffectsController } from './use-selection-effects-controller'
 
 const CHAIR = {
   id: 'chair-1',
@@ -36,11 +36,11 @@ beforeEach(() => {
   resetSelectionMetaStore()
 })
 
-describe('useSceneSelectionEffects', () => {
+describe('useSelectionEffectsController', () => {
   it('requests outliner focus after delete when an index is queued', () => {
     const announcements = createAnnouncements()
     const { result } = renderHook(() =>
-      useSceneSelectionEffects({
+      useSelectionEffectsController({
         announcements,
         editorInteractionsEnabled: true,
       }),
@@ -64,7 +64,7 @@ describe('useSceneSelectionEffects', () => {
     )
 
     const { result } = renderHook(() =>
-      useSceneSelectionEffects({
+      useSelectionEffectsController({
         announcements,
         editorInteractionsEnabled: true,
       }),
@@ -89,7 +89,7 @@ describe('useSceneSelectionEffects', () => {
   it('announces selection changes for each special mode', () => {
     const announcements = createAnnouncements()
     const { result } = renderHook(() =>
-      useSceneSelectionEffects({
+      useSelectionEffectsController({
         announcements,
         editorInteractionsEnabled: true,
       }),
@@ -146,7 +146,7 @@ describe('useSceneSelectionEffects', () => {
     sceneStateActions.setSelectedId(CHAIR.id)
     const announcements = createAnnouncements()
     const { result } = renderHook(() =>
-      useSceneSelectionEffects({
+      useSelectionEffectsController({
         announcements,
         editorInteractionsEnabled: true,
       }),

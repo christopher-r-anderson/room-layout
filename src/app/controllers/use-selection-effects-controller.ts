@@ -22,7 +22,7 @@ export interface SelectionEffectsApi {
   consumePostDeleteFocusTarget(): 'room-view' | 'outliner' | null
 }
 
-interface SceneSelectionEffectsOptions {
+interface SelectionEffectsControllerOptions {
   announcements: AnnouncementsApi
   editorInteractionsEnabled: boolean
 }
@@ -85,10 +85,10 @@ function announceSelectionChange(options: {
   }
 }
 
-export function useSceneSelectionEffects({
+export function useSelectionEffectsController({
   announcements,
   editorInteractionsEnabled,
-}: SceneSelectionEffectsOptions): SelectionEffectsApi {
+}: SelectionEffectsControllerOptions): SelectionEffectsApi {
   const items = useItems()
   const selectedId = useSceneStateStore((state) => state.selectedId)
   const outlinerFocusRequest = useOutlinerFocusRequest()
