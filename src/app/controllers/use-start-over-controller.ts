@@ -7,7 +7,7 @@ import { sceneStateActions } from '@/editor-state/scene-state-store'
 import { sceneCommands } from '@/scene/scene-commands'
 import { clearSceneDraft } from '@/app/url-scene/scene-draft'
 import { toast } from 'sonner'
-import type { SelectionEffectsApi } from './use-scene-selection-effects'
+import type { SelectionEffectsApi } from './use-selection-effects-controller'
 
 interface AnnouncementsApi {
   announcePolite: (message: string) => void

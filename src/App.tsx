@@ -24,8 +24,8 @@ import {
 import { useKeyboardShortcuts } from './app/keyboard/use-keyboard-shortcuts'
 import { useCameraKeyState } from './app/keyboard/use-camera-key-state'
 import { useAnnouncements } from './app/hooks/use-announcements'
-import { usePreviewController } from './app/use-preview-controller'
-import { useSceneSelectionEffects } from './app/controllers/use-scene-selection-effects'
+import { usePreviewController } from './app/controllers/use-preview-controller'
+import { useSelectionEffectsController } from './app/controllers/use-selection-effects-controller'
 import { useSelectionController } from './app/controllers/use-selection-controller'
 import { useMovementController } from './app/controllers/use-movement-controller'
 import { useHistoryController } from './app/controllers/use-history-controller'
@@ -67,7 +67,7 @@ import { useDraftPersistence } from './app/use-draft-persistence'
 import { sceneCommands } from './scene/scene-commands'
 import { ROTATION_STEP_RADIANS } from './app/controllers/_shared/constants'
 import { useActiveFinishIds } from './app/controllers/_shared/use-active-finish-ids'
-import { useTestStateBridge } from './app/use-test-state-bridge'
+import { useTestStateBridge } from './app/test/use-test-state-bridge'
 
 class SceneAssetErrorBoundary extends Component<
   {
@@ -240,7 +240,7 @@ function App() {
     selectedFurniture,
     canStartOver: !sceneIsAtDefaults,
   })
-  const selectionEffects = useSceneSelectionEffects({
+  const selectionEffects = useSelectionEffectsController({
     announcements,
     editorInteractionsEnabled: startup.editorInteractionsEnabled,
   })

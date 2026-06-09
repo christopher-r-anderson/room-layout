@@ -7,7 +7,7 @@ import {
   ADD_FURNITURE_NO_SPACE_MESSAGE,
   ADD_FURNITURE_UNKNOWN_CATALOG_MESSAGE,
 } from '@/app/hooks/command-messages'
-import type { SelectionEffectsApi } from './use-scene-selection-effects'
+import type { SelectionEffectsApi } from './use-selection-effects-controller'
 
 interface CatalogControllerOptions {
   dialogState: Pick<DialogStateSnapshot, 'setCatalogOpen'>

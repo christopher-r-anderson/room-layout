@@ -7,7 +7,7 @@ import { selectionMetaActions } from '@/editor-state/selection-meta-store'
 import { sceneCommands } from '@/scene/scene-commands'
 import type { SelectByIdResult } from '@/scene/scene.types'
 import type { InteractionSource } from '@/app/scene-interaction.types'
-import type { SelectionEffectsApi } from './use-scene-selection-effects'
+import type { SelectionEffectsApi } from './use-selection-effects-controller'
 
 interface SelectionControllerOptions {
   selectionEffects: SelectionEffectsApi
