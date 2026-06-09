@@ -1,4 +1,1 @@
-export interface HistoryAvailability {
-  canUndo: boolean
-  canRedo: boolean
-}
+export type { HistoryAvailability } from '@/editor-state/types/history.types'

@@ -11,7 +11,7 @@ import {
   DrawerTrigger,
 } from '@/components/ui/drawer'
 import { cn } from '@/lib/utils'
-import type { FurnitureCatalogEntry } from '@/scene/objects/furniture-catalog'
+import type { FurnitureCatalogEntry } from '@/app/scene-object.types'
 
 function formatMeasurement(value: number) {
   return Number(value.toFixed(2)).toString()

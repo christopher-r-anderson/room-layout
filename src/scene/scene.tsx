@@ -64,8 +64,8 @@ import {
   sceneStateActions,
   sceneStateStore,
   useItems,
-} from '@/editor-state/scene-state-store'
-import { selectionMetaActions } from '@/editor-state/selection-meta-store'
+} from '@/editor-state/scene-contracts'
+import { selectionMetaActions } from '@/editor-state/scene-contracts'
 import {
   clearSceneServices,
   registerSceneServices,

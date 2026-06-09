@@ -13,7 +13,7 @@ import {
 import { flushSync } from 'react-dom'
 import { NeutralToneMapping, SRGBColorSpace } from 'three'
 import { EditorOverlay } from './app/overlay/editor-overlay'
-import { useDialogStateSnapshot } from './editor-state/dialog-store'
+import { useDialogStateSnapshot } from './app/hooks/use-dialog-state-snapshot'
 import {
   sceneStateActions,
   useFloorFinishId,

@@ -14,6 +14,7 @@ import {
   type FurnitureCollection,
 } from '@/scene/objects/furniture-catalog'
 import { editorRuntimeActions } from '@/editor-state/editor-runtime-store'
+import type { StartupErrorKind } from '@/editor-state/types/startup.types'
 import {
   fetchCatalogManifest,
   ManifestNetworkError,
@@ -24,11 +25,7 @@ import { createDevPerfLogger } from './perf-log'
 const perfLog = createDevPerfLogger('🚀')
 
 type StartupPhase = 'loading-manifest' | 'loading-assets' | 'ready' | 'error'
-export type StartupErrorKind =
-  | 'manifest-timeout'
-  | 'manifest-network'
-  | 'manifest-validation'
-  | 'asset-load'
+export type { StartupErrorKind } from '@/editor-state/types/startup.types'
 
 interface ReducerState {
   phase: StartupPhase

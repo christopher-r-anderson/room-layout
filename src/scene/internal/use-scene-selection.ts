@@ -4,7 +4,7 @@ import { getMeshes } from '@/lib/three/get-meshes'
 import {
   sceneStateActions,
   useSelectedId,
-} from '@/editor-state/scene-state-store'
+} from '@/editor-state/scene-contracts'
 import type { FurnitureItem } from '../objects/furniture.types'
 
 interface SceneSelectionState {

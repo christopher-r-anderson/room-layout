@@ -1,4 +1,4 @@
-import type { FurnitureItem } from '@/scene/objects/furniture.types'
+import type { FurnitureItem } from '@/app/scene-object.types'
 import { SelectionToolsOther } from './selection-tools-other'
 import { cn } from '@/lib/utils'
 import type { CSSProperties, Ref } from 'react'
