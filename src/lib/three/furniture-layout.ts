@@ -5,7 +5,7 @@ import {
   getFootprintBounds,
 } from './furniture-footprint'
 
-export interface FurnitureLayoutItem {
+interface FurnitureLayoutItem {
   id: string
   position: [number, number, number]
   rotationY: number

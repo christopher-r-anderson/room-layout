@@ -4,14 +4,14 @@ const FLOOR_NORMAL = new Vector3(0, 1, 0)
 const floorPlaneScratch = new Plane(FLOOR_NORMAL, 0)
 const floorIntersectionScratch = new Vector3()
 
-export interface DragBounds {
+interface DragBounds {
   minX: number
   maxX: number
   minZ: number
   maxZ: number
 }
 
-export interface DragOffset {
+interface DragOffset {
   x: number
   z: number
 }

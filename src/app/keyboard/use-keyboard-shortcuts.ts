@@ -15,7 +15,7 @@ import {
   type SuppressionMode,
 } from './keyboard-shortcuts.definitions'
 
-export type RotationDirection = -1 | 1
+type RotationDirection = -1 | 1
 
 interface ShortcutContext {
   targetIsEditingTarget: boolean

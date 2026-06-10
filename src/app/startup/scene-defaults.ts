@@ -21,7 +21,7 @@ export function createDefaultSceneState(options: {
   }
 }
 
-export function getDefaultSceneState(
+function getDefaultSceneState(
   environmentConfig: EnvironmentMaterialConfig,
 ): DefaultSceneState {
   return createDefaultSceneState({

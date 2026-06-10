@@ -1,6 +1,6 @@
 import type { Mesh, Object3D } from 'three'
 
-export const UI_BOUNDS_ROLE = 'ui-bounds'
+const UI_BOUNDS_ROLE = 'ui-bounds'
 
 export function isUiBoundsObject(object: Object3D) {
   return object.userData.roomLayoutRole === UI_BOUNDS_ROLE

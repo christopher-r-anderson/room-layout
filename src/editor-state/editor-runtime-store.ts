@@ -6,7 +6,7 @@ import type { EqualityChecker } from './store-types'
 
 export type RestoreOutcome = 'restored' | 'invalid' | 'skipped'
 
-export type EditorStartupPhase = 'loading' | 'ready' | 'errored'
+type EditorStartupPhase = 'loading' | 'ready' | 'errored'
 
 export interface EditorAssetError {
   kind: StartupErrorKind
@@ -159,7 +159,7 @@ export const editorRuntimeStore = createStore<EditorRuntimeStoreState>()(
   })),
 )
 
-export function useEditorRuntimeStore<T>(
+function useEditorRuntimeStore<T>(
   selector: (state: EditorRuntimeStoreState) => T,
   equalityFn?: EqualityChecker<T>,
 ) {

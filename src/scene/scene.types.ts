@@ -55,12 +55,12 @@ export interface ScreenPoint {
   y: number
 }
 
-export type SelectedToolbarGeometrySource =
+type SelectedToolbarGeometrySource =
   | 'ui-bounds-node'
   | 'render-bounds'
   | 'object-origin'
 
-export type SelectedToolbarGeometryUnavailableReason =
+type SelectedToolbarGeometryUnavailableReason =
   | 'no-selection'
   | 'object-not-ready'
   | 'no-placement-points'

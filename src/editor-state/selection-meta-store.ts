@@ -28,7 +28,7 @@ function areScreenPointsEqual(left: ScreenPoint, right: ScreenPoint) {
   return left.x === right.x && left.y === right.y
 }
 
-export function areSelectedToolbarGeometriesEqual(
+function areSelectedToolbarGeometriesEqual(
   currentGeometry: SelectedToolbarGeometry,
   nextGeometry: SelectedToolbarGeometry,
 ) {
@@ -139,7 +139,7 @@ export const selectionMetaStore = createStore<SelectionMetaStoreState>()(
   })),
 )
 
-export function useSelectionMetaStore<T>(
+function useSelectionMetaStore<T>(
   selector: (state: SelectionMetaStoreState) => T,
   equalityFn?: EqualityChecker<T>,
 ) {

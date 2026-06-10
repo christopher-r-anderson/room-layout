@@ -32,10 +32,3 @@ export async function createR3FTestScene(
 }
 
 export type R3FTestScene = Awaited<ReturnType<typeof createR3FTestScene>>
-
-/**
- * Helper to inspect scene tree for debugging.
- */
-export function inspectSceneGraph(renderer: R3FTestScene): void {
-  console.log(renderer.toGraph())
-}

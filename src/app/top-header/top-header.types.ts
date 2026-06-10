@@ -11,7 +11,7 @@ import type {
   WallFinishOption,
 } from '@/lib/three/environment-materials'
 import type { Ref } from 'react'
-export interface TopHeaderProps {
+interface TopHeaderProps {
   catalog: {
     catalog: FurnitureCatalogEntry[]
     catalogIdToAdd: string

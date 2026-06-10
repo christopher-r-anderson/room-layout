@@ -289,13 +289,10 @@ export function resetSceneStateStore() {
 
 export const useItems = () =>
   useSceneStateStore((state) => state.history.present)
-export const useHistory = () => useSceneStateStore((state) => state.history)
 export const useSelectedId = () =>
   useSceneStateStore((state) => state.selectedId)
 export const useHasSelection = () =>
   useSceneStateStore((state) => state.selectedId !== null)
-export const useInstanceIdCounter = () =>
-  useSceneStateStore((state) => state.instanceIdCounter)
 export const useHistoryAvailability = () =>
   useSceneStateStore(
     (state) => state.historyAvailability,

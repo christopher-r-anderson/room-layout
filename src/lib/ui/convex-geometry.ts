@@ -17,7 +17,7 @@ export interface PointBounds extends Rect {
   centerY: number
 }
 
-export function crossProduct(
+function crossProduct(
   origin: ScreenPoint,
   left: ScreenPoint,
   right: ScreenPoint,
@@ -92,7 +92,7 @@ export function getConvexHull(points: ScreenPoint[]) {
   return [...lowerHull, ...upperHull]
 }
 
-export function pointInRect(point: ScreenPoint, rect: Rect) {
+function pointInRect(point: ScreenPoint, rect: Rect) {
   return (
     point.x >= rect.left &&
     point.x <= getRectRight(rect) &&
@@ -101,7 +101,7 @@ export function pointInRect(point: ScreenPoint, rect: Rect) {
   )
 }
 
-export function pointInPolygon(point: ScreenPoint, polygon: ScreenPoint[]) {
+function pointInPolygon(point: ScreenPoint, polygon: ScreenPoint[]) {
   let isInside = false
 
   for (
@@ -126,7 +126,7 @@ export function pointInPolygon(point: ScreenPoint, polygon: ScreenPoint[]) {
   return isInside
 }
 
-export function orientation(
+function orientation(
   left: ScreenPoint,
   center: ScreenPoint,
   right: ScreenPoint,
@@ -142,11 +142,7 @@ export function orientation(
   return value > 0 ? 1 : 2
 }
 
-export function onSegment(
-  left: ScreenPoint,
-  point: ScreenPoint,
-  right: ScreenPoint,
-) {
+function onSegment(left: ScreenPoint, point: ScreenPoint, right: ScreenPoint) {
   return (
     point.x <= Math.max(left.x, right.x) &&
     point.x >= Math.min(left.x, right.x) &&
@@ -155,7 +151,7 @@ export function onSegment(
   )
 }
 
-export function segmentsIntersect(
+function segmentsIntersect(
   firstStart: ScreenPoint,
   firstEnd: ScreenPoint,
   secondStart: ScreenPoint,
@@ -216,7 +212,7 @@ export function rectIntersectsPolygon(rect: Rect, polygon: ScreenPoint[]) {
   })
 }
 
-export function getLineIntersectionAtY(
+function getLineIntersectionAtY(
   left: ScreenPoint,
   right: ScreenPoint,
   y: number,
@@ -239,7 +235,7 @@ export function getLineIntersectionAtY(
   return [left.x + (right.x - left.x) * progress]
 }
 
-export function getLineIntersectionAtX(
+function getLineIntersectionAtX(
   left: ScreenPoint,
   right: ScreenPoint,
   x: number,

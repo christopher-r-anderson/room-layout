@@ -23,7 +23,7 @@ export function getDomRectBottom(rect: DOMRectReadOnly) {
   return rect.bottom || rect.top + rect.height
 }
 
-export function intersects(left: Rect, right: Rect) {
+function intersects(left: Rect, right: Rect) {
   return !(
     getRectRight(left) <= right.left ||
     getRectRight(right) <= left.left ||

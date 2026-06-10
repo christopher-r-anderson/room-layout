@@ -123,7 +123,7 @@ export async function readSceneState(page: Page): Promise<BrowserSceneState> {
   return rawState
 }
 
-export async function setOverlaysHidden(page: Page, hidden: boolean) {
+async function setOverlaysHidden(page: Page, hidden: boolean) {
   await waitForRoomLayoutTestApi(page)
 
   await page.evaluate((nextHidden) => {

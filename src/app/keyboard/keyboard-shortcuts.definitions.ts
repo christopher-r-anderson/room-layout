@@ -2,18 +2,18 @@ import type { KeyCombo } from '@/lib/ui/keyboard-shortcut-matcher'
 
 export type SuppressionMode = 'always-on-match' | 'on-execute'
 
-export type KeyboardShortcutHandler =
+type KeyboardShortcutHandler =
   | 'use-keyboard-shortcuts'
   | 'use-camera-key-state'
   | 'native-input'
 
-export interface ShortcutPlatformLabel {
+interface ShortcutPlatformLabel {
   kind: 'platform'
   appleLabel: string
   defaultLabel: string
 }
 
-export interface ShortcutAlternativesLabel {
+interface ShortcutAlternativesLabel {
   kind: 'alternatives'
   labels: string[]
 }
@@ -25,7 +25,7 @@ export type ShortcutKeyLabel =
 
 export type ShortcutComboLabel = ShortcutKeyLabel[]
 
-export interface ShortcutHelpEntry {
+interface ShortcutHelpEntry {
   sectionTitle: string
   sectionOrder: number
   groupLabel: string

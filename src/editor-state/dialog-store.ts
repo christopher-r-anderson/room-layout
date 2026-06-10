@@ -4,7 +4,7 @@ import { createStore } from 'zustand/vanilla'
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
 import type { EqualityChecker } from './store-types'
 
-export type ActiveDialog =
+type ActiveDialog =
   | 'catalog'
   | 'delete'
   | 'keyboard-shortcuts'
@@ -480,9 +480,9 @@ function createDialogStore() {
   )
 }
 
-export const dialogStore = createDialogStore()
+const dialogStore = createDialogStore()
 
-export function useDialogStore<T>(
+function useDialogStore<T>(
   selector: (state: DialogStoreState) => T,
   equalityFn?: EqualityChecker<T>,
 ) {

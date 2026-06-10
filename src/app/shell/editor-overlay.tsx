@@ -30,12 +30,12 @@ import { TopHeader } from '@/app/top-header/top-header'
 import type { TopHeaderShellProps } from '@/app/top-header/top-header.types'
 import { useOverlayLayout } from '@/app/shell/overlay-layout-context'
 
-export interface CameraToolsShellProps {
+interface CameraToolsShellProps {
   onSetCameraPreset: (preset: CameraPreset) => void
   onFocusSelected: () => void
 }
 
-export interface OutlinerShellProps {
+interface OutlinerShellProps {
   onNavigateBackToSelectionControls: () => boolean
   onSelectById: PanelSelectById
   onPreviewChange: (
@@ -44,7 +44,7 @@ export interface OutlinerShellProps {
   ) => void
 }
 
-export interface DockedSelectedItemShellProps {
+interface DockedSelectedItemShellProps {
   onOpenDeleteDialog: () => void
   onRotateSelection: (direction: -1 | 1) => void
   onInvalidSelectedItemDetailValue: (fieldLabel: string) => string
@@ -64,7 +64,7 @@ interface EditorOverlayProps {
   onRetryAssetLoading: () => void
 }
 
-export function EditorOverlayDialogs({
+function EditorOverlayDialogs({
   onConfirmDeleteSelection,
   onRetryAssetLoading,
 }: {

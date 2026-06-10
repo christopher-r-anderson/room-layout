@@ -36,8 +36,3 @@ export interface PendingSelectionChangeBehavior {
   announceMode: SelectionAnnouncementMode
   requestOutlinerFocus: boolean
 }
-
-export type SelectionEffectPostDeleteFocusTarget =
-  | 'room-view'
-  | 'outliner'
-  | null

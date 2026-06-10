@@ -15,7 +15,7 @@ import {
   perfCounters,
 } from '@/lib/debug/perf-counters'
 
-export interface BrowserSceneState {
+interface BrowserSceneState {
   assetsReady: boolean
   assetError: boolean
   cameraPosition: [number, number, number]

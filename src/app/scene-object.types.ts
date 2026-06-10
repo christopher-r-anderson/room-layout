@@ -1,11 +1,3 @@
-export type {
-  FurnitureKind,
-  FurnitureInstance,
-  FurnitureItem,
-  FootprintSize,
-} from '@/scene/objects/furniture.types'
+export type { FurnitureItem } from '@/scene/objects/furniture.types'
 
-export type {
-  FurnitureCatalogEntry,
-  FurnitureCollection,
-} from '@/scene/objects/furniture-catalog'
+export type { FurnitureCatalogEntry } from '@/scene/objects/furniture-catalog'

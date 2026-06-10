@@ -41,7 +41,7 @@ function ExternalLink({
   )
 }
 
-export function AssetAttribution({
+function AssetAttribution({
   assetName,
   contributors,
   sourceName,

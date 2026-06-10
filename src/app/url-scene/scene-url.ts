@@ -27,7 +27,7 @@ interface SceneUrlPayloadV1 {
 // Parse result
 // ---------------------------------------------------------------------------
 
-export type ParseSceneUrlOutcome =
+type ParseSceneUrlOutcome =
   | 'no-param'
   | 'duplicate-param'
   | 'over-limit'

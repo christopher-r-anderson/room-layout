@@ -2,7 +2,7 @@ import { type Camera, type Object3D, Vector3 } from 'three'
 import type { FurnitureItem } from '../objects/furniture.types'
 import { getVisualObjectBounds } from '@/lib/three/get-visual-object-bounds'
 
-export interface SceneSnapshotItem {
+interface SceneSnapshotItem {
   id: string
   catalogId: string
   name: string

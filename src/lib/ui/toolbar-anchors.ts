@@ -44,7 +44,7 @@ export interface CandidateAnchorDefinition {
 export const TOOLBAR_GAP = 12 // Visual offset between the object contour and toolbar.
 const SUPPORT_BAND_TOLERANCE = 16 // How much point spread still counts as one visible edge.
 
-export const CANDIDATE_ANCHOR_DEFINITIONS: CandidateAnchorDefinition[] = [
+const CANDIDATE_ANCHOR_DEFINITIONS: CandidateAnchorDefinition[] = [
   { id: 'top-center', side: 'top', axisRatio: 0.5 },
   { id: 'top-left', side: 'top', axisRatio: 0.25 },
   { id: 'top-right', side: 'top', axisRatio: 0.75 },
@@ -59,7 +59,7 @@ export const CANDIDATE_ANCHOR_DEFINITIONS: CandidateAnchorDefinition[] = [
   { id: 'left-lower', side: 'left', axisRatio: 0.75 },
 ]
 
-export function getAnchor(
+function getAnchor(
   points: ScreenPoint[],
   side: Exclude<ToolbarSide, 'docked'>,
 ) {
@@ -213,7 +213,7 @@ export function getAttachmentDistance(rect: Rect, anchor: ScreenPoint) {
   return Math.hypot(rectCenterX - anchor.x, rectCenterY - anchor.y)
 }
 
-export function resolveCandidateAnchor(
+function resolveCandidateAnchor(
   definition: CandidateAnchorDefinition,
   bounds: PointBounds,
   hull: ScreenPoint[],

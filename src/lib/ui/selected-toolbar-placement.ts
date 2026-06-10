@@ -33,14 +33,14 @@ import {
 } from './toolbar-anchors'
 
 export type { ScreenPoint } from './convex-geometry'
-export type { ToolbarFloatingCandidateId, ToolbarSide } from './toolbar-anchors'
+export type { ToolbarFloatingCandidateId } from './toolbar-anchors'
 
 export type ToolbarGeometrySource =
   | 'ui-bounds-node'
   | 'render-bounds'
   | 'object-origin'
 
-export type ToolbarPlacementMode = 'hidden' | 'floating' | 'docked'
+type ToolbarPlacementMode = 'hidden' | 'floating' | 'docked'
 
 export interface ToolbarPlacement {
   mode: ToolbarPlacementMode
