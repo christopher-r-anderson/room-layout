@@ -25,7 +25,6 @@ import { createDevPerfLogger } from './perf-log'
 const perfLog = createDevPerfLogger('🚀')
 
 type StartupPhase = 'loading-manifest' | 'loading-assets' | 'ready' | 'error'
-export type { StartupErrorKind } from '@/editor-state/types/startup.types'
 
 interface ReducerState {
   phase: StartupPhase

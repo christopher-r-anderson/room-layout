@@ -1,9 +1,10 @@
 import { useMemo, type ReactNode } from 'react'
 import { OverlayLayoutProvider } from './overlay-layout-provider'
 import { useOverlayExclusionRects } from './use-overlay-exclusion-rects'
+import type { HeaderLayoutMode } from './use-header-layout-mode'
 
 interface ShellLayoutServicesProviderProps {
-  syncLayoutMode: (layout: 'mobile' | 'desktop') => void
+  syncLayoutMode: (layout: HeaderLayoutMode) => void
   children: ReactNode
 }
 

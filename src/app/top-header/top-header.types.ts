@@ -11,6 +11,7 @@ import type {
   WallFinishOption,
 } from '@/lib/three/environment-materials'
 import type { Ref } from 'react'
+import type { HeaderLayoutMode } from '@/app/shell/use-header-layout-mode'
 interface TopHeaderProps {
   catalog: {
     catalog: FurnitureCatalogEntry[]
@@ -61,7 +62,7 @@ interface TopHeaderProps {
   floorFinishes: FloorFinishOption[]
   onFloorFinishChange: (finishId: string) => void
   startOverDisabled: boolean
-  onLayoutModeChange?: (layout: 'mobile' | 'desktop') => void
+  onLayoutModeChange?: (layout: HeaderLayoutMode) => void
   onShareSceneUrl: () => Promise<'shared' | 'copied' | null>
   topHeaderRef?: Ref<HTMLDivElement>
   desktopRoomSidebarRef?: Ref<HTMLElement>
@@ -87,7 +88,7 @@ export interface TopHeaderShellProps {
 
 export interface TopHeaderContainerProps extends TopHeaderShellProps {
   startOverDisabled?: boolean
-  onLayoutModeChange?: (layout: 'mobile' | 'desktop') => void
+  onLayoutModeChange?: (layout: HeaderLayoutMode) => void
   topHeaderRef?: Ref<HTMLDivElement>
   desktopRoomSidebarRef?: Ref<HTMLElement>
   mobileRoomDrawerRef?: Ref<HTMLDivElement>

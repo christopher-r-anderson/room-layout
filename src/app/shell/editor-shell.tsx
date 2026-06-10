@@ -2,11 +2,12 @@ import type { ReactNode } from 'react'
 import { SelectedItemInteractionProvider } from '@/app/selection/selected-item-interaction-provider'
 import { SelectionPlacementEngineProvider } from './selection-placement-engine-provider'
 import { ShellLayoutServicesProvider } from './shell-layout-services-provider'
+import type { HeaderLayoutMode } from './use-header-layout-mode'
 
 export interface EditorShellProps {
   isCatalogDrawerOpen: boolean
   startupOverlayActive: boolean
-  syncLayoutMode: (layout: 'mobile' | 'desktop') => void
+  syncLayoutMode: (layout: HeaderLayoutMode) => void
   children: ReactNode
 }
 

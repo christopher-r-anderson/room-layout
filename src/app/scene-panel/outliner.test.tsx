@@ -20,7 +20,7 @@ import {
   selectionMetaStore,
 } from '@/editor-state/selection-meta-store'
 import type { PanelInteractionSource } from '../scene-interaction.types'
-import type { ScenePanelReadModel } from '../scene-panel.types'
+import type { ScenePanelReadModel } from '@/editor-state/types/scene-panel.types'
 import { Outliner } from './outliner'
 
 const OUTLINER_EXPANDED_PREFERENCE_KEY = 'outliner-expanded'
