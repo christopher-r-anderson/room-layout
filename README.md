@@ -34,6 +34,13 @@ pnpm format       # check formatting
 pnpm format:write # apply formatting
 pnpm fix          # lint + format fixes
 
+# to clean up unused code and exports that are not used elsewhere
+# note that currently components/ui ignores unused exports
+# this is to preserve useful but currently unused items like `CardFooter`
+# this should be revisited in the future as the app stabilizes
+pnpm knip         # check for unused files and exports
+pnpm knip:fix     # remove unused files and exports
+
 pnpm test         # watch unit tests
 pnpm test:run     # run unit tests
 
