@@ -8,7 +8,7 @@ import {
   readSceneState,
   resetPerfCounters,
   selectOutlinerItemByKeyboard,
-  startCdpPerfTrace,
+  withPerfTrace,
 } from '../support/editor-harness'
 
 const ITERATION_COUNT = 5
@@ -33,15 +33,19 @@ test('captures a baseline drag interaction trace', async ({
     null
 
   await resetPerfCounters(page)
-  const trace = await startCdpPerfTrace(page, 'drag-interaction')
+  const { result: finalState, tracePath } = await withPerfTrace(
+    page,
+    'drag-interaction',
+    async () => {
+      let tracedFinalState = beforeTraceState
+      for (let i = 0; i < ITERATION_COUNT; i += 1) {
+        await dragSelectedFurniture(page, { x: 60, y: 40 })
+        tracedFinalState = await readSceneState(page)
+      }
 
-  let finalState = beforeTraceState
-  for (let i = 0; i < ITERATION_COUNT; i += 1) {
-    await dragSelectedFurniture(page, { x: 60, y: 40 })
-    finalState = await readSceneState(page)
-  }
-
-  const tracePath = await trace.stop()
+      return tracedFinalState
+    },
+  )
   const counters = await readPerfCounters(page)
   const countersPath = tracePath.replace(/\.trace\.json$/, '.counters.json')
 

@@ -520,7 +520,7 @@ export async function holdKeyUntilCameraMoves(
   }
 }
 
-export async function startCdpPerfTrace(page: Page, label: string) {
+async function startCdpPerfTrace(page: Page, label: string) {
   const cdp = await page.context().newCDPSession(page)
 
   await cdp.send('Tracing.start', {

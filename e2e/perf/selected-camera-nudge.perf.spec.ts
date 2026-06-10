@@ -9,7 +9,7 @@ import {
   readSceneState,
   resetPerfCounters,
   selectOutlinerItemByKeyboard,
-  startCdpPerfTrace,
+  withPerfTrace,
 } from '../support/editor-harness'
 
 function diffCounters(
@@ -56,27 +56,35 @@ test('captures a baseline selected camera nudge settle trace', async ({
   await page.waitForTimeout(500)
 
   await resetPerfCounters(page)
-  const trace = await startCdpPerfTrace(page, 'selected-camera-nudge-settle')
-  const before = await readPerfCounters(page)
+  const {
+    result: { before, afterNudge, afterSettle, settledState },
+    tracePath,
+  } = await withPerfTrace(page, 'selected-camera-nudge-settle', async () => {
+    const beforeCounters = await readPerfCounters(page)
 
-  const nudgeBaseline = (await readSceneState(page)).cameraPosition
-  await holdKeyUntilCameraMoves(page, 'KeyW', nudgeBaseline, 0.2)
-  const afterNudge = await readPerfCounters(page)
+    const nudgeBaseline = (await readSceneState(page)).cameraPosition
+    await holdKeyUntilCameraMoves(page, 'KeyW', nudgeBaseline, 0.2)
+    const afterNudgeCounters = await readPerfCounters(page)
 
-  const settleDeadline = Date.now() + 750
-  let settledState = await readSceneState(page)
-  while (Date.now() < settleDeadline) {
-    settledState = await readSceneState(page)
-    expect(settledState.selectedId).toBe(selectedId)
-    await expect(toolbar).toHaveAttribute(
-      'data-selected-toolbar-mode',
-      'floating',
-    )
-    await page.waitForTimeout(75)
-  }
+    const settleDeadline = Date.now() + 750
+    let tracedSettledState = await readSceneState(page)
+    while (Date.now() < settleDeadline) {
+      tracedSettledState = await readSceneState(page)
+      expect(tracedSettledState.selectedId).toBe(selectedId)
+      await expect(toolbar).toHaveAttribute(
+        'data-selected-toolbar-mode',
+        'floating',
+      )
+      await page.waitForTimeout(75)
+    }
 
-  const afterSettle = await readPerfCounters(page)
-  const tracePath = await trace.stop()
+    return {
+      before: beforeCounters,
+      afterNudge: afterNudgeCounters,
+      afterSettle: await readPerfCounters(page),
+      settledState: tracedSettledState,
+    }
+  })
   const countersPath = tracePath.replace(/\.trace\.json$/, '.counters.json')
 
   await writeFile(
