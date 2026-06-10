@@ -8,7 +8,7 @@ import type { InteractionSource } from '@/app/scene-interaction.types'
 import type {
   PendingSelectionChangeBehavior,
   SelectionAnnouncementMode,
-} from './_shared/types'
+} from './_shared/selection-effects.types'
 
 interface AnnouncementsApi {
   announcePolite: (message: string) => void

@@ -29,6 +29,7 @@ import { SelectedDetailsPlaceholder } from '../selection/selected-details-view'
 import { TopHeader } from '@/app/top-header/top-header'
 import type { TopHeaderShellProps } from '@/app/top-header/top-header.types'
 import { useOverlayLayout } from '@/app/shell/overlay-layout-context'
+import type { HeaderLayoutMode } from '@/app/shell/use-header-layout-mode'
 
 interface CameraToolsShellProps {
   onSetCameraPreset: (preset: CameraPreset) => void
@@ -55,7 +56,7 @@ interface DockedSelectedItemShellProps {
 
 interface EditorOverlayProps {
   startOverDisabled: boolean
-  onHeaderLayoutModeChange: (layout: 'mobile' | 'desktop') => void
+  onHeaderLayoutModeChange: (layout: HeaderLayoutMode) => void
   topHeader: TopHeaderShellProps
   outliner: OutlinerShellProps
   cameraTools: CameraToolsShellProps

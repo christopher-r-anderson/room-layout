@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import type { StartupErrorKind } from './use-startup-state'
+import type { StartupErrorKind } from './startup.types'
 
 interface InitializationErrorProps {
   errorKind: StartupErrorKind | null

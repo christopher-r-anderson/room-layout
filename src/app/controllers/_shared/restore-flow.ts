@@ -9,7 +9,7 @@ import type {
   InvalidRestoreCase,
   RestorableState,
   RestoreFlowNotifications,
-} from './types'
+} from './restore-flow.types'
 
 function tryRestoreDraft(
   draftState: RestorableState | null,
