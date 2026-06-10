@@ -5,7 +5,7 @@ import type {
   FloorFinishOption,
   WallFinishOption,
 } from '@/lib/three/environment-materials'
-import { RoomControls } from './room-controls'
+import { RoomControls } from '@/app/room-surface/room-controls'
 
 function createFloorOptions(): FloorFinishOption[] {
   return [

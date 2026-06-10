@@ -8,17 +8,17 @@ import {
   resetEditorRuntimeStore,
 } from '@/editor-state/editor-runtime-store'
 import { sceneStateActions } from '@/editor-state/scene-state-store'
-import { TopHeader } from './top-header'
+import { TopHeader } from '@/app/top-header/top-header'
 import type {
   TopHeaderDesktopProps,
   TopHeaderMobileProps,
-} from './top-header.types'
+} from '@/app/top-header/top-header.types'
 
-vi.mock('./use-header-layout-mode', () => ({
+vi.mock('@/app/shell/use-header-layout-mode', () => ({
   useHeaderLayoutMode: () => 'desktop' as const,
 }))
 
-vi.mock('./top-header-desktop', () => ({
+vi.mock('@/app/top-header/top-header-desktop', () => ({
   TopHeaderDesktop: (props: TopHeaderDesktopProps) => (
     <div>
       <span data-testid="floor-finish-id">{props.floorFinishId}</span>
@@ -27,7 +27,7 @@ vi.mock('./top-header-desktop', () => ({
   ),
 }))
 
-vi.mock('./top-header-mobile', () => ({
+vi.mock('@/app/top-header/top-header-mobile', () => ({
   TopHeaderMobile: (props: TopHeaderMobileProps) => (
     <div>
       <span data-testid="floor-finish-id">{props.floorFinishId}</span>

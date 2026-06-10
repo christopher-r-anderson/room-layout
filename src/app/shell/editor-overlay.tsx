@@ -26,9 +26,9 @@ import type {
   UpdateSelectedItemDetailsResult,
 } from '../selected-item-details.types'
 import { SelectedDetailsPlaceholder } from '../selection/selected-details-view'
-import { TopHeader } from './top-header'
-import type { TopHeaderShellProps } from './top-header.types'
-import { useOverlayLayout } from '../contexts/overlay-layout-context'
+import { TopHeader } from '@/app/top-header/top-header'
+import type { TopHeaderShellProps } from '@/app/top-header/top-header.types'
+import { useOverlayLayout } from '@/app/shell/overlay-layout-context'
 
 export interface CameraToolsShellProps {
   onSetCameraPreset: (preset: CameraPreset) => void

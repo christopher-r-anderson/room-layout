@@ -6,9 +6,9 @@ import type {
   FloorFinishOption,
   WallFinishOption,
 } from '@/lib/three/environment-materials'
-import { ROOM_TRIGGER_TOOLTIP } from './room-copy'
-import { TopHeaderDesktop } from './top-header-desktop'
-import type { TopHeaderDesktopProps } from './top-header.types'
+import { ROOM_TRIGGER_TOOLTIP } from '@/app/room-surface/room-copy'
+import { TopHeaderDesktop } from '@/app/top-header/top-header-desktop'
+import type { TopHeaderDesktopProps } from '@/app/top-header/top-header.types'
 
 vi.mock('@/app/catalog/catalog-drawer', () => ({
   CatalogDrawer: ({ triggerButton }: { triggerButton?: React.ReactNode }) => (
@@ -48,11 +48,11 @@ vi.mock('@/components/ui/tooltip', () => ({
   TooltipTrigger: ({ render }: { render: React.ReactNode }) => <>{render}</>,
 }))
 
-vi.mock('./room-sidebar', () => ({
+vi.mock('@/app/room-surface/room-sidebar', () => ({
   RoomSidebar: () => null,
 }))
 
-vi.mock('./start-over-button', () => ({
+vi.mock('@/app/top-header/start-over-button', () => ({
   StartOverButton: () => <button type="button">Start over</button>,
 }))
 

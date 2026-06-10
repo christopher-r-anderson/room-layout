@@ -5,19 +5,30 @@
 ```mermaid
 graph TD
   App["App.tsx — composition root"]
-  Shell["src/app/ — editor shell"]
+  Shell["src/app/shell/ — editor shell coordination"]
+  Header["src/app/top-header/ — header feature"]
+  Room["src/app/room-surface/ — room surface feature"]
   State["src/editor-state/ — stores"]
   Scene["src/scene/ — scene domain"]
   Lib["src/lib/ — pure utilities"]
   UI["src/components/ui/ — shadcn primitives"]
 
   App --> Shell
+  App --> Header
+  App --> Room
   App --> State
   App --> Scene
 
   Shell --> State
   Shell --> Lib
   Shell --> UI
+
+  Header --> Shell
+  Header --> State
+  Header --> UI
+
+  Room --> UI
+  Room --> Lib
 
   State --> Lib
 
@@ -33,7 +44,9 @@ graph TD
 | Layer                        | Path                           | May import from                                                            | Must not import from                               |
 | ---------------------------- | ------------------------------ | -------------------------------------------------------------------------- | -------------------------------------------------- |
 | Composition root             | `src/App.tsx`                  | Everything                                                                 | —                                                  |
-| Editor shell                 | `src/app/`                     | `editor-state`, `scene` (contracts only), `lib`, `components/ui`           | non-contract `scene` modules, `scene/internal`     |
+| Editor shell                 | `src/app/shell/`               | `editor-state`, `scene` (contracts only), `lib`, `components/ui`           | non-contract `scene` modules, `scene/internal`     |
+| Header feature               | `src/app/top-header/`          | `editor-state`, `lib`, `components/ui`, shell coordination                 | `scene/internal`, store internals                  |
+| Room surface feature         | `src/app/room-surface/`        | `lib`, `components/ui`                                                     | stores, `scene/internal`                           |
 | Editor state                 | `src/editor-state/`            | `lib`, `scene` (type-only contracts from `scene.types`, `furniture.types`) | `app`, `components`                                |
 | Scene domain                 | `src/scene/`                   | `editor-state/scene-contracts`, `lib`                                      | `app`, `components`, direct store modules          |
 | Pure views (subset of shell) | Designated files in `src/app/` | `components/ui`, `lib`, type re-exports from `app/*.types.ts`              | `editor-state`, `controllers`, `contexts`, `hooks` |
@@ -88,5 +101,31 @@ Add to `src/scene/internal/`. Never export from scene contract modules (`scene.t
 - **`@/editor-state/scene-contracts`** is the narrow surface the scene uses to read/write shared state. Keep it minimal.
 - **`@/editor-state/scene-test-support`** is a test-only seam for scene setup/reset helpers. It exists so scene tests can avoid direct store imports without widening the production scene contract.
 - **Pure views** are prop-driven components with no knowledge of stores or state management. They compose shadcn primitives from `@/components/ui/` and utilities from `@/lib/`; shared type surfaces should come from app shims such as `@/app/scene-object.types` or `@/app/selected-item-details.types`, not from `@/scene/**`.
-- **Connected containers** (e.g. `editor-overlay.tsx`, `top-header.tsx`, `outliner.tsx`, render sites) read from stores and pass state/callbacks to pure views. They are not restricted by the pure-view rule.
+- **Connected containers** (e.g. `editor-shell.tsx`, `editor-overlay.tsx`, `top-header.tsx`, `outliner.tsx`, render sites) read from stores and pass state/callbacks to pure views. They are not restricted by the pure-view rule.
 - **Type re-export shims** in `src/app/*.types.ts` exist so that pure views can import shared types without touching `@/editor-state/` directly.
+
+## Shell Provider Layers
+
+Shell coordination depends on provider order. Keep these layers in this order:
+
+### 1. `ShellLayoutServicesProvider`
+
+Collect exclusion rects and compose the overlay layout contract.
+
+- Uses: `useOverlayExclusionRects`
+- Publishes via: `OverlayLayoutProvider`
+- Consumers: `useOverlayLayout`
+
+### 2. `SelectionPlacementEngineProvider`
+
+Compute selected-item placement from shell layout data and publish it.
+
+- Uses: `useComputeSelectedItemPlacement`
+- Publishes via: `SelectedItemPlacementProvider`
+- Consumers: `useSelectedItemPlacement`, `useSelectedItemActionsSizeRef`
+
+### 3. `SelectedItemInteractionProvider`
+
+Hold ephemeral interaction state (e.g. blur-commit suppression) shared by selected-item render sites.
+
+- Consumers: `useSelectedItemInteraction`

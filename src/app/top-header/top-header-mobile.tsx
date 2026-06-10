@@ -8,9 +8,9 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { IconDotsVertical, IconHomeCog } from '@tabler/icons-react'
-import { RoomDrawer } from './room-drawer'
+import { RoomDrawer } from '@/app/room-surface/room-drawer'
 import { HeaderMoreActionsDrawer } from './header-more-actions-drawer'
-import { ROOM_TRIGGER_TOOLTIP } from './room-copy'
+import { ROOM_TRIGGER_TOOLTIP } from '@/app/room-surface/room-copy'
 import type { TopHeaderMobileProps } from './top-header.types'
 
 export function TopHeaderMobile({

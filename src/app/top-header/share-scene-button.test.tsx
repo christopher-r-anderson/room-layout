@@ -3,7 +3,7 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
-import { ShareSceneButton } from './share-scene-button'
+import { ShareSceneButton } from '@/app/top-header/share-scene-button'
 
 describe('ShareSceneButton', () => {
   it('shows shared feedback when native share succeeds', async () => {

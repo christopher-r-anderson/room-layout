@@ -1,9 +1,9 @@
 /* eslint-disable react-refresh/only-export-components */
 
 import { createContext, useContext, type ReactNode } from 'react'
-import type { OverlayExclusionRectId } from '@/app/overlay/use-overlay-exclusion-rects'
+import type { OverlayExclusionRectId } from './use-overlay-exclusion-rects'
 
-export interface OverlayLayout {
+interface OverlayLayout {
   exclusionRects: Partial<Record<OverlayExclusionRectId, DOMRectReadOnly>>
   registerExclusionElement: (
     key: OverlayExclusionRectId,
@@ -11,7 +11,7 @@ export interface OverlayLayout {
   syncLayoutMode: (layout: 'mobile' | 'desktop') => void
 }
 
-export const OverlayLayoutContext = createContext<OverlayLayout | null>(null)
+const OverlayLayoutContext = createContext<OverlayLayout | null>(null)
 
 export function useOverlayLayout(): OverlayLayout {
   const value = useContext(OverlayLayoutContext)
