@@ -1,5 +1,5 @@
 import { useMemo, type ReactNode } from 'react'
-import { OverlayLayoutProvider } from './overlay-layout-context'
+import { OverlayLayoutProvider } from './overlay-layout-provider'
 import { useOverlayExclusionRects } from './use-overlay-exclusion-rects'
 
 interface ShellLayoutServicesProviderProps {

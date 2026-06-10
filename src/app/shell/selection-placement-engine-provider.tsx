@@ -1,6 +1,6 @@
 import { useMemo, type ReactNode } from 'react'
 import { useComputeSelectedItemPlacement } from '@/app/selection/use-compute-selected-item-placement'
-import { SelectedItemPlacementProvider } from '@/app/selection/use-selected-item-placement-context'
+import { SelectedItemPlacementProvider } from '@/app/selection/selected-item-placement-provider'
 
 interface SelectionPlacementEngineProviderProps {
   isCatalogDrawerOpen: boolean

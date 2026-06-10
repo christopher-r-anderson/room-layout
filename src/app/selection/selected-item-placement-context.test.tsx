@@ -3,10 +3,10 @@ import { renderHook } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import type { SelectedItemPlacement } from './selected-item-placement.types'
 import {
-  SelectedItemPlacementProvider,
   useSelectedItemActionsSizeRef,
   useSelectedItemPlacement,
-} from './use-selected-item-placement-context'
+} from './selected-item-placement-context'
+import { SelectedItemPlacementProvider } from './selected-item-placement-provider'
 
 describe('SelectedItemPlacementContext', () => {
   it('useSelectedItemPlacement throws outside the provider', () => {

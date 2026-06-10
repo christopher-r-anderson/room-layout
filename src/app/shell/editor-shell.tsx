@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { SelectedItemInteractionProvider } from '@/app/selection/selected-item-interaction-context'
+import { SelectedItemInteractionProvider } from '@/app/selection/selected-item-interaction-provider'
 import { SelectionPlacementEngineProvider } from './selection-placement-engine-provider'
 import { ShellLayoutServicesProvider } from './shell-layout-services-provider'
 

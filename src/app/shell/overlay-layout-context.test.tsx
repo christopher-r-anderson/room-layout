@@ -1,10 +1,8 @@
 // @vitest-environment jsdom
 import { renderHook } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
-import {
-  OverlayLayoutProvider,
-  useOverlayLayout,
-} from '@/app/shell/overlay-layout-context'
+import { useOverlayLayout } from '@/app/shell/overlay-layout-context'
+import { OverlayLayoutProvider } from '@/app/shell/overlay-layout-provider'
 import type { OverlayExclusionRectId } from '@/app/shell/use-overlay-exclusion-rects'
 
 describe('OverlayLayoutContext', () => {

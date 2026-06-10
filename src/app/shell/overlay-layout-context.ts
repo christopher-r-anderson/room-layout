@@ -1,6 +1,4 @@
-/* eslint-disable react-refresh/only-export-components */
-
-import { createContext, useContext, type ReactNode } from 'react'
+import { createContext, useContext } from 'react'
 import type { OverlayExclusionRectId } from './use-overlay-exclusion-rects'
 
 interface OverlayLayout {
@@ -11,7 +9,7 @@ interface OverlayLayout {
   syncLayoutMode: (layout: 'mobile' | 'desktop') => void
 }
 
-const OverlayLayoutContext = createContext<OverlayLayout | null>(null)
+export const OverlayLayoutContext = createContext<OverlayLayout | null>(null)
 
 export function useOverlayLayout(): OverlayLayout {
   const value = useContext(OverlayLayoutContext)
@@ -23,15 +21,4 @@ export function useOverlayLayout(): OverlayLayout {
   }
 
   return value
-}
-
-export function OverlayLayoutProvider(props: {
-  value: OverlayLayout
-  children: ReactNode
-}) {
-  return (
-    <OverlayLayoutContext.Provider value={props.value}>
-      {props.children}
-    </OverlayLayoutContext.Provider>
-  )
 }

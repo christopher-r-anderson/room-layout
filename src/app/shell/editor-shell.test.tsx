@@ -3,8 +3,8 @@
 import { render, screen } from '@testing-library/react'
 import { createRef } from 'react'
 import { describe, expect, it, vi } from 'vitest'
-import { EditorRefsProvider } from '@/app/contexts/editor-refs-context'
-import { useSelectedItemPlacement } from '@/app/selection/use-selected-item-placement-context'
+import { EditorRefsProvider } from '@/app/contexts/editor-refs-provider'
+import { useSelectedItemPlacement } from '@/app/selection/selected-item-placement-context'
 import { useOverlayLayout } from './overlay-layout-context'
 import { EditorShell } from './editor-shell'
 

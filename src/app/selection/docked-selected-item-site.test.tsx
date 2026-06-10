@@ -3,8 +3,8 @@ import { render, screen } from '@testing-library/react'
 import { createRef } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { TooltipProvider } from '@/components/ui/tooltip'
-import { EditorRefsProvider } from '@/app/contexts/editor-refs-context'
-import { OverlayLayoutProvider } from '@/app/shell/overlay-layout-context'
+import { EditorRefsProvider } from '@/app/contexts/editor-refs-provider'
+import { OverlayLayoutProvider } from '@/app/shell/overlay-layout-provider'
 import { createHistoryState } from '@/lib/ui/editor-history'
 import {
   editorRuntimeActions,
@@ -17,8 +17,8 @@ import {
 } from '@/editor-state/scene-state-store'
 import { DockedSelectedItemSite } from './docked-selected-item-site'
 import { FloatingSelectedItemSite } from './floating-selected-item-site'
-import { SelectedItemInteractionProvider } from './selected-item-interaction-context'
-import { SelectedItemPlacementProvider } from './use-selected-item-placement-context'
+import { SelectedItemInteractionProvider } from './selected-item-interaction-provider'
+import { SelectedItemPlacementProvider } from './selected-item-placement-provider'
 import { FURNITURE_ITEM } from './test-fixtures'
 
 beforeEach(() => {

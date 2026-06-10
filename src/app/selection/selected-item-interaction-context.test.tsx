@@ -1,10 +1,8 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
-import {
-  SelectedItemInteractionProvider,
-  useSelectedItemInteraction,
-} from './selected-item-interaction-context'
+import { useSelectedItemInteraction } from './selected-item-interaction-context'
+import { SelectedItemInteractionProvider } from './selected-item-interaction-provider'
 
 describe('SelectedItemInteractionContext', () => {
   it('throws outside the provider', () => {
