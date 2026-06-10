@@ -1,28 +1,13 @@
-/* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, type ReactNode } from 'react'
+import { createContext, useContext } from 'react'
 import type { SelectedItemPlacement } from './selected-item-placement.types'
 
-export interface SelectedItemPlacementContextValue {
+interface SelectedItemPlacementContextValue {
   placement: SelectedItemPlacement
   actionsSizeRef: (element: HTMLElement | null) => void
 }
 
-const SelectedItemPlacementContext =
+export const SelectedItemPlacementContext =
   createContext<SelectedItemPlacementContextValue | null>(null)
-
-export function SelectedItemPlacementProvider({
-  value,
-  children,
-}: {
-  value: SelectedItemPlacementContextValue
-  children: ReactNode
-}) {
-  return (
-    <SelectedItemPlacementContext.Provider value={value}>
-      {children}
-    </SelectedItemPlacementContext.Provider>
-  )
-}
 
 export function useSelectedItemPlacement(): SelectedItemPlacement {
   const value = useContext(SelectedItemPlacementContext)

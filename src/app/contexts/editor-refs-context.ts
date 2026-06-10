@@ -1,13 +1,6 @@
-/* eslint-disable react-refresh/only-export-components */
+import { createContext, useContext, type RefObject } from 'react'
 
-import {
-  createContext,
-  useContext,
-  type ReactNode,
-  type RefObject,
-} from 'react'
-
-export interface EditorRefs {
+interface EditorRefs {
   roomViewRef: RefObject<HTMLElement | null>
   selectedItemControlsRef: RefObject<HTMLDivElement | null>
 }
@@ -22,15 +15,4 @@ export function useEditorRefs(): EditorRefs {
   }
 
   return value
-}
-
-export function EditorRefsProvider(props: {
-  value: EditorRefs
-  children: ReactNode
-}) {
-  return (
-    <EditorRefsContext.Provider value={props.value}>
-      {props.children}
-    </EditorRefsContext.Provider>
-  )
 }

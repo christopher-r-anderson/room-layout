@@ -13,11 +13,11 @@ import {
   resetEditorRuntimeStore,
 } from '@/editor-state/editor-runtime-store'
 import { sceneStateActions } from '@/editor-state/scene-state-store'
-import { OverlayLayoutProvider } from '@/app/shell/overlay-layout-context'
-import { EditorRefsProvider } from '../contexts/editor-refs-context'
+import { OverlayLayoutProvider } from '@/app/shell/overlay-layout-provider'
+import { EditorRefsProvider } from '../contexts/editor-refs-provider'
 import { FloatingSelectedItemSite } from '../selection/floating-selected-item-site'
-import { SelectedItemInteractionProvider } from '../selection/selected-item-interaction-context'
-import { SelectedItemPlacementProvider } from '../selection/use-selected-item-placement-context'
+import { SelectedItemInteractionProvider } from '../selection/selected-item-interaction-provider'
+import { SelectedItemPlacementProvider } from '../selection/selected-item-placement-provider'
 import { EditorOverlay } from './editor-overlay'
 import { findFirstFocusableControl } from '@/app/shell/focusable-controls'
 

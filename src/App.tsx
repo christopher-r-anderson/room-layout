@@ -35,7 +35,7 @@ import { useStartOverController } from './app/controllers/use-start-over-control
 import { useAssetLifecycleController } from './app/controllers/use-asset-lifecycle-controller'
 import { useShareController } from './app/controllers/use-share-controller'
 import { useCanvasKeyboardController } from './app/controllers/use-canvas-keyboard-controller'
-import { EditorRefsProvider } from './app/contexts/editor-refs-context'
+import { EditorRefsProvider } from './app/contexts/editor-refs-provider'
 import {
   editorRuntimeActions,
   useAssetError,

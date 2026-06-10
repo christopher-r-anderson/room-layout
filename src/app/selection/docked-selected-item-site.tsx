@@ -16,7 +16,7 @@ import { useSelectedItemInteraction } from './selected-item-interaction-context'
 import {
   useSelectedItemActionsSizeRef,
   useSelectedItemPlacement,
-} from './use-selected-item-placement-context'
+} from './selected-item-placement-context'
 
 export interface DockedSelectedItemSiteProps {
   onOpenDeleteDialog: () => void

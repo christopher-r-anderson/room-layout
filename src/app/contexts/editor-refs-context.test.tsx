@@ -2,7 +2,8 @@
 import { renderHook } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { createRef } from 'react'
-import { EditorRefsProvider, useEditorRefs } from './editor-refs-context'
+import { useEditorRefs } from './editor-refs-context'
+import { EditorRefsProvider } from './editor-refs-provider'
 
 describe('EditorRefsContext', () => {
   it('exposes the provided refs value', () => {
