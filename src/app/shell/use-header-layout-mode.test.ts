@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   HEADER_DESKTOP_MEDIA_QUERY,
   useHeaderLayoutMode,
-} from './use-header-layout-mode'
+} from '@/app/shell/use-header-layout-mode'
 
 function installMatchMedia(matches: boolean) {
   const listeners = new Set<(event: MediaQueryListEvent) => void>()

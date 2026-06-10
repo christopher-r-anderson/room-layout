@@ -68,13 +68,13 @@ Accessibility is an explicit goal for this project, especially for no-mouse edit
 
 - The editor supports keyboard-first interaction through room-contents selection, selected-item actions/details, global movement/rotation/history shortcuts, and canvas keyboard browse (spatial navigation when nothing is selected).
 - Startup, dialog, and editor feedback flows include screen-reader announcement support and deterministic focus transitions for key operations like delete and selection reconciliation.
-- All room-view-specific shortcuts (movement, rotation, deletion, and canvas browse) are scoped to the 3D room view's DOM focus, so keyboard navigation outside the canvas — for example, in the Furniture in room panel or selected-item details inputs — does not accidentally trigger object actions.
-- Canvas keyboard browse uses spatial ordering (top-to-bottom, left-to-right by screen projection) so arrow keys follow visual layout rather than an internal list order that may differ from what users see. The visible Furniture in room panel deliberately uses its own stable alpha-by-name order to remain predictable as objects move.
+- All room-view-specific shortcuts (movement, rotation, deletion, and canvas browse) are scoped to the 3D room view's DOM focus, so keyboard navigation outside the canvas, for example in the Furniture in room panel or selected-item details inputs, does not accidentally trigger object actions.
+- Canvas keyboard browse uses spatial ordering, top-to-bottom and left-to-right by screen projection, so arrow keys follow visual layout rather than an internal list order that may differ from what users see. The visible Furniture in room panel deliberately uses its own stable alpha-by-name order to remain predictable as objects move.
 - The Furniture in room panel is the primary accessible alternative to direct canvas interaction. It remains visible regardless of selection state so assistive technology users always have a stable text representation of the room contents.
 - There is no duplicate hidden DOM scene graph; the Furniture in room panel represents the room for assistive technology.
 - After canvas keyboard selection, announcements include a Tab hint to reach selected item actions and details, so screen reader users know what to do next.
 - The current selected-item actions/details are transitional surfaces for a future contextual model. Even if those controls later float visually near the selected object, they should remain after the 3D room view in logical DOM/tab order.
-- Automated accessibility checks run through Playwright + axe in Chromium and currently cover baseline shell/dialog states plus room-contents/selected-item states.
+- Automated accessibility checks run through Playwright + axe in Chromium and currently cover baseline shell/dialog states plus room-surface and selected-item states.
 - Automated checks are necessary but not sufficient; manual assistive-technology verification remains an ongoing task.
 
 First-time local setup:

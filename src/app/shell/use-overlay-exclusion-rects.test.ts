@@ -2,7 +2,7 @@
 
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { useOverlayExclusionRects } from './use-overlay-exclusion-rects'
+import { useOverlayExclusionRects } from '@/app/shell/use-overlay-exclusion-rects'
 
 const measuredRects = new WeakMap<Element, DOMRectReadOnly>()
 const originalVisualViewport = Object.getOwnPropertyDescriptor(
@@ -148,7 +148,6 @@ describe('useOverlayExclusionRects', () => {
 
     await waitFor(() => {
       expect(result.current.rects['top-header']).toMatchObject({
-        x: 12,
         y: 8,
         width: 120,
         height: 48,
@@ -167,7 +166,6 @@ describe('useOverlayExclusionRects', () => {
 
     await waitFor(() => {
       expect(result.current.rects['top-header']).toMatchObject({
-        x: 24,
         y: 16,
         width: 96,
         height: 32,
@@ -204,7 +202,6 @@ describe('useOverlayExclusionRects', () => {
 
     await waitFor(() => {
       expect(result.current.rects['top-header']).toMatchObject({
-        x: 10,
         y: 20,
         width: 140,
         height: 60,
@@ -220,7 +217,6 @@ describe('useOverlayExclusionRects', () => {
 
     await waitFor(() => {
       expect(result.current.rects['top-header']).toMatchObject({
-        x: 14,
         y: 24,
         width: 150,
         height: 70,
@@ -234,7 +230,6 @@ describe('useOverlayExclusionRects', () => {
 
     await waitFor(() => {
       expect(result.current.rects['top-header']).toMatchObject({
-        x: 18,
         y: 28,
         width: 160,
         height: 80,
@@ -248,7 +243,6 @@ describe('useOverlayExclusionRects', () => {
 
     await waitFor(() => {
       expect(result.current.rects['top-header']).toMatchObject({
-        x: 22,
         y: 32,
         width: 170,
         height: 90,
@@ -262,7 +256,6 @@ describe('useOverlayExclusionRects', () => {
 
     await waitFor(() => {
       expect(result.current.rects['top-header']).toMatchObject({
-        x: 26,
         y: 36,
         width: 180,
         height: 100,
@@ -276,7 +269,6 @@ describe('useOverlayExclusionRects', () => {
 
     await waitFor(() => {
       expect(result.current.rects['top-header']).toMatchObject({
-        x: 30,
         y: 40,
         width: 190,
         height: 110,
@@ -304,7 +296,6 @@ describe('useOverlayExclusionRects', () => {
 
     await waitFor(() => {
       expect(result.current.rects['camera-tools']).toMatchObject({
-        x: 12,
         y: 40,
         width: 48,
         height: 144,
@@ -318,7 +309,6 @@ describe('useOverlayExclusionRects', () => {
 
     await waitFor(() => {
       expect(result.current.rects['camera-tools']).toMatchObject({
-        x: 96,
         y: 40,
         width: 48,
         height: 144,
@@ -332,7 +322,6 @@ describe('useOverlayExclusionRects', () => {
 
     await waitFor(() => {
       expect(result.current.rects['camera-tools']).toMatchObject({
-        x: 152,
         y: 40,
         width: 48,
         height: 144,

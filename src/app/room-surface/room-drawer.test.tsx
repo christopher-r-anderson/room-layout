@@ -8,7 +8,7 @@ import type {
   FloorFinishOption,
   WallFinishOption,
 } from '@/lib/three/environment-materials'
-import { RoomDrawer } from './room-drawer'
+import { RoomDrawer } from '@/app/room-surface/room-drawer'
 
 function createFloorOptions(): FloorFinishOption[] {
   return [

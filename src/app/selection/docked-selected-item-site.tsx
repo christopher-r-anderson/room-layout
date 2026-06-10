@@ -1,5 +1,5 @@
 import { useEditorRefs } from '@/app/contexts/editor-refs-context'
-import { useOverlayLayout } from '@/app/contexts/overlay-layout-context'
+import { useOverlayLayout } from '@/app/shell/overlay-layout-context'
 import {
   useEditorInteractionsEnabled,
   useStartupOverlayActive,

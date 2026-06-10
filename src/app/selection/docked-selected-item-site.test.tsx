@@ -4,7 +4,7 @@ import { createRef } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { EditorRefsProvider } from '@/app/contexts/editor-refs-context'
-import { OverlayLayoutProvider } from '@/app/contexts/overlay-layout-context'
+import { OverlayLayoutProvider } from '@/app/shell/overlay-layout-context'
 import { createHistoryState } from '@/lib/ui/editor-history'
 import {
   editorRuntimeActions,

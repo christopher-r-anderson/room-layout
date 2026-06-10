@@ -13,15 +13,15 @@ import {
   resetEditorRuntimeStore,
 } from '@/editor-state/editor-runtime-store'
 import { sceneStateActions } from '@/editor-state/scene-state-store'
-import { OverlayLayoutProvider } from '../contexts/overlay-layout-context'
+import { OverlayLayoutProvider } from '@/app/shell/overlay-layout-context'
 import { EditorRefsProvider } from '../contexts/editor-refs-context'
 import { FloatingSelectedItemSite } from '../selection/floating-selected-item-site'
 import { SelectedItemInteractionProvider } from '../selection/selected-item-interaction-context'
 import { SelectedItemPlacementProvider } from '../selection/use-selected-item-placement-context'
 import { EditorOverlay } from './editor-overlay'
-import { findFirstFocusableControl } from './focusable-controls'
+import { findFirstFocusableControl } from '@/app/shell/focusable-controls'
 
-vi.mock('./use-header-layout-mode', () => ({
+vi.mock('@/app/shell/use-header-layout-mode', () => ({
   useHeaderLayoutMode: () => 'desktop' as const,
 }))
 

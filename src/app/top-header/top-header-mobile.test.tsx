@@ -7,9 +7,9 @@ import type {
   FloorFinishOption,
   WallFinishOption,
 } from '@/lib/three/environment-materials'
-import { ROOM_TRIGGER_TOOLTIP } from './room-copy'
-import { TopHeaderMobile } from './top-header-mobile'
-import type { TopHeaderMobileProps } from './top-header.types'
+import { ROOM_TRIGGER_TOOLTIP } from '@/app/room-surface/room-copy'
+import { TopHeaderMobile } from '@/app/top-header/top-header-mobile'
+import type { TopHeaderMobileProps } from '@/app/top-header/top-header.types'
 
 vi.mock('@/app/catalog/catalog-drawer', () => ({
   CatalogDrawer: () => <button type="button">Add furniture</button>,
@@ -19,11 +19,11 @@ vi.mock('@/app/history/history-tools', () => ({
   HistoryTools: () => <div />,
 }))
 
-vi.mock('./room-drawer', () => ({
+vi.mock('@/app/room-surface/room-drawer', () => ({
   RoomDrawer: () => null,
 }))
 
-vi.mock('./share-scene-button', () => ({
+vi.mock('@/app/top-header/share-scene-button', () => ({
   ShareSceneButton: () => <button type="button">Share room layout</button>,
 }))
 

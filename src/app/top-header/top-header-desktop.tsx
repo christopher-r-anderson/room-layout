@@ -10,8 +10,8 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { IconHomeCog, IconInfoCircle, IconKeyboard } from '@tabler/icons-react'
-import { ROOM_TRIGGER_TOOLTIP } from './room-copy'
-import { RoomSidebar } from './room-sidebar'
+import { ROOM_TRIGGER_TOOLTIP } from '@/app/room-surface/room-copy'
+import { RoomSidebar } from '@/app/room-surface/room-sidebar'
 import { StartOverButton } from './start-over-button'
 import { ShareSceneButton } from './share-scene-button'
 import type { TopHeaderDesktopProps } from './top-header.types'
