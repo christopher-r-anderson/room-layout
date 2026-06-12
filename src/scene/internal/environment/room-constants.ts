@@ -4,4 +4,4 @@ export {
   ROOM_HALF_DEPTH_METERS,
   ROOM_HALF_WIDTH_METERS,
   ROOM_WALL_HEIGHT_METERS,
-} from '@/lib/three/room-metrics'
+} from '@/shared/lib/three/room-metrics'

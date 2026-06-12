@@ -1,5 +1,8 @@
 import { describe, expect, it, beforeEach, vi } from 'vitest'
-import { createHistoryState, type HistoryState } from '@/lib/ui/editor-history'
+import {
+  createHistoryState,
+  type HistoryState,
+} from '@/shared/lib/ui/editor-history'
 import type { FurnitureItem } from '../objects/furniture.types'
 import {
   addFurnitureToHistory,
@@ -18,14 +21,14 @@ const layoutMocks = vi.hoisted(() => ({
   resolveRotatedFurnitureTransform: vi.fn(),
 }))
 
-vi.mock('@/lib/three/furniture-spawn', () => ({
+vi.mock('@/shared/lib/three/furniture-spawn', () => ({
   findFurnitureSpawnPosition: spawnMocks.findFurnitureSpawnPosition,
 }))
 
-vi.mock('@/lib/three/furniture-layout', async () => {
+vi.mock('@/shared/lib/three/furniture-layout', async () => {
   const actual = await vi.importActual<
-    typeof import('@/lib/three/furniture-layout')
-  >('@/lib/three/furniture-layout')
+    typeof import('@/shared/lib/three/furniture-layout')
+  >('@/shared/lib/three/furniture-layout')
 
   return {
     ...actual,

@@ -5,11 +5,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   runStartupAssetErrorTransition,
   runStartupRetryTransition,
-} from '@/app/startup/startup-transitions'
+} from '@/features/startup/startup-transitions'
 import { runStartupRestoreFlow } from './_shared/restore-flow'
 import { useAssetLifecycleController } from './use-asset-lifecycle-controller'
 
-vi.mock('@/app/startup/startup-transitions', () => ({
+vi.mock('@/features/startup/startup-transitions', () => ({
   runStartupAssetErrorTransition: vi.fn(),
   runStartupRetryTransition: vi.fn(),
 }))
@@ -18,15 +18,15 @@ vi.mock('./_shared/restore-flow', () => ({
   runStartupRestoreFlow: vi.fn(),
 }))
 
-vi.mock('@/app/url-scene/scene-draft', () => ({
+vi.mock('@/features/url-scene/scene-draft', () => ({
   loadSceneDraft: vi.fn().mockReturnValue(null),
   saveSceneDraft: vi.fn(),
 }))
 
-vi.mock('@/app/url-scene/scene-url', async () => {
+vi.mock('@/features/url-scene/scene-url', async () => {
   const actual = await vi.importActual<
-    typeof import('@/app/url-scene/scene-url')
-  >('@/app/url-scene/scene-url')
+    typeof import('@/features/url-scene/scene-url')
+  >('@/features/url-scene/scene-url')
   return {
     ...actual,
     parseSceneUrl: vi.fn().mockReturnValue({ ok: false, reason: 'no-param' }),

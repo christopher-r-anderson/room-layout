@@ -5,15 +5,18 @@ import { sceneStateActions } from '@/editor-state/scene-state-store'
 import {
   runStartupAssetErrorTransition,
   runStartupRetryTransition,
-} from '@/app/startup/startup-transitions'
+} from '@/features/startup/startup-transitions'
 import {
   SCENE_URL_PARAM,
   parseSceneUrl,
   validateCatalogReferences,
-} from '@/app/url-scene/scene-url'
-import { loadSceneDraft, saveSceneDraft } from '@/app/url-scene/scene-draft'
-import { createDefaultSceneState } from '@/app/startup/scene-defaults'
-import { isSceneStateAtDefaults } from '@/lib/three/scene-model'
+} from '@/features/url-scene/scene-url'
+import {
+  loadSceneDraft,
+  saveSceneDraft,
+} from '@/features/url-scene/scene-draft'
+import { createDefaultSceneState } from '@/shared/lib/three/scene-defaults'
+import { isSceneStateAtDefaults } from '@/shared/lib/three/scene-model'
 import { sceneCommands } from '@/scene/scene-commands'
 import type { FurnitureCatalogEntry } from '@/scene/objects/furniture-catalog'
 import { toast } from 'sonner'

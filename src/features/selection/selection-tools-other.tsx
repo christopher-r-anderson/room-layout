@@ -1,0 +1,68 @@
+import { ButtonGroup } from '@/shared/ui/button-group'
+import { IconRotate3d, IconTrash } from '@tabler/icons-react'
+import type { FurnitureItem } from '@/scene/objects/furniture.types'
+import { ToolButton } from '@/shared/ui/tool-button'
+
+export function SelectionToolsOther({
+  editorInteractionsEnabled,
+  onOpenDeleteDialog,
+  onPrepareDelete,
+  onRotateSelection,
+  selectedFurniture,
+}: {
+  editorInteractionsEnabled: boolean
+  onOpenDeleteDialog: () => void
+  onPrepareDelete?: () => void
+  onRotateSelection: (direction: -1 | 1) => void
+  selectedFurniture: FurnitureItem | null
+}) {
+  const controlsDisabled = !editorInteractionsEnabled || !selectedFurniture
+  const disabledMessage = !editorInteractionsEnabled
+    ? 'Editor interactions are unavailable while loading'
+    : 'No item selected'
+
+  return (
+    <ButtonGroup aria-label="Selected item actions">
+      <ToolButton
+        action={() => {
+          onRotateSelection(1)
+        }}
+        disabled={controlsDisabled}
+        disabledMessage={disabledMessage}
+        shortcuts=","
+        label="Rotate counterclockwise"
+        labelVisibility="sr-only"
+        icon={<IconRotate3d className="-scale-x-100" />}
+        size="toolbar-icon"
+        tooltipSide="top"
+      />
+      <ToolButton
+        action={() => {
+          onRotateSelection(-1)
+        }}
+        disabled={controlsDisabled}
+        disabledMessage={disabledMessage}
+        shortcuts="."
+        label="Rotate clockwise"
+        labelVisibility="sr-only"
+        icon={<IconRotate3d />}
+        size="toolbar-icon"
+        tooltipSide="top"
+      />
+      <ToolButton
+        action={onOpenDeleteDialog}
+        disabled={controlsDisabled}
+        disabledMessage={disabledMessage}
+        shortcuts="Delete Backspace"
+        label="Remove item"
+        labelVisibility="sr-only"
+        icon={<IconTrash />}
+        size="toolbar-icon"
+        tooltipSide="top"
+        onPointerDown={() => {
+          onPrepareDelete?.()
+        }}
+      />
+    </ButtonGroup>
+  )
+}

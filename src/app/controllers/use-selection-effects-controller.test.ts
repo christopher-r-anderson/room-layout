@@ -9,7 +9,7 @@ import {
   resetSceneStateStore,
   sceneStateActions,
 } from '@/editor-state/scene-state-store'
-import { createHistoryState } from '@/lib/ui/editor-history'
+import { createHistoryState } from '@/shared/lib/ui/editor-history'
 import { useSelectionEffectsController } from './use-selection-effects-controller'
 
 const CHAIR = {

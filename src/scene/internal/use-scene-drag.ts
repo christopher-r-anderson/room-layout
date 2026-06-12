@@ -3,15 +3,15 @@ import { type ThreeEvent } from '@react-three/fiber'
 import {
   getFloorIntersection,
   getDraggedFurniturePosition,
-} from '@/lib/three/furniture-drag'
+} from '@/shared/lib/three/furniture-drag'
 import {
   resolveMovedFurniturePosition,
   type LayoutBounds,
-} from '@/lib/three/furniture-layout'
+} from '@/shared/lib/three/furniture-layout'
 import {
   finalizeHistoryPresent,
   type HistoryState,
-} from '@/lib/ui/editor-history'
+} from '@/shared/lib/ui/editor-history'
 import type { FurnitureItem } from '../objects/furniture.types'
 
 interface DragState {

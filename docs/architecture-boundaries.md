@@ -1,131 +1,95 @@
 # Architecture Boundaries
 
-## Layer Diagram
+This document defines target architecture and placement rules for runtime code.
+
+Architecture boundaries are enforced by ESLint. This document is the policy. `eslint.config.js` is the executable contract.
+
+## Architecture Map
 
 ```mermaid
-graph TD
-  App["App.tsx — composition root"]
-  Shell["src/app/shell/ — editor shell coordination"]
-  Header["src/app/top-header/ — header feature"]
-  Room["src/app/room-surface/ — room surface feature"]
-  State["src/editor-state/ — stores"]
-  Scene["src/scene/ — scene domain"]
-  Lib["src/lib/ — pure utilities"]
-  UI["src/components/ui/ — shadcn primitives"]
+flowchart TD
+  app["app\ncomposition and shell wiring"]
+  features["features\neditor capabilities"]
+  state["editor-state\nstores, actions, contracts"]
+  shared["shared\nreusable infra and primitives"]
+  scene["scene\nrendering and scene domain"]
+  test["test\n test-only support"]
 
-  App --> Shell
-  App --> Header
-  App --> Room
-  App --> State
-  App --> Scene
+  app --> features
+  app --> state
+  app --> shared
+  app --> scene
 
-  Shell --> State
-  Shell --> Lib
-  Shell --> UI
+  features --> state
+  features --> shared
+  features -. approved scene contracts .-> scene
 
-  Header --> Shell
-  Header --> State
-  Header --> UI
+  state --> shared
+  state -. scene contracts only .-> scene
 
-  Room --> UI
-  Room --> Lib
-
-  State --> Lib
-
-  Scene --> Lib
-
-  Shell -. "scene contracts only" .-> Scene
-  State -. "type-only scene contracts" .-> Scene
-  Scene -. "via scene-contracts only" .-> State
+  scene --> shared
+  scene -. editor-state contracts only .-> state
 ```
 
-## Layer Responsibilities
+Notes:
 
-| Layer                        | Path                           | May import from                                                            | Must not import from                               |
-| ---------------------------- | ------------------------------ | -------------------------------------------------------------------------- | -------------------------------------------------- |
-| Composition root             | `src/App.tsx`                  | Everything                                                                 | —                                                  |
-| Editor shell                 | `src/app/shell/`               | `editor-state`, `scene` (contracts only), `lib`, `components/ui`           | non-contract `scene` modules, `scene/internal`     |
-| Header feature               | `src/app/top-header/`          | `editor-state`, `lib`, `components/ui`, shell coordination                 | `scene/internal`, store internals                  |
-| Room surface feature         | `src/app/room-surface/`        | `lib`, `components/ui`                                                     | stores, `scene/internal`                           |
-| Editor state                 | `src/editor-state/`            | `lib`, `scene` (type-only contracts from `scene.types`, `furniture.types`) | `app`, `components`                                |
-| Scene domain                 | `src/scene/`                   | `editor-state/scene-contracts`, `lib`                                      | `app`, `components`, direct store modules          |
-| Pure views (subset of shell) | Designated files in `src/app/` | `components/ui`, `lib`, type re-exports from `app/*.types.ts`              | `editor-state`, `controllers`, `contexts`, `hooks` |
-| Controllers                  | `src/app/controllers/`         | `editor-state`, `scene` (commands/contracts), `lib`, other controllers     | `components/ui`, overlay/view components           |
-| UI primitives                | `src/components/ui/`           | `lib`                                                                      | Everything else                                    |
-| Utilities                    | `src/lib/`                     | Only `lib` siblings and external packages                                  | `app`, `editor-state`, `scene`, `components`       |
+- `app` is the composition root and may read across layers.
+- `shared/ui` is stricter than other `shared` folders.
+- `test` is test-only support and not a runtime dependency target.
 
-## ESLint Enforcement
+## Layer Intent
 
-The core layer boundaries are enforced via `no-restricted-imports` rules in `eslint.config.js`. The rules are:
+- `src/app`: composition root, app shell wiring, runtime harness wiring.
+- `src/features`: user-facing editor capabilities and feature-local behavior.
+- `src/editor-state`: shared stores, actions, selectors, contracts, and shared state types.
+- `src/shared`: reusable runtime primitives and infra used by app/features/state/scene.
+- `src/scene`: scene rendering domain and scene internals.
+- `src/test`: test-only infrastructure.
 
-1. **Scene isolation** — `src/scene/` cannot import from `src/app/`. Can only import from `@/editor-state/scene-contracts` (all other editor-state paths are blocked).
-2. **Editor-state isolation** — `src/editor-state/` cannot import from `src/app/` or `src/components/`.
-3. **App-side scene restriction** — `src/app/` can import scene only through the approved contract modules: `@/scene/scene.types`, `@/scene/scene-commands`, `@/scene/objects/furniture.types`, or `@/scene/objects/furniture-catalog`.
-4. **Controller boundary** — `src/app/controllers/` cannot import UI components (`@/components/`), overlay components, or view components.
-5. **Pure-view boundary** — Designated view files cannot import from `@/editor-state/`, `@/app/controllers/`, `@/app/contexts/`, `@/app/hooks/`, or `@/scene/scene.types`.
-6. **UI primitives boundary** — `src/components/ui/` cannot import from `app`, `editor-state`, or `scene`.
+For local context inside each area, see:
 
-Test files keep flexibility where it is useful for setup, but the production scene boundary is still enforced in tests by allowing only `@/editor-state/scene-contracts` and the dedicated `@/editor-state/scene-test-support` seam.
+- `src/app/README.md`
+- `src/features/README.md`
+- `src/editor-state/README.md`
+- `src/shared/README.md`
+- `src/scene/README.md`
 
-## Adding New Modules
+## Placement Rules
 
-### New store
+1. If code is consumed by both `app` and `features`, it cannot live in `app`.
+2. Put feature orchestration in a feature folder unless it coordinates multiple features.
+3. Put cross-feature state in `editor-state`, not feature-local modules.
+4. Keep `shared/ui` dependency-free from app/features/state/scene runtime code.
+5. Keep `shared/layout` lower-level than `app/chrome`.
+6. Keep scene internals in `scene/internal` and avoid importing them outside scene.
+7. Use approved scene contract imports outside scene, not arbitrary `@/scene/**` paths.
+8. Do not import `src/test` from runtime code.
 
-Add to `src/editor-state/`. Export from `src/editor-state/index.ts`. If the scene needs access, add specific exports to `src/editor-state/scene-contracts.ts`. If a scene test needs a reset/helper seam, expose that from `src/editor-state/scene-test-support.ts` instead of widening the production contract.
+## Current Exceptions
 
-### New shared type
+These are temporary or intentionally narrow.
 
-- If consumed by stores: put in `src/editor-state/types/`. Export from `src/editor-state/types/index.ts`.
-- If consumed only by views/shell: put in `src/app/` as a standalone `.types.ts` file.
-- If consumed by both: put in `src/editor-state/types/` and add a re-export shim in `src/app/` (e.g. `src/app/foo.types.ts` re-exports from `@/editor-state/types/foo.types`). Views import from the `src/app/` shim.
+- Scene runtime imports in app/features/shared are currently allowlisted to a small contract surface.
+- `shared/lib` still has a few scene-type dependencies and is not yet fully scene-independent.
 
-### New pure view
+## Future Improvements
 
-Add to the appropriate feature folder in `src/app/`. Add the file path to the pure-view ESLint glob list in `eslint.config.js`. The component must receive all state via props — no store imports, no controller imports, no context imports.
+1. Scene public API surface
+   - Replace temporary scene allowlist exceptions with explicit public scene entrypoints.
+2. Module public entrypoints
+   - Introduce `index.ts` entrypoints for cross-layer modules that are imported externally.
+   - Keep purely local modules private.
+3. Controller ownership
+   - Move feature-specific controllers from app-level orchestration into owning features when boundaries are clear.
+4. Feature internal structure
+   - Add internal subfolders only where feature size and churn justify it.
+5. Shared lib type ownership
+   - Reduce `shared/lib` dependency on scene-owned types.
+   - Revisit neutral foundational type ownership once scene public surface is finalized.
 
-### New controller
+## Related Docs
 
-Add to `src/app/controllers/`. It automatically inherits the controller boundary rule (no UI component imports). Controllers coordinate state via store actions and scene commands, and return callbacks/data for containers to pass to views.
-
-### New scene internal
-
-Add to `src/scene/internal/`. Never export from scene contract modules (`scene.types.ts`, `scene-commands.ts`, `furniture.types.ts`, `furniture-catalog.ts`).
-
-### Deferred lib boundary
-
-`src/lib/` is not yet covered by a broad import boundary rule. Some lib utilities currently depend on scene contract types such as `FurnitureItem` and `FootprintSize`, so a strict lib-wide deny rule would either break existing code or force an additional shared-types refactor first. To make this enforceable later, move those scene-derived types into a neutral shared-types module, update lib utilities to depend on that neutral surface, and then add an ESLint rule that blocks `lib` from importing `app`, `editor-state`, and `scene` directly.
-
-## Key Conventions
-
-- **Scene contracts** are the stable API between scene and app: `@/scene/scene.types`, `@/scene/scene-commands`, `@/scene/objects/furniture.types`, `@/scene/objects/furniture-catalog`.
-- **`@/editor-state/scene-contracts`** is the narrow surface the scene uses to read/write shared state. Keep it minimal.
-- **`@/editor-state/scene-test-support`** is a test-only seam for scene setup/reset helpers. It exists so scene tests can avoid direct store imports without widening the production scene contract.
-- **Pure views** are prop-driven components with no knowledge of stores or state management. They compose shadcn primitives from `@/components/ui/` and utilities from `@/lib/`; shared type surfaces should come from app shims such as `@/app/scene-object.types` or `@/app/selected-item-details.types`, not from `@/scene/**`.
-- **Connected containers** (e.g. `editor-shell.tsx`, `editor-overlay.tsx`, `top-header.tsx`, `outliner.tsx`, render sites) read from stores and pass state/callbacks to pure views. They are not restricted by the pure-view rule.
-- **Type re-export shims** in `src/app/*.types.ts` exist so that pure views can import shared types without touching `@/editor-state/` directly.
-
-## Shell Provider Layers
-
-Shell coordination depends on provider order. Keep these layers in this order:
-
-### 1. `ShellLayoutServicesProvider`
-
-Collect exclusion rects and compose the overlay layout contract.
-
-- Uses: `useOverlayExclusionRects`
-- Publishes via: `OverlayLayoutProvider`
-- Consumers: `useOverlayLayout`
-
-### 2. `SelectionPlacementEngineProvider`
-
-Compute selected-item placement from shell layout data and publish it.
-
-- Uses: `useComputeSelectedItemPlacement`
-- Publishes via: `SelectedItemPlacementProvider`
-- Consumers: `useSelectedItemPlacement`, `useSelectedItemActionsSizeRef`
-
-### 3. `SelectedItemInteractionProvider`
-
-Hold ephemeral interaction state (e.g. blur-commit suppression) shared by selected-item render sites.
-
-- Consumers: `useSelectedItemInteraction`
+- Root overview and scripts: `README.md`
+- Overlay model and behavior: `docs/overlay-interaction-model.md`
+- Selected toolbar placement details: `docs/selected-toolbar-placement.md`
+- Editor state details: `docs/editor-state-architecture.md`

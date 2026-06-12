@@ -7,10 +7,10 @@ import {
   sceneStateStore,
 } from '@/editor-state/scene-state-store'
 import { sceneCommands } from '@/scene/scene-commands'
-import { clearSceneDraft } from '@/app/url-scene/scene-draft'
+import { clearSceneDraft } from '@/features/url-scene/scene-draft'
 import { useStartOverController } from './use-start-over-controller'
 
-vi.mock('@/app/url-scene/scene-draft', () => ({
+vi.mock('@/features/url-scene/scene-draft', () => ({
   clearSceneDraft: vi.fn(),
 }))
 

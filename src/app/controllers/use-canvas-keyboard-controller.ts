@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, type RefObject } from 'react'
 import type { SelectByIdResult } from '@/scene/scene.types'
-import type { InteractionSource } from '@/app/scene-interaction.types'
+import type { InteractionSource } from '@/editor-state/types/interaction.types'
 import { sceneCommands } from '@/scene/scene-commands'
-import { sortSpatially } from '@/lib/three/spatial-sort'
+import { sortSpatially } from '@/shared/lib/three/spatial-sort'
 
 interface AnnouncementsApi {
   announcePolite: (message: string) => void

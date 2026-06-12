@@ -3,7 +3,7 @@ import type { DialogStateSnapshot } from '@/editor-state/dialog-store'
 import { sceneStateActions, useItems } from '@/editor-state/scene-state-store'
 import { useSelectedSource } from '@/editor-state/selection-meta-store'
 import { sceneCommands } from '@/scene/scene-commands'
-import { DELETE_SELECTION_MISSING_MESSAGE } from '@/app/hooks/command-messages'
+import { DELETE_SELECTION_MISSING_MESSAGE } from '@/shared/messages/command-messages'
 import type { SelectionEffectsApi } from './use-selection-effects-controller'
 
 interface AnnouncementsApi {

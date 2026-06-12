@@ -1,5 +1,5 @@
 import type { FurnitureItem } from './objects/furniture.types'
-export type { CameraPreset } from '@/lib/three/camera-presets'
+export type { CameraPreset } from '@/shared/lib/three/camera-presets'
 
 export type MoveSource = 'keyboard' | 'inspector' | 'toolbar' | 'drag'
 

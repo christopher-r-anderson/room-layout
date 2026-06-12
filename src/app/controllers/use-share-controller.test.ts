@@ -2,15 +2,15 @@
 
 import { act, renderHook } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { createHistoryState } from '@/lib/ui/editor-history'
+import { createHistoryState } from '@/shared/lib/ui/editor-history'
 import {
   resetSceneStateStore,
   sceneStateActions,
 } from '@/editor-state/scene-state-store'
-import { serializeSceneToUrl } from '@/app/url-scene/scene-url'
+import { serializeSceneToUrl } from '@/features/url-scene/scene-url'
 import { useShareController } from './use-share-controller'
 
-vi.mock('@/app/url-scene/scene-url', () => ({
+vi.mock('@/features/url-scene/scene-url', () => ({
   serializeSceneToUrl: vi.fn(),
 }))
 

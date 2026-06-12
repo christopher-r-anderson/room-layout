@@ -5,7 +5,7 @@ import {
   type EnvironmentMaterialConfig,
   type FloorFinishOption,
   type WallFinishOption,
-} from '@/lib/three/environment-materials'
+} from '@/shared/lib/three/environment-materials'
 
 interface UseActiveFinishIdsOptions {
   environmentConfig: EnvironmentMaterialConfig | null

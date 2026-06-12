@@ -4,7 +4,7 @@ import { createStore } from 'zustand/vanilla'
 import type { InteractionSource } from './types/interaction.types'
 import type { SceneOutlinerFocusRequest } from './types/scene-panel.types'
 import type { ScreenPoint, SelectedToolbarGeometry } from '@/scene/scene.types'
-import { perfCounters } from '@/lib/debug/perf-counters'
+import { perfCounters } from '@/shared/debug/perf-counters'
 import type { EqualityChecker } from './store-types'
 
 interface SelectionMetaStoreState {

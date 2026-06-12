@@ -4,7 +4,7 @@ import {
   useOutlinerFocusRequest,
 } from '@/editor-state/selection-meta-store'
 import { useItems, useSceneStateStore } from '@/editor-state/scene-state-store'
-import type { InteractionSource } from '@/app/scene-interaction.types'
+import type { InteractionSource } from '@/editor-state/types/interaction.types'
 import type {
   PendingSelectionChangeBehavior,
   SelectionAnnouncementMode,

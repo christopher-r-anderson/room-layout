@@ -2,7 +2,7 @@
 
 import { act, renderHook } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { createHistoryState } from '@/lib/ui/editor-history'
+import { createHistoryState } from '@/shared/lib/ui/editor-history'
 import {
   resetSceneStateStore,
   sceneStateActions,
@@ -13,7 +13,7 @@ import {
   selectionMetaActions,
 } from '@/editor-state/selection-meta-store'
 import { sceneCommands } from '@/scene/scene-commands'
-import { DELETE_SELECTION_MISSING_MESSAGE } from '@/app/hooks/command-messages'
+import { DELETE_SELECTION_MISSING_MESSAGE } from '@/shared/messages/command-messages'
 import { useDeletionController } from './use-deletion-controller'
 
 const CHAIR = {

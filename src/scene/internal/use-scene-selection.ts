@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useRef, useState, type RefObject } from 'react'
 import { type Object3D } from 'three'
-import { getMeshes } from '@/lib/three/get-meshes'
+import { getMeshes } from '@/shared/lib/three/get-meshes'
 import {
   sceneStateActions,
   useSelectedId,

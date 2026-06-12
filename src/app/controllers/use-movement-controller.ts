@@ -1,5 +1,5 @@
 import { useCallback } from 'react'
-import { resolvePositionFromWallClearances } from '@/lib/three/wall-clearance'
+import { resolvePositionFromWallClearances } from '@/shared/lib/three/wall-clearance'
 import {
   sceneStateActions,
   useSelectedFurniture,
@@ -10,7 +10,7 @@ import type { MoveSource, MoveSelectionResult } from '@/scene/scene.types'
 import type {
   UpdateSelectedItemDetailsInput,
   UpdateSelectedItemDetailsResult,
-} from '@/app/selected-item-details.types'
+} from '@/editor-state/types/selected-item.types'
 import {
   formatCoordinate,
   formatMoveBlockedMessage,

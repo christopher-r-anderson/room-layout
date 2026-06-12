@@ -17,7 +17,7 @@ import {
   getCollection,
   preloadFurnitureCollections,
 } from './furniture-catalog'
-import { resolvePublicAssetPath } from '@/lib/asset-path'
+import { resolvePublicAssetPath } from '@/shared/lib/asset-path'
 import type { FurnitureCollection } from './furniture-catalog'
 
 const TEST_PATHS = [
