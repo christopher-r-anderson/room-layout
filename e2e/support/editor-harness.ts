@@ -1,7 +1,7 @@
 import { mkdir, stat, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { expect, type Page } from '@playwright/test'
-import type { PerfCounterSnapshot } from '../../src/lib/debug/perf-counters'
+import type { PerfCounterSnapshot } from '../../src/shared/debug/perf-counters'
 import { getPerfBaselineSha } from './perf-meta'
 
 const FURNITURE_ASSET_ROUTE = /\/models\/.+\.glb(?:\?.*)?$/

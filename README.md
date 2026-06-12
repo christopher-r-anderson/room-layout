@@ -122,11 +122,21 @@ Current deployment URL:
 
 In addition to this README, project-specific guides are available:
 
+- [Architecture Boundaries](docs/architecture-boundaries.md): Layer map, placement rules, current exceptions, and planned boundary improvements.
 - [Editor Shortcuts Reference](docs/editor-shortcuts-reference.md): End-user shortcut map for camera, object, and scene actions.
 - [Editor State Architecture](docs/editor-state-architecture.md): Current Phase 1 boundary between app shell state, shared editor-state stores, and scene-owned behavior.
 - [Keyboard Shortcuts (Engineering)](docs/keyboard-shortcuts.md): Input architecture, matching/suppression/execution rules, and held-key camera behavior.
 - [Overlay Interaction Model](docs/overlay-interaction-model.md): Blocking overlays vs the non-blocking Room surface, including focus and breakpoint behavior.
 - [Selected Toolbar Placement](docs/selected-toolbar-placement.md): Bounds source order, viewport-space placement, floating candidate scoring, and docked fallback behavior.
+
+Local architecture notes are also available in:
+
+- `src/app/README.md`
+- `src/features/README.md`
+- `src/editor-state/README.md`
+- `src/shared/README.md`
+- `src/scene/README.md`
+- `src/test/README.md`
 
 ## 🖦 Usage
 

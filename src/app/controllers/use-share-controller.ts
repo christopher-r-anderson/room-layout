@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 import { sceneStateActions, useItems } from '@/editor-state/scene-state-store'
-import { serializeSceneToUrl } from '@/app/url-scene/scene-url'
+import { serializeSceneToUrl } from '@/features/url-scene/scene-url'
 
 interface AnnouncementsApi {
   announcePolite: (message: string) => void

@@ -3,9 +3,9 @@
 import { act, renderHook } from '@testing-library/react'
 import { describe, expect, it, beforeEach, vi } from 'vitest'
 import { Ray, Vector3 } from 'three'
-import type { HistoryState } from '@/lib/ui/editor-history'
+import type { HistoryState } from '@/shared/lib/ui/editor-history'
 import { useSceneDrag } from './use-scene-drag'
-import type { LayoutBounds } from '@/lib/three/furniture-layout'
+import type { LayoutBounds } from '@/shared/lib/three/furniture-layout'
 import type { FurnitureItem } from '../objects/furniture.types'
 
 const {
@@ -18,12 +18,12 @@ const {
   mockResolveMovedFurniturePosition: vi.fn(),
 }))
 
-vi.mock('@/lib/three/furniture-drag', () => ({
+vi.mock('@/shared/lib/three/furniture-drag', () => ({
   getFloorIntersection: mockGetFloorIntersection,
   getDraggedFurniturePosition: mockGetDraggedFurniturePosition,
 }))
 
-vi.mock('@/lib/three/furniture-layout', () => ({
+vi.mock('@/shared/lib/three/furniture-layout', () => ({
   resolveMovedFurniturePosition: mockResolveMovedFurniturePosition,
 }))
 

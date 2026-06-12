@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   commitHistoryPresent,
   createHistoryState,
-} from '@/lib/ui/editor-history'
+} from '@/shared/lib/ui/editor-history'
 import type { FurnitureItem } from '../objects/furniture.types'
 import {
   getSceneHistoryAvailability,

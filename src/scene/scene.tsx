@@ -1,12 +1,15 @@
-import { getMeshes } from '@/lib/three/get-meshes'
-import { getVisualObjectBounds } from '@/lib/three/get-visual-object-bounds'
-import { CAMERA_PRESETS, type CameraPreset } from '@/lib/three/camera-presets'
+import { getMeshes } from '@/shared/lib/three/get-meshes'
+import { getVisualObjectBounds } from '@/shared/lib/three/get-visual-object-bounds'
+import {
+  CAMERA_PRESETS,
+  type CameraPreset,
+} from '@/shared/lib/three/camera-presets'
 import { Room } from './internal/environment/room'
 import { Lighting } from './internal/environment/lighting'
 import type {
   FloorFinishOption,
   WallFinishOption,
-} from '@/lib/three/environment-materials'
+} from '@/shared/lib/three/environment-materials'
 import { CameraControls } from './internal/camera/camera-controls'
 import { InteractiveFurniture } from './internal/objects/interactive-furniture'
 import { useGLTF } from '@react-three/drei'
@@ -19,8 +22,8 @@ import {
   resolveAbsoluteFurnitureTransform,
   resolveMovedFurniturePosition,
   type LayoutBounds,
-} from '@/lib/three/furniture-layout'
-import { commitHistoryPresent } from '@/lib/ui/editor-history'
+} from '@/shared/lib/three/furniture-layout'
+import { commitHistoryPresent } from '@/shared/lib/ui/editor-history'
 import type { FurnitureInstance } from './objects/furniture.types'
 import type {
   FurnitureCatalogEntry,
@@ -59,7 +62,7 @@ import {
   ROOM_HALF_WIDTH_METERS,
 } from './internal/environment/room-constants'
 import { computeSelectedToolbarGeometry } from './internal/selected-toolbar-geometry'
-import { perfCounters } from '@/lib/debug/perf-counters'
+import { perfCounters } from '@/shared/debug/perf-counters'
 import {
   sceneStateActions,
   sceneStateStore,

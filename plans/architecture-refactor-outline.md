@@ -117,15 +117,67 @@ DOM order is whatever each site needs locally. Accessibility/focus order is dict
 
 After Items A–E, the natural layers have already formed. This Item makes them real:
 
-- `src/scene/` — already isolated by ESLint. Keep.
-- `src/editor-state/` (new) — Zustand stores + selectors + actions. No React-component imports.
-- `src/editor-shell/` (renamed from most of `src/app/`) — controllers, overlay layout, dialogs, panels.
-- `src/editor-ui/` (new) — pure UI primitives (`SelectedItemActions`, `SelectedItemDetails`, `Outliner` view layer, `TopHeader` view layer, `CameraTools` view layer). Props in, JSX out. No store imports, no controller imports, no refs to app shell.
+- `src/app/` — composition root, global providers, and app-level chrome/layout orchestration.
+- `src/features/` — feature-first domain capabilities (selection, catalog, history, startup, room-surface, etc.); each feature owns its local UI/orchestration/model. Tests are colocated (`*.test.ts(x)` / `*.spec.ts(x)`) by default.
+- `src/editor-state/` — shared Zustand stores + selectors + actions for cross-feature editor state.
+- `src/shared/` — cross-feature low-level building blocks (`ui`, `hooks`, `lib`, `types`, `infra`, `debug`).
+- `src/scene/` — scene/domain internals and rendering-specific logic.
+- `src/test/` — test-only infrastructure (`support`, `setup`, and related helpers); not imported by runtime feature code.
+- `src/lib/` and `src/components/ui/` remain valid as transitional shared homes until moved under `src/shared/`.
+
+Recommended final package shape:
+
+```text
+src/
+  app/
+    App.tsx                    # thin composition root only
+    chrome/                    # app-shell composition (overlay, header composition, shell coordinators)
+    testing/                   # runtime test harness wiring (for example browser test bridge)
+  editor-state/
+    stores/                    # runtime, scene, selection-meta, dialog store slices
+    selectors/                 # cross-feature derived selectors
+    actions/                   # validated store transitions
+    contracts/                 # narrow non-React seams consumed by scene/tests
+    types/
+  features/
+    selection/
+      index.ts                 # public API for the feature
+      lib/
+      model/                   # feature-local state/types/selectors
+      orchestration/           # connected wrappers, controllers, effects
+      ui/                      # presentational selection UI
+    camera/
+    catalog/
+    history/
+    keyboard/
+    project-info/
+    room-surface/
+    scene-panel/
+    startup/
+    url-scene/
+  scene/                       # Three.js scene domain and internal scene helpers
+  shared/
+    debug/                     # runtime diagnostics and instrumentation
+    hooks/                     # reusable hooks not owned by one feature
+    infra/                     # IO/adapters (URL/persistence/analytics)
+    layout/                    # app-level layout services (layout mode, exclusion rects, layout contexts)
+    lib/                       # generic helpers and utilities
+    providers/                 # global providers only
+    types/
+    ui/                        # shared primitives/design-system wrappers
+  test/                        # test-only infrastructure
+    support/                   # test renderers, fixtures, pointer helpers
+```
+
+`src/main.tsx` remains where it is and is intentionally omitted from this shape block.
 
 ESLint rules:
 
-- `editor-ui` may not import from `editor-shell`, `editor-state`, or `scene`.
-- `editor-shell` may import from `editor-ui` and `editor-state`; may import scene contracts only via the existing approved modules.
+- `features/*` may import from `shared/*` and `editor-state`; cross-feature imports should go through each feature's `index.ts` API.
+- `app/chrome/*` and `app/layout/*` are app-level composition layers and may compose feature entrypoints.
+- `features/*` should not import from `app/chrome/*`; shared layout contracts used by multiple features should live under `app/layout/*` or `shared/*`.
+- `shared/*` may not import from `features/*`.
+- `test/*` is test-only infrastructure and should not be imported by runtime app/features code.
 - `editor-state` may not import React-component modules.
 - `scene` may import from `editor-state` only through a narrow contracts module.
 
@@ -139,7 +191,3 @@ This Item is pure rearrangement and rule enforcement; no behavior changes.
 - Changing the catalog/manifest format or asset pipeline.
 - Changing visual design, copy, or interaction semantics.
 - Performance optimization beyond what naturally falls out of selector-scoped subscriptions replacing prop-drilled re-renders.
-
-## Open questions deferred to per-phase plans
-
-- Whether the Phase 3 docked toolbar should reuse the existing floating-toolbar component or a new shared primitive (decided in Phase 3 plan).

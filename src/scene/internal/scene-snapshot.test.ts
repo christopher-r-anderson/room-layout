@@ -9,7 +9,7 @@ import {
 import { describe, expect, it } from 'vitest'
 import { createSceneSnapshot } from './scene-snapshot'
 import type { FurnitureItem } from '../objects/furniture.types'
-import { markUiBoundsSubtree } from '@/lib/three/ui-bounds'
+import { markUiBoundsSubtree } from '@/shared/lib/three/ui-bounds'
 
 const CANVAS_SIZE = {
   width: 800,

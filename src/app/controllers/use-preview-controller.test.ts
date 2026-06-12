@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { createHistoryState } from '@/lib/ui/editor-history'
+import { createHistoryState } from '@/shared/lib/ui/editor-history'
 import {
   resetSceneStateStore,
   sceneStateActions,

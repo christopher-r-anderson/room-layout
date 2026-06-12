@@ -2,15 +2,15 @@
 import { act } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { MeshStandardMaterial, Texture } from 'three'
-import { createR3FTestScene } from '@/test/r3f-renderer'
-import type { FloorFinishOption } from '@/lib/three/environment-materials'
+import { createR3FTestScene } from '@/test/support/r3f-renderer'
+import type { FloorFinishOption } from '@/shared/lib/three/environment-materials'
 import { FloorMaterial } from './floor-material'
 
 const { mockLoadFloorTexture } = vi.hoisted(() => ({
   mockLoadFloorTexture: vi.fn(),
 }))
 
-vi.mock('@/lib/three/load-floor-texture', () => ({
+vi.mock('@/shared/lib/three/load-floor-texture', () => ({
   loadFloorTexture: mockLoadFloorTexture,
 }))
 

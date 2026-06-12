@@ -2,6 +2,6 @@
   "$schema": "https://unpkg.com/knip@6/schema.json",
   "tags": ["-lintignore"],
   "ignoreIssues": {
-    "src/components/ui/*.tsx": ["exports"]
+    "src/shared/ui/*.tsx": ["exports"]
   }
 }

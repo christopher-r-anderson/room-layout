@@ -3,7 +3,7 @@ import { useFrame } from '@react-three/fiber'
 import type { Object3D } from 'three'
 import type { CameraControlsImpl } from '@react-three/drei'
 import { buildFurnitureItemsFromInstances } from './furniture-operations'
-import { createHistoryState } from '@/lib/ui/editor-history'
+import { createHistoryState } from '@/shared/lib/ui/editor-history'
 import { createSceneSnapshot } from './scene-snapshot'
 import type { CameraKeyState } from '../scene.types'
 import type {

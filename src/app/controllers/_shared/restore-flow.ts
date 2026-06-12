@@ -2,8 +2,8 @@ import type { FurnitureCatalogEntry } from '@/scene/objects/furniture-catalog'
 import {
   type ParseSceneUrlResult,
   validateCatalogReferences,
-} from '@/app/url-scene/scene-url'
-import type { SceneDraftState } from '@/app/url-scene/scene-draft'
+} from '@/features/url-scene/scene-url'
+import type { SceneDraftState } from '@/features/url-scene/scene-draft'
 import type {
   DraftRestoreAttempt,
   InvalidRestoreCase,

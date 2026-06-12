@@ -4,7 +4,7 @@ import { act, renderHook } from '@testing-library/react'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { Group } from 'three'
 import { resetSceneStateStore } from '@/editor-state/scene-test-support'
-import { createDummyMesh } from '@/test/three-fixtures'
+import { createDummyMesh } from '@/test/support/three-fixtures'
 import { useSceneSelection } from './use-scene-selection'
 import type { FurnitureItem } from '../objects/furniture.types'
 

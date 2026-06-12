@@ -7,7 +7,7 @@ import { sceneCommands } from '@/scene/scene-commands'
 import {
   ADD_FURNITURE_NO_SPACE_MESSAGE,
   ADD_FURNITURE_UNKNOWN_CATALOG_MESSAGE,
-} from '@/app/hooks/command-messages'
+} from '@/shared/messages/command-messages'
 import { useCatalogController } from './use-catalog-controller'
 
 function createSelectionEffects() {

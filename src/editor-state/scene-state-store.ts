@@ -6,7 +6,7 @@ import {
   canUndoHistory,
   createHistoryState,
   type HistoryState,
-} from '@/lib/ui/editor-history'
+} from '@/shared/lib/ui/editor-history'
 import type { HistoryAvailability } from './types/history.types'
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
 import type { EqualityChecker } from './store-types'
