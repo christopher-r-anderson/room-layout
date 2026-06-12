@@ -7,15 +7,15 @@ const { mockGetClonedNode } = vi.hoisted(() => ({
   mockGetClonedNode: vi.fn(),
 }))
 
-vi.mock('@/lib/three/get-cloned-node', () => ({
+vi.mock('@/shared/lib/three/get-cloned-node', () => ({
   getClonedNode: mockGetClonedNode,
 }))
 
-import { createR3FTestScene } from '@/test/r3f-renderer'
-import { firePointerEvent } from '@/test/pointer-helpers'
+import { createR3FTestScene } from '@/test/support/r3f-renderer'
+import { firePointerEvent } from '@/test/support/pointer-helpers'
 import { InteractiveFurniture } from './interactive-furniture'
-import { getMeshes } from '@/lib/three/get-meshes'
-import { isUiBoundsObject } from '@/lib/three/ui-bounds'
+import { getMeshes } from '@/shared/lib/three/get-meshes'
+import { isUiBoundsObject } from '@/shared/lib/three/ui-bounds'
 
 beforeEach(() => {
   mockGetClonedNode.mockReturnValue(

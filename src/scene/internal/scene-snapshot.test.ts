@@ -9,7 +9,7 @@ import {
 import { describe, expect, it } from 'vitest'
 import { createSceneSnapshot } from './scene-snapshot'
 import type { FurnitureItem } from '../objects/furniture.types'
-import { markUiBoundsSubtree } from '@/lib/three/ui-bounds'
+import { markUiBoundsSubtree } from '@/shared/lib/three/ui-bounds'
 
 const CANVAS_SIZE = {
   width: 800,
@@ -54,20 +54,16 @@ function createDefaultCamera() {
 }
 
 describe('createSceneSnapshot', () => {
-  it('returns snapshot structure with selected metadata and items', () => {
+  it('returns snapshot structure with items', () => {
     const item = createFurnitureItem('item-1')
     const snapshot = createSceneSnapshot(
       [item],
-      'item-1',
       new Map(),
       createDefaultCamera(),
       CANVAS_SIZE,
     )
 
     expect(snapshot).toEqual({
-      selectedId: 'item-1',
-      selectedName: 'Catalog Couch',
-      itemCount: 1,
       cameraPosition: [0, 0, 0],
       items: [
         {
@@ -82,46 +78,9 @@ describe('createSceneSnapshot', () => {
     })
   })
 
-  it('returns selectedName null when selectedId is null', () => {
-    const snapshot = createSceneSnapshot(
-      [createFurnitureItem('item-1')],
-      null,
-      new Map(),
-      createDefaultCamera(),
-      CANVAS_SIZE,
-    )
-
-    expect(snapshot.selectedName).toBeNull()
-  })
-
-  it('returns selectedName null when selected id is not found', () => {
-    const snapshot = createSceneSnapshot(
-      [createFurnitureItem('item-1')],
-      'missing-id',
-      new Map(),
-      createDefaultCamera(),
-      CANVAS_SIZE,
-    )
-
-    expect(snapshot.selectedName).toBeNull()
-  })
-
-  it('returns selectedName when selected id matches an item', () => {
-    const snapshot = createSceneSnapshot(
-      [createFurnitureItem('item-1', { name: 'End Table' })],
-      'item-1',
-      new Map(),
-      createDefaultCamera(),
-      CANVAS_SIZE,
-    )
-
-    expect(snapshot.selectedName).toBe('End Table')
-  })
-
   it('rounds position coordinates to 3 decimal places', () => {
     const snapshot = createSceneSnapshot(
       [createFurnitureItem('item-1', { position: [1.23456, 0, 7.89012] })],
-      null,
       new Map(),
       createDefaultCamera(),
       CANVAS_SIZE,
@@ -133,7 +92,6 @@ describe('createSceneSnapshot', () => {
   it('rounds rotationY to 6 decimal places', () => {
     const snapshot = createSceneSnapshot(
       [createFurnitureItem('item-1', { rotationY: 1.12345678 })],
-      null,
       new Map(),
       createDefaultCamera(),
       CANVAS_SIZE,
@@ -145,7 +103,6 @@ describe('createSceneSnapshot', () => {
   it('returns null pointerTarget when object ref is not registered', () => {
     const snapshot = createSceneSnapshot(
       [createFurnitureItem('item-1')],
-      null,
       new Map(),
       createDefaultCamera(),
       CANVAS_SIZE,
@@ -163,7 +120,6 @@ describe('createSceneSnapshot', () => {
 
     const snapshot = createSceneSnapshot(
       [createFurnitureItem('item-1')],
-      null,
       new Map([['item-1', object]]),
       camera,
       CANVAS_SIZE,
@@ -179,7 +135,6 @@ describe('createSceneSnapshot', () => {
 
     const snapshot = createSceneSnapshot(
       [createFurnitureItem('item-1')],
-      null,
       new Map([['item-1', mesh]]),
       camera,
       CANVAS_SIZE,
@@ -200,7 +155,6 @@ describe('createSceneSnapshot', () => {
 
     const snapshot = createSceneSnapshot(
       [createFurnitureItem('item-1')],
-      null,
       new Map([['item-1', mesh]]),
       camera,
       CANVAS_SIZE,
@@ -216,7 +170,6 @@ describe('createSceneSnapshot', () => {
 
     const snapshot = createSceneSnapshot(
       [createFurnitureItem('item-1')],
-      null,
       new Map([['item-1', mesh]]),
       camera,
       CANVAS_SIZE,
@@ -232,7 +185,6 @@ describe('createSceneSnapshot', () => {
 
     const snapshot = createSceneSnapshot(
       [createFurnitureItem('item-1')],
-      null,
       new Map([['item-1', object]]),
       camera,
       CANVAS_SIZE,
@@ -265,7 +217,6 @@ describe('createSceneSnapshot', () => {
 
     const snapshot = createSceneSnapshot(
       [createFurnitureItem('item-1')],
-      null,
       new Map([['item-1', object]]),
       camera,
       CANVAS_SIZE,

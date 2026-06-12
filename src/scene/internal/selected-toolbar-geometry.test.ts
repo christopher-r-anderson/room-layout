@@ -8,7 +8,7 @@ import {
   PerspectiveCamera,
 } from 'three'
 import { computeSelectedToolbarGeometry } from './selected-toolbar-geometry'
-import { markUiBoundsSubtree } from '@/lib/three/ui-bounds'
+import { markUiBoundsSubtree } from '@/shared/lib/three/ui-bounds'
 
 const CANVAS_SIZE = { width: 800, height: 600 }
 

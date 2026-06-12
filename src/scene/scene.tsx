@@ -1,38 +1,60 @@
-import { getMeshes } from '@/lib/three/get-meshes'
+import { getMeshes } from '@/shared/lib/three/get-meshes'
+import { getVisualObjectBounds } from '@/shared/lib/three/get-visual-object-bounds'
+import {
+  CAMERA_PRESETS,
+  type CameraPreset,
+} from '@/shared/lib/three/camera-presets'
 import { Room } from './internal/environment/room'
 import { Lighting } from './internal/environment/lighting'
 import type {
   FloorFinishOption,
   WallFinishOption,
-} from '@/lib/three/environment-materials'
+} from '@/shared/lib/three/environment-materials'
 import { CameraControls } from './internal/camera/camera-controls'
 import { InteractiveFurniture } from './internal/objects/interactive-furniture'
 import { useGLTF } from '@react-three/drei'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import type { CameraControlsImpl } from '@react-three/drei'
 import { useFrame, useThree } from '@react-three/fiber'
 import { type Object3D } from 'three'
 import { EffectComposer, Outline } from '@react-three/postprocessing'
-import { type LayoutBounds } from '@/lib/three/furniture-layout'
-import { createHistoryState } from '@/lib/ui/editor-history'
-import type { FurnitureItem } from './objects/furniture.types'
+import {
+  resolveAbsoluteFurnitureTransform,
+  resolveMovedFurniturePosition,
+  type LayoutBounds,
+} from '@/shared/lib/three/furniture-layout'
+import { commitHistoryPresent } from '@/shared/lib/ui/editor-history'
+import type { FurnitureInstance } from './objects/furniture.types'
 import type {
   FurnitureCatalogEntry,
   FurnitureCollection,
 } from './objects/furniture-catalog'
 import {
+  addFurnitureToHistory,
   areFurnitureCollectionsEqual,
+  createFurnitureInstanceId,
+  deleteSelectionFromHistory,
+  rotateSelectedFurnitureInHistory,
   updateFurniturePositionInHistory,
 } from './internal/furniture-operations'
 import { validateCatalogAssetNodes } from './internal/validate-catalog-asset-nodes'
 import {
-  getSceneHistoryAvailability,
-  type SceneHistoryAvailability,
+  redoSceneHistory,
+  undoSceneHistory,
 } from './internal/scene-history-state'
-import type { SceneRef } from './scene.types'
-import type { SelectedToolbarGeometry } from './scene.types'
+import type {
+  AddFurnitureResult,
+  CameraKeyState,
+  MoveSource,
+  MoveSelectionResult,
+  SelectedToolbarGeometry,
+  UpdateSelectionTransformResult,
+} from './scene.types'
 import { useSceneDrag } from './internal/use-scene-drag'
-import { useSceneImperativeApi } from './internal/use-scene-imperative-api'
+import {
+  buildRestoredSceneHistory,
+  useSceneImperativeApi,
+} from './internal/use-scene-imperative-api'
 import { useSceneSelection } from './internal/use-scene-selection'
 import { BlendFunction } from 'postprocessing'
 import {
@@ -40,6 +62,17 @@ import {
   ROOM_HALF_WIDTH_METERS,
 } from './internal/environment/room-constants'
 import { computeSelectedToolbarGeometry } from './internal/selected-toolbar-geometry'
+import { perfCounters } from '@/shared/debug/perf-counters'
+import {
+  sceneStateActions,
+  sceneStateStore,
+  useItems,
+} from '@/editor-state/scene-contracts'
+import { selectionMetaActions } from '@/editor-state/scene-contracts'
+import {
+  clearSceneServices,
+  registerSceneServices,
+} from './internal/scene-services'
 
 const FLOOR_PLANE_Y = 0
 const SNAP_SIZE = 0.5
@@ -55,8 +88,8 @@ const ROOM_BOUNDS: LayoutBounds = {
   maxZ: ROOM_HALF_DEPTH_METERS,
 }
 
-function getInitialFurnitureItems(): FurnitureItem[] {
-  return []
+function roundCameraCoordinate(value: number) {
+  return Math.round(value * 1000) / 1000
 }
 
 function approximatelyEqualPx(left: number, right: number) {
@@ -121,41 +154,45 @@ function isSameToolbarGeometry(
 }
 
 export function Scene({
-  ref,
   renderQuality = 'default',
   catalog,
   collections,
   onCanvasPointerSelection,
-  onSelectionChange,
-  onHistoryChange,
   onAssetsReady,
   previewedId = null,
   onPreviewChange,
-  onDragStateChange,
-  onSelectedToolbarGeometryChange,
   floorOption = null,
   wallOption = null,
   onFloorLoadingChange,
 }: {
-  ref: React.Ref<SceneRef>
   renderQuality?: 'default' | 'e2e-low'
   catalog: FurnitureCatalogEntry[]
   collections: FurnitureCollection[]
   onCanvasPointerSelection?: (id: string) => void
-  onSelectionChange?: (item: FurnitureItem | null) => void
-  onHistoryChange?: (availability: SceneHistoryAvailability) => void
   onAssetsReady?: () => void
   previewedId?: string | null
   onPreviewChange?: (id: string | null) => void
-  onDragStateChange?: (isDragging: boolean) => void
-  onSelectedToolbarGeometryChange?: (geometry: SelectedToolbarGeometry) => void
   floorOption?: FloorFinishOption | null
   wallOption?: WallFinishOption | null
   onFloorLoadingChange?: (isLoading: boolean) => void
 }) {
   const isE2ELowQuality = renderQuality === 'e2e-low'
+  if (import.meta.env.DEV) {
+    perfCounters.incrSceneRender()
+  }
   const camera = useThree((state) => state.camera)
-  const canvasSize = useThree((state) => state.size)
+  // Subscribe to width/height primitives so r3f's per-frame state updates
+  // don't churn a fresh `size` object reference and re-fire dependent effects.
+  // Without this, the selected-toolbar geometry useEffect re-runs every frame
+  // during camera rotation, producing a re-render → effect → emit cascade
+  // that visibly jitters the floating toolbar.
+  const canvasWidth = useThree((state) => state.size.width)
+  const canvasHeight = useThree((state) => state.size.height)
+  const canvasSize = useMemo(
+    () => ({ width: canvasWidth, height: canvasHeight }),
+    [canvasWidth, canvasHeight],
+  )
+  const invalidate = useThree((state) => state.invalidate)
   const collectionPaths = useMemo(
     () => collections.map((c) => c.sourcePath),
     [collections],
@@ -199,13 +236,10 @@ export function Scene({
 
   const hasReportedAssetsReadyRef = useRef(false)
   const cameraControlsRef = useRef<CameraControlsImpl | null>(null)
+  const cameraKeyStateRef = useRef<CameraKeyState>(new Set())
   const toolbarGeometryAccumulatorRef = useRef(0)
   const lastToolbarGeometryRef = useRef<SelectedToolbarGeometry | null>(null)
-  const [history, setHistory] = useState(() =>
-    createHistoryState<FurnitureItem[]>(getInitialFurnitureItems()),
-  )
-  const furniture = history.present
-  const instanceIdRef = useRef(furniture.length)
+  const furniture = useItems()
   const {
     objectRefs,
     registerObject,
@@ -215,7 +249,6 @@ export function Scene({
     setSelectedIdAndResolveObject,
   } = useSceneSelection({
     furniture,
-    onSelectionChange,
   })
 
   const handleSelect = useCallback(
@@ -228,7 +261,7 @@ export function Scene({
 
   const updateFurniturePosition = useCallback(
     (id: string, nextPosition: [number, number, number]) => {
-      setHistory((currentHistory) => {
+      sceneStateActions.updateHistory((currentHistory) => {
         return updateFurniturePositionInHistory(
           currentHistory,
           id,
@@ -249,7 +282,7 @@ export function Scene({
     furniture,
     selectFurniture,
     updateFurniturePosition,
-    setHistory,
+    updateHistory: sceneStateActions.updateHistory,
     bounds: ROOM_BOUNDS,
     floorPlaneY: FLOOR_PLANE_Y,
     snapSize: SNAP_SIZE,
@@ -257,25 +290,470 @@ export function Scene({
     areFurnitureCollectionsEqual,
   })
 
-  const historyAvailability = useMemo(
-    () =>
-      getSceneHistoryAvailability({
-        history,
-        selectedId,
-        isDragging: Boolean(dragState),
-      }),
-    [dragState, history, selectedId],
+  const handleRestoreInitialLayout = useCallback(
+    (instances: FurnitureInstance[]) => {
+      const restoredState = buildRestoredSceneHistory({
+        instances,
+        catalog,
+        collections,
+        sourceScenesByPath,
+      })
+
+      sceneStateActions.setInstanceIdCounter(restoredState.instanceIdSeed)
+      sceneStateActions.setHistory(restoredState.history)
+      sceneStateActions.setSelectedId(null)
+    },
+    [catalog, collections, sourceScenesByPath],
   )
+
+  const handleClearSelection = useCallback(() => {
+    if (dragState) {
+      return
+    }
+
+    selectFurniture(null)
+  }, [dragState, selectFurniture])
+
+  const handleDeleteSelection = useCallback(() => {
+    const { history, selectedId } = sceneStateStore.getState()
+    const operationResult = deleteSelectionFromHistory(history, selectedId)
+
+    if (!operationResult.deleted) {
+      return false
+    }
+
+    sceneStateActions.setHistory(operationResult.history)
+
+    if (
+      operationResult.deletedId &&
+      dragState?.id === operationResult.deletedId
+    ) {
+      clearDragState()
+    }
+
+    sceneStateActions.setSelectedId(null)
+
+    return true
+  }, [clearDragState, dragState])
+
+  const handleSelectById = useCallback(
+    (id: string | null) => {
+      const furnitureItems = sceneStateStore.getState().history.present
+
+      if (dragState) {
+        return {
+          ok: false as const,
+          status: 'blocked-dragging' as const,
+        }
+      }
+
+      if (id === null) {
+        setSelectedIdAndResolveObject(null)
+        return {
+          ok: true as const,
+          status: 'cleared' as const,
+        }
+      }
+
+      const itemExists = furnitureItems.some((item) => item.id === id)
+
+      if (!itemExists) {
+        return {
+          ok: false as const,
+          status: 'not-found' as const,
+        }
+      }
+
+      setSelectedIdAndResolveObject(id)
+
+      return {
+        ok: true as const,
+        status: 'selected' as const,
+      }
+    },
+    [dragState, setSelectedIdAndResolveObject],
+  )
+
+  const handleUndo = useCallback(() => {
+    const { history, selectedId } = sceneStateStore.getState()
+    const undoResult = undoSceneHistory({
+      history,
+      selectedId,
+      isDragging: Boolean(dragState),
+    })
+
+    if (!undoResult.didChange) {
+      return false
+    }
+
+    sceneStateActions.setHistory(undoResult.history)
+    sceneStateActions.setSelectedId(undoResult.selectedId)
+
+    return true
+  }, [dragState])
+
+  const handleRedo = useCallback(() => {
+    const { history, selectedId } = sceneStateStore.getState()
+    const redoResult = redoSceneHistory({
+      history,
+      selectedId,
+      isDragging: Boolean(dragState),
+    })
+
+    if (!redoResult.didChange) {
+      return false
+    }
+
+    sceneStateActions.setHistory(redoResult.history)
+    sceneStateActions.setSelectedId(redoResult.selectedId)
+
+    return true
+  }, [dragState])
+
+  const handleMoveSelection = useCallback(
+    (
+      delta: { x: number; z: number },
+      _options?: { source?: MoveSource },
+    ): MoveSelectionResult => {
+      void _options
+      const { history, selectedId } = sceneStateStore.getState()
+      const furnitureItems = history.present
+
+      if (dragState) {
+        return {
+          ok: false,
+          reason: 'dragging',
+        }
+      }
+
+      if (!selectedId) {
+        return {
+          ok: false,
+          reason: 'no-selection',
+        }
+      }
+
+      const activeItem = furnitureItems.find((item) => item.id === selectedId)
+
+      if (!activeItem) {
+        return {
+          ok: false,
+          reason: 'no-selection',
+        }
+      }
+
+      const proposedPosition: [number, number, number] = [
+        activeItem.position[0] + delta.x,
+        activeItem.position[1],
+        activeItem.position[2] + delta.z,
+      ]
+
+      const resolvedPosition = resolveMovedFurniturePosition({
+        movingId: selectedId,
+        proposedPosition,
+        items: furnitureItems,
+        edgeSnapThreshold: EDGE_SNAP_THRESHOLD,
+        bounds: ROOM_BOUNDS,
+      })
+
+      if (!resolvedPosition) {
+        return {
+          ok: false,
+          reason: 'blocked-collision',
+        }
+      }
+
+      const positionUnchanged =
+        resolvedPosition[0] === activeItem.position[0] &&
+        resolvedPosition[1] === activeItem.position[1] &&
+        resolvedPosition[2] === activeItem.position[2]
+
+      if (positionUnchanged) {
+        const attemptedMovement =
+          proposedPosition[0] !== activeItem.position[0] ||
+          proposedPosition[2] !== activeItem.position[2]
+
+        return {
+          ok: false,
+          reason: attemptedMovement ? 'blocked-bounds' : 'no-op',
+        }
+      }
+
+      const nextFurniture = furnitureItems.map((item) => {
+        if (item.id !== selectedId) {
+          return item
+        }
+
+        return {
+          ...item,
+          position: resolvedPosition,
+        }
+      })
+
+      sceneStateActions.updateHistory((currentHistory) =>
+        commitHistoryPresent(currentHistory, nextFurniture),
+      )
+
+      return {
+        ok: true,
+        position: resolvedPosition,
+      }
+    },
+    [dragState],
+  )
+
+  const handleSetSelectionTransform = useCallback(
+    (input: {
+      position?: [number, number, number]
+      rotationY?: number
+    }): UpdateSelectionTransformResult => {
+      const { history, selectedId } = sceneStateStore.getState()
+      const furnitureItems = history.present
+
+      if (dragState) {
+        return {
+          ok: false,
+          reason: 'dragging',
+        }
+      }
+
+      if (!selectedId) {
+        return {
+          ok: false,
+          reason: 'no-selection',
+        }
+      }
+
+      const activeItem = furnitureItems.find((item) => item.id === selectedId)
+
+      if (!activeItem) {
+        return {
+          ok: false,
+          reason: 'no-selection',
+        }
+      }
+
+      const nextPosition = input.position ?? activeItem.position
+      const nextRotationY = input.rotationY ?? activeItem.rotationY
+
+      if (
+        nextPosition[0] === activeItem.position[0] &&
+        nextPosition[1] === activeItem.position[1] &&
+        nextPosition[2] === activeItem.position[2] &&
+        nextRotationY === activeItem.rotationY
+      ) {
+        return {
+          ok: false,
+          reason: 'no-op',
+        }
+      }
+
+      const resolvedTransform = resolveAbsoluteFurnitureTransform({
+        movingId: selectedId,
+        proposedPosition: nextPosition,
+        proposedRotationY: nextRotationY,
+        items: furnitureItems,
+        bounds: ROOM_BOUNDS,
+      })
+
+      if (!resolvedTransform) {
+        return {
+          ok: false,
+          reason: 'no-selection',
+        }
+      }
+
+      if (!resolvedTransform.ok) {
+        return resolvedTransform
+      }
+
+      const nextFurniture = furnitureItems.map((item) => {
+        if (item.id !== selectedId) {
+          return item
+        }
+
+        return {
+          ...item,
+          position: resolvedTransform.position,
+          rotationY: resolvedTransform.rotationY,
+        }
+      })
+
+      const nextHistory = commitHistoryPresent(
+        history,
+        nextFurniture,
+        areFurnitureCollectionsEqual,
+      )
+      const updatedItem = nextHistory.present.find(
+        (item) => item.id === selectedId,
+      )
+
+      if (!updatedItem) {
+        return {
+          ok: false,
+          reason: 'no-selection',
+        }
+      }
+
+      sceneStateActions.setHistory(nextHistory)
+
+      return {
+        ok: true,
+        item: updatedItem,
+      }
+    },
+    [dragState],
+  )
+
+  const handleRotateSelection = useCallback((deltaRadians: number) => {
+    const { history, selectedId } = sceneStateStore.getState()
+    const nextHistory = rotateSelectedFurnitureInHistory({
+      history,
+      selectedId,
+      deltaRadians,
+      bounds: ROOM_BOUNDS,
+    })
+
+    sceneStateActions.setHistory(nextHistory)
+  }, [])
+
+  const handleAddFurniture = useCallback(
+    (catalogId: string): AddFurnitureResult => {
+      const { history, instanceIdCounter } = sceneStateStore.getState()
+      const operationResult = addFurnitureToHistory({
+        history,
+        sourceScenesByPath,
+        catalogId,
+        nextId: createFurnitureInstanceId(instanceIdCounter + 1),
+        catalog,
+        collections,
+        bounds: ROOM_BOUNDS,
+        edgeSnapThreshold: EDGE_SNAP_THRESHOLD,
+        snapSize: SNAP_SIZE,
+      })
+
+      sceneStateActions.setHistory(operationResult.history)
+
+      if (operationResult.incrementInstanceId) {
+        sceneStateActions.setInstanceIdCounter(instanceIdCounter + 1)
+        sceneStateActions.setSelectedId(
+          operationResult.result.ok ? operationResult.result.id : null,
+        )
+      }
+
+      return operationResult.result
+    },
+    [catalog, collections, sourceScenesByPath],
+  )
+
+  const handleSetCameraPreset = useCallback((preset: CameraPreset) => {
+    const view = CAMERA_PRESETS[preset]
+    void cameraControlsRef.current?.setLookAt(
+      ...view.position,
+      ...view.target,
+      true,
+    )
+  }, [])
+
+  const handleGetCameraPosition = useCallback(() => {
+    return camera.position.toArray().map((coordinate) => {
+      return roundCameraCoordinate(coordinate)
+    }) as [number, number, number]
+  }, [camera])
+
+  const handleSetCameraKeyState = useCallback(
+    (keyState: CameraKeyState) => {
+      cameraKeyStateRef.current = keyState
+
+      if (keyState.size > 0) {
+        invalidate()
+      }
+    },
+    [invalidate],
+  )
+
+  const getSnapshot = useSceneImperativeApi({
+    camera,
+    cameraKeyStateRef,
+    canvasSize,
+    cameraControlsRef,
+    furniture,
+    objectRefs,
+  })
+
+  const handleFocusSelected = useCallback(() => {
+    const { selectedId } = sceneStateStore.getState()
+    const controls = cameraControlsRef.current
+
+    if (!controls || !selectedId) {
+      return
+    }
+
+    const object = objectRefs.current.get(selectedId)
+
+    if (!object) {
+      return
+    }
+
+    const bounds = getVisualObjectBounds(object)
+
+    if (!bounds) {
+      return
+    }
+
+    void controls.fitToBox(bounds, true, {
+      paddingTop: 0.5,
+      paddingBottom: 0.5,
+      paddingLeft: 0.5,
+      paddingRight: 0.5,
+    })
+  }, [cameraControlsRef, objectRefs])
+
+  useLayoutEffect(() => {
+    registerSceneServices({
+      addFurniture: handleAddFurniture,
+      clearSelection: handleClearSelection,
+      deleteSelection: handleDeleteSelection,
+      focusSelected: handleFocusSelected,
+      getCameraPosition: handleGetCameraPosition,
+      getSnapshot,
+      moveSelection: handleMoveSelection,
+      redo: handleRedo,
+      restoreInitialLayout: handleRestoreInitialLayout,
+      rotateSelection: handleRotateSelection,
+      setCameraKeyState: handleSetCameraKeyState,
+      selectById: handleSelectById,
+      setCameraPreset: handleSetCameraPreset,
+      setSelectionTransform: handleSetSelectionTransform,
+      undo: handleUndo,
+    })
+
+    return () => {
+      clearSceneServices()
+    }
+  }, [
+    handleAddFurniture,
+    handleClearSelection,
+    handleDeleteSelection,
+    handleFocusSelected,
+    handleGetCameraPosition,
+    getSnapshot,
+    handleMoveSelection,
+    handleRedo,
+    handleRestoreInitialLayout,
+    handleRotateSelection,
+    handleSetCameraKeyState,
+    handleSelectById,
+    handleSetCameraPreset,
+    handleSetSelectionTransform,
+    handleUndo,
+  ])
 
   const isDragging = Boolean(dragState)
 
   useEffect(() => {
-    onDragStateChange?.(isDragging)
-  }, [isDragging, onDragStateChange])
-
-  useEffect(() => {
-    onHistoryChange?.(historyAvailability)
-  }, [historyAvailability, onHistoryChange])
+    sceneStateActions.setDragging(isDragging)
+  }, [isDragging])
 
   useEffect(() => {
     // Do not report ready if no collections have been passed yet
@@ -306,29 +784,6 @@ export function Scene({
   const handlePreviewEnd = useCallback(() => {
     onPreviewChange?.(null)
   }, [onPreviewChange])
-
-  useSceneImperativeApi({
-    ref,
-    bounds: ROOM_BOUNDS,
-    camera,
-    canvasSize,
-    cameraControlsRef,
-    catalog,
-    clearDragState,
-    collections,
-    dragState,
-    edgeSnapThreshold: EDGE_SNAP_THRESHOLD,
-    furniture,
-    history,
-    instanceIdRef,
-    objectRefs,
-    selectFurniture,
-    selectedId,
-    setHistory,
-    setSelectedIdAndResolveObject,
-    snapSize: SNAP_SIZE,
-    sourceScenesByPath,
-  })
 
   const sceneFurniture = useMemo(
     () =>
@@ -366,10 +821,6 @@ export function Scene({
     previewMeshes.length > 0
 
   useEffect(() => {
-    if (!onSelectedToolbarGeometryChange) {
-      return
-    }
-
     const nextGeometry = computeSelectedToolbarGeometry({
       selectedId,
       object: selectedId ? (objectRefs.current.get(selectedId) ?? null) : null,
@@ -386,20 +837,14 @@ export function Scene({
     }
 
     lastToolbarGeometryRef.current = nextGeometry
-    onSelectedToolbarGeometryChange(nextGeometry)
-  }, [
-    camera,
-    canvasSize,
-    objectRefs,
-    onSelectedToolbarGeometryChange,
-    selectedId,
-  ])
+    if (import.meta.env.DEV) {
+      perfCounters.incrToolbarEmission()
+      perfCounters.incrToolbarEmissionFromEffect()
+    }
+    selectionMetaActions.setToolbarGeometry(nextGeometry)
+  }, [camera, canvasSize, objectRefs, selectedId])
 
   useFrame((_, delta) => {
-    if (!onSelectedToolbarGeometryChange) {
-      return
-    }
-
     toolbarGeometryAccumulatorRef.current += delta
     if (toolbarGeometryAccumulatorRef.current < 1 / 24) {
       return
@@ -423,7 +868,11 @@ export function Scene({
     }
 
     lastToolbarGeometryRef.current = nextGeometry
-    onSelectedToolbarGeometryChange(nextGeometry)
+    if (import.meta.env.DEV) {
+      perfCounters.incrToolbarEmission()
+      perfCounters.incrToolbarEmissionFromFrame()
+    }
+    selectionMetaActions.setToolbarGeometry(nextGeometry)
   })
 
   return (

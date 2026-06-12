@@ -4,7 +4,7 @@ import {
   redoHistoryState,
   type HistoryState,
   undoHistoryState,
-} from '@/lib/ui/editor-history'
+} from '@/shared/lib/ui/editor-history'
 import type { FurnitureItem } from '../objects/furniture.types'
 
 export interface SceneHistoryAvailability {

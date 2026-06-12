@@ -1,13 +1,10 @@
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type RefObject,
-} from 'react'
+import { useCallback, useMemo, useRef, useState, type RefObject } from 'react'
 import { type Object3D } from 'three'
-import { getMeshes } from '@/lib/three/get-meshes'
+import { getMeshes } from '@/shared/lib/three/get-meshes'
+import {
+  sceneStateActions,
+  useSelectedId,
+} from '@/editor-state/scene-contracts'
 import type { FurnitureItem } from '../objects/furniture.types'
 
 interface SceneSelectionState {
@@ -22,30 +19,29 @@ interface SceneSelectionState {
 
 export function useSceneSelection({
   furniture,
-  onSelectionChange,
 }: {
   furniture: FurnitureItem[]
-  onSelectionChange?: (item: FurnitureItem | null) => void
 }): SceneSelectionState {
   const objectRefs = useRef(new Map<string, Object3D>())
-  const [selectedId, setSelectedId] = useState<string | null>(null)
-  const [selectedObject, setSelectedObject] = useState<Object3D | null>(null)
+  const selectedId = useSelectedId()
+  const [registeredObjects, setRegisteredObjects] = useState(
+    () => new Map<string, Object3D>(),
+  )
   const selectedFurniture = useMemo(
     () => furniture.find((item) => item.id === selectedId) ?? null,
     [furniture, selectedId],
+  )
+  const selectedObject = useMemo(
+    () => (selectedId ? (registeredObjects.get(selectedId) ?? null) : null),
+    [registeredObjects, selectedId],
   )
   const selection = useMemo(
     () => (selectedObject ? getMeshes(selectedObject) : []),
     [selectedObject],
   )
 
-  useEffect(() => {
-    onSelectionChange?.(selectedFurniture)
-  }, [onSelectionChange, selectedFurniture])
-
   const setSelectedIdAndResolveObject = useCallback((id: string | null) => {
-    setSelectedId(id)
-    setSelectedObject(id ? (objectRefs.current.get(id) ?? null) : null)
+    sceneStateActions.setSelectedId(id)
   }, [])
 
   const setSelection = useCallback(
@@ -66,26 +62,35 @@ export function useSceneSelection({
     [furniture, setSelection],
   )
 
-  const registerObject = useCallback(
-    (id: string, object: Object3D | null) => {
-      if (object) {
-        objectRefs.current.set(id, object)
+  const registerObject = useCallback((id: string, object: Object3D | null) => {
+    if (object) {
+      objectRefs.current.set(id, object)
 
-        if (selectedId === id) {
-          setSelectedObject(object)
+      setRegisteredObjects((currentObjects) => {
+        if (currentObjects.get(id) === object) {
+          return currentObjects
         }
 
-        return
+        const nextObjects = new Map(currentObjects)
+        nextObjects.set(id, object)
+        return nextObjects
+      })
+
+      return
+    }
+
+    objectRefs.current.delete(id)
+
+    setRegisteredObjects((currentObjects) => {
+      if (!currentObjects.has(id)) {
+        return currentObjects
       }
 
-      objectRefs.current.delete(id)
-
-      if (selectedId === id) {
-        setSelectedObject(null)
-      }
-    },
-    [selectedId],
-  )
+      const nextObjects = new Map(currentObjects)
+      nextObjects.delete(id)
+      return nextObjects
+    })
+  }, [])
 
   return {
     objectRefs,

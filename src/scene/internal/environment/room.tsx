@@ -1,7 +1,7 @@
 import type {
   FloorFinishOption,
   WallFinishOption,
-} from '@/lib/three/environment-materials'
+} from '@/shared/lib/three/environment-materials'
 import { FloorMaterial } from './floor-material'
 import { WallMaterial } from './wall-material'
 import {

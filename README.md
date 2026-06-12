@@ -34,6 +34,13 @@ pnpm format       # check formatting
 pnpm format:write # apply formatting
 pnpm fix          # lint + format fixes
 
+# to clean up unused code and exports that are not used elsewhere
+# note that currently components/ui ignores unused exports
+# this is to preserve useful but currently unused items like `CardFooter`
+# this should be revisited in the future as the app stabilizes
+pnpm knip         # check for unused files and exports
+pnpm knip:fix     # remove unused files and exports
+
 pnpm test         # watch unit tests
 pnpm test:run     # run unit tests
 
@@ -68,13 +75,13 @@ Accessibility is an explicit goal for this project, especially for no-mouse edit
 
 - The editor supports keyboard-first interaction through room-contents selection, selected-item actions/details, global movement/rotation/history shortcuts, and canvas keyboard browse (spatial navigation when nothing is selected).
 - Startup, dialog, and editor feedback flows include screen-reader announcement support and deterministic focus transitions for key operations like delete and selection reconciliation.
-- All room-view-specific shortcuts (movement, rotation, deletion, and canvas browse) are scoped to the 3D room view's DOM focus, so keyboard navigation outside the canvas — for example, in the Furniture in room panel or selected-item details inputs — does not accidentally trigger object actions.
-- Canvas keyboard browse uses spatial ordering (top-to-bottom, left-to-right by screen projection) so arrow keys follow visual layout rather than an internal list order that may differ from what users see. The visible Furniture in room panel deliberately uses its own stable alpha-by-name order to remain predictable as objects move.
+- All room-view-specific shortcuts (movement, rotation, deletion, and canvas browse) are scoped to the 3D room view's DOM focus, so keyboard navigation outside the canvas, for example in the Furniture in room panel or selected-item details inputs, does not accidentally trigger object actions.
+- Canvas keyboard browse uses spatial ordering, top-to-bottom and left-to-right by screen projection, so arrow keys follow visual layout rather than an internal list order that may differ from what users see. The visible Furniture in room panel deliberately uses its own stable alpha-by-name order to remain predictable as objects move.
 - The Furniture in room panel is the primary accessible alternative to direct canvas interaction. It remains visible regardless of selection state so assistive technology users always have a stable text representation of the room contents.
 - There is no duplicate hidden DOM scene graph; the Furniture in room panel represents the room for assistive technology.
 - After canvas keyboard selection, announcements include a Tab hint to reach selected item actions and details, so screen reader users know what to do next.
 - The current selected-item actions/details are transitional surfaces for a future contextual model. Even if those controls later float visually near the selected object, they should remain after the 3D room view in logical DOM/tab order.
-- Automated accessibility checks run through Playwright + axe in Chromium and currently cover baseline shell/dialog states plus room-contents/selected-item states.
+- Automated accessibility checks run through Playwright + axe in Chromium and currently cover baseline shell/dialog states plus room-surface and selected-item states.
 - Automated checks are necessary but not sufficient; manual assistive-technology verification remains an ongoing task.
 
 First-time local setup:
@@ -115,10 +122,21 @@ Current deployment URL:
 
 In addition to this README, project-specific guides are available:
 
+- [Architecture Boundaries](docs/architecture-boundaries.md): Layer map, placement rules, current exceptions, and planned boundary improvements.
 - [Editor Shortcuts Reference](docs/editor-shortcuts-reference.md): End-user shortcut map for camera, object, and scene actions.
+- [Editor State Architecture](docs/editor-state-architecture.md): Current Phase 1 boundary between app shell state, shared editor-state stores, and scene-owned behavior.
 - [Keyboard Shortcuts (Engineering)](docs/keyboard-shortcuts.md): Input architecture, matching/suppression/execution rules, and held-key camera behavior.
 - [Overlay Interaction Model](docs/overlay-interaction-model.md): Blocking overlays vs the non-blocking Room surface, including focus and breakpoint behavior.
 - [Selected Toolbar Placement](docs/selected-toolbar-placement.md): Bounds source order, viewport-space placement, floating candidate scoring, and docked fallback behavior.
+
+Local architecture notes are also available in:
+
+- `src/app/README.md`
+- `src/features/README.md`
+- `src/editor-state/README.md`
+- `src/shared/README.md`
+- `src/scene/README.md`
+- `src/test/README.md`
 
 ## 🖦 Usage
 

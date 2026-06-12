@@ -1,8 +1,8 @@
 import { Box3, type Camera, type Object3D, Vector3 } from 'three'
 import type { ScreenPoint, SelectedToolbarGeometry } from '../scene.types'
-import { getMeshes } from '@/lib/three/get-meshes'
-import { getVisualObjectBounds } from '@/lib/three/get-visual-object-bounds'
-import { isUiBoundsObject } from '@/lib/three/ui-bounds'
+import { getMeshes } from '@/shared/lib/three/get-meshes'
+import { getVisualObjectBounds } from '@/shared/lib/three/get-visual-object-bounds'
+import { isUiBoundsObject } from '@/shared/lib/three/ui-bounds'
 
 const PROJECTED_POINT = new Vector3()
 const WORLD_POINT = new Vector3()

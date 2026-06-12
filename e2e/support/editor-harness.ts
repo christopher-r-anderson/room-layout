@@ -1,4 +1,8 @@
+import { mkdir, stat, writeFile } from 'node:fs/promises'
+import path from 'node:path'
 import { expect, type Page } from '@playwright/test'
+import type { PerfCounterSnapshot } from '../../src/shared/debug/perf-counters'
+import { getPerfBaselineSha } from './perf-meta'
 
 const FURNITURE_ASSET_ROUTE = /\/models\/.+\.glb(?:\?.*)?$/
 export const EDITOR_READY_TIMEOUT_MS = 30_000
@@ -34,6 +38,48 @@ export interface BrowserSceneState {
   }[]
 }
 
+interface RoomLayoutTestApi {
+  getState: () => BrowserSceneState
+  setOverlaysHidden: (hidden: boolean) => void
+  getPerfCounters: () => PerfCounterSnapshot
+  resetPerfCounters: () => void
+}
+
+type RoomLayoutTestWindow = typeof globalThis & {
+  __ROOM_LAYOUT_TEST__?: RoomLayoutTestApi
+}
+
+const PERF_RESULTS_DIR = path.resolve(process.cwd(), 'test-results/perf')
+const PERF_TRACE_CATEGORIES =
+  'disabled-by-default-devtools.timeline,devtools.timeline,v8.execute,blink.user_timing,latencyInfo'
+
+function cameraDistance(
+  from: [number, number, number],
+  to: [number, number, number],
+) {
+  const deltaX = to[0] - from[0]
+  const deltaY = to[1] - from[1]
+  const deltaZ = to[2] - from[2]
+
+  return Math.hypot(deltaX, deltaY, deltaZ)
+}
+
+function buildPerfArtifactPath(
+  label: string,
+  extension: 'trace.json' | 'counters.json',
+) {
+  return path.join(
+    PERF_RESULTS_DIR,
+    `${label}-${getPerfBaselineSha()}-${new Date().toISOString()}.${extension}`,
+  )
+}
+
+async function waitForRoomLayoutTestApi(page: Page) {
+  await page.waitForFunction(() => {
+    return '__ROOM_LAYOUT_TEST__' in globalThis
+  })
+}
+
 async function getCanvasBounds(page: Page) {
   const canvasBounds = await page.locator('canvas').boundingBox()
 
@@ -48,12 +94,7 @@ async function didSelectFurniture(page: Page, itemId: string) {
   return page
     .waitForFunction(
       (expectedId) => {
-        const testWindow = globalThis as typeof globalThis & {
-          __ROOM_LAYOUT_TEST__?: {
-            getState: () => BrowserSceneState
-            setOverlaysHidden: (hidden: boolean) => void
-          }
-        }
+        const testWindow = globalThis as RoomLayoutTestWindow
 
         return (
           testWindow.__ROOM_LAYOUT_TEST__?.getState().selectedId === expectedId
@@ -67,17 +108,10 @@ async function didSelectFurniture(page: Page, itemId: string) {
 }
 
 export async function readSceneState(page: Page): Promise<BrowserSceneState> {
-  await page.waitForFunction(() => {
-    return '__ROOM_LAYOUT_TEST__' in globalThis
-  })
+  await waitForRoomLayoutTestApi(page)
 
   const rawState = await page.evaluate(() => {
-    const testWindow = globalThis as typeof globalThis & {
-      __ROOM_LAYOUT_TEST__?: {
-        getState: () => BrowserSceneState
-        setOverlaysHidden: (hidden: boolean) => void
-      }
-    }
+    const testWindow = globalThis as RoomLayoutTestWindow
 
     return testWindow.__ROOM_LAYOUT_TEST__?.getState() ?? null
   })
@@ -89,18 +123,11 @@ export async function readSceneState(page: Page): Promise<BrowserSceneState> {
   return rawState
 }
 
-export async function setOverlaysHidden(page: Page, hidden: boolean) {
-  await page.waitForFunction(() => {
-    return '__ROOM_LAYOUT_TEST__' in globalThis
-  })
+async function setOverlaysHidden(page: Page, hidden: boolean) {
+  await waitForRoomLayoutTestApi(page)
 
   await page.evaluate((nextHidden) => {
-    const testWindow = globalThis as typeof globalThis & {
-      __ROOM_LAYOUT_TEST__?: {
-        getState: () => BrowserSceneState
-        setOverlaysHidden: (hidden: boolean) => void
-      }
-    }
+    const testWindow = globalThis as RoomLayoutTestWindow
 
     testWindow.__ROOM_LAYOUT_TEST__?.setOverlaysHidden(nextHidden)
   }, hidden)
@@ -273,6 +300,33 @@ export async function focusRoomView(page: Page) {
   await expect(roomView).toBeFocused()
 }
 
+export async function readPerfCounters(
+  page: Page,
+): Promise<PerfCounterSnapshot> {
+  await waitForRoomLayoutTestApi(page)
+
+  const counters = await page.evaluate(() => {
+    const testWindow = globalThis as RoomLayoutTestWindow
+
+    return testWindow.__ROOM_LAYOUT_TEST__?.getPerfCounters() ?? null
+  })
+
+  if (!counters) {
+    throw new Error('perf-counters test hook did not return any content')
+  }
+
+  return counters
+}
+
+export async function resetPerfCounters(page: Page) {
+  await waitForRoomLayoutTestApi(page)
+
+  await page.evaluate(() => {
+    const testWindow = globalThis as RoomLayoutTestWindow
+    testWindow.__ROOM_LAYOUT_TEST__?.resetPerfCounters()
+  })
+}
+
 export async function addFurniture(page: Page, name = 'Leather Couch') {
   const initialState = await readSceneState(page)
   const pickerTrigger = page.getByRole('button', { name: 'Add Furniture' })
@@ -304,6 +358,7 @@ export async function selectOutlinerItemByKeyboard(
   await button.focus()
   await expect(button).toBeFocused()
   await page.keyboard.press('Enter')
+  await expect(button).toHaveAttribute('aria-current', 'true')
 
   return button
 }
@@ -441,6 +496,111 @@ export async function dragSelectedFurniture(
   }
 
   return run()
+}
+
+export async function holdKeyUntilCameraMoves(
+  page: Page,
+  key: string,
+  baseline: [number, number, number],
+  minimumDistance = 0.2,
+) {
+  await page.keyboard.down(key)
+
+  try {
+    await expect
+      .poll(async () => {
+        return cameraDistance(
+          (await readSceneState(page)).cameraPosition,
+          baseline,
+        )
+      })
+      .toBeGreaterThan(minimumDistance)
+  } finally {
+    await page.keyboard.up(key)
+  }
+}
+
+async function startCdpPerfTrace(page: Page, label: string) {
+  const cdp = await page.context().newCDPSession(page)
+
+  await cdp.send('Tracing.start', {
+    categories: PERF_TRACE_CATEGORIES,
+    transferMode: 'ReturnAsStream',
+  })
+
+  return {
+    async stop() {
+      const tracePath = buildPerfArtifactPath(label, 'trace.json')
+      const tracingComplete = new Promise<{ stream: string }>((resolve) => {
+        cdp.once('Tracing.tracingComplete', (event) => {
+          resolve(event as { stream: string })
+        })
+      })
+
+      await cdp.send('Tracing.end')
+      const { stream } = await tracingComplete
+
+      let traceContent = ''
+      let streamEnded = false
+      while (!streamEnded) {
+        const { data, eof, base64Encoded } = await cdp.send('IO.read', {
+          handle: stream,
+        })
+
+        traceContent += base64Encoded
+          ? Buffer.from(data, 'base64').toString('utf8')
+          : data
+        streamEnded = eof
+      }
+
+      await cdp.send('IO.close', { handle: stream })
+      await mkdir(PERF_RESULTS_DIR, { recursive: true })
+      await writeFile(tracePath, traceContent, 'utf8')
+
+      const traceStats = await stat(tracePath)
+      if (traceStats.size === 0) {
+        throw new Error(`CDP trace was empty for ${label}`)
+      }
+
+      return tracePath
+    },
+  }
+}
+
+export async function withPerfTrace<T>(
+  page: Page,
+  label: string,
+  callback: () => Promise<T>,
+) {
+  const trace = await startCdpPerfTrace(page, label)
+  let completed = false
+  let result!: T
+  let error: Error | null = null
+
+  try {
+    result = await callback()
+    completed = true
+  } catch (caughtError) {
+    error =
+      caughtError instanceof Error
+        ? caughtError
+        : new Error(String(caughtError))
+  }
+
+  const tracePath = await trace.stop()
+
+  if (error) {
+    throw error
+  }
+
+  if (!completed) {
+    throw new Error(`perf trace callback did not complete for ${label}`)
+  }
+
+  return {
+    result,
+    tracePath,
+  }
 }
 
 export async function delayFurnitureAssetRequests(page: Page) {

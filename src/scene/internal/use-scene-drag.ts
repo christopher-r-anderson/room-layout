@@ -1,23 +1,17 @@
-import {
-  useCallback,
-  useRef,
-  useState,
-  type Dispatch,
-  type SetStateAction,
-} from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { type ThreeEvent } from '@react-three/fiber'
 import {
   getFloorIntersection,
   getDraggedFurniturePosition,
-} from '@/lib/three/furniture-drag'
+} from '@/shared/lib/three/furniture-drag'
 import {
   resolveMovedFurniturePosition,
   type LayoutBounds,
-} from '@/lib/three/furniture-layout'
+} from '@/shared/lib/three/furniture-layout'
 import {
   finalizeHistoryPresent,
   type HistoryState,
-} from '@/lib/ui/editor-history'
+} from '@/shared/lib/ui/editor-history'
 import type { FurnitureItem } from '../objects/furniture.types'
 
 interface DragState {
@@ -41,7 +35,7 @@ export function useSceneDrag({
   furniture,
   selectFurniture,
   updateFurniturePosition,
-  setHistory,
+  updateHistory,
   bounds,
   floorPlaneY,
   snapSize,
@@ -54,7 +48,11 @@ export function useSceneDrag({
     id: string,
     nextPosition: [number, number, number],
   ) => void
-  setHistory: Dispatch<SetStateAction<HistoryState<FurnitureItem[]>>>
+  updateHistory: (
+    updater: (
+      history: HistoryState<FurnitureItem[]>,
+    ) => HistoryState<FurnitureItem[]>,
+  ) => void
   bounds: LayoutBounds
   floorPlaneY: number
   snapSize: number
@@ -165,7 +163,7 @@ export function useSceneDrag({
         return
       }
 
-      setHistory((currentHistory) =>
+      updateHistory((currentHistory) =>
         finalizeHistoryPresent(
           currentHistory,
           dragStartState,
@@ -173,7 +171,7 @@ export function useSceneDrag({
         ),
       )
     },
-    [areFurnitureCollectionsEqual, dragState, setHistory],
+    [areFurnitureCollectionsEqual, dragState, updateHistory],
   )
 
   return {

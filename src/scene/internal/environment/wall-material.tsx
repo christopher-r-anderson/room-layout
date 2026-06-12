@@ -1,4 +1,4 @@
-import type { WallFinishOption } from '@/lib/three/environment-materials'
+import type { WallFinishOption } from '@/shared/lib/three/environment-materials'
 
 interface WallMaterialProps {
   option: WallFinishOption | null

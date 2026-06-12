@@ -1,13 +1,13 @@
-import { findFurnitureSpawnPosition } from '@/lib/three/furniture-spawn'
+import { findFurnitureSpawnPosition } from '@/shared/lib/three/furniture-spawn'
 import {
   resolveRotatedFurnitureTransform,
   type LayoutBounds,
-} from '@/lib/three/furniture-layout'
+} from '@/shared/lib/three/furniture-layout'
 import {
   commitHistoryPresent,
   replaceHistoryPresent,
   type HistoryState,
-} from '@/lib/ui/editor-history'
+} from '@/shared/lib/ui/editor-history'
 import { type Object3D } from 'three'
 import type {
   FurnitureCatalogEntry,

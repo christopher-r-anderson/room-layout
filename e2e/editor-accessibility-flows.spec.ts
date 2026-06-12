@@ -55,6 +55,9 @@ test('keeps announcements deterministic and reconciles focus on undo selection l
 
   await focusRoomView(page)
   await page.keyboard.press('ArrowRight')
+  await expect
+    .poll(async () => (await readSceneState(page)).items[0]?.position)
+    .not.toEqual(initialPosition)
   await page.keyboard.press('Control+z')
 
   await waitForPoliteAnnouncement(page, 'Undo complete.')
@@ -217,7 +220,7 @@ test('outliner collapse toggle is keyboard operable and manages focus correctly'
   await expect(couchButton).toBeVisible()
 })
 
-test('Tab from the room view reaches selected item actions and then details', async ({
+test('Tab from the room view reaches selected item actions and Tab from the outliner reaches details', async ({
   page,
 }) => {
   await openEditor(page)
@@ -233,8 +236,12 @@ test('Tab from the room view reaches selected item actions and then details', as
     page.getByRole('button', { name: 'Rotate counterclockwise' }),
   ).toBeFocused()
 
-  await page.keyboard.press('Tab')
-  await page.keyboard.press('Tab')
+  const outlinerButton = page.getByRole('button', { name: /^Leather Couch/i })
+  await outlinerButton.focus()
+  await expect(outlinerButton).toBeFocused()
+
+  // In floating mode the actions toolbar is outside the overlay flow, while
+  // the details card stays in the overlay traversal after the outliner.
   await page.keyboard.press('Tab')
   await expect(page.getByLabel('Distance from left wall (m)')).toBeFocused()
 })
