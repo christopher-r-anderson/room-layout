@@ -1,240 +1,54 @@
-# Project Guidelines
+# Room Layout Agent Contract
 
-## Skills
+Keep always-loaded agent context small. Route deeper guidance to
+task-specific policy files.
 
-- **Git Commits**: Always use the [git-commit skill](./.agents/skills/git-commit/SKILL.md) when the user asks to create commits.
+## Core Rules
 
-## Build and Test
+- Preserve architecture boundaries enforced in `eslint.config.js`.
+- Treat `docs/architecture-boundaries.md` as architecture policy source of truth.
+- Keep runtime code independent from `src/test/**`.
+- Do not import `@/scene/internal/**` outside scene runtime/tests.
+- Use `@/` alias for source imports unless local relative import is more
+  appropriate inside the same module area.
 
-- Install deps with `pnpm install`.
-- Run dev server with `pnpm dev`.
-- Validate code with `pnpm lint`, `pnpm typecheck`, and `pnpm test:run`.
-- Run browser integration coverage with `pnpm test:e2e` when changing browser-facing editor flows, startup/loading behavior, or scene interaction wiring.
-- Run browser perf trace scenarios with `pnpm test:browser:perf` when changing frame-sensitive user flows.
-- Before finalizing code changes, run `pnpm fix` to apply lint+format fixes.
-- For perf-sensitive utility changes, use `pnpm bench` (or `pnpm bench:json` / `pnpm bench:compare`).
+## Required Skills and Tools
 
-### Library Documentation
+- Use `./.agents/skills/git-commit/SKILL.md` when the user asks to commit.
+- Use `./.agents/skills/shadcn/SKILL.md` when working on shadcn/ui workflows.
+- See `./.agents/skills/README.md` for mixed-source skill provenance and
+  formatting ownership.
+- Use Context7 for external library/framework docs and setup guidance.
 
-- Use shadcn for ui and ui components. Add components from the default registry as needed.
-- Always use Context7 when I need library/API documentation, code generation, setup or configuration steps without me having to explicitly ask.
-- use the context7 /tailwindlabs/tailwindcss.com v4 for documentation when using tailwind
+## Validation Defaults
 
-## Architecture
+- Keep base checks to `pnpm lint`, `pnpm typecheck`, and `pnpm test:run`.
+- Use `pnpm test:e2e` for browser-facing behavior changes.
+- Use `pnpm test:browser:perf` for frame-time-sensitive flow changes.
+- Run `pnpm fix` before finalizing edits.
 
-- Keep scene/domain behavior in `src/scene/` and keep pure math/Three helpers in `src/lib/three/`.
-- Keep utility modules in `src/lib/three/` and `src/lib/ui/` framework-agnostic and testable.
-- Treat `public/catalog-manifest.json` as the single source of truth for model paths and node names.
-- Keep `src/App.tsx` focused on app-shell concerns (overlay controls, keyboard wiring) and pass intent to `Scene` via a minimal API.
+## Task Routing
 
-### Structural invariants
+- Architecture and placement policy: `./.agents/policies/architecture.md`
+- Test selection matrix: `./.agents/policies/testing.md`
+- Docs sync and anti-drift policy: `./.agents/policies/docs-sync.md`
+- Refactor/move-only playbook: `./.agents/playbooks/refactor-move-only.md`
+- Runtime behavior change playbook: `./.agents/playbooks/runtime-change.md`
+- UI and accessibility playbook: `./.agents/playbooks/ui-a11y-change.md`
 
-**One-way dependency direction.**
-`src/app` may import from `src/scene`; `src/scene` must never import from `src/app`. This is enforced as an ESLint error. Any import from `@/app` inside `src/scene` is a hard violation.
+## Human Docs
 
-**Scene contracts vs. scene internals.**
-Scene contracts are types and values that form the stable API between the scene domain and the app shell: `MoveSelectionResult`, `MoveSource`, `SelectByIdResult`, `FurnitureItem`, `FootprintSize`, and the `sceneCommands` imperative facade. App-side code must import scene contracts only from the approved modules below — no barrel imports required:
+- Project overview and scripts: `README.md`
+- Architecture policy: `docs/architecture-boundaries.md`
+- Layer-local context:
+  - `src/app/README.md`
+  - `src/features/README.md`
+  - `src/editor-state/README.md`
+  - `src/shared/README.md`
+  - `src/scene/README.md`
 
-- `@/scene/scene.types` — `MoveSelectionResult`, `MoveSource`, `SelectByIdResult`
-- `@/scene/scene-commands` — `sceneCommands` (imperative scene services facade), `clearSceneServices`, `whenSceneServicesReady`
-- `@/scene/objects/furniture.types` — `FurnitureItem`, `FootprintSize`
-- `@/scene/objects/furniture-catalog` — preload/cache helpers and catalog/collection types (implementation/data allowed by policy)
+## Scope Guardrails
 
-Scene internals (utilities, state management, internal hooks) are organized in `src/scene/internal/` and must not be imported from app-side code. Attempting to import from `@/scene/internal/**` is enforced as an ESLint error. The one necessary exception is `src/App.tsx` importing the `Scene` component via relative path (`./scene/scene`) as the composition root — this is not caught by the `@/scene/` lint pattern and is intentional.
-
-**Hook locality.**
-Feature-local hooks belong in their feature folder (e.g. `src/app/overlay/use-overlay-state.ts`). Cross-cutting hooks that serve multiple features belong in `src/app/hooks/`. App-composition coordinator hooks that remain flat in `src/app/` are consumed only by `App.tsx`.
-
-After the Phase 2 app-shell refactor, controller hooks live under `src/app/controllers/`, shared controller helpers live under `src/app/controllers/_shared/`, and cross-shell refs/layout state live in `src/app/contexts/`.
-
-**Shared type placement.**
-Types consumed by more than one layer (e.g. a feature folder and `hooks/`) belong at `src/app/` root as standalone `.types.ts` files (e.g. `scene-panel.types.ts`), not inside any single consumer folder.
-
-**Selected-item layout.**
-After the Phase 3 selected-item refactor, selected-item UI is split into pure views and render sites under `src/app/selection/`:
-
-- Pure views (`selected-actions-view.tsx`, `selected-details-view.tsx`) are presentation-only. They do not import stores or selection contexts; all state arrives via props.
-- Render sites (`floating-selected-item-site.tsx`, `docked-selected-item-site.tsx`) read placement and runtime state from the relevant Zustand stores and the `SelectedItemPlacementContext` / `SelectedItemInteractionContext`, and own the placement-specific wiring (ref claims, suppression, blur-suppression).
-- Placement is computed once by `useComputeSelectedItemPlacement` and exposed through `SelectedItemPlacementProvider`. Both sites consume the same placement value to decide whether to render.
-- The docked site is mounted inside `EditorOverlay` (between the outliner and the camera tools). This is a deliberate tab-order shift introduced in Phase 3: in floating mode, Tab from the room view reaches the floating actions toolbar; details inputs are reached via the overlay traversal (top header → outliner → details card → camera tools) rather than directly after the actions toolbar.
-- The docked details placement currently uses absolute positioning (Strategy B). A grid-based variant (Strategy A) is intentionally deferred.
-
-## Conventions
-
-- Prefer object-level pointer event handling with pointer capture for object movement interactions.
-- Always release pointer capture on pointer up/cancel paths.
-- Reuse Three.js scratch objects in hot paths (drag math) to avoid unnecessary allocations.
-- Use the `@/` path alias for source imports.
-- Use semantic interaction naming (for example, `InteractiveFurniture`, `onMoveStart`) over narrow gesture-specific names unless behavior is truly gesture-specific.
-- Prefer fixing asset/data contract issues at the source (pivot, footprint metadata, node naming) over app-side compensation logic.
-- Add app-side workarounds only when production constraints require them (for example: third-party assets, legacy interfaces, or external platform limits), and keep them explicit, minimal, and easy to remove.
-- If it is unclear whether a workaround is pipeline-appropriate, pause and ask the user before implementing it.
-
-## Testing
-
-- Add or update Vitest tests for new behavior in pure utility modules.
-- Prefer behavior/contract-oriented assertions over implementation-detail assertions.
-- For geometry, transform, and other floating-point-derived values, prefer tolerant assertions like `toBeCloseTo` over exact equality unless exact integers are the product contract.
-- Avoid over-testing tunable constants unless they are intentional product contracts.
-- Use Playwright browser tests for startup/loading flows, retry/error handling, editor history flows, and other browser-realistic interaction coverage.
-- For Playwright scene-only tests where overlay chrome is incidental, prefer the shared overlay-hidden harness helpers in `e2e/support/editor-harness.ts` over ad hoc CSS injection or one-off DOM hacks.
-- Use the overlay-hidden test mode only when the assertion is about scene/canvas behavior and the overlays are not part of the contract under test.
-- Do not hide overlays in tests that are meant to validate overlay/outliner/dialog/toolbar behavior, focus order, accessibility semantics, announcements, or real pointer hit-target/layout interactions. Those tests should exercise the real UI.
-- Do not use overlay-hidden mode to paper over real regressions in interactive layout or hit-target overlap. If the UI itself is the feature under test, keep it visible and fix the product or the test intent instead.
-- When a test only needs to establish or change state and pointer semantics are irrelevant, prefer keyboard activation/focus paths over mouse clicks. This keeps tests aligned with the accessible contract and avoids coupling them to incidental layout.
-- Keep pointer-driven test steps only when the product behavior being verified is specifically about pointer input, hover, drag, pointer capture, context menus, collision, or hit-testing.
-- When changing accessibility semantics, focus management, or announcements, run `e2e/editor-a11y-audits.spec.ts` in Chromium and keep it out of the perf lane.
-- Keep browser perf trace scenarios in Playwright separate from correctness-oriented browser tests.
-- Prefer trace capture and scripted browser scenarios over Playwright runner timing output when evaluating real interaction flows.
-- For pure utility hot paths, use Vitest benchmark files (`*.bench.ts`) and compare against saved baselines (`pnpm bench:json`, `pnpm bench:compare`).
-- For user-flow performance decisions (drag, rotate, collision, camera transitions), use Playwright-driven browser benchmarks with scripted interactions and trace capture.
-- Use browser benchmarks when implementation options affect frame-time-sensitive interactions or when microbench results are not sufficient to choose an approach.
-- Keep performance optimizations only when measured results justify the added complexity.
-
-## Testing Strategy for React Three Fiber
-
-This project uses a 3-tier testing architecture to balance test speed, coverage, and confidence:
-
-### Tier 1: Unit Tests (Vitest + Node.js)
-
-- **What:** Pure utilities, pure React hooks (no scene dependencies)
-- **Tools:** Vitest with `environment: 'node'`
-- **Examples:**
-  - Geometry math: `src/lib/three/furniture-drag.test.ts`
-  - Hotkey logic: `src/lib/ui/delete-hotkeys.test.ts`
-  - App state hooks: `src/app/use-editor-dialog-state.test.ts`
-- **Speed:** <50ms per test
-- **Coverage:** ~90% of codebase
-- **When to use:** "Is this pure logic with no 3D rendering or browser-specific behavior?"
-
-### Tier 1.5: Integration Tests (Vitest + RTTR + jsdom)
-
-- **What:** React Three Fiber components, scene composition, event dispatch sequencing
-- **Tools:** Vitest with `@vitest-environment jsdom` + `@react-three/test-renderer`
-- **Examples:**
-  - Component structure: `src/scene/internal/objects/interactive-furniture.test.tsx`
-  - Event handler wiring: `src/scene/internal/objects/interactive-furniture.event.test.tsx`
-  - Hook initialization: `src/scene/internal/use-scene-imperative-api.test.ts`
-- **Speed:** <200ms per test
-- **Coverage:** ~5-10% of codebase (fills R3F component gaps)
-- **When to use:** "Does this test component render, event dispatch, or initialization?"
-- **Limitations:** RTTR cannot populate `event.ray` or pointer-capture-dependent geometry (drag, collision). Use Playwright E2E for those behaviors.
-- **Important:** Don't use RTTR for pointer event results (collision detection, ray casting); use Playwright for that.
-
-### Tier 2: E2E Tests (Playwright + Real Browser)
-
-- **What:** Multi-step user workflows, real WebGL rendering, asset loading, visual validation
-- **Tools:** Playwright with Chromium
-- **Examples:**
-  - Drag + collision detection: `e2e/drag-collision.spec.ts`
-  - Undo/redo with visual confirmation: `e2e/editor-history.spec.ts`
-  - Asset loading and error recovery: `e2e/startup-loading.spec.ts`
-- **Speed:** <5s per test
-- **Coverage:** ~5-10% of codebase (critical workflows only)
-- **When to use:** "Does this require real browser rendering, asset loading, or visual confirmation?"
-
-### Key Principles
-
-1. **Don't over-test:** If a behavior is tested in Tier 1 or 1.5, don't duplicate it in E2E.
-2. **Avoid jsdom for canvas:** Tier 1.5 uses jsdom for component structure and event dispatch, but real pointer event validation (raycasting, collision) happens in E2E.
-3. **Use tolerant assertions for geometry:** Floating-point values use `toBeCloseTo()`, not exact equality.
-4. **Test frame-dependent logic with `advanceFrames()`:** In Tier 1.5, use RTTR's frame advancement to test `useFrame` effects.
-5. **Use real UI only when it matters:** For scene-only browser tests, the overlay-hidden harness is acceptable; for overlay/accessibility/layout contracts, keep the real UI visible.
-6. **Prefer the least-coupled interaction path:** If mouse behavior is not the subject of the test, use keyboard focus/activation instead of pointer clicks.
-
-### Test Commands
-
-- `pnpm test:run` - All Tier 1 + 1.5 tests (Vitest)
-- `pnpm test:e2e` - All Tier 2 tests (Playwright)
-- `pnpm test:browser:perf` - Performance traces (separate Playwright project)
-- `pnpm bench` - Hot-path benchmarks (utilities only)
-
-### RTTR Patterns (Tier 1.5)
-
-#### Rendering a component
-
-```typescript
-import { createR3FTestScene } from '@/test/r3f-renderer'
-
-test('renders mesh with correct geometry', async () => {
-  const renderer = await createR3FTestScene(
-    <mesh>
-      <boxGeometry args={[2, 2, 2]} />
-      <meshStandardMaterial color={0xff0000} />
-    </mesh>
-  )
-
-  // renderer.scene is the root test instance.
-  // For raw elements (<mesh>, <group>), the element IS renderer.scene.
-  // For React function components (<MyComponent />), the rendered output is at
-  // renderer.scene.children[0], and Three.js properties are on .instance.
-  const mesh = renderer.scene
-  expect(mesh.type).toBe('Mesh')
-  expect(mesh.children[0]?.geometry.type).toBe('BoxGeometry')
-})
-```
-
-#### Testing event handler invocation
-
-```typescript
-import { firePointerEvent } from '@/test/pointer-helpers'
-import { vi } from 'vitest'
-
-test('calls event handler on pointer down', async () => {
-  const renderer = await createR3FTestScene(<YourComponent />)
-  const component = renderer.scene
-
-  // Test that event handler fires (without validating actual browser capture)
-  await firePointerEvent(renderer, component, 'pointerDown', { pointerId: 1 })
-  // Assert via component state or spy that handler was called
-})
-```
-
-**Important:** RTTR tests validate _event dispatch sequencing_ (did the handler run?) but cannot validate actual DOM pointer capture behavior or geometry interactions (drag, collision detection, raycasting). For those, use Playwright E2E tests where the real browser enforces the behavior.
-
-#### Testing frame-dependent logic
-
-```typescript
-test('rotates mesh over frames', async () => {
-  const renderer = await createR3FTestScene(<YourRotatingComponent />)
-  const mesh = renderer.scene
-
-  expect(mesh.rotation.z).toBe(0)
-
-  await renderer.advanceFrames(10)
-
-  expect(mesh.rotation.z).toBeCloseTo(Math.PI / 4, 2)
-})
-```
-
-### Debugging RTTR Tests
-
-- **Inspect scene tree:** Use `renderer.toGraph()` to print the scene structure
-- **Find a specific object:** `renderer.scene.getObjectByName('furniture-id')`
-- **Check geometry/material:** `mesh.geometry.parameters`, `mesh.material.color`
-
-### Gotchas to Avoid
-
-- Don't test pointer-geometry behaviors (drag, ray casting, collision) in jsdom; use Playwright E2E instead
-- Don't use testing-library's `fireEvent()` for RTTR tests; use `firePointerEvent()` from pointer-helpers
-- Don't snapshot 3D scenes; assert on specific properties instead
-- Don't forget `advanceFrames()` when testing `useFrame` effects
-- `renderer.scene` is the root test instance for raw elements; for React function components, the rendered output is at `renderer.scene.children[0]` and Three.js properties are on `.instance`
-
-## Asset Pipeline
-
-- Keep runtime models under `public/models/` and source assets under `assets-source/`.
-- If rotation/placement feels wrong for a model, prefer fixing the asset pivot/origin in source files before adding runtime offsets.
-- Any renamed GLTF node must be updated in `public/catalog-manifest.json`.
-
-## Gotchas
-
-- `getClonedNode` throws when node names are wrong; treat these as hard failures, not optional behavior.
-- Drag math is floor-plane based (`Y` fixed, movement on `X/Z`), so keep that model in related features.
-- React Three Fiber canvas host semantics can trigger accessibility rule violations; keep landmark/label semantics on explicit DOM wrappers rather than relying on implicit canvas host attributes.
-- Keep selection announcements centralized in app-shell reconciliation; avoid duplicate announcement surfaces and avoid moving outliner focus for ordinary pointer/canvas selection.
-
-## Docs
-
-- For project overview, stack, and basic scripts, see `README.md`.
-- For roadmap, completion status, and next steps, see `PLAN.md`.
+- Keep AGENTS and `.agents/policies/*` operational and concise.
+- Put long explanations in human docs under `docs/`.
+- Do not duplicate policy text across AGENTS and docs; link to canonical source.

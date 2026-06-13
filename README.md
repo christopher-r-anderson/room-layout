@@ -129,6 +129,12 @@ In addition to this README, project-specific guides are available:
 - [Overlay Interaction Model](docs/overlay-interaction-model.md): Blocking overlays vs the non-blocking Room surface, including focus and breakpoint behavior.
 - [Selected Toolbar Placement](docs/selected-toolbar-placement.md): Bounds source order, viewport-space placement, floating candidate scoring, and docked fallback behavior.
 
+Agent and automation guidance:
+
+- [AGENTS.md](AGENTS.md): Compact always-loaded agent contract.
+- [.agents/README.md](.agents/README.md): Modular policy/playbook index used by AGENTS routing.
+- [.agents/policies/testing.md](.agents/policies/testing.md): Agent-facing testing and workflow heuristics.
+
 Local architecture notes are also available in:
 
 - `src/app/README.md`

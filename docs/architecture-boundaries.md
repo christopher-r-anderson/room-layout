@@ -46,6 +46,9 @@ Notes:
 - `src/scene`: scene rendering domain and scene internals.
 - `src/test`: test-only infrastructure.
 
+Keep this document concise and move layer-local detail to the matching
+`src/*/README.md` files.
+
 For local context inside each area, see:
 
 - `src/app/README.md`
@@ -90,6 +93,7 @@ These are temporary or intentionally narrow.
 ## Related Docs
 
 - Root overview and scripts: `README.md`
+- Agent operating contract and policy routing: `AGENTS.md`, `.agents/README.md`
 - Overlay model and behavior: `docs/overlay-interaction-model.md`
 - Selected toolbar placement details: `docs/selected-toolbar-placement.md`
 - Editor state details: `docs/editor-state-architecture.md`

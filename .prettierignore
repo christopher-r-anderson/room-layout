@@ -6,4 +6,6 @@ assets-source/
 public/models/
 public/basis/
 
-.agents
+# Agent guidance docs are first-party and should be format-checked.
+# Ignore only externally managed skill payloads.
+.agents/skills/shadcn/
