@@ -1,0 +1,40 @@
+# URL Scene Sharing
+
+This guide documents the shared URL scene payload used by the editor.
+
+## Summary
+
+The editor can encode room layouts in a `?scene=` query parameter and restore
+that layout on startup.
+
+## Payload Shape
+
+- `v`: schema version (`1`)
+- `items`: ordered list of furniture instances
+- `items[].id`: instance ID
+- `items[].catalogId`: manifest catalog entry ID
+- `items[].position`: `[x, y, z]` rounded to 3 decimals
+- `items[].rotationY`: radians rounded to 3 decimals
+- `floorFinishId` and `wallFinishId`: optional environment finish IDs
+
+## Constraints
+
+- encoded payload length must be <= 4000 chars
+- duplicate `scene` query params are invalid
+- unknown `catalogId` values fail restore closed
+- items are sorted by `id` before encoding for determinism
+
+## Restore Behavior
+
+On startup, a valid `?scene=` is restored before editor interaction begins.
+Invalid payloads fall back to an empty scene and show an error message.
+
+## User Entry Points
+
+Use desktop Share action or mobile More menu Share action. The app uses native
+share where available and clipboard fallback otherwise.
+
+## Related Docs
+
+- `README.md`
+- `docs/catalog-and-assets.md`

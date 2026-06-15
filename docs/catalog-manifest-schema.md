@@ -1,6 +1,7 @@
 # Catalog Manifest Schema
 
-The catalog manifest (`public/catalog-manifest.json`) defines the furniture catalog that the room layout editor loads at startup.
+The catalog manifest (`public/catalog-manifest.json`) defines the furniture
+catalog that the room layout editor loads at startup.
 
 ## Format
 
@@ -70,19 +71,23 @@ The manifest is a JSON file with the following structure:
 
 ### Collection Object
 
-| Field       | Type   | Description                                                                    |
-| ----------- | ------ | ------------------------------------------------------------------------------ |
-| `id`        | string | Unique identifier for the collection (referenced by catalog entries)           |
-| `modelPath` | string | Relative path to the GLTF model file (e.g., `"models/leather-collection.glb"`) |
+| Field       | Type   | Description                                                                          |
+| ----------- | ------ | ------------------------------------------------------------------------------------ |
+| `id`        | string | Unique identifier for the collection (referenced by catalog entries)                 |
+| `modelPath` | string | Relative path to the GLTF model file (for example `"models/leather-collection.glb"`) |
 
 ### Catalog Entry Object
 
 - `id` (`string`): Unique identifier for the furniture item
 - `name` (`string`): Display name of the furniture piece
-- `kind` (`string`): Furniture kind; must be one of `armchair`, `couch`, `coffee-table`, `end-table`
-- `collectionId` (`string`): Reference to a collection `id`; must exist in the collections array
-- `nodeName` (`string`): Name of the Three.js object node in the GLTF model to clone (for example `"ChairNode"`)
-- `uiBoundsNodeName` (`string`, optional): Descendant node under `nodeName` used as the preferred bounds source for selected-item toolbar placement
+- `kind` (`string`): Furniture kind; must be one of `armchair`, `couch`,
+  `coffee-table`, `end-table`
+- `collectionId` (`string`): Reference to a collection `id`; must exist in the
+  collections array
+- `nodeName` (`string`): Name of the Three.js object node in the GLTF model to
+  clone (for example `"ChairNode"`)
+- `uiBoundsNodeName` (`string`, optional): Descendant node under `nodeName`
+  used as the preferred bounds source for selected-item toolbar placement
 - `footprintSize` (`object`): Bounding dimensions for collision detection
 - `footprintSize.width` (`number`): Width in meters (must be `> 0`)
 - `footprintSize.depth` (`number`): Depth in meters (must be `> 0`)
@@ -120,7 +125,9 @@ For web delivery, prefer KTX2 textures for floor finishes:
 - Diffuse/albedo maps: ETC1S (`*_diff_2k.ktx2`)
 - Normal maps: UASTC (`*_nor_gl_1k.ktx2`)
 
-If `previewPath` is omitted for a floor finish, the Room panel renders that option with a neutral placeholder tile instead of an image thumbnail. The finish remains selectable.
+If `previewPath` is omitted for a floor finish, the Room panel renders that
+option with a neutral placeholder tile instead of an image thumbnail. The finish
+remains selectable.
 
 ### Wall Finish Object
 
@@ -132,28 +139,36 @@ If `previewPath` is omitted for a floor finish, the Room panel renders that opti
 
 ## Validation Rules
 
-- All path fields (`modelPath`, catalog/floor `previewPath`, `diffusePath`, `normalPath`) must be **relative paths** that do not escape the public directory:
-  - ✅ Allowed: `"models/foo.glb"`, `"catalog-previews/couch.webp"`
-  - ❌ Not allowed: `"/models/foo.glb"`, `"http://example.com/foo.glb"`, `"//cdn.example.com/foo.glb"`, `"../models/foo.glb"`, `"%2e%2e/models/foo.glb"`, `"models\\foo.glb"`, `"models%2ffoo.glb"`
-  - Paths are percent-decoded for validation and then canonicalized before runtime resolution
-- All `kind` values must match one of the known furniture kinds
-- All `collectionId` references must point to an existing collection
-- If `uiBoundsNodeName` is present, it must be a non-empty string and must resolve to a descendant node inside the catalog entry's `nodeName` subtree at runtime
-- All footprint dimensions must be positive numbers
-- Wall colors must use `#RRGGBB` hex format
-- Wall finishes must not define `previewPath`; wall swatches are derived from `color`
-- Default environment finish ids must reference existing floor/wall finish ids
-- Both `collections` and `catalog` arrays must not be empty
-- Both `environment.floorFinishes` and `environment.wallFinishes` arrays must not be empty
+- All path fields (`modelPath`, catalog/floor `previewPath`, `diffusePath`,
+  `normalPath`) must be relative paths that do not escape the public directory.
+- All `kind` values must match one of the known furniture kinds.
+- All `collectionId` references must point to an existing collection.
+- If `uiBoundsNodeName` is present, it must be a non-empty string and must
+  resolve to a descendant node inside the catalog entry's `nodeName` subtree at
+  runtime.
+- All footprint dimensions must be positive numbers.
+- Wall colors must use `#RRGGBB` hex format.
+- Wall finishes must not define `previewPath`; wall swatches are derived from
+  `color`.
+- Default environment finish ids must reference existing floor/wall finish ids.
+- Both `collections` and `catalog` arrays must not be empty.
+- Both `environment.floorFinishes` and `environment.wallFinishes` arrays must
+  not be empty.
 
 ## Runtime Behavior
 
-- If the manifest fetch fails or times out, the app shows a startup error overlay and disables editor interactions until the user retries; there is no built-in fallback catalog
-- Manifest paths are resolved relative to the app's `import.meta.env.BASE_URL`
-- If `uiBoundsNodeName` is omitted, selected-item toolbar placement falls back to projected render bounds or object origin
-- If `uiBoundsNodeName` is present but the referenced node is missing from the loaded GLB subtree, startup fails as a hard asset contract error
-- `uiBoundsNodeName` affects toolbar bounds selection only; it is not an authored point anchor and it does not bypass overlap checks
-- Failed asset preloads also trigger the startup error overlay; operators must ensure all paths in the manifest are valid and accessible
+- If the manifest fetch fails or times out, the app shows a startup error
+  overlay and disables editor interactions until the user retries; there is no
+  built-in fallback catalog.
+- Manifest paths are resolved relative to the app's `import.meta.env.BASE_URL`.
+- If `uiBoundsNodeName` is omitted, selected-item toolbar placement falls back
+  to projected render bounds or object origin.
+- If `uiBoundsNodeName` is present but the referenced node is missing from the
+  loaded GLB subtree, startup fails as a hard asset contract error.
+- `uiBoundsNodeName` affects toolbar bounds selection only; it is not an
+  authored point anchor and it does not bypass overlap checks.
+- Failed asset preloads also trigger the startup error overlay; operators must
+  ensure all paths in the manifest are valid and accessible.
 
 ## Example
 
