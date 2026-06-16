@@ -37,7 +37,6 @@ interface CameraToolsShellProps {
 }
 
 interface OutlinerShellProps {
-  onNavigateBackToSelectionControls: () => boolean
   onSelectById: PanelSelectById
   onPreviewChange: (
     id: string | null,
@@ -187,9 +186,6 @@ export function EditorOverlay({
           >
             <StatusMessage />
             <Outliner
-              onNavigateBackToSelectionControls={
-                outliner.onNavigateBackToSelectionControls
-              }
               onSelectById={outliner.onSelectById}
               onPreviewChange={outliner.onPreviewChange}
             />

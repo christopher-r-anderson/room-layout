@@ -120,9 +120,7 @@ describe('useSelectionEffectsController', () => {
       sceneStateActions.setSelectedId(CHAIR.id)
     })
 
-    expect(announcements.announcePolite).toHaveBeenCalledWith(
-      'Chair selected. Press Shift+Tab to reach selected item actions and details.',
-    )
+    expect(announcements.announcePolite).toHaveBeenCalledWith('Chair selected.')
 
     act(() => {
       sceneStateActions.setSelectedId(null)

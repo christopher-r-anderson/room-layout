@@ -43,11 +43,9 @@ function loadStoredExpandedState() {
 }
 
 export function Outliner({
-  onNavigateBackToSelectionControls,
   onSelectById,
   onPreviewChange,
 }: {
-  onNavigateBackToSelectionControls?: () => boolean
   onSelectById: PanelSelectById
   onPreviewChange: (
     id: string | null,
@@ -170,7 +168,7 @@ export function Outliner({
             ) : (
               <ScrollArea className="max-h-40">
                 <ul className="space-y-2" aria-label="Furniture items">
-                  {items.map((item, itemIndex) => {
+                  {items.map((item) => {
                     const isSelected = item.id === selectedId
                     const isPreviewed = item.id === previewedId && !isSelected
 
@@ -211,21 +209,6 @@ export function Outliner({
                           onBlur={() => {
                             if (!disabled) {
                               onPreviewChange(null, 'outliner-focus')
-                            }
-                          }}
-                          onKeyDown={(event) => {
-                            if (
-                              disabled ||
-                              event.key !== 'Tab' ||
-                              !event.shiftKey ||
-                              !onNavigateBackToSelectionControls ||
-                              itemIndex !== 0
-                            ) {
-                              return
-                            }
-
-                            if (onNavigateBackToSelectionControls()) {
-                              event.preventDefault()
                             }
                           }}
                           onPointerEnter={() => {

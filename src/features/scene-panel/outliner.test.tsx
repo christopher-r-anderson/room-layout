@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createHistoryState } from '@/shared/lib/ui/editor-history'
@@ -64,11 +64,9 @@ function seedScene(readModel: ScenePanelReadModel = READ_MODEL) {
 }
 
 function renderOutliner({
-  onNavigateBackToSelectionControls,
   onSelectById,
   onPreviewChange,
 }: {
-  onNavigateBackToSelectionControls?: () => boolean
   onSelectById?: (id: string, source: PanelInteractionSource) => void
   onPreviewChange?: (
     id: string | null,
@@ -80,7 +78,6 @@ function renderOutliner({
 
   render(
     <Outliner
-      onNavigateBackToSelectionControls={onNavigateBackToSelectionControls}
       onSelectById={handleSelectById}
       onPreviewChange={handlePreviewChange}
     />,
@@ -152,42 +149,6 @@ describe('SceneOutliner', () => {
       expect.any(String),
       'panel-keyboard',
     )
-  })
-
-  it('hands Shift+Tab back to selected item controls when requested', () => {
-    const onNavigateBackToSelectionControls = vi.fn(() => true)
-
-    renderOutliner({ onNavigateBackToSelectionControls })
-    const firstItem = screen.getByRole('button', { name: /leather couch/i })
-    const event = new KeyboardEvent('keydown', {
-      bubbles: true,
-      cancelable: true,
-      key: 'Tab',
-      shiftKey: true,
-    })
-
-    fireEvent(firstItem, event)
-
-    expect(onNavigateBackToSelectionControls).toHaveBeenCalledTimes(1)
-    expect(event.defaultPrevented).toBe(true)
-  })
-
-  it('does not hand Shift+Tab back for non-first outliner items', () => {
-    const onNavigateBackToSelectionControls = vi.fn(() => true)
-
-    renderOutliner({ onNavigateBackToSelectionControls })
-    const secondItem = screen.getByRole('button', { name: /end table/i })
-    const event = new KeyboardEvent('keydown', {
-      bubbles: true,
-      cancelable: true,
-      key: 'Tab',
-      shiftKey: true,
-    })
-
-    fireEvent(secondItem, event)
-
-    expect(onNavigateBackToSelectionControls).not.toHaveBeenCalled()
-    expect(event.defaultPrevented).toBe(false)
   })
 
   it('applies preview styling to the previewed non-selected item', async () => {

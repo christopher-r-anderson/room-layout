@@ -246,12 +246,11 @@ test('Tab from the room view reaches selected item actions and Tab from the outl
   await expect(page.getByLabel('Distance from left wall (m)')).toBeFocused()
 })
 
-test('outliner keyboard selection keeps focus in the panel and reaches selected item actions with Shift+Tab', async ({
+test('outliner keyboard selection reaches selected item actions via natural tab order', async ({
   page,
 }) => {
   await openEditor(page)
   await addFurniture(page, 'Leather Couch')
-  await addFurniture(page, 'End Table')
 
   const couchButton = page.getByRole('button', { name: /^Leather Couch/i })
   const rotateCounterclockwiseButton = page.getByRole('button', {
@@ -261,13 +260,10 @@ test('outliner keyboard selection keeps focus in the panel and reaches selected 
   await couchButton.focus()
   await page.keyboard.press('Enter')
 
-  await waitForPoliteAnnouncement(
-    page,
-    'Leather Couch selected. Press Shift+Tab to reach selected item actions and details.',
-  )
+  await waitForPoliteAnnouncement(page, 'Leather Couch selected.')
   await expect(couchButton).toBeFocused()
 
-  await page.keyboard.press('Shift+Tab')
+  await page.keyboard.press('Tab')
   await expect(rotateCounterclockwiseButton).toBeFocused()
 })
 

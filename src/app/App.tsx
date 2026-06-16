@@ -52,10 +52,7 @@ import { runStartupReset } from '@/features/startup/reset-startup-state'
 import { useStartupState } from '@/features/startup/use-startup-state'
 import { FloatingSelectedItemSite } from '@/features/selection/floating-selected-item-site'
 import { EditorShell } from './chrome/editor-shell'
-import {
-  findFirstActionableInspectorControl,
-  findFirstFocusableControl,
-} from './chrome/focusable-controls'
+import { findFirstActionableInspectorControl } from './chrome/focusable-controls'
 import {
   resetSelectionMetaStore,
   selectionMetaActions,
@@ -396,19 +393,6 @@ function App() {
       announcements,
     })
 
-  const handleNavigateBackToSelectionControls = useCallback(() => {
-    const firstFocusableControl = findFirstFocusableControl(
-      selectedItemControlsRef.current,
-    )
-
-    if (!firstFocusableControl) {
-      return false
-    }
-
-    firstFocusableControl.focus()
-    return true
-  }, [])
-
   const handleFocusInspector = useCallback(() => {
     if (!startup.editorInteractionsEnabled) {
       return
@@ -519,9 +503,7 @@ function App() {
               then use the arrow keys to preview items in the room and Enter or
               Space to select the previewed item. You can also use the furniture
               in room panel and selected item actions and details to rotate,
-              remove, or type exact placement changes without dragging. When
-              focus is in the furniture in room panel, press Shift+Tab to return
-              to selected item actions and details.
+              remove, or type exact placement changes without dragging.
             </p>
             <section
               aria-describedby="scene-instructions"
@@ -615,8 +597,6 @@ function App() {
                     onConfirmStartOver: handlers.handleConfirmStartOver,
                   }}
                   outliner={{
-                    onNavigateBackToSelectionControls:
-                      handleNavigateBackToSelectionControls,
                     onSelectById: handlers.handleSelectById,
                     onPreviewChange: handleOutlinerPreviewChange,
                   }}

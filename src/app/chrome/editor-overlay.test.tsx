@@ -19,7 +19,6 @@ import { FloatingSelectedItemSite } from '@/features/selection/floating-selected
 import { SelectedItemInteractionProvider } from '@/features/selection/selected-item-interaction-provider'
 import { SelectedItemPlacementProvider } from '@/features/selection/selected-item-placement-provider'
 import { EditorOverlay } from './editor-overlay'
-import { findFirstFocusableControl } from './focusable-controls'
 
 vi.mock('@/shared/layout/use-header-layout-mode', () => ({
   useHeaderLayoutMode: () => 'desktop' as const,
@@ -306,19 +305,6 @@ describe('EditorOverlay integration', () => {
                         onConfirmStartOver: vi.fn(),
                       }}
                       outliner={{
-                        onNavigateBackToSelectionControls: () => {
-                          const firstFocusableControl =
-                            findFirstFocusableControl(
-                              selectedItemControlsRef.current,
-                            )
-
-                          if (!firstFocusableControl) {
-                            return false
-                          }
-
-                          firstFocusableControl.focus()
-                          return true
-                        },
                         onSelectById: vi.fn(),
                         onPreviewChange: vi.fn(),
                       }}
@@ -356,7 +342,7 @@ describe('EditorOverlay integration', () => {
     outlinerItem.focus()
     expect(outlinerItem).toHaveFocus()
 
-    await user.keyboard('{Shift>}{Tab}{/Shift}')
+    await user.tab()
 
     expect(rotateCounterclockwiseButton).toHaveFocus()
 

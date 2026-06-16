@@ -54,9 +54,7 @@ function announceSelectionChange(options: {
 
   if (announceMode === 'panel-keyboard') {
     if (selectedItem) {
-      announcePolite(
-        `${selectedItem.name} selected. Press Shift+Tab to reach selected item actions and details.`,
-      )
+      announcePolite(`${selectedItem.name} selected.`)
     }
     return
   }
