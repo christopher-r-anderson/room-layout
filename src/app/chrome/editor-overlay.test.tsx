@@ -368,9 +368,6 @@ describe('EditorOverlay integration', () => {
     expect(environmentDialog).toBeVisible()
 
     expect(screen.getByRole('group', { name: 'Camera' })).toBeVisible()
-    expect(document.querySelector('[data-camera-anchor]')).toHaveClass(
-      'right-94',
-    )
 
     await user.click(
       within(environmentDialog).getByRole('button', {
@@ -385,8 +382,6 @@ describe('EditorOverlay integration', () => {
     })
 
     expect(environmentTrigger).toHaveFocus()
-    expect(document.querySelector('[data-camera-anchor]')).toHaveClass(
-      'right-2',
-    )
+    expect(screen.getByRole('group', { name: 'Camera' })).toBeVisible()
   })
 })

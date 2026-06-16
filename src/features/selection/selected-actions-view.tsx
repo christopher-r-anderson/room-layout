@@ -21,7 +21,7 @@ export function SelectedActionsView({
   className?: string
   disabled: boolean
   onOpenDeleteDialog: () => void
-  onPrepareDelete: () => void
+  onPrepareDelete?: () => void
   onRotateSelection: (direction: -1 | 1) => void
   placementCandidateId?: ToolbarFloatingCandidateId
   placementMode?: SelectedActionsViewPlacementMode

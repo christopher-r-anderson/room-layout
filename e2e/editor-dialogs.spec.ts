@@ -338,9 +338,9 @@ test.describe('narrow viewport more actions', () => {
     await clickVisibleCanvasArea(page, { xRatio: 0.15, yOffset: 140 })
     await expect(roomDialog).toBeVisible()
 
-    const topViewButton = page.locator(
-      '[data-camera-anchor] button[aria-label="Switch to Top view"]',
-    )
+    const topViewButton = page
+      .getByRole('group', { name: 'Camera' })
+      .getByRole('button', { name: 'Switch to Top view' })
     await expect(topViewButton).toBeVisible()
     await topViewButton.click()
 

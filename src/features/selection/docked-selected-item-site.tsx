@@ -10,12 +10,10 @@ import type {
   UpdateSelectedItemDetailsInput,
   UpdateSelectedItemDetailsResult,
 } from '@/editor-state/types/selected-item.types'
-import { SelectedActionsView } from './selected-actions-view'
 import { SelectedDetailsView } from './selected-details-view'
 import { useSelectedItemInteraction } from './selected-item-interaction-context'
 import {
   useSelectedItemActionsSizeRef,
-  useSelectedItemPlacement,
 } from './selected-item-placement-context'
 
 export interface DockedSelectedItemSiteProps {
@@ -33,7 +31,6 @@ export function DockedSelectedItemSite({
   onInvalidSelectedItemDetailValue,
   onUpdateSelectedItemDetails,
 }: DockedSelectedItemSiteProps) {
-  const placement = useSelectedItemPlacement()
   const actionsSizeRef = useSelectedItemActionsSizeRef()
   const interaction = useSelectedItemInteraction()
   const { dockedInspectorRef, selectedItemControlsRef } = useEditorRefs()
@@ -47,8 +44,6 @@ export function DockedSelectedItemSite({
     return null
   }
 
-  const isDocked = placement.site === 'docked'
-  const shouldClaimControlsRef = placement.site !== 'floating'
   const controlsSuppressed = startupOverlayActive || isCatalogDrawerOpen
   const controlsDisabled = !editorInteractionsEnabled || controlsSuppressed
 
@@ -64,39 +59,23 @@ export function DockedSelectedItemSite({
     <div
       ref={(element) => {
         dockedInspectorRef.current = element
-
-        if (shouldClaimControlsRef) {
-          selectedItemControlsRef.current = element
-        } else if (selectedItemControlsRef.current === element) {
-          selectedItemControlsRef.current = null
-        }
+        selectedItemControlsRef.current = element
       }}
       inert={controlsSuppressed}
       aria-hidden={controlsSuppressed}
       className="absolute pointer-events-none inset-0 z-10"
     >
-      {isDocked ? (
-        <SelectedActionsView
-          className="absolute transition-[transform,opacity] duration-150 ease-out"
-          disabled={controlsDisabled}
-          onOpenDeleteDialog={handleOpenDeleteDialog}
-          onPrepareDelete={interaction.prepareDeleteBlurSuppression}
-          onRotateSelection={onRotateSelection}
-          placementMode="docked"
-          sectionRef={actionsSizeRef}
-          selectedFurniture={selectedFurniture}
-          style={{
-            transform: `translate3d(${String(placement.left)}px, ${String(placement.top)}px, 0)`,
-          }}
-        />
-      ) : null}
       <SelectedDetailsView
         className="absolute bottom-30 md:bottom-2 left-2 right-2 md:left-auto md:w-auto"
         key={selectedFurniture.id}
         disabled={controlsDisabled}
         selectedFurniture={selectedFurniture}
         sectionRef={registerExclusionElement('selected-details')}
+        actionsSectionRef={actionsSizeRef}
         consumeBlurCommitSuppression={interaction.consumeBlurCommitSuppression}
+        onOpenDeleteDialog={handleOpenDeleteDialog}
+        onPrepareDelete={interaction.prepareDeleteBlurSuppression}
+        onRotateSelection={onRotateSelection}
         onInvalidSelectedItemDetailValue={onInvalidSelectedItemDetailValue}
         onUpdateSelectedItemDetails={onUpdateSelectedItemDetails}
       />

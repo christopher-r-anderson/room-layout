@@ -1,10 +1,7 @@
-import { useCallback, useLayoutEffect, useRef, useState } from 'react'
 import {
   dialogActions,
   useIsDeleteDialogOpen,
-  useIsRoomSurfaceOpen,
   usePendingDeleteFurniture,
-  useRoomSurfaceLayout,
 } from '@/editor-state/dialog-store'
 import {
   useStartupLoadingActive,
@@ -107,59 +104,9 @@ export function EditorOverlay({
   onRetryAssetLoading,
 }: EditorOverlayProps) {
   const { registerExclusionElement } = useOverlayLayout()
-  const cameraAnchorRef = useRef<HTMLDivElement | null>(null)
-  const [cameraAnchorHeight, setCameraAnchorHeight] = useState(0)
-  const roomSurfaceLayout = useRoomSurfaceLayout()
-  const isRoomSurfaceOpen = useIsRoomSurfaceOpen()
   const selectedId = useSceneStateStore((state) => state.selectedId)
   const startupOverlayActive = useStartupOverlayActive()
-  const isDesktopRoomOpen = isRoomSurfaceOpen && roomSurfaceLayout === 'desktop'
-  const isMobileRoomOpen = isRoomSurfaceOpen && roomSurfaceLayout === 'mobile'
-
-  useLayoutEffect(() => {
-    const element = cameraAnchorRef.current
-
-    if (!element) {
-      return
-    }
-
-    const updateHeight = () => {
-      setCameraAnchorHeight(element.getBoundingClientRect().height)
-    }
-
-    updateHeight()
-
-    if (typeof ResizeObserver === 'undefined') {
-      window.addEventListener('resize', updateHeight)
-
-      return () => {
-        window.removeEventListener('resize', updateHeight)
-      }
-    }
-
-    const observer = new ResizeObserver(() => {
-      updateHeight()
-    })
-
-    observer.observe(element)
-
-    return () => {
-      observer.disconnect()
-    }
-  }, [])
-
-  const centeredBottom =
-    cameraAnchorHeight > 0
-      ? `calc(50% - ${String(cameraAnchorHeight / 2)}px)`
-      : '50%'
-  const mobileOpenBottom = 'calc(50dvh + 0.5rem)'
-  const handleCameraAnchorRef = useCallback(
-    (element: HTMLDivElement | null) => {
-      cameraAnchorRef.current = element
-      registerExclusionElement('camera-tools')(element)
-    },
-    [registerExclusionElement],
-  )
+  const registerCameraTools = registerExclusionElement('camera-tools')
 
   return (
     <>
@@ -205,14 +152,8 @@ export function EditorOverlay({
       <DockedSelectedItemSite {...dockedSelectedItem} />
 
       <div
-        ref={handleCameraAnchorRef}
-        data-camera-anchor
-        className={`pointer-events-none absolute transition-[bottom,right] duration-200 ${
-          isDesktopRoomOpen ? 'right-94' : 'right-2'
-        }`}
-        style={{
-          bottom: isMobileRoomOpen ? mobileOpenBottom : centeredBottom,
-        }}
+        ref={registerCameraTools}
+        className="pointer-events-none absolute right-2 bottom-30 md:bottom-2 z-20"
         inert={startupOverlayActive}
         aria-hidden={startupOverlayActive}
       >

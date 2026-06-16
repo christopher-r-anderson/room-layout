@@ -7,6 +7,37 @@ import { SelectedDetailsView } from './selected-details-view'
 import { FURNITURE_ITEM } from './test-fixtures'
 
 describe('SelectedDetailsView', () => {
+  it('tabs through inspector actions before placement inputs when action handlers are provided', async () => {
+    const user = userEvent.setup()
+
+    render(
+      <SelectedDetailsView
+        disabled={false}
+        selectedFurniture={FURNITURE_ITEM}
+        consumeBlurCommitSuppression={() => false}
+        onOpenDeleteDialog={vi.fn()}
+        onPrepareDelete={vi.fn()}
+        onRotateSelection={vi.fn()}
+        onInvalidSelectedItemDetailValue={vi.fn()}
+        onUpdateSelectedItemDetails={vi.fn()}
+      />,
+    )
+
+    await user.tab()
+    expect(
+      screen.getByRole('button', { name: 'Rotate counterclockwise' }),
+    ).toHaveFocus()
+
+    await user.tab()
+    expect(screen.getByRole('button', { name: 'Rotate clockwise' })).toHaveFocus()
+
+    await user.tab()
+    expect(screen.getByRole('button', { name: 'Remove item' })).toHaveFocus()
+
+    await user.tab()
+    expect(screen.getByLabelText('Distance from left wall (m)')).toHaveFocus()
+  })
+
   it('does not commit rounded display values on blur when the field was not edited', async () => {
     const user = userEvent.setup()
     const onUpdateSelectedItemDetails = vi.fn()

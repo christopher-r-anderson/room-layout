@@ -1,4 +1,3 @@
-import { useEditorRefs } from '@/shared/providers/editor-refs-context'
 import {
   useEditorInteractionsEnabled,
   useStartupOverlayActive,
@@ -24,7 +23,6 @@ export function FloatingSelectedItemSite({
   const placement = useSelectedItemPlacement()
   const actionsSizeRef = useSelectedItemActionsSizeRef()
   const interaction = useSelectedItemInteraction()
-  const { selectedItemControlsRef } = useEditorRefs()
   const selectedFurniture = useSelectedFurniture()
   const editorInteractionsEnabled = useEditorInteractionsEnabled()
   const startupOverlayActive = useStartupOverlayActive()
@@ -51,7 +49,6 @@ export function FloatingSelectedItemSite({
 
   return (
     <div
-      ref={selectedItemControlsRef}
       inert={controlsSuppressed}
       className="absolute pointer-events-none w-full h-full z-10"
       aria-hidden={controlsSuppressed}

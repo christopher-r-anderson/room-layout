@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
 import { cn } from '@/shared/lib/utils'
 import { getWallClearances } from '@/shared/lib/three/wall-clearance'
+import { SelectedActionsView } from './selected-actions-view'
 
 type FieldOverride =
   | {
@@ -156,7 +157,11 @@ export function SelectedDetailsView({
   disabled,
   selectedFurniture,
   sectionRef,
+  actionsSectionRef,
   consumeBlurCommitSuppression,
+  onOpenDeleteDialog,
+  onPrepareDelete,
+  onRotateSelection,
   onInvalidSelectedItemDetailValue,
   onUpdateSelectedItemDetails,
 }: {
@@ -164,7 +169,11 @@ export function SelectedDetailsView({
   disabled: boolean
   selectedFurniture: FurnitureItem
   sectionRef?: Ref<HTMLElement>
+  actionsSectionRef?: Ref<HTMLElement>
   consumeBlurCommitSuppression: () => boolean
+  onOpenDeleteDialog?: () => void
+  onPrepareDelete?: () => void
+  onRotateSelection?: (direction: -1 | 1) => void
   onInvalidSelectedItemDetailValue?: (fieldLabel: string) => string
   onUpdateSelectedItemDetails: (
     input: UpdateSelectedItemDetailsInput,
@@ -387,6 +396,18 @@ export function SelectedDetailsView({
       titleId={titleId}
     >
       <CardContent className="space-y-2.5" data-selected-item-details-root>
+        {onOpenDeleteDialog && onRotateSelection ? (
+          <SelectedActionsView
+            className="w-fit"
+            disabled={disabled}
+            onOpenDeleteDialog={onOpenDeleteDialog}
+            onPrepareDelete={onPrepareDelete}
+            onRotateSelection={onRotateSelection}
+            placementMode="docked"
+            sectionRef={actionsSectionRef}
+            selectedFurniture={selectedFurniture}
+          />
+        ) : null}
         <div className="flex gap-2">
           <div className="min-w-0 rounded-md border border-border/60 bg-muted/20 p-2">
             <p className="text-[11px]/4 font-medium text-muted-foreground">
