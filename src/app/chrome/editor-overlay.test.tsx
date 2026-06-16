@@ -15,7 +15,6 @@ import {
 import { sceneStateActions } from '@/editor-state/scene-state-store'
 import { OverlayLayoutProvider } from '../../shared/layout/overlay-layout-provider'
 import { EditorRefsProvider } from '../../shared/providers/editor-refs-provider'
-import { FloatingSelectedItemSite } from '@/features/selection/floating-selected-item-site'
 import { SelectedItemInteractionProvider } from '@/features/selection/selected-item-interaction-provider'
 import { SelectedItemPlacementProvider } from '@/features/selection/selected-item-placement-provider'
 import { EditorOverlay } from './editor-overlay'
@@ -262,11 +261,6 @@ describe('EditorOverlay integration', () => {
               <SelectedItemInteractionProvider>
                 <SelectedItemPlacementProvider value={placementValue}>
                   <div className="relative min-h-192">
-                    <FloatingSelectedItemSite
-                      onOpenDeleteDialog={vi.fn()}
-                      onRotateSelection={vi.fn()}
-                    />
-
                     <EditorOverlay
                       startOverDisabled={false}
                       onHeaderLayoutModeChange={vi.fn()}
@@ -317,6 +311,10 @@ describe('EditorOverlay integration', () => {
                         onRotateSelection: vi.fn(),
                         onInvalidSelectedItemDetailValue: onInvalid,
                         onUpdateSelectedItemDetails: onUpdate,
+                      }}
+                      floatingSelectedItem={{
+                        onOpenDeleteDialog: vi.fn(),
+                        onRotateSelection: vi.fn(),
                       }}
                       onConfirmDeleteSelection={vi.fn()}
                       onRetryAssetLoading={vi.fn()}

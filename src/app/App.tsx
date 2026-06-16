@@ -50,7 +50,6 @@ import { Toaster } from '@/shared/ui/sonner'
 import { isFreshSceneState } from '@/shared/lib/three/scene-defaults'
 import { runStartupReset } from '@/features/startup/reset-startup-state'
 import { useStartupState } from '@/features/startup/use-startup-state'
-import { FloatingSelectedItemSite } from '@/features/selection/floating-selected-item-site'
 import { EditorShell } from './chrome/editor-shell'
 import { findFirstActionableInspectorControl } from './chrome/focusable-controls'
 import {
@@ -574,11 +573,6 @@ function App() {
 
             {testOverlaysHidden ? null : (
               <>
-                <FloatingSelectedItemSite
-                  onOpenDeleteDialog={handlers.handleOpenDeleteDialog}
-                  onRotateSelection={handlers.handleRotateSelection}
-                />
-
                 <EditorOverlay
                   startOverDisabled={sceneIsAtDefaults}
                   onHeaderLayoutModeChange={dialogState.syncLayoutMode}
@@ -611,6 +605,10 @@ function App() {
                       handlers.handleInvalidSelectedItemDetailValue,
                     onUpdateSelectedItemDetails:
                       handlers.handleUpdateSelectedItemDetails,
+                  }}
+                  floatingSelectedItem={{
+                    onOpenDeleteDialog: handlers.handleOpenDeleteDialog,
+                    onRotateSelection: handlers.handleRotateSelection,
                   }}
                   onConfirmDeleteSelection={
                     handlers.handleConfirmDeleteSelection

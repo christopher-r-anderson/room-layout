@@ -12,9 +12,7 @@ import type {
 } from '@/editor-state/types/selected-item.types'
 import { SelectedDetailsView } from './selected-details-view'
 import { useSelectedItemInteraction } from './selected-item-interaction-context'
-import {
-  useSelectedItemActionsSizeRef,
-} from './selected-item-placement-context'
+import { useSelectedItemActionsSizeRef } from './selected-item-placement-context'
 
 export interface DockedSelectedItemSiteProps {
   onOpenDeleteDialog: () => void

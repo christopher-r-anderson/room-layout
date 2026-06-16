@@ -29,7 +29,9 @@ describe('SelectedDetailsView', () => {
     ).toHaveFocus()
 
     await user.tab()
-    expect(screen.getByRole('button', { name: 'Rotate clockwise' })).toHaveFocus()
+    expect(
+      screen.getByRole('button', { name: 'Rotate clockwise' }),
+    ).toHaveFocus()
 
     await user.tab()
     expect(screen.getByRole('button', { name: 'Remove item' })).toHaveFocus()

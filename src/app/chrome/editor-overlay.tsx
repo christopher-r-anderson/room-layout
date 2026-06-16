@@ -18,6 +18,7 @@ import { InitializationProgress } from '@/features/startup/initialization-progre
 import { Outliner } from '@/features/scene-panel/outliner'
 import type { PanelSelectById } from '@/editor-state/types/interaction.types'
 import { DockedSelectedItemSite } from '@/features/selection/docked-selected-item-site'
+import { FloatingSelectedItemSite } from '@/features/selection/floating-selected-item-site'
 import type {
   UpdateSelectedItemDetailsInput,
   UpdateSelectedItemDetailsResult,
@@ -50,6 +51,11 @@ interface DockedSelectedItemShellProps {
   ) => UpdateSelectedItemDetailsResult
 }
 
+interface FloatingSelectedItemShellProps {
+  onOpenDeleteDialog: () => void
+  onRotateSelection: (direction: -1 | 1) => void
+}
+
 interface EditorOverlayProps {
   startOverDisabled: boolean
   onHeaderLayoutModeChange: (layout: HeaderLayoutMode) => void
@@ -57,6 +63,7 @@ interface EditorOverlayProps {
   outliner: OutlinerShellProps
   cameraTools: CameraToolsShellProps
   dockedSelectedItem: DockedSelectedItemShellProps
+  floatingSelectedItem: FloatingSelectedItemShellProps
   onConfirmDeleteSelection: () => void
   onRetryAssetLoading: () => void
 }
@@ -100,6 +107,7 @@ export function EditorOverlay({
   outliner,
   cameraTools,
   dockedSelectedItem,
+  floatingSelectedItem,
   onConfirmDeleteSelection,
   onRetryAssetLoading,
 }: EditorOverlayProps) {
@@ -150,6 +158,7 @@ export function EditorOverlay({
       </div>
 
       <DockedSelectedItemSite {...dockedSelectedItem} />
+      <FloatingSelectedItemSite {...floatingSelectedItem} />
 
       <div
         ref={registerCameraTools}
