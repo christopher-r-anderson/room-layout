@@ -44,6 +44,9 @@ interface UseKeyboardShortcutsOptions {
   isBlockingOverlayOpen: boolean
   canStartOver: boolean
   roomViewHasFocus: boolean
+  onFocusInspector: () => void
+  onFocusRoomView: () => void
+  onFocusOutliner: () => void
   onUndo: () => void
   onRedo: () => void
   onStartOverIntent: () => void
@@ -116,6 +119,9 @@ function canExecuteShortcut(
 function getShortcutExecutor(
   shortcutId: KeyboardShortcutDefinition['id'],
   callbacks: {
+    onFocusInspector: () => void
+    onFocusRoomView: () => void
+    onFocusOutliner: () => void
     onUndo: () => void
     onRedo: () => void
     onStartOverIntent: () => void
@@ -130,6 +136,12 @@ function getShortcutExecutor(
   },
 ) {
   switch (shortcutId) {
+    case 'focus-inspector':
+      return callbacks.onFocusInspector
+    case 'focus-room-view':
+      return callbacks.onFocusRoomView
+    case 'focus-outliner':
+      return callbacks.onFocusOutliner
     case 'undo':
       return callbacks.onUndo
     case 'redo':
@@ -243,6 +255,9 @@ export function useKeyboardShortcuts({
   isBlockingOverlayOpen,
   canStartOver,
   roomViewHasFocus,
+  onFocusInspector,
+  onFocusRoomView,
+  onFocusOutliner,
   onUndo,
   onRedo,
   onStartOverIntent,
@@ -258,6 +273,9 @@ export function useKeyboardShortcuts({
   const shortcutDefinitions: ShortcutDefinition[] =
     USE_KEYBOARD_SHORTCUT_DEFINITIONS.map((shortcut) => {
       const execute = getShortcutExecutor(shortcut.id, {
+        onFocusInspector,
+        onFocusRoomView,
+        onFocusOutliner,
         onUndo,
         onRedo,
         onStartOverIntent,

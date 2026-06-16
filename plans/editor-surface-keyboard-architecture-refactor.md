@@ -329,11 +329,15 @@ Changes:
   - Persisted selected-source inference
   - Mobile floating quick-actions
   - Camera floating-anchor measurement logic
+  - Unused token field on `SceneOutlinerFocusRequest`
 - Cleanup locations:
   - Runtime code
   - Tests
   - Docs
   - Comments and migration notes
+  - `src/editor-state/types/scene-panel.types.ts` — remove token field from SceneOutlinerFocusRequest
+  - `src/app/App.tsx`, `src/app/controllers/use-selection-effects-controller.ts` — remove token assignment at request creation sites
+  - `src/editor-state/selection-meta-store.test.ts`, `src/features/scene-panel/outliner.test.tsx` — remove token from test request constructors
 
 ## Secondary Scope Index
 

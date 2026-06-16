@@ -4,3 +4,9 @@ const FOCUSABLE_CONTROLS_SELECTOR =
 export function findFirstFocusableControl(root: ParentNode | null) {
   return root?.querySelector<HTMLElement>(FOCUSABLE_CONTROLS_SELECTOR) ?? null
 }
+
+export function findFirstActionableInspectorControl(
+  root: ParentNode | null,
+): HTMLElement | null {
+  return findFirstFocusableControl(root)
+}

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { fireEvent, render } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useEffect, useRef } from 'react'
 import { describe, expect, it, vi } from 'vitest'
@@ -12,6 +12,9 @@ function KeyboardShortcutHarness(props: {
   isBlockingOverlayOpen: boolean
   canStartOver?: boolean
   roomViewHasFocus?: boolean
+  onFocusInspector?: () => void
+  onFocusRoomView?: () => void
+  onFocusOutliner?: () => void
   onUndo: () => void
   onRedo: () => void
   onStartOverIntent: () => void
@@ -28,6 +31,9 @@ function KeyboardShortcutHarness(props: {
     ...props,
     canStartOver: props.canStartOver ?? true,
     roomViewHasFocus: props.roomViewHasFocus ?? true,
+    onFocusInspector: props.onFocusInspector ?? vi.fn(),
+    onFocusRoomView: props.onFocusRoomView ?? vi.fn(),
+    onFocusOutliner: props.onFocusOutliner ?? vi.fn(),
     onSetCameraPreset: props.onSetCameraPreset ?? vi.fn(),
     onCanvasBrowse: props.onCanvasBrowse ?? vi.fn(),
     onCanvasSelectPreviewed: props.onCanvasSelectPreviewed ?? vi.fn(),
@@ -49,6 +55,9 @@ function DialogEscapeHarness(props: {
     isBlockingOverlayOpen: false,
     canStartOver: true,
     roomViewHasFocus: true,
+    onFocusInspector: vi.fn(),
+    onFocusRoomView: vi.fn(),
+    onFocusOutliner: vi.fn(),
     onUndo: vi.fn(),
     onRedo: vi.fn(),
     onStartOverIntent: vi.fn(),
@@ -80,6 +89,7 @@ function TextInputHarness(props: {
   onUndo: () => void
   onRedo: () => void
   onStartOverIntent?: () => void
+  onFocusInspector?: () => void
   isBlockingOverlayOpen?: boolean
   canStartOver?: boolean
 }) {
@@ -91,6 +101,9 @@ function TextInputHarness(props: {
     isBlockingOverlayOpen: props.isBlockingOverlayOpen ?? false,
     canStartOver: props.canStartOver ?? true,
     roomViewHasFocus: true,
+    onFocusInspector: props.onFocusInspector ?? vi.fn(),
+    onFocusRoomView: vi.fn(),
+    onFocusOutliner: vi.fn(),
     onUndo: props.onUndo,
     onRedo: props.onRedo,
     onStartOverIntent: props.onStartOverIntent ?? vi.fn(),
@@ -125,6 +138,9 @@ function SelectedItemDetailsInputHarness(props: {
     isBlockingOverlayOpen: false,
     canStartOver: true,
     roomViewHasFocus: true,
+    onFocusInspector: vi.fn(),
+    onFocusRoomView: vi.fn(),
+    onFocusOutliner: vi.fn(),
     onUndo: vi.fn(),
     onRedo: vi.fn(),
     onStartOverIntent: vi.fn(),
@@ -164,6 +180,9 @@ function DialogStartOverHarness(props: {
     isBlockingOverlayOpen: props.isBlockingOverlayOpen,
     canStartOver: props.canStartOver ?? true,
     roomViewHasFocus: true,
+    onFocusInspector: vi.fn(),
+    onFocusRoomView: vi.fn(),
+    onFocusOutliner: vi.fn(),
     onUndo: vi.fn(),
     onRedo: vi.fn(),
     onStartOverIntent: props.onStartOverIntent,
@@ -200,6 +219,9 @@ function PreHandledEscapeHarness(props: {
     isBlockingOverlayOpen: false,
     canStartOver: true,
     roomViewHasFocus: true,
+    onFocusInspector: vi.fn(),
+    onFocusRoomView: vi.fn(),
+    onFocusOutliner: vi.fn(),
     onUndo: vi.fn(),
     onRedo: vi.fn(),
     onStartOverIntent: vi.fn(),
@@ -235,6 +257,7 @@ function PreHandledEscapeHarness(props: {
 function ContentEditableHarness(props: {
   enabled: boolean
   onStartOverIntent: () => void
+  onFocusInspector?: () => void
 }) {
   const editableRef = useRef<HTMLDivElement | null>(null)
 
@@ -244,6 +267,9 @@ function ContentEditableHarness(props: {
     isBlockingOverlayOpen: false,
     canStartOver: true,
     roomViewHasFocus: true,
+    onFocusInspector: props.onFocusInspector ?? vi.fn(),
+    onFocusRoomView: vi.fn(),
+    onFocusOutliner: vi.fn(),
     onUndo: vi.fn(),
     onRedo: vi.fn(),
     onStartOverIntent: props.onStartOverIntent,
@@ -432,6 +458,144 @@ describe('useKeyboardShortcuts', () => {
     expect(onRotate).toHaveBeenNthCalledWith(2, -1)
     expect(onMoveSelection).not.toHaveBeenCalled()
     expect(onClearSelection).not.toHaveBeenCalled()
+  })
+
+  it('dispatches pane-navigation shortcuts even when the room view does not have focus', () => {
+    const onFocusInspector = vi.fn()
+    const onFocusRoomView = vi.fn()
+    const onFocusOutliner = vi.fn()
+
+    render(
+      <KeyboardShortcutHarness
+        enabled
+        hasSelection={false}
+        isBlockingOverlayOpen={false}
+        roomViewHasFocus={false}
+        onFocusInspector={onFocusInspector}
+        onFocusRoomView={onFocusRoomView}
+        onFocusOutliner={onFocusOutliner}
+        onUndo={vi.fn()}
+        onRedo={vi.fn()}
+        onStartOverIntent={vi.fn()}
+        onOpenDeleteDialog={vi.fn()}
+        onFocusSelected={vi.fn()}
+        onMoveSelection={vi.fn()}
+        onClearSelection={vi.fn()}
+        onRotate={vi.fn()}
+      />,
+    )
+
+    const focusInspectorEvent = new KeyboardEvent('keydown', {
+      bubbles: true,
+      cancelable: true,
+      key: 'I',
+      shiftKey: true,
+    })
+    const focusRoomViewEvent = new KeyboardEvent('keydown', {
+      bubbles: true,
+      cancelable: true,
+      key: 'R',
+      shiftKey: true,
+    })
+    const focusOutlinerEvent = new KeyboardEvent('keydown', {
+      bubbles: true,
+      cancelable: true,
+      key: 'O',
+      shiftKey: true,
+    })
+
+    fireEvent(window, focusInspectorEvent)
+    fireEvent(window, focusRoomViewEvent)
+    fireEvent(window, focusOutlinerEvent)
+
+    expect(onFocusInspector).toHaveBeenCalledTimes(1)
+    expect(onFocusRoomView).toHaveBeenCalledTimes(1)
+    expect(onFocusOutliner).toHaveBeenCalledTimes(1)
+    expect(focusInspectorEvent.defaultPrevented).toBe(true)
+    expect(focusRoomViewEvent.defaultPrevented).toBe(true)
+    expect(focusOutlinerEvent.defaultPrevented).toBe(true)
+  })
+
+  it('blocks pane-navigation shortcuts when a blocking overlay is open', () => {
+    const onFocusInspector = vi.fn()
+
+    render(
+      <KeyboardShortcutHarness
+        enabled
+        hasSelection={false}
+        isBlockingOverlayOpen
+        onFocusInspector={onFocusInspector}
+        onUndo={vi.fn()}
+        onRedo={vi.fn()}
+        onStartOverIntent={vi.fn()}
+        onOpenDeleteDialog={vi.fn()}
+        onFocusSelected={vi.fn()}
+        onMoveSelection={vi.fn()}
+        onClearSelection={vi.fn()}
+        onRotate={vi.fn()}
+      />,
+    )
+
+    const event = new KeyboardEvent('keydown', {
+      bubbles: true,
+      cancelable: true,
+      key: 'I',
+      shiftKey: true,
+    })
+
+    fireEvent(window, event)
+
+    expect(onFocusInspector).not.toHaveBeenCalled()
+    expect(event.defaultPrevented).toBe(false)
+  })
+
+  it('does not dispatch pane-navigation shortcuts from text inputs or contenteditable targets', () => {
+    const onFocusInspector = vi.fn()
+
+    const view = render(
+      <TextInputHarness
+        enabled
+        onUndo={vi.fn()}
+        onRedo={vi.fn()}
+        onFocusInspector={onFocusInspector}
+      />,
+    )
+
+    const input = screen.getByRole('textbox', { name: 'editor text input' })
+    const inputEvent = new KeyboardEvent('keydown', {
+      bubbles: true,
+      cancelable: true,
+      key: 'I',
+      shiftKey: true,
+    })
+
+    fireEvent(input, inputEvent)
+
+    expect(onFocusInspector).not.toHaveBeenCalled()
+    expect(inputEvent.defaultPrevented).toBe(false)
+
+    view.rerender(
+      <ContentEditableHarness
+        enabled
+        onStartOverIntent={vi.fn()}
+        onFocusInspector={onFocusInspector}
+      />,
+    )
+
+    const contentEditable = screen.getByRole('textbox', {
+      name: 'content editable',
+    })
+    const contentEditableEvent = new KeyboardEvent('keydown', {
+      bubbles: true,
+      cancelable: true,
+      key: 'I',
+      shiftKey: true,
+    })
+
+    fireEvent(contentEditable, contentEditableEvent)
+
+    expect(onFocusInspector).not.toHaveBeenCalled()
+    expect(contentEditableEvent.defaultPrevented).toBe(false)
   })
 
   it('dispatches undo/redo for Meta-based shortcuts', () => {

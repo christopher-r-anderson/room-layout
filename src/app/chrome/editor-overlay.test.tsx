@@ -227,6 +227,7 @@ describe('EditorOverlay integration', () => {
 
     function TestHarness() {
       const selectedItemControlsRef = React.useRef<HTMLDivElement | null>(null)
+      const dockedInspectorRef = React.useRef<HTMLDivElement | null>(null)
       const roomViewRef = React.useRef<HTMLElement | null>(null)
       const onUpdate = vi.fn(() => ({
         ok: true as const,
@@ -249,7 +250,9 @@ describe('EditorOverlay integration', () => {
 
       return (
         <TooltipProvider>
-          <EditorRefsProvider value={{ roomViewRef, selectedItemControlsRef }}>
+          <EditorRefsProvider
+            value={{ roomViewRef, selectedItemControlsRef, dockedInspectorRef }}
+          >
             <OverlayLayoutProvider
               value={{
                 exclusionRects: {},

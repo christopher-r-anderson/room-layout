@@ -52,12 +52,16 @@ import { runStartupReset } from '@/features/startup/reset-startup-state'
 import { useStartupState } from '@/features/startup/use-startup-state'
 import { FloatingSelectedItemSite } from '@/features/selection/floating-selected-item-site'
 import { EditorShell } from './chrome/editor-shell'
-import { findFirstFocusableControl } from './chrome/focusable-controls'
+import {
+  findFirstActionableInspectorControl,
+  findFirstFocusableControl,
+} from './chrome/focusable-controls'
 import {
   resetSelectionMetaStore,
   selectionMetaActions,
   useOutlinerFocusRequest,
 } from '@/editor-state/selection-meta-store'
+import { useRequestOutlinerFocus } from '@/app/controllers/use-request-outliner-focus'
 import { perfCounters } from '@/shared/debug/perf-counters'
 import { useDraftPersistence } from '@/features/url-scene/use-draft-persistence'
 import { sceneCommands } from '@/scene/scene-commands'
@@ -97,6 +101,7 @@ function App() {
   }
   const roomViewRef = useRef<HTMLElement | null>(null)
   const selectedItemControlsRef = useRef<HTMLDivElement | null>(null)
+  const dockedInspectorRef = useRef<HTMLDivElement | null>(null)
   const roomViewFocusFrameRef = useRef<number | null>(null)
   const items = useItems()
   const selectedFurniture = useSelectedFurniture()
@@ -106,6 +111,7 @@ function App() {
   const [roomViewHasFocus, setRoomViewHasFocus] = useState(false)
   const [testOverlaysHidden, setTestOverlaysHidden] = useState(false)
   const outlinerFocusRequest = useOutlinerFocusRequest()
+  const requestOutlinerFocus = useRequestOutlinerFocus()
   const isE2ELowRenderQuality =
     import.meta.env.DEV && import.meta.env.VITE_E2E_RENDER_QUALITY === 'low'
   const canvasShadowMode = isE2ELowRenderQuality ? false : 'percentage'
@@ -372,7 +378,7 @@ function App() {
 
   const { clearQueuedMovementAnnouncement } = announcements
   const editorRefs = useMemo(
-    () => ({ roomViewRef, selectedItemControlsRef }),
+    () => ({ roomViewRef, selectedItemControlsRef, dockedInspectorRef }),
     [],
   )
 
@@ -403,6 +409,57 @@ function App() {
     return true
   }, [])
 
+  const handleFocusInspector = useCallback(() => {
+    if (!startup.editorInteractionsEnabled) {
+      return
+    }
+
+    if (selectedFurniture === null) {
+      requestOutlinerFocus()
+      announcements.announcePolite(
+        'No item selected. Focus moved to Furniture in room.',
+      )
+      return
+    }
+
+    const firstFocusableControl = findFirstActionableInspectorControl(
+      dockedInspectorRef.current,
+    )
+
+    firstFocusableControl?.focus()
+  }, [
+    announcements,
+    dockedInspectorRef,
+    requestOutlinerFocus,
+    selectedFurniture,
+    startup.editorInteractionsEnabled,
+  ])
+
+  const handleFocusRoomView = useCallback(() => {
+    if (!startup.editorInteractionsEnabled) {
+      return
+    }
+
+    focusRoomView()
+
+    if (selectedFurniture !== null) {
+      applyCanvasKeyboardPreviewChange(selectedFurniture.id)
+    }
+  }, [
+    applyCanvasKeyboardPreviewChange,
+    focusRoomView,
+    selectedFurniture,
+    startup.editorInteractionsEnabled,
+  ])
+
+  const handleFocusOutliner = useCallback(() => {
+    if (!startup.editorInteractionsEnabled) {
+      return
+    }
+
+    requestOutlinerFocus()
+  }, [requestOutlinerFocus, startup.editorInteractionsEnabled])
+
   useTestStateBridge({
     activeFloorFinishId,
     activeWallFinishId,
@@ -416,6 +473,9 @@ function App() {
     isBlockingOverlayOpen: dialogState.isBlockingOverlayOpen,
     canStartOver: !sceneIsAtDefaults,
     roomViewHasFocus,
+    onFocusInspector: handleFocusInspector,
+    onFocusRoomView: handleFocusRoomView,
+    onFocusOutliner: handleFocusOutliner,
     onUndo: handlers.handleUndo,
     onRedo: handlers.handleRedo,
     onStartOverIntent: handlers.handleOpenStartOverDialog,

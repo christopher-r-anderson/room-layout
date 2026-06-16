@@ -34,11 +34,14 @@ describe('DockedSelectedItemSite', () => {
   it('attaches the controls ref when hidden placement still shows details', () => {
     const roomViewRef = createRef<HTMLElement>()
     const selectedItemControlsRef = createRef<HTMLDivElement>()
+    const dockedInspectorRef = createRef<HTMLDivElement>()
     const registerExclusionElement = vi.fn(() => vi.fn())
 
     render(
       <TooltipProvider>
-        <EditorRefsProvider value={{ roomViewRef, selectedItemControlsRef }}>
+        <EditorRefsProvider
+          value={{ roomViewRef, selectedItemControlsRef, dockedInspectorRef }}
+        >
           <OverlayLayoutProvider
             value={{
               exclusionRects: {},
@@ -83,16 +86,22 @@ describe('DockedSelectedItemSite', () => {
     expect(selectedItemControlsRef.current).toContainElement(
       screen.getByLabelText('Distance from left wall (m)'),
     )
+    expect(dockedInspectorRef.current).toContainElement(
+      screen.getByLabelText('Distance from left wall (m)'),
+    )
   })
 
   it('leaves the controls ref on floating actions when details also render', () => {
     const roomViewRef = createRef<HTMLElement>()
     const selectedItemControlsRef = createRef<HTMLDivElement>()
+    const dockedInspectorRef = createRef<HTMLDivElement>()
     const registerExclusionElement = vi.fn(() => vi.fn())
 
     render(
       <TooltipProvider>
-        <EditorRefsProvider value={{ roomViewRef, selectedItemControlsRef }}>
+        <EditorRefsProvider
+          value={{ roomViewRef, selectedItemControlsRef, dockedInspectorRef }}
+        >
           <OverlayLayoutProvider
             value={{
               exclusionRects: {},
@@ -144,6 +153,9 @@ describe('DockedSelectedItemSite', () => {
       screen.getByRole('button', { name: 'Rotate counterclockwise' }),
     )
     expect(selectedItemControlsRef.current).not.toContainElement(
+      screen.getByLabelText('Distance from left wall (m)'),
+    )
+    expect(dockedInspectorRef.current).toContainElement(
       screen.getByLabelText('Distance from left wall (m)'),
     )
   })

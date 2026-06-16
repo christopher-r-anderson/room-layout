@@ -125,6 +125,54 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     ],
   },
   {
+    id: 'focus-inspector',
+    match: { key: 'I', shift: true },
+    handler: 'use-keyboard-shortcuts',
+    helpEntries: [
+      {
+        sectionTitle: 'Navigation',
+        sectionOrder: 1,
+        groupLabel: 'Pane focus',
+        groupOrder: 1,
+        rowLabel: 'Focus inspector',
+        rowOrder: 1,
+        comboLabels: [['Shift', 'I']],
+      },
+    ],
+  },
+  {
+    id: 'focus-room-view',
+    match: { key: 'R', shift: true },
+    handler: 'use-keyboard-shortcuts',
+    helpEntries: [
+      {
+        sectionTitle: 'Navigation',
+        sectionOrder: 1,
+        groupLabel: 'Pane focus',
+        groupOrder: 1,
+        rowLabel: 'Focus room view',
+        rowOrder: 2,
+        comboLabels: [['Shift', 'R']],
+      },
+    ],
+  },
+  {
+    id: 'focus-outliner',
+    match: { key: 'O', shift: true },
+    handler: 'use-keyboard-shortcuts',
+    helpEntries: [
+      {
+        sectionTitle: 'Navigation',
+        sectionOrder: 1,
+        groupLabel: 'Pane focus',
+        groupOrder: 1,
+        rowLabel: 'Focus Furniture in room',
+        rowOrder: 3,
+        comboLabels: [['Shift', 'O']],
+      },
+    ],
+  },
+  {
     id: 'delete',
     match: [{ key: 'delete' }, { key: 'backspace' }],
     handler: 'use-keyboard-shortcuts',

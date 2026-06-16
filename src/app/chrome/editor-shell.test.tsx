@@ -27,10 +27,13 @@ describe('EditorShell', () => {
   it('wires layout and placement contexts in provider order', () => {
     const roomViewRef = createRef<HTMLElement>()
     const selectedItemControlsRef = createRef<HTMLDivElement>()
+    const dockedInspectorRef = createRef<HTMLDivElement>()
 
     expect(() => {
       render(
-        <EditorRefsProvider value={{ roomViewRef, selectedItemControlsRef }}>
+        <EditorRefsProvider
+          value={{ roomViewRef, selectedItemControlsRef, dockedInspectorRef }}
+        >
           <EditorShell
             isCatalogDrawerOpen={false}
             startupOverlayActive={false}

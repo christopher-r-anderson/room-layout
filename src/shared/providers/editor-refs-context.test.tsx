@@ -9,15 +9,22 @@ describe('EditorRefsContext', () => {
   it('exposes the provided refs value', () => {
     const roomViewRef = createRef<HTMLElement>()
     const selectedItemControlsRef = createRef<HTMLDivElement>()
+    const dockedInspectorRef = createRef<HTMLDivElement>()
     const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <EditorRefsProvider value={{ roomViewRef, selectedItemControlsRef }}>
+      <EditorRefsProvider
+        value={{ roomViewRef, selectedItemControlsRef, dockedInspectorRef }}
+      >
         {children}
       </EditorRefsProvider>
     )
 
     const { result } = renderHook(() => useEditorRefs(), { wrapper })
 
-    expect(result.current).toEqual({ roomViewRef, selectedItemControlsRef })
+    expect(result.current).toEqual({
+      roomViewRef,
+      selectedItemControlsRef,
+      dockedInspectorRef,
+    })
   })
 
   it('throws outside the provider', () => {

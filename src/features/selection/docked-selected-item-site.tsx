@@ -36,7 +36,7 @@ export function DockedSelectedItemSite({
   const placement = useSelectedItemPlacement()
   const actionsSizeRef = useSelectedItemActionsSizeRef()
   const interaction = useSelectedItemInteraction()
-  const { selectedItemControlsRef } = useEditorRefs()
+  const { dockedInspectorRef, selectedItemControlsRef } = useEditorRefs()
   const { registerExclusionElement } = useOverlayLayout()
   const selectedFurniture = useSelectedFurniture()
   const editorInteractionsEnabled = useEditorInteractionsEnabled()
@@ -62,7 +62,15 @@ export function DockedSelectedItemSite({
 
   return (
     <div
-      ref={shouldClaimControlsRef ? selectedItemControlsRef : undefined}
+      ref={(element) => {
+        dockedInspectorRef.current = element
+
+        if (shouldClaimControlsRef) {
+          selectedItemControlsRef.current = element
+        } else if (selectedItemControlsRef.current === element) {
+          selectedItemControlsRef.current = null
+        }
+      }}
       inert={controlsSuppressed}
       aria-hidden={controlsSuppressed}
       className="absolute pointer-events-none inset-0 z-10"
