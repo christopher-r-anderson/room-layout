@@ -53,17 +53,17 @@ Create standardized, semantic git commits using the Conventional Commits specifi
 
 ### Body
 
-- *No* prose or long form content, em dash separated phrases, etc.
+- _No_ prose or long form content, em dash separated phrases, etc.
 - Body must be a bullet list of general actions - do not replicate fine detail better served by a diff
 - Each item is a succinct, leading lowercase phrase
 - Attempt to keep lines less than 72 chars, otherwise wrap lines at 72 chars
 - Do not create long lists for things like file names
 - Describe the final state represented by the commit diff as a logical unit since the previous commit - do not include interim session steps, revisions, decisions, or justifications.
-- *Use the multiline commit approach below and verify that there are no literal `\n` newlines in the committed message*
+- _Use the multiline commit approach below and verify that there are no literal `\n` newlines in the committed message_
 
 ## Example
 
-Use this example for style, *do not copy for content.*
+Use this example for style, _do not copy for content._
 
 ```bash
 git commit -m "$(cat <<'EOF'
