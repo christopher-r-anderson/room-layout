@@ -7,10 +7,11 @@ import {
   useStartupLoadingActive,
   useStartupOverlayActive,
   useAssetError,
+  useEditorInteractionsEnabled,
 } from '@/editor-state/editor-runtime-store'
-import { useSceneStateStore } from '@/editor-state/scene-state-store'
+import { useHasSelection } from '@/editor-state/scene-state-store'
 import type { CameraPreset } from '@/scene/scene.types'
-import { ConnectedCameraTools } from '@/features/camera/camera-tools'
+import { CameraTools } from '@/features/camera/camera-tools'
 import { DeleteConfirmationDialog } from '@/features/selection/delete-confirmation-dialog'
 import { StatusMessage } from './status-message'
 import { InitializationError } from '@/features/startup/initialization-error'
@@ -27,7 +28,10 @@ import { SelectedDetailsPlaceholder } from '@/features/selection/selected-detail
 import { TopHeader } from './top-header/top-header'
 import type { TopHeaderShellProps } from './top-header/top-header.types'
 import { useOverlayLayout } from '@/shared/layout/overlay-layout-context'
-import type { HeaderLayoutMode } from '@/shared/layout/use-header-layout-mode'
+import {
+  useHeaderLayoutMode,
+  type HeaderLayoutMode,
+} from '@/shared/layout/use-header-layout-mode'
 
 interface CameraToolsShellProps {
   onSetCameraPreset: (preset: CameraPreset) => void
@@ -112,68 +116,81 @@ export function EditorOverlay({
   onRetryAssetLoading,
 }: EditorOverlayProps) {
   const { registerExclusionElement } = useOverlayLayout()
-  const selectedId = useSceneStateStore((state) => state.selectedId)
+  const hasSelection = useHasSelection()
   const startupOverlayActive = useStartupOverlayActive()
-  const registerCameraTools = registerExclusionElement('camera-tools')
+  const interactionsEnabled = useEditorInteractionsEnabled()
+  const layoutMode = useHeaderLayoutMode()
+  const isDesktop = layoutMode === 'desktop'
 
   return (
     <>
       <div
-        className="pointer-events-none absolute inset-2 flex flex-col justify-between"
+        className="pointer-events-none fixed inset-2 flex flex-col justify-end gap-2"
         inert={startupOverlayActive}
-        aria-hidden={startupOverlayActive}
       >
-        <TopHeader
-          {...topHeader}
-          onLayoutModeChange={onHeaderLayoutModeChange}
-          startOverDisabled={startOverDisabled}
-          topHeaderRef={registerExclusionElement('top-header')}
-          desktopRoomSidebarRef={registerExclusionElement(
-            'desktop-room-sidebar',
-          )}
-          mobileRoomDrawerRef={registerExclusionElement('mobile-room-drawer')}
-        />
-
-        <div className="grid gap-2 md:grid-cols-[minmax(0,20rem)_minmax(0,1fr)] md:items-end">
-          <div
-            ref={registerExclusionElement('outliner')}
-            className="flex min-w-0 flex-col gap-2 overflow-y-auto md:max-w-80"
-          >
-            <StatusMessage />
-            <Outliner
-              onSelectById={outliner.onSelectById}
-              onPreviewChange={outliner.onPreviewChange}
-            />
-          </div>
-
-          {selectedId === null ? (
-            <div
-              aria-hidden="true"
-              className="hidden md:flex md:min-h-32 md:items-end md:justify-end"
-            >
-              <SelectedDetailsPlaceholder />
-            </div>
-          ) : null}
-        </div>
-      </div>
-
-      <DockedSelectedItemSite {...dockedSelectedItem} />
-      <FloatingSelectedItemSite {...floatingSelectedItem} />
-
-      <div
-        ref={registerCameraTools}
-        className="pointer-events-none absolute right-2 bottom-30 md:bottom-2 z-20"
-        inert={startupOverlayActive}
-        aria-hidden={startupOverlayActive}
-      >
-        <div className="pointer-events-auto">
-          <ConnectedCameraTools
-            onSetPreset={cameraTools.onSetCameraPreset}
-            onFocusSelected={cameraTools.onFocusSelected}
+        <div className="mb-auto">
+          <TopHeader
+            {...topHeader}
+            onLayoutModeChange={onHeaderLayoutModeChange}
+            startOverDisabled={startOverDisabled}
+            topHeaderRef={registerExclusionElement('top-header')}
+            desktopRoomSidebarRef={registerExclusionElement(
+              'desktop-room-sidebar',
+            )}
+            mobileRoomDrawerRef={registerExclusionElement('mobile-room-drawer')}
           />
         </div>
-      </div>
 
+        <FloatingSelectedItemSite {...floatingSelectedItem} />
+
+        <div
+          className="absolute z-20 pointer-events-auto right-0 top-1/4 -translate-y-1/2"
+          ref={registerExclusionElement('camera-tools')}
+        >
+          <CameraTools
+            onSetPreset={cameraTools.onSetCameraPreset}
+            onFocusSelected={cameraTools.onFocusSelected}
+            editorInteractionsEnabled={interactionsEnabled}
+            hasSelection={hasSelection}
+            displayLabels={isDesktop}
+          />
+        </div>
+
+        <div className="grid gap-2 md:justify-items-start md:items-end md:grid-cols-2 md:grid-rows-[1fr_auto]">
+          <div
+            className="pointer-events-auto"
+            ref={registerExclusionElement('status')}
+          >
+            <StatusMessage />
+          </div>
+
+          {isDesktop && (
+            <div
+              ref={registerExclusionElement('outliner')}
+              className="md:min-w-80 pointer-events-auto"
+            >
+              <Outliner
+                onSelectById={outliner.onSelectById}
+                onPreviewChange={outliner.onPreviewChange}
+              />
+            </div>
+          )}
+
+          <div className="pointer-events-auto md:col-start-2 md:row-start-1 md:row-span-2 md:justify-self-end">
+            {hasSelection ? (
+              <DockedSelectedItemSite {...dockedSelectedItem} />
+            ) : (
+              <div
+                ref={registerExclusionElement('selected-details')}
+                aria-hidden="true"
+                className="contents"
+              >
+                <SelectedDetailsPlaceholder />
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
       <EditorOverlayDialogs
         onConfirmDeleteSelection={onConfirmDeleteSelection}
         onRetryAssetLoading={onRetryAssetLoading}

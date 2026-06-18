@@ -486,11 +486,7 @@ function App() {
   return (
     <TooltipProvider>
       <EditorRefsProvider value={editorRefs}>
-        <EditorShell
-          isCatalogDrawerOpen={dialogState.isCatalogDrawerOpen}
-          startupOverlayActive={startup.startupOverlayActive}
-          syncLayoutMode={dialogState.syncLayoutMode}
-        >
+        <EditorShell syncLayoutMode={dialogState.syncLayoutMode}>
           <main
             className="relative size-full"
             aria-busy={startup.startupLoadingActive}
@@ -523,7 +519,6 @@ function App() {
               onPointerDownCapture={focusRoomView}
             >
               <Canvas
-                className="absolute inset-0 z-0"
                 camera={{
                   position: [3, 2.5, 3],
                   fov: 50,

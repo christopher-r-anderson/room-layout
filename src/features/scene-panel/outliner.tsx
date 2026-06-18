@@ -127,12 +127,7 @@ export function Outliner({
   }, [disabled, focusRequest, isExpanded, items])
 
   return (
-    <section
-      ref={containerRef}
-      aria-labelledby={headingId}
-      className="pointer-events-auto"
-      tabIndex={-1}
-    >
+    <section ref={containerRef} aria-labelledby={headingId} tabIndex={-1}>
       <Card
         size="sm"
         className="w-full bg-background/90 shadow-sm backdrop-blur-sm"
@@ -153,7 +148,8 @@ export function Outliner({
                     variant="ghost"
                     size="icon-sm"
                     aria-controls={contentId}
-                    aria-label="Toggle furniture in room"
+                    aria-label="Toggle furniture list visibility"
+                    className="mb-2"
                   />
                 }
               >

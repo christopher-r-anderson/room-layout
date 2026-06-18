@@ -1,5 +1,4 @@
 import { Button } from '@/shared/ui/button'
-import { cn } from '@/shared/lib/utils'
 import { IconPlus } from '@tabler/icons-react'
 import type { ComponentProps } from 'react'
 
@@ -14,7 +13,7 @@ export function CatalogAddButton({
       type="button"
       size={size}
       variant={variant}
-      className={cn('pointer-events-auto', className)}
+      className={className}
       {...props}
     >
       <IconPlus aria-hidden="true" size={16} />

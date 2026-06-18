@@ -68,7 +68,6 @@ export function TopHeaderMobile({
                       type="button"
                       variant="secondary"
                       size="toolbar"
-                      className="pointer-events-auto"
                       aria-controls="room-drawer"
                       aria-expanded={isRoomOpen}
                       aria-haspopup="dialog"
@@ -93,12 +92,11 @@ export function TopHeaderMobile({
           <div
             className="flex items-center gap-2 justify-self-end"
             inert={catalog.isCatalogDrawerOpen}
-            aria-hidden={catalog.isCatalogDrawerOpen}
           >
             <HistoryTools
               canRedo={history.canRedo}
               canUndo={history.canUndo}
-              buttonLabelVisibility="sr-only"
+              displayLabels={false}
               buttonSize="toolbar-icon"
               editorInteractionsEnabled={editorInteractionsEnabled}
               onRedo={history.onRedo}

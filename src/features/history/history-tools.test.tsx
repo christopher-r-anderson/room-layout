@@ -65,7 +65,7 @@ describe('HistoryTools', () => {
       <HistoryTools
         canRedo
         canUndo
-        buttonLabelVisibility="always"
+        displayLabels={true}
         buttonSize="toolbar"
         editorInteractionsEnabled
         onRedo={vi.fn()}

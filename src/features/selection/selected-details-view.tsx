@@ -8,7 +8,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
 import { cn } from '@/shared/lib/utils'
 import { getWallClearances } from '@/shared/lib/three/wall-clearance'
-import { SelectedActionsView } from './selected-actions-view'
+import {
+  RotateCounterclockwiseButton,
+  RotateClockwiseButton,
+  DeleteButton,
+} from './components/selection-action-buttons'
 
 type FieldOverride =
   | {
@@ -33,24 +37,21 @@ const FIELD_CONFIG: {
     label: 'Distance from left wall (m)',
     shortLabel: 'Left wall',
     group: 'position',
-    helpText:
-      'Press Enter or leave the field to apply the left wall clearance. Press Escape to cancel.',
+    helpText: 'Tab / Enter applies offset. Esc cancels.',
   },
   {
     key: 'positionZ',
     label: 'Distance from back wall (m)',
     shortLabel: 'Back wall',
     group: 'position',
-    helpText:
-      'Press Enter or leave the field to apply the back wall clearance. Press Escape to cancel.',
+    helpText: 'Tab / Enter applies offset. Esc cancels.',
   },
   {
     key: 'rotationDegrees',
     label: 'Rotation (deg)',
     shortLabel: 'Rotate',
     group: 'rotation',
-    helpText:
-      'Press Enter or leave the field to apply the rotation. Press Escape to cancel.',
+    helpText: 'Tab / Enter applies rotation. Esc cancels.',
   },
 ]
 
@@ -58,39 +59,6 @@ const POSITION_FIELDS = FIELD_CONFIG.filter(
   (field) => field.group === 'position',
 )
 const ROTATION_FIELD = FIELD_CONFIG.find((field) => field.group === 'rotation')
-
-function SelectedItemDetailsCard({
-  ariaHidden,
-  children,
-  className,
-  itemName,
-  sectionRef,
-  titleId,
-}: {
-  ariaHidden?: boolean
-  children: React.ReactNode
-  className?: string
-  itemName: string
-  sectionRef?: Ref<HTMLElement>
-  titleId: string
-}) {
-  return (
-    <section
-      ref={sectionRef}
-      className={cn('pointer-events-auto', className)}
-      aria-hidden={ariaHidden}
-      aria-labelledby={ariaHidden ? undefined : titleId}
-    >
-      <Card className="w-full bg-background shadow-sm" size="sm">
-        <CardHeader className="gap-0.5">
-          <CardTitle id={titleId}>Placement</CardTitle>
-          <p className="truncate text-xs/relaxed text-foreground">{itemName}</p>
-        </CardHeader>
-        {children}
-      </Card>
-    </section>
-  )
-}
 
 function normalizeDegrees(value: number) {
   const normalized = value % 360
@@ -141,14 +109,14 @@ export function SelectedDetailsPlaceholder({
   className?: string
 }) {
   return (
-    <div
+    <p
       className={cn(
         'rounded-md border border-border/70 bg-background/90 px-3 py-2 text-xs/relaxed text-muted-foreground shadow-sm',
         className,
       )}
     >
       Select an item to fine-tune placement.
-    </div>
+    </p>
   )
 }
 
@@ -157,7 +125,6 @@ export function SelectedDetailsView({
   disabled,
   selectedFurniture,
   sectionRef,
-  actionsSectionRef,
   consumeBlurCommitSuppression,
   onOpenDeleteDialog,
   onPrepareDelete,
@@ -169,12 +136,11 @@ export function SelectedDetailsView({
   disabled: boolean
   selectedFurniture: FurnitureItem
   sectionRef?: Ref<HTMLElement>
-  actionsSectionRef?: Ref<HTMLElement>
   consumeBlurCommitSuppression: () => boolean
-  onOpenDeleteDialog?: () => void
-  onPrepareDelete?: () => void
-  onRotateSelection?: (direction: -1 | 1) => void
-  onInvalidSelectedItemDetailValue?: (fieldLabel: string) => string
+  onOpenDeleteDialog: () => void
+  onPrepareDelete: () => void
+  onRotateSelection: (direction: -1 | 1) => void
+  onInvalidSelectedItemDetailValue: (fieldLabel: string) => string
   onUpdateSelectedItemDetails: (
     input: UpdateSelectedItemDetailsInput,
   ) => UpdateSelectedItemDetailsResult
@@ -244,9 +210,7 @@ export function SelectedDetailsView({
     const parsedValue = Number(rawValue)
 
     if (rawValue.length === 0 || !Number.isFinite(parsedValue)) {
-      const message =
-        onInvalidSelectedItemDetailValue?.(fieldLabel) ??
-        `${fieldLabel} must be a valid number.`
+      const message = onInvalidSelectedItemDetailValue(fieldLabel)
 
       setErrors((currentErrors) => ({
         ...currentErrors,
@@ -389,60 +353,70 @@ export function SelectedDetailsView({
   }
 
   return (
-    <SelectedItemDetailsCard
-      className={className}
-      itemName={selectedFurniture.name}
-      sectionRef={sectionRef}
-      titleId={titleId}
-    >
-      <CardContent className="space-y-2.5" data-selected-item-details-root>
-        {onOpenDeleteDialog && onRotateSelection ? (
-          <SelectedActionsView
-            className="w-fit"
-            disabled={disabled}
-            onOpenDeleteDialog={onOpenDeleteDialog}
-            onPrepareDelete={onPrepareDelete}
-            onRotateSelection={onRotateSelection}
-            placementMode="docked"
-            sectionRef={actionsSectionRef}
-            selectedFurniture={selectedFurniture}
-          />
-        ) : null}
-        <div className="flex gap-2">
-          <div className="min-w-0 rounded-md border border-border/60 bg-muted/20 p-2">
-            <p className="text-[11px]/4 font-medium text-muted-foreground">
-              Position (m)
-            </p>
-            <div className="mt-1.5 grid grid-cols-2 gap-2">
-              {POSITION_FIELDS.map(renderField)}
+    <section ref={sectionRef} className={className} aria-labelledby={titleId}>
+      <Card className="w-full bg-background shadow-sm" size="sm">
+        <CardHeader className="gap-0.5 flex justify-between">
+          <CardTitle id={titleId} className="truncate">
+            {selectedFurniture.name} Placement
+          </CardTitle>
+        </CardHeader>
+        <CardContent data-selected-item-details-root>
+          <div className="grid gap-2 grid-flow-col grid-rows-[auto_auto] justify-items-start w-max m-auto">
+            <DeleteButton
+              displayLabel={true}
+              action={onOpenDeleteDialog}
+              onPointerDown={() => {
+                onPrepareDelete()
+              }}
+            />
+
+            <div className="min-w-0 rounded-md border border-border/60 bg-muted/20 p-2">
+              <p className="text-[11px]/4 font-medium text-muted-foreground">
+                Position (m)
+              </p>
+              <div className="mt-1.5 grid grid-cols-2 gap-2">
+                {POSITION_FIELDS.map(renderField)}
+              </div>
+            </div>
+            <div className="justify-self-end flex gap-2">
+              <RotateCounterclockwiseButton
+                displayLabel={false}
+                action={() => {
+                  onRotateSelection(1)
+                }}
+              />
+              <RotateClockwiseButton
+                displayLabel={false}
+                action={() => {
+                  onRotateSelection(-1)
+                }}
+              />
+            </div>
+            <div className="justify-self-end min-w-0 rounded-md border border-border/60 bg-muted/20 p-2">
+              <p className="text-[11px]/4 font-medium text-muted-foreground">
+                Rotation (deg)
+              </p>
+              <div className="mt-1.5">
+                {ROTATION_FIELD ? renderField(ROTATION_FIELD) : null}
+              </div>
             </div>
           </div>
-          <div className="min-w-0 rounded-md border border-border/60 bg-muted/20 p-2">
-            <p className="text-[11px]/4 font-medium text-muted-foreground">
-              Rotation (deg)
-            </p>
-            <div className="mt-1.5">
-              {ROTATION_FIELD ? renderField(ROTATION_FIELD) : null}
-            </div>
-          </div>
-        </div>
-        {visualSupportMessage ? (
           <p
             aria-hidden="true"
             className={cn(
-              'min-h-10 m-0 text-[11px]/4 w-0 min-w-full',
+              'm-0 text-[11px]/4 w-0 min-w-full',
               supportIsError ? 'text-destructive' : 'text-muted-foreground',
             )}
           >
-            {visualSupportMessage}
+            {visualSupportMessage ?? 'Edit the selected item.'}
           </p>
-        ) : null}
-        {supportErrorMessage ? (
-          <p aria-atomic="true" aria-live="assertive" className="sr-only">
-            {supportErrorMessage}
-          </p>
-        ) : null}
-      </CardContent>
-    </SelectedItemDetailsCard>
+          {supportErrorMessage ? (
+            <p aria-atomic="true" aria-live="assertive" className="sr-only">
+              {supportErrorMessage}
+            </p>
+          ) : null}
+        </CardContent>
+      </Card>
+    </section>
   )
 }

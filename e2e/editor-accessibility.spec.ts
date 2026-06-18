@@ -40,7 +40,10 @@ test('supports outliner selection and selected item details without the canvas',
     })
     .toBeCloseTo(-0.5, 6)
 
-  await page.getByRole('button', { name: 'Remove item' }).click()
+  await page
+    .getByRole('region', { name: /Placement$/i })
+    .getByRole('button', { name: 'Remove item' })
+    .click()
   await page
     .getByRole('alertdialog', { name: /remove item from room/i })
     .getByRole('button', { name: 'Remove item' })

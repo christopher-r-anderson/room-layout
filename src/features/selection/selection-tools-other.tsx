@@ -1,7 +1,10 @@
 import { ButtonGroup } from '@/shared/ui/button-group'
-import { IconRotate3d, IconTrash } from '@tabler/icons-react'
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
-import { ToolButton } from '@/shared/ui/tool-button'
+import {
+  DeleteButton,
+  RotateClockwiseButton,
+  RotateCounterclockwiseButton,
+} from './components/selection-action-buttons'
 
 export function SelectionToolsOther({
   editorInteractionsEnabled,
@@ -23,42 +26,27 @@ export function SelectionToolsOther({
 
   return (
     <ButtonGroup aria-label="Selected item actions">
-      <ToolButton
+      <RotateCounterclockwiseButton
+        displayLabel={false}
         action={() => {
           onRotateSelection(1)
         }}
         disabled={controlsDisabled}
         disabledMessage={disabledMessage}
-        shortcuts=","
-        label="Rotate counterclockwise"
-        labelVisibility="sr-only"
-        icon={<IconRotate3d className="-scale-x-100" />}
-        size="toolbar-icon"
-        tooltipSide="top"
       />
-      <ToolButton
+      <RotateClockwiseButton
+        displayLabel={false}
         action={() => {
           onRotateSelection(-1)
         }}
         disabled={controlsDisabled}
         disabledMessage={disabledMessage}
-        shortcuts="."
-        label="Rotate clockwise"
-        labelVisibility="sr-only"
-        icon={<IconRotate3d />}
-        size="toolbar-icon"
-        tooltipSide="top"
       />
-      <ToolButton
+      <DeleteButton
+        displayLabel={false}
         action={onOpenDeleteDialog}
         disabled={controlsDisabled}
         disabledMessage={disabledMessage}
-        shortcuts="Delete Backspace"
-        label="Remove item"
-        labelVisibility="sr-only"
-        icon={<IconTrash />}
-        size="toolbar-icon"
-        tooltipSide="top"
         onPointerDown={() => {
           onPrepareDelete?.()
         }}

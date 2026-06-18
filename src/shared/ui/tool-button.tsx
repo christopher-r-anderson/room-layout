@@ -19,7 +19,7 @@ export function ToolButton({
   shortcuts,
   label,
   visibleLabel,
-  labelVisibility = 'responsive',
+  displayLabel = true,
   shortcutHint,
   icon,
   size = 'default',
@@ -29,13 +29,13 @@ export function ToolButton({
   onPointerDown,
 }: {
   id?: string
-  action: () => void
-  disabled: boolean
-  disabledMessage: string
-  shortcuts: string
+  action?: () => void
+  disabled?: boolean
+  disabledMessage?: string
+  shortcuts?: string
   label: string
   visibleLabel?: string
-  labelVisibility?: 'responsive' | 'always' | 'sr-only'
+  displayLabel?: boolean
   shortcutHint?: string
   icon: ReactElement<HTMLAttributes<HTMLElement>>
   size?: ComponentProps<typeof Button>['size']
@@ -48,12 +48,7 @@ export function ToolButton({
   const ariaHiddenIcon = cloneElement(icon, {
     'aria-hidden': 'true',
   })
-  const visibleLabelClassName =
-    labelVisibility === 'always'
-      ? undefined
-      : labelVisibility === 'sr-only'
-        ? 'sr-only'
-        : 'sr-only sm:not-sr-only'
+  const labelClassName = displayLabel ? undefined : 'sr-only'
 
   return (
     <Tooltip>
@@ -76,14 +71,12 @@ export function ToolButton({
             onClick={(event) => {
               event.preventDefault()
               if (!disabled) {
-                action()
+                action?.()
               }
             }}
           >
             {ariaHiddenIcon}
-            <span className={visibleLabelClassName}>
-              {visibleLabel ?? label}
-            </span>
+            <span className={labelClassName}>{visibleLabel ?? label}</span>
           </Button>
         }
       />

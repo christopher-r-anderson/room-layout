@@ -421,13 +421,19 @@ export async function selectFurnitureById(
 }
 
 export async function rotateSelectionRight(page: Page) {
-  await page.getByRole('button', { name: 'Rotate clockwise' }).click()
+  await page
+    .getByRole('region', { name: /Placement$/i })
+    .getByRole('button', { name: 'Rotate clockwise' })
+    .click()
 
   return readSceneState(page)
 }
 
 export async function deleteSelectedFurniture(page: Page) {
-  await page.getByRole('button', { name: 'Remove item' }).click()
+  await page
+    .getByRole('region', { name: /Placement$/i })
+    .getByRole('button', { name: 'Remove item' })
+    .click()
   await page
     .getByRole('alertdialog', { name: /remove item from room/i })
     .getByRole('button', { name: 'Remove item' })

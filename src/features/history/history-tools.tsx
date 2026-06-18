@@ -10,7 +10,7 @@ export function HistoryTools({
   onRedo,
   onUndo,
   buttonClassName,
-  buttonLabelVisibility,
+  displayLabels,
   buttonSize,
 }: {
   canRedo: boolean
@@ -19,7 +19,7 @@ export function HistoryTools({
   onRedo: () => void
   onUndo: () => void
   buttonClassName?: string
-  buttonLabelVisibility?: ComponentProps<typeof ToolButton>['labelVisibility']
+  displayLabels?: boolean
   buttonSize?: ComponentProps<typeof ToolButton>['size']
 }) {
   const undoDisabled = !canUndo || !editorInteractionsEnabled
@@ -39,7 +39,7 @@ export function HistoryTools({
         disabledMessage={undoDisabledMessage}
         shortcuts="Control+Z"
         label="Undo"
-        labelVisibility={buttonLabelVisibility}
+        displayLabel={displayLabels}
         icon={<IconArrowBackUp />}
         size={buttonSize}
         className={buttonClassName}
@@ -50,7 +50,7 @@ export function HistoryTools({
         disabledMessage={redoDisabledMessage}
         shortcuts="Control+Shift+Z Control+Y"
         label="Redo"
-        labelVisibility={buttonLabelVisibility}
+        displayLabel={displayLabels}
         icon={<IconArrowForwardUp />}
         size={buttonSize}
         className={buttonClassName}

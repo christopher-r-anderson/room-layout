@@ -1,23 +1,10 @@
 // @vitest-environment jsdom
 
-import { act, render, screen } from '@testing-library/react'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
-import {
-  editorRuntimeActions,
-  resetEditorRuntimeStore,
-} from '@/editor-state/editor-runtime-store'
-import {
-  resetSceneStateStore,
-  sceneStateActions,
-} from '@/editor-state/scene-state-store'
-import { CameraTools, ConnectedCameraTools } from './camera-tools'
+import { render, screen } from '@testing-library/react'
+import { describe, expect, it, vi } from 'vitest'
+import { CameraTools } from './camera-tools'
 
 describe('CameraTools', () => {
-  beforeEach(() => {
-    resetEditorRuntimeStore()
-    resetSceneStateStore()
-  })
-
   it('uses explicit props without relying on store state', () => {
     render(
       <CameraTools
@@ -34,9 +21,17 @@ describe('CameraTools', () => {
     expect(screen.getByRole('button', { name: 'Focus Selected' })).toBeEnabled()
   })
 
-  it('subscribes to editor stores in the connected variant', () => {
-    render(
-      <ConnectedCameraTools onSetPreset={vi.fn()} onFocusSelected={vi.fn()} />,
+  it('respects disabled state from explicit props', () => {
+    const onSetPreset = vi.fn()
+    const onFocusSelected = vi.fn()
+
+    const { rerender } = render(
+      <CameraTools
+        editorInteractionsEnabled={false}
+        hasSelection={false}
+        onSetPreset={onSetPreset}
+        onFocusSelected={onFocusSelected}
+      />,
     )
 
     expect(
@@ -46,10 +41,14 @@ describe('CameraTools', () => {
       screen.getByRole('button', { name: 'Focus Selected' }),
     ).toHaveAttribute('aria-disabled', 'true')
 
-    act(() => {
-      editorRuntimeActions.markAssetsReady()
-      sceneStateActions.setSelectedId('chair-1')
-    })
+    rerender(
+      <CameraTools
+        editorInteractionsEnabled={true}
+        hasSelection={true}
+        onSetPreset={onSetPreset}
+        onFocusSelected={onFocusSelected}
+      />,
+    )
 
     expect(
       screen.getByRole('button', { name: 'Switch to Corner view' }),

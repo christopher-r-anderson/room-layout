@@ -3,20 +3,13 @@ import { useComputeSelectedItemPlacement } from '@/features/selection/use-comput
 import { SelectedItemPlacementProvider } from '@/features/selection/selected-item-placement-provider'
 
 interface SelectionPlacementEngineProviderProps {
-  isCatalogDrawerOpen: boolean
-  startupOverlayActive: boolean
   children: ReactNode
 }
 
 export function SelectionPlacementEngineProvider({
-  isCatalogDrawerOpen,
-  startupOverlayActive,
   children,
 }: SelectionPlacementEngineProviderProps) {
-  const { placement, actionsSizeRef } = useComputeSelectedItemPlacement({
-    isCatalogDrawerOpen,
-    startupOverlayActive,
-  })
+  const { placement, actionsSizeRef } = useComputeSelectedItemPlacement()
 
   const placementValue = useMemo(
     () => ({ placement, actionsSizeRef }),

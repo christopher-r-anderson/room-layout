@@ -192,7 +192,7 @@ function KeyboardShortcutsTriggerButton(props: ComponentProps<typeof Button>) {
       aria-controls="keyboard-shortcuts-dialog"
       aria-haspopup="dialog"
       aria-label="Keyboard shortcuts"
-      className="pointer-events-auto rounded-md"
+      className="rounded-md"
       {...props}
     >
       <IconKeyboard size={20} aria-hidden="true" />

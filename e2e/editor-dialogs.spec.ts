@@ -100,7 +100,9 @@ test('room surface, sheet, and confirmation dialogs keep accessible contracts an
 
   await addFurniture(page, 'Leather Couch')
 
-  const deleteButton = page.getByRole('button', { name: 'Remove item' })
+  const deleteButton = page
+    .getByRole('region', { name: /Placement$/i })
+    .getByRole('button', { name: 'Remove item' })
   await deleteButton.click()
 
   const deleteDialog = page.getByRole('alertdialog', {
@@ -150,7 +152,7 @@ test('desktop Room sidebar closes with Escape and restores focus to its trigger'
   await closeWithEscapeAndRestoreFocus(page, roomSurface, roomButton)
 })
 
-test('desktop Room sidebar keeps camera presets usable while it remains open', async ({
+test('desktop Room sidebar keeps camera preset shortcuts usable while it remains open', async ({
   page,
 }) => {
   await openEditor(page)
@@ -163,7 +165,13 @@ test('desktop Room sidebar keeps camera presets usable while it remains open', a
 
   const initialCameraPosition = (await readSceneState(page)).cameraPosition
 
-  await page.getByRole('button', { name: 'Switch to Top view' }).click()
+  const roomView = page.getByRole('region', {
+    name: 'Interactive 3D room editor',
+  })
+  await roomView.focus()
+  await expect(roomView).toBeFocused()
+
+  await page.keyboard.press('4')
 
   await expect
     .poll(async () => (await readSceneState(page)).cameraPosition)
@@ -205,7 +213,6 @@ test('catalog, room, delete, and info surfaces stay mutually exclusive', async (
 
   const catalogButton = page.getByRole('button', { name: 'Add Furniture' })
   const roomButton = page.locator('button[aria-controls="room-surface"]')
-  const deleteButton = page.getByRole('button', { name: 'Remove item' })
   const infoButton = page.getByRole('button', {
     name: 'Open project and asset info',
   })
@@ -238,7 +245,13 @@ test('catalog, room, delete, and info surfaces stay mutually exclusive', async (
   await roomButton.click()
   await expect(roomSurface).toBeVisible()
 
-  await deleteButton.click()
+  const roomView = page.getByRole('region', {
+    name: 'Interactive 3D room editor',
+  })
+  await roomView.focus()
+  await expect(roomView).toBeFocused()
+
+  await page.keyboard.press('Delete')
   await expect(roomSurface).toBeHidden()
   await expect(deleteDialog).toBeVisible()
 
@@ -290,7 +303,7 @@ test('confirming desktop start over moves focus to the next enabled header contr
 test.describe('narrow viewport more actions', () => {
   test.use({ viewport: { width: 390, height: 844 } })
 
-  test('mobile Room is a direct action and keeps camera presets available while More owns auxiliary dialogs', async ({
+  test('mobile Room is a direct action and More owns auxiliary dialogs while open', async ({
     page,
   }) => {
     await openEditor(page)
@@ -338,19 +351,21 @@ test.describe('narrow viewport more actions', () => {
     await clickVisibleCanvasArea(page, { xRatio: 0.15, yOffset: 140 })
     await expect(roomDialog).toBeVisible()
 
-    const topViewButton = page
-      .getByRole('group', { name: 'Camera' })
-      .getByRole('button', { name: 'Switch to Top view' })
+    const topViewButton = page.getByRole('button', {
+      name: 'Switch to Top view',
+    })
+    await expect(topViewButton).toHaveCount(0)
+
+    await page.keyboard.press('Escape')
+    await expect(roomDialog).toBeHidden()
+    await expect(roomButton).toBeFocused()
+
     await expect(topViewButton).toBeVisible()
     await topViewButton.click()
 
     await expect
       .poll(async () => (await readSceneState(page)).cameraPosition)
       .not.toEqual(initialCameraPosition)
-
-    await page.keyboard.press('Escape')
-    await expect(roomDialog).toBeHidden()
-    await expect(roomButton).toBeFocused()
 
     await roomButton.click()
     await expect(roomDialog).toBeVisible()

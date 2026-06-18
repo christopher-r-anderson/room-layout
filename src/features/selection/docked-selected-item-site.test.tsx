@@ -78,11 +78,11 @@ describe('DockedSelectedItemSite', () => {
     )
 
     expect(
-      screen.getByRole('region', { name: 'Placement' }),
+      screen.getByRole('region', { name: /Placement$/i }),
     ).toBeInTheDocument()
     expect(
       screen.queryByRole('region', { name: 'Selected item actions' }),
-    ).toBeInTheDocument()
+    ).not.toBeInTheDocument()
     expect(selectedItemControlsRef.current).toContainElement(
       screen.getByLabelText('Distance from left wall (m)'),
     )
@@ -147,11 +147,11 @@ describe('DockedSelectedItemSite', () => {
     )
 
     expect(
-      screen.getByRole('region', { name: 'Placement' }),
+      screen.getByRole('region', { name: /Placement$/i }),
     ).toBeInTheDocument()
     expect(
       screen.getAllByRole('region', { name: 'Selected item actions' }),
-    ).toHaveLength(2)
+    ).toHaveLength(1)
     expect(selectedItemControlsRef.current).toContainElement(
       screen.getByLabelText('Distance from left wall (m)'),
     )
@@ -213,8 +213,8 @@ describe('DockedSelectedItemSite', () => {
     )
 
     expect(
-      screen.getAllByRole('region', { name: 'Selected item actions' }),
-    ).toHaveLength(1)
+      screen.queryAllByRole('region', { name: 'Selected item actions' }),
+    ).toHaveLength(0)
     expect(selectedItemControlsRef.current).toContainElement(
       screen.getByLabelText('Distance from left wall (m)'),
     )

@@ -105,7 +105,6 @@ export function TopHeaderDesktop({
           <HistoryTools
             canRedo={history.canRedo}
             canUndo={history.canUndo}
-            buttonLabelVisibility="always"
             buttonSize="toolbar"
             editorInteractionsEnabled={editorInteractionsEnabled}
             onRedo={history.onRedo}
@@ -119,7 +118,6 @@ export function TopHeaderDesktop({
                 ? 'Editor interactions are unavailable while loading'
                 : 'Scene already matches defaults'
             }
-            labelVisibility="always"
             onOpenStartOverDialog={() => {
               dialogs.onOpenStartOverDialog({
                 returnFocusTarget: 'start-over-inline',
@@ -133,7 +131,6 @@ export function TopHeaderDesktop({
           <div
             className="flex items-center justify-end gap-2"
             inert={catalog.isCatalogDrawerOpen}
-            aria-hidden={catalog.isCatalogDrawerOpen}
           >
             <KeyboardShortcutsDialog
               open={dialogs.isKeyboardShortcutsDialogOpen}
@@ -172,7 +169,6 @@ export function TopHeaderDesktop({
             <ShareSceneButton
               className="min-w-26"
               disabled={!editorInteractionsEnabled}
-              labelVisibility="always"
               onShareSceneUrl={onShareSceneUrl}
               size="toolbar"
             />

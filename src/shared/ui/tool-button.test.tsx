@@ -6,7 +6,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { ToolButton } from './tool-button'
 
 describe('ToolButton', () => {
-  it('keeps the existing responsive label behavior by default', () => {
+  it('shows the label by default', () => {
     render(
       <ToolButton
         action={vi.fn()}
@@ -22,8 +22,7 @@ describe('ToolButton', () => {
     const button = screen.getByRole('button', { name: 'Add furniture' })
     const label = within(button).getByText('Add')
 
-    expect(label.className).toContain('sr-only')
-    expect(label.className).toContain('sm:not-sr-only')
+    expect(label.className).toBe('')
   })
 
   it('supports explicit label visibility and toolbar sizing for future header layouts', () => {
@@ -35,7 +34,7 @@ describe('ToolButton', () => {
         shortcuts="A"
         label="Add furniture"
         visibleLabel="Add furniture"
-        labelVisibility="always"
+        displayLabel={true}
         size="toolbar"
         icon={<IconPlus />}
       />,

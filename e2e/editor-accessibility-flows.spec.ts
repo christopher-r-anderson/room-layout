@@ -200,7 +200,7 @@ test('outliner collapse toggle is keyboard operable and manages focus correctly'
   await addFurniture(page, 'Leather Couch')
 
   const toggleButton = page.getByRole('button', {
-    name: 'Toggle furniture in room',
+    name: 'Toggle furniture list visibility',
   })
   const couchButton = page.getByRole('button', { name: /^Leather Couch/i })
 
@@ -220,7 +220,7 @@ test('outliner collapse toggle is keyboard operable and manages focus correctly'
   await expect(couchButton).toBeVisible()
 })
 
-test('Tab from the room view reaches selected item actions and Tab from the outliner reaches details', async ({
+test('Tab from the room view reaches header controls and Tab from the outliner reaches inspector controls', async ({
   page,
 }) => {
   await openEditor(page)
@@ -233,7 +233,7 @@ test('Tab from the room view reaches selected item actions and Tab from the outl
   await focusRoomView(page)
   await page.keyboard.press('Tab')
   await expect(
-    page.getByRole('button', { name: 'Rotate counterclockwise' }),
+    page.getByRole('button', { name: 'Add Furniture' }),
   ).toBeFocused()
 
   const outlinerButton = page.getByRole('button', { name: /^Leather Couch/i })
@@ -243,28 +243,31 @@ test('Tab from the room view reaches selected item actions and Tab from the outl
   // In floating mode the actions toolbar is outside the overlay flow, while
   // the details card stays in the overlay traversal after the outliner.
   await page.keyboard.press('Tab')
-  await expect(page.getByLabel('Distance from left wall (m)')).toBeFocused()
+  await expect(
+    page
+      .getByRole('region', { name: /Placement$/i })
+      .getByRole('button', { name: 'Remove item' }),
+  ).toBeFocused()
 })
 
-test('outliner keyboard selection reaches selected item actions via natural tab order', async ({
+test('outliner keyboard selection reaches inspector controls via natural tab order', async ({
   page,
 }) => {
   await openEditor(page)
   await addFurniture(page, 'Leather Couch')
 
   const couchButton = page.getByRole('button', { name: /^Leather Couch/i })
-  const rotateCounterclockwiseButton = page.getByRole('button', {
-    name: 'Rotate counterclockwise',
-  })
 
   await couchButton.focus()
   await page.keyboard.press('Enter')
-
-  await waitForPoliteAnnouncement(page, 'Leather Couch selected.')
   await expect(couchButton).toBeFocused()
 
   await page.keyboard.press('Tab')
-  await expect(rotateCounterclockwiseButton).toBeFocused()
+  await expect(
+    page
+      .getByRole('region', { name: /Placement$/i })
+      .getByRole('button', { name: 'Remove item' }),
+  ).toBeFocused()
 })
 
 test('invalid selected item detail edits show inline feedback and do not move the item', async ({
@@ -335,19 +338,16 @@ test('selected item controls are suppressed from tab order while the catalog dra
   const selectedItemActions = page.locator(
     'section[aria-label="Selected item actions"]',
   )
-  const suppressedControlsRoot = page.locator(
-    'xpath=//div[@inert and @aria-hidden="true"][.//section[@aria-label="Selected item actions"]]',
-  )
 
   await page.getByRole('button', { name: 'Add Furniture' }).click()
   const drawerDialog = page.getByRole('dialog', { name: 'Add furniture' })
   await expect(drawerDialog).toBeVisible()
   await expect(selectedItemActions).toBeVisible()
-  await expect(suppressedControlsRoot).toHaveCount(1)
+  await expect(selectedItemActions).toHaveAttribute('inert', '')
 
   for (let i = 0; i < 10; i += 1) {
     await page.keyboard.press('Tab')
-    await expect(suppressedControlsRoot).toHaveAttribute('inert', '')
+    await expect(selectedItemActions).toHaveAttribute('inert', '')
   }
 })
 

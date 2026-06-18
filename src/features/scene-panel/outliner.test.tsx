@@ -102,7 +102,7 @@ describe('SceneOutliner', () => {
 
     expect(screen.getByText('No furniture in the room.')).toBeInTheDocument()
     expect(
-      screen.getByRole('button', { name: 'Toggle furniture in room' }),
+      screen.getByRole('button', { name: 'Toggle furniture list visibility' }),
     ).toBeVisible()
   })
 
@@ -114,7 +114,7 @@ describe('SceneOutliner', () => {
     expect(screen.getByRole('button', { name: /leather couch/i })).toBeVisible()
 
     await user.click(
-      screen.getByRole('button', { name: 'Toggle furniture in room' }),
+      screen.getByRole('button', { name: 'Toggle furniture list visibility' }),
     )
 
     expect(
@@ -194,7 +194,9 @@ describe('SceneOutliner', () => {
 
     await waitFor(() => {
       expect(
-        screen.getByRole('button', { name: 'Toggle furniture in room' }),
+        screen.getByRole('button', {
+          name: 'Toggle furniture list visibility',
+        }),
       ).toHaveFocus()
     })
     expect(selectionMetaStore.getState().outlinerFocusRequest).toBeNull()

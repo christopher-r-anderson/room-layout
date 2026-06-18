@@ -7,6 +7,7 @@ export type OverlayExclusionRectId =
   | 'camera-tools'
   | 'desktop-room-sidebar'
   | 'mobile-room-drawer'
+  | 'status'
 
 type ExclusionRectMap = Partial<Record<OverlayExclusionRectId, DOMRectReadOnly>>
 

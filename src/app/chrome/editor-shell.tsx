@@ -5,24 +5,14 @@ import { ShellLayoutServicesProvider } from './shell-layout-services-provider'
 import type { HeaderLayoutMode } from '@/shared/layout/use-header-layout-mode'
 
 export interface EditorShellProps {
-  isCatalogDrawerOpen: boolean
-  startupOverlayActive: boolean
   syncLayoutMode: (layout: HeaderLayoutMode) => void
   children: ReactNode
 }
 
-export function EditorShell({
-  isCatalogDrawerOpen,
-  startupOverlayActive,
-  syncLayoutMode,
-  children,
-}: EditorShellProps) {
+export function EditorShell({ syncLayoutMode, children }: EditorShellProps) {
   return (
     <ShellLayoutServicesProvider syncLayoutMode={syncLayoutMode}>
-      <SelectionPlacementEngineProvider
-        isCatalogDrawerOpen={isCatalogDrawerOpen}
-        startupOverlayActive={startupOverlayActive}
-      >
+      <SelectionPlacementEngineProvider>
         <SelectedItemInteractionProvider>
           {children}
         </SelectedItemInteractionProvider>

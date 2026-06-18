@@ -75,13 +75,7 @@ describe('ShareSceneButton', () => {
   })
 
   it('supports explicit label visibility and toolbar sizing', () => {
-    render(
-      <ShareSceneButton
-        onShareSceneUrl={vi.fn()}
-        labelVisibility="always"
-        size="toolbar"
-      />,
-    )
+    render(<ShareSceneButton onShareSceneUrl={vi.fn()} size="toolbar" />)
 
     const button = screen.getByRole('button', { name: 'Share room layout' })
     const label = screen.getByText('Share')

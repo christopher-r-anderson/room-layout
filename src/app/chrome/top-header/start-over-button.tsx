@@ -7,8 +7,7 @@ export function StartOverButton({
   disabled,
   disabledMessage,
   onOpenStartOverDialog,
-  className = 'pointer-events-auto',
-  labelVisibility,
+  className,
   size,
 }: {
   buttonId?: string
@@ -16,7 +15,7 @@ export function StartOverButton({
   disabledMessage: string
   onOpenStartOverDialog: () => void
   className?: string
-  labelVisibility?: ComponentProps<typeof ToolButton>['labelVisibility']
+  labelVisibility?: ComponentProps<typeof ToolButton>['displayLabel']
   size?: ComponentProps<typeof ToolButton>['size']
 }) {
   return (
@@ -28,7 +27,6 @@ export function StartOverButton({
       shortcuts="Control+Alt+N Meta+Alt+N"
       label="Start over"
       visibleLabel="Start Over"
-      labelVisibility={labelVisibility}
       icon={<IconRotate2 />}
       size={size}
       className={className}

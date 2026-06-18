@@ -56,7 +56,6 @@ export function HeaderMoreActionsDrawer({
         <div className="grid gap-2 px-4 pb-4">
           <ShareSceneButton
             disabled={shareDisabled}
-            labelVisibility="always"
             onShareSceneUrl={onShareSceneUrl}
             size="toolbar"
             variant="secondary"

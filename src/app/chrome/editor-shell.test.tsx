@@ -34,11 +34,7 @@ describe('EditorShell', () => {
         <EditorRefsProvider
           value={{ roomViewRef, selectedItemControlsRef, dockedInspectorRef }}
         >
-          <EditorShell
-            isCatalogDrawerOpen={false}
-            startupOverlayActive={false}
-            syncLayoutMode={vi.fn()}
-          >
+          <EditorShell syncLayoutMode={vi.fn()}>
             <ShellContextProbe />
           </EditorShell>
         </EditorRefsProvider>,

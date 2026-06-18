@@ -15,11 +15,6 @@ import type {
   SelectedItemPlacement,
 } from './selected-item-placement.types'
 
-interface ComputeSelectedItemPlacementOptions {
-  isCatalogDrawerOpen: boolean
-  startupOverlayActive: boolean
-}
-
 interface ComputeSelectedItemPlacementResult {
   placement: SelectedItemPlacement
   actionsSizeRef: (element: HTMLElement | null) => void
@@ -53,10 +48,7 @@ function createCandidateStore(
   }
 }
 
-export function useComputeSelectedItemPlacement({
-  isCatalogDrawerOpen,
-  startupOverlayActive,
-}: ComputeSelectedItemPlacementOptions): ComputeSelectedItemPlacementResult {
+export function useComputeSelectedItemPlacement(): ComputeSelectedItemPlacementResult {
   const selectedFurniture = useSelectedFurniture()
   const selectedToolbarGeometry = useToolbarGeometry()
   const { roomViewRef } = useEditorRefs()
@@ -94,7 +86,6 @@ export function useComputeSelectedItemPlacement({
     roomViewRect?.height,
   ])
 
-  const controlsSuppressed = startupOverlayActive || isCatalogDrawerOpen
   const activeToolbarGeometry =
     selectedFurniture !== null &&
     selectedToolbarGeometry.kind === 'available' &&
@@ -180,16 +171,6 @@ export function useComputeSelectedItemPlacement({
       return { site: 'hidden', reason: 'no-selection' }
     }
 
-    if (controlsSuppressed) {
-      // Suppressed (startup or catalog drawer): keep the docked site mounted so
-      // selection details remain visible/inert; the floating site is hidden.
-      // Site decision still follows toolbar mode so docked vs floating site
-      // mounts predictably.
-      if (toolbarPlacement.mode === 'hidden') {
-        return { site: 'hidden', reason: 'computed-hidden' }
-      }
-    }
-
     if (toolbarPlacement.mode === 'hidden') {
       return { site: 'hidden', reason: 'computed-hidden' }
     }
@@ -223,7 +204,6 @@ export function useComputeSelectedItemPlacement({
     }
   }, [
     selectedFurniture,
-    controlsSuppressed,
     toolbarPlacement.mode,
     toolbarPlacement.candidateId,
     toolbarPlacement.left,

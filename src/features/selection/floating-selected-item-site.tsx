@@ -1,15 +1,12 @@
-import {
-  useEditorInteractionsEnabled,
-  useStartupOverlayActive,
-} from '@/editor-state/editor-runtime-store'
+import { useEditorInteractionsEnabled } from '@/editor-state/editor-runtime-store'
 import { useIsCatalogDrawerOpen } from '@/editor-state/dialog-store'
 import { useSelectedFurniture } from '@/editor-state/scene-state-store'
-import { SelectedActionsView } from './selected-actions-view'
 import { useSelectedItemInteraction } from './selected-item-interaction-context'
 import {
   useSelectedItemActionsSizeRef,
   useSelectedItemPlacement,
 } from './selected-item-placement-context'
+import { SelectionToolsOther } from './selection-tools-other'
 
 export interface FloatingSelectedItemSiteProps {
   onOpenDeleteDialog: () => void
@@ -25,19 +22,17 @@ export function FloatingSelectedItemSite({
   const interaction = useSelectedItemInteraction()
   const selectedFurniture = useSelectedFurniture()
   const editorInteractionsEnabled = useEditorInteractionsEnabled()
-  const startupOverlayActive = useStartupOverlayActive()
   const isCatalogDrawerOpen = useIsCatalogDrawerOpen()
 
   if (selectedFurniture === null) {
     return null
   }
-
   if (placement.site !== 'floating') {
     return null
   }
 
-  const controlsSuppressed = startupOverlayActive || isCatalogDrawerOpen
-  const controlsDisabled = !editorInteractionsEnabled || controlsSuppressed
+  const controlsSuppressed = isCatalogDrawerOpen
+  const controlsDisabled = !editorInteractionsEnabled || isCatalogDrawerOpen
 
   const handleOpenDeleteDialog = () => {
     try {
@@ -48,25 +43,26 @@ export function FloatingSelectedItemSite({
   }
 
   return (
-    <div
+    <section
+      ref={actionsSizeRef}
+      className="absolute top-0 left-0 pointer-events-auto transition-[transform,opacity] duration-150 ease-out"
+      aria-label="Selected item actions"
+      data-selected-toolbar-candidate={placement.candidateId}
+      data-selected-toolbar-mode="floating"
+      style={{
+        transform: `translate3d(${String(placement.left)}px, ${String(placement.top)}px, 0)`,
+      }}
       inert={controlsSuppressed}
-      className="absolute pointer-events-none w-full h-full z-10"
-      aria-hidden={controlsSuppressed}
     >
-      <SelectedActionsView
-        className="absolute transition-[transform,opacity] duration-150 ease-out"
-        disabled={controlsDisabled}
-        onOpenDeleteDialog={handleOpenDeleteDialog}
-        onPrepareDelete={interaction.prepareDeleteBlurSuppression}
-        placementCandidateId={placement.candidateId}
-        onRotateSelection={onRotateSelection}
-        placementMode="floating"
-        sectionRef={actionsSizeRef}
-        selectedFurniture={selectedFurniture}
-        style={{
-          transform: `translate3d(${String(placement.left)}px, ${String(placement.top)}px, 0)`,
-        }}
-      />
-    </div>
+      <div className="rounded-xl border bg-background/90 p-1.5 shadow-sm backdrop-blur-sm">
+        <SelectionToolsOther
+          editorInteractionsEnabled={!controlsDisabled}
+          onOpenDeleteDialog={handleOpenDeleteDialog}
+          onPrepareDelete={interaction.prepareDeleteBlurSuppression}
+          onRotateSelection={onRotateSelection}
+          selectedFurniture={selectedFurniture}
+        />
+      </div>
+    </section>
   )
 }
