@@ -1,20 +1,21 @@
 import { useEditorInteractionsEnabled } from '@/editor-state/editor-runtime-store'
-import { DIALOG_IDS } from '@/editor-state/dialog-contract'
-import { useDialogOpen } from '@/editor-state/dialog-store'
 import { useSelectedFurniture } from '@/editor-state/scene-state-store'
 import { useSelectedItemInteraction } from './selected-item-interaction-context'
 import {
   useSelectedItemActionsSizeRef,
   useSelectedItemPlacement,
 } from './selected-item-placement-context'
+import { resolveSelectionControlsInteractivity } from './selection-controls-interactivity'
 import { SelectionToolsOther } from './selection-tools-other'
 
 export interface FloatingSelectedItemSiteProps {
+  isCatalogDrawerOpen: boolean
   onOpenDeleteDialog: () => void
   onRotateSelection: (direction: -1 | 1) => void
 }
 
 export function FloatingSelectedItemSite({
+  isCatalogDrawerOpen,
   onOpenDeleteDialog,
   onRotateSelection,
 }: FloatingSelectedItemSiteProps) {
@@ -23,7 +24,6 @@ export function FloatingSelectedItemSite({
   const interaction = useSelectedItemInteraction()
   const selectedFurniture = useSelectedFurniture()
   const editorInteractionsEnabled = useEditorInteractionsEnabled()
-  const isCatalogDrawerOpen = useDialogOpen(DIALOG_IDS.catalog)
 
   if (selectedFurniture === null) {
     return null
@@ -32,8 +32,10 @@ export function FloatingSelectedItemSite({
     return null
   }
 
-  const controlsSuppressed = isCatalogDrawerOpen
-  const controlsDisabled = !editorInteractionsEnabled || isCatalogDrawerOpen
+  const interactivity = resolveSelectionControlsInteractivity({
+    editorInteractionsEnabled,
+    isCatalogDrawerOpen,
+  })
 
   const handleOpenDeleteDialog = () => {
     try {
@@ -53,15 +55,15 @@ export function FloatingSelectedItemSite({
       style={{
         transform: `translate3d(${String(placement.left)}px, ${String(placement.top)}px, 0)`,
       }}
-      inert={controlsSuppressed}
+      inert={interactivity.suppressed}
     >
       <div className="rounded-xl border bg-background/90 p-1.5 shadow-sm backdrop-blur-sm">
         <SelectionToolsOther
-          editorInteractionsEnabled={!controlsDisabled}
+          controlsDisabled={interactivity.disabled}
+          disabledMessage={interactivity.disabledMessage}
           onOpenDeleteDialog={handleOpenDeleteDialog}
           onPrepareDelete={interaction.prepareDeleteBlurSuppression}
           onRotateSelection={onRotateSelection}
-          selectedFurniture={selectedFurniture}
         />
       </div>
     </section>

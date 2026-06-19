@@ -1,5 +1,4 @@
 import { ButtonGroup } from '@/shared/ui/button-group'
-import type { FurnitureItem } from '@/scene/objects/furniture.types'
 import {
   DeleteButton,
   RotateClockwiseButton,
@@ -7,23 +6,18 @@ import {
 } from './components/selection-action-buttons'
 
 export function SelectionToolsOther({
-  editorInteractionsEnabled,
+  controlsDisabled,
+  disabledMessage,
   onOpenDeleteDialog,
   onPrepareDelete,
   onRotateSelection,
-  selectedFurniture,
 }: {
-  editorInteractionsEnabled: boolean
+  controlsDisabled: boolean
+  disabledMessage: string
   onOpenDeleteDialog: () => void
   onPrepareDelete?: () => void
   onRotateSelection: (direction: -1 | 1) => void
-  selectedFurniture: FurnitureItem | null
 }) {
-  const controlsDisabled = !editorInteractionsEnabled || !selectedFurniture
-  const disabledMessage = !editorInteractionsEnabled
-    ? 'Editor interactions are unavailable while loading'
-    : 'No item selected'
-
   return (
     <ButtonGroup aria-label="Selected item actions">
       <RotateCounterclockwiseButton

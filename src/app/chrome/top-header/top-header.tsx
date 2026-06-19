@@ -7,10 +7,13 @@ import { TopHeaderDesktop } from './top-header-desktop'
 import { TopHeaderMobile } from './top-header-mobile'
 import type { TopHeaderContainerProps } from './top-header.types'
 import type {
+  AppDialogOpenRequest,
   DialogAccessPoint,
-  DialogOpenRequest,
-} from '@/editor-state/dialog-contract'
-import { DIALOG_IDS } from '@/editor-state/dialog-contract'
+} from '@/app/dialogs/dialog-focus'
+import {
+  DIALOG_ACCESS_POINTS,
+  isDialogAccessPoint,
+} from '@/app/dialogs/dialog-focus'
 import {
   dialogActions,
   useDialogOpen,
@@ -18,6 +21,7 @@ import {
   useIsBlockingOverlayOpen,
   useReturnFocusAccessPoint,
 } from '@/editor-state/dialog-store'
+import { DIALOG_IDS } from '@/app/dialogs/dialog-registry'
 import {
   useEditorInteractionsEnabled,
   useFloorFinishLoading,
@@ -172,7 +176,12 @@ export function TopHeader({
   const roomSurfaceLayout = isRoomSurfacePayload(roomSurfacePayload)
     ? roomSurfacePayload.layout
     : null
-  const returnFocusAccessPoint = useReturnFocusAccessPoint()
+  const returnFocusAccessPointToken = useReturnFocusAccessPoint()
+  const returnFocusAccessPoint = isDialogAccessPoint(
+    returnFocusAccessPointToken,
+  )
+    ? returnFocusAccessPointToken
+    : DIALOG_ACCESS_POINTS.none
   const isCatalogDrawerOpen = useDialogOpen(DIALOG_IDS.catalog)
   const isRoomSurfaceOpen = useDialogOpen(DIALOG_IDS.roomSurface)
   const isInfoDialogOpen = useDialogOpen(DIALOG_IDS.projectInfo)
@@ -200,7 +209,7 @@ export function TopHeader({
   })
 
   const focusReturnTarget = (target: DialogAccessPoint) => {
-    if (target === 'top-header-more-actions') {
+    if (target === DIALOG_ACCESS_POINTS.topHeaderMoreActions) {
       if (layoutMode === 'desktop') {
         if (isStartOverDialogOpen) {
           focusControlById(startOverTriggerId)
@@ -225,7 +234,7 @@ export function TopHeader({
       return
     }
 
-    if (target === 'top-header-keyboard-shortcuts') {
+    if (target === DIALOG_ACCESS_POINTS.topHeaderKeyboardShortcuts) {
       if (layoutMode === 'mobile') {
         focusControlById(headerMoreActionsTriggerId)
         return
@@ -235,7 +244,7 @@ export function TopHeader({
       return
     }
 
-    if (target === 'top-header-project-info') {
+    if (target === DIALOG_ACCESS_POINTS.topHeaderProjectInfo) {
       if (layoutMode === 'mobile') {
         focusControlById(headerMoreActionsTriggerId)
         return
@@ -245,14 +254,14 @@ export function TopHeader({
       return
     }
 
-    if (target === 'top-header-room') {
+    if (target === DIALOG_ACCESS_POINTS.topHeaderRoom) {
       focusControlById(
         layoutMode === 'mobile' ? mobileRoomTriggerId : desktopRoomTriggerId,
       )
       return
     }
 
-    if (target === 'top-header-start-over') {
+    if (target === DIALOG_ACCESS_POINTS.topHeaderStartOver) {
       if (layoutMode === 'mobile') {
         focusControlById(headerMoreActionsTriggerId)
         return
@@ -263,17 +272,17 @@ export function TopHeader({
   }
 
   const focusActiveReturnTarget = () => {
-    if (returnFocusAccessPoint !== 'none') {
+    if (returnFocusAccessPoint !== DIALOG_ACCESS_POINTS.none) {
       focusReturnTarget(returnFocusAccessPoint)
     }
   }
 
   const openDialogFromHeaderMoreActions = (
-    open: (request?: DialogOpenRequest) => unknown,
+    open: (request?: AppDialogOpenRequest) => unknown,
     returnFocusAccessPoint: DialogAccessPoint,
   ) => {
     dialogActions.setDialogOpen(DIALOG_IDS.headerMoreActions, false, {
-      returnFocusAccessPoint: 'top-header-more-actions',
+      returnFocusAccessPoint: DIALOG_ACCESS_POINTS.topHeaderMoreActions,
     })
 
     queueMicrotask(() => {
@@ -356,18 +365,18 @@ export function TopHeader({
                 true,
                 request,
               )
-            }, 'top-header-more-actions')
+            }, DIALOG_ACCESS_POINTS.topHeaderMoreActions)
           }}
           onOpenStartOverFromHeaderMoreActions={() => {
             openDialogFromHeaderMoreActions(
               onOpenStartOverDialog,
-              'top-header-more-actions',
+              DIALOG_ACCESS_POINTS.topHeaderMoreActions,
             )
           }}
           onOpenProjectInfoFromHeaderMoreActions={() => {
             openDialogFromHeaderMoreActions((request) => {
               dialogActions.setDialogOpen(DIALOG_IDS.projectInfo, true, request)
-            }, 'top-header-more-actions')
+            }, DIALOG_ACCESS_POINTS.topHeaderMoreActions)
           }}
           focusControlById={focusControlById}
           wallFinishId={wallFinishId}
@@ -482,7 +491,9 @@ export function TopHeader({
         onConfirm={() => {
           onConfirmStartOver()
 
-          if (returnFocusAccessPoint === 'top-header-start-over') {
+          if (
+            returnFocusAccessPoint === DIALOG_ACCESS_POINTS.topHeaderStartOver
+          ) {
             focusNextHeaderControlById(startOverTriggerId)
             return
           }

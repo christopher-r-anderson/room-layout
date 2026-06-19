@@ -1,8 +1,8 @@
 import type { DialogDefinition } from '@/editor-state/dialog-contract'
-import { DIALOG_IDS } from '@/editor-state/dialog-contract'
 
-export const projectInfoDialogDefinition: DialogDefinition = {
-  id: DIALOG_IDS.projectInfo,
+export const projectInfoDialogId = 'project-info' as const
+
+export const projectInfoDialogDefinition = {
+  id: projectInfoDialogId,
   kind: 'blocking',
-  getReturnFocusAccessPoint: () => 'top-header-project-info',
-}
+} satisfies DialogDefinition

@@ -4,7 +4,6 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { SelectionToolsOther } from './selection-tools-other'
-import { FURNITURE_ITEM } from './test-fixtures'
 
 describe('SelectionToolsOther', () => {
   it('executes rotate and remove actions when selection is available', async () => {
@@ -14,10 +13,10 @@ describe('SelectionToolsOther', () => {
 
     render(
       <SelectionToolsOther
-        editorInteractionsEnabled
+        controlsDisabled={false}
+        disabledMessage=""
         onOpenDeleteDialog={onOpenDeleteDialog}
         onRotateSelection={onRotateSelection}
-        selectedFurniture={FURNITURE_ITEM}
       />,
     )
 
@@ -50,10 +49,10 @@ describe('SelectionToolsOther', () => {
 
     render(
       <SelectionToolsOther
-        editorInteractionsEnabled={false}
+        controlsDisabled={true}
+        disabledMessage="Editor interactions are unavailable while loading"
         onOpenDeleteDialog={onOpenDeleteDialog}
         onRotateSelection={onRotateSelection}
-        selectedFurniture={null}
       />,
     )
 

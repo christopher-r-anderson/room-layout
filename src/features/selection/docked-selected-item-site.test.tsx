@@ -59,6 +59,7 @@ describe('DockedSelectedItemSite', () => {
                 }}
               >
                 <DockedSelectedItemSite
+                  isCatalogDrawerOpen={false}
                   onOpenDeleteDialog={vi.fn()}
                   onRotateSelection={vi.fn()}
                   onInvalidSelectedItemDetailValue={(fieldLabel) =>
@@ -123,10 +124,12 @@ describe('DockedSelectedItemSite', () => {
                 }}
               >
                 <FloatingSelectedItemSite
+                  isCatalogDrawerOpen={false}
                   onOpenDeleteDialog={vi.fn()}
                   onRotateSelection={vi.fn()}
                 />
                 <DockedSelectedItemSite
+                  isCatalogDrawerOpen={false}
                   onOpenDeleteDialog={vi.fn()}
                   onRotateSelection={vi.fn()}
                   onInvalidSelectedItemDetailValue={(fieldLabel) =>
@@ -188,10 +191,12 @@ describe('DockedSelectedItemSite', () => {
                 }}
               >
                 <FloatingSelectedItemSite
+                  isCatalogDrawerOpen={false}
                   onOpenDeleteDialog={vi.fn()}
                   onRotateSelection={vi.fn()}
                 />
                 <DockedSelectedItemSite
+                  isCatalogDrawerOpen={false}
                   onOpenDeleteDialog={vi.fn()}
                   onRotateSelection={vi.fn()}
                   onInvalidSelectedItemDetailValue={(fieldLabel) =>

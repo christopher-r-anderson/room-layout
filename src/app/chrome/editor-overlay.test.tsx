@@ -7,7 +7,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
 import { TooltipProvider } from '@/shared/ui/tooltip'
 import { createHistoryState } from '@/shared/lib/ui/editor-history'
-import { DIALOG_IDS } from '@/editor-state/dialog-contract'
+import { DIALOG_IDS } from '@/app/dialogs/dialog-registry'
 import { resetDialogStore } from '@/editor-state/dialog-store'
 import { dialogActions } from '@/editor-state/dialog-store'
 import {

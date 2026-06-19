@@ -37,7 +37,7 @@ It does not own:
 
 - `DialogId`
 - `DialogKind`
-- `DialogAccessPoint`
+- `DialogReturnFocusToken`
 - `DialogOpenRequest`
 - `DialogDefinition`
 - `DialogRuntimeContext`
@@ -47,7 +47,9 @@ Dialog definitions are registered through a single app bootstrap path in
 `src/app/dialogs/bootstrap-dialog-registry.ts`.
 
 Feature and shell definition modules declare per-dialog behavior, including
-`kind`, open guards, payload derivation, and default return-focus access point.
+`kind`, open guards, and payload derivation. Default return-focus access points
+are composed in `src/app/dialogs/dialog-registry.ts`, keeping feature definitions
+free of app-shell imports.
 
 ### Global Gating and Feature-Specific Guards
 
@@ -80,10 +82,12 @@ other top-level surfaces by the one-active-surface invariant.
 Payload is carried on the active surface and read with `useDialogPayload(id)`.
 There is no dialog-specific top-level payload field.
 
-Return focus uses semantic `DialogAccessPoint` tokens, not layout-specific DOM
-ids. Top-header code resolves those semantic tokens into concrete elements.
+Return focus uses an opaque `DialogReturnFocusToken` at the store level. App
+composition in `src/app/dialogs/dialog-focus.ts` owns the typed
+`DialogAccessPoint` vocabulary and the `DIALOG_ACCESS_POINTS` constant map.
+Top-header code resolves those tokens into concrete elements.
 
-Current access-point token set:
+Current access-point token set (defined in `src/app/dialogs/dialog-focus.ts`):
 
 - `top-header-room`
 - `top-header-keyboard-shortcuts`

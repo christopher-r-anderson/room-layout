@@ -1,8 +1,8 @@
 import type { FurnitureCatalogEntry } from '@/scene/objects/furniture-catalog'
 import type {
+  AppDialogOpenRequest,
   DialogAccessPoint,
-  DialogOpenRequest,
-} from '@/editor-state/dialog-contract'
+} from '@/app/dialogs/dialog-focus'
 import type {
   EnvironmentMaterialConfig,
   FloorFinishOption,
@@ -31,21 +31,21 @@ interface TopHeaderProps {
     onConfirmStartOver: () => void
     onRoomSurfaceOpenChange: (
       open: boolean,
-      request?: DialogOpenRequest<{ layout: HeaderLayoutMode }>,
+      request?: AppDialogOpenRequest<{ layout: HeaderLayoutMode }>,
     ) => boolean
     onInfoDialogOpenChange: (
       open: boolean,
-      request?: DialogOpenRequest,
+      request?: AppDialogOpenRequest,
     ) => boolean
     onKeyboardShortcutsDialogOpenChange: (
       open: boolean,
-      request?: DialogOpenRequest,
+      request?: AppDialogOpenRequest,
     ) => boolean
     onHeaderMoreActionsOpenChange: (
       open: boolean,
-      request?: DialogOpenRequest,
+      request?: AppDialogOpenRequest,
     ) => boolean
-    onOpenStartOverDialog: (request?: DialogOpenRequest) => void
+    onOpenStartOverDialog: (request?: AppDialogOpenRequest) => void
     returnFocusAccessPoint: DialogAccessPoint
   }
   editorInteractionsEnabled: boolean
@@ -79,7 +79,7 @@ export interface TopHeaderShellProps {
   onUndo: () => void
   onRedo: () => void
   onShareSceneUrl: () => Promise<'shared' | 'copied' | null>
-  onOpenStartOverDialog: (request?: DialogOpenRequest) => void
+  onOpenStartOverDialog: (request?: AppDialogOpenRequest) => void
   onConfirmStartOver: () => void
 }
 

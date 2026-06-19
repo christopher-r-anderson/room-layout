@@ -2,7 +2,6 @@
 
 import { act, renderHook } from '@testing-library/react'
 import { beforeEach, describe, expect, it } from 'vitest'
-import { DIALOG_IDS } from './dialog-contract'
 import {
   dialogActions,
   resetDialogStore,
@@ -21,11 +20,11 @@ beforeEach(() => {
 
   dialogActions.registerDialogDefinitions([
     {
-      id: DIALOG_IDS.delete,
+      id: 'delete',
       kind: 'blocking',
     },
     {
-      id: DIALOG_IDS.roomSurface,
+      id: 'room-surface',
       kind: 'non-blocking',
     },
   ])
@@ -34,9 +33,7 @@ beforeEach(() => {
 describe('dialogStore', () => {
   it('tracks a single active surface and blocking state by dialog kind', () => {
     const { result: activeSurface } = renderHook(() => useActiveSurface())
-    const { result: isDeleteOpen } = renderHook(() =>
-      useDialogOpen(DIALOG_IDS.delete),
-    )
+    const { result: isDeleteOpen } = renderHook(() => useDialogOpen('delete'))
     const { result: isBlocking } = renderHook(() => useIsBlockingOverlayOpen())
 
     expect(activeSurface.current).toBeNull()
@@ -44,10 +41,10 @@ describe('dialogStore', () => {
     expect(isBlocking.current).toBe(false)
 
     act(() => {
-      dialogActions.openDialog(DIALOG_IDS.delete)
+      dialogActions.openDialog('delete')
     })
 
-    expect(activeSurface.current?.id).toBe(DIALOG_IDS.delete)
+    expect(activeSurface.current?.id).toBe('delete')
     expect(isDeleteOpen.current).toBe(true)
     expect(isBlocking.current).toBe(true)
 
@@ -64,7 +61,7 @@ describe('dialogStore', () => {
     const { result } = renderHook(() => useIsBlockingOverlayOpen())
 
     act(() => {
-      dialogActions.openDialog(DIALOG_IDS.roomSurface, {
+      dialogActions.openDialog('room-surface', {
         payload: { layout: 'desktop' },
         returnFocusAccessPoint: 'top-header-room',
       })
@@ -81,13 +78,13 @@ describe('dialogStore', () => {
       canStartOver: () => true,
     })
     dialogActions.registerDialogDefinition({
-      id: DIALOG_IDS.delete,
+      id: 'delete',
       kind: 'blocking',
     })
 
-    const opened = dialogActions.openDialog(DIALOG_IDS.delete)
+    const opened = dialogActions.openDialog('delete')
 
     expect(opened).toBe(false)
-    expect(dialogActions.isDialogOpen(DIALOG_IDS.delete)).toBe(false)
+    expect(dialogActions.isDialogOpen('delete')).toBe(false)
   })
 })

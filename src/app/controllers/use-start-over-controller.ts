@@ -1,5 +1,5 @@
 import { useCallback } from 'react'
-import type { DialogOpenRequest } from '@/editor-state/dialog-contract'
+import type { AppDialogOpenRequest } from '@/app/dialogs/dialog-focus'
 import { sceneStateActions } from '@/editor-state/scene-state-store'
 import { sceneCommands } from '@/scene/scene-commands'
 import { clearSceneDraft } from '@/features/url-scene/scene-draft'
@@ -13,7 +13,7 @@ interface AnnouncementsApi {
 interface StartOverControllerOptions {
   announcements: AnnouncementsApi
   closeActiveDialog: () => void
-  openStartOverDialog: (request?: DialogOpenRequest) => boolean
+  openStartOverDialog: (request?: AppDialogOpenRequest) => boolean
   canStartOver: boolean
   selectionEffects: SelectionEffectsApi
   clearPreview: () => void
@@ -35,7 +35,7 @@ export function useStartOverController({
   const { announcePolite } = announcements
 
   const handleOpenStartOverDialog = useCallback(
-    (request?: DialogOpenRequest) => {
+    (request?: AppDialogOpenRequest) => {
       if (!canStartOver) {
         return
       }

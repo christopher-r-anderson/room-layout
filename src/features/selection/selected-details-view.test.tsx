@@ -506,4 +506,31 @@ describe('SelectedDetailsView', () => {
     )
     expect(xInput).toHaveValue('1.9')
   })
+
+  it('disables selected item action buttons when the inspector is disabled', () => {
+    render(
+      <SelectedDetailsView
+        disabled={true}
+        disabledMessage="Editor interactions are unavailable while loading"
+        selectedFurniture={FURNITURE_ITEM}
+        consumeBlurCommitSuppression={() => false}
+        onOpenDeleteDialog={vi.fn()}
+        onPrepareDelete={vi.fn()}
+        onRotateSelection={vi.fn()}
+        onInvalidSelectedItemDetailValue={vi.fn()}
+        onUpdateSelectedItemDetails={vi.fn()}
+      />,
+    )
+
+    expect(
+      screen.getByRole('button', { name: 'Rotate counterclockwise' }),
+    ).toHaveAttribute('aria-disabled', 'true')
+    expect(
+      screen.getByRole('button', { name: 'Rotate clockwise' }),
+    ).toHaveAttribute('aria-disabled', 'true')
+    expect(screen.getByRole('button', { name: 'Remove item' })).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    )
+  })
 })

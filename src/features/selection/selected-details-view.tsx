@@ -123,6 +123,7 @@ export function SelectedDetailsPlaceholder({
 export function SelectedDetailsView({
   className,
   disabled,
+  disabledMessage,
   selectedFurniture,
   sectionRef,
   consumeBlurCommitSuppression,
@@ -134,6 +135,7 @@ export function SelectedDetailsView({
 }: {
   className?: string
   disabled: boolean
+  disabledMessage?: string
   selectedFurniture: FurnitureItem
   sectionRef?: Ref<HTMLElement>
   consumeBlurCommitSuppression: () => boolean
@@ -365,6 +367,8 @@ export function SelectedDetailsView({
             <DeleteButton
               displayLabel={true}
               action={onOpenDeleteDialog}
+              disabled={disabled}
+              disabledMessage={disabledMessage}
               onPointerDown={() => {
                 onPrepareDelete()
               }}
@@ -384,12 +388,16 @@ export function SelectedDetailsView({
                 action={() => {
                   onRotateSelection(1)
                 }}
+                disabled={disabled}
+                disabledMessage={disabledMessage}
               />
               <RotateClockwiseButton
                 displayLabel={false}
                 action={() => {
                   onRotateSelection(-1)
                 }}
+                disabled={disabled}
+                disabledMessage={disabledMessage}
               />
             </div>
             <div className="justify-self-end min-w-0 rounded-md border border-border/60 bg-muted/20 p-2">

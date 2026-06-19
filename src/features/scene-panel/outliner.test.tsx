@@ -8,7 +8,7 @@ import {
   loadBooleanPreference,
   saveBooleanPreference,
 } from '@/shared/lib/ui/storage'
-import { DIALOG_IDS } from '@/editor-state/dialog-contract'
+import { DIALOG_IDS } from '@/app/dialogs/dialog-registry'
 import { dialogActions, resetDialogStore } from '@/editor-state/dialog-store'
 import {
   editorRuntimeActions,

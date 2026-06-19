@@ -15,14 +15,12 @@ import { flushSync } from 'react-dom'
 import { NeutralToneMapping, SRGBColorSpace } from 'three'
 import { EditorOverlay } from './chrome/editor-overlay'
 import {
-  DIALOG_IDS,
-  type DialogOpenRequest,
-} from '@/editor-state/dialog-contract'
-import {
   dialogActions,
   useDialogPayload,
   useIsBlockingOverlayOpen,
 } from '@/editor-state/dialog-store'
+import type { AppDialogOpenRequest } from '@/app/dialogs/dialog-focus'
+import { DIALOG_IDS } from '@/app/dialogs/dialog-registry'
 import {
   sceneStateActions,
   useFloorFinishId,
@@ -332,7 +330,7 @@ function App() {
   const startOverController = useStartOverController({
     announcements,
     closeActiveDialog: dialogActions.closeActiveDialog,
-    openStartOverDialog: (request?: DialogOpenRequest) =>
+    openStartOverDialog: (request?: AppDialogOpenRequest) =>
       dialogActions.openDialog(DIALOG_IDS.startOver, request),
     canStartOver: !sceneIsAtDefaults,
     selectionEffects,

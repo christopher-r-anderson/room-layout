@@ -1,12 +1,12 @@
 // @vitest-environment jsdom
 
 import { beforeEach, describe, expect, it } from 'vitest'
-import { DIALOG_IDS } from '@/editor-state/dialog-contract'
 import {
   dialogActions,
   dialogStoreForTests,
   resetDialogStore,
 } from '@/editor-state/dialog-store'
+import { DIALOG_IDS } from '@/app/dialogs/dialog-registry'
 import {
   bootstrapDialogRegistry,
   resetDialogRegistryForTests,

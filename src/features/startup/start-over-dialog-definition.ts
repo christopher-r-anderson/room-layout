@@ -1,9 +1,9 @@
 import type { DialogDefinition } from '@/editor-state/dialog-contract'
-import { DIALOG_IDS } from '@/editor-state/dialog-contract'
 
-export const startOverDialogDefinition: DialogDefinition = {
-  id: DIALOG_IDS.startOver,
+export const startOverDialogId = 'start-over' as const
+
+export const startOverDialogDefinition = {
+  id: startOverDialogId,
   kind: 'blocking',
   canOpen: (context) => context.isDialogsEnabled(),
-  getReturnFocusAccessPoint: () => 'top-header-start-over',
-}
+} satisfies DialogDefinition

@@ -1,8 +1,8 @@
 import type { DialogDefinition } from '@/editor-state/dialog-contract'
-import { DIALOG_IDS } from '@/editor-state/dialog-contract'
 
-export const headerMoreActionsDialogDefinition: DialogDefinition = {
-  id: DIALOG_IDS.headerMoreActions,
+export const headerMoreActionsDialogId = 'header-more-actions' as const
+
+export const headerMoreActionsDialogDefinition = {
+  id: headerMoreActionsDialogId,
   kind: 'blocking',
-  getReturnFocusAccessPoint: () => 'top-header-more-actions',
-}
+} satisfies DialogDefinition

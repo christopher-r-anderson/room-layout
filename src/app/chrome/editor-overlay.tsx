@@ -3,7 +3,7 @@ import {
   useDialogOpen,
   useDialogPayload,
 } from '@/editor-state/dialog-store'
-import { DIALOG_IDS } from '@/editor-state/dialog-contract'
+import { DIALOG_IDS } from '@/app/dialogs/dialog-registry'
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
 import {
   useStartupLoadingActive,
@@ -118,6 +118,7 @@ export function EditorOverlay({
   const hasSelection = useHasSelection()
   const startupOverlayActive = useStartupOverlayActive()
   const interactionsEnabled = useEditorInteractionsEnabled()
+  const isCatalogDrawerOpen = useDialogOpen(DIALOG_IDS.catalog)
   const layoutMode = useHeaderLayoutMode()
   const isDesktop = layoutMode === 'desktop'
 
@@ -139,7 +140,10 @@ export function EditorOverlay({
           />
         </div>
 
-        <FloatingSelectedItemSite {...floatingSelectedItem} />
+        <FloatingSelectedItemSite
+          isCatalogDrawerOpen={isCatalogDrawerOpen}
+          {...floatingSelectedItem}
+        />
 
         <div
           className="absolute z-20 pointer-events-auto right-0 top-1/4 -translate-y-1/2"
@@ -176,7 +180,10 @@ export function EditorOverlay({
 
           <div className="pointer-events-auto md:col-start-2 md:row-start-1 md:row-span-2 md:justify-self-end">
             {hasSelection ? (
-              <DockedSelectedItemSite {...dockedSelectedItem} />
+              <DockedSelectedItemSite
+                isCatalogDrawerOpen={isCatalogDrawerOpen}
+                {...dockedSelectedItem}
+              />
             ) : (
               <div
                 ref={registerExclusionElement('selected-details')}
