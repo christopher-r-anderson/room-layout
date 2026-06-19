@@ -1,5 +1,6 @@
 import { Canvas } from '@react-three/fiber'
 import { Scene } from '@/scene/scene'
+import type { FurnitureItem } from '@/scene/objects/furniture.types'
 import {
   useCallback,
   useEffect,
@@ -13,7 +14,15 @@ import {
 import { flushSync } from 'react-dom'
 import { NeutralToneMapping, SRGBColorSpace } from 'three'
 import { EditorOverlay } from './chrome/editor-overlay'
-import { useDialogStateSnapshot } from '@/app/chrome/hooks/use-dialog-state-snapshot'
+import {
+  DIALOG_IDS,
+  type DialogOpenRequest,
+} from '@/editor-state/dialog-contract'
+import {
+  dialogActions,
+  useDialogPayload,
+  useIsBlockingOverlayOpen,
+} from '@/editor-state/dialog-store'
 import {
   sceneStateActions,
   useFloorFinishId,
@@ -64,6 +73,8 @@ import { sceneCommands } from '@/scene/scene-commands'
 import { ROTATION_STEP_RADIANS } from '@/app/controllers/_shared/constants'
 import { useActiveFinishIds } from '@/app/controllers/_shared/use-active-finish-ids'
 import { useTestStateBridge } from './testing/use-test-state-bridge'
+import { buildDialogRuntimeContext } from './dialogs/dialog-context-builder'
+import { bootstrapDialogRegistry } from './dialogs/bootstrap-dialog-registry'
 
 class SceneAssetErrorBoundary extends Component<
   {
@@ -203,18 +214,27 @@ function App() {
   }, [items, environmentConfig, activeFloorFinishId, activeWallFinishId])
 
   const announcements = useAnnouncements()
+  const dialogRuntimeContext = useMemo(
+    () =>
+      buildDialogRuntimeContext({
+        canStartOver: () => true,
+      }),
+    [],
+  )
+  useEffect(() => {
+    bootstrapDialogRegistry(dialogRuntimeContext)
+  }, [dialogRuntimeContext])
 
-  const dialogState = useDialogStateSnapshot({
-    editorInteractionsEnabled: startup.editorInteractionsEnabled,
-    startupOverlayActive: startup.startupOverlayActive,
-    selectedFurniture,
-    canStartOver: !sceneIsAtDefaults,
-  })
+  const isBlockingOverlayOpen = useIsBlockingOverlayOpen()
+  const pendingDeleteFurniture = useDialogPayload(
+    DIALOG_IDS.delete,
+  ) as FurnitureItem | null
+
   const selectionEffects = useSelectionEffectsController({
     announcements,
     editorInteractionsEnabled: startup.editorInteractionsEnabled,
   })
-  const wasBlockingOverlayOpenRef = useRef(dialogState.isBlockingOverlayOpen)
+  const wasBlockingOverlayOpenRef = useRef(isBlockingOverlayOpen)
 
   const activeCatalogIdToAdd = useMemo(() => {
     if (catalogIdToAdd) {
@@ -236,7 +256,7 @@ function App() {
     handleCanvasKeyboardPreviewChange: applyCanvasKeyboardPreviewChange,
     clearPreviewOnCanvasMiss,
   } = usePreviewController({
-    isBlockingOverlayOpen: dialogState.isBlockingOverlayOpen,
+    isBlockingOverlayOpen,
     editorInteractionsEnabled: startup.editorInteractionsEnabled,
   })
 
@@ -265,10 +285,10 @@ function App() {
 
   useEffect(() => {
     const wasBlockingOverlayOpen = wasBlockingOverlayOpenRef.current
-    wasBlockingOverlayOpenRef.current = dialogState.isBlockingOverlayOpen
+    wasBlockingOverlayOpenRef.current = isBlockingOverlayOpen
 
     if (
-      !dialogState.isBlockingOverlayOpen ||
+      !isBlockingOverlayOpen ||
       wasBlockingOverlayOpen ||
       outlinerFocusRequest === null
     ) {
@@ -276,7 +296,7 @@ function App() {
     }
 
     selectionMetaActions.clearOutlinerFocusRequest()
-  }, [dialogState.isBlockingOverlayOpen, outlinerFocusRequest])
+  }, [isBlockingOverlayOpen, outlinerFocusRequest])
 
   const selectionController = useSelectionController({
     selectionEffects,
@@ -295,20 +315,26 @@ function App() {
   })
   const deletionController = useDeletionController({
     announcements,
-    dialogState,
+    closeActiveDialog: dialogActions.closeActiveDialog,
+    openDeleteDialog: () => dialogActions.openDialog(DIALOG_IDS.delete),
+    pendingDeleteFurniture,
     editorInteractionsEnabled: startup.editorInteractionsEnabled,
     selectionEffects,
     focusRoomView,
   })
   const catalogController = useCatalogController({
-    dialogState,
+    setCatalogOpen: (open) =>
+      dialogActions.setDialogOpen(DIALOG_IDS.catalog, open),
     selectionEffects,
     catalogIdToAdd: activeCatalogIdToAdd,
     editorInteractionsEnabled: startup.editorInteractionsEnabled,
   })
   const startOverController = useStartOverController({
     announcements,
-    dialogState,
+    closeActiveDialog: dialogActions.closeActiveDialog,
+    openStartOverDialog: (request?: DialogOpenRequest) =>
+      dialogActions.openDialog(DIALOG_IDS.startOver, request),
+    canStartOver: !sceneIsAtDefaults,
     selectionEffects,
     clearPreview: clearPreviewOnCanvasMiss,
     defaults: {
@@ -318,7 +344,7 @@ function App() {
   })
   const assetLifecycleController = useAssetLifecycleController({
     announcements,
-    dialogState,
+    closeActiveDialog: dialogActions.closeActiveDialog,
     selectionEffects,
     startup: {
       catalog: startup.catalog,
@@ -453,7 +479,7 @@ function App() {
   useKeyboardShortcuts({
     enabled: startup.editorInteractionsEnabled,
     hasSelection: selectedFurniture !== null,
-    isBlockingOverlayOpen: dialogState.isBlockingOverlayOpen,
+    isBlockingOverlayOpen,
     canStartOver: !sceneIsAtDefaults,
     roomViewHasFocus,
     onFocusInspector: handleFocusInspector,
@@ -479,14 +505,14 @@ function App() {
 
   useCameraKeyState({
     enabled: startup.editorInteractionsEnabled,
-    isBlockingOverlayOpen: dialogState.isBlockingOverlayOpen,
+    isBlockingOverlayOpen,
     roomViewHasFocus,
   })
 
   return (
     <TooltipProvider>
       <EditorRefsProvider value={editorRefs}>
-        <EditorShell syncLayoutMode={dialogState.syncLayoutMode}>
+        <EditorShell>
           <main
             className="relative size-full"
             aria-busy={startup.startupLoadingActive}
@@ -570,7 +596,6 @@ function App() {
               <>
                 <EditorOverlay
                   startOverDisabled={sceneIsAtDefaults}
-                  onHeaderLayoutModeChange={dialogState.syncLayoutMode}
                   topHeader={{
                     catalog: startup.catalog,
                     environmentConfig,

@@ -12,6 +12,7 @@ Contains
 - `chrome/`: app-shell composition and connected orchestration.
 - `controllers/`: app-level orchestration hooks that coordinate multiple domains.
 - `hooks/`: app-level hooks used by composition or shell orchestration.
+- `dialogs/`: app-owned dialog runtime context builder and registry bootstrap composition.
 - `testing/`: runtime test harness hooks used by browser automation.
 
 Should not contain
@@ -19,6 +20,11 @@ Should not contain
 - Generic reusable primitives that belong in `src/shared`.
 - Scene internals.
 - Test-only infrastructure (put in `src/test`).
+
+Dialog architecture notes
+
+- App composes `DialogRuntimeContext` and bootstraps dialog definitions before dialog consumers render.
+- App may coordinate multi-domain dialog behavior, but feature-specific guards and payload derivation stay with owning features.
 
 See also
 

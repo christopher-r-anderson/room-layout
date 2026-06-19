@@ -1,4 +1,4 @@
-import { useEffect, useId } from 'react'
+import { useId } from 'react'
 import { KeyboardShortcutsDialog } from '@/features/keyboard/keyboard-shortcuts-help'
 import { ProjectInfoDialog } from '@/features/project-info/project-info-dialog'
 import { StartOverConfirmationDialog } from '@/features/startup/start-over-confirmation-dialog'
@@ -7,25 +7,20 @@ import { TopHeaderDesktop } from './top-header-desktop'
 import { TopHeaderMobile } from './top-header-mobile'
 import type { TopHeaderContainerProps } from './top-header.types'
 import type {
-  DialogOpenOptions,
-  DialogReturnFocusTarget,
-} from '@/editor-state/dialog-store'
+  DialogAccessPoint,
+  DialogOpenRequest,
+} from '@/editor-state/dialog-contract'
+import { DIALOG_IDS } from '@/editor-state/dialog-contract'
 import {
   dialogActions,
+  useDialogOpen,
+  useDialogPayload,
   useIsBlockingOverlayOpen,
-  useIsCatalogDrawerOpen,
-  useIsHeaderMoreActionsOpen,
-  useIsInfoDialogOpen,
-  useIsKeyboardShortcutsDialogOpen,
-  useIsRoomSurfaceOpen,
-  useIsStartOverDialogOpen,
-  useReturnFocusTarget,
-  useRoomSurfaceLayout,
+  useReturnFocusAccessPoint,
 } from '@/editor-state/dialog-store'
 import {
   useEditorInteractionsEnabled,
   useFloorFinishLoading,
-  useStartupOverlayActive,
 } from '@/editor-state/editor-runtime-store'
 import { useActiveFinishIds } from '@/app/controllers/_shared/use-active-finish-ids'
 import {
@@ -37,6 +32,20 @@ import {
 
 const HEADER_CONTROL_SELECTOR =
   'button, input, select, textarea, [tabindex]:not([tabindex="-1"])'
+
+interface RoomSurfacePayload {
+  layout: 'mobile' | 'desktop'
+}
+
+function isRoomSurfacePayload(value: unknown): value is RoomSurfacePayload {
+  if (!value || typeof value !== 'object') {
+    return false
+  }
+
+  const payload = value as { layout?: unknown }
+
+  return payload.layout === 'mobile' || payload.layout === 'desktop'
+}
 
 function isEnabledHeaderControl(element: HTMLElement) {
   if (element.matches('[disabled], [aria-disabled="true"]')) {
@@ -145,7 +154,6 @@ export function TopHeader({
   onCatalogDrawerOpenChange,
   onCatalogIdToAddChange,
   onConfirmStartOver,
-  onLayoutModeChange,
   onOpenStartOverDialog,
   onRedo,
   onShareSceneUrl,
@@ -156,19 +164,23 @@ export function TopHeader({
   mobileRoomDrawerRef,
 }: TopHeaderContainerProps) {
   const editorInteractionsEnabled = useEditorInteractionsEnabled()
-  const startupOverlayActive = useStartupOverlayActive()
   const historyAvailability = useHistoryAvailability()
   const storedFloorFinishId = useFloorFinishId()
   const storedWallFinishId = useWallFinishId()
   const floorFinishLoading = useFloorFinishLoading()
-  const roomSurfaceLayout = useRoomSurfaceLayout()
-  const returnFocusTarget = useReturnFocusTarget()
-  const isCatalogDrawerOpen = useIsCatalogDrawerOpen()
-  const isRoomSurfaceOpen = useIsRoomSurfaceOpen()
-  const isInfoDialogOpen = useIsInfoDialogOpen()
-  const isKeyboardShortcutsDialogOpen = useIsKeyboardShortcutsDialogOpen()
-  const isHeaderMoreActionsOpen = useIsHeaderMoreActionsOpen()
-  const isStartOverDialogOpen = useIsStartOverDialogOpen()
+  const roomSurfacePayload = useDialogPayload(DIALOG_IDS.roomSurface)
+  const roomSurfaceLayout = isRoomSurfacePayload(roomSurfacePayload)
+    ? roomSurfacePayload.layout
+    : null
+  const returnFocusAccessPoint = useReturnFocusAccessPoint()
+  const isCatalogDrawerOpen = useDialogOpen(DIALOG_IDS.catalog)
+  const isRoomSurfaceOpen = useDialogOpen(DIALOG_IDS.roomSurface)
+  const isInfoDialogOpen = useDialogOpen(DIALOG_IDS.projectInfo)
+  const isKeyboardShortcutsDialogOpen = useDialogOpen(
+    DIALOG_IDS.keyboardShortcuts,
+  )
+  const isHeaderMoreActionsOpen = useDialogOpen(DIALOG_IDS.headerMoreActions)
+  const isStartOverDialogOpen = useDialogOpen(DIALOG_IDS.startOver)
   const isBlockingOverlayOpen = useIsBlockingOverlayOpen()
   const layoutMode = useHeaderLayoutMode()
   const mobileRoomTriggerId = useId()
@@ -187,57 +199,85 @@ export function TopHeader({
     wallFinishId: storedWallFinishId,
   })
 
-  useEffect(() => {
-    onLayoutModeChange?.(layoutMode)
-  }, [layoutMode, onLayoutModeChange])
+  const focusReturnTarget = (target: DialogAccessPoint) => {
+    if (target === 'top-header-more-actions') {
+      if (layoutMode === 'desktop') {
+        if (isStartOverDialogOpen) {
+          focusControlById(startOverTriggerId)
+          return
+        }
 
-  const focusReturnTarget = (target: DialogReturnFocusTarget) => {
-    if (target === 'header-more-actions') {
+        if (isKeyboardShortcutsDialogOpen) {
+          focusControlById(desktopKeyboardTriggerId)
+          return
+        }
+
+        if (isInfoDialogOpen) {
+          focusControlById(desktopInfoTriggerId)
+          return
+        }
+
+        focusControlById(startOverTriggerId)
+        return
+      }
+
       focusControlById(headerMoreActionsTriggerId)
       return
     }
 
-    if (target === 'keyboard-inline') {
+    if (target === 'top-header-keyboard-shortcuts') {
+      if (layoutMode === 'mobile') {
+        focusControlById(headerMoreActionsTriggerId)
+        return
+      }
+
       focusControlById(desktopKeyboardTriggerId)
       return
     }
 
-    if (target === 'info-inline') {
+    if (target === 'top-header-project-info') {
+      if (layoutMode === 'mobile') {
+        focusControlById(headerMoreActionsTriggerId)
+        return
+      }
+
       focusControlById(desktopInfoTriggerId)
       return
     }
 
-    if (target === 'room-inline') {
+    if (target === 'top-header-room') {
       focusControlById(
         layoutMode === 'mobile' ? mobileRoomTriggerId : desktopRoomTriggerId,
       )
       return
     }
 
-    if (target === 'start-over-inline') {
+    if (target === 'top-header-start-over') {
+      if (layoutMode === 'mobile') {
+        focusControlById(headerMoreActionsTriggerId)
+        return
+      }
+
       focusControlById(startOverTriggerId)
     }
   }
 
   const focusActiveReturnTarget = () => {
-    if (returnFocusTarget) {
-      focusReturnTarget(returnFocusTarget)
+    if (returnFocusAccessPoint !== 'none') {
+      focusReturnTarget(returnFocusAccessPoint)
     }
   }
 
   const openDialogFromHeaderMoreActions = (
-    open: (options?: DialogOpenOptions) => unknown,
-    returnFocusTarget: DialogReturnFocusTarget,
+    open: (request?: DialogOpenRequest) => unknown,
+    returnFocusAccessPoint: DialogAccessPoint,
   ) => {
-    dialogActions.setHeaderMoreActionsOpen(false, {
-      startupOverlayActive,
-      dialogOptions: {
-        returnFocusTarget: 'header-more-actions',
-      },
+    dialogActions.setDialogOpen(DIALOG_IDS.headerMoreActions, false, {
+      returnFocusAccessPoint: 'top-header-more-actions',
     })
 
     queueMicrotask(() => {
-      open({ returnFocusTarget })
+      open({ returnFocusAccessPoint })
     })
   }
 
@@ -261,31 +301,34 @@ export function TopHeader({
             isKeyboardShortcutsDialogOpen,
             isHeaderMoreActionsOpen,
             isStartOverDialogOpen,
-            onCloseStartOverDialog: dialogActions.closeDialog,
+            onCloseStartOverDialog: dialogActions.closeActiveDialog,
             onConfirmStartOver,
-            onRoomSurfaceOpenChange: (open, options) =>
-              dialogActions.setRoomSurfaceOpen(open, {
-                editorInteractionsEnabled,
-                startupOverlayActive,
-                dialogOptions: options,
-              }),
-            onInfoDialogOpenChange: (open, options) =>
-              dialogActions.setInfoOpen(open, {
-                startupOverlayActive,
-                dialogOptions: options,
-              }),
-            onKeyboardShortcutsDialogOpenChange: (open, options) =>
-              dialogActions.setKeyboardShortcutsOpen(open, {
-                startupOverlayActive,
-                dialogOptions: options,
-              }),
-            onHeaderMoreActionsOpenChange: (open, options) =>
-              dialogActions.setHeaderMoreActionsOpen(open, {
-                startupOverlayActive,
-                dialogOptions: options,
-              }),
+            onRoomSurfaceOpenChange: (open, request) =>
+              dialogActions.setDialogOpen(
+                DIALOG_IDS.roomSurface,
+                open,
+                request,
+              ),
+            onInfoDialogOpenChange: (open, request) =>
+              dialogActions.setDialogOpen(
+                DIALOG_IDS.projectInfo,
+                open,
+                request,
+              ),
+            onKeyboardShortcutsDialogOpenChange: (open, request) =>
+              dialogActions.setDialogOpen(
+                DIALOG_IDS.keyboardShortcuts,
+                open,
+                request,
+              ),
+            onHeaderMoreActionsOpenChange: (open, request) =>
+              dialogActions.setDialogOpen(
+                DIALOG_IDS.headerMoreActions,
+                open,
+                request,
+              ),
             onOpenStartOverDialog,
-            returnFocusTarget,
+            returnFocusAccessPoint,
           }}
           editorInteractionsEnabled={editorInteractionsEnabled}
           floorFinishId={floorFinishId}
@@ -307,26 +350,24 @@ export function TopHeader({
           headerMoreActionsContentId={headerMoreActionsContentId}
           headerMoreActionsTriggerId={headerMoreActionsTriggerId}
           onOpenKeyboardShortcutsFromHeaderMoreActions={() => {
-            openDialogFromHeaderMoreActions((options) => {
-              dialogActions.setKeyboardShortcutsOpen(true, {
-                startupOverlayActive,
-                dialogOptions: options,
-              })
-            }, 'header-more-actions')
+            openDialogFromHeaderMoreActions((request) => {
+              dialogActions.setDialogOpen(
+                DIALOG_IDS.keyboardShortcuts,
+                true,
+                request,
+              )
+            }, 'top-header-more-actions')
           }}
           onOpenStartOverFromHeaderMoreActions={() => {
             openDialogFromHeaderMoreActions(
               onOpenStartOverDialog,
-              'header-more-actions',
+              'top-header-more-actions',
             )
           }}
           onOpenProjectInfoFromHeaderMoreActions={() => {
-            openDialogFromHeaderMoreActions((options) => {
-              dialogActions.setInfoOpen(true, {
-                startupOverlayActive,
-                dialogOptions: options,
-              })
-            }, 'header-more-actions')
+            openDialogFromHeaderMoreActions((request) => {
+              dialogActions.setDialogOpen(DIALOG_IDS.projectInfo, true, request)
+            }, 'top-header-more-actions')
           }}
           focusControlById={focusControlById}
           wallFinishId={wallFinishId}
@@ -350,31 +391,34 @@ export function TopHeader({
             isKeyboardShortcutsDialogOpen,
             isHeaderMoreActionsOpen,
             isStartOverDialogOpen,
-            onCloseStartOverDialog: dialogActions.closeDialog,
+            onCloseStartOverDialog: dialogActions.closeActiveDialog,
             onConfirmStartOver,
-            onRoomSurfaceOpenChange: (open, options) =>
-              dialogActions.setRoomSurfaceOpen(open, {
-                editorInteractionsEnabled,
-                startupOverlayActive,
-                dialogOptions: options,
-              }),
-            onInfoDialogOpenChange: (open, options) =>
-              dialogActions.setInfoOpen(open, {
-                startupOverlayActive,
-                dialogOptions: options,
-              }),
-            onKeyboardShortcutsDialogOpenChange: (open, options) =>
-              dialogActions.setKeyboardShortcutsOpen(open, {
-                startupOverlayActive,
-                dialogOptions: options,
-              }),
-            onHeaderMoreActionsOpenChange: (open, options) =>
-              dialogActions.setHeaderMoreActionsOpen(open, {
-                startupOverlayActive,
-                dialogOptions: options,
-              }),
+            onRoomSurfaceOpenChange: (open, request) =>
+              dialogActions.setDialogOpen(
+                DIALOG_IDS.roomSurface,
+                open,
+                request,
+              ),
+            onInfoDialogOpenChange: (open, request) =>
+              dialogActions.setDialogOpen(
+                DIALOG_IDS.projectInfo,
+                open,
+                request,
+              ),
+            onKeyboardShortcutsDialogOpenChange: (open, request) =>
+              dialogActions.setDialogOpen(
+                DIALOG_IDS.keyboardShortcuts,
+                open,
+                request,
+              ),
+            onHeaderMoreActionsOpenChange: (open, request) =>
+              dialogActions.setDialogOpen(
+                DIALOG_IDS.headerMoreActions,
+                open,
+                request,
+              ),
             onOpenStartOverDialog,
-            returnFocusTarget,
+            returnFocusAccessPoint,
           }}
           editorInteractionsEnabled={editorInteractionsEnabled}
           floorFinishId={floorFinishId}
@@ -406,9 +450,7 @@ export function TopHeader({
           <KeyboardShortcutsDialog
             open={isKeyboardShortcutsDialogOpen}
             onOpenChange={(open) => {
-              dialogActions.setKeyboardShortcutsOpen(open, {
-                startupOverlayActive,
-              })
+              dialogActions.setDialogOpen(DIALOG_IDS.keyboardShortcuts, open)
 
               if (!open) {
                 focusActiveReturnTarget()
@@ -420,9 +462,7 @@ export function TopHeader({
           <ProjectInfoDialog
             open={isInfoDialogOpen}
             onOpenChange={(open) => {
-              dialogActions.setInfoOpen(open, {
-                startupOverlayActive,
-              })
+              dialogActions.setDialogOpen(DIALOG_IDS.projectInfo, open)
 
               if (!open) {
                 focusActiveReturnTarget()
@@ -436,13 +476,13 @@ export function TopHeader({
       <StartOverConfirmationDialog
         open={isStartOverDialogOpen}
         onClose={() => {
-          dialogActions.closeDialog()
+          dialogActions.closeActiveDialog()
           focusActiveReturnTarget()
         }}
         onConfirm={() => {
           onConfirmStartOver()
 
-          if (returnFocusTarget === 'start-over-inline') {
+          if (returnFocusAccessPoint === 'top-header-start-over') {
             focusNextHeaderControlById(startOverTriggerId)
             return
           }

@@ -1,5 +1,5 @@
 import { useCallback } from 'react'
-import type { DialogStateSnapshot } from '@/editor-state/dialog-store'
+import type { FurnitureItem } from '@/scene/objects/furniture.types'
 import { sceneStateActions, useItems } from '@/editor-state/scene-state-store'
 import { useSelectedSource } from '@/editor-state/selection-meta-store'
 import { sceneCommands } from '@/scene/scene-commands'
@@ -12,10 +12,9 @@ interface AnnouncementsApi {
 
 interface DeletionControllerOptions {
   announcements: AnnouncementsApi
-  dialogState: Pick<
-    DialogStateSnapshot,
-    'closeDialog' | 'openDelete' | 'pendingDeleteFurniture'
-  >
+  closeActiveDialog: () => void
+  openDeleteDialog: () => boolean
+  pendingDeleteFurniture: FurnitureItem | null
   editorInteractionsEnabled: boolean
   selectionEffects: SelectionEffectsApi
   focusRoomView: () => void
@@ -23,7 +22,9 @@ interface DeletionControllerOptions {
 
 export function useDeletionController({
   announcements,
-  dialogState,
+  closeActiveDialog,
+  openDeleteDialog,
+  pendingDeleteFurniture,
   editorInteractionsEnabled,
   selectionEffects,
   focusRoomView,
@@ -33,13 +34,13 @@ export function useDeletionController({
   const { announcePolite } = announcements
 
   const handleConfirmDeleteSelection = useCallback(() => {
-    const pendingId = dialogState.pendingDeleteFurniture?.id ?? null
+    const pendingId = pendingDeleteFurniture?.id ?? null
     const deletedIndex = pendingId
       ? items.findIndex((item) => item.id === pendingId)
       : -1
-    const deletedName = dialogState.pendingDeleteFurniture?.name ?? null
+    const deletedName = pendingDeleteFurniture?.name ?? null
 
-    dialogState.closeDialog()
+    closeActiveDialog()
 
     if (!editorInteractionsEnabled) {
       selectionEffects.notePendingSelection(null)
@@ -88,16 +89,17 @@ export function useDeletionController({
     }
   }, [
     announcePolite,
-    dialogState,
+    closeActiveDialog,
     editorInteractionsEnabled,
     focusRoomView,
     items,
+    pendingDeleteFurniture,
     selectedSource,
     selectionEffects,
   ])
 
   const handleOpenDeleteDialog = useCallback(() => {
-    const opened = dialogState.openDelete()
+    const opened = openDeleteDialog()
 
     if (opened) {
       selectionEffects.notePostDeleteFocusTarget('outliner')
@@ -105,10 +107,10 @@ export function useDeletionController({
     } else {
       selectionEffects.notePostDeleteFocusTarget(null)
     }
-  }, [dialogState, selectionEffects])
+  }, [openDeleteDialog, selectionEffects])
 
   const handleOpenDeleteDialogFromRoomView = useCallback(() => {
-    const opened = dialogState.openDelete()
+    const opened = openDeleteDialog()
 
     if (opened) {
       selectionEffects.notePostDeleteFocusTarget('room-view')
@@ -116,7 +118,7 @@ export function useDeletionController({
     } else {
       selectionEffects.notePostDeleteFocusTarget(null)
     }
-  }, [dialogState, selectionEffects])
+  }, [openDeleteDialog, selectionEffects])
 
   return {
     handleConfirmDeleteSelection,

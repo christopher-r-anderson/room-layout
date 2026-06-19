@@ -46,7 +46,6 @@ describe('DockedSelectedItemSite', () => {
             value={{
               exclusionRects: {},
               registerExclusionElement,
-              syncLayoutMode: vi.fn(),
             }}
           >
             <SelectedItemInteractionProvider>
@@ -109,7 +108,6 @@ describe('DockedSelectedItemSite', () => {
             value={{
               exclusionRects: {},
               registerExclusionElement,
-              syncLayoutMode: vi.fn(),
             }}
           >
             <SelectedItemInteractionProvider>
@@ -175,7 +173,6 @@ describe('DockedSelectedItemSite', () => {
             value={{
               exclusionRects: {},
               registerExclusionElement,
-              syncLayoutMode: vi.fn(),
             }}
           >
             <SelectedItemInteractionProvider>

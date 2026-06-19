@@ -43,8 +43,8 @@ function createDialogState(overrides?: {
   pendingDeleteFurniture?: typeof CHAIR | null
 }) {
   return {
-    closeDialog: vi.fn(),
-    openDelete: vi.fn().mockReturnValue(true),
+    closeActiveDialog: vi.fn(),
+    openDeleteDialog: vi.fn().mockReturnValue(true),
     pendingDeleteFurniture:
       overrides?.pendingDeleteFurniture === undefined
         ? CHAIR
@@ -73,7 +73,9 @@ describe('useDeletionController', () => {
     const { result } = renderHook(() =>
       useDeletionController({
         announcements,
-        dialogState,
+        closeActiveDialog: dialogState.closeActiveDialog,
+        openDeleteDialog: dialogState.openDeleteDialog,
+        pendingDeleteFurniture: dialogState.pendingDeleteFurniture,
         editorInteractionsEnabled: true,
         selectionEffects,
         focusRoomView: vi.fn(),
@@ -84,7 +86,7 @@ describe('useDeletionController', () => {
       result.current.handleConfirmDeleteSelection()
     })
 
-    expect(dialogState.closeDialog).toHaveBeenCalled()
+    expect(dialogState.closeActiveDialog).toHaveBeenCalled()
     expect(deleteSelection).not.toHaveBeenCalled()
     expect(sceneStateStore.getState().editorMessage).toBe(
       DELETE_SELECTION_MISSING_MESSAGE,
@@ -102,7 +104,9 @@ describe('useDeletionController', () => {
     const { result } = renderHook(() =>
       useDeletionController({
         announcements,
-        dialogState,
+        closeActiveDialog: dialogState.closeActiveDialog,
+        openDeleteDialog: dialogState.openDeleteDialog,
+        pendingDeleteFurniture: dialogState.pendingDeleteFurniture,
         editorInteractionsEnabled: false,
         selectionEffects,
         focusRoomView: vi.fn(),
@@ -113,7 +117,7 @@ describe('useDeletionController', () => {
       result.current.handleConfirmDeleteSelection()
     })
 
-    expect(dialogState.closeDialog).toHaveBeenCalled()
+    expect(dialogState.closeActiveDialog).toHaveBeenCalled()
     expect(deleteSelection).not.toHaveBeenCalled()
     expect(sceneStateStore.getState().editorMessage).toBeNull()
     expect(selectionEffects.notePendingSelection).toHaveBeenCalledWith(null)
@@ -131,7 +135,9 @@ describe('useDeletionController', () => {
     const { result } = renderHook(() =>
       useDeletionController({
         announcements,
-        dialogState,
+        closeActiveDialog: dialogState.closeActiveDialog,
+        openDeleteDialog: dialogState.openDeleteDialog,
+        pendingDeleteFurniture: dialogState.pendingDeleteFurniture,
         editorInteractionsEnabled: true,
         selectionEffects,
         focusRoomView,
@@ -162,7 +168,9 @@ describe('useDeletionController', () => {
     const { result } = renderHook(() =>
       useDeletionController({
         announcements: { announcePolite: vi.fn() },
-        dialogState,
+        closeActiveDialog: dialogState.closeActiveDialog,
+        openDeleteDialog: dialogState.openDeleteDialog,
+        pendingDeleteFurniture: dialogState.pendingDeleteFurniture,
         editorInteractionsEnabled: true,
         selectionEffects,
         focusRoomView,
@@ -186,7 +194,9 @@ describe('useDeletionController', () => {
     const { result } = renderHook(() =>
       useDeletionController({
         announcements: { announcePolite: vi.fn() },
-        dialogState,
+        closeActiveDialog: dialogState.closeActiveDialog,
+        openDeleteDialog: dialogState.openDeleteDialog,
+        pendingDeleteFurniture: dialogState.pendingDeleteFurniture,
         editorInteractionsEnabled: true,
         selectionEffects,
         focusRoomView: vi.fn(),
@@ -209,7 +219,9 @@ describe('useDeletionController', () => {
     const { result } = renderHook(() =>
       useDeletionController({
         announcements: { announcePolite: vi.fn() },
-        dialogState,
+        closeActiveDialog: dialogState.closeActiveDialog,
+        openDeleteDialog: dialogState.openDeleteDialog,
+        pendingDeleteFurniture: dialogState.pendingDeleteFurniture,
         editorInteractionsEnabled: true,
         selectionEffects,
         focusRoomView: vi.fn(),
@@ -227,13 +239,15 @@ describe('useDeletionController', () => {
 
   it('clears the post-delete target when the dialog refuses to open', () => {
     const dialogState = createDialogState()
-    dialogState.openDelete.mockReturnValue(false)
+    dialogState.openDeleteDialog.mockReturnValue(false)
     const selectionEffects = createSelectionEffects()
 
     const { result } = renderHook(() =>
       useDeletionController({
         announcements: { announcePolite: vi.fn() },
-        dialogState,
+        closeActiveDialog: dialogState.closeActiveDialog,
+        openDeleteDialog: dialogState.openDeleteDialog,
+        pendingDeleteFurniture: dialogState.pendingDeleteFurniture,
         editorInteractionsEnabled: true,
         selectionEffects,
         focusRoomView: vi.fn(),

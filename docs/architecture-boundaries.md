@@ -67,6 +67,7 @@ For local context inside each area, see:
 6. Keep scene internals in `scene/internal` and avoid importing them outside scene.
 7. Use approved scene contract imports outside scene, not arbitrary `@/scene/**` paths.
 8. Do not import `src/test` from runtime code.
+9. Keep dialog definition ownership in features (or shell-only app chrome when shell-specific), with app responsible for registry bootstrap composition and editor-state responsible for generic dialog orchestration only.
 
 ## Current Exceptions
 

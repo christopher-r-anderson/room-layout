@@ -123,7 +123,7 @@ In addition to this README, project-specific guides are available:
 ### Architecture
 
 - [Architecture Boundaries](docs/architecture-boundaries.md): Layer map, placement rules, current exceptions, and planned boundary improvements.
-- [Editor State Architecture](docs/editor-state-architecture.md): Current Phase 1 boundary between app shell state, shared editor-state stores, and scene-owned behavior.
+- [Editor State Architecture](docs/editor-state-architecture.md): Runtime editor-state ownership, dialog orchestration model, and app/scene data-flow seams.
 
 ### Contributor Workflows
 

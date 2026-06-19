@@ -45,15 +45,17 @@ describe('useStartOverController', () => {
   it('clears the editor message when openStartOver returns true', () => {
     sceneStateStore.getState().setEditorMessage('stale')
     const dialogState = {
-      closeDialog: vi.fn(),
-      openStartOver: vi.fn().mockReturnValue(true),
+      closeActiveDialog: vi.fn(),
+      openStartOverDialog: vi.fn().mockReturnValue(true),
     }
     const selectionEffects = createSelectionEffects()
 
     const { result } = renderHook(() =>
       useStartOverController({
         announcements: { announcePolite: vi.fn() },
-        dialogState,
+        closeActiveDialog: dialogState.closeActiveDialog,
+        openStartOverDialog: dialogState.openStartOverDialog,
+        canStartOver: true,
         selectionEffects,
         clearPreview: vi.fn(),
         defaults: {
@@ -67,7 +69,7 @@ describe('useStartOverController', () => {
       result.current.handleOpenStartOverDialog()
     })
 
-    expect(dialogState.openStartOver).toHaveBeenCalled()
+    expect(dialogState.openStartOverDialog).toHaveBeenCalled()
     expect(sceneStateStore.getState().editorMessage).toBeNull()
   })
 
@@ -80,8 +82,8 @@ describe('useStartOverController', () => {
       .spyOn(sceneCommands, 'setCameraPreset')
       .mockImplementation(() => undefined)
     const dialogState = {
-      closeDialog: vi.fn(),
-      openStartOver: vi.fn().mockReturnValue(true),
+      closeActiveDialog: vi.fn(),
+      openStartOverDialog: vi.fn().mockReturnValue(true),
     }
     const selectionEffects = createSelectionEffects()
     const clearPreview = vi.fn()
@@ -90,7 +92,9 @@ describe('useStartOverController', () => {
     const { result } = renderHook(() =>
       useStartOverController({
         announcements,
-        dialogState,
+        closeActiveDialog: dialogState.closeActiveDialog,
+        openStartOverDialog: dialogState.openStartOverDialog,
+        canStartOver: true,
         selectionEffects,
         clearPreview,
         defaults: {
@@ -104,7 +108,7 @@ describe('useStartOverController', () => {
       result.current.handleConfirmStartOver()
     })
 
-    expect(dialogState.closeDialog).toHaveBeenCalled()
+    expect(dialogState.closeActiveDialog).toHaveBeenCalled()
     expect(clearPreview).toHaveBeenCalledTimes(1)
     expect(restoreInitialLayout).toHaveBeenCalledWith([])
     expect(setCameraPreset).toHaveBeenCalledWith('corner')
@@ -129,15 +133,17 @@ describe('useStartOverController', () => {
       .spyOn(sceneCommands, 'setCameraPreset')
       .mockImplementation(() => undefined)
     const dialogState = {
-      closeDialog: vi.fn(),
-      openStartOver: vi.fn(),
+      closeActiveDialog: vi.fn(),
+      openStartOverDialog: vi.fn(),
     }
     const clearPreview = vi.fn()
 
     const { result } = renderHook(() =>
       useStartOverController({
         announcements: { announcePolite: vi.fn() },
-        dialogState,
+        closeActiveDialog: dialogState.closeActiveDialog,
+        openStartOverDialog: dialogState.openStartOverDialog,
+        canStartOver: true,
         selectionEffects: createSelectionEffects(),
         clearPreview,
         defaults: { floorFinishId: 'floor', wallFinishId: 'wall' },

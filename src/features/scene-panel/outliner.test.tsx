@@ -8,6 +8,7 @@ import {
   loadBooleanPreference,
   saveBooleanPreference,
 } from '@/shared/lib/ui/storage'
+import { DIALOG_IDS } from '@/editor-state/dialog-contract'
 import { dialogActions, resetDialogStore } from '@/editor-state/dialog-store'
 import {
   editorRuntimeActions,
@@ -91,6 +92,16 @@ describe('SceneOutliner', () => {
     resetEditorRuntimeStore()
     resetSceneStateStore()
     resetSelectionMetaStore()
+    dialogActions.configureRuntimeContext({
+      isDialogsEnabled: () => true,
+      getSelectedFurniture: () => READ_MODEL.items[0] ?? null,
+      canStartOver: () => true,
+    })
+    dialogActions.registerDialogDefinition({
+      id: DIALOG_IDS.delete,
+      kind: 'blocking',
+      canOpen: (context) => context.getSelectedFurniture() !== null,
+    })
     editorRuntimeActions.markAssetsReady()
     seedScene()
   })
@@ -286,10 +297,7 @@ describe('SceneOutliner', () => {
     it('does not call onPreviewChange while a blocking dialog is open', async () => {
       const user = userEvent.setup()
       const onPreviewChange = vi.fn()
-      dialogActions.openDelete({
-        editorInteractionsEnabled: true,
-        selectedFurniture: READ_MODEL.items[0] ?? null,
-      })
+      dialogActions.openDialog(DIALOG_IDS.delete)
 
       renderOutliner({ onPreviewChange })
       const button = screen.getByRole('button', { name: /leather couch/i })

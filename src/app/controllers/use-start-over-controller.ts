@@ -1,8 +1,5 @@
 import { useCallback } from 'react'
-import type {
-  DialogOpenOptions,
-  DialogStateSnapshot,
-} from '@/editor-state/dialog-store'
+import type { DialogOpenRequest } from '@/editor-state/dialog-contract'
 import { sceneStateActions } from '@/editor-state/scene-state-store'
 import { sceneCommands } from '@/scene/scene-commands'
 import { clearSceneDraft } from '@/features/url-scene/scene-draft'
@@ -15,7 +12,9 @@ interface AnnouncementsApi {
 
 interface StartOverControllerOptions {
   announcements: AnnouncementsApi
-  dialogState: Pick<DialogStateSnapshot, 'closeDialog' | 'openStartOver'>
+  closeActiveDialog: () => void
+  openStartOverDialog: (request?: DialogOpenRequest) => boolean
+  canStartOver: boolean
   selectionEffects: SelectionEffectsApi
   clearPreview: () => void
   defaults: {
@@ -26,7 +25,9 @@ interface StartOverControllerOptions {
 
 export function useStartOverController({
   announcements,
-  dialogState,
+  closeActiveDialog,
+  openStartOverDialog,
+  canStartOver,
   selectionEffects,
   clearPreview,
   defaults,
@@ -34,18 +35,22 @@ export function useStartOverController({
   const { announcePolite } = announcements
 
   const handleOpenStartOverDialog = useCallback(
-    (options?: DialogOpenOptions) => {
-      const opened = dialogState.openStartOver(options)
+    (request?: DialogOpenRequest) => {
+      if (!canStartOver) {
+        return
+      }
+
+      const opened = openStartOverDialog(request)
 
       if (opened) {
         sceneStateActions.clearEditorMessage()
       }
     },
-    [dialogState],
+    [canStartOver, openStartOverDialog],
   )
 
   const handleConfirmStartOver = useCallback(() => {
-    dialogState.closeDialog()
+    closeActiveDialog()
     clearPreview()
     sceneStateActions.clearEditorMessage()
     sceneCommands.restoreInitialLayout([])
@@ -66,7 +71,7 @@ export function useStartOverController({
     clearPreview,
     defaults.floorFinishId,
     defaults.wallFinishId,
-    dialogState,
+    closeActiveDialog,
     selectionEffects,
   ])
 

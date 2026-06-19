@@ -78,7 +78,7 @@ function createProps(
       onKeyboardShortcutsDialogOpenChange: vi.fn(() => true),
       onHeaderMoreActionsOpenChange: vi.fn(() => true),
       onOpenStartOverDialog: vi.fn(),
-      returnFocusTarget: null,
+      returnFocusAccessPoint: 'none',
     },
     editorInteractionsEnabled: true,
     floorFinishId: 'wood-floor',
@@ -168,7 +168,7 @@ describe('TopHeaderMobile', () => {
     await user.click(trigger)
 
     expect(onHeaderMoreActionsOpenChange).toHaveBeenCalledWith(true, {
-      returnFocusTarget: 'header-more-actions',
+      returnFocusAccessPoint: 'top-header-more-actions',
     })
   })
 

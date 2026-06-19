@@ -1,125 +1,211 @@
 # Editor State Architecture
 
-This document captures the current Phase 1 boundary between the app shell, shared editor-state stores, and the scene domain.
+This document describes runtime editor-state responsibilities, boundaries, and
+data flow between app shell composition, editor-state stores, and the scene
+domain.
 
-## Goals
+## Purpose and Scope
 
-Phase 1 moves app-facing editor coordination out of `App.tsx`-local state and into explicit stores, while keeping scene-domain mutation logic inside `src/scene/`.
+The editor-state layer provides shared state seams for cross-feature behavior.
+It allows app and feature code to coordinate dialog orchestration, startup
+runtime state, selection metadata, and app-facing scene mirrors without moving
+scene-domain mutation rules out of the scene layer.
 
-The main goals are:
+This document is architecture reference guidance. It focuses on stable
+responsibility and boundaries, not migration history.
 
-- make app-shell UI state observable without imperative scene sync hooks
-- keep scene/domain logic owned by the scene layer
-- reduce the public `SceneRef` surface to the smallest contract still required by app features and browser tests
-- make startup restore and selection side effects flow through explicit seams instead of ad hoc ref calls
+## Dialog Orchestration
 
-## Current Layers
+Dialog orchestration is implemented by a generic registry-driven dialog store,
+feature-owned dialog definitions, and app-layer bootstrap composition.
 
-### App shell
+### Ownership and Boundary of Dialog Store
 
-The app shell lives under `src/app/` plus `src/App.tsx`.
+`src/editor-state/dialog-store.ts` owns only top-level dialog surface state,
+generic dialog operations, and dialog-open selectors.
 
-It owns:
+It does not own:
 
-- overlays, dialogs, and toolbar composition
-- startup orchestration and announcements
-- keyboard routing and outliner focus behavior
-- URL sharing and draft persistence wiring
+- layout transition policy
+- feature-specific guard derivation logic
+- DOM element lookup for focus restoration
+- writes to scene or selection stores
 
-It does not own scene history, placement math, collision, or furniture mutation rules.
+### Shared Contract Types and Registry Model
 
-### Editor-state stores
+`src/editor-state/dialog-contract.ts` defines dialog contract types, including:
 
-The shared app-facing stores live under `src/editor-state/`.
+- `DialogId`
+- `DialogKind`
+- `DialogAccessPoint`
+- `DialogOpenRequest`
+- `DialogDefinition`
+- `DialogRuntimeContext`
+- `ActiveSurfaceState`
 
-`dialog-store`
+Dialog definitions are registered through a single app bootstrap path in
+`src/app/dialogs/bootstrap-dialog-registry.ts`.
 
-- owns dialog open/close state and dialog-specific payloads
-- replaces dialog state that previously lived in app-local hooks
+Feature and shell definition modules declare per-dialog behavior, including
+`kind`, open guards, payload derivation, and default return-focus access point.
+
+### Global Gating and Feature-Specific Guards
+
+Dialog open behavior uses two layers of gating:
+
+1. Store-level global gate: startup readiness.
+2. Definition-level feature guards: dialog-specific `canOpen(...)` rules.
+
+Startup readiness is the only store-level global gate. Additional rules such as
+selection requirements or start-over eligibility belong in feature-level guards
+or controller-level intent handling.
+
+### Active-Surface Invariant and Blocking Semantics
+
+Dialog store keeps one active top-level surface at a time:
+
+- `activeSurface = null`, or
+- one `ActiveSurfaceState` with `{ id, kind, payload, returnFocusAccessPoint }`.
+
+`kind` drives blocking policy:
+
+- `blocking`: contributes to `useIsBlockingOverlayOpen()`.
+- `non-blocking`: remains open without asserting blocking-overlay behavior.
+
+Room surface uses `non-blocking` semantics and remains mutually exclusive with
+other top-level surfaces by the one-active-surface invariant.
+
+### Payload Model and Return-Focus Access Points
+
+Payload is carried on the active surface and read with `useDialogPayload(id)`.
+There is no dialog-specific top-level payload field.
+
+Return focus uses semantic `DialogAccessPoint` tokens, not layout-specific DOM
+ids. Top-header code resolves those semantic tokens into concrete elements.
+
+Current access-point token set:
+
+- `top-header-room`
+- `top-header-keyboard-shortcuts`
+- `top-header-project-info`
+- `top-header-start-over`
+- `top-header-more-actions`
+- `room-view`
+- `outliner`
+- `selection-inspector`
+- `none`
+
+### Responsive Continuity Ownership
+
+Responsive continuity behavior belongs to top-header orchestration code in
+`src/app/chrome/top-header/`, not dialog-store.
+
+Dialog-store remains layout-agnostic. It exposes semantic state and actions;
+top-header coordinator logic decides responsive handoff and focus fallback.
+
+### External Reads Through DialogRuntimeContext
+
+Dialog-store reads external state through `DialogRuntimeContext` configured by
+app composition in `src/app/dialogs/dialog-context-builder.ts`.
+
+This context currently exposes:
+
+- dialog readiness
+- selected furniture lookup
+- start-over eligibility seam
+
+### Disallowed Writes and Seam Constraints
+
+Dialog-store must not:
+
+- write to `scene-state-store`
+- write to `selection-meta-store`
+- depend on shell layout context
+
+Cross-store writes stay in app/feature controller orchestration.
+
+## Other Editor-State Stores
 
 `editor-runtime-store`
 
-- owns startup phase, restore outcomes, asset errors, and similar runtime coordination state
-- gives the app shell a stable place to read startup and restore progress
+- startup phase and runtime readiness state
+- startup errors and restore outcomes
+- runtime loading flags
 
 `selection-meta-store`
 
-- owns selection-side metadata that is not part of the scene domain itself
-- currently includes outliner focus handoff requests and related app-only reconciliation state
+- app-side selection metadata and focus handoff intent
+- outliner focus reconciliation signals
 
 `scene-state-store`
 
-- mirrors app-facing scene read model state such as `history.present`, selected id, preview id, drag state, finishes, history availability, and editor messages
-- is intentionally not yet the source of truth for scene mutations like add, move, rotate, delete, undo, or redo
+- app-facing scene read model state
+- selection id, preview id, drag state, finishes, history availability,
+  editor messages
+- remains an app-facing mirror for scene-owned mutation domain behavior
 
-## Scene ownership
+## Scene Ownership and App-to-Scene Seams
 
-The scene still owns:
+Scene-domain mutation rules remain in `src/scene/` and `src/scene/internal/`.
 
-- local history state and furniture mutation rules
-- collision and layout constraints
-- selection changes and object resolution
-- camera controls and scene snapshots used for projection-driven behavior
+App-side mutation intent uses `sceneCommands`, backed by scene service
+registration in `src/scene/internal/scene-services.ts`.
 
-This logic stays in `src/scene/` and `src/scene/internal/` so the app shell does not reimplement scene rules.
+Scene owns placement, collision, mutation rules, and camera behavior.
+App/editor-state own orchestration and UI-facing state seams.
 
-## App-to-scene seams
+## Data Flow
 
-### `sceneCommands`
+Steady-state flow:
 
-`SceneRef` has been removed. App-side code now uses `sceneCommands` as the imperative facade for scene-owned commands that still need mounted scene services.
+1. Scene code mutates scene-domain state.
+2. Scene code publishes app-facing mirrors to scene/editor runtime seams.
+3. Dialog definitions and app controllers read through store selectors and
+   context seams.
+4. App and feature UI use generic dialog actions/selectors for top-level
+   surfaces.
+5. App-side side effects (announcements, focus reconciliation, restore
+   messaging) run in controller hooks.
 
-The facade includes mutation commands such as add, select, move, rotate, delete, undo, redo, camera preset, focus, and startup restore. Snapshot and camera-position reads are still available for projection-driven behavior and browser tests.
+## How to Use Dialog Store
 
-### `scene-services`
+### Register a Dialog Definition
 
-`src/scene/internal/scene-services.ts` backs `sceneCommands` with a registry owned by the mounted `Scene` component.
+1. Add/update a feature-owned definition module with `DialogDefinition`.
+2. Include the definition in `bootstrap-dialog-registry.ts`.
+3. Ensure bootstrap runs before dialog consumers render.
 
-Startup restore reaches the scene through `sceneCommands.restoreInitialLayout(...)`, which delegates to the registered service while keeping restore behavior scene-owned.
+### Open, Close, and Read Dialog State
 
-## Data flow
+- open: `dialogActions.openDialog(id, request?)`
+- set open/closed: `dialogActions.setDialogOpen(id, open, request?)`
+- close active: `dialogActions.closeActiveDialog()`
+- read open state: `useDialogOpen(id)`
+- read payload: `useDialogPayload(id)`
+- read active surface: `useActiveSurface()`
+- read semantic return focus token: `useReturnFocusAccessPoint()`
 
-The current steady-state flow is:
+### Where Guards and Return-Focus Policy Belong
 
-1. Scene logic mutates local scene state.
-2. Scene code writes app-facing mirrors into `scene-state-store`.
-3. App selectors and local contexts read store state for overlays, preview, selection-derived UI, and startup coordination.
-4. App-only side effects such as announcements and outliner focus run from focused controller hooks based on store changes.
+- global readiness gate: dialog-store startup gate
+- feature guard logic: dialog definition `canOpen(...)` and/or feature
+  controller intent checks
+- focus target resolution to DOM: top-header or owning UI coordinator
 
-This replaced the old `useSceneSync` pattern, which mixed imperative reads and app-side reconciliation logic.
+### What Not to Put in Dialog Store
 
-## Selection and focus reconciliation
+- layout transition state
+- DOM node lookup/mapping
+- cross-store writes
+- feature-domain mutation effects
 
-Selection side effects now live in app code instead of an imperative scene sync hook.
+## What Remains by Design
 
-`useSelectionEffectsController` observes store-backed selection changes and coordinates:
+These seams are intentional in the current architecture:
 
-- announcement timing
-- source-aware selection behavior
-- outliner focus requests via `selection-meta-store`
-
-Mutation entry points are now split across focused controller hooks such as `useSelectionController`, `useMovementController`, `useHistoryController`, `useDeletionController`, and `useAssetLifecycleController`, with `App.tsx` composing those handlers into the app shell.
-
-This keeps screen-reader and focus behavior in the app shell, where those responsibilities belong.
-
-## Snapshot contract
-
-`createSceneSnapshot()` is narrower than before.
-
-It now returns only:
-
-- `cameraPosition`
-- `items` with rounded transforms and projected `pointerTarget`
-
-Selected id, selected name, and item count are derived elsewhere when needed. This keeps snapshot reads focused on geometry/projection data rather than duplicating store-backed metadata.
-
-## What Phase 1 does not finish yet
-
-Phase 1 is still intentionally incomplete in a few areas:
-
-- scene mutations still execute through the `sceneCommands` facade backed by registered scene services
-- `scene-state-store` still mirrors scene state instead of owning mutation source of truth
-- the scene still owns local history state internally
-- `getSnapshot` still exists because pointer-target projection data is not store-backed yet
-
-Those are the main follow-on seams for later refactor phases.
+- scene-domain mutations execute through scene-owned services
+- `scene-state-store` is app-facing mirror state for scene domain
+- projection-driven geometry data still comes from scene snapshot seams where
+  needed
+- startup restore orchestration remains app-level coordination over
+  scene-owned restore execution

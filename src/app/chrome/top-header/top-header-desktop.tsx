@@ -72,8 +72,8 @@ export function TopHeaderDesktop({
                     aria-expanded={isRoomOpen}
                     onClick={() => {
                       dialogs.onRoomSurfaceOpenChange(!isRoomOpen, {
-                        layout: 'desktop',
-                        returnFocusTarget: 'room-inline',
+                        payload: { layout: 'desktop' },
+                        returnFocusAccessPoint: 'top-header-room',
                       })
                     }}
                     onKeyDown={(event) => {
@@ -120,7 +120,7 @@ export function TopHeaderDesktop({
             }
             onOpenStartOverDialog={() => {
               dialogs.onOpenStartOverDialog({
-                returnFocusTarget: 'start-over-inline',
+                returnFocusAccessPoint: 'top-header-start-over',
               })
             }}
             size="toolbar"

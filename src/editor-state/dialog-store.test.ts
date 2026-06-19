@@ -2,67 +2,92 @@
 
 import { act, renderHook } from '@testing-library/react'
 import { beforeEach, describe, expect, it } from 'vitest'
-import type { FurnitureItem } from '@/scene/objects/furniture.types'
+import { DIALOG_IDS } from './dialog-contract'
 import {
   dialogActions,
   resetDialogStore,
+  useActiveSurface,
+  useDialogOpen,
   useIsBlockingOverlayOpen,
 } from './dialog-store'
 
-const LEATHER_COUCH: FurnitureItem = {
-  id: 'leather-couch-1',
-  catalogId: 'leather-couch',
-  collectionId: 'leather-collection',
-  footprintSize: { width: 2.4, depth: 0.9 },
-  kind: 'couch',
-  name: 'Leather Couch',
-  nodeName: 'LeatherCouch',
-  position: [0, 0, 0],
-  rotationY: 0,
-  sourcePath: '/models/leather-couch.glb',
-}
-
 beforeEach(() => {
   resetDialogStore()
+  dialogActions.configureRuntimeContext({
+    isDialogsEnabled: () => true,
+    getSelectedFurniture: () => null,
+    canStartOver: () => true,
+  })
+
+  dialogActions.registerDialogDefinitions([
+    {
+      id: DIALOG_IDS.delete,
+      kind: 'blocking',
+    },
+    {
+      id: DIALOG_IDS.roomSurface,
+      kind: 'non-blocking',
+    },
+  ])
 })
 
 describe('dialogStore', () => {
-  it('useIsBlockingOverlayOpen reflects an active dialog', () => {
-    const { result } = renderHook(() => useIsBlockingOverlayOpen())
+  it('tracks a single active surface and blocking state by dialog kind', () => {
+    const { result: activeSurface } = renderHook(() => useActiveSurface())
+    const { result: isDeleteOpen } = renderHook(() =>
+      useDialogOpen(DIALOG_IDS.delete),
+    )
+    const { result: isBlocking } = renderHook(() => useIsBlockingOverlayOpen())
 
-    expect(result.current).toBe(false)
+    expect(activeSurface.current).toBeNull()
+    expect(isDeleteOpen.current).toBe(false)
+    expect(isBlocking.current).toBe(false)
 
     act(() => {
-      dialogActions.openDelete({
-        editorInteractionsEnabled: true,
-        selectedFurniture: LEATHER_COUCH,
-      })
+      dialogActions.openDialog(DIALOG_IDS.delete)
     })
 
-    expect(result.current).toBe(true)
+    expect(activeSurface.current?.id).toBe(DIALOG_IDS.delete)
+    expect(isDeleteOpen.current).toBe(true)
+    expect(isBlocking.current).toBe(true)
 
     act(() => {
-      dialogActions.closeDialog()
+      dialogActions.closeActiveDialog()
+    })
+
+    expect(activeSurface.current).toBeNull()
+    expect(isDeleteOpen.current).toBe(false)
+    expect(isBlocking.current).toBe(false)
+  })
+
+  it('keeps blocking-overlay selector false for non-blocking room surface', () => {
+    const { result } = renderHook(() => useIsBlockingOverlayOpen())
+
+    act(() => {
+      dialogActions.openDialog(DIALOG_IDS.roomSurface, {
+        payload: { layout: 'desktop' },
+        returnFocusAccessPoint: 'top-header-room',
+      })
     })
 
     expect(result.current).toBe(false)
   })
 
-  it('useIsBlockingOverlayOpen stays false for a non-blocking room surface', () => {
-    const { result } = renderHook(() => useIsBlockingOverlayOpen())
-
-    act(() => {
-      dialogActions.openRoomSurface({
-        editorInteractionsEnabled: true,
-        startupOverlayActive: false,
-        dialogOptions: {
-          layout: 'desktop',
-          returnFocusTarget: 'room-inline',
-        },
-      })
+  it('enforces dialog readiness as a store-level global gate', () => {
+    resetDialogStore()
+    dialogActions.configureRuntimeContext({
+      isDialogsEnabled: () => false,
+      getSelectedFurniture: () => null,
+      canStartOver: () => true,
+    })
+    dialogActions.registerDialogDefinition({
+      id: DIALOG_IDS.delete,
+      kind: 'blocking',
     })
 
-    // openRoomSurface clears activeDialog (room surface is not blocking).
-    expect(result.current).toBe(false)
+    const opened = dialogActions.openDialog(DIALOG_IDS.delete)
+
+    expect(opened).toBe(false)
+    expect(dialogActions.isDialogOpen(DIALOG_IDS.delete)).toBe(false)
   })
 })

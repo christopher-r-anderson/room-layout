@@ -2,7 +2,7 @@
 
 import { render, screen } from '@testing-library/react'
 import { createRef } from 'react'
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { EditorRefsProvider } from '../../shared/providers/editor-refs-provider'
 import { useSelectedItemPlacement } from '@/features/selection/selected-item-placement-context'
 import { useOverlayLayout } from '../../shared/layout/overlay-layout-context'
@@ -34,7 +34,7 @@ describe('EditorShell', () => {
         <EditorRefsProvider
           value={{ roomViewRef, selectedItemControlsRef, dockedInspectorRef }}
         >
-          <EditorShell syncLayoutMode={vi.fn()}>
+          <EditorShell>
             <ShellContextProbe />
           </EditorShell>
         </EditorRefsProvider>,

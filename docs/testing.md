@@ -18,7 +18,7 @@ Add `pnpm test:e2e` when changing browser-facing behavior, including:
 - startup/loading and retry flows
 - scene interaction wiring and history behavior
 - keyboard workflows and focus navigation
-- dialogs, overlays, and user-visible editor controls
+- dialogs, overlays, semantic focus return, and user-visible editor controls
 
 Use `pnpm test:browser:perf` for frame-time-sensitive changes:
 
@@ -43,6 +43,12 @@ Do not hide overlays when the contract under test is UI behavior:
 - outliner, selected-item controls, dialogs, toolbars
 - focus order and accessibility semantics
 - pointer hit-target and layout behavior
+
+For dialog architecture changes, include coverage for:
+
+- one-active-surface mutual exclusion
+- blocking vs non-blocking behavior contracts
+- responsive focus-return continuity across header layout transitions
 
 If pointer behavior is not the feature being tested, prefer keyboard
 focus/activation paths to keep tests less brittle.

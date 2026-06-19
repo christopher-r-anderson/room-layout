@@ -1,5 +1,4 @@
 import { useCallback } from 'react'
-import type { DialogStateSnapshot } from '@/editor-state/dialog-store'
 import { sceneStateActions } from '@/editor-state/scene-state-store'
 import { selectionMetaActions } from '@/editor-state/selection-meta-store'
 import { sceneCommands } from '@/scene/scene-commands'
@@ -10,14 +9,14 @@ import {
 import type { SelectionEffectsApi } from './use-selection-effects-controller'
 
 interface CatalogControllerOptions {
-  dialogState: Pick<DialogStateSnapshot, 'setCatalogOpen'>
+  setCatalogOpen: (open: boolean) => boolean
   selectionEffects: SelectionEffectsApi
   catalogIdToAdd: string
   editorInteractionsEnabled: boolean
 }
 
 export function useCatalogController({
-  dialogState,
+  setCatalogOpen,
   selectionEffects,
   catalogIdToAdd,
   editorInteractionsEnabled,
@@ -59,13 +58,13 @@ export function useCatalogController({
 
   const handleCatalogDrawerOpenChange = useCallback(
     (open: boolean) => {
-      const changed = dialogState.setCatalogOpen(open)
+      const changed = setCatalogOpen(open)
 
       if (open && changed) {
         sceneStateActions.clearEditorMessage()
       }
     },
-    [dialogState],
+    [setCatalogOpen],
   )
 
   return {

@@ -2,6 +2,9 @@
 
 This editor uses two overlay classes.
 
+Top-level overlays are orchestrated by the generic dialog-store active-surface
+model and coordinated at the shell/feature layer.
+
 ## Blocking overlays
 
 Blocking overlays suspend editor interaction while they are open.
@@ -24,6 +27,9 @@ Behavior:
 - Held camera-key state is cleared.
 
 Downstream hooks consume this state as `isBlockingOverlayOpen`.
+
+Blocking state is derived from dialog definition `kind: 'blocking'`, not from
+dialog-specific booleans.
 
 ## Non-blocking overlays
 
@@ -64,6 +70,8 @@ Rule:
 
 This avoids mixed overlay stacks and keeps the top-level overlay model consistent.
 
+This is enforced by the one-active-surface invariant in dialog-store.
+
 ## Breakpoint persistence
 
 Room stays open across desktop/mobile layout transitions.
@@ -75,3 +83,18 @@ Behavior:
 - The Room return-focus target remains the Room trigger across those transitions.
 
 Blocking overlays such as the mobile More drawer use their own responsive close behavior.
+
+## Focus and Access Points
+
+Dialog-store tracks semantic return-focus access points, not concrete DOM
+targets.
+
+Examples:
+
+- `top-header-room`
+- `top-header-more-actions`
+- `top-header-start-over`
+
+Top-header coordinator code resolves these semantic access points to visible,
+enabled controls for the active layout and applies fallback behavior when a
+trigger is unavailable after responsive transitions.

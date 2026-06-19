@@ -7,7 +7,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
 import { TooltipProvider } from '@/shared/ui/tooltip'
 import { createHistoryState } from '@/shared/lib/ui/editor-history'
-import { dialogActions, resetDialogStore } from '@/editor-state/dialog-store'
+import { DIALOG_IDS } from '@/editor-state/dialog-contract'
+import { resetDialogStore } from '@/editor-state/dialog-store'
+import { dialogActions } from '@/editor-state/dialog-store'
 import {
   editorRuntimeActions,
   resetEditorRuntimeStore,
@@ -209,6 +211,22 @@ beforeEach(() => {
   resetDialogStore()
   resetEditorRuntimeStore()
   sceneStateActions.resetSceneState()
+  dialogActions.configureRuntimeContext({
+    isDialogsEnabled: () => true,
+    getSelectedFurniture: () => null,
+    canStartOver: () => true,
+  })
+  dialogActions.registerDialogDefinitions([
+    {
+      id: DIALOG_IDS.catalog,
+      kind: 'blocking',
+    },
+    {
+      id: DIALOG_IDS.roomSurface,
+      kind: 'non-blocking',
+      canOpen: (context) => context.isDialogsEnabled(),
+    },
+  ])
   editorRuntimeActions.markAssetsReady()
 })
 
@@ -255,7 +273,6 @@ describe('EditorOverlay integration', () => {
               value={{
                 exclusionRects: {},
                 registerExclusionElement,
-                syncLayoutMode: dialogActions.syncLayoutMode,
               }}
             >
               <SelectedItemInteractionProvider>
@@ -263,7 +280,6 @@ describe('EditorOverlay integration', () => {
                   <div className="relative min-h-192">
                     <EditorOverlay
                       startOverDisabled={false}
-                      onHeaderLayoutModeChange={vi.fn()}
                       topHeader={{
                         catalog: [],
                         environmentConfig: {

@@ -73,8 +73,8 @@ export function TopHeaderMobile({
                       aria-haspopup="dialog"
                       onClick={() => {
                         dialogs.onRoomSurfaceOpenChange(!isRoomOpen, {
-                          layout: 'mobile',
-                          returnFocusTarget: 'room-inline',
+                          payload: { layout: 'mobile' },
+                          returnFocusAccessPoint: 'top-header-room',
                         })
                       }}
                     >
@@ -113,7 +113,7 @@ export function TopHeaderMobile({
               aria-haspopup="dialog"
               onClick={() => {
                 dialogs.onHeaderMoreActionsOpenChange(true, {
-                  returnFocusTarget: 'header-more-actions',
+                  returnFocusAccessPoint: 'top-header-more-actions',
                 })
               }}
             >
@@ -130,8 +130,8 @@ export function TopHeaderMobile({
         }
         onOpenChange={(open) => {
           dialogs.onRoomSurfaceOpenChange(open, {
-            layout: 'mobile',
-            returnFocusTarget: 'room-inline',
+            payload: { layout: 'mobile' },
+            returnFocusAccessPoint: 'top-header-room',
           })
         }}
         onCloseAutoFocus={() => {
@@ -154,7 +154,7 @@ export function TopHeaderMobile({
         open={dialogs.isHeaderMoreActionsOpen}
         onOpenChange={(open) => {
           dialogs.onHeaderMoreActionsOpenChange(open, {
-            returnFocusTarget: 'header-more-actions',
+            returnFocusAccessPoint: 'top-header-more-actions',
           })
         }}
         onCloseAutoFocus={() => {

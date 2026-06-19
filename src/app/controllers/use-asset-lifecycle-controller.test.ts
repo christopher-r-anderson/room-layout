@@ -87,13 +87,13 @@ describe('useAssetLifecycleController', () => {
 
   it('routes asset errors through the startup transition and announces assertively', () => {
     const announcements = createAnnouncements()
-    const dialogState = { closeAllDialogs: vi.fn() }
+    const closeActiveDialog = vi.fn()
     const startup = createStartup()
 
     const { result } = renderHook(() =>
       useAssetLifecycleController({
         announcements,
-        dialogState,
+        closeActiveDialog,
         selectionEffects: createSelectionEffects(),
         startup,
       }),
@@ -117,7 +117,7 @@ describe('useAssetLifecycleController', () => {
     const { result } = renderHook(() =>
       useAssetLifecycleController({
         announcements,
-        dialogState: { closeAllDialogs: vi.fn() },
+        closeActiveDialog: vi.fn(),
         selectionEffects,
         startup,
       }),
@@ -143,7 +143,7 @@ describe('useAssetLifecycleController', () => {
     const { result } = renderHook(() =>
       useAssetLifecycleController({
         announcements,
-        dialogState: { closeAllDialogs: vi.fn() },
+        closeActiveDialog: vi.fn(),
         selectionEffects: createSelectionEffects(),
         startup,
       }),

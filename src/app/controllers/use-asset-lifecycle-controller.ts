@@ -1,5 +1,4 @@
 import { useCallback, useRef } from 'react'
-import type { DialogStateSnapshot } from '@/editor-state/dialog-store'
 import { editorRuntimeActions } from '@/editor-state/editor-runtime-store'
 import { sceneStateActions } from '@/editor-state/scene-state-store'
 import {
@@ -32,7 +31,7 @@ interface AnnouncementsApi {
 
 interface AssetLifecycleControllerOptions {
   announcements: AnnouncementsApi
-  dialogState: Pick<DialogStateSnapshot, 'closeAllDialogs'>
+  closeActiveDialog: () => void
   selectionEffects: SelectionEffectsApi
   startup: {
     catalog: FurnitureCatalogEntry[]
@@ -49,7 +48,7 @@ interface AssetLifecycleControllerOptions {
 
 export function useAssetLifecycleController({
   announcements,
-  dialogState,
+  closeActiveDialog,
   selectionEffects,
   startup,
 }: AssetLifecycleControllerOptions) {
@@ -64,7 +63,7 @@ export function useAssetLifecycleController({
             message: runtimeError.message,
           })
         },
-        closeAllDialogs: dialogState.closeAllDialogs,
+        closeAllDialogs: closeActiveDialog,
         recordAssetError: startup.handleAssetError,
         resetEditorShellState: startup.resetEditorShellState,
       })
@@ -73,7 +72,7 @@ export function useAssetLifecycleController({
         'Unable to load room editor assets. Retry available.',
       )
     },
-    [announcements, dialogState, startup],
+    [announcements, closeActiveDialog, startup],
   )
 
   const handleSceneAssetsReady = useCallback(() => {
@@ -197,12 +196,12 @@ export function useAssetLifecycleController({
 
   const handleRetryAssetLoading = useCallback(() => {
     runStartupRetryTransition({
-      closeAllDialogs: dialogState.closeAllDialogs,
+      closeAllDialogs: closeActiveDialog,
       resetEditorShellState: startup.resetEditorShellState,
       retryAssetLoading: startup.retryAssetLoading,
     })
     announcements.clearAssertiveAnnouncement()
-  }, [announcements, dialogState, startup])
+  }, [announcements, closeActiveDialog, startup])
 
   return {
     handleSceneAssetError,

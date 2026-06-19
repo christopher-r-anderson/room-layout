@@ -1,10 +1,8 @@
 import type { FurnitureCatalogEntry } from '@/scene/objects/furniture-catalog'
 import type {
-  DialogOpenOptions,
-  DialogReturnFocusTarget,
-  RoomSurfaceLayout,
-  RoomSurfaceOpenOptions,
-} from '@/editor-state/dialog-store'
+  DialogAccessPoint,
+  DialogOpenRequest,
+} from '@/editor-state/dialog-contract'
 import type {
   EnvironmentMaterialConfig,
   FloorFinishOption,
@@ -22,7 +20,7 @@ interface TopHeaderProps {
     onCatalogDrawerOpenChange: (open: boolean) => void
   }
   dialogs: {
-    roomSurfaceLayout: RoomSurfaceLayout | null
+    roomSurfaceLayout: HeaderLayoutMode | null
     isBlockingOverlayOpen: boolean
     isRoomSurfaceOpen: boolean
     isInfoDialogOpen: boolean
@@ -33,22 +31,22 @@ interface TopHeaderProps {
     onConfirmStartOver: () => void
     onRoomSurfaceOpenChange: (
       open: boolean,
-      options?: RoomSurfaceOpenOptions,
+      request?: DialogOpenRequest<{ layout: HeaderLayoutMode }>,
     ) => boolean
     onInfoDialogOpenChange: (
       open: boolean,
-      options?: DialogOpenOptions,
+      request?: DialogOpenRequest,
     ) => boolean
     onKeyboardShortcutsDialogOpenChange: (
       open: boolean,
-      options?: DialogOpenOptions,
+      request?: DialogOpenRequest,
     ) => boolean
     onHeaderMoreActionsOpenChange: (
       open: boolean,
-      options?: DialogOpenOptions,
+      request?: DialogOpenRequest,
     ) => boolean
-    onOpenStartOverDialog: (options?: DialogOpenOptions) => void
-    returnFocusTarget: DialogReturnFocusTarget
+    onOpenStartOverDialog: (request?: DialogOpenRequest) => void
+    returnFocusAccessPoint: DialogAccessPoint
   }
   editorInteractionsEnabled: boolean
   history: {
@@ -62,7 +60,6 @@ interface TopHeaderProps {
   floorFinishes: FloorFinishOption[]
   onFloorFinishChange: (finishId: string) => void
   startOverDisabled: boolean
-  onLayoutModeChange?: (layout: HeaderLayoutMode) => void
   onShareSceneUrl: () => Promise<'shared' | 'copied' | null>
   topHeaderRef?: Ref<HTMLDivElement>
   desktopRoomSidebarRef?: Ref<HTMLElement>
@@ -82,13 +79,12 @@ export interface TopHeaderShellProps {
   onUndo: () => void
   onRedo: () => void
   onShareSceneUrl: () => Promise<'shared' | 'copied' | null>
-  onOpenStartOverDialog: (options?: DialogOpenOptions) => void
+  onOpenStartOverDialog: (request?: DialogOpenRequest) => void
   onConfirmStartOver: () => void
 }
 
 export interface TopHeaderContainerProps extends TopHeaderShellProps {
   startOverDisabled?: boolean
-  onLayoutModeChange?: (layout: HeaderLayoutMode) => void
   topHeaderRef?: Ref<HTMLDivElement>
   desktopRoomSidebarRef?: Ref<HTMLElement>
   mobileRoomDrawerRef?: Ref<HTMLDivElement>

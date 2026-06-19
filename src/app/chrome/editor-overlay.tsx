@@ -1,8 +1,10 @@
 import {
   dialogActions,
-  useIsDeleteDialogOpen,
-  usePendingDeleteFurniture,
+  useDialogOpen,
+  useDialogPayload,
 } from '@/editor-state/dialog-store'
+import { DIALOG_IDS } from '@/editor-state/dialog-contract'
+import type { FurnitureItem } from '@/scene/objects/furniture.types'
 import {
   useStartupLoadingActive,
   useStartupOverlayActive,
@@ -28,10 +30,7 @@ import { SelectedDetailsPlaceholder } from '@/features/selection/selected-detail
 import { TopHeader } from './top-header/top-header'
 import type { TopHeaderShellProps } from './top-header/top-header.types'
 import { useOverlayLayout } from '@/shared/layout/overlay-layout-context'
-import {
-  useHeaderLayoutMode,
-  type HeaderLayoutMode,
-} from '@/shared/layout/use-header-layout-mode'
+import { useHeaderLayoutMode } from '@/shared/layout/use-header-layout-mode'
 
 interface CameraToolsShellProps {
   onSetCameraPreset: (preset: CameraPreset) => void
@@ -62,7 +61,6 @@ interface FloatingSelectedItemShellProps {
 
 interface EditorOverlayProps {
   startOverDisabled: boolean
-  onHeaderLayoutModeChange: (layout: HeaderLayoutMode) => void
   topHeader: TopHeaderShellProps
   outliner: OutlinerShellProps
   cameraTools: CameraToolsShellProps
@@ -79,8 +77,10 @@ function EditorOverlayDialogs({
   onConfirmDeleteSelection: () => void
   onRetryAssetLoading: () => void
 }) {
-  const isDeleteDialogOpen = useIsDeleteDialogOpen()
-  const pendingDeleteFurniture = usePendingDeleteFurniture()
+  const isDeleteDialogOpen = useDialogOpen(DIALOG_IDS.delete)
+  const pendingDeleteFurniture = useDialogPayload(
+    DIALOG_IDS.delete,
+  ) as FurnitureItem | null
   const startupLoadingActive = useStartupLoadingActive()
   const assetError = useAssetError()
 
@@ -89,7 +89,7 @@ function EditorOverlayDialogs({
       <DeleteConfirmationDialog
         open={isDeleteDialogOpen}
         pendingDeleteFurniture={pendingDeleteFurniture}
-        onClose={dialogActions.closeDialog}
+        onClose={dialogActions.closeActiveDialog}
         onConfirm={onConfirmDeleteSelection}
       />
       <InitializationProgress visible={startupLoadingActive} />
@@ -106,7 +106,6 @@ function EditorOverlayDialogs({
 
 export function EditorOverlay({
   startOverDisabled,
-  onHeaderLayoutModeChange,
   topHeader,
   outliner,
   cameraTools,
@@ -131,7 +130,6 @@ export function EditorOverlay({
         <div className="mb-auto">
           <TopHeader
             {...topHeader}
-            onLayoutModeChange={onHeaderLayoutModeChange}
             startOverDisabled={startOverDisabled}
             topHeaderRef={registerExclusionElement('top-header')}
             desktopRoomSidebarRef={registerExclusionElement(

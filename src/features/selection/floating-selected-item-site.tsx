@@ -1,5 +1,6 @@
 import { useEditorInteractionsEnabled } from '@/editor-state/editor-runtime-store'
-import { useIsCatalogDrawerOpen } from '@/editor-state/dialog-store'
+import { DIALOG_IDS } from '@/editor-state/dialog-contract'
+import { useDialogOpen } from '@/editor-state/dialog-store'
 import { useSelectedFurniture } from '@/editor-state/scene-state-store'
 import { useSelectedItemInteraction } from './selected-item-interaction-context'
 import {
@@ -22,7 +23,7 @@ export function FloatingSelectedItemSite({
   const interaction = useSelectedItemInteraction()
   const selectedFurniture = useSelectedFurniture()
   const editorInteractionsEnabled = useEditorInteractionsEnabled()
-  const isCatalogDrawerOpen = useIsCatalogDrawerOpen()
+  const isCatalogDrawerOpen = useDialogOpen(DIALOG_IDS.catalog)
 
   if (selectedFurniture === null) {
     return null

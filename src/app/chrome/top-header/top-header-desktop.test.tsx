@@ -99,7 +99,7 @@ function createProps(
       onKeyboardShortcutsDialogOpenChange: vi.fn(() => true),
       onHeaderMoreActionsOpenChange: vi.fn(() => true),
       onOpenStartOverDialog: vi.fn(),
-      returnFocusTarget: null,
+      returnFocusAccessPoint: 'none',
     },
     desktopInfoTriggerId: 'desktop-info-trigger',
     desktopKeyboardTriggerId: 'desktop-keyboard-trigger',

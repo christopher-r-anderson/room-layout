@@ -12,13 +12,12 @@ describe('OverlayLayoutContext', () => {
       void key
       return registerCallback
     })
-    const syncLayoutMode = vi.fn()
     const exclusionRects = {
       'top-header': new DOMRectReadOnly(1, 2, 3, 4),
     }
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <OverlayLayoutProvider
-        value={{ exclusionRects, registerExclusionElement, syncLayoutMode }}
+        value={{ exclusionRects, registerExclusionElement }}
       >
         {children}
       </OverlayLayoutProvider>
@@ -29,7 +28,6 @@ describe('OverlayLayoutContext', () => {
     expect(result.current).toEqual({
       exclusionRects,
       registerExclusionElement,
-      syncLayoutMode,
     })
   })
 

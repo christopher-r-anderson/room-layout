@@ -8,10 +8,10 @@ For end-user key mappings, see [Editor Shortcuts Reference](./editor-shortcuts-r
 
 The app uses two keyboard systems:
 
-- **Discrete shortcuts (press-triggered):** Defined in `src/app/keyboard/use-keyboard-shortcuts.ts`.
-- **Held camera motion (state-driven):** Captured in `src/app/keyboard/use-camera-key-state.ts`, consumed per frame in `src/scene/internal/use-scene-imperative-api.ts`.
+- **Discrete shortcuts (press-triggered):** Defined in `src/features/keyboard/use-keyboard-shortcuts.ts`.
+- **Held camera motion (state-driven):** Captured in `src/features/keyboard/use-camera-key-state.ts`, consumed per frame in `src/scene/internal/use-scene-imperative-api.ts`.
 
-Shortcut metadata now lives in `src/app/keyboard/keyboard-shortcuts.definitions.ts`, and both the dispatcher and help dialog derive from that shared source so labels and execution rules stay in sync.
+Shortcut metadata now lives in `src/features/keyboard/keyboard-shortcuts.definitions.ts`, and both the dispatcher and help dialog derive from that shared source so labels and execution rules stay in sync.
 
 The split exists because press actions and continuous camera motion have different timing and suppression needs.
 
@@ -124,6 +124,9 @@ Use this pattern only when a shortcut intentionally overrides a browser-native c
 - The non-blocking Room surface does not set that blocking signal, so shortcuts continue to work when Room is open unless focus is inside a control that already suppresses them.
 - `always-on-match` can suppress browser defaults while the blocking-overlay gate is active.
 - Escape inside dialogs is not intercepted by clear-selection, so dialogs can handle close behavior natively.
+
+Blocking status is derived from dialog-store active-surface `kind`, not from
+dialog-specific boolean flags.
 
 ## Held Camera Key Model
 

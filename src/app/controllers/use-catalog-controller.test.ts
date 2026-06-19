@@ -37,7 +37,7 @@ describe('useCatalogController', () => {
 
     const { result } = renderHook(() =>
       useCatalogController({
-        dialogState: { setCatalogOpen: vi.fn() },
+        setCatalogOpen: vi.fn(() => true),
         selectionEffects,
         catalogIdToAdd: 'chair',
         editorInteractionsEnabled: false,
@@ -62,7 +62,7 @@ describe('useCatalogController', () => {
     const { result, rerender } = renderHook(
       ({ catalogIdToAdd }) =>
         useCatalogController({
-          dialogState: { setCatalogOpen: vi.fn() },
+          setCatalogOpen: vi.fn(() => true),
           selectionEffects,
           catalogIdToAdd,
           editorInteractionsEnabled: true,
@@ -98,7 +98,7 @@ describe('useCatalogController', () => {
 
     const { result } = renderHook(() =>
       useCatalogController({
-        dialogState: { setCatalogOpen: vi.fn() },
+        setCatalogOpen: vi.fn(() => true),
         selectionEffects,
         catalogIdToAdd: 'chair',
         editorInteractionsEnabled: true,
