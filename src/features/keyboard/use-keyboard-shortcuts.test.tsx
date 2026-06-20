@@ -4,7 +4,15 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useEffect, useRef } from 'react'
 import { describe, expect, it, vi } from 'vitest'
+import type { EditorCommand } from '@/editor-state/editor-command'
 import { useKeyboardShortcuts } from './use-keyboard-shortcuts'
+
+const createDispatchSpy = () => vi.fn<(command: EditorCommand) => void>()
+type DispatchSpy = ReturnType<typeof createDispatchSpy>
+
+function dispatchedCommands(dispatch: DispatchSpy): EditorCommand[] {
+  return dispatch.mock.calls.map(([command]) => command)
+}
 
 function KeyboardShortcutHarness(props: {
   enabled: boolean
@@ -12,31 +20,15 @@ function KeyboardShortcutHarness(props: {
   isBlockingOverlayOpen: boolean
   canStartOver?: boolean
   roomViewHasFocus?: boolean
-  onFocusInspector?: () => void
-  onFocusRoomView?: () => void
-  onFocusOutliner?: () => void
-  onUndo: () => void
-  onRedo: () => void
-  onStartOverIntent: () => void
-  onOpenDeleteDialog: () => void
-  onFocusSelected: () => void
-  onMoveSelection: (delta: { x: number; z: number }) => void
-  onClearSelection: () => void
-  onRotate: (direction: -1 | 1) => void
-  onSetCameraPreset?: (preset: 'corner' | 'front' | 'side' | 'top') => void
-  onCanvasBrowse?: (direction: 'next' | 'prev' | 'first' | 'last') => void
-  onCanvasSelectPreviewed?: () => void
+  dispatch: DispatchSpy
 }) {
   useKeyboardShortcuts({
-    ...props,
+    enabled: props.enabled,
+    hasSelection: props.hasSelection,
+    isBlockingOverlayOpen: props.isBlockingOverlayOpen,
     canStartOver: props.canStartOver ?? true,
     roomViewHasFocus: props.roomViewHasFocus ?? true,
-    onFocusInspector: props.onFocusInspector ?? vi.fn(),
-    onFocusRoomView: props.onFocusRoomView ?? vi.fn(),
-    onFocusOutliner: props.onFocusOutliner ?? vi.fn(),
-    onSetCameraPreset: props.onSetCameraPreset ?? vi.fn(),
-    onCanvasBrowse: props.onCanvasBrowse ?? vi.fn(),
-    onCanvasSelectPreviewed: props.onCanvasSelectPreviewed ?? vi.fn(),
+    dispatch: props.dispatch,
   })
 
   return <button type="button">Editor Root</button>
@@ -45,7 +37,7 @@ function KeyboardShortcutHarness(props: {
 function DialogEscapeHarness(props: {
   enabled: boolean
   hasSelection: boolean
-  onClearSelection: () => void
+  dispatch: DispatchSpy
 }) {
   const buttonRef = useRef<HTMLButtonElement | null>(null)
 
@@ -55,20 +47,7 @@ function DialogEscapeHarness(props: {
     isBlockingOverlayOpen: false,
     canStartOver: true,
     roomViewHasFocus: true,
-    onFocusInspector: vi.fn(),
-    onFocusRoomView: vi.fn(),
-    onFocusOutliner: vi.fn(),
-    onUndo: vi.fn(),
-    onRedo: vi.fn(),
-    onStartOverIntent: vi.fn(),
-    onOpenDeleteDialog: vi.fn(),
-    onFocusSelected: vi.fn(),
-    onMoveSelection: vi.fn(),
-    onClearSelection: props.onClearSelection,
-    onRotate: vi.fn(),
-    onSetCameraPreset: vi.fn(),
-    onCanvasBrowse: vi.fn(),
-    onCanvasSelectPreviewed: vi.fn(),
+    dispatch: props.dispatch,
   })
 
   useEffect(() => {
@@ -86,10 +65,7 @@ function DialogEscapeHarness(props: {
 
 function TextInputHarness(props: {
   enabled: boolean
-  onUndo: () => void
-  onRedo: () => void
-  onStartOverIntent?: () => void
-  onFocusInspector?: () => void
+  dispatch: DispatchSpy
   isBlockingOverlayOpen?: boolean
   canStartOver?: boolean
 }) {
@@ -101,20 +77,7 @@ function TextInputHarness(props: {
     isBlockingOverlayOpen: props.isBlockingOverlayOpen ?? false,
     canStartOver: props.canStartOver ?? true,
     roomViewHasFocus: true,
-    onFocusInspector: props.onFocusInspector ?? vi.fn(),
-    onFocusRoomView: vi.fn(),
-    onFocusOutliner: vi.fn(),
-    onUndo: props.onUndo,
-    onRedo: props.onRedo,
-    onStartOverIntent: props.onStartOverIntent ?? vi.fn(),
-    onOpenDeleteDialog: vi.fn(),
-    onFocusSelected: vi.fn(),
-    onMoveSelection: vi.fn(),
-    onClearSelection: vi.fn(),
-    onRotate: vi.fn(),
-    onSetCameraPreset: vi.fn(),
-    onCanvasBrowse: vi.fn(),
-    onCanvasSelectPreviewed: vi.fn(),
+    dispatch: props.dispatch,
   })
 
   useEffect(() => {
@@ -126,9 +89,7 @@ function TextInputHarness(props: {
 
 function SelectedItemDetailsInputHarness(props: {
   enabled: boolean
-  onOpenDeleteDialog: () => void
-  onMoveSelection: (delta: { x: number; z: number }) => void
-  onRotate: (direction: -1 | 1) => void
+  dispatch: DispatchSpy
 }) {
   const inputRef = useRef<HTMLInputElement | null>(null)
 
@@ -138,20 +99,7 @@ function SelectedItemDetailsInputHarness(props: {
     isBlockingOverlayOpen: false,
     canStartOver: true,
     roomViewHasFocus: true,
-    onFocusInspector: vi.fn(),
-    onFocusRoomView: vi.fn(),
-    onFocusOutliner: vi.fn(),
-    onUndo: vi.fn(),
-    onRedo: vi.fn(),
-    onStartOverIntent: vi.fn(),
-    onOpenDeleteDialog: props.onOpenDeleteDialog,
-    onFocusSelected: vi.fn(),
-    onMoveSelection: props.onMoveSelection,
-    onClearSelection: vi.fn(),
-    onRotate: props.onRotate,
-    onSetCameraPreset: vi.fn(),
-    onCanvasBrowse: vi.fn(),
-    onCanvasSelectPreviewed: vi.fn(),
+    dispatch: props.dispatch,
   })
 
   useEffect(() => {
@@ -172,7 +120,7 @@ function DialogStartOverHarness(props: {
   isBlockingOverlayOpen: boolean
   canStartOver?: boolean
   includeTextInput?: boolean
-  onStartOverIntent: () => void
+  dispatch: DispatchSpy
 }) {
   useKeyboardShortcuts({
     enabled: props.enabled,
@@ -180,20 +128,7 @@ function DialogStartOverHarness(props: {
     isBlockingOverlayOpen: props.isBlockingOverlayOpen,
     canStartOver: props.canStartOver ?? true,
     roomViewHasFocus: true,
-    onFocusInspector: vi.fn(),
-    onFocusRoomView: vi.fn(),
-    onFocusOutliner: vi.fn(),
-    onUndo: vi.fn(),
-    onRedo: vi.fn(),
-    onStartOverIntent: props.onStartOverIntent,
-    onOpenDeleteDialog: vi.fn(),
-    onFocusSelected: vi.fn(),
-    onMoveSelection: vi.fn(),
-    onClearSelection: vi.fn(),
-    onRotate: vi.fn(),
-    onSetCameraPreset: vi.fn(),
-    onCanvasBrowse: vi.fn(),
-    onCanvasSelectPreviewed: vi.fn(),
+    dispatch: props.dispatch,
   })
 
   return (
@@ -209,7 +144,7 @@ function DialogStartOverHarness(props: {
 function PreHandledEscapeHarness(props: {
   enabled: boolean
   hasSelection: boolean
-  onClearSelection: () => void
+  dispatch: DispatchSpy
 }) {
   const buttonRef = useRef<HTMLButtonElement | null>(null)
 
@@ -219,20 +154,7 @@ function PreHandledEscapeHarness(props: {
     isBlockingOverlayOpen: false,
     canStartOver: true,
     roomViewHasFocus: true,
-    onFocusInspector: vi.fn(),
-    onFocusRoomView: vi.fn(),
-    onFocusOutliner: vi.fn(),
-    onUndo: vi.fn(),
-    onRedo: vi.fn(),
-    onStartOverIntent: vi.fn(),
-    onOpenDeleteDialog: vi.fn(),
-    onFocusSelected: vi.fn(),
-    onMoveSelection: vi.fn(),
-    onClearSelection: props.onClearSelection,
-    onRotate: vi.fn(),
-    onSetCameraPreset: vi.fn(),
-    onCanvasBrowse: vi.fn(),
-    onCanvasSelectPreviewed: vi.fn(),
+    dispatch: props.dispatch,
   })
 
   useEffect(() => {
@@ -256,8 +178,7 @@ function PreHandledEscapeHarness(props: {
 
 function ContentEditableHarness(props: {
   enabled: boolean
-  onStartOverIntent: () => void
-  onFocusInspector?: () => void
+  dispatch: DispatchSpy
 }) {
   const editableRef = useRef<HTMLDivElement | null>(null)
 
@@ -267,20 +188,7 @@ function ContentEditableHarness(props: {
     isBlockingOverlayOpen: false,
     canStartOver: true,
     roomViewHasFocus: true,
-    onFocusInspector: props.onFocusInspector ?? vi.fn(),
-    onFocusRoomView: vi.fn(),
-    onFocusOutliner: vi.fn(),
-    onUndo: vi.fn(),
-    onRedo: vi.fn(),
-    onStartOverIntent: props.onStartOverIntent,
-    onOpenDeleteDialog: vi.fn(),
-    onFocusSelected: vi.fn(),
-    onMoveSelection: vi.fn(),
-    onClearSelection: vi.fn(),
-    onRotate: vi.fn(),
-    onSetCameraPreset: vi.fn(),
-    onCanvasBrowse: vi.fn(),
-    onCanvasSelectPreviewed: vi.fn(),
+    dispatch: props.dispatch,
   })
 
   useEffect(() => {
@@ -325,87 +233,65 @@ function fireStartOverShortcuts(target: Window | HTMLElement): KeyboardEvent[] {
 describe('useKeyboardShortcuts', () => {
   it('blocks delete shortcuts when a blocking overlay is open and uses the latest blocking-overlay state on rerender', async () => {
     const user = userEvent.setup()
-    const onOpenDeleteDialog = vi.fn()
+    const dispatch = createDispatchSpy()
 
     const view = render(
       <KeyboardShortcutHarness
         enabled
         hasSelection
         isBlockingOverlayOpen={false}
-        onUndo={vi.fn()}
-        onRedo={vi.fn()}
-        onStartOverIntent={vi.fn()}
-        onOpenDeleteDialog={onOpenDeleteDialog}
-        onFocusSelected={vi.fn()}
-        onMoveSelection={vi.fn()}
-        onClearSelection={vi.fn()}
-        onRotate={vi.fn()}
+        dispatch={dispatch}
       />,
     )
 
     await user.keyboard('{Delete}')
-    expect(onOpenDeleteDialog).toHaveBeenCalledTimes(1)
+    expect(dispatchedCommands(dispatch)).toEqual([
+      { kind: 'open-delete-dialog', returnFocusTo: 'room-view' },
+    ])
 
     view.rerender(
       <KeyboardShortcutHarness
         enabled
         hasSelection
         isBlockingOverlayOpen
-        onUndo={vi.fn()}
-        onRedo={vi.fn()}
-        onStartOverIntent={vi.fn()}
-        onOpenDeleteDialog={onOpenDeleteDialog}
-        onFocusSelected={vi.fn()}
-        onMoveSelection={vi.fn()}
-        onClearSelection={vi.fn()}
-        onRotate={vi.fn()}
+        dispatch={dispatch}
       />,
     )
 
     await user.keyboard('{Delete}')
-    expect(onOpenDeleteDialog).toHaveBeenCalledTimes(1)
+    expect(dispatchedCommands(dispatch)).toEqual([
+      { kind: 'open-delete-dialog', returnFocusTo: 'room-view' },
+    ])
   })
 
   it('handles Backspace as a delete shortcut variant when selection exists', async () => {
     const user = userEvent.setup()
-    const onOpenDeleteDialog = vi.fn()
+    const dispatch = createDispatchSpy()
 
     render(
       <KeyboardShortcutHarness
         enabled
         hasSelection
         isBlockingOverlayOpen={false}
-        onUndo={vi.fn()}
-        onRedo={vi.fn()}
-        onStartOverIntent={vi.fn()}
-        onOpenDeleteDialog={onOpenDeleteDialog}
-        onFocusSelected={vi.fn()}
-        onMoveSelection={vi.fn()}
-        onClearSelection={vi.fn()}
-        onRotate={vi.fn()}
+        dispatch={dispatch}
       />,
     )
 
     await user.keyboard('{Backspace}')
-    expect(onOpenDeleteDialog).toHaveBeenCalledTimes(1)
+    expect(dispatchedCommands(dispatch)).toEqual([
+      { kind: 'open-delete-dialog', returnFocusTo: 'room-view' },
+    ])
   })
 
   it('does not intercept or execute shortcuts when disabled', () => {
-    const onUndo = vi.fn()
+    const dispatch = createDispatchSpy()
 
     render(
       <KeyboardShortcutHarness
         enabled={false}
         hasSelection
         isBlockingOverlayOpen={false}
-        onUndo={onUndo}
-        onRedo={vi.fn()}
-        onStartOverIntent={vi.fn()}
-        onOpenDeleteDialog={vi.fn()}
-        onFocusSelected={vi.fn()}
-        onMoveSelection={vi.fn()}
-        onClearSelection={vi.fn()}
-        onRotate={vi.fn()}
+        dispatch={dispatch}
       />,
     )
 
@@ -419,30 +305,19 @@ describe('useKeyboardShortcuts', () => {
     fireEvent(window, event)
 
     expect(event.defaultPrevented).toBe(false)
-    expect(onUndo).not.toHaveBeenCalled()
+    expect(dispatch).not.toHaveBeenCalled()
   })
 
   it('dispatches history and rotation shortcuts when enabled and no blocking overlay is open', async () => {
     const user = userEvent.setup()
-    const onUndo = vi.fn()
-    const onRedo = vi.fn()
-    const onRotate = vi.fn()
-    const onMoveSelection = vi.fn()
-    const onClearSelection = vi.fn()
+    const dispatch = createDispatchSpy()
 
     render(
       <KeyboardShortcutHarness
         enabled
         hasSelection
         isBlockingOverlayOpen={false}
-        onUndo={onUndo}
-        onRedo={onRedo}
-        onStartOverIntent={vi.fn()}
-        onOpenDeleteDialog={vi.fn()}
-        onFocusSelected={vi.fn()}
-        onMoveSelection={onMoveSelection}
-        onClearSelection={onClearSelection}
-        onRotate={onRotate}
+        dispatch={dispatch}
       />,
     )
 
@@ -452,18 +327,17 @@ describe('useKeyboardShortcuts', () => {
     await user.keyboard(',')
     await user.keyboard('.')
 
-    expect(onUndo).toHaveBeenCalledTimes(1)
-    expect(onRedo).toHaveBeenCalledTimes(2)
-    expect(onRotate).toHaveBeenNthCalledWith(1, 1)
-    expect(onRotate).toHaveBeenNthCalledWith(2, -1)
-    expect(onMoveSelection).not.toHaveBeenCalled()
-    expect(onClearSelection).not.toHaveBeenCalled()
+    expect(dispatchedCommands(dispatch)).toEqual([
+      { kind: 'undo' },
+      { kind: 'redo' },
+      { kind: 'redo' },
+      { kind: 'rotate-selection', direction: 1 },
+      { kind: 'rotate-selection', direction: -1 },
+    ])
   })
 
   it('dispatches pane-navigation shortcuts even when the room view does not have focus', () => {
-    const onFocusInspector = vi.fn()
-    const onFocusRoomView = vi.fn()
-    const onFocusOutliner = vi.fn()
+    const dispatch = createDispatchSpy()
 
     render(
       <KeyboardShortcutHarness
@@ -471,17 +345,7 @@ describe('useKeyboardShortcuts', () => {
         hasSelection={false}
         isBlockingOverlayOpen={false}
         roomViewHasFocus={false}
-        onFocusInspector={onFocusInspector}
-        onFocusRoomView={onFocusRoomView}
-        onFocusOutliner={onFocusOutliner}
-        onUndo={vi.fn()}
-        onRedo={vi.fn()}
-        onStartOverIntent={vi.fn()}
-        onOpenDeleteDialog={vi.fn()}
-        onFocusSelected={vi.fn()}
-        onMoveSelection={vi.fn()}
-        onClearSelection={vi.fn()}
-        onRotate={vi.fn()}
+        dispatch={dispatch}
       />,
     )
 
@@ -508,31 +372,25 @@ describe('useKeyboardShortcuts', () => {
     fireEvent(window, focusRoomViewEvent)
     fireEvent(window, focusOutlinerEvent)
 
-    expect(onFocusInspector).toHaveBeenCalledTimes(1)
-    expect(onFocusRoomView).toHaveBeenCalledTimes(1)
-    expect(onFocusOutliner).toHaveBeenCalledTimes(1)
+    expect(dispatchedCommands(dispatch)).toEqual([
+      { kind: 'focus-inspector' },
+      { kind: 'focus-room-view' },
+      { kind: 'focus-outliner' },
+    ])
     expect(focusInspectorEvent.defaultPrevented).toBe(true)
     expect(focusRoomViewEvent.defaultPrevented).toBe(true)
     expect(focusOutlinerEvent.defaultPrevented).toBe(true)
   })
 
   it('blocks pane-navigation shortcuts when a blocking overlay is open', () => {
-    const onFocusInspector = vi.fn()
+    const dispatch = createDispatchSpy()
 
     render(
       <KeyboardShortcutHarness
         enabled
         hasSelection={false}
         isBlockingOverlayOpen
-        onFocusInspector={onFocusInspector}
-        onUndo={vi.fn()}
-        onRedo={vi.fn()}
-        onStartOverIntent={vi.fn()}
-        onOpenDeleteDialog={vi.fn()}
-        onFocusSelected={vi.fn()}
-        onMoveSelection={vi.fn()}
-        onClearSelection={vi.fn()}
-        onRotate={vi.fn()}
+        dispatch={dispatch}
       />,
     )
 
@@ -545,21 +403,14 @@ describe('useKeyboardShortcuts', () => {
 
     fireEvent(window, event)
 
-    expect(onFocusInspector).not.toHaveBeenCalled()
+    expect(dispatch).not.toHaveBeenCalled()
     expect(event.defaultPrevented).toBe(false)
   })
 
   it('does not dispatch pane-navigation shortcuts from text inputs or contenteditable targets', () => {
-    const onFocusInspector = vi.fn()
+    const dispatch = createDispatchSpy()
 
-    const view = render(
-      <TextInputHarness
-        enabled
-        onUndo={vi.fn()}
-        onRedo={vi.fn()}
-        onFocusInspector={onFocusInspector}
-      />,
-    )
+    const view = render(<TextInputHarness enabled dispatch={dispatch} />)
 
     const input = screen.getByRole('textbox', { name: 'editor text input' })
     const inputEvent = new KeyboardEvent('keydown', {
@@ -571,16 +422,10 @@ describe('useKeyboardShortcuts', () => {
 
     fireEvent(input, inputEvent)
 
-    expect(onFocusInspector).not.toHaveBeenCalled()
+    expect(dispatch).not.toHaveBeenCalled()
     expect(inputEvent.defaultPrevented).toBe(false)
 
-    view.rerender(
-      <ContentEditableHarness
-        enabled
-        onStartOverIntent={vi.fn()}
-        onFocusInspector={onFocusInspector}
-      />,
-    )
+    view.rerender(<ContentEditableHarness enabled dispatch={dispatch} />)
 
     const contentEditable = screen.getByRole('textbox', {
       name: 'content editable',
@@ -594,27 +439,19 @@ describe('useKeyboardShortcuts', () => {
 
     fireEvent(contentEditable, contentEditableEvent)
 
-    expect(onFocusInspector).not.toHaveBeenCalled()
+    expect(dispatch).not.toHaveBeenCalled()
     expect(contentEditableEvent.defaultPrevented).toBe(false)
   })
 
   it('dispatches undo/redo for Meta-based shortcuts', () => {
-    const onUndo = vi.fn()
-    const onRedo = vi.fn()
+    const dispatch = createDispatchSpy()
 
     render(
       <KeyboardShortcutHarness
         enabled
         hasSelection
         isBlockingOverlayOpen={false}
-        onUndo={onUndo}
-        onRedo={onRedo}
-        onStartOverIntent={vi.fn()}
-        onOpenDeleteDialog={vi.fn()}
-        onFocusSelected={vi.fn()}
-        onMoveSelection={vi.fn()}
-        onClearSelection={vi.fn()}
-        onRotate={vi.fn()}
+        dispatch={dispatch}
       />,
     )
 
@@ -636,30 +473,24 @@ describe('useKeyboardShortcuts', () => {
     fireEvent(window, undoEvent)
     fireEvent(window, redoEvent)
 
-    expect(onUndo).toHaveBeenCalledTimes(1)
-    expect(onRedo).toHaveBeenCalledTimes(1)
+    expect(dispatchedCommands(dispatch)).toEqual([
+      { kind: 'undo' },
+      { kind: 'redo' },
+    ])
     expect(undoEvent.defaultPrevented).toBe(true)
     expect(redoEvent.defaultPrevented).toBe(true)
   })
 
   it('does not dispatch undo/redo when a blocking overlay is open', async () => {
     const user = userEvent.setup()
-    const onUndo = vi.fn()
-    const onRedo = vi.fn()
+    const dispatch = createDispatchSpy()
 
     render(
       <KeyboardShortcutHarness
         enabled
         hasSelection
         isBlockingOverlayOpen
-        onUndo={onUndo}
-        onRedo={onRedo}
-        onStartOverIntent={vi.fn()}
-        onOpenDeleteDialog={vi.fn()}
-        onFocusSelected={vi.fn()}
-        onMoveSelection={vi.fn()}
-        onClearSelection={vi.fn()}
-        onRotate={vi.fn()}
+        dispatch={dispatch}
       />,
     )
 
@@ -667,28 +498,19 @@ describe('useKeyboardShortcuts', () => {
     await user.keyboard('{Control>}{Shift>}z{/Shift}{/Control}')
     await user.keyboard('{Control>}y{/Control}')
 
-    expect(onUndo).not.toHaveBeenCalled()
-    expect(onRedo).not.toHaveBeenCalled()
+    expect(dispatch).not.toHaveBeenCalled()
   })
 
   it('dispatches arrow movement and escape clear when selection exists', async () => {
     const user = userEvent.setup()
-    const onMoveSelection = vi.fn()
-    const onClearSelection = vi.fn()
+    const dispatch = createDispatchSpy()
 
     render(
       <KeyboardShortcutHarness
         enabled
         hasSelection
         isBlockingOverlayOpen={false}
-        onUndo={vi.fn()}
-        onRedo={vi.fn()}
-        onStartOverIntent={vi.fn()}
-        onOpenDeleteDialog={vi.fn()}
-        onFocusSelected={vi.fn()}
-        onMoveSelection={onMoveSelection}
-        onClearSelection={onClearSelection}
-        onRotate={vi.fn()}
+        dispatch={dispatch}
       />,
     )
 
@@ -697,84 +519,63 @@ describe('useKeyboardShortcuts', () => {
     await user.keyboard('{Alt>}{ArrowDown}{/Alt}')
     await user.keyboard('{Escape}')
 
-    expect(onMoveSelection).toHaveBeenNthCalledWith(1, { x: 0.5, z: 0 })
-    expect(onMoveSelection).toHaveBeenNthCalledWith(2, { x: 0, z: -1 })
-    expect(onMoveSelection).toHaveBeenNthCalledWith(3, { x: 0, z: 0.1 })
-    expect(onClearSelection).toHaveBeenCalledTimes(1)
+    expect(dispatchedCommands(dispatch)).toEqual([
+      { kind: 'move-selection', delta: { x: 0.5, z: 0 } },
+      { kind: 'move-selection', delta: { x: 0, z: -1 } },
+      { kind: 'move-selection', delta: { x: 0, z: 0.1 } },
+      { kind: 'clear-selection' },
+    ])
   })
 
   it('dispatches focusSelected on F when selection exists and no blocking-overlay or input context', async () => {
     const user = userEvent.setup()
-    const onFocusSelected = vi.fn()
-    const onMoveSelection = vi.fn()
+    const dispatch = createDispatchSpy()
 
     render(
       <KeyboardShortcutHarness
         enabled
         hasSelection
         isBlockingOverlayOpen={false}
-        onUndo={vi.fn()}
-        onRedo={vi.fn()}
-        onStartOverIntent={vi.fn()}
-        onOpenDeleteDialog={vi.fn()}
-        onFocusSelected={onFocusSelected}
-        onMoveSelection={onMoveSelection}
-        onClearSelection={vi.fn()}
-        onRotate={vi.fn()}
+        dispatch={dispatch}
       />,
     )
 
     await user.keyboard('f')
-    expect(onFocusSelected).toHaveBeenCalledTimes(1)
-    expect(onMoveSelection).not.toHaveBeenCalled()
+    expect(dispatchedCommands(dispatch)).toEqual([{ kind: 'focus-selected' }])
   })
 
   it('dispatches camera preset shortcuts on 1/2/3/4 when enabled and no blocking-overlay or input context', async () => {
     const user = userEvent.setup()
-    const onSetCameraPreset = vi.fn()
+    const dispatch = createDispatchSpy()
 
     render(
       <KeyboardShortcutHarness
         enabled
         hasSelection={false}
         isBlockingOverlayOpen={false}
-        onUndo={vi.fn()}
-        onRedo={vi.fn()}
-        onStartOverIntent={vi.fn()}
-        onOpenDeleteDialog={vi.fn()}
-        onFocusSelected={vi.fn()}
-        onMoveSelection={vi.fn()}
-        onClearSelection={vi.fn()}
-        onRotate={vi.fn()}
-        onSetCameraPreset={onSetCameraPreset}
+        dispatch={dispatch}
       />,
     )
 
     await user.keyboard('1234')
 
-    expect(onSetCameraPreset).toHaveBeenNthCalledWith(1, 'corner')
-    expect(onSetCameraPreset).toHaveBeenNthCalledWith(2, 'front')
-    expect(onSetCameraPreset).toHaveBeenNthCalledWith(3, 'side')
-    expect(onSetCameraPreset).toHaveBeenNthCalledWith(4, 'top')
+    expect(dispatchedCommands(dispatch)).toEqual([
+      { kind: 'set-camera-preset', preset: 'corner' },
+      { kind: 'set-camera-preset', preset: 'front' },
+      { kind: 'set-camera-preset', preset: 'side' },
+      { kind: 'set-camera-preset', preset: 'top' },
+    ])
   })
 
   it('dispatches camera preset shortcuts for shifted number-row digit codes on common alternate layouts', () => {
-    const onSetCameraPreset = vi.fn()
+    const dispatch = createDispatchSpy()
 
     render(
       <KeyboardShortcutHarness
         enabled
         hasSelection={false}
         isBlockingOverlayOpen={false}
-        onUndo={vi.fn()}
-        onRedo={vi.fn()}
-        onStartOverIntent={vi.fn()}
-        onOpenDeleteDialog={vi.fn()}
-        onFocusSelected={vi.fn()}
-        onMoveSelection={vi.fn()}
-        onClearSelection={vi.fn()}
-        onRotate={vi.fn()}
-        onSetCameraPreset={onSetCameraPreset}
+        dispatch={dispatch}
       />,
     )
 
@@ -819,29 +620,23 @@ describe('useKeyboardShortcuts', () => {
       }),
     )
 
-    expect(onSetCameraPreset).toHaveBeenNthCalledWith(1, 'corner')
-    expect(onSetCameraPreset).toHaveBeenNthCalledWith(2, 'front')
-    expect(onSetCameraPreset).toHaveBeenNthCalledWith(3, 'side')
-    expect(onSetCameraPreset).toHaveBeenNthCalledWith(4, 'top')
+    expect(dispatchedCommands(dispatch)).toEqual([
+      { kind: 'set-camera-preset', preset: 'corner' },
+      { kind: 'set-camera-preset', preset: 'front' },
+      { kind: 'set-camera-preset', preset: 'side' },
+      { kind: 'set-camera-preset', preset: 'top' },
+    ])
   })
 
   it('does not dispatch camera preset shortcuts for unshifted alternate-layout number-row symbols', () => {
-    const onSetCameraPreset = vi.fn()
+    const dispatch = createDispatchSpy()
 
     render(
       <KeyboardShortcutHarness
         enabled
         hasSelection={false}
         isBlockingOverlayOpen={false}
-        onUndo={vi.fn()}
-        onRedo={vi.fn()}
-        onStartOverIntent={vi.fn()}
-        onOpenDeleteDialog={vi.fn()}
-        onFocusSelected={vi.fn()}
-        onMoveSelection={vi.fn()}
-        onClearSelection={vi.fn()}
-        onRotate={vi.fn()}
-        onSetCameraPreset={onSetCameraPreset}
+        dispatch={dispatch}
       />,
     )
 
@@ -882,120 +677,86 @@ describe('useKeyboardShortcuts', () => {
       }),
     )
 
-    expect(onSetCameraPreset).not.toHaveBeenCalled()
+    expect(dispatch).not.toHaveBeenCalled()
   })
 
   it('does not dispatch camera preset shortcuts when a blocking overlay is open', async () => {
     const user = userEvent.setup()
-    const onSetCameraPreset = vi.fn()
+    const dispatch = createDispatchSpy()
 
     render(
       <KeyboardShortcutHarness
         enabled
         hasSelection={false}
         isBlockingOverlayOpen
-        onUndo={vi.fn()}
-        onRedo={vi.fn()}
-        onStartOverIntent={vi.fn()}
-        onOpenDeleteDialog={vi.fn()}
-        onFocusSelected={vi.fn()}
-        onMoveSelection={vi.fn()}
-        onClearSelection={vi.fn()}
-        onRotate={vi.fn()}
-        onSetCameraPreset={onSetCameraPreset}
+        dispatch={dispatch}
       />,
     )
 
     await user.keyboard('1234')
 
-    expect(onSetCameraPreset).not.toHaveBeenCalled()
+    expect(dispatch).not.toHaveBeenCalled()
   })
 
   it('does not dispatch focusSelected on F when no selection', async () => {
     const user = userEvent.setup()
-    const onFocusSelected = vi.fn()
+    const dispatch = createDispatchSpy()
 
     render(
       <KeyboardShortcutHarness
         enabled
         hasSelection={false}
         isBlockingOverlayOpen={false}
-        onUndo={vi.fn()}
-        onRedo={vi.fn()}
-        onStartOverIntent={vi.fn()}
-        onOpenDeleteDialog={vi.fn()}
-        onFocusSelected={onFocusSelected}
-        onMoveSelection={vi.fn()}
-        onClearSelection={vi.fn()}
-        onRotate={vi.fn()}
+        dispatch={dispatch}
       />,
     )
 
     await user.keyboard('f')
-    expect(onFocusSelected).not.toHaveBeenCalled()
+    expect(dispatch).not.toHaveBeenCalled()
   })
 
   it('does not dispatch focusSelected on F when a blocking overlay is open', async () => {
     const user = userEvent.setup()
-    const onFocusSelected = vi.fn()
+    const dispatch = createDispatchSpy()
 
     render(
       <KeyboardShortcutHarness
         enabled
         hasSelection
         isBlockingOverlayOpen
-        onUndo={vi.fn()}
-        onRedo={vi.fn()}
-        onStartOverIntent={vi.fn()}
-        onOpenDeleteDialog={vi.fn()}
-        onFocusSelected={onFocusSelected}
-        onMoveSelection={vi.fn()}
-        onClearSelection={vi.fn()}
-        onRotate={vi.fn()}
+        dispatch={dispatch}
       />,
     )
 
     await user.keyboard('f')
-    expect(onFocusSelected).not.toHaveBeenCalled()
+    expect(dispatch).not.toHaveBeenCalled()
   })
 
   it('does not clear selection when Escape originates inside dialog content', async () => {
     const user = userEvent.setup()
-    const onClearSelection = vi.fn()
+    const dispatch = createDispatchSpy()
 
-    render(
-      <DialogEscapeHarness
-        enabled
-        hasSelection
-        onClearSelection={onClearSelection}
-      />,
-    )
+    render(<DialogEscapeHarness enabled hasSelection dispatch={dispatch} />)
 
     await user.keyboard('{Escape}')
 
-    expect(onClearSelection).not.toHaveBeenCalled()
+    expect(dispatch).not.toHaveBeenCalled()
   })
 
   it('does not clear selection when Escape was already handled', async () => {
     const user = userEvent.setup()
-    const onClearSelection = vi.fn()
+    const dispatch = createDispatchSpy()
 
-    render(
-      <PreHandledEscapeHarness
-        enabled
-        hasSelection
-        onClearSelection={onClearSelection}
-      />,
-    )
+    render(<PreHandledEscapeHarness enabled hasSelection dispatch={dispatch} />)
 
     await user.keyboard('{Escape}')
 
-    expect(onClearSelection).not.toHaveBeenCalled()
+    expect(dispatch).not.toHaveBeenCalled()
   })
 
   it('does not clear selection when room view is not focused', async () => {
     const user = userEvent.setup()
-    const onClearSelection = vi.fn()
+    const dispatch = createDispatchSpy()
 
     render(
       <KeyboardShortcutHarness
@@ -1003,55 +764,38 @@ describe('useKeyboardShortcuts', () => {
         hasSelection
         isBlockingOverlayOpen={false}
         roomViewHasFocus={false}
-        onUndo={vi.fn()}
-        onRedo={vi.fn()}
-        onStartOverIntent={vi.fn()}
-        onOpenDeleteDialog={vi.fn()}
-        onFocusSelected={vi.fn()}
-        onMoveSelection={vi.fn()}
-        onClearSelection={onClearSelection}
-        onRotate={vi.fn()}
+        dispatch={dispatch}
       />,
     )
 
     await user.keyboard('{Escape}')
 
-    expect(onClearSelection).not.toHaveBeenCalled()
+    expect(dispatch).not.toHaveBeenCalled()
   })
 
   it('dispatches clear-selection on Escape even when there is no selection (for preview clearing)', async () => {
     const user = userEvent.setup()
-    const onClearSelection = vi.fn()
+    const dispatch = createDispatchSpy()
 
     render(
       <KeyboardShortcutHarness
         enabled
         hasSelection={false}
         isBlockingOverlayOpen={false}
-        roomViewHasFocus={true}
-        onUndo={vi.fn()}
-        onRedo={vi.fn()}
-        onStartOverIntent={vi.fn()}
-        onOpenDeleteDialog={vi.fn()}
-        onFocusSelected={vi.fn()}
-        onMoveSelection={vi.fn()}
-        onClearSelection={onClearSelection}
-        onRotate={vi.fn()}
+        roomViewHasFocus
+        dispatch={dispatch}
       />,
     )
 
     await user.keyboard('{Escape}')
 
-    expect(onClearSelection).toHaveBeenCalledTimes(1)
+    expect(dispatchedCommands(dispatch)).toEqual([{ kind: 'clear-selection' }])
   })
 
   it('does not intercept undo/redo in text inputs', () => {
-    const onUndo = vi.fn()
-    const onRedo = vi.fn()
+    const dispatch = createDispatchSpy()
 
-    const view = render(
-      <TextInputHarness enabled onUndo={onUndo} onRedo={onRedo} />,
-    )
+    const view = render(<TextInputHarness enabled dispatch={dispatch} />)
 
     const input = view.getByRole('textbox', { name: 'editor text input' })
 
@@ -1076,27 +820,18 @@ describe('useKeyboardShortcuts', () => {
     expect(redoNotCanceled).toBe(true)
     expect(undoEvent.defaultPrevented).toBe(false)
     expect(redoEvent.defaultPrevented).toBe(false)
-    expect(onUndo).not.toHaveBeenCalled()
-    expect(onRedo).not.toHaveBeenCalled()
+    expect(dispatch).not.toHaveBeenCalled()
   })
 
   it('does not dispatch camera preset shortcuts in text inputs', () => {
-    const onSetCameraPreset = vi.fn()
+    const dispatch = createDispatchSpy()
 
     const view = render(
       <KeyboardShortcutHarness
         enabled
         hasSelection={false}
         isBlockingOverlayOpen={false}
-        onUndo={vi.fn()}
-        onRedo={vi.fn()}
-        onStartOverIntent={vi.fn()}
-        onOpenDeleteDialog={vi.fn()}
-        onFocusSelected={vi.fn()}
-        onMoveSelection={vi.fn()}
-        onClearSelection={vi.fn()}
-        onRotate={vi.fn()}
-        onSetCameraPreset={onSetCameraPreset}
+        dispatch={dispatch}
       />,
     )
 
@@ -1115,11 +850,11 @@ describe('useKeyboardShortcuts', () => {
 
     expect(presetNotCanceled).toBe(true)
     expect(presetEvent.defaultPrevented).toBe(false)
-    expect(onSetCameraPreset).not.toHaveBeenCalled()
+    expect(dispatch).not.toHaveBeenCalled()
   })
 
   it('dispatches start over and prevents default for Ctrl+Alt+N and Meta+Alt+N', () => {
-    const onStartOverIntent = vi.fn()
+    const dispatch = createDispatchSpy()
 
     render(
       <KeyboardShortcutHarness
@@ -1127,20 +862,16 @@ describe('useKeyboardShortcuts', () => {
         hasSelection={false}
         isBlockingOverlayOpen={false}
         canStartOver
-        onUndo={vi.fn()}
-        onRedo={vi.fn()}
-        onStartOverIntent={onStartOverIntent}
-        onOpenDeleteDialog={vi.fn()}
-        onFocusSelected={vi.fn()}
-        onMoveSelection={vi.fn()}
-        onClearSelection={vi.fn()}
-        onRotate={vi.fn()}
+        dispatch={dispatch}
       />,
     )
 
     const events = fireStartOverShortcuts(window)
 
-    expect(onStartOverIntent).toHaveBeenCalledTimes(2)
+    expect(dispatchedCommands(dispatch)).toEqual([
+      { kind: 'start-over' },
+      { kind: 'start-over' },
+    ])
     for (const event of events) {
       expect(event.defaultPrevented).toBe(true)
     }
@@ -1148,25 +879,18 @@ describe('useKeyboardShortcuts', () => {
 
   it.each<{
     name: string
-    renderCase: (onStartOverIntent: () => void) => Window | HTMLElement
+    renderCase: (dispatch: DispatchSpy) => Window | HTMLElement
   }>([
     {
       name: 'start over is disabled',
-      renderCase: (onStartOverIntent) => {
+      renderCase: (dispatch) => {
         render(
           <KeyboardShortcutHarness
             enabled
             hasSelection={false}
             isBlockingOverlayOpen={false}
             canStartOver={false}
-            onUndo={vi.fn()}
-            onRedo={vi.fn()}
-            onStartOverIntent={onStartOverIntent}
-            onOpenDeleteDialog={vi.fn()}
-            onFocusSelected={vi.fn()}
-            onMoveSelection={vi.fn()}
-            onClearSelection={vi.fn()}
-            onRotate={vi.fn()}
+            dispatch={dispatch}
           />,
         )
 
@@ -1175,21 +899,14 @@ describe('useKeyboardShortcuts', () => {
     },
     {
       name: 'a blocking overlay is open',
-      renderCase: (onStartOverIntent) => {
+      renderCase: (dispatch) => {
         render(
           <KeyboardShortcutHarness
             enabled
             hasSelection={false}
             isBlockingOverlayOpen
             canStartOver
-            onUndo={vi.fn()}
-            onRedo={vi.fn()}
-            onStartOverIntent={onStartOverIntent}
-            onOpenDeleteDialog={vi.fn()}
-            onFocusSelected={vi.fn()}
-            onMoveSelection={vi.fn()}
-            onClearSelection={vi.fn()}
-            onRotate={vi.fn()}
+            dispatch={dispatch}
           />,
         )
 
@@ -1198,13 +915,13 @@ describe('useKeyboardShortcuts', () => {
     },
     {
       name: 'the target is inside dialog content',
-      renderCase: (onStartOverIntent) => {
+      renderCase: (dispatch) => {
         const view = render(
           <DialogStartOverHarness
             enabled
             isBlockingOverlayOpen
             canStartOver
-            onStartOverIntent={onStartOverIntent}
+            dispatch={dispatch}
           />,
         )
 
@@ -1213,14 +930,14 @@ describe('useKeyboardShortcuts', () => {
     },
     {
       name: 'the target is a dialog text input',
-      renderCase: (onStartOverIntent) => {
+      renderCase: (dispatch) => {
         const view = render(
           <DialogStartOverHarness
             enabled
             isBlockingOverlayOpen
             canStartOver
             includeTextInput
-            onStartOverIntent={onStartOverIntent}
+            dispatch={dispatch}
           />,
         )
 
@@ -1229,27 +946,17 @@ describe('useKeyboardShortcuts', () => {
     },
     {
       name: 'the target is a regular text input',
-      renderCase: (onStartOverIntent) => {
-        const view = render(
-          <TextInputHarness
-            enabled
-            onUndo={vi.fn()}
-            onRedo={vi.fn()}
-            onStartOverIntent={onStartOverIntent}
-          />,
-        )
+      renderCase: (dispatch) => {
+        const view = render(<TextInputHarness enabled dispatch={dispatch} />)
 
         return view.getByRole('textbox', { name: 'editor text input' })
       },
     },
     {
       name: 'the target is contenteditable',
-      renderCase: (onStartOverIntent) => {
+      renderCase: (dispatch) => {
         const view = render(
-          <ContentEditableHarness
-            enabled
-            onStartOverIntent={onStartOverIntent}
-          />,
+          <ContentEditableHarness enabled dispatch={dispatch} />,
         )
 
         return view.getByRole('textbox', { name: 'content editable' })
@@ -1258,11 +965,11 @@ describe('useKeyboardShortcuts', () => {
   ])(
     'does not dispatch start over or prevent default when $name',
     ({ renderCase }) => {
-      const onStartOverIntent = vi.fn()
-      const target = renderCase(onStartOverIntent)
+      const dispatch = createDispatchSpy()
+      const target = renderCase(dispatch)
       const events = fireStartOverShortcuts(target)
 
-      expect(onStartOverIntent).not.toHaveBeenCalled()
+      expect(dispatch).not.toHaveBeenCalled()
       for (const event of events) {
         expect(event.defaultPrevented).toBe(false)
       }
@@ -1270,20 +977,14 @@ describe('useKeyboardShortcuts', () => {
   )
 
   it('does not prevent default or intercept browser zoom keys (Ctrl+Plus/Minus, Cmd+Plus/Minus)', () => {
+    const dispatch = createDispatchSpy()
+
     render(
       <KeyboardShortcutHarness
         enabled
         hasSelection={false}
         isBlockingOverlayOpen={false}
-        onUndo={vi.fn()}
-        onRedo={vi.fn()}
-        onStartOverIntent={vi.fn()}
-        onOpenDeleteDialog={vi.fn()}
-        onFocusSelected={vi.fn()}
-        onMoveSelection={vi.fn()}
-        onClearSelection={vi.fn()}
-        onRotate={vi.fn()}
-        onSetCameraPreset={vi.fn()}
+        dispatch={dispatch}
       />,
     )
 
@@ -1309,24 +1010,19 @@ describe('useKeyboardShortcuts', () => {
 
       expect(event.defaultPrevented).toBe(false)
     }
+
+    expect(dispatch).not.toHaveBeenCalled()
   })
 
   it('suppresses always-on-match shortcuts (Ctrl+Z) even when execute condition fails (blocking overlay open)', () => {
-    const onUndo = vi.fn()
+    const dispatch = createDispatchSpy()
 
     render(
       <KeyboardShortcutHarness
         enabled
         hasSelection={false}
         isBlockingOverlayOpen
-        onUndo={onUndo}
-        onRedo={vi.fn()}
-        onStartOverIntent={vi.fn()}
-        onOpenDeleteDialog={vi.fn()}
-        onFocusSelected={vi.fn()}
-        onMoveSelection={vi.fn()}
-        onClearSelection={vi.fn()}
-        onRotate={vi.fn()}
+        dispatch={dispatch}
       />,
     )
 
@@ -1342,25 +1038,18 @@ describe('useKeyboardShortcuts', () => {
     // Should prevent default even though a blocking overlay is open (always-on-match behavior)
     expect(event.defaultPrevented).toBe(true)
     // Should NOT execute the action because the blocking overlay gate blocks execution
-    expect(onUndo).not.toHaveBeenCalled()
+    expect(dispatch).not.toHaveBeenCalled()
   })
 
   it('suppresses on-execute shortcuts only when action executes', () => {
-    const onMoveSelection = vi.fn()
+    const dispatch = createDispatchSpy()
 
     render(
       <KeyboardShortcutHarness
         enabled
         hasSelection
         isBlockingOverlayOpen={false}
-        onUndo={vi.fn()}
-        onRedo={vi.fn()}
-        onStartOverIntent={vi.fn()}
-        onOpenDeleteDialog={vi.fn()}
-        onFocusSelected={vi.fn()}
-        onMoveSelection={onMoveSelection}
-        onClearSelection={vi.fn()}
-        onRotate={vi.fn()}
+        dispatch={dispatch}
       />,
     )
 
@@ -1374,27 +1063,20 @@ describe('useKeyboardShortcuts', () => {
     fireEvent(window, moveEvent)
 
     expect(moveEvent.defaultPrevented).toBe(true)
-    expect(onMoveSelection).toHaveBeenCalled()
+    expect(dispatchedCommands(dispatch)).toEqual([
+      { kind: 'move-selection', delta: { x: 0, z: -0.5 } },
+    ])
   })
 
   it('falls through to canvas-browse shortcut when move shortcut cannot execute (no selection)', () => {
-    const onMoveSelection = vi.fn()
-    const onCanvasBrowse = vi.fn()
+    const dispatch = createDispatchSpy()
 
     render(
       <KeyboardShortcutHarness
         enabled
         hasSelection={false}
         isBlockingOverlayOpen={false}
-        onUndo={vi.fn()}
-        onRedo={vi.fn()}
-        onStartOverIntent={vi.fn()}
-        onOpenDeleteDialog={vi.fn()}
-        onFocusSelected={vi.fn()}
-        onMoveSelection={onMoveSelection}
-        onClearSelection={vi.fn()}
-        onRotate={vi.fn()}
-        onCanvasBrowse={onCanvasBrowse}
+        dispatch={dispatch}
       />,
     )
 
@@ -1407,16 +1089,16 @@ describe('useKeyboardShortcuts', () => {
 
     fireEvent(window, upEvent)
 
-    expect(onMoveSelection).not.toHaveBeenCalled()
-    expect(onCanvasBrowse).toHaveBeenCalledWith('prev')
+    expect(dispatchedCommands(dispatch)).toEqual([
+      { kind: 'canvas-browse', direction: 'prev' },
+    ])
     // canvas-browse-prev suppresses the default action
     expect(upEvent.defaultPrevented).toBe(true)
   })
 
   it('dispatches canvas-browse shortcuts when room view has focus and no selection', async () => {
     const user = userEvent.setup()
-    const onCanvasBrowse = vi.fn()
-    const onCanvasSelectPreviewed = vi.fn()
+    const dispatch = createDispatchSpy()
 
     render(
       <KeyboardShortcutHarness
@@ -1424,16 +1106,7 @@ describe('useKeyboardShortcuts', () => {
         hasSelection={false}
         isBlockingOverlayOpen={false}
         roomViewHasFocus
-        onUndo={vi.fn()}
-        onRedo={vi.fn()}
-        onStartOverIntent={vi.fn()}
-        onOpenDeleteDialog={vi.fn()}
-        onFocusSelected={vi.fn()}
-        onMoveSelection={vi.fn()}
-        onClearSelection={vi.fn()}
-        onRotate={vi.fn()}
-        onCanvasBrowse={onCanvasBrowse}
-        onCanvasSelectPreviewed={onCanvasSelectPreviewed}
+        dispatch={dispatch}
       />,
     )
 
@@ -1445,19 +1118,20 @@ describe('useKeyboardShortcuts', () => {
     await user.keyboard('{End}')
     await user.keyboard('{Enter}')
 
-    expect(onCanvasBrowse).toHaveBeenNthCalledWith(1, 'next')
-    expect(onCanvasBrowse).toHaveBeenNthCalledWith(2, 'next')
-    expect(onCanvasBrowse).toHaveBeenNthCalledWith(3, 'prev')
-    expect(onCanvasBrowse).toHaveBeenNthCalledWith(4, 'prev')
-    expect(onCanvasBrowse).toHaveBeenNthCalledWith(5, 'first')
-    expect(onCanvasBrowse).toHaveBeenNthCalledWith(6, 'last')
-    expect(onCanvasSelectPreviewed).toHaveBeenCalledTimes(1)
+    expect(dispatchedCommands(dispatch)).toEqual([
+      { kind: 'canvas-browse', direction: 'next' },
+      { kind: 'canvas-browse', direction: 'next' },
+      { kind: 'canvas-browse', direction: 'prev' },
+      { kind: 'canvas-browse', direction: 'prev' },
+      { kind: 'canvas-browse', direction: 'first' },
+      { kind: 'canvas-browse', direction: 'last' },
+      { kind: 'canvas-select-previewed' },
+    ])
   })
 
   it('does not dispatch canvas-browse shortcuts when room view lacks focus', async () => {
     const user = userEvent.setup()
-    const onCanvasBrowse = vi.fn()
-    const onCanvasSelectPreviewed = vi.fn()
+    const dispatch = createDispatchSpy()
 
     render(
       <KeyboardShortcutHarness
@@ -1465,29 +1139,18 @@ describe('useKeyboardShortcuts', () => {
         hasSelection={false}
         isBlockingOverlayOpen={false}
         roomViewHasFocus={false}
-        onUndo={vi.fn()}
-        onRedo={vi.fn()}
-        onStartOverIntent={vi.fn()}
-        onOpenDeleteDialog={vi.fn()}
-        onFocusSelected={vi.fn()}
-        onMoveSelection={vi.fn()}
-        onClearSelection={vi.fn()}
-        onRotate={vi.fn()}
-        onCanvasBrowse={onCanvasBrowse}
-        onCanvasSelectPreviewed={onCanvasSelectPreviewed}
+        dispatch={dispatch}
       />,
     )
 
     await user.keyboard('{ArrowRight}{ArrowLeft}{Home}{End}{Enter}')
 
-    expect(onCanvasBrowse).not.toHaveBeenCalled()
-    expect(onCanvasSelectPreviewed).not.toHaveBeenCalled()
+    expect(dispatch).not.toHaveBeenCalled()
   })
 
   it('does not dispatch canvas-browse shortcuts when selection exists', async () => {
     const user = userEvent.setup()
-    const onCanvasBrowse = vi.fn()
-    const onMoveSelection = vi.fn()
+    const dispatch = createDispatchSpy()
 
     render(
       <KeyboardShortcutHarness
@@ -1495,34 +1158,22 @@ describe('useKeyboardShortcuts', () => {
         hasSelection
         isBlockingOverlayOpen={false}
         roomViewHasFocus
-        onUndo={vi.fn()}
-        onRedo={vi.fn()}
-        onStartOverIntent={vi.fn()}
-        onOpenDeleteDialog={vi.fn()}
-        onFocusSelected={vi.fn()}
-        onMoveSelection={onMoveSelection}
-        onClearSelection={vi.fn()}
-        onRotate={vi.fn()}
-        onCanvasBrowse={onCanvasBrowse}
+        dispatch={dispatch}
       />,
     )
 
     await user.keyboard('{ArrowRight}{ArrowLeft}')
 
-    // Arrow keys should go to move-selection (has selection), not canvas-browse
-    expect(onMoveSelection).toHaveBeenCalled()
-    expect(onCanvasBrowse).not.toHaveBeenCalled()
+    // Arrow keys should go to move-selection (has selection), not canvas-browse.
+    expect(dispatchedCommands(dispatch)).toEqual([
+      { kind: 'move-selection', delta: { x: 0.5, z: 0 } },
+      { kind: 'move-selection', delta: { x: -0.5, z: 0 } },
+    ])
   })
 
   it('keeps room-view scoped shortcuts inactive until the room view has focus', async () => {
     const user = userEvent.setup()
-    const onOpenDeleteDialog = vi.fn()
-    const onMoveSelection = vi.fn()
-    const onRotate = vi.fn()
-    const onFocusSelected = vi.fn()
-    const onSetCameraPreset = vi.fn()
-    const onCanvasBrowse = vi.fn()
-    const onCanvasSelectPreviewed = vi.fn()
+    const dispatch = createDispatchSpy()
 
     render(
       <KeyboardShortcutHarness
@@ -1530,17 +1181,7 @@ describe('useKeyboardShortcuts', () => {
         hasSelection
         isBlockingOverlayOpen={false}
         roomViewHasFocus={false}
-        onUndo={vi.fn()}
-        onRedo={vi.fn()}
-        onStartOverIntent={vi.fn()}
-        onOpenDeleteDialog={onOpenDeleteDialog}
-        onFocusSelected={onFocusSelected}
-        onMoveSelection={onMoveSelection}
-        onClearSelection={vi.fn()}
-        onRotate={onRotate}
-        onSetCameraPreset={onSetCameraPreset}
-        onCanvasBrowse={onCanvasBrowse}
-        onCanvasSelectPreviewed={onCanvasSelectPreviewed}
+        dispatch={dispatch}
       />,
     )
 
@@ -1549,35 +1190,18 @@ describe('useKeyboardShortcuts', () => {
     await user.keyboard('{ArrowUp}{ArrowDown}{ArrowLeft}{ArrowRight}')
     await user.keyboard('{Home}{End}{Enter}')
 
-    expect(onOpenDeleteDialog).not.toHaveBeenCalled()
-    expect(onFocusSelected).not.toHaveBeenCalled()
-    expect(onRotate).not.toHaveBeenCalled()
-    expect(onSetCameraPreset).not.toHaveBeenCalled()
-    expect(onMoveSelection).not.toHaveBeenCalled()
-    expect(onCanvasBrowse).not.toHaveBeenCalled()
-    expect(onCanvasSelectPreviewed).not.toHaveBeenCalled()
+    expect(dispatch).not.toHaveBeenCalled()
   })
 
   it('suppresses room-view shortcuts while focus is inside selected item detail inputs', async () => {
     const user = userEvent.setup()
-    const onOpenDeleteDialog = vi.fn()
-    const onMoveSelection = vi.fn()
-    const onRotate = vi.fn()
+    const dispatch = createDispatchSpy()
 
-    render(
-      <SelectedItemDetailsInputHarness
-        enabled
-        onOpenDeleteDialog={onOpenDeleteDialog}
-        onMoveSelection={onMoveSelection}
-        onRotate={onRotate}
-      />,
-    )
+    render(<SelectedItemDetailsInputHarness enabled dispatch={dispatch} />)
 
     await user.keyboard('{Delete}{Backspace},.')
     await user.keyboard('{ArrowUp}{ArrowDown}{ArrowLeft}{ArrowRight}')
 
-    expect(onOpenDeleteDialog).not.toHaveBeenCalled()
-    expect(onRotate).not.toHaveBeenCalled()
-    expect(onMoveSelection).not.toHaveBeenCalled()
+    expect(dispatch).not.toHaveBeenCalled()
   })
 })

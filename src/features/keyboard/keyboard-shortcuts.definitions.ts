@@ -1,3 +1,4 @@
+import type { EditorCommand } from '@/editor-state/editor-command'
 import type { KeyCombo } from '@/shared/lib/ui/keyboard-shortcut-matcher'
 
 export type SuppressionMode = 'always-on-match' | 'on-execute'
@@ -39,6 +40,7 @@ export interface KeyboardShortcutDefinition {
   id: string
   match: KeyCombo | KeyCombo[]
   handler: KeyboardShortcutHandler
+  command?: EditorCommand
   helpEntries: ShortcutHelpEntry[]
   allowMatchInEditingTarget?: boolean
   requiresRoomViewFocus?: boolean
@@ -71,6 +73,7 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     id: 'undo',
     match: { key: 'z', ctrlOrMeta: true },
     handler: 'use-keyboard-shortcuts',
+    command: { kind: 'undo' },
     suppressionMode: 'always-on-match',
     helpEntries: [
       {
@@ -91,6 +94,7 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
       { key: 'y', ctrlOrMeta: true },
     ],
     handler: 'use-keyboard-shortcuts',
+    command: { kind: 'redo' },
     suppressionMode: 'always-on-match',
     helpEntries: [
       {
@@ -111,6 +115,7 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     id: 'start-over',
     match: { key: 'n', ctrlOrMeta: true, alt: true },
     handler: 'use-keyboard-shortcuts',
+    command: { kind: 'start-over' },
     requiresStartOverCapability: true,
     helpEntries: [
       {
@@ -128,6 +133,7 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     id: 'focus-inspector',
     match: { key: 'I', shift: true },
     handler: 'use-keyboard-shortcuts',
+    command: { kind: 'focus-inspector' },
     helpEntries: [
       {
         sectionTitle: 'Navigation',
@@ -144,6 +150,7 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     id: 'focus-room-view',
     match: { key: 'R', shift: true },
     handler: 'use-keyboard-shortcuts',
+    command: { kind: 'focus-room-view' },
     helpEntries: [
       {
         sectionTitle: 'Navigation',
@@ -160,6 +167,7 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     id: 'focus-outliner',
     match: { key: 'O', shift: true },
     handler: 'use-keyboard-shortcuts',
+    command: { kind: 'focus-outliner' },
     helpEntries: [
       {
         sectionTitle: 'Navigation',
@@ -176,6 +184,7 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     id: 'delete',
     match: [{ key: 'delete' }, { key: 'backspace' }],
     handler: 'use-keyboard-shortcuts',
+    command: { kind: 'open-delete-dialog', returnFocusTo: 'room-view' },
     requiresRoomViewFocus: true,
     requiresSelection: true,
     suppressionMode: 'on-execute',
@@ -195,6 +204,7 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     id: 'focus-selected',
     match: { key: 'f' },
     handler: 'use-keyboard-shortcuts',
+    command: { kind: 'focus-selected' },
     requiresRoomViewFocus: true,
     requiresSelection: true,
     suppressionMode: 'on-execute',
@@ -214,6 +224,7 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     id: 'preset-corner',
     match: [{ key: '1' }, { code: 'Digit1', shift: true }, { code: 'Numpad1' }],
     handler: 'use-keyboard-shortcuts',
+    command: { kind: 'set-camera-preset', preset: 'corner' },
     requiresRoomViewFocus: true,
     suppressionMode: 'on-execute',
     helpEntries: [
@@ -232,6 +243,7 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     id: 'preset-front',
     match: [{ key: '2' }, { code: 'Digit2', shift: true }, { code: 'Numpad2' }],
     handler: 'use-keyboard-shortcuts',
+    command: { kind: 'set-camera-preset', preset: 'front' },
     requiresRoomViewFocus: true,
     suppressionMode: 'on-execute',
     helpEntries: [
@@ -250,6 +262,7 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     id: 'preset-side',
     match: [{ key: '3' }, { code: 'Digit3', shift: true }, { code: 'Numpad3' }],
     handler: 'use-keyboard-shortcuts',
+    command: { kind: 'set-camera-preset', preset: 'side' },
     requiresRoomViewFocus: true,
     suppressionMode: 'on-execute',
     helpEntries: [
@@ -268,6 +281,7 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     id: 'preset-top',
     match: [{ key: '4' }, { code: 'Digit4', shift: true }, { code: 'Numpad4' }],
     handler: 'use-keyboard-shortcuts',
+    command: { kind: 'set-camera-preset', preset: 'top' },
     requiresRoomViewFocus: true,
     suppressionMode: 'on-execute',
     helpEntries: [
@@ -286,6 +300,7 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     id: 'move-up',
     match: { key: 'ArrowUp' },
     handler: 'use-keyboard-shortcuts',
+    command: { kind: 'move-selection', delta: { x: 0, z: -0.5 } },
     requiresRoomViewFocus: true,
     requiresSelection: true,
     suppressionMode: 'on-execute',
@@ -305,6 +320,7 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     id: 'move-up-large',
     match: { key: 'ArrowUp', shift: true },
     handler: 'use-keyboard-shortcuts',
+    command: { kind: 'move-selection', delta: { x: 0, z: -1 } },
     requiresRoomViewFocus: true,
     requiresSelection: true,
     suppressionMode: 'on-execute',
@@ -324,6 +340,7 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     id: 'move-up-small',
     match: { key: 'ArrowUp', alt: true },
     handler: 'use-keyboard-shortcuts',
+    command: { kind: 'move-selection', delta: { x: 0, z: -0.1 } },
     requiresRoomViewFocus: true,
     requiresSelection: true,
     suppressionMode: 'on-execute',
@@ -343,6 +360,7 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     id: 'move-down',
     match: { key: 'ArrowDown' },
     handler: 'use-keyboard-shortcuts',
+    command: { kind: 'move-selection', delta: { x: 0, z: 0.5 } },
     requiresRoomViewFocus: true,
     requiresSelection: true,
     suppressionMode: 'on-execute',
@@ -362,6 +380,7 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     id: 'move-down-large',
     match: { key: 'ArrowDown', shift: true },
     handler: 'use-keyboard-shortcuts',
+    command: { kind: 'move-selection', delta: { x: 0, z: 1 } },
     requiresRoomViewFocus: true,
     requiresSelection: true,
     suppressionMode: 'on-execute',
@@ -381,6 +400,7 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     id: 'move-down-small',
     match: { key: 'ArrowDown', alt: true },
     handler: 'use-keyboard-shortcuts',
+    command: { kind: 'move-selection', delta: { x: 0, z: 0.1 } },
     requiresRoomViewFocus: true,
     requiresSelection: true,
     suppressionMode: 'on-execute',
@@ -400,6 +420,7 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     id: 'move-left',
     match: { key: 'ArrowLeft' },
     handler: 'use-keyboard-shortcuts',
+    command: { kind: 'move-selection', delta: { x: -0.5, z: 0 } },
     requiresRoomViewFocus: true,
     requiresSelection: true,
     suppressionMode: 'on-execute',
@@ -419,6 +440,7 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     id: 'move-left-large',
     match: { key: 'ArrowLeft', shift: true },
     handler: 'use-keyboard-shortcuts',
+    command: { kind: 'move-selection', delta: { x: -1, z: 0 } },
     requiresRoomViewFocus: true,
     requiresSelection: true,
     suppressionMode: 'on-execute',
@@ -438,6 +460,7 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     id: 'move-left-small',
     match: { key: 'ArrowLeft', alt: true },
     handler: 'use-keyboard-shortcuts',
+    command: { kind: 'move-selection', delta: { x: -0.1, z: 0 } },
     requiresRoomViewFocus: true,
     requiresSelection: true,
     suppressionMode: 'on-execute',
@@ -457,6 +480,7 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     id: 'move-right',
     match: { key: 'ArrowRight' },
     handler: 'use-keyboard-shortcuts',
+    command: { kind: 'move-selection', delta: { x: 0.5, z: 0 } },
     requiresRoomViewFocus: true,
     requiresSelection: true,
     suppressionMode: 'on-execute',
@@ -476,6 +500,7 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     id: 'move-right-large',
     match: { key: 'ArrowRight', shift: true },
     handler: 'use-keyboard-shortcuts',
+    command: { kind: 'move-selection', delta: { x: 1, z: 0 } },
     requiresRoomViewFocus: true,
     requiresSelection: true,
     suppressionMode: 'on-execute',
@@ -495,6 +520,7 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     id: 'move-right-small',
     match: { key: 'ArrowRight', alt: true },
     handler: 'use-keyboard-shortcuts',
+    command: { kind: 'move-selection', delta: { x: 0.1, z: 0 } },
     requiresRoomViewFocus: true,
     requiresSelection: true,
     suppressionMode: 'on-execute',
@@ -514,6 +540,7 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     id: 'rotate-left',
     match: [{ key: ',' }, { code: 'Comma' }],
     handler: 'use-keyboard-shortcuts',
+    command: { kind: 'rotate-selection', direction: 1 },
     requiresRoomViewFocus: true,
     requiresSelection: true,
     suppressionMode: 'on-execute',
@@ -533,6 +560,7 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     id: 'rotate-right',
     match: [{ key: '.' }, { code: 'Period' }],
     handler: 'use-keyboard-shortcuts',
+    command: { kind: 'rotate-selection', direction: -1 },
     requiresRoomViewFocus: true,
     requiresSelection: true,
     suppressionMode: 'on-execute',
@@ -552,6 +580,7 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     id: 'canvas-browse-next',
     match: [{ key: 'ArrowRight' }, { key: 'ArrowDown' }],
     handler: 'use-keyboard-shortcuts',
+    command: { kind: 'canvas-browse', direction: 'next' },
     requiresRoomViewFocus: true,
     requiresNoSelection: true,
     suppressionMode: 'on-execute',
@@ -571,6 +600,7 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     id: 'canvas-browse-prev',
     match: [{ key: 'ArrowLeft' }, { key: 'ArrowUp' }],
     handler: 'use-keyboard-shortcuts',
+    command: { kind: 'canvas-browse', direction: 'prev' },
     requiresRoomViewFocus: true,
     requiresNoSelection: true,
     suppressionMode: 'on-execute',
@@ -590,6 +620,7 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     id: 'canvas-browse-first',
     match: { key: 'Home' },
     handler: 'use-keyboard-shortcuts',
+    command: { kind: 'canvas-browse', direction: 'first' },
     requiresRoomViewFocus: true,
     requiresNoSelection: true,
     suppressionMode: 'on-execute',
@@ -609,6 +640,7 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     id: 'canvas-browse-last',
     match: { key: 'End' },
     handler: 'use-keyboard-shortcuts',
+    command: { kind: 'canvas-browse', direction: 'last' },
     requiresRoomViewFocus: true,
     requiresNoSelection: true,
     suppressionMode: 'on-execute',
@@ -628,6 +660,7 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     id: 'canvas-select-previewed',
     match: [{ key: 'Enter' }, { key: ' ' }],
     handler: 'use-keyboard-shortcuts',
+    command: { kind: 'canvas-select-previewed' },
     requiresRoomViewFocus: true,
     requiresNoSelection: true,
     suppressionMode: 'on-execute',
@@ -647,6 +680,7 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     id: 'clear-selection',
     match: { key: 'Escape' },
     handler: 'use-keyboard-shortcuts',
+    command: { kind: 'clear-selection' },
     requiresRoomViewFocus: true,
     suppressionMode: 'on-execute',
     helpEntries: [

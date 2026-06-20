@@ -1,5 +1,6 @@
 import { useEffect, useEffectEvent } from 'react'
-import type { CameraPreset } from '@/scene/scene.types'
+import type { EditorCommand } from '@/editor-state/editor-command'
+import type { CommandDispatch } from '@/editor-state/command-dispatch-context'
 import {
   isContentEditableTarget,
   isDialogTarget,
@@ -11,11 +12,8 @@ import {
 } from '@/shared/lib/ui/keyboard-shortcut-matcher'
 import {
   USE_KEYBOARD_SHORTCUT_DEFINITIONS,
-  type KeyboardShortcutDefinition,
   type SuppressionMode,
 } from './keyboard-shortcuts.definitions'
-
-type RotationDirection = -1 | 1
 
 interface ShortcutContext {
   targetIsEditingTarget: boolean
@@ -35,7 +33,7 @@ interface ShortcutDefinition {
   requiresNoSelection?: boolean
   requiresStartOverCapability?: boolean
   suppressionMode?: SuppressionMode
-  execute: () => void
+  command: EditorCommand
 }
 
 interface UseKeyboardShortcutsOptions {
@@ -44,20 +42,7 @@ interface UseKeyboardShortcutsOptions {
   isBlockingOverlayOpen: boolean
   canStartOver: boolean
   roomViewHasFocus: boolean
-  onFocusInspector: () => void
-  onFocusRoomView: () => void
-  onFocusOutliner: () => void
-  onUndo: () => void
-  onRedo: () => void
-  onStartOverIntent: () => void
-  onOpenDeleteDialog: () => void
-  onFocusSelected: () => void
-  onMoveSelection: (delta: { x: number; z: number }) => void
-  onClearSelection: () => void
-  onRotate: (direction: RotationDirection) => void
-  onSetCameraPreset: (preset: CameraPreset) => void
-  onCanvasBrowse: (direction: 'next' | 'prev' | 'first' | 'last') => void
-  onCanvasSelectPreviewed: () => void
+  dispatch: CommandDispatch
 }
 
 function shouldBlockForTextInput(
@@ -116,181 +101,18 @@ function canExecuteShortcut(
   return true
 }
 
-function getShortcutExecutor(
-  shortcutId: KeyboardShortcutDefinition['id'],
-  callbacks: {
-    onFocusInspector: () => void
-    onFocusRoomView: () => void
-    onFocusOutliner: () => void
-    onUndo: () => void
-    onRedo: () => void
-    onStartOverIntent: () => void
-    onOpenDeleteDialog: () => void
-    onFocusSelected: () => void
-    onMoveSelection: (delta: { x: number; z: number }) => void
-    onClearSelection: () => void
-    onRotate: (direction: RotationDirection) => void
-    onSetCameraPreset: (preset: CameraPreset) => void
-    onCanvasBrowse: (direction: 'next' | 'prev' | 'first' | 'last') => void
-    onCanvasSelectPreviewed: () => void
-  },
-) {
-  switch (shortcutId) {
-    case 'focus-inspector':
-      return callbacks.onFocusInspector
-    case 'focus-room-view':
-      return callbacks.onFocusRoomView
-    case 'focus-outliner':
-      return callbacks.onFocusOutliner
-    case 'undo':
-      return callbacks.onUndo
-    case 'redo':
-      return callbacks.onRedo
-    case 'start-over':
-      return callbacks.onStartOverIntent
-    case 'delete':
-      return callbacks.onOpenDeleteDialog
-    case 'focus-selected':
-      return callbacks.onFocusSelected
-    case 'preset-corner':
-      return () => {
-        callbacks.onSetCameraPreset('corner')
-      }
-    case 'preset-front':
-      return () => {
-        callbacks.onSetCameraPreset('front')
-      }
-    case 'preset-side':
-      return () => {
-        callbacks.onSetCameraPreset('side')
-      }
-    case 'preset-top':
-      return () => {
-        callbacks.onSetCameraPreset('top')
-      }
-    case 'move-up':
-      return () => {
-        callbacks.onMoveSelection({ x: 0, z: -0.5 })
-      }
-    case 'move-up-large':
-      return () => {
-        callbacks.onMoveSelection({ x: 0, z: -1 })
-      }
-    case 'move-up-small':
-      return () => {
-        callbacks.onMoveSelection({ x: 0, z: -0.1 })
-      }
-    case 'move-down':
-      return () => {
-        callbacks.onMoveSelection({ x: 0, z: 0.5 })
-      }
-    case 'move-down-large':
-      return () => {
-        callbacks.onMoveSelection({ x: 0, z: 1 })
-      }
-    case 'move-down-small':
-      return () => {
-        callbacks.onMoveSelection({ x: 0, z: 0.1 })
-      }
-    case 'move-left':
-      return () => {
-        callbacks.onMoveSelection({ x: -0.5, z: 0 })
-      }
-    case 'move-left-large':
-      return () => {
-        callbacks.onMoveSelection({ x: -1, z: 0 })
-      }
-    case 'move-left-small':
-      return () => {
-        callbacks.onMoveSelection({ x: -0.1, z: 0 })
-      }
-    case 'move-right':
-      return () => {
-        callbacks.onMoveSelection({ x: 0.5, z: 0 })
-      }
-    case 'move-right-large':
-      return () => {
-        callbacks.onMoveSelection({ x: 1, z: 0 })
-      }
-    case 'move-right-small':
-      return () => {
-        callbacks.onMoveSelection({ x: 0.1, z: 0 })
-      }
-    case 'rotate-left':
-      return () => {
-        callbacks.onRotate(1)
-      }
-    case 'rotate-right':
-      return () => {
-        callbacks.onRotate(-1)
-      }
-    case 'canvas-browse-next':
-      return () => {
-        callbacks.onCanvasBrowse('next')
-      }
-    case 'canvas-browse-prev':
-      return () => {
-        callbacks.onCanvasBrowse('prev')
-      }
-    case 'canvas-browse-first':
-      return () => {
-        callbacks.onCanvasBrowse('first')
-      }
-    case 'canvas-browse-last':
-      return () => {
-        callbacks.onCanvasBrowse('last')
-      }
-    case 'canvas-select-previewed':
-      return callbacks.onCanvasSelectPreviewed
-    case 'clear-selection':
-      return callbacks.onClearSelection
-    default:
-      return null
-  }
-}
-
 export function useKeyboardShortcuts({
   enabled,
   hasSelection,
   isBlockingOverlayOpen,
   canStartOver,
   roomViewHasFocus,
-  onFocusInspector,
-  onFocusRoomView,
-  onFocusOutliner,
-  onUndo,
-  onRedo,
-  onStartOverIntent,
-  onOpenDeleteDialog,
-  onFocusSelected,
-  onMoveSelection,
-  onClearSelection,
-  onRotate,
-  onSetCameraPreset,
-  onCanvasBrowse,
-  onCanvasSelectPreviewed,
+  dispatch,
 }: UseKeyboardShortcutsOptions): void {
   const shortcutDefinitions: ShortcutDefinition[] =
     USE_KEYBOARD_SHORTCUT_DEFINITIONS.map((shortcut) => {
-      const execute = getShortcutExecutor(shortcut.id, {
-        onFocusInspector,
-        onFocusRoomView,
-        onFocusOutliner,
-        onUndo,
-        onRedo,
-        onStartOverIntent,
-        onOpenDeleteDialog,
-        onFocusSelected,
-        onMoveSelection,
-        onClearSelection,
-        onRotate,
-        onSetCameraPreset,
-        onCanvasBrowse,
-        onCanvasSelectPreviewed,
-      })
-
-      if (!execute) {
-        throw new Error(`Missing keyboard shortcut executor for ${shortcut.id}`)
+      if (!shortcut.command) {
+        throw new Error(`Missing command for ${shortcut.id}`)
       }
 
       return {
@@ -302,7 +124,7 @@ export function useKeyboardShortcuts({
         requiresNoSelection: shortcut.requiresNoSelection,
         requiresStartOverCapability: shortcut.requiresStartOverCapability,
         suppressionMode: shortcut.suppressionMode,
-        execute,
+        command: shortcut.command,
       }
     })
 
@@ -349,7 +171,7 @@ export function useKeyboardShortcuts({
       if (suppressionMode === 'always-on-match') {
         event.preventDefault()
         if (canExecute) {
-          shortcut.execute()
+          dispatch(shortcut.command)
         }
         return
       }
@@ -357,7 +179,7 @@ export function useKeyboardShortcuts({
       // on-execute: suppress and stop only if the action will actually run
       if (canExecute) {
         event.preventDefault()
-        shortcut.execute()
+        dispatch(shortcut.command)
         return
       }
 
