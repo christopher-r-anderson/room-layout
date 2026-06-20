@@ -7,20 +7,24 @@ import { IconDotsVertical, IconHomeCog } from '@tabler/icons-react'
 import { RoomDrawer } from '@/features/room-surface/room-drawer'
 import { HeaderMoreActionsDrawer } from './header-more-actions-drawer'
 import { ROOM_TRIGGER_TOOLTIP } from '@/features/room-surface/room-copy'
+import {
+  HEADER_MORE_ACTIONS_CONTENT_ID,
+  topHeaderDialogOpenChange,
+} from './top-header-dialog-bindings'
+import { headerFocusRegistry } from './header-focus-registry'
 import type { TopHeaderMobileProps } from './top-header.types'
 
 export function TopHeaderMobile({
   catalog,
-  dialogs,
   editorInteractionsEnabled,
   floorFinishId,
   floorFinishLoading,
   floorFinishes,
   history,
   mobileRoomDrawerRef,
-  mobileRoomTriggerId,
-  headerMoreActionsContentId,
-  headerMoreActionsTriggerId,
+  isRoomSurfaceOpen,
+  isHeaderMoreActionsOpen,
+  blockingOverlayOpen,
   startOverDisabled,
   onFloorFinishChange,
   onOpenKeyboardShortcutsFromHeaderMoreActions,
@@ -31,11 +35,7 @@ export function TopHeaderMobile({
   onWallFinishChange,
   wallFinishId,
   wallFinishes,
-  focusControlById,
 }: TopHeaderMobileProps) {
-  const isRoomOpen =
-    dialogs.isRoomSurfaceOpen && dialogs.roomSurfaceLayout === 'mobile'
-
   return (
     <div
       ref={topHeaderRef}
@@ -64,18 +64,17 @@ export function TopHeaderMobile({
                 <TooltipTrigger
                   render={
                     <Button
-                      id={mobileRoomTriggerId}
+                      ref={headerFocusRegistry.register('top-header-room')}
                       type="button"
                       variant="secondary"
                       size="toolbar"
                       aria-controls="room-drawer"
-                      aria-expanded={isRoomOpen}
+                      aria-expanded={isRoomSurfaceOpen}
                       aria-haspopup="dialog"
                       onClick={() => {
-                        dialogs.onRoomSurfaceOpenChange(!isRoomOpen, {
-                          payload: { layout: 'mobile' },
-                          returnFocusAccessPoint: 'top-header-room',
-                        })
+                        topHeaderDialogOpenChange.roomSurface(
+                          !isRoomSurfaceOpen,
+                        )
                       }}
                     >
                       <IconHomeCog size={16} aria-hidden="true" />
@@ -103,18 +102,16 @@ export function TopHeaderMobile({
               onUndo={history.onUndo}
             />
             <Button
-              id={headerMoreActionsTriggerId}
+              ref={headerFocusRegistry.register('top-header-more-actions')}
               type="button"
               variant="secondary"
               size="toolbar-icon"
               aria-label="More actions"
-              aria-controls={headerMoreActionsContentId}
-              aria-expanded={dialogs.isHeaderMoreActionsOpen}
+              aria-controls={HEADER_MORE_ACTIONS_CONTENT_ID}
+              aria-expanded={isHeaderMoreActionsOpen}
               aria-haspopup="dialog"
               onClick={() => {
-                dialogs.onHeaderMoreActionsOpenChange(true, {
-                  returnFocusAccessPoint: 'top-header-more-actions',
-                })
+                topHeaderDialogOpenChange.headerMoreActions(true)
               }}
             >
               <IconDotsVertical aria-hidden="true" />
@@ -125,19 +122,14 @@ export function TopHeaderMobile({
 
       <RoomDrawer
         contentRef={mobileRoomDrawerRef}
-        open={
-          dialogs.isRoomSurfaceOpen && dialogs.roomSurfaceLayout === 'mobile'
-        }
+        open={isRoomSurfaceOpen}
         onOpenChange={(open) => {
-          dialogs.onRoomSurfaceOpenChange(open, {
-            payload: { layout: 'mobile' },
-            returnFocusAccessPoint: 'top-header-room',
-          })
+          topHeaderDialogOpenChange.roomSurface(open)
         }}
         onCloseAutoFocus={() => {
-          focusControlById(mobileRoomTriggerId)
+          headerFocusRegistry.focus('top-header-room')
         }}
-        restoreFocusOnClose={!dialogs.isBlockingOverlayOpen}
+        restoreFocusOnClose={!blockingOverlayOpen}
         floorFinishId={floorFinishId}
         floorFinishLoading={floorFinishLoading}
         floorFinishes={floorFinishes}
@@ -148,17 +140,15 @@ export function TopHeaderMobile({
       />
 
       <HeaderMoreActionsDrawer
-        contentId={headerMoreActionsContentId}
+        contentId={HEADER_MORE_ACTIONS_CONTENT_ID}
         shareDisabled={!editorInteractionsEnabled}
         startOverDisabled={!editorInteractionsEnabled || startOverDisabled}
-        open={dialogs.isHeaderMoreActionsOpen}
+        open={isHeaderMoreActionsOpen}
         onOpenChange={(open) => {
-          dialogs.onHeaderMoreActionsOpenChange(open, {
-            returnFocusAccessPoint: 'top-header-more-actions',
-          })
+          topHeaderDialogOpenChange.headerMoreActions(open)
         }}
         onCloseAutoFocus={() => {
-          focusControlById(headerMoreActionsTriggerId)
+          headerFocusRegistry.focus('top-header-more-actions')
         }}
         onShareSceneUrl={onShareSceneUrl}
         onOpenKeyboardShortcuts={onOpenKeyboardShortcutsFromHeaderMoreActions}

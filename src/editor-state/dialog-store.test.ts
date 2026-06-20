@@ -63,7 +63,6 @@ describe('dialogStore', () => {
     act(() => {
       dialogActions.openDialog('room-surface', {
         payload: { layout: 'desktop' },
-        returnFocusAccessPoint: 'top-header-room',
       })
     })
 

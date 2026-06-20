@@ -404,7 +404,9 @@ describe('EditorOverlay integration', () => {
       ).not.toBeInTheDocument()
     })
 
-    expect(environmentTrigger).toHaveFocus()
+    await waitFor(() => {
+      expect(environmentTrigger).toHaveFocus()
+    })
     expect(screen.getByRole('group', { name: 'Camera' })).toBeVisible()
   })
 })

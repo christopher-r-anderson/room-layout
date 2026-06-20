@@ -1,15 +1,12 @@
 import type { FurnitureCatalogEntry } from '@/scene/objects/furniture-catalog'
-import type {
-  AppDialogOpenRequest,
-  DialogAccessPoint,
-} from '@/app/dialogs/dialog-focus'
+import type { AppDialogOpenRequest } from '@/app/dialogs/dialog-requests'
 import type {
   EnvironmentMaterialConfig,
   FloorFinishOption,
   WallFinishOption,
 } from '@/shared/lib/three/environment-materials'
 import type { Ref } from 'react'
-import type { HeaderLayoutMode } from '@/shared/layout/use-header-layout-mode'
+
 interface TopHeaderProps {
   catalog: {
     catalog: FurnitureCatalogEntry[]
@@ -18,35 +15,6 @@ interface TopHeaderProps {
     onAddFurniture: () => boolean
     onCatalogIdToAddChange: (catalogId: string) => void
     onCatalogDrawerOpenChange: (open: boolean) => void
-  }
-  dialogs: {
-    roomSurfaceLayout: HeaderLayoutMode | null
-    isBlockingOverlayOpen: boolean
-    isRoomSurfaceOpen: boolean
-    isInfoDialogOpen: boolean
-    isKeyboardShortcutsDialogOpen: boolean
-    isHeaderMoreActionsOpen: boolean
-    isStartOverDialogOpen: boolean
-    onCloseStartOverDialog: () => void
-    onConfirmStartOver: () => void
-    onRoomSurfaceOpenChange: (
-      open: boolean,
-      request?: AppDialogOpenRequest<{ layout: HeaderLayoutMode }>,
-    ) => boolean
-    onInfoDialogOpenChange: (
-      open: boolean,
-      request?: AppDialogOpenRequest,
-    ) => boolean
-    onKeyboardShortcutsDialogOpenChange: (
-      open: boolean,
-      request?: AppDialogOpenRequest,
-    ) => boolean
-    onHeaderMoreActionsOpenChange: (
-      open: boolean,
-      request?: AppDialogOpenRequest,
-    ) => boolean
-    onOpenStartOverDialog: (request?: AppDialogOpenRequest) => void
-    returnFocusAccessPoint: DialogAccessPoint
   }
   editorInteractionsEnabled: boolean
   history: {
@@ -69,6 +37,22 @@ interface TopHeaderProps {
   onWallFinishChange: (finishId: string) => void
 }
 
+type TopHeaderToolbarProps = Pick<
+  TopHeaderProps,
+  | 'catalog'
+  | 'editorInteractionsEnabled'
+  | 'floorFinishId'
+  | 'floorFinishLoading'
+  | 'floorFinishes'
+  | 'history'
+  | 'onFloorFinishChange'
+  | 'startOverDisabled'
+  | 'onShareSceneUrl'
+  | 'onWallFinishChange'
+  | 'wallFinishId'
+  | 'wallFinishes'
+>
+
 export interface TopHeaderShellProps {
   catalog: FurnitureCatalogEntry[]
   environmentConfig: EnvironmentMaterialConfig | null
@@ -90,53 +74,22 @@ export interface TopHeaderContainerProps extends TopHeaderShellProps {
   mobileRoomDrawerRef?: Ref<HTMLDivElement>
 }
 
-export interface TopHeaderMobileProps extends Pick<
-  TopHeaderProps,
-  | 'catalog'
-  | 'dialogs'
-  | 'editorInteractionsEnabled'
-  | 'floorFinishId'
-  | 'floorFinishLoading'
-  | 'floorFinishes'
-  | 'history'
-  | 'onFloorFinishChange'
-  | 'startOverDisabled'
-  | 'onShareSceneUrl'
-  | 'onWallFinishChange'
-  | 'wallFinishId'
-  | 'wallFinishes'
-> {
+export interface TopHeaderMobileProps extends TopHeaderToolbarProps {
   topHeaderRef?: Ref<HTMLDivElement>
   mobileRoomDrawerRef?: Ref<HTMLDivElement>
-  mobileRoomTriggerId: string
-  headerMoreActionsContentId: string
-  headerMoreActionsTriggerId: string
+  isRoomSurfaceOpen: boolean
+  isHeaderMoreActionsOpen: boolean
+  blockingOverlayOpen: boolean
   onOpenKeyboardShortcutsFromHeaderMoreActions: () => void
   onOpenStartOverFromHeaderMoreActions: () => void
   onOpenProjectInfoFromHeaderMoreActions: () => void
-  focusControlById: (id: string) => void
 }
 
-export interface TopHeaderDesktopProps extends Pick<
-  TopHeaderProps,
-  | 'catalog'
-  | 'dialogs'
-  | 'editorInteractionsEnabled'
-  | 'floorFinishId'
-  | 'floorFinishLoading'
-  | 'floorFinishes'
-  | 'history'
-  | 'onFloorFinishChange'
-  | 'startOverDisabled'
-  | 'onShareSceneUrl'
-  | 'onWallFinishChange'
-  | 'wallFinishId'
-  | 'wallFinishes'
-> {
+export interface TopHeaderDesktopProps extends TopHeaderToolbarProps {
   topHeaderRef?: Ref<HTMLDivElement>
   desktopRoomSidebarRef?: Ref<HTMLElement>
-  desktopRoomTriggerId: string
-  desktopInfoTriggerId: string
-  desktopKeyboardTriggerId: string
-  startOverTriggerId: string
+  isRoomSurfaceOpen: boolean
+  isKeyboardShortcutsOpen: boolean
+  isProjectInfoOpen: boolean
+  onOpenStartOverDialog: (request?: AppDialogOpenRequest) => void
 }

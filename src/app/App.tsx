@@ -19,7 +19,7 @@ import {
   useDialogPayload,
   useIsBlockingOverlayOpen,
 } from '@/editor-state/dialog-store'
-import type { AppDialogOpenRequest } from '@/app/dialogs/dialog-focus'
+import type { AppDialogOpenRequest } from '@/app/dialogs/dialog-requests'
 import { DIALOG_IDS } from '@/app/dialogs/dialog-registry'
 import {
   sceneStateActions,
@@ -71,8 +71,10 @@ import { sceneCommands } from '@/scene/scene-commands'
 import { ROTATION_STEP_RADIANS } from '@/app/controllers/_shared/constants'
 import { useActiveFinishIds } from '@/app/controllers/_shared/use-active-finish-ids'
 import { useTestStateBridge } from './testing/use-test-state-bridge'
-import { buildDialogRuntimeContext } from './dialogs/dialog-context-builder'
-import { bootstrapDialogRegistry } from './dialogs/bootstrap-dialog-registry'
+import {
+  buildDialogRuntimeContext,
+  bootstrapDialogRegistry,
+} from './dialogs/bootstrap-dialog-registry'
 
 class SceneAssetErrorBoundary extends Component<
   {

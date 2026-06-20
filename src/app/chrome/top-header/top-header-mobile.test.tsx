@@ -9,6 +9,7 @@ import type {
 } from '@/shared/lib/three/environment-materials'
 import { ROOM_TRIGGER_TOOLTIP } from '@/features/room-surface/room-copy'
 import { TopHeaderMobile } from './top-header-mobile'
+import { topHeaderDialogOpenChange } from './top-header-dialog-bindings'
 import type { TopHeaderMobileProps } from './top-header.types'
 
 vi.mock('@/features/catalog/catalog-drawer', () => ({
@@ -63,23 +64,6 @@ function createProps(
       onCatalogIdToAddChange: vi.fn(),
       onCatalogDrawerOpenChange: vi.fn(),
     },
-    dialogs: {
-      roomSurfaceLayout: null,
-      isBlockingOverlayOpen: false,
-      isRoomSurfaceOpen: false,
-      isInfoDialogOpen: false,
-      isKeyboardShortcutsDialogOpen: false,
-      isHeaderMoreActionsOpen: false,
-      isStartOverDialogOpen: false,
-      onCloseStartOverDialog: vi.fn(),
-      onConfirmStartOver: vi.fn(),
-      onRoomSurfaceOpenChange: vi.fn(() => true),
-      onInfoDialogOpenChange: vi.fn(() => true),
-      onKeyboardShortcutsDialogOpenChange: vi.fn(() => true),
-      onHeaderMoreActionsOpenChange: vi.fn(() => true),
-      onOpenStartOverDialog: vi.fn(),
-      returnFocusAccessPoint: 'none',
-    },
     editorInteractionsEnabled: true,
     floorFinishId: 'wood-floor',
     floorFinishLoading: false,
@@ -90,9 +74,9 @@ function createProps(
       onRedo: vi.fn(),
       onUndo: vi.fn(),
     },
-    headerMoreActionsContentId: 'header-more-actions-content',
-    mobileRoomTriggerId: 'mobile-room-trigger',
-    headerMoreActionsTriggerId: 'header-more-actions-trigger',
+    isRoomSurfaceOpen: false,
+    isHeaderMoreActionsOpen: false,
+    blockingOverlayOpen: false,
     startOverDisabled: false,
     onFloorFinishChange: vi.fn(),
     onOpenKeyboardShortcutsFromHeaderMoreActions: vi.fn(),
@@ -104,7 +88,6 @@ function createProps(
     onWallFinishChange: vi.fn(),
     wallFinishId: 'light-gray',
     wallFinishes: createWallOptions(),
-    focusControlById: vi.fn(),
     ...overrides,
   }
 }
@@ -117,15 +100,10 @@ describe('TopHeaderMobile', () => {
   })
 
   it('exposes dialog trigger semantics for the More actions drawer', () => {
-    const baseProps = createProps()
-
     render(
       <TopHeaderMobile
         {...createProps({
-          dialogs: {
-            ...baseProps.dialogs,
-            isHeaderMoreActionsOpen: true,
-          },
+          isHeaderMoreActionsOpen: true,
         })}
       />,
     )
@@ -147,19 +125,11 @@ describe('TopHeaderMobile', () => {
 
   it('opens the More actions drawer through shared dialog state', async () => {
     const user = userEvent.setup()
-    const onHeaderMoreActionsOpenChange = vi.fn(() => true)
-    const baseProps = createProps()
+    const onHeaderMoreActionsOpenChange = vi
+      .spyOn(topHeaderDialogOpenChange, 'headerMoreActions')
+      .mockReturnValue(true)
 
-    render(
-      <TopHeaderMobile
-        {...createProps({
-          dialogs: {
-            ...baseProps.dialogs,
-            onHeaderMoreActionsOpenChange,
-          },
-        })}
-      />,
-    )
+    render(<TopHeaderMobile {...createProps()} />)
 
     const trigger = screen.getByRole('button', { name: 'More actions' })
 
@@ -167,21 +137,16 @@ describe('TopHeaderMobile', () => {
 
     await user.click(trigger)
 
-    expect(onHeaderMoreActionsOpenChange).toHaveBeenCalledWith(true, {
-      returnFocusAccessPoint: 'top-header-more-actions',
-    })
+    expect(onHeaderMoreActionsOpenChange).toHaveBeenCalledWith(true)
+
+    onHeaderMoreActionsOpenChange.mockRestore()
   })
 
   it('keeps share inside the More actions drawer instead of the mobile header row', () => {
-    const baseProps = createProps()
-
     const { container } = render(
       <TopHeaderMobile
         {...createProps({
-          dialogs: {
-            ...baseProps.dialogs,
-            isHeaderMoreActionsOpen: true,
-          },
+          isHeaderMoreActionsOpen: true,
         })}
       />,
     )

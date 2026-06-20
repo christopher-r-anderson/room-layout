@@ -423,44 +423,4 @@ test.describe('narrow viewport more actions', () => {
     await expect(addFurnitureDialog).toBeHidden()
     await expect(addFurnitureButton).toBeFocused()
   })
-
-  test('start over restores focus to a visible control after responsive header resizes', async ({
-    page,
-  }) => {
-    await openEditor(page)
-    await addFurniture(page, 'Leather Couch')
-
-    const moreButton = page.getByRole('button', { name: 'More actions' })
-    await moreButton.click()
-
-    const moreDialog = page.getByRole('dialog', { name: 'More actions' })
-    await expect(moreDialog).toBeVisible()
-
-    await moreDialog.getByRole('button', { name: 'Start Over' }).click()
-
-    const startOverDialog = page.getByRole('alertdialog', {
-      name: /start over\?/i,
-    })
-    await expect(startOverDialog).toBeVisible()
-
-    await page.setViewportSize({ width: 1024, height: 844 })
-
-    const desktopStartOverButton = page.locator(
-      '[aria-keyshortcuts="Control+Alt+N Meta+Alt+N"]',
-    )
-    await expect(desktopStartOverButton).toBeVisible()
-
-    await startOverDialog.getByRole('button', { name: 'Cancel' }).click()
-    await expect(startOverDialog).toBeHidden()
-    await expect(desktopStartOverButton).toBeFocused()
-
-    await desktopStartOverButton.click()
-    await expect(startOverDialog).toBeVisible()
-
-    await page.setViewportSize({ width: 390, height: 844 })
-
-    await startOverDialog.getByRole('button', { name: 'Cancel' }).click()
-    await expect(startOverDialog).toBeHidden()
-    await expect(moreButton).toBeFocused()
-  })
 })

@@ -5,6 +5,7 @@ import {
   type HTMLAttributes,
   type PointerEventHandler,
   type ReactElement,
+  type Ref,
 } from 'react'
 import { cn } from '@/shared/lib/utils'
 import { Tooltip, TooltipContent, TooltipTrigger } from './tooltip'
@@ -13,6 +14,7 @@ import { KbdShortcutDisplay } from './keyboard-shortcut-display'
 
 export function ToolButton({
   id,
+  buttonRef,
   action,
   disabled,
   disabledMessage,
@@ -29,6 +31,7 @@ export function ToolButton({
   onPointerDown,
 }: {
   id?: string
+  buttonRef?: Ref<HTMLButtonElement>
   action?: () => void
   disabled?: boolean
   disabledMessage?: string
@@ -56,6 +59,7 @@ export function ToolButton({
         render={
           <Button
             id={id}
+            ref={buttonRef}
             type="button"
             variant={variant}
             size={size}

@@ -1,8 +1,6 @@
 import { CatalogDrawer } from '@/features/catalog/catalog-drawer'
 import { CatalogAddButton } from '@/features/catalog/catalog-add-button'
 import { HistoryTools } from '@/features/history/history-tools'
-import { KeyboardShortcutsDialog } from '@/features/keyboard/keyboard-shortcuts-help'
-import { ProjectInfoDialog } from '@/features/project-info/project-info-dialog'
 import { Button } from '@/shared/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/shared/ui/tooltip'
 import { IconHomeCog, IconInfoCircle, IconKeyboard } from '@tabler/icons-react'
@@ -10,22 +8,23 @@ import { ROOM_TRIGGER_TOOLTIP } from '@/features/room-surface/room-copy'
 import { RoomSidebar } from '@/features/room-surface/room-sidebar'
 import { StartOverButton } from './start-over-button'
 import { ShareSceneButton } from './share-scene-button'
+import { topHeaderDialogOpenChange } from './top-header-dialog-bindings'
+import { headerFocusRegistry } from './header-focus-registry'
 import type { TopHeaderDesktopProps } from './top-header.types'
 
 export function TopHeaderDesktop({
   catalog,
   desktopRoomSidebarRef,
-  desktopRoomTriggerId,
-  dialogs,
-  desktopInfoTriggerId,
-  desktopKeyboardTriggerId,
   editorInteractionsEnabled,
   floorFinishId,
   floorFinishLoading,
   floorFinishes,
   history,
+  isRoomSurfaceOpen,
+  isKeyboardShortcutsOpen,
+  isProjectInfoOpen,
+  onOpenStartOverDialog,
   startOverDisabled,
-  startOverTriggerId,
   topHeaderRef,
   onFloorFinishChange,
   onShareSceneUrl,
@@ -33,9 +32,6 @@ export function TopHeaderDesktop({
   wallFinishId,
   wallFinishes,
 }: TopHeaderDesktopProps) {
-  const isRoomOpen =
-    dialogs.isRoomSurfaceOpen && dialogs.roomSurfaceLayout === 'desktop'
-
   return (
     <>
       <div
@@ -63,26 +59,23 @@ export function TopHeaderDesktop({
               <TooltipTrigger
                 render={
                   <Button
-                    id={desktopRoomTriggerId}
+                    ref={headerFocusRegistry.register('top-header-room')}
                     type="button"
                     variant="secondary"
                     size="toolbar"
                     className="pointer-events-auto"
                     aria-controls="room-surface"
-                    aria-expanded={isRoomOpen}
+                    aria-expanded={isRoomSurfaceOpen}
                     onClick={() => {
-                      dialogs.onRoomSurfaceOpenChange(!isRoomOpen, {
-                        payload: { layout: 'desktop' },
-                        returnFocusAccessPoint: 'top-header-room',
-                      })
+                      topHeaderDialogOpenChange.roomSurface(!isRoomSurfaceOpen)
                     }}
                     onKeyDown={(event) => {
-                      if (event.key !== 'Escape' || !isRoomOpen) {
+                      if (event.key !== 'Escape' || !isRoomSurfaceOpen) {
                         return
                       }
 
                       event.preventDefault()
-                      dialogs.onRoomSurfaceOpenChange(false)
+                      topHeaderDialogOpenChange.roomSurface(false)
                     }}
                   >
                     <IconHomeCog size={16} aria-hidden="true" />
@@ -111,7 +104,7 @@ export function TopHeaderDesktop({
             onUndo={history.onUndo}
           />
           <StartOverButton
-            buttonId={startOverTriggerId}
+            buttonRef={headerFocusRegistry.register('top-header-start-over')}
             disabled={!editorInteractionsEnabled || startOverDisabled}
             disabledMessage={
               !editorInteractionsEnabled
@@ -119,9 +112,7 @@ export function TopHeaderDesktop({
                 : 'Scene already matches defaults'
             }
             onOpenStartOverDialog={() => {
-              dialogs.onOpenStartOverDialog({
-                returnFocusAccessPoint: 'top-header-start-over',
-              })
+              onOpenStartOverDialog()
             }}
             size="toolbar"
           />
@@ -132,40 +123,34 @@ export function TopHeaderDesktop({
             className="flex items-center justify-end gap-2"
             inert={catalog.isCatalogDrawerOpen}
           >
-            <KeyboardShortcutsDialog
-              open={dialogs.isKeyboardShortcutsDialogOpen}
-              onOpenChange={dialogs.onKeyboardShortcutsDialogOpenChange}
-              triggerButton={
-                <button
-                  id={desktopKeyboardTriggerId}
-                  type="button"
-                  aria-controls="keyboard-shortcuts-dialog"
-                  aria-haspopup="dialog"
-                  aria-label="Keyboard shortcuts"
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-input bg-background shadow-xs transition-[color,box-shadow] outline-none hover:bg-accent hover:text-accent-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50"
-                >
-                  <IconKeyboard size={20} aria-hidden="true" />
-                  <span className="sr-only">Keyboard shortcuts</span>
-                </button>
-              }
-            />
-            <ProjectInfoDialog
-              open={dialogs.isInfoDialogOpen}
-              onOpenChange={dialogs.onInfoDialogOpenChange}
-              triggerButton={
-                <button
-                  id={desktopInfoTriggerId}
-                  type="button"
-                  aria-controls="project-info-dialog"
-                  aria-haspopup="dialog"
-                  aria-label="Open project and asset info"
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-input bg-background shadow-xs transition-[color,box-shadow] outline-none hover:bg-accent hover:text-accent-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50"
-                >
-                  <IconInfoCircle size={20} aria-hidden="true" />
-                  <span className="sr-only">Open project and asset info</span>
-                </button>
-              }
-            />
+            <button
+              type="button"
+              aria-controls="keyboard-shortcuts-dialog"
+              aria-haspopup="dialog"
+              aria-expanded={isKeyboardShortcutsOpen}
+              aria-label="Keyboard shortcuts"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-input bg-background shadow-xs transition-[color,box-shadow] outline-none hover:bg-accent hover:text-accent-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50"
+              onClick={() => {
+                topHeaderDialogOpenChange.keyboardShortcuts(true)
+              }}
+            >
+              <IconKeyboard size={20} aria-hidden="true" />
+              <span className="sr-only">Keyboard shortcuts</span>
+            </button>
+            <button
+              type="button"
+              aria-controls="project-info-dialog"
+              aria-haspopup="dialog"
+              aria-expanded={isProjectInfoOpen}
+              aria-label="Open project and asset info"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-input bg-background shadow-xs transition-[color,box-shadow] outline-none hover:bg-accent hover:text-accent-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50"
+              onClick={() => {
+                topHeaderDialogOpenChange.projectInfo(true)
+              }}
+            >
+              <IconInfoCircle size={20} aria-hidden="true" />
+              <span className="sr-only">Open project and asset info</span>
+            </button>
             <ShareSceneButton
               className="min-w-26"
               disabled={!editorInteractionsEnabled}
@@ -178,12 +163,10 @@ export function TopHeaderDesktop({
 
       <RoomSidebar
         containerRef={desktopRoomSidebarRef}
-        open={isRoomOpen}
+        open={isRoomSurfaceOpen}
         onClose={() => {
-          dialogs.onRoomSurfaceOpenChange(false)
-          queueMicrotask(() => {
-            document.getElementById(desktopRoomTriggerId)?.focus()
-          })
+          topHeaderDialogOpenChange.roomSurface(false)
+          headerFocusRegistry.focus('top-header-room')
         }}
         floorFinishId={floorFinishId}
         floorFinishLoading={floorFinishLoading}

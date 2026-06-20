@@ -1,9 +1,10 @@
 import { IconRotate2 } from '@tabler/icons-react'
 import { ToolButton } from '@/shared/ui/tool-button'
-import type { ComponentProps } from 'react'
+import type { ComponentProps, Ref } from 'react'
 
 export function StartOverButton({
   buttonId,
+  buttonRef,
   disabled,
   disabledMessage,
   onOpenStartOverDialog,
@@ -11,6 +12,7 @@ export function StartOverButton({
   size,
 }: {
   buttonId?: string
+  buttonRef?: Ref<HTMLButtonElement>
   disabled: boolean
   disabledMessage: string
   onOpenStartOverDialog: () => void
@@ -21,6 +23,7 @@ export function StartOverButton({
   return (
     <ToolButton
       id={buttonId}
+      buttonRef={buttonRef}
       action={onOpenStartOverDialog}
       disabled={disabled}
       disabledMessage={disabledMessage}

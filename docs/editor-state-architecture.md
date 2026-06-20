@@ -33,23 +33,25 @@ It does not own:
 
 ### Shared Contract Types and Registry Model
 
-`src/editor-state/dialog-contract.ts` defines dialog contract types, including:
+`src/editor-state/dialog-contract.ts` defines the feature-facing dialog contract
+consumed by feature definition modules without depending on the store:
 
 - `DialogId`
 - `DialogKind`
-- `DialogReturnFocusToken`
 - `DialogOpenRequest`
 - `DialogDefinition`
 - `DialogRuntimeContext`
-- `ActiveSurfaceState`
+
+The runtime active-surface shape (`ActiveSurfaceState`) is store-internal and
+defined in `src/editor-state/dialog-store.ts`.
 
 Dialog definitions are registered through a single app bootstrap path in
 `src/app/dialogs/bootstrap-dialog-registry.ts`.
 
 Feature and shell definition modules declare per-dialog behavior, including
-`kind`, open guards, and payload derivation. Default return-focus access points
-are composed in `src/app/dialogs/dialog-registry.ts`, keeping feature definitions
-free of app-shell imports.
+`kind`, open guards, and payload derivation. They are aggregated in
+`src/app/dialogs/dialog-registry.ts`, keeping feature definitions free of
+app-shell imports.
 
 ### Global Gating and Feature-Specific Guards
 
@@ -67,7 +69,7 @@ or controller-level intent handling.
 Dialog store keeps one active top-level surface at a time:
 
 - `activeSurface = null`, or
-- one `ActiveSurfaceState` with `{ id, kind, payload, returnFocusAccessPoint }`.
+- one `ActiveSurfaceState` with `{ id, kind, payload }`.
 
 `kind` drives blocking policy:
 
@@ -77,40 +79,26 @@ Dialog store keeps one active top-level surface at a time:
 Room surface uses `non-blocking` semantics and remains mutually exclusive with
 other top-level surfaces by the one-active-surface invariant.
 
-### Payload Model and Return-Focus Access Points
+### Payload Model and Focus Return
 
 Payload is carried on the active surface and read with `useDialogPayload(id)`.
 There is no dialog-specific top-level payload field.
 
-Return focus uses an opaque `DialogReturnFocusToken` at the store level. App
-composition in `src/app/dialogs/dialog-focus.ts` owns the typed
-`DialogAccessPoint` vocabulary and the `DIALOG_ACCESS_POINTS` constant map.
-Top-header code resolves those tokens into concrete elements.
+The dialog store is focus-agnostic: it carries no return-focus token. Focus
+return is owned entirely by the surface that opened the dialog:
 
-Current access-point token set (defined in `src/app/dialogs/dialog-focus.ts`):
-
-- `top-header-room`
-- `top-header-keyboard-shortcuts`
-- `top-header-project-info`
-- `top-header-start-over`
-- `top-header-more-actions`
-- `room-view`
-- `outliner`
-- `selection-inspector`
-- `none`
-
-### Responsive Continuity Ownership
-
-Responsive continuity behavior belongs to top-header orchestration code in
-`src/app/chrome/top-header/`, not dialog-store.
-
-Dialog-store remains layout-agnostic. It exposes semantic state and actions;
-top-header coordinator logic decides responsive handoff and focus fallback.
+- Blocking dialogs rely on Base UI restoring focus to their opener on close.
+- The top header's mobile and room surfaces return focus explicitly through a
+  small module-level registry in
+  `src/app/chrome/top-header/header-focus-registry.ts` (keyed live trigger
+  nodes), because their openers either unmount or are non-modal.
+- The Start Over button becomes disabled after a reset, so the header walks to
+  the next enabled control via `findNextEnabledHeaderControl`.
 
 ### External Reads Through DialogRuntimeContext
 
 Dialog-store reads external state through `DialogRuntimeContext` configured by
-app composition in `src/app/dialogs/dialog-context-builder.ts`.
+app composition in `src/app/dialogs/bootstrap-dialog-registry.ts`.
 
 This context currently exposes:
 
@@ -187,7 +175,6 @@ Steady-state flow:
 - read open state: `useDialogOpen(id)`
 - read payload: `useDialogPayload(id)`
 - read active surface: `useActiveSurface()`
-- read semantic return focus token: `useReturnFocusAccessPoint()`
 
 ### Where Guards and Return-Focus Policy Belong
 

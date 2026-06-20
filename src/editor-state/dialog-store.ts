@@ -3,12 +3,18 @@ import { subscribeWithSelector } from 'zustand/middleware'
 import { createStore } from 'zustand/vanilla'
 import type { EqualityChecker } from './store-types'
 import type {
-  ActiveSurfaceState,
   DialogDefinition,
   DialogId,
+  DialogKind,
   DialogOpenRequest,
   DialogRuntimeContext,
 } from './dialog-contract'
+
+export interface ActiveSurfaceState<TPayload = unknown> {
+  id: DialogId
+  kind: DialogKind
+  payload: TPayload | null
+}
 
 interface DialogStoreState {
   activeSurface: ActiveSurfaceState | null
@@ -57,16 +63,10 @@ function resolveActiveSurface(
     ? definition.getPayload(context, request)
     : (request?.payload ?? null)
 
-  const returnFocusAccessPoint =
-    request?.returnFocusAccessPoint ??
-    definition.getReturnFocusAccessPoint?.(context, request) ??
-    'none'
-
   return {
     id: definition.id,
     kind: definition.kind,
     payload,
-    returnFocusAccessPoint,
   }
 }
 
@@ -254,11 +254,6 @@ export const useDialogPayload = (id: DialogId) =>
 
     return state.activeSurface.payload
   })
-
-export const useReturnFocusAccessPoint = () =>
-  useDialogStore(
-    (state) => state.activeSurface?.returnFocusAccessPoint ?? 'none',
-  )
 
 export const useIsBlockingOverlayOpen = () =>
   useDialogStore((state) => state.activeSurface?.kind === 'blocking')

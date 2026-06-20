@@ -49,7 +49,7 @@ guidance.
 ### Dialog and Overlay Contracts
 
 - verify key surfaces (catalog, room panel, confirmations, info) open and close predictably
-- verify `Escape` close behavior and semantic access-point focus return behavior across desktop/mobile transitions
+- verify `Escape` close behavior and focus return to the opening control (native restore for blocking dialogs; explicit registry return for the Room surface and mobile More drawer)
 - verify mutually exclusive top-level surfaces do not overlap in conflicting states
 - verify non-blocking Room behavior does not block scene/camera shortcuts while open
 

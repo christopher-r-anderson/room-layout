@@ -84,17 +84,16 @@ Behavior:
 
 Blocking overlays such as the mobile More drawer use their own responsive close behavior.
 
-## Focus and Access Points
+## Focus return
 
-Dialog-store tracks semantic return-focus access points, not concrete DOM
-targets.
+Dialog-store is focus-agnostic; it stores no return-focus target. Focus return
+is owned by the surface that opened the dialog:
 
-Examples:
-
-- `top-header-room`
-- `top-header-more-actions`
-- `top-header-start-over`
-
-Top-header coordinator code resolves these semantic access points to visible,
-enabled controls for the active layout and applies fallback behavior when a
-trigger is unavailable after responsive transitions.
+- Blocking dialogs (keyboard shortcuts, project info, start over) rely on Base
+  UI restoring focus to their opener on close.
+- The top header returns focus explicitly through a module-level registry
+  (`src/app/chrome/top-header/header-focus-registry.ts`) for cases where native
+  restore is unreliable: the non-modal Room surface, and the mobile More drawer
+  whose menu items unmount on close (focus returns to the More trigger).
+- Confirming Start Over disables the Start Over button, so the header walks to
+  the next enabled control instead of restoring to a disabled target.
