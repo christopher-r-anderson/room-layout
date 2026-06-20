@@ -46,7 +46,7 @@ interface DockedSelectedItemShellProps {
   ) => UpdateSelectedItemDetailsResult
 }
 
-interface EditorOverlayProps {
+export interface EditorOverlayProps {
   startOverDisabled: boolean
   topHeader: TopHeaderShellProps
   outliner: OutlinerShellProps

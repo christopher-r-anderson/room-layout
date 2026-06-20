@@ -1,19 +1,5 @@
-import { Canvas } from '@react-three/fiber'
-import { Scene } from '@/scene/scene'
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  Component,
-  Suspense,
-  type ReactNode,
-} from 'react'
-import { flushSync } from 'react-dom'
-import { NeutralToneMapping, SRGBColorSpace } from 'three'
-import { EditorOverlay } from './chrome/editor-overlay'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   dialogActions,
   useDialogPayload,
@@ -28,8 +14,6 @@ import {
   useSelectedFurniture,
   useWallFinishId,
 } from '@/editor-state/scene-state-store'
-import { useKeyboardShortcuts } from '@/features/keyboard/use-keyboard-shortcuts'
-import { useCameraKeyState } from '@/features/keyboard/use-camera-key-state'
 import { useAnnouncements } from '@/app/chrome/hooks/use-announcements'
 import { usePreviewController } from '@/app/controllers/use-preview-controller'
 import { useSelectionEffectsController } from '@/app/controllers/use-selection-effects-controller'
@@ -54,13 +38,11 @@ import {
   useStartupOverlayActive,
   useStartupPhase,
 } from '@/editor-state/editor-runtime-store'
-import { Announcer } from '@/features/scene-panel/announcer'
 import { TooltipProvider } from '@/shared/ui/tooltip'
-import { Toaster } from '@/shared/ui/sonner'
 import { isFreshSceneState } from '@/shared/lib/three/scene-defaults'
 import { runStartupReset } from '@/features/startup/reset-startup-state'
 import { useStartupState } from '@/features/startup/use-startup-state'
-import { EditorShell } from './chrome/editor-shell'
+import { EditorBody } from './chrome/editor-body'
 import { findFirstActionableInspectorControl } from './chrome/focusable-controls'
 import {
   resetSelectionMetaStore,
@@ -79,32 +61,6 @@ import {
   bootstrapDialogRegistry,
 } from './dialogs/bootstrap-dialog-registry'
 
-class SceneAssetErrorBoundary extends Component<
-  {
-    children: ReactNode
-    onError: (error: Error) => void
-  },
-  { hasError: boolean }
-> {
-  state = { hasError: false }
-
-  static getDerivedStateFromError() {
-    return { hasError: true }
-  }
-
-  componentDidCatch(error: Error) {
-    this.props.onError(error)
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return null
-    }
-
-    return this.props.children
-  }
-}
-
 function App() {
   if (import.meta.env.DEV) {
     perfCounters.incrAppRender()
@@ -118,7 +74,6 @@ function App() {
   const floorFinishId = useFloorFinishId()
   const wallFinishId = useWallFinishId()
   const [catalogIdToAdd, setCatalogIdToAdd] = useState('')
-  const [roomViewHasFocus, setRoomViewHasFocus] = useState(false)
   const [testOverlaysHidden, setTestOverlaysHidden] = useState(false)
   const outlinerFocusRequest = useOutlinerFocusRequest()
   const requestOutlinerFocus = useRequestOutlinerFocus()
@@ -512,146 +467,59 @@ function App() {
 
   const dispatchCommand = useCommandDispatchValue(commandApi)
 
-  useKeyboardShortcuts({
-    enabled: startup.editorInteractionsEnabled,
-    hasSelection: selectedFurniture !== null,
-    isBlockingOverlayOpen,
-    canStartOver: !sceneIsAtDefaults,
-    roomViewHasFocus,
-    dispatch: dispatchCommand,
-  })
-
-  useCameraKeyState({
-    enabled: startup.editorInteractionsEnabled,
-    isBlockingOverlayOpen,
-    roomViewHasFocus,
-  })
-
   return (
     <TooltipProvider>
       <EditorRefsProvider value={editorRefs}>
         <CommandDispatchProvider value={dispatchCommand}>
-          <EditorShell>
-            <main
-              className="relative size-full"
-              aria-busy={startup.startupLoadingActive}
-              data-test-overlays-hidden={testOverlaysHidden ? 'true' : 'false'}
-            >
-              <h1 className="sr-only">Room Layout</h1>
-              <p id="scene-instructions" className="sr-only">
-                Interactive 3D room editor. Tab to focus the room-view region,
-                then use the arrow keys to preview items in the room and Enter
-                or Space to select the previewed item. You can also use the
-                furniture in room panel and selected item actions and details to
-                rotate, remove, or type exact placement changes without
-                dragging.
-              </p>
-              <section
-                aria-describedby="scene-instructions"
-                aria-label="Interactive 3D room editor"
-                ref={roomViewRef}
-                tabIndex={startup.editorInteractionsEnabled ? 0 : -1}
-                className="absolute inset-0 z-0 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
-                onFocus={() => {
-                  flushSync(() => {
-                    setRoomViewHasFocus(true)
-                  })
-                }}
-                onBlur={() => {
-                  flushSync(() => {
-                    setRoomViewHasFocus(false)
-                  })
-                }}
-                onPointerDownCapture={focusRoomView}
-              >
-                <Canvas
-                  camera={{
-                    position: [3, 2.5, 3],
-                    fov: 50,
-                  }}
-                  frameloop="demand"
-                  onCreated={({ gl }) => {
-                    gl.outputColorSpace = SRGBColorSpace
-                    gl.toneMapping = NeutralToneMapping
-                    gl.toneMappingExposure = isE2ELowRenderQuality ? 1 : 1.05
-                  }}
-                  onPointerMissed={() => {
-                    if (!startup.editorInteractionsEnabled) {
-                      return
-                    }
-
-                    focusRoomView()
-                    clearPreviewOnCanvasMiss()
-                    handlers.handleClearSelection()
-                  }}
-                  shadows={canvasShadowMode}
-                >
-                  <SceneAssetErrorBoundary
-                    key={startup.cacheInvalidationKey}
-                    onError={handlers.handleSceneAssetError}
-                  >
-                    <Suspense fallback={null}>
-                      <Scene
-                        renderQuality={
-                          isE2ELowRenderQuality ? 'e2e-low' : 'default'
-                        }
-                        catalog={startup.catalog}
-                        collections={startup.collections}
-                        onCanvasPointerSelection={
-                          handlers.handleCanvasPointerSelection
-                        }
-                        onAssetsReady={handlers.handleSceneAssetsReady}
-                        previewedId={previewedId}
-                        onPreviewChange={handleScenePreviewChange}
-                        floorOption={selectedFloorOption}
-                        wallOption={selectedWallOption}
-                        onFloorLoadingChange={handleFloorLoadingChange}
-                      />
-                    </Suspense>
-                  </SceneAssetErrorBoundary>
-                </Canvas>
-              </section>
-
-              {testOverlaysHidden ? null : (
-                <>
-                  <EditorOverlay
-                    startOverDisabled={sceneIsAtDefaults}
-                    topHeader={{
-                      catalog: startup.catalog,
-                      environmentConfig,
-                      catalogIdToAdd: activeCatalogIdToAdd,
-                      onAddFurniture: handlers.handleAddFurniture,
-                      onCatalogIdToAddChange: setCatalogIdToAdd,
-                      onCatalogDrawerOpenChange:
-                        handlers.handleCatalogDrawerOpenChange,
-                      onShareSceneUrl: handlers.handleShareSceneUrl,
-                      onOpenStartOverDialog: handlers.handleOpenStartOverDialog,
-                      onConfirmStartOver: handlers.handleConfirmStartOver,
-                    }}
-                    outliner={{
-                      onSelectById: handlers.handleSelectById,
-                      onPreviewChange: handleOutlinerPreviewChange,
-                    }}
-                    dockedSelectedItem={{
-                      onInvalidSelectedItemDetailValue:
-                        handlers.handleInvalidSelectedItemDetailValue,
-                      onUpdateSelectedItemDetails:
-                        handlers.handleUpdateSelectedItemDetails,
-                    }}
-                    onConfirmDeleteSelection={
-                      handlers.handleConfirmDeleteSelection
-                    }
-                    onRetryAssetLoading={handlers.handleRetryAssetLoading}
-                  />
-                </>
-              )}
-              <Announcer
-                politeMessage={announcements.politeAnnouncement}
-                assertiveMessage={announcements.assertiveAnnouncement}
-              />
-              <Toaster />
-            </main>
-          </EditorShell>
+          <EditorBody
+            catalog={startup.catalog}
+            collections={startup.collections}
+            cacheInvalidationKey={startup.cacheInvalidationKey}
+            testOverlaysHidden={testOverlaysHidden}
+            sceneIsAtDefaults={sceneIsAtDefaults}
+            focusRoomView={focusRoomView}
+            canvasShadowMode={canvasShadowMode}
+            isE2ELowRenderQuality={isE2ELowRenderQuality}
+            previewedId={previewedId}
+            selectedFloorOption={selectedFloorOption}
+            selectedWallOption={selectedWallOption}
+            clearPreviewOnCanvasMiss={clearPreviewOnCanvasMiss}
+            onScenePreviewChange={handleScenePreviewChange}
+            onFloorLoadingChange={handleFloorLoadingChange}
+            onCanvasPointerSelection={handlers.handleCanvasPointerSelection}
+            onSceneAssetsReady={handlers.handleSceneAssetsReady}
+            onSceneAssetError={handlers.handleSceneAssetError}
+            onClearSelection={handlers.handleClearSelection}
+            politeAnnouncement={announcements.politeAnnouncement}
+            assertiveAnnouncement={announcements.assertiveAnnouncement}
+            editorOverlay={{
+              startOverDisabled: sceneIsAtDefaults,
+              topHeader: {
+                catalog: startup.catalog,
+                environmentConfig,
+                catalogIdToAdd: activeCatalogIdToAdd,
+                onAddFurniture: handlers.handleAddFurniture,
+                onCatalogIdToAddChange: setCatalogIdToAdd,
+                onCatalogDrawerOpenChange:
+                  handlers.handleCatalogDrawerOpenChange,
+                onShareSceneUrl: handlers.handleShareSceneUrl,
+                onOpenStartOverDialog: handlers.handleOpenStartOverDialog,
+                onConfirmStartOver: handlers.handleConfirmStartOver,
+              },
+              outliner: {
+                onSelectById: handlers.handleSelectById,
+                onPreviewChange: handleOutlinerPreviewChange,
+              },
+              dockedSelectedItem: {
+                onInvalidSelectedItemDetailValue:
+                  handlers.handleInvalidSelectedItemDetailValue,
+                onUpdateSelectedItemDetails:
+                  handlers.handleUpdateSelectedItemDetails,
+              },
+              onConfirmDeleteSelection: handlers.handleConfirmDeleteSelection,
+              onRetryAssetLoading: handlers.handleRetryAssetLoading,
+            }}
+          />
         </CommandDispatchProvider>
       </EditorRefsProvider>
     </TooltipProvider>
