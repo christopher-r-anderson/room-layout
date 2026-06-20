@@ -633,16 +633,10 @@ function App() {
                       onPreviewChange: handleOutlinerPreviewChange,
                     }}
                     dockedSelectedItem={{
-                      onOpenDeleteDialog: handlers.handleOpenDeleteDialog,
-                      onRotateSelection: handlers.handleRotateSelection,
                       onInvalidSelectedItemDetailValue:
                         handlers.handleInvalidSelectedItemDetailValue,
                       onUpdateSelectedItemDetails:
                         handlers.handleUpdateSelectedItemDetails,
-                    }}
-                    floatingSelectedItem={{
-                      onOpenDeleteDialog: handlers.handleOpenDeleteDialog,
-                      onRotateSelection: handlers.handleRotateSelection,
                     }}
                     onConfirmDeleteSelection={
                       handlers.handleConfirmDeleteSelection

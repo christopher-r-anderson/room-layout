@@ -2,6 +2,7 @@ import { useEditorRefs } from '@/shared/providers/editor-refs-context'
 import { useOverlayLayout } from '@/shared/layout/overlay-layout-context'
 import { useEditorInteractionsEnabled } from '@/editor-state/editor-runtime-store'
 import { useSelectedFurniture } from '@/editor-state/scene-state-store'
+import { useCommandDispatch } from '@/editor-state/command-dispatch-context'
 import type {
   UpdateSelectedItemDetailsInput,
   UpdateSelectedItemDetailsResult,
@@ -12,8 +13,6 @@ import { useSelectedItemInteraction } from './selected-item-interaction-context'
 
 export interface DockedSelectedItemSiteProps {
   isCatalogDrawerOpen: boolean
-  onOpenDeleteDialog: () => void
-  onRotateSelection: (direction: -1 | 1) => void
   onInvalidSelectedItemDetailValue: (fieldLabel: string) => string
   onUpdateSelectedItemDetails: (
     input: UpdateSelectedItemDetailsInput,
@@ -22,8 +21,6 @@ export interface DockedSelectedItemSiteProps {
 
 export function DockedSelectedItemSite({
   isCatalogDrawerOpen,
-  onOpenDeleteDialog,
-  onRotateSelection,
   onInvalidSelectedItemDetailValue,
   onUpdateSelectedItemDetails,
 }: DockedSelectedItemSiteProps) {
@@ -32,6 +29,7 @@ export function DockedSelectedItemSite({
   const { registerExclusionElement } = useOverlayLayout()
   const selectedFurniture = useSelectedFurniture()
   const editorInteractionsEnabled = useEditorInteractionsEnabled()
+  const dispatch = useCommandDispatch()
 
   if (selectedFurniture === null) {
     return null
@@ -44,7 +42,7 @@ export function DockedSelectedItemSite({
 
   const handleOpenDeleteDialog = () => {
     try {
-      onOpenDeleteDialog()
+      dispatch({ kind: 'open-delete-dialog', returnFocusTo: 'outliner' })
     } finally {
       interaction.consumeBlurCommitSuppression()
     }
@@ -68,7 +66,9 @@ export function DockedSelectedItemSite({
         consumeBlurCommitSuppression={interaction.consumeBlurCommitSuppression}
         onOpenDeleteDialog={handleOpenDeleteDialog}
         onPrepareDelete={interaction.prepareDeleteBlurSuppression}
-        onRotateSelection={onRotateSelection}
+        onRotateSelection={(direction) => {
+          dispatch({ kind: 'rotate-selection', direction })
+        }}
         onInvalidSelectedItemDetailValue={onInvalidSelectedItemDetailValue}
         onUpdateSelectedItemDetails={onUpdateSelectedItemDetails}
       />

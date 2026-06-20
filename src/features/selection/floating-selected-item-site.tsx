@@ -1,5 +1,6 @@
 import { useEditorInteractionsEnabled } from '@/editor-state/editor-runtime-store'
 import { useSelectedFurniture } from '@/editor-state/scene-state-store'
+import { useCommandDispatch } from '@/editor-state/command-dispatch-context'
 import { useSelectedItemInteraction } from './selected-item-interaction-context'
 import {
   useSelectedItemActionsSizeRef,
@@ -10,20 +11,17 @@ import { SelectionToolsOther } from './selection-tools-other'
 
 export interface FloatingSelectedItemSiteProps {
   isCatalogDrawerOpen: boolean
-  onOpenDeleteDialog: () => void
-  onRotateSelection: (direction: -1 | 1) => void
 }
 
 export function FloatingSelectedItemSite({
   isCatalogDrawerOpen,
-  onOpenDeleteDialog,
-  onRotateSelection,
 }: FloatingSelectedItemSiteProps) {
   const placement = useSelectedItemPlacement()
   const actionsSizeRef = useSelectedItemActionsSizeRef()
   const interaction = useSelectedItemInteraction()
   const selectedFurniture = useSelectedFurniture()
   const editorInteractionsEnabled = useEditorInteractionsEnabled()
+  const dispatch = useCommandDispatch()
 
   if (selectedFurniture === null) {
     return null
@@ -39,7 +37,7 @@ export function FloatingSelectedItemSite({
 
   const handleOpenDeleteDialog = () => {
     try {
-      onOpenDeleteDialog()
+      dispatch({ kind: 'open-delete-dialog', returnFocusTo: 'outliner' })
     } finally {
       interaction.consumeBlurCommitSuppression()
     }
@@ -63,7 +61,9 @@ export function FloatingSelectedItemSite({
           disabledMessage={interactivity.disabledMessage}
           onOpenDeleteDialog={handleOpenDeleteDialog}
           onPrepareDelete={interaction.prepareDeleteBlurSuppression}
-          onRotateSelection={onRotateSelection}
+          onRotateSelection={(direction) => {
+            dispatch({ kind: 'rotate-selection', direction })
+          }}
         />
       </div>
     </section>

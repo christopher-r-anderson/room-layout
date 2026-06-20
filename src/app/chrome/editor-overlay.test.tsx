@@ -304,14 +304,8 @@ describe('EditorOverlay integration', () => {
                           onPreviewChange: vi.fn(),
                         }}
                         dockedSelectedItem={{
-                          onOpenDeleteDialog: vi.fn(),
-                          onRotateSelection: vi.fn(),
                           onInvalidSelectedItemDetailValue: onInvalid,
                           onUpdateSelectedItemDetails: onUpdate,
-                        }}
-                        floatingSelectedItem={{
-                          onOpenDeleteDialog: vi.fn(),
-                          onRotateSelection: vi.fn(),
                         }}
                         onConfirmDeleteSelection={vi.fn()}
                         onRetryAssetLoading={vi.fn()}

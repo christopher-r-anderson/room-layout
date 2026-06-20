@@ -40,17 +40,10 @@ interface OutlinerShellProps {
 }
 
 interface DockedSelectedItemShellProps {
-  onOpenDeleteDialog: () => void
-  onRotateSelection: (direction: -1 | 1) => void
   onInvalidSelectedItemDetailValue: (fieldLabel: string) => string
   onUpdateSelectedItemDetails: (
     input: UpdateSelectedItemDetailsInput,
   ) => UpdateSelectedItemDetailsResult
-}
-
-interface FloatingSelectedItemShellProps {
-  onOpenDeleteDialog: () => void
-  onRotateSelection: (direction: -1 | 1) => void
 }
 
 interface EditorOverlayProps {
@@ -58,7 +51,6 @@ interface EditorOverlayProps {
   topHeader: TopHeaderShellProps
   outliner: OutlinerShellProps
   dockedSelectedItem: DockedSelectedItemShellProps
-  floatingSelectedItem: FloatingSelectedItemShellProps
   onConfirmDeleteSelection: () => void
   onRetryAssetLoading: () => void
 }
@@ -102,7 +94,6 @@ export function EditorOverlay({
   topHeader,
   outliner,
   dockedSelectedItem,
-  floatingSelectedItem,
   onConfirmDeleteSelection,
   onRetryAssetLoading,
 }: EditorOverlayProps) {
@@ -132,10 +123,7 @@ export function EditorOverlay({
           />
         </div>
 
-        <FloatingSelectedItemSite
-          isCatalogDrawerOpen={isCatalogDrawerOpen}
-          {...floatingSelectedItem}
-        />
+        <FloatingSelectedItemSite isCatalogDrawerOpen={isCatalogDrawerOpen} />
 
         <div
           className="absolute z-20 pointer-events-auto right-0 top-1/4 -translate-y-1/2"

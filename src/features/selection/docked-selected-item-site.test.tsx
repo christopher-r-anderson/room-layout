@@ -1,10 +1,13 @@
 // @vitest-environment jsdom
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { createRef } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { TooltipProvider } from '@/shared/ui/tooltip'
 import { EditorRefsProvider } from '@/shared/providers/editor-refs-provider'
 import { OverlayLayoutProvider } from '@/shared/layout/overlay-layout-provider'
+import { CommandDispatchProvider } from '@/editor-state/command-dispatch-provider'
+import type { CommandDispatch } from '@/editor-state/command-dispatch-context'
 import { createHistoryState } from '@/shared/lib/ui/editor-history'
 import {
   editorRuntimeActions,
@@ -58,18 +61,18 @@ describe('DockedSelectedItemSite', () => {
                   actionsSizeRef: vi.fn(),
                 }}
               >
-                <DockedSelectedItemSite
-                  isCatalogDrawerOpen={false}
-                  onOpenDeleteDialog={vi.fn()}
-                  onRotateSelection={vi.fn()}
-                  onInvalidSelectedItemDetailValue={(fieldLabel) =>
-                    `${fieldLabel} must be a valid number.`
-                  }
-                  onUpdateSelectedItemDetails={() => ({
-                    ok: true,
-                    item: FURNITURE_ITEM,
-                  })}
-                />
+                <CommandDispatchProvider value={vi.fn()}>
+                  <DockedSelectedItemSite
+                    isCatalogDrawerOpen={false}
+                    onInvalidSelectedItemDetailValue={(fieldLabel) =>
+                      `${fieldLabel} must be a valid number.`
+                    }
+                    onUpdateSelectedItemDetails={() => ({
+                      ok: true,
+                      item: FURNITURE_ITEM,
+                    })}
+                  />
+                </CommandDispatchProvider>
               </SelectedItemPlacementProvider>
             </SelectedItemInteractionProvider>
           </OverlayLayoutProvider>
@@ -123,23 +126,19 @@ describe('DockedSelectedItemSite', () => {
                   actionsSizeRef: vi.fn(),
                 }}
               >
-                <FloatingSelectedItemSite
-                  isCatalogDrawerOpen={false}
-                  onOpenDeleteDialog={vi.fn()}
-                  onRotateSelection={vi.fn()}
-                />
-                <DockedSelectedItemSite
-                  isCatalogDrawerOpen={false}
-                  onOpenDeleteDialog={vi.fn()}
-                  onRotateSelection={vi.fn()}
-                  onInvalidSelectedItemDetailValue={(fieldLabel) =>
-                    `${fieldLabel} must be a valid number.`
-                  }
-                  onUpdateSelectedItemDetails={() => ({
-                    ok: true,
-                    item: FURNITURE_ITEM,
-                  })}
-                />
+                <CommandDispatchProvider value={vi.fn()}>
+                  <FloatingSelectedItemSite isCatalogDrawerOpen={false} />
+                  <DockedSelectedItemSite
+                    isCatalogDrawerOpen={false}
+                    onInvalidSelectedItemDetailValue={(fieldLabel) =>
+                      `${fieldLabel} must be a valid number.`
+                    }
+                    onUpdateSelectedItemDetails={() => ({
+                      ok: true,
+                      item: FURNITURE_ITEM,
+                    })}
+                  />
+                </CommandDispatchProvider>
               </SelectedItemPlacementProvider>
             </SelectedItemInteractionProvider>
           </OverlayLayoutProvider>
@@ -190,23 +189,19 @@ describe('DockedSelectedItemSite', () => {
                   actionsSizeRef: vi.fn(),
                 }}
               >
-                <FloatingSelectedItemSite
-                  isCatalogDrawerOpen={false}
-                  onOpenDeleteDialog={vi.fn()}
-                  onRotateSelection={vi.fn()}
-                />
-                <DockedSelectedItemSite
-                  isCatalogDrawerOpen={false}
-                  onOpenDeleteDialog={vi.fn()}
-                  onRotateSelection={vi.fn()}
-                  onInvalidSelectedItemDetailValue={(fieldLabel) =>
-                    `${fieldLabel} must be a valid number.`
-                  }
-                  onUpdateSelectedItemDetails={() => ({
-                    ok: true,
-                    item: FURNITURE_ITEM,
-                  })}
-                />
+                <CommandDispatchProvider value={vi.fn()}>
+                  <FloatingSelectedItemSite isCatalogDrawerOpen={false} />
+                  <DockedSelectedItemSite
+                    isCatalogDrawerOpen={false}
+                    onInvalidSelectedItemDetailValue={(fieldLabel) =>
+                      `${fieldLabel} must be a valid number.`
+                    }
+                    onUpdateSelectedItemDetails={() => ({
+                      ok: true,
+                      item: FURNITURE_ITEM,
+                    })}
+                  />
+                </CommandDispatchProvider>
               </SelectedItemPlacementProvider>
             </SelectedItemInteractionProvider>
           </OverlayLayoutProvider>
@@ -220,5 +215,44 @@ describe('DockedSelectedItemSite', () => {
     expect(selectedItemControlsRef.current).toContainElement(
       screen.getByLabelText('Distance from left wall (m)'),
     )
+  })
+
+  it('dispatches rotate and delete commands from the floating actions', async () => {
+    const user = userEvent.setup()
+    const dispatch: CommandDispatch = vi.fn()
+
+    render(
+      <TooltipProvider>
+        <CommandDispatchProvider value={dispatch}>
+          <SelectedItemInteractionProvider>
+            <SelectedItemPlacementProvider
+              value={{
+                placement: {
+                  site: 'floating',
+                  candidateId: 'bottom-center',
+                  left: 12,
+                  top: 24,
+                },
+                actionsSizeRef: vi.fn(),
+              }}
+            >
+              <FloatingSelectedItemSite isCatalogDrawerOpen={false} />
+            </SelectedItemPlacementProvider>
+          </SelectedItemInteractionProvider>
+        </CommandDispatchProvider>
+      </TooltipProvider>,
+    )
+
+    await user.click(
+      screen.getByRole('button', { name: 'Rotate counterclockwise' }),
+    )
+    await user.click(screen.getByRole('button', { name: 'Rotate clockwise' }))
+    await user.click(screen.getByRole('button', { name: 'Remove item' }))
+
+    expect(vi.mocked(dispatch).mock.calls.map(([command]) => command)).toEqual([
+      { kind: 'rotate-selection', direction: 1 },
+      { kind: 'rotate-selection', direction: -1 },
+      { kind: 'open-delete-dialog', returnFocusTo: 'outliner' },
+    ])
   })
 })
