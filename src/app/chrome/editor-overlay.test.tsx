@@ -17,6 +17,7 @@ import {
 import { sceneStateActions } from '@/editor-state/scene-state-store'
 import { OverlayLayoutProvider } from '../../shared/layout/overlay-layout-provider'
 import { EditorRefsProvider } from '../../shared/providers/editor-refs-provider'
+import { CommandDispatchProvider } from '@/editor-state/command-dispatch-provider'
 import { SelectedItemInteractionProvider } from '@/features/selection/selected-item-interaction-provider'
 import { SelectedItemPlacementProvider } from '@/features/selection/selected-item-placement-provider'
 import { EditorOverlay } from './editor-overlay'
@@ -120,19 +121,15 @@ vi.mock('../history/history-tools', () => ({
   HistoryTools: ({
     canRedo,
     canUndo,
-    onRedo,
-    onUndo,
   }: {
     canRedo: boolean
     canUndo: boolean
-    onRedo: () => void
-    onUndo: () => void
   }) => (
     <div role="group" aria-label="History Actions">
-      <button type="button" disabled={!canUndo} onClick={onUndo}>
+      <button type="button" disabled={!canUndo}>
         Undo
       </button>
-      <button type="button" disabled={!canRedo} onClick={onRedo}>
+      <button type="button" disabled={!canRedo}>
         Redo
       </button>
     </div>
@@ -277,65 +274,67 @@ describe('EditorOverlay integration', () => {
             >
               <SelectedItemInteractionProvider>
                 <SelectedItemPlacementProvider value={placementValue}>
-                  <div className="relative min-h-192">
-                    <EditorOverlay
-                      startOverDisabled={false}
-                      topHeader={{
-                        catalog: [],
-                        environmentConfig: {
-                          defaultFloorFinishId: 'wood-floor',
-                          defaultWallFinishId: 'light-gray',
-                          floorFinishes: [
-                            {
-                              id: 'wood-floor',
-                              label: 'Wood',
-                              diffusePath: '/textures/wood.jpg',
-                              normalPath: '/textures/wood-normal.png',
-                              tileSizeMeters: { width: 0.5, depth: 0.5 },
-                            },
-                          ],
-                          wallFinishes: [
-                            {
-                              id: 'light-gray',
-                              label: 'Light Gray',
-                              color: 0xf5f5f5,
-                            },
-                          ],
-                        },
-                        catalogIdToAdd: '',
-                        onAddFurniture: vi.fn(() => true),
-                        onCatalogIdToAddChange: vi.fn(),
-                        onCatalogDrawerOpenChange: vi.fn(),
-                        onUndo: vi.fn(),
-                        onRedo: vi.fn(),
-                        onShareSceneUrl: vi.fn(() =>
-                          Promise.resolve<'shared' | 'copied' | null>('copied'),
-                        ),
-                        onOpenStartOverDialog: vi.fn(),
-                        onConfirmStartOver: vi.fn(),
-                      }}
-                      outliner={{
-                        onSelectById: vi.fn(),
-                        onPreviewChange: vi.fn(),
-                      }}
-                      cameraTools={{
-                        onSetCameraPreset: vi.fn(),
-                        onFocusSelected: vi.fn(),
-                      }}
-                      dockedSelectedItem={{
-                        onOpenDeleteDialog: vi.fn(),
-                        onRotateSelection: vi.fn(),
-                        onInvalidSelectedItemDetailValue: onInvalid,
-                        onUpdateSelectedItemDetails: onUpdate,
-                      }}
-                      floatingSelectedItem={{
-                        onOpenDeleteDialog: vi.fn(),
-                        onRotateSelection: vi.fn(),
-                      }}
-                      onConfirmDeleteSelection={vi.fn()}
-                      onRetryAssetLoading={vi.fn()}
-                    />
-                  </div>
+                  <CommandDispatchProvider value={vi.fn()}>
+                    <div className="relative min-h-192">
+                      <EditorOverlay
+                        startOverDisabled={false}
+                        topHeader={{
+                          catalog: [],
+                          environmentConfig: {
+                            defaultFloorFinishId: 'wood-floor',
+                            defaultWallFinishId: 'light-gray',
+                            floorFinishes: [
+                              {
+                                id: 'wood-floor',
+                                label: 'Wood',
+                                diffusePath: '/textures/wood.jpg',
+                                normalPath: '/textures/wood-normal.png',
+                                tileSizeMeters: { width: 0.5, depth: 0.5 },
+                              },
+                            ],
+                            wallFinishes: [
+                              {
+                                id: 'light-gray',
+                                label: 'Light Gray',
+                                color: 0xf5f5f5,
+                              },
+                            ],
+                          },
+                          catalogIdToAdd: '',
+                          onAddFurniture: vi.fn(() => true),
+                          onCatalogIdToAddChange: vi.fn(),
+                          onCatalogDrawerOpenChange: vi.fn(),
+                          onShareSceneUrl: vi.fn(() =>
+                            Promise.resolve<'shared' | 'copied' | null>(
+                              'copied',
+                            ),
+                          ),
+                          onOpenStartOverDialog: vi.fn(),
+                          onConfirmStartOver: vi.fn(),
+                        }}
+                        outliner={{
+                          onSelectById: vi.fn(),
+                          onPreviewChange: vi.fn(),
+                        }}
+                        cameraTools={{
+                          onSetCameraPreset: vi.fn(),
+                          onFocusSelected: vi.fn(),
+                        }}
+                        dockedSelectedItem={{
+                          onOpenDeleteDialog: vi.fn(),
+                          onRotateSelection: vi.fn(),
+                          onInvalidSelectedItemDetailValue: onInvalid,
+                          onUpdateSelectedItemDetails: onUpdate,
+                        }}
+                        floatingSelectedItem={{
+                          onOpenDeleteDialog: vi.fn(),
+                          onRotateSelection: vi.fn(),
+                        }}
+                        onConfirmDeleteSelection={vi.fn()}
+                        onRetryAssetLoading={vi.fn()}
+                      />
+                    </div>
+                  </CommandDispatchProvider>
                 </SelectedItemPlacementProvider>
               </SelectedItemInteractionProvider>
             </OverlayLayoutProvider>

@@ -20,8 +20,6 @@ interface TopHeaderProps {
   history: {
     canRedo: boolean
     canUndo: boolean
-    onRedo: () => void
-    onUndo: () => void
   }
   floorFinishId: string
   floorFinishLoading: boolean
@@ -60,8 +58,6 @@ export interface TopHeaderShellProps {
   onAddFurniture: () => boolean
   onCatalogIdToAddChange: (catalogId: string) => void
   onCatalogDrawerOpenChange: (open: boolean) => void
-  onUndo: () => void
-  onRedo: () => void
   onShareSceneUrl: () => Promise<'shared' | 'copied' | null>
   onOpenStartOverDialog: (request?: AppDialogOpenRequest) => void
   onConfirmStartOver: () => void

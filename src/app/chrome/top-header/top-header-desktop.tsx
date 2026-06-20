@@ -100,8 +100,6 @@ export function TopHeaderDesktop({
             canUndo={history.canUndo}
             buttonSize="toolbar"
             editorInteractionsEnabled={editorInteractionsEnabled}
-            onRedo={history.onRedo}
-            onUndo={history.onUndo}
           />
           <StartOverButton
             buttonRef={headerFocusRegistry.register('top-header-start-over')}

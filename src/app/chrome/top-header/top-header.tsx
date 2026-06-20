@@ -35,9 +35,7 @@ export function TopHeader({
   onCatalogIdToAddChange,
   onConfirmStartOver,
   onOpenStartOverDialog,
-  onRedo,
   onShareSceneUrl,
-  onUndo,
   startOverDisabled = false,
   topHeaderRef,
   desktopRoomSidebarRef,
@@ -122,8 +120,6 @@ export function TopHeader({
     history: {
       canRedo: historyAvailability.canRedo,
       canUndo: historyAvailability.canUndo,
-      onRedo,
-      onUndo,
     },
     onFloorFinishChange: sceneStateActions.setFloorFinishId,
     onWallFinishChange: sceneStateActions.setWallFinishId,

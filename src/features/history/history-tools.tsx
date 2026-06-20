@@ -1,14 +1,13 @@
 import { ButtonGroup } from '@/shared/ui/button-group'
 import { IconArrowBackUp, IconArrowForwardUp } from '@tabler/icons-react'
 import { ToolButton } from '@/shared/ui/tool-button'
+import { useCommandDispatch } from '@/editor-state/command-dispatch-context'
 import type { ComponentProps } from 'react'
 
 export function HistoryTools({
   canRedo,
   canUndo,
   editorInteractionsEnabled,
-  onRedo,
-  onUndo,
   buttonClassName,
   displayLabels,
   buttonSize,
@@ -16,12 +15,11 @@ export function HistoryTools({
   canRedo: boolean
   canUndo: boolean
   editorInteractionsEnabled: boolean
-  onRedo: () => void
-  onUndo: () => void
   buttonClassName?: string
   displayLabels?: boolean
   buttonSize?: ComponentProps<typeof ToolButton>['size']
 }) {
+  const dispatch = useCommandDispatch()
   const undoDisabled = !canUndo || !editorInteractionsEnabled
   const redoDisabled = !canRedo || !editorInteractionsEnabled
   const undoDisabledMessage = !editorInteractionsEnabled
@@ -34,7 +32,9 @@ export function HistoryTools({
   return (
     <ButtonGroup aria-label="History Actions">
       <ToolButton
-        action={onUndo}
+        action={() => {
+          dispatch({ kind: 'undo' })
+        }}
         disabled={undoDisabled}
         disabledMessage={undoDisabledMessage}
         shortcuts="Control+Z"
@@ -45,7 +45,9 @@ export function HistoryTools({
         className={buttonClassName}
       />
       <ToolButton
-        action={onRedo}
+        action={() => {
+          dispatch({ kind: 'redo' })
+        }}
         disabled={redoDisabled}
         disabledMessage={redoDisabledMessage}
         shortcuts="Control+Shift+Z Control+Y"

@@ -98,8 +98,6 @@ export function TopHeaderMobile({
               displayLabels={false}
               buttonSize="toolbar-icon"
               editorInteractionsEnabled={editorInteractionsEnabled}
-              onRedo={history.onRedo}
-              onUndo={history.onUndo}
             />
             <Button
               ref={headerFocusRegistry.register('top-header-more-actions')}

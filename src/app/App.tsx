@@ -624,8 +624,6 @@ function App() {
                       onCatalogIdToAddChange: setCatalogIdToAdd,
                       onCatalogDrawerOpenChange:
                         handlers.handleCatalogDrawerOpenChange,
-                      onUndo: handlers.handleUndo,
-                      onRedo: handlers.handleRedo,
                       onShareSceneUrl: handlers.handleShareSceneUrl,
                       onOpenStartOverDialog: handlers.handleOpenStartOverDialog,
                       onConfirmStartOver: handlers.handleConfirmStartOver,

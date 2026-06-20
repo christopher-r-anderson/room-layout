@@ -78,11 +78,9 @@ function renderTopHeader() {
       onCatalogIdToAddChange={vi.fn()}
       onConfirmStartOver={vi.fn()}
       onOpenStartOverDialog={vi.fn()}
-      onRedo={vi.fn()}
       onShareSceneUrl={vi.fn(() =>
         Promise.resolve<'shared' | 'copied' | null>(null),
       )}
-      onUndo={vi.fn()}
     />,
   )
 }

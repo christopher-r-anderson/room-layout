@@ -3,18 +3,22 @@
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
+import type { ReactElement } from 'react'
+import { CommandDispatchProvider } from '@/editor-state/command-dispatch-provider'
+import type { CommandDispatch } from '@/editor-state/command-dispatch-context'
 import { HistoryTools } from './history-tools'
+
+function renderWithDispatch(ui: ReactElement, dispatch: CommandDispatch) {
+  return render(
+    <CommandDispatchProvider value={dispatch}>{ui}</CommandDispatchProvider>,
+  )
+}
 
 describe('HistoryTools', () => {
   it('exposes keyboard shortcuts for undo and redo', () => {
-    render(
-      <HistoryTools
-        canRedo
-        canUndo
-        editorInteractionsEnabled
-        onRedo={vi.fn()}
-        onUndo={vi.fn()}
-      />,
+    renderWithDispatch(
+      <HistoryTools canRedo canUndo editorInteractionsEnabled />,
+      vi.fn(),
     )
 
     expect(screen.getByRole('button', { name: 'Undo' })).toHaveAttribute(
@@ -27,19 +31,31 @@ describe('HistoryTools', () => {
     )
   })
 
+  it('dispatches undo and redo commands on click', async () => {
+    const user = userEvent.setup()
+    const dispatch: CommandDispatch = vi.fn()
+
+    renderWithDispatch(
+      <HistoryTools canRedo canUndo editorInteractionsEnabled />,
+      dispatch,
+    )
+
+    await user.click(screen.getByRole('button', { name: 'Undo' }))
+    await user.click(screen.getByRole('button', { name: 'Redo' }))
+
+    expect(vi.mocked(dispatch).mock.calls.map(([command]) => command)).toEqual([
+      { kind: 'undo' },
+      { kind: 'redo' },
+    ])
+  })
+
   it('is non-interactive when disabled', async () => {
     const user = userEvent.setup()
-    const onUndo = vi.fn()
-    const onRedo = vi.fn()
+    const dispatch = vi.fn()
 
-    render(
-      <HistoryTools
-        canRedo
-        canUndo
-        editorInteractionsEnabled={false}
-        onRedo={onRedo}
-        onUndo={onUndo}
-      />,
+    renderWithDispatch(
+      <HistoryTools canRedo canUndo editorInteractionsEnabled={false} />,
+      dispatch,
     )
 
     const undoButton = screen.getByRole('button', { name: 'Undo' })
@@ -56,21 +72,19 @@ describe('HistoryTools', () => {
     await user.click(undoButton)
     await user.click(redoButton)
 
-    expect(onUndo).not.toHaveBeenCalled()
-    expect(onRedo).not.toHaveBeenCalled()
+    expect(dispatch).not.toHaveBeenCalled()
   })
 
   it('forwards toolbar sizing and explicit label visibility to the tool buttons', () => {
-    render(
+    renderWithDispatch(
       <HistoryTools
         canRedo
         canUndo
         displayLabels={true}
         buttonSize="toolbar"
         editorInteractionsEnabled
-        onRedo={vi.fn()}
-        onUndo={vi.fn()}
       />,
+      vi.fn(),
     )
 
     const undoButton = screen.getByRole('button', { name: 'Undo' })

@@ -92,8 +92,6 @@ function createProps(
     history: {
       canRedo: false,
       canUndo: false,
-      onRedo: vi.fn(),
-      onUndo: vi.fn(),
     },
     isRoomSurfaceOpen: false,
     isKeyboardShortcutsOpen: false,
