@@ -632,10 +632,6 @@ function App() {
                       onSelectById: handlers.handleSelectById,
                       onPreviewChange: handleOutlinerPreviewChange,
                     }}
-                    cameraTools={{
-                      onSetCameraPreset: handlers.handleSetCameraPreset,
-                      onFocusSelected: handlers.handleFocusSelected,
-                    }}
                     dockedSelectedItem={{
                       onOpenDeleteDialog: handlers.handleOpenDeleteDialog,
                       onRotateSelection: handlers.handleRotateSelection,

@@ -12,7 +12,6 @@ import {
   useEditorInteractionsEnabled,
 } from '@/editor-state/editor-runtime-store'
 import { useHasSelection } from '@/editor-state/scene-state-store'
-import type { CameraPreset } from '@/scene/scene.types'
 import { CameraTools } from '@/features/camera/camera-tools'
 import { DeleteConfirmationDialog } from '@/features/selection/delete-confirmation-dialog'
 import { StatusMessage } from './status-message'
@@ -31,11 +30,6 @@ import { TopHeader } from './top-header/top-header'
 import type { TopHeaderShellProps } from './top-header/top-header.types'
 import { useOverlayLayout } from '@/shared/layout/overlay-layout-context'
 import { useHeaderLayoutMode } from '@/shared/layout/use-header-layout-mode'
-
-interface CameraToolsShellProps {
-  onSetCameraPreset: (preset: CameraPreset) => void
-  onFocusSelected: () => void
-}
 
 interface OutlinerShellProps {
   onSelectById: PanelSelectById
@@ -63,7 +57,6 @@ interface EditorOverlayProps {
   startOverDisabled: boolean
   topHeader: TopHeaderShellProps
   outliner: OutlinerShellProps
-  cameraTools: CameraToolsShellProps
   dockedSelectedItem: DockedSelectedItemShellProps
   floatingSelectedItem: FloatingSelectedItemShellProps
   onConfirmDeleteSelection: () => void
@@ -108,7 +101,6 @@ export function EditorOverlay({
   startOverDisabled,
   topHeader,
   outliner,
-  cameraTools,
   dockedSelectedItem,
   floatingSelectedItem,
   onConfirmDeleteSelection,
@@ -150,8 +142,6 @@ export function EditorOverlay({
           ref={registerExclusionElement('camera-tools')}
         >
           <CameraTools
-            onSetPreset={cameraTools.onSetCameraPreset}
-            onFocusSelected={cameraTools.onFocusSelected}
             editorInteractionsEnabled={interactionsEnabled}
             hasSelection={hasSelection}
             displayLabels={isDesktop}

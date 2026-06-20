@@ -8,23 +8,20 @@ import {
   IconFocus2,
 } from '@tabler/icons-react'
 import { ToolButton } from '@/shared/ui/tool-button'
-import type { CameraPreset } from '@/shared/lib/three/camera-presets'
+import { useCommandDispatch } from '@/editor-state/command-dispatch-context'
 
 export interface CameraToolsProps {
   editorInteractionsEnabled: boolean
   hasSelection: boolean
-  onSetPreset: (preset: CameraPreset) => void
-  onFocusSelected: () => void
   displayLabels?: boolean
 }
 
 export function CameraTools({
   editorInteractionsEnabled,
   hasSelection,
-  onSetPreset,
-  onFocusSelected,
   displayLabels = true,
 }: CameraToolsProps) {
+  const dispatch = useCommandDispatch()
   const presetsDisabled = !editorInteractionsEnabled
   const presetsDisabledMessage =
     'Editor interactions are unavailable while loading'
@@ -38,7 +35,7 @@ export function CameraTools({
       </ButtonGroupText>
       <ToolButton
         action={() => {
-          onSetPreset('corner')
+          dispatch({ kind: 'set-camera-preset', preset: 'corner' })
         }}
         disabled={presetsDisabled}
         disabledMessage={presetsDisabledMessage}
@@ -52,7 +49,7 @@ export function CameraTools({
       />
       <ToolButton
         action={() => {
-          onSetPreset('front')
+          dispatch({ kind: 'set-camera-preset', preset: 'front' })
         }}
         disabled={presetsDisabled}
         disabledMessage={presetsDisabledMessage}
@@ -66,7 +63,7 @@ export function CameraTools({
       />
       <ToolButton
         action={() => {
-          onSetPreset('side')
+          dispatch({ kind: 'set-camera-preset', preset: 'side' })
         }}
         disabled={presetsDisabled}
         disabledMessage={presetsDisabledMessage}
@@ -80,7 +77,7 @@ export function CameraTools({
       />
       <ToolButton
         action={() => {
-          onSetPreset('top')
+          dispatch({ kind: 'set-camera-preset', preset: 'top' })
         }}
         disabled={presetsDisabled}
         disabledMessage={presetsDisabledMessage}
@@ -93,7 +90,9 @@ export function CameraTools({
         tooltipSide="left"
       />
       <ToolButton
-        action={onFocusSelected}
+        action={() => {
+          dispatch({ kind: 'focus-selected' })
+        }}
         disabled={!hasSelection || !editorInteractionsEnabled}
         disabledMessage={
           !editorInteractionsEnabled

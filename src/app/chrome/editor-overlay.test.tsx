@@ -153,22 +153,9 @@ vi.mock('../keyboard/keyboard-shortcuts-help', () => ({
 }))
 
 vi.mock('../camera/camera-tools', () => ({
-  CameraTools: ({ onFocusSelected }: { onFocusSelected: () => void }) => (
+  CameraTools: () => (
     <div role="group" aria-label="Camera">
-      <button type="button" onClick={onFocusSelected}>
-        Focus Selected
-      </button>
-    </div>
-  ),
-  ConnectedCameraTools: ({
-    onFocusSelected,
-  }: {
-    onFocusSelected: () => void
-  }) => (
-    <div role="group" aria-label="Camera">
-      <button type="button" onClick={onFocusSelected}>
-        Focus Selected
-      </button>
+      <button type="button">Focus Selected</button>
     </div>
   ),
 }))
@@ -315,10 +302,6 @@ describe('EditorOverlay integration', () => {
                         outliner={{
                           onSelectById: vi.fn(),
                           onPreviewChange: vi.fn(),
-                        }}
-                        cameraTools={{
-                          onSetCameraPreset: vi.fn(),
-                          onFocusSelected: vi.fn(),
                         }}
                         dockedSelectedItem={{
                           onOpenDeleteDialog: vi.fn(),
