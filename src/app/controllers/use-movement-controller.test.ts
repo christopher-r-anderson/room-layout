@@ -54,9 +54,6 @@ describe('useMovementController', () => {
     const rotateSelection = vi
       .spyOn(sceneCommands, 'rotateSelection')
       .mockImplementation(() => undefined)
-    const setSelectionTransform = vi
-      .spyOn(sceneCommands, 'setSelectionTransform')
-      .mockReturnValue({ ok: true, item: CHAIR })
 
     const { result } = renderHook(() =>
       useMovementController({
@@ -70,21 +67,9 @@ describe('useMovementController', () => {
       reason: 'no-selection',
     })
     result.current.handleRotateSelection(1)
-    expect(
-      result.current.handleUpdateSelectedItemDetails({
-        field: 'positionX',
-        fieldLabel: 'Left clearance',
-        value: 1,
-      }),
-    ).toEqual({
-      ok: false,
-      reason: 'no-selection',
-      message: 'Select a furniture item first.',
-    })
 
     expect(moveSelection).not.toHaveBeenCalled()
     expect(rotateSelection).not.toHaveBeenCalled()
-    expect(setSelectionTransform).not.toHaveBeenCalled()
   })
 
   it('forwards enabled move and rotate commands to the scene', () => {

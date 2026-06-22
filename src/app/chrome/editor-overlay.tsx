@@ -21,10 +21,6 @@ import { Outliner } from '@/features/scene-panel/outliner'
 import type { PanelSelectById } from '@/editor-state/types/interaction.types'
 import { DockedSelectedItemSite } from '@/features/selection/docked-selected-item-site'
 import { FloatingSelectedItemSite } from '@/features/selection/floating-selected-item-site'
-import type {
-  UpdateSelectedItemDetailsInput,
-  UpdateSelectedItemDetailsResult,
-} from '@/editor-state/types/selected-item.types'
 import { SelectedDetailsPlaceholder } from '@/features/selection/selected-details-view'
 import { TopHeader } from './top-header/top-header'
 import type { TopHeaderShellProps } from './top-header/top-header.types'
@@ -39,18 +35,10 @@ interface OutlinerShellProps {
   ) => void
 }
 
-interface DockedSelectedItemShellProps {
-  onInvalidSelectedItemDetailValue: (fieldLabel: string) => string
-  onUpdateSelectedItemDetails: (
-    input: UpdateSelectedItemDetailsInput,
-  ) => UpdateSelectedItemDetailsResult
-}
-
 export interface EditorOverlayProps {
   startOverDisabled: boolean
   topHeader: TopHeaderShellProps
   outliner: OutlinerShellProps
-  dockedSelectedItem: DockedSelectedItemShellProps
   onConfirmDeleteSelection: () => void
   onRetryAssetLoading: () => void
 }
@@ -93,7 +81,6 @@ export function EditorOverlay({
   startOverDisabled,
   topHeader,
   outliner,
-  dockedSelectedItem,
   onConfirmDeleteSelection,
   onRetryAssetLoading,
 }: EditorOverlayProps) {
@@ -160,7 +147,6 @@ export function EditorOverlay({
             {hasSelection ? (
               <DockedSelectedItemSite
                 isCatalogDrawerOpen={isCatalogDrawerOpen}
-                {...dockedSelectedItem}
               />
             ) : (
               <div

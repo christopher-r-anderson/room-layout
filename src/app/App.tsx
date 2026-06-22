@@ -493,12 +493,6 @@ function App() {
                   onSelectById: handlers.handleSelectById,
                   onPreviewChange: handleOutlinerPreviewChange,
                 },
-                dockedSelectedItem: {
-                  onInvalidSelectedItemDetailValue:
-                    handlers.handleInvalidSelectedItemDetailValue,
-                  onUpdateSelectedItemDetails:
-                    handlers.handleUpdateSelectedItemDetails,
-                },
                 onConfirmDeleteSelection: handlers.handleConfirmDeleteSelection,
                 onRetryAssetLoading: handlers.handleRetryAssetLoading,
               }}

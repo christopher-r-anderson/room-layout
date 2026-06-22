@@ -229,12 +229,6 @@ describe('EditorOverlay integration', () => {
       const selectedItemControlsRef = React.useRef<HTMLDivElement | null>(null)
       const dockedInspectorRef = React.useRef<HTMLDivElement | null>(null)
       const roomViewRef = React.useRef<HTMLElement | null>(null)
-      const onUpdate = vi.fn(() => ({
-        ok: true as const,
-        item: selectedFurniture,
-      }))
-      const onInvalid = (fieldLabel: string) =>
-        `${fieldLabel} must be a valid number.`
       const placementValue = React.useMemo(
         () => ({
           placement: {
@@ -302,10 +296,6 @@ describe('EditorOverlay integration', () => {
                         outliner={{
                           onSelectById: vi.fn(),
                           onPreviewChange: vi.fn(),
-                        }}
-                        dockedSelectedItem={{
-                          onInvalidSelectedItemDetailValue: onInvalid,
-                          onUpdateSelectedItemDetails: onUpdate,
                         }}
                         onConfirmDeleteSelection={vi.fn()}
                         onRetryAssetLoading={vi.fn()}

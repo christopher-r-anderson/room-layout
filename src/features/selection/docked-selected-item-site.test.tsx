@@ -62,16 +62,7 @@ describe('DockedSelectedItemSite', () => {
                 }}
               >
                 <CommandDispatchProvider value={vi.fn()}>
-                  <DockedSelectedItemSite
-                    isCatalogDrawerOpen={false}
-                    onInvalidSelectedItemDetailValue={(fieldLabel) =>
-                      `${fieldLabel} must be a valid number.`
-                    }
-                    onUpdateSelectedItemDetails={() => ({
-                      ok: true,
-                      item: FURNITURE_ITEM,
-                    })}
-                  />
+                  <DockedSelectedItemSite isCatalogDrawerOpen={false} />
                 </CommandDispatchProvider>
               </SelectedItemPlacementProvider>
             </SelectedItemInteractionProvider>
@@ -128,16 +119,7 @@ describe('DockedSelectedItemSite', () => {
               >
                 <CommandDispatchProvider value={vi.fn()}>
                   <FloatingSelectedItemSite isCatalogDrawerOpen={false} />
-                  <DockedSelectedItemSite
-                    isCatalogDrawerOpen={false}
-                    onInvalidSelectedItemDetailValue={(fieldLabel) =>
-                      `${fieldLabel} must be a valid number.`
-                    }
-                    onUpdateSelectedItemDetails={() => ({
-                      ok: true,
-                      item: FURNITURE_ITEM,
-                    })}
-                  />
+                  <DockedSelectedItemSite isCatalogDrawerOpen={false} />
                 </CommandDispatchProvider>
               </SelectedItemPlacementProvider>
             </SelectedItemInteractionProvider>
@@ -191,16 +173,7 @@ describe('DockedSelectedItemSite', () => {
               >
                 <CommandDispatchProvider value={vi.fn()}>
                   <FloatingSelectedItemSite isCatalogDrawerOpen={false} />
-                  <DockedSelectedItemSite
-                    isCatalogDrawerOpen={false}
-                    onInvalidSelectedItemDetailValue={(fieldLabel) =>
-                      `${fieldLabel} must be a valid number.`
-                    }
-                    onUpdateSelectedItemDetails={() => ({
-                      ok: true,
-                      item: FURNITURE_ITEM,
-                    })}
-                  />
+                  <DockedSelectedItemSite isCatalogDrawerOpen={false} />
                 </CommandDispatchProvider>
               </SelectedItemPlacementProvider>
             </SelectedItemInteractionProvider>

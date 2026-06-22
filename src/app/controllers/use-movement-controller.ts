@@ -1,23 +1,14 @@
 import { useCallback } from 'react'
-import { resolvePositionFromWallClearances } from '@/shared/lib/three/wall-clearance'
 import { announcementActions } from '@/editor-state/announcement-store'
 import {
   sceneStateActions,
   useSelectedFurniture,
 } from '@/editor-state/scene-state-store'
-import { selectionMetaActions } from '@/editor-state/selection-meta-store'
 import { sceneCommands } from '@/scene/scene-commands'
 import type { MoveSource, MoveSelectionResult } from '@/scene/scene.types'
-import type {
-  UpdateSelectedItemDetailsInput,
-  UpdateSelectedItemDetailsResult,
-} from '@/editor-state/types/selected-item.types'
 import {
   formatCoordinate,
   formatMoveBlockedMessage,
-  formatSelectedItemDetailsBlockedMessage,
-  formatSelectedItemDetailsInvalidValueMessage,
-  normalizeDegreesRadians,
 } from './_shared/format-messages'
 
 interface MovementControllerOptions {
@@ -85,85 +76,8 @@ export function useMovementController({
     [editorInteractionsEnabled, rotationStepRadians, selectedFurniture],
   )
 
-  const handleInvalidSelectedItemDetailValue = useCallback(
-    (fieldLabel: string) => {
-      return formatSelectedItemDetailsInvalidValueMessage(fieldLabel)
-    },
-    [],
-  )
-
-  const handleUpdateSelectedItemDetails = useCallback(
-    (
-      input: UpdateSelectedItemDetailsInput,
-    ): UpdateSelectedItemDetailsResult => {
-      sceneStateActions.clearEditorMessage()
-
-      if (
-        !selectedFurniture ||
-        !editorInteractionsEnabled ||
-        !sceneCommands.isSceneReady()
-      ) {
-        return {
-          ok: false,
-          reason: 'no-selection',
-          message: formatSelectedItemDetailsBlockedMessage(
-            input.fieldLabel,
-            'no-selection',
-          ),
-        }
-      }
-
-      const nextPosition: [number, number, number] | undefined =
-        input.field === 'positionX'
-          ? resolvePositionFromWallClearances(selectedFurniture, {
-              left: input.value,
-            })
-          : input.field === 'positionZ'
-            ? resolvePositionFromWallClearances(selectedFurniture, {
-                back: input.value,
-              })
-            : undefined
-      const nextRotationY =
-        input.field === 'rotationDegrees'
-          ? normalizeDegreesRadians(input.value)
-          : undefined
-
-      const result = sceneCommands.setSelectionTransform({
-        position: nextPosition,
-        rotationY: nextRotationY,
-      })
-
-      if (result.ok) {
-        selectionMetaActions.setSelectedSource('panel-keyboard')
-        announcementActions.announcePolite(
-          `${result.item.name} details updated.`,
-        )
-        return { ok: true, item: result.item }
-      }
-
-      if (result.reason === 'no-op') {
-        return {
-          ok: false,
-          reason: 'no-op',
-        }
-      }
-
-      return {
-        ok: false,
-        reason: result.reason,
-        message: formatSelectedItemDetailsBlockedMessage(
-          input.fieldLabel,
-          result.reason,
-        ),
-      }
-    },
-    [editorInteractionsEnabled, selectedFurniture],
-  )
-
   return {
     handleMoveSelection,
     handleRotateSelection,
-    handleInvalidSelectedItemDetailValue,
-    handleUpdateSelectedItemDetails,
   }
 }

@@ -3,26 +3,20 @@ import { useOverlayLayout } from '@/shared/layout/overlay-layout-context'
 import { useEditorInteractionsEnabled } from '@/editor-state/editor-runtime-store'
 import { useSelectedFurniture } from '@/editor-state/scene-state-store'
 import { useCommandDispatch } from '@/editor-state/command-dispatch-context'
-import type {
-  UpdateSelectedItemDetailsInput,
-  UpdateSelectedItemDetailsResult,
-} from '@/editor-state/types/selected-item.types'
 import { SelectedDetailsView } from './selected-details-view'
 import { resolveSelectionControlsInteractivity } from './selection-controls-interactivity'
 import { useSelectedItemInteraction } from './selected-item-interaction-context'
+import {
+  invalidSelectedItemDetailValueMessage,
+  updateSelectedItemDetails,
+} from './selected-item-detail-actions'
 
 export interface DockedSelectedItemSiteProps {
   isCatalogDrawerOpen: boolean
-  onInvalidSelectedItemDetailValue: (fieldLabel: string) => string
-  onUpdateSelectedItemDetails: (
-    input: UpdateSelectedItemDetailsInput,
-  ) => UpdateSelectedItemDetailsResult
 }
 
 export function DockedSelectedItemSite({
   isCatalogDrawerOpen,
-  onInvalidSelectedItemDetailValue,
-  onUpdateSelectedItemDetails,
 }: DockedSelectedItemSiteProps) {
   const interaction = useSelectedItemInteraction()
   const { dockedInspectorRef, selectedItemControlsRef } = useEditorRefs()
@@ -69,8 +63,8 @@ export function DockedSelectedItemSite({
         onRotateSelection={(direction) => {
           dispatch({ kind: 'rotate-selection', direction })
         }}
-        onInvalidSelectedItemDetailValue={onInvalidSelectedItemDetailValue}
-        onUpdateSelectedItemDetails={onUpdateSelectedItemDetails}
+        onInvalidSelectedItemDetailValue={invalidSelectedItemDetailValueMessage}
+        onUpdateSelectedItemDetails={updateSelectedItemDetails}
       />
     </div>
   )
