@@ -12,6 +12,7 @@ import { NeutralToneMapping, SRGBColorSpace } from 'three'
 import { Scene } from '@/scene/scene'
 import { useIsBlockingOverlayOpen } from '@/editor-state/dialog-store'
 import { useSelectedFurniture } from '@/editor-state/scene-state-store'
+import { useSceneIsAtDefaults } from '@/editor-state/use-scene-is-at-defaults'
 import {
   useEditorInteractionsEnabled,
   useStartupLoadingActive,
@@ -61,7 +62,6 @@ export interface EditorBodyProps {
   collections: SceneProps['collections']
   cacheInvalidationKey: Key
   testOverlaysHidden: boolean
-  sceneIsAtDefaults: boolean
   focusRoomView: () => void
   canvasShadowMode: false | 'percentage'
   isE2ELowRenderQuality: boolean
@@ -83,7 +83,6 @@ export function EditorBody({
   collections,
   cacheInvalidationKey,
   testOverlaysHidden,
-  sceneIsAtDefaults,
   focusRoomView,
   canvasShadowMode,
   isE2ELowRenderQuality,
@@ -100,6 +99,7 @@ export function EditorBody({
   editorOverlay,
 }: EditorBodyProps) {
   const [roomViewHasFocus, setRoomViewHasFocus] = useState(false)
+  const sceneIsAtDefaults = useSceneIsAtDefaults()
   const editorInteractionsEnabled = useEditorInteractionsEnabled()
   const isBlockingOverlayOpen = useIsBlockingOverlayOpen()
   const startupLoadingActive = useStartupLoadingActive()

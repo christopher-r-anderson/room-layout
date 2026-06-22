@@ -258,7 +258,6 @@ describe('EditorOverlay integration', () => {
                   <CommandDispatchProvider value={vi.fn()}>
                     <div className="relative min-h-192">
                       <EditorOverlay
-                        startOverDisabled={false}
                         topHeader={{
                           onShareSceneUrl: vi.fn(() =>
                             Promise.resolve<'shared' | 'copied' | null>(

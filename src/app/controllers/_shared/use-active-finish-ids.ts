@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import {
   findFloorFinishOption,
   findWallFinishOption,
+  resolveActiveFinishIds,
   type EnvironmentMaterialConfig,
   type FloorFinishOption,
   type WallFinishOption,
@@ -25,17 +26,11 @@ export function useActiveFinishIds({
   floorFinishId,
   wallFinishId,
 }: UseActiveFinishIdsOptions): ActiveFinishIds {
-  const activeFloorFinishId = environmentConfig?.floorFinishes.some(
-    (option) => option.id === floorFinishId,
+  const { activeFloorFinishId, activeWallFinishId } = resolveActiveFinishIds(
+    environmentConfig,
+    floorFinishId,
+    wallFinishId,
   )
-    ? floorFinishId
-    : (environmentConfig?.defaultFloorFinishId ?? '')
-
-  const activeWallFinishId = environmentConfig?.wallFinishes.some(
-    (option) => option.id === wallFinishId,
-  )
-    ? wallFinishId
-    : (environmentConfig?.defaultWallFinishId ?? '')
 
   const selectedFloorOption = useMemo(
     () =>

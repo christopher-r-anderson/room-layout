@@ -10,7 +10,6 @@ import { DIALOG_IDS } from '@/app/dialogs/dialog-registry'
 import {
   sceneStateActions,
   useFloorFinishId,
-  useItems,
   usePreviewedId,
   useSelectedFurniture,
   useWallFinishId,
@@ -22,6 +21,7 @@ import {
   previewFromScene,
 } from '@/editor-state/preview-actions'
 import { usePreviewReconciler } from '@/editor-state/use-preview-reconciler'
+import { useSceneIsAtDefaults } from '@/editor-state/use-scene-is-at-defaults'
 import { startSelectionEffectsReconciler } from '@/editor-state/selection-effects'
 import {
   clearSelection,
@@ -47,7 +47,6 @@ import {
   useStartupPhase,
 } from '@/editor-state/editor-runtime-store'
 import { TooltipProvider } from '@/shared/ui/tooltip'
-import { isFreshSceneState } from '@/shared/lib/three/scene-defaults'
 import { runStartupReset } from '@/features/startup/reset-startup-state'
 import { useStartupState } from '@/features/startup/use-startup-state'
 import { EditorBody } from './chrome/editor-body'
@@ -77,7 +76,6 @@ function App() {
   const selectedItemControlsRef = useRef<HTMLDivElement | null>(null)
   const dockedInspectorRef = useRef<HTMLDivElement | null>(null)
   const roomViewFocusFrameRef = useRef<number | null>(null)
-  const items = useItems()
   const selectedFurniture = useSelectedFurniture()
   const floorFinishId = useFloorFinishId()
   const wallFinishId = useWallFinishId()
@@ -163,20 +161,7 @@ function App() {
     environmentConfig,
   })
 
-  const sceneIsAtDefaults = useMemo(() => {
-    if (!environmentConfig) {
-      return false
-    }
-
-    return isFreshSceneState(
-      {
-        items,
-        floorFinishId: activeFloorFinishId,
-        wallFinishId: activeWallFinishId,
-      },
-      environmentConfig,
-    )
-  }, [items, environmentConfig, activeFloorFinishId, activeWallFinishId])
+  const sceneIsAtDefaults = useSceneIsAtDefaults()
 
   const dialogRuntimeContext = useMemo(
     () =>
@@ -413,7 +398,6 @@ function App() {
               collections={startup.collections}
               cacheInvalidationKey={startup.cacheInvalidationKey}
               testOverlaysHidden={testOverlaysHidden}
-              sceneIsAtDefaults={sceneIsAtDefaults}
               focusRoomView={focusRoomView}
               canvasShadowMode={canvasShadowMode}
               isE2ELowRenderQuality={isE2ELowRenderQuality}
@@ -428,7 +412,6 @@ function App() {
               onSceneAssetError={handlers.handleSceneAssetError}
               onClearSelection={clearSelection}
               editorOverlay={{
-                startOverDisabled: sceneIsAtDefaults,
                 topHeader: {
                   onShareSceneUrl: handlers.handleShareSceneUrl,
                   onOpenStartOverDialog: handlers.handleOpenStartOverDialog,

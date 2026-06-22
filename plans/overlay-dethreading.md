@@ -88,24 +88,25 @@ coordinator — never by importing a sibling feature. E.g. the outliner's
 4. ✅ **scene-assets store seam** — `editor-state/scene-assets-store` mirrors the
    startup manifest; top-header reads `useEnvironmentConfig()` (environmentConfig
    prop de-threaded). (`refactor(editor-state): add scene-assets store and
-   de-thread environment config`)
+de-thread environment config`)
 5. ✅ **catalog feature de-thread** — `catalog-selection-store` +
    `catalog-actions` in `features/catalog`; the drawer self-sources entries /
    active id / enabled / open; catalog prop bundle gone from the top-header shell;
    `use-catalog-controller` removed. (`refactor(catalog): self-source the catalog
-   drawer from the feature`)
-6. **start-over button → dispatch + `startOverDisabled`** — now unblocked: derive
-   `sceneIsAtDefaults`/`canStartOver` from scene-assets + scene-state (selector),
-   dispatch the `start-over` command from the button, drop the `startOverDisabled`
-   thread. (Mind the mobile more-actions/focus coordinator.)
-7. **start-over + asset-lifecycle controller conversions** — now unblocked by the
-   scene-assets store (defaults / finish-ids) and the preview module; convert to
-   editor-state coordinators.
+drawer from the feature`)
+6. ✅ **`startOverDisabled` de-thread** — `editor-state/use-scene-is-at-defaults`
+   selector (env from scene-assets + scene-state + shared `resolveActiveFinishIds`);
+   top-header and EditorBody self-read it; the `startOverDisabled`/`sceneIsAtDefaults`
+   props are gone. (`refactor(editor-state): derive scene-is-at-defaults via a
+selector`) — the start-over button **command dispatch** (and the
+   `onOpenStartOverDialog` thread + mobile more-actions coupling) is still pending.
+7. **start-over button → dispatch** + **start-over / asset-lifecycle controller
+   conversions** — now unblocked by the scene-assets store (defaults / finish-ids)
+   and the preview module; convert to coordinators (mind the start-over home fork:
+   it touches url-scene draft + startup dialog id).
 8. **delete-confirm + retry** → via deletion/asset-lifecycle modules
    (post-delete focus-intent + startup seams).
 9. **Documentation reconciliation** (final stage) — see
-   `plans/documentation-reconciliation.md`.
-7. **Documentation reconciliation** (final stage) — see
    `plans/documentation-reconciliation.md`; run after the runtime work is green.
 
 Each slice: full validation gate + the a11y/hotkeys e2e flows.

@@ -2,7 +2,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   resetSceneStateStore,
-  sceneStateActions,
   sceneStateStore,
 } from '@/editor-state/scene-state-store'
 import {

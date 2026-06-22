@@ -49,7 +49,6 @@ export interface TopHeaderShellProps {
 }
 
 export interface TopHeaderContainerProps extends TopHeaderShellProps {
-  startOverDisabled?: boolean
   topHeaderRef?: Ref<HTMLDivElement>
   desktopRoomSidebarRef?: Ref<HTMLElement>
   mobileRoomDrawerRef?: Ref<HTMLDivElement>

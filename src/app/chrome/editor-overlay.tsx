@@ -27,7 +27,6 @@ import { useOverlayLayout } from '@/shared/layout/overlay-layout-context'
 import { useHeaderLayoutMode } from '@/shared/layout/use-header-layout-mode'
 
 export interface EditorOverlayProps {
-  startOverDisabled: boolean
   topHeader: TopHeaderShellProps
   onConfirmDeleteSelection: () => void
   onRetryAssetLoading: () => void
@@ -68,7 +67,6 @@ function EditorOverlayDialogs({
 }
 
 export function EditorOverlay({
-  startOverDisabled,
   topHeader,
   onConfirmDeleteSelection,
   onRetryAssetLoading,
@@ -90,7 +88,6 @@ export function EditorOverlay({
         <div className="mb-auto">
           <TopHeader
             {...topHeader}
-            startOverDisabled={startOverDisabled}
             topHeaderRef={registerExclusionElement('top-header')}
             desktopRoomSidebarRef={registerExclusionElement(
               'desktop-room-sidebar',

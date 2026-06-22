@@ -23,6 +23,26 @@ export interface EnvironmentMaterialConfig {
   defaultWallFinishId: string
 }
 
+export function resolveActiveFinishIds(
+  config: EnvironmentMaterialConfig | null,
+  floorFinishId: string,
+  wallFinishId: string,
+): { activeFloorFinishId: string; activeWallFinishId: string } {
+  const activeFloorFinishId = config?.floorFinishes.some(
+    (option) => option.id === floorFinishId,
+  )
+    ? floorFinishId
+    : (config?.defaultFloorFinishId ?? '')
+
+  const activeWallFinishId = config?.wallFinishes.some(
+    (option) => option.id === wallFinishId,
+  )
+    ? wallFinishId
+    : (config?.defaultWallFinishId ?? '')
+
+  return { activeFloorFinishId, activeWallFinishId }
+}
+
 export function findFloorFinishOption(
   config: EnvironmentMaterialConfig,
   id: string,

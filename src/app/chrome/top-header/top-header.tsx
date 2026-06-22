@@ -17,6 +17,7 @@ import {
   useFloorFinishLoading,
 } from '@/editor-state/editor-runtime-store'
 import { useEnvironmentConfig } from '@/editor-state/scene-assets-store'
+import { useSceneIsAtDefaults } from '@/editor-state/use-scene-is-at-defaults'
 import { useActiveFinishIds } from '@/app/controllers/_shared/use-active-finish-ids'
 import {
   sceneStateActions,
@@ -31,12 +32,12 @@ export function TopHeader({
   onConfirmStartOver,
   onOpenStartOverDialog,
   onShareSceneUrl,
-  startOverDisabled = false,
   topHeaderRef,
   desktopRoomSidebarRef,
   mobileRoomDrawerRef,
 }: TopHeaderContainerProps) {
   const environmentConfig = useEnvironmentConfig()
+  const startOverDisabled = useSceneIsAtDefaults()
   const editorInteractionsEnabled = useEditorInteractionsEnabled()
   const historyAvailability = useHistoryAvailability()
   const storedFloorFinishId = useFloorFinishId()
