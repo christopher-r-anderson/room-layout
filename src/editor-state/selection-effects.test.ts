@@ -1,5 +1,4 @@
 // @vitest-environment jsdom
-import { act, renderHook } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   resetSelectionMetaStore,
@@ -18,7 +17,7 @@ import { announcementActions } from '@/editor-state/announcement-store'
 import {
   resetSelectionEffects,
   selectionEffects,
-  useSelectionEffectsReconciler,
+  startSelectionEffectsReconciler,
 } from '@/editor-state/selection-effects'
 
 vi.mock('@/editor-state/announcement-store', () => ({
@@ -44,130 +43,131 @@ const CHAIR = {
   sourcePath: '/models/chair.glb',
 }
 
+// Reconciliation is deferred to a microtask; awaiting a resolved promise drains
+// the queued reconcile before assertions run.
+const flushReconcile = () => Promise.resolve()
+
+let stopReconciler: () => void
+
 beforeEach(() => {
   resetSceneStateStore()
   resetSelectionMetaStore()
   resetEditorRuntimeStore()
   resetSelectionEffects()
   editorRuntimeActions.markAssetsReady()
+  stopReconciler = startSelectionEffectsReconciler()
 })
 
 afterEach(() => {
+  stopReconciler()
   vi.clearAllMocks()
 })
 
-describe('useSelectionEffectsReconciler', () => {
-  it('requests outliner focus after delete when an index is queued', () => {
-    renderHook(() => {
-      useSelectionEffectsReconciler()
-    })
-
-    act(() => {
-      selectionEffects.notePostDeleteOutlinerFocusIndex(2)
-      sceneStateActions.setHistory(createHistoryState([CHAIR]))
-    })
+describe('startSelectionEffectsReconciler', () => {
+  it('requests outliner focus after delete when an index is queued', async () => {
+    selectionEffects.notePostDeleteOutlinerFocusIndex(2)
+    sceneStateActions.setHistory(createHistoryState([CHAIR]))
+    await flushReconcile()
 
     expect(selectionMetaStore.getState().outlinerFocusRequest).toEqual(
       expect.objectContaining({ preferredIndex: 2 }),
     )
   })
 
-  it('reconciles the next selection source only when selection changes', () => {
+  it('reconciles the next selection source only when selection changes', async () => {
     const setSelectedSourceSpy = vi.spyOn(
       selectionMetaStore.getState(),
       'setSelectedSource',
     )
 
-    renderHook(() => {
-      useSelectionEffectsReconciler()
-    })
-
-    act(() => {
-      sceneStateActions.setHistory(createHistoryState([CHAIR]))
-      selectionEffects.notePendingSource('panel-pointer')
-      sceneStateActions.setSelectedId(CHAIR.id)
-    })
+    sceneStateActions.setHistory(createHistoryState([CHAIR]))
+    selectionEffects.notePendingSource('panel-pointer')
+    sceneStateActions.setSelectedId(CHAIR.id)
+    await flushReconcile()
 
     expect(selectionMetaStore.getState().selectedSource).toBe('panel-pointer')
     expect(setSelectedSourceSpy).toHaveBeenCalledTimes(1)
 
-    act(() => {
-      sceneStateActions.setSelectedId(CHAIR.id)
-    })
+    sceneStateActions.setSelectedId(CHAIR.id)
+    await flushReconcile()
 
     expect(setSelectedSourceSpy).toHaveBeenCalledTimes(1)
   })
 
-  it('announces selection changes for each special mode', () => {
-    renderHook(() => {
-      useSelectionEffectsReconciler()
+  it('announces selection changes for each special mode', async () => {
+    sceneStateActions.setHistory(createHistoryState([CHAIR]))
+    selectionEffects.notePendingSelection({
+      announceMode: 'added',
+      requestOutlinerFocus: false,
     })
-
-    act(() => {
-      sceneStateActions.setHistory(createHistoryState([CHAIR]))
-      selectionEffects.notePendingSelection({
-        announceMode: 'added',
-        requestOutlinerFocus: false,
-      })
-      sceneStateActions.setSelectedId(CHAIR.id)
-    })
+    sceneStateActions.setSelectedId(CHAIR.id)
+    await flushReconcile()
 
     expect(announcementActions.announcePolite).toHaveBeenCalledWith(
       'Chair added to room.',
     )
 
-    act(() => {
-      sceneStateActions.setSelectedId(null)
-    })
+    sceneStateActions.setSelectedId(null)
+    await flushReconcile()
 
-    act(() => {
-      selectionEffects.notePendingSelection({
-        announceMode: 'panel-keyboard',
-        requestOutlinerFocus: false,
-      })
-      sceneStateActions.setSelectedId(CHAIR.id)
+    selectionEffects.notePendingSelection({
+      announceMode: 'panel-keyboard',
+      requestOutlinerFocus: false,
     })
+    sceneStateActions.setSelectedId(CHAIR.id)
+    await flushReconcile()
 
     expect(announcementActions.announcePolite).toHaveBeenCalledWith(
       'Chair selected.',
     )
 
-    act(() => {
-      sceneStateActions.setSelectedId(null)
-    })
+    sceneStateActions.setSelectedId(null)
+    await flushReconcile()
 
-    act(() => {
-      selectionEffects.notePendingSelection({
-        announceMode: 'canvas-keyboard',
-        requestOutlinerFocus: false,
-      })
-      sceneStateActions.setSelectedId(CHAIR.id)
+    selectionEffects.notePendingSelection({
+      announceMode: 'canvas-keyboard',
+      requestOutlinerFocus: false,
     })
+    sceneStateActions.setSelectedId(CHAIR.id)
+    await flushReconcile()
 
     expect(announcementActions.announcePolite).toHaveBeenCalledWith(
       'Chair selected. Press Tab to reach selected item actions and details.',
     )
   })
 
-  it('clears stale pending behavior when items change without selection changing', () => {
+  it('clears stale pending behavior when items change without selection changing', async () => {
     sceneStateActions.setHistory(createHistoryState([CHAIR]))
     sceneStateActions.setSelectedId(CHAIR.id)
-    renderHook(() => {
-      useSelectionEffectsReconciler()
-    })
+    await flushReconcile()
 
-    act(() => {
-      selectionEffects.notePendingSelection({
-        announceMode: 'suppress',
-        requestOutlinerFocus: true,
-      })
-      sceneStateActions.setHistory(createHistoryState([{ ...CHAIR }]))
+    selectionEffects.notePendingSelection({
+      announceMode: 'suppress',
+      requestOutlinerFocus: true,
     })
+    sceneStateActions.setHistory(createHistoryState([{ ...CHAIR }]))
+    await flushReconcile()
 
-    act(() => {
-      sceneStateActions.setSelectedId(null)
-    })
+    sceneStateActions.setSelectedId(null)
+    await flushReconcile()
 
     expect(selectionMetaStore.getState().outlinerFocusRequest).toBeNull()
+  })
+
+  it('defers reconciliation until pending intent noted after the mutation lands', async () => {
+    // Mutation happens first (synchronous store write), then the consumer notes
+    // its intent — the reconcile must run after both.
+    sceneStateActions.setHistory(createHistoryState([CHAIR]))
+    sceneStateActions.setSelectedId(CHAIR.id)
+    selectionEffects.notePendingSelection({
+      announceMode: 'panel-keyboard',
+      requestOutlinerFocus: false,
+    })
+    await flushReconcile()
+
+    expect(announcementActions.announcePolite).toHaveBeenCalledTimes(1)
+    expect(announcementActions.announcePolite).toHaveBeenCalledWith(
+      'Chair selected.',
+    )
   })
 })

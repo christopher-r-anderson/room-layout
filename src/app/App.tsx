@@ -16,7 +16,7 @@ import {
 } from '@/editor-state/scene-state-store'
 import { announcementActions } from '@/editor-state/announcement-store'
 import { usePreviewController } from '@/app/controllers/use-preview-controller'
-import { useSelectionEffectsReconciler } from '@/editor-state/selection-effects'
+import { startSelectionEffectsReconciler } from '@/editor-state/selection-effects'
 import { useSelectionController } from '@/app/controllers/use-selection-controller'
 import { useMovementController } from '@/app/controllers/use-movement-controller'
 import { useHistoryController } from '@/app/controllers/use-history-controller'
@@ -188,7 +188,7 @@ function App() {
     DIALOG_IDS.delete,
   ) as FurnitureItem | null
 
-  useSelectionEffectsReconciler()
+  useEffect(() => startSelectionEffectsReconciler(), [])
   const wasBlockingOverlayOpenRef = useRef(isBlockingOverlayOpen)
 
   const activeCatalogIdToAdd = useMemo(() => {

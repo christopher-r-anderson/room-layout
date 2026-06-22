@@ -1,11 +1,11 @@
-import { useEffect, useRef } from 'react'
+import type { FurnitureItem } from '@/scene/objects/furniture.types'
 import { announcementActions } from './announcement-store'
-import { useEditorInteractionsEnabled } from './editor-runtime-store'
+import { editorRuntimeStore } from './editor-runtime-store'
 import {
   selectionMetaActions,
-  useOutlinerFocusRequest,
+  selectionMetaStore,
 } from './selection-meta-store'
-import { useItems, useSceneStateStore } from './scene-state-store'
+import { sceneStateStore } from './scene-state-store'
 import type { InteractionSource } from './types/interaction.types'
 import type {
   PendingSelectionChangeBehavior,
@@ -21,10 +21,18 @@ let pendingSelectionChangeBehavior: PendingSelectionChangeBehavior | null = null
 let pendingPostDeleteOutlinerFocusIndex: number | null = null
 let pendingDeleteFocusTarget: 'room-view' | 'outliner' | null = null
 
+// Reconciliation trackers: the values the subscription has already reconciled
+// against. They live at module scope so reconciliation can run fully outside
+// React.
+let previousItems: FurnitureItem[] = sceneStateStore.getState().history.present
+let previousReconciledSelectedId: string | null = null
+let previousSideEffectSelectedId: string | null =
+  sceneStateStore.getState().selectedId
+
 function announceSelectionChange(options: {
   announceMode: SelectionAnnouncementMode
   announcePolite: (message: string) => void
-  items: ReturnType<typeof useItems>
+  items: FurnitureItem[]
   newId: string | null
   previousSelectedId: string | null
 }) {
@@ -81,7 +89,7 @@ function announceSelectionChange(options: {
  * Imperative seam consumers call around scene mutations to record how the next
  * selection change should be reconciled (source, announce mode, outliner focus)
  * and to hand off post-delete focus intent. The reconciliation itself runs in
- * `useSelectionEffectsReconciler`.
+ * the subscription started by `startSelectionEffectsReconciler`.
  */
 export const selectionEffects = {
   notePendingSelection: (behavior: PendingSelectionChangeBehavior | null) => {
@@ -110,106 +118,143 @@ export function resetSelectionEffects() {
   pendingDeleteFocusTarget = null
 }
 
-/**
- * Reconciles selection metadata and screen-reader announcements after scene
- * state changes. The effects stay deferred past the synchronous handler that
- * mutated the scene, so the pending intent recorded via `selectionEffects` has
- * already landed by the time they read the module cells.
- */
-export function useSelectionEffectsReconciler(): void {
-  const items = useItems()
-  const selectedId = useSceneStateStore((state) => state.selectedId)
-  const outlinerFocusRequest = useOutlinerFocusRequest()
-  const editorInteractionsEnabled = useEditorInteractionsEnabled()
+function syncReconcilerTrackers() {
+  const state = sceneStateStore.getState()
+  previousItems = state.history.present
+  previousReconciledSelectedId = null
+  previousSideEffectSelectedId = state.selectedId
+}
 
-  const previousReconciledSelectedIdRef = useRef<string | null>(null)
-  const previousSelectionSideEffectSelectedIdRef = useRef<string | null>(
-    selectedId,
-  )
+// Reconciles selection metadata and screen-reader announcements after scene
+// state changes. Mirrors the four commit-ordered effects the App-owned hook used
+// to run; reads pending intent recorded via `selectionEffects` and the live
+// outliner-focus request, then advances the trackers.
+function reconcileSelectionEffects() {
+  const state = sceneStateStore.getState()
+  const items = state.history.present
+  const selectedId = state.selectedId
+  const itemsChanged = items !== previousItems
+  const outlinerFocusRequest =
+    selectionMetaStore.getState().outlinerFocusRequest
+  const editorInteractionsEnabled =
+    editorRuntimeStore.getState().startupPhase === 'ready'
 
-  useEffect(() => {
+  // Post-delete outliner focus runs without a readiness guard, matching the
+  // original items-keyed effect.
+  if (itemsChanged) {
     const preferredIndex = pendingPostDeleteOutlinerFocusIndex
 
-    if (preferredIndex === null) {
-      return
+    if (preferredIndex !== null) {
+      pendingPostDeleteOutlinerFocusIndex = null
+      selectionMetaActions.requestOutlinerFocus({
+        token: Date.now(),
+        preferredIndex,
+      })
+    }
+  }
+
+  if (editorInteractionsEnabled) {
+    if (selectedId !== previousReconciledSelectedId) {
+      const pendingSource = pendingSelectionSource
+      pendingSelectionSource = null
+      previousReconciledSelectedId = selectedId
+
+      selectionMetaActions.setSelectedSource(
+        selectedId === null ? null : pendingSource,
+      )
     }
 
-    pendingPostDeleteOutlinerFocusIndex = null
-    selectionMetaActions.requestOutlinerFocus({
-      token: Date.now(),
-      preferredIndex,
-    })
-  }, [items])
+    const previousSelectedId = previousSideEffectSelectedId
 
-  useEffect(() => {
-    if (!editorInteractionsEnabled) {
-      return
-    }
-
-    if (selectedId === previousReconciledSelectedIdRef.current) {
-      return
-    }
-
-    const pendingSource = pendingSelectionSource
-    pendingSelectionSource = null
-    previousReconciledSelectedIdRef.current = selectedId
-
-    selectionMetaActions.setSelectedSource(
-      selectedId === null ? null : pendingSource,
-    )
-  }, [editorInteractionsEnabled, selectedId])
-
-  useEffect(() => {
-    if (!editorInteractionsEnabled) {
-      return
-    }
-
-    const previousSelectedId = previousSelectionSideEffectSelectedIdRef.current
-
-    if (selectedId === previousSelectedId) {
-      return
-    }
-
-    const pendingBehavior = pendingSelectionChangeBehavior ?? {
-      announceMode: 'default' as const,
-      requestOutlinerFocus: false,
-    }
-    pendingSelectionChangeBehavior = null
-
-    announceSelectionChange({
-      announceMode: pendingBehavior.announceMode,
-      announcePolite: announcementActions.announcePolite,
-      items,
-      newId: selectedId,
-      previousSelectedId,
-    })
-
-    if (pendingBehavior.requestOutlinerFocus && outlinerFocusRequest === null) {
-      if (selectedId) {
-        selectionMetaActions.requestOutlinerFocus({
-          token: Date.now(),
-          targetSelectedId: selectedId,
-        })
-      } else if (previousSelectedId) {
-        selectionMetaActions.requestOutlinerFocus({
-          token: Date.now(),
-          focusContainer: true,
-        })
+    if (selectedId !== previousSelectedId) {
+      const pendingBehavior = pendingSelectionChangeBehavior ?? {
+        announceMode: 'default' as const,
+        requestOutlinerFocus: false,
       }
+      pendingSelectionChangeBehavior = null
+
+      announceSelectionChange({
+        announceMode: pendingBehavior.announceMode,
+        announcePolite: announcementActions.announcePolite,
+        items,
+        newId: selectedId,
+        previousSelectedId,
+      })
+
+      if (
+        pendingBehavior.requestOutlinerFocus &&
+        outlinerFocusRequest === null
+      ) {
+        if (selectedId) {
+          selectionMetaActions.requestOutlinerFocus({
+            token: Date.now(),
+            targetSelectedId: selectedId,
+          })
+        } else if (previousSelectedId) {
+          selectionMetaActions.requestOutlinerFocus({
+            token: Date.now(),
+            focusContainer: true,
+          })
+        }
+      }
+
+      previousSideEffectSelectedId = selectedId
+    } else if (itemsChanged) {
+      // Selection unchanged but items did: drop now-stale pending behavior.
+      pendingSelectionChangeBehavior = null
     }
+  }
 
-    previousSelectionSideEffectSelectedIdRef.current = selectedId
-  }, [editorInteractionsEnabled, items, outlinerFocusRequest, selectedId])
+  previousItems = items
+}
 
-  useEffect(() => {
-    if (!editorInteractionsEnabled) {
-      return
-    }
+let reconcileScheduled = false
 
-    if (selectedId !== previousSelectionSideEffectSelectedIdRef.current) {
-      return
-    }
+// Coalesces the synchronous scene-state writes a single handler emits (e.g. undo
+// writes history and selection) into one deferred reconcile, and defers it past
+// the handler so pending intent noted after the mutation has landed.
+function scheduleReconcile() {
+  if (reconcileScheduled) {
+    return
+  }
 
-    pendingSelectionChangeBehavior = null
-  }, [editorInteractionsEnabled, items, selectedId])
+  reconcileScheduled = true
+  queueMicrotask(() => {
+    reconcileScheduled = false
+    reconcileSelectionEffects()
+  })
+}
+
+let activeUnsubscribe: (() => void) | null = null
+
+/**
+ * Subscribes selection-effects reconciliation to scene-state changes. Intended
+ * to run once at app startup; idempotent so repeated calls reuse the active
+ * subscription.
+ */
+export function startSelectionEffectsReconciler(): () => void {
+  if (activeUnsubscribe) {
+    return activeUnsubscribe
+  }
+
+  syncReconcilerTrackers()
+
+  const unsubscribe = sceneStateStore.subscribe(
+    (state) => ({
+      items: state.history.present,
+      selectedId: state.selectedId,
+    }),
+    scheduleReconcile,
+    {
+      equalityFn: (a, b) =>
+        a.items === b.items && a.selectedId === b.selectedId,
+    },
+  )
+
+  activeUnsubscribe = () => {
+    unsubscribe()
+    activeUnsubscribe = null
+  }
+
+  return activeUnsubscribe
 }

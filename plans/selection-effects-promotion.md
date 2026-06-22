@@ -1,13 +1,14 @@
 # Plan: Promote `selectionEffects` Out Of The App-Owned Hook (Handover §6.1)
 
-> **Status:** Slices 1 & 2 shipped (green). Slice 3 (C2) deferred as optional.
+> **Status:** Slices 1, 2 & 3 shipped (green). §6.1 fully realized (C2).
 > Branch `editor-surface-keyboard-architecture-refactor`.
-> **Progress:** Slice 1 `refactor(editor-state): extract selection-effects module
-> and reconciler`; Slice 2 `refactor(selection): consume selection-effects module
-> directly`. Keystone §6.1 de-threading complete — App no longer owns or threads
-> `selectionEffects`; all 6 consumers import the module. Slice 3 (promote the
-> reconciler to a startup `scene-state-store` subscription) remains optional and
-> isolates the timing risk; not started.
+> **Progress:** Slice 1 extract module + reconciler; Slice 2 consumers import the
+> module directly; Slice 3 drive reconciliation via a startup `scene-state-store`
+> subscription. `selectionEffects` is now a pure `editor-state` module with zero
+> React surface; reconciliation defers via `queueMicrotask` to preserve the
+> note-before-reconcile ordering. App only calls `startSelectionEffectsReconciler()`
+> once at startup. The deferral is covered by a dedicated unit test plus the
+> a11y/hotkeys e2e flows.
 > **Decisions locked:** A = **C1 now** (thin reconciler hook), optionally promote
 > to C2 (startup subscription) later. B = reconciler lives in `editor-state`,
 > invoked from the original site in `App.tsx` (not `EditorBody`) to preserve effect
