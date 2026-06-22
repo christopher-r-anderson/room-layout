@@ -1,25 +1,18 @@
 import { useCallback } from 'react'
+import { announcementActions } from '@/editor-state/announcement-store'
 import { sceneStateActions } from '@/editor-state/scene-state-store'
 import { sceneCommands } from '@/scene/scene-commands'
 import type { SelectionEffectsApi } from './use-selection-effects-controller'
 
-interface AnnouncementsApi {
-  announcePolite: (message: string) => void
-}
-
 interface HistoryControllerOptions {
-  announcements: AnnouncementsApi
   editorInteractionsEnabled: boolean
   selectionEffects: SelectionEffectsApi
 }
 
 export function useHistoryController({
-  announcements,
   editorInteractionsEnabled,
   selectionEffects,
 }: HistoryControllerOptions) {
-  const { announcePolite } = announcements
-
   const handleUndo = useCallback(() => {
     const undid =
       editorInteractionsEnabled && sceneCommands.isSceneReady()
@@ -35,9 +28,9 @@ export function useHistoryController({
     )
     sceneStateActions.clearEditorMessage()
     if (undid) {
-      announcePolite('Undo complete.')
+      announcementActions.announcePolite('Undo complete.')
     }
-  }, [announcePolite, editorInteractionsEnabled, selectionEffects])
+  }, [editorInteractionsEnabled, selectionEffects])
 
   const handleRedo = useCallback(() => {
     const redid =
@@ -54,9 +47,9 @@ export function useHistoryController({
     )
     sceneStateActions.clearEditorMessage()
     if (redid) {
-      announcePolite('Redo complete.')
+      announcementActions.announcePolite('Redo complete.')
     }
-  }, [announcePolite, editorInteractionsEnabled, selectionEffects])
+  }, [editorInteractionsEnabled, selectionEffects])
 
   return {
     handleUndo,

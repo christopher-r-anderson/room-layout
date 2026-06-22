@@ -1,17 +1,13 @@
 import { useCallback } from 'react'
 import type { AppDialogOpenRequest } from '@/app/dialogs/dialog-requests'
+import { announcementActions } from '@/editor-state/announcement-store'
 import { sceneStateActions } from '@/editor-state/scene-state-store'
 import { sceneCommands } from '@/scene/scene-commands'
 import { clearSceneDraft } from '@/features/url-scene/scene-draft'
 import { toast } from 'sonner'
 import type { SelectionEffectsApi } from './use-selection-effects-controller'
 
-interface AnnouncementsApi {
-  announcePolite: (message: string) => void
-}
-
 interface StartOverControllerOptions {
-  announcements: AnnouncementsApi
   closeActiveDialog: () => void
   openStartOverDialog: (request?: AppDialogOpenRequest) => boolean
   canStartOver: boolean
@@ -24,7 +20,6 @@ interface StartOverControllerOptions {
 }
 
 export function useStartOverController({
-  announcements,
   closeActiveDialog,
   openStartOverDialog,
   canStartOver,
@@ -32,8 +27,6 @@ export function useStartOverController({
   clearPreview,
   defaults,
 }: StartOverControllerOptions) {
-  const { announcePolite } = announcements
-
   const handleOpenStartOverDialog = useCallback(
     (request?: AppDialogOpenRequest) => {
       if (!canStartOver) {
@@ -64,10 +57,11 @@ export function useStartOverController({
       announceMode: 'suppress',
       requestOutlinerFocus: false,
     })
-    announcePolite('Started over. Your changes were cleared.')
+    announcementActions.announcePolite(
+      'Started over. Your changes were cleared.',
+    )
     toast.success('Started over. Your changes were cleared.')
   }, [
-    announcePolite,
     clearPreview,
     defaults.floorFinishId,
     defaults.wallFinishId,

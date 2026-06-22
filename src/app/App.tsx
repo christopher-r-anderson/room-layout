@@ -14,7 +14,7 @@ import {
   useSelectedFurniture,
   useWallFinishId,
 } from '@/editor-state/scene-state-store'
-import { useAnnouncements } from '@/app/chrome/hooks/use-announcements'
+import { announcementActions } from '@/editor-state/announcement-store'
 import { usePreviewController } from '@/app/controllers/use-preview-controller'
 import { useSelectionEffectsController } from '@/app/controllers/use-selection-effects-controller'
 import { useSelectionController } from '@/app/controllers/use-selection-controller'
@@ -172,7 +172,6 @@ function App() {
     )
   }, [items, environmentConfig, activeFloorFinishId, activeWallFinishId])
 
-  const announcements = useAnnouncements()
   const dialogRuntimeContext = useMemo(
     () =>
       buildDialogRuntimeContext({
@@ -190,7 +189,6 @@ function App() {
   ) as FurnitureItem | null
 
   const selectionEffects = useSelectionEffectsController({
-    announcements,
     editorInteractionsEnabled: startup.editorInteractionsEnabled,
   })
   const wasBlockingOverlayOpenRef = useRef(isBlockingOverlayOpen)
@@ -263,17 +261,14 @@ function App() {
   })
   const { handleSelectById } = selectionController
   const movementController = useMovementController({
-    announcements,
     editorInteractionsEnabled: startup.editorInteractionsEnabled,
     rotationStepRadians: ROTATION_STEP_RADIANS,
   })
   const historyController = useHistoryController({
-    announcements,
     editorInteractionsEnabled: startup.editorInteractionsEnabled,
     selectionEffects,
   })
   const deletionController = useDeletionController({
-    announcements,
     closeActiveDialog: dialogActions.closeActiveDialog,
     openDeleteDialog: () => dialogActions.openDialog(DIALOG_IDS.delete),
     pendingDeleteFurniture,
@@ -289,7 +284,6 @@ function App() {
     editorInteractionsEnabled: startup.editorInteractionsEnabled,
   })
   const startOverController = useStartOverController({
-    announcements,
     closeActiveDialog: dialogActions.closeActiveDialog,
     openStartOverDialog: (request?: AppDialogOpenRequest) =>
       dialogActions.openDialog(DIALOG_IDS.startOver, request),
@@ -302,7 +296,6 @@ function App() {
     },
   })
   const assetLifecycleController = useAssetLifecycleController({
-    announcements,
     closeActiveDialog: dialogActions.closeActiveDialog,
     selectionEffects,
     startup: {
@@ -320,7 +313,6 @@ function App() {
     },
   })
   const shareController = useShareController({
-    announcements,
     activeFloorFinishId,
     activeWallFinishId,
   })
@@ -357,24 +349,16 @@ function App() {
     handleFocusSelected,
   }
 
-  const { clearQueuedMovementAnnouncement } = announcements
   const editorRefs = useMemo(
     () => ({ roomViewRef, selectedItemControlsRef, dockedInspectorRef }),
     [],
   )
-
-  useEffect(() => {
-    return () => {
-      clearQueuedMovementAnnouncement()
-    }
-  }, [clearQueuedMovementAnnouncement])
 
   const { previewedIdRef, handleCanvasBrowse, handleCanvasSelectPreviewed } =
     useCanvasKeyboardController({
       previewedId,
       applyCanvasKeyboardPreviewChange,
       handleSelectById,
-      announcements,
     })
 
   const handleFocusInspector = useCallback(() => {
@@ -384,7 +368,7 @@ function App() {
 
     if (selectedFurniture === null) {
       requestOutlinerFocus()
-      announcements.announcePolite(
+      announcementActions.announcePolite(
         'No item selected. Focus moved to Furniture in room.',
       )
       return
@@ -396,7 +380,6 @@ function App() {
 
     firstFocusableControl?.focus()
   }, [
-    announcements,
     dockedInspectorRef,
     requestOutlinerFocus,
     selectedFurniture,
@@ -492,8 +475,6 @@ function App() {
               onSceneAssetsReady={handlers.handleSceneAssetsReady}
               onSceneAssetError={handlers.handleSceneAssetError}
               onClearSelection={handlers.handleClearSelection}
-              politeAnnouncement={announcements.politeAnnouncement}
-              assertiveAnnouncement={announcements.assertiveAnnouncement}
               editorOverlay={{
                 startOverDisabled: sceneIsAtDefaults,
                 topHeader: {

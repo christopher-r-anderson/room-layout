@@ -8,7 +8,18 @@ import {
 } from '@/editor-state/scene-state-store'
 import { sceneCommands } from '@/scene/scene-commands'
 import { clearSceneDraft } from '@/features/url-scene/scene-draft'
+import { announcementActions } from '@/editor-state/announcement-store'
 import { useStartOverController } from './use-start-over-controller'
+
+vi.mock('@/editor-state/announcement-store', () => ({
+  announcementActions: {
+    announcePolite: vi.fn(),
+    announceAssertive: vi.fn(),
+    clearAssertiveAnnouncement: vi.fn(),
+    queueMovementAnnouncement: vi.fn(),
+    clearQueuedMovementAnnouncement: vi.fn(),
+  },
+}))
 
 vi.mock('@/features/url-scene/scene-draft', () => ({
   clearSceneDraft: vi.fn(),
@@ -40,6 +51,7 @@ describe('useStartOverController', () => {
 
   afterEach(() => {
     vi.restoreAllMocks()
+    vi.clearAllMocks()
   })
 
   it('clears the editor message when openStartOver returns true', () => {
@@ -52,7 +64,6 @@ describe('useStartOverController', () => {
 
     const { result } = renderHook(() =>
       useStartOverController({
-        announcements: { announcePolite: vi.fn() },
         closeActiveDialog: dialogState.closeActiveDialog,
         openStartOverDialog: dialogState.openStartOverDialog,
         canStartOver: true,
@@ -87,11 +98,9 @@ describe('useStartOverController', () => {
     }
     const selectionEffects = createSelectionEffects()
     const clearPreview = vi.fn()
-    const announcements = { announcePolite: vi.fn() }
 
     const { result } = renderHook(() =>
       useStartOverController({
-        announcements,
         closeActiveDialog: dialogState.closeActiveDialog,
         openStartOverDialog: dialogState.openStartOverDialog,
         canStartOver: true,
@@ -119,7 +128,7 @@ describe('useStartOverController', () => {
       announceMode: 'suppress',
       requestOutlinerFocus: false,
     })
-    expect(announcements.announcePolite).toHaveBeenCalledWith(
+    expect(announcementActions.announcePolite).toHaveBeenCalledWith(
       'Started over. Your changes were cleared.',
     )
   })
@@ -140,7 +149,6 @@ describe('useStartOverController', () => {
 
     const { result } = renderHook(() =>
       useStartOverController({
-        announcements: { announcePolite: vi.fn() },
         closeActiveDialog: dialogState.closeActiveDialog,
         openStartOverDialog: dialogState.openStartOverDialog,
         canStartOver: true,

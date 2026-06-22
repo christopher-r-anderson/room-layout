@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 import { resolvePositionFromWallClearances } from '@/shared/lib/three/wall-clearance'
+import { announcementActions } from '@/editor-state/announcement-store'
 import {
   sceneStateActions,
   useSelectedFurniture,
@@ -19,24 +20,16 @@ import {
   normalizeDegreesRadians,
 } from './_shared/format-messages'
 
-interface AnnouncementsApi {
-  announcePolite: (message: string) => void
-  queueMovementAnnouncement: (message: string) => void
-}
-
 interface MovementControllerOptions {
-  announcements: AnnouncementsApi
   editorInteractionsEnabled: boolean
   rotationStepRadians: number
 }
 
 export function useMovementController({
-  announcements,
   editorInteractionsEnabled,
   rotationStepRadians,
 }: MovementControllerOptions) {
   const selectedFurniture = useSelectedFurniture()
-  const { announcePolite, queueMovementAnnouncement } = announcements
 
   const handleMoveSelection = useCallback(
     (
@@ -55,7 +48,7 @@ export function useMovementController({
 
       if (result.ok) {
         if (movedItemName) {
-          queueMovementAnnouncement(
+          announcementActions.queueMovementAnnouncement(
             `${movedItemName} moved to X ${formatCoordinate(result.position[0])} and Z ${formatCoordinate(result.position[2])}.`,
           )
         }
@@ -66,12 +59,12 @@ export function useMovementController({
       const blockedMessage = formatMoveBlockedMessage(result.reason)
 
       if (blockedMessage) {
-        queueMovementAnnouncement(blockedMessage)
+        announcementActions.queueMovementAnnouncement(blockedMessage)
       }
 
       return result
     },
-    [editorInteractionsEnabled, queueMovementAnnouncement, selectedFurniture],
+    [editorInteractionsEnabled, selectedFurniture],
   )
 
   const handleRotateSelection = useCallback(
@@ -86,15 +79,10 @@ export function useMovementController({
       sceneCommands.rotateSelection(direction * rotationStepRadians)
 
       if (rotatingName) {
-        announcePolite(`${rotatingName} rotated.`)
+        announcementActions.announcePolite(`${rotatingName} rotated.`)
       }
     },
-    [
-      announcePolite,
-      editorInteractionsEnabled,
-      rotationStepRadians,
-      selectedFurniture,
-    ],
+    [editorInteractionsEnabled, rotationStepRadians, selectedFurniture],
   )
 
   const handleInvalidSelectedItemDetailValue = useCallback(
@@ -147,7 +135,9 @@ export function useMovementController({
 
       if (result.ok) {
         selectionMetaActions.setSelectedSource('panel-keyboard')
-        announcePolite(`${result.item.name} details updated.`)
+        announcementActions.announcePolite(
+          `${result.item.name} details updated.`,
+        )
         return { ok: true, item: result.item }
       }
 
@@ -167,7 +157,7 @@ export function useMovementController({
         ),
       }
     },
-    [announcePolite, editorInteractionsEnabled, selectedFurniture],
+    [editorInteractionsEnabled, selectedFurniture],
   )
 
   return {

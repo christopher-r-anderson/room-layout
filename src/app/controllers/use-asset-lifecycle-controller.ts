@@ -1,4 +1,5 @@
 import { useCallback, useRef } from 'react'
+import { announcementActions } from '@/editor-state/announcement-store'
 import { editorRuntimeActions } from '@/editor-state/editor-runtime-store'
 import { sceneStateActions } from '@/editor-state/scene-state-store'
 import {
@@ -23,14 +24,7 @@ import { runStartupRestoreFlow } from './_shared/restore-flow'
 import type { RestorableState } from './_shared/restore-flow.types'
 import type { SelectionEffectsApi } from './use-selection-effects-controller'
 
-interface AnnouncementsApi {
-  announcePolite: (message: string) => void
-  announceAssertive: (message: string) => void
-  clearAssertiveAnnouncement: () => void
-}
-
 interface AssetLifecycleControllerOptions {
-  announcements: AnnouncementsApi
   closeActiveDialog: () => void
   selectionEffects: SelectionEffectsApi
   startup: {
@@ -47,7 +41,6 @@ interface AssetLifecycleControllerOptions {
 }
 
 export function useAssetLifecycleController({
-  announcements,
   closeActiveDialog,
   selectionEffects,
   startup,
@@ -68,11 +61,11 @@ export function useAssetLifecycleController({
         resetEditorShellState: startup.resetEditorShellState,
       })
       toast.error('Unable to load room editor assets. Retry available.')
-      announcements.announceAssertive(
+      announcementActions.announceAssertive(
         'Unable to load room editor assets. Retry available.',
       )
     },
-    [announcements, closeActiveDialog, startup],
+    [closeActiveDialog, startup],
   )
 
   const handleSceneAssetsReady = useCallback(() => {
@@ -175,8 +168,8 @@ export function useAssetLifecycleController({
           )
         },
         notifications: {
-          announcePolite: announcements.announcePolite,
-          announceAssertive: announcements.announceAssertive,
+          announcePolite: announcementActions.announcePolite,
+          announceAssertive: announcementActions.announceAssertive,
           setEditorMessage: sceneStateActions.setEditorMessage,
           setRestoreOutcome: editorRuntimeActions.recordRestoreOutcome,
           toastSuccess: (message) => toast.success(message),
@@ -192,7 +185,7 @@ export function useAssetLifecycleController({
     })
 
     startup.handleAssetsReady()
-  }, [announcements, selectionEffects, startup])
+  }, [selectionEffects, startup])
 
   const handleRetryAssetLoading = useCallback(() => {
     runStartupRetryTransition({
@@ -200,8 +193,8 @@ export function useAssetLifecycleController({
       resetEditorShellState: startup.resetEditorShellState,
       retryAssetLoading: startup.retryAssetLoading,
     })
-    announcements.clearAssertiveAnnouncement()
-  }, [announcements, closeActiveDialog, startup])
+    announcementActions.clearAssertiveAnnouncement()
+  }, [closeActiveDialog, startup])
 
   return {
     handleSceneAssetError,

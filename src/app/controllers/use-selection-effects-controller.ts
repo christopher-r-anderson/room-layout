@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { announcementActions } from '@/editor-state/announcement-store'
 import {
   selectionMetaActions,
   useOutlinerFocusRequest,
@@ -10,10 +11,6 @@ import type {
   SelectionAnnouncementMode,
 } from './_shared/selection-effects.types'
 
-interface AnnouncementsApi {
-  announcePolite: (message: string) => void
-}
-
 export interface SelectionEffectsApi {
   notePendingSelection(behavior: PendingSelectionChangeBehavior | null): void
   notePendingSource(source: InteractionSource): void
@@ -23,7 +20,6 @@ export interface SelectionEffectsApi {
 }
 
 interface SelectionEffectsControllerOptions {
-  announcements: AnnouncementsApi
   editorInteractionsEnabled: boolean
 }
 
@@ -84,13 +80,11 @@ function announceSelectionChange(options: {
 }
 
 export function useSelectionEffectsController({
-  announcements,
   editorInteractionsEnabled,
 }: SelectionEffectsControllerOptions): SelectionEffectsApi {
   const items = useItems()
   const selectedId = useSceneStateStore((state) => state.selectedId)
   const outlinerFocusRequest = useOutlinerFocusRequest()
-  const { announcePolite } = announcements
 
   const pendingSelectionSourceRef = useRef<InteractionSource>(null)
   const previousReconciledSelectedIdRef = useRef<string | null>(null)
@@ -155,7 +149,7 @@ export function useSelectionEffectsController({
 
     announceSelectionChange({
       announceMode: pendingBehavior.announceMode,
-      announcePolite,
+      announcePolite: announcementActions.announcePolite,
       items,
       newId: selectedId,
       previousSelectedId,
@@ -176,13 +170,7 @@ export function useSelectionEffectsController({
     }
 
     previousSelectionSideEffectSelectedIdRef.current = selectedId
-  }, [
-    announcePolite,
-    editorInteractionsEnabled,
-    items,
-    outlinerFocusRequest,
-    selectedId,
-  ])
+  }, [editorInteractionsEnabled, items, outlinerFocusRequest, selectedId])
 
   useEffect(() => {
     if (!editorInteractionsEnabled) {

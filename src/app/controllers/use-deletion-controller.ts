@@ -1,17 +1,13 @@
 import { useCallback } from 'react'
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
+import { announcementActions } from '@/editor-state/announcement-store'
 import { sceneStateActions, useItems } from '@/editor-state/scene-state-store'
 import { useSelectedSource } from '@/editor-state/selection-meta-store'
 import { sceneCommands } from '@/scene/scene-commands'
 import { DELETE_SELECTION_MISSING_MESSAGE } from '@/shared/messages/command-messages'
 import type { SelectionEffectsApi } from './use-selection-effects-controller'
 
-interface AnnouncementsApi {
-  announcePolite: (message: string) => void
-}
-
 interface DeletionControllerOptions {
-  announcements: AnnouncementsApi
   closeActiveDialog: () => void
   openDeleteDialog: () => boolean
   pendingDeleteFurniture: FurnitureItem | null
@@ -21,7 +17,6 @@ interface DeletionControllerOptions {
 }
 
 export function useDeletionController({
-  announcements,
   closeActiveDialog,
   openDeleteDialog,
   pendingDeleteFurniture,
@@ -31,7 +26,6 @@ export function useDeletionController({
 }: DeletionControllerOptions) {
   const items = useItems()
   const selectedSource = useSelectedSource()
-  const { announcePolite } = announcements
 
   const handleConfirmDeleteSelection = useCallback(() => {
     const pendingId = pendingDeleteFurniture?.id ?? null
@@ -85,10 +79,9 @@ export function useDeletionController({
     }
 
     if (deletedName) {
-      announcePolite(`${deletedName} removed from room.`)
+      announcementActions.announcePolite(`${deletedName} removed from room.`)
     }
   }, [
-    announcePolite,
     closeActiveDialog,
     editorInteractionsEnabled,
     focusRoomView,

@@ -14,6 +14,16 @@ vi.mock('@/features/url-scene/scene-url', () => ({
   serializeSceneToUrl: vi.fn(),
 }))
 
+vi.mock('@/editor-state/announcement-store', () => ({
+  announcementActions: {
+    announcePolite: vi.fn(),
+    announceAssertive: vi.fn(),
+    clearAssertiveAnnouncement: vi.fn(),
+    queueMovementAnnouncement: vi.fn(),
+    clearQueuedMovementAnnouncement: vi.fn(),
+  },
+}))
+
 const CHAIR = {
   id: 'chair-1',
   catalogId: 'chair-1',
@@ -49,14 +59,8 @@ describe('useShareController', () => {
     sceneStateActions.setHistory(createHistoryState([CHAIR]))
     serializeSceneToUrlMock.mockReturnValue('https://example.com/shared')
 
-    const announcements = {
-      announcePolite: vi.fn(),
-      announceAssertive: vi.fn(),
-    }
-
     const { result } = renderHook(() =>
       useShareController({
-        announcements,
         activeFloorFinishId: 'oak-floor',
         activeWallFinishId: 'white-wall',
       }),

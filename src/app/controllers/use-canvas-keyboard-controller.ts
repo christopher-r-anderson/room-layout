@@ -1,12 +1,9 @@
 import { useCallback, useEffect, useRef, type RefObject } from 'react'
 import type { SelectByIdResult } from '@/scene/scene.types'
 import type { InteractionSource } from '@/editor-state/types/interaction.types'
+import { announcementActions } from '@/editor-state/announcement-store'
 import { sceneCommands } from '@/scene/scene-commands'
 import { sortSpatially } from '@/shared/lib/three/spatial-sort'
-
-interface AnnouncementsApi {
-  announcePolite: (message: string) => void
-}
 
 interface UseCanvasKeyboardControllerOptions {
   previewedId: string | null
@@ -15,7 +12,6 @@ interface UseCanvasKeyboardControllerOptions {
     id: string | null,
     source?: InteractionSource,
   ) => SelectByIdResult
-  announcements: AnnouncementsApi
 }
 
 interface CanvasKeyboardController {
@@ -29,7 +25,6 @@ export function useCanvasKeyboardController({
   previewedId,
   applyCanvasKeyboardPreviewChange,
   handleSelectById,
-  announcements,
 }: UseCanvasKeyboardControllerOptions): CanvasKeyboardController {
   const previewedIdRef = useRef<string | null>(null)
 
@@ -81,10 +76,10 @@ export function useCanvasKeyboardController({
 
       const item = snapshot.items.find((sceneItem) => sceneItem.id === nextId)
       if (item) {
-        announcements.announcePolite(item.name)
+        announcementActions.announcePolite(item.name)
       }
     },
-    [announcements, handleCanvasKeyboardPreviewChange],
+    [handleCanvasKeyboardPreviewChange],
   )
 
   const handleCanvasSelectPreviewed = useCallback(() => {

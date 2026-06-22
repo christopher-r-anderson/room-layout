@@ -7,7 +7,18 @@ import {
   runStartupRetryTransition,
 } from '@/features/startup/startup-transitions'
 import { runStartupRestoreFlow } from './_shared/restore-flow'
+import { announcementActions } from '@/editor-state/announcement-store'
 import { useAssetLifecycleController } from './use-asset-lifecycle-controller'
+
+vi.mock('@/editor-state/announcement-store', () => ({
+  announcementActions: {
+    announcePolite: vi.fn(),
+    announceAssertive: vi.fn(),
+    clearAssertiveAnnouncement: vi.fn(),
+    queueMovementAnnouncement: vi.fn(),
+    clearQueuedMovementAnnouncement: vi.fn(),
+  },
+}))
 
 vi.mock('@/features/startup/startup-transitions', () => ({
   runStartupAssetErrorTransition: vi.fn(),
@@ -52,14 +63,6 @@ function createSelectionEffects() {
   }
 }
 
-function createAnnouncements() {
-  return {
-    announcePolite: vi.fn(),
-    announceAssertive: vi.fn(),
-    clearAssertiveAnnouncement: vi.fn(),
-  }
-}
-
 function createStartup() {
   return {
     catalog: [],
@@ -83,16 +86,15 @@ describe('useAssetLifecycleController', () => {
 
   afterEach(() => {
     vi.restoreAllMocks()
+    vi.clearAllMocks()
   })
 
   it('routes asset errors through the startup transition and announces assertively', () => {
-    const announcements = createAnnouncements()
     const closeActiveDialog = vi.fn()
     const startup = createStartup()
 
     const { result } = renderHook(() =>
       useAssetLifecycleController({
-        announcements,
         closeActiveDialog,
         selectionEffects: createSelectionEffects(),
         startup,
@@ -104,19 +106,17 @@ describe('useAssetLifecycleController', () => {
     })
 
     expect(runStartupAssetErrorTransition).toHaveBeenCalledTimes(1)
-    expect(announcements.announceAssertive).toHaveBeenCalledWith(
+    expect(announcementActions.announceAssertive).toHaveBeenCalledWith(
       'Unable to load room editor assets. Retry available.',
     )
   })
 
   it('runs the restore flow exactly once across multiple ready notifications', () => {
-    const announcements = createAnnouncements()
     const startup = createStartup()
     const selectionEffects = createSelectionEffects()
 
     const { result } = renderHook(() =>
       useAssetLifecycleController({
-        announcements,
         closeActiveDialog: vi.fn(),
         selectionEffects,
         startup,
@@ -137,12 +137,10 @@ describe('useAssetLifecycleController', () => {
   })
 
   it('clears the assertive announcement when retrying asset load', () => {
-    const announcements = createAnnouncements()
     const startup = createStartup()
 
     const { result } = renderHook(() =>
       useAssetLifecycleController({
-        announcements,
         closeActiveDialog: vi.fn(),
         selectionEffects: createSelectionEffects(),
         startup,
@@ -154,6 +152,8 @@ describe('useAssetLifecycleController', () => {
     })
 
     expect(runStartupRetryTransition).toHaveBeenCalledTimes(1)
-    expect(announcements.clearAssertiveAnnouncement).toHaveBeenCalledTimes(1)
+    expect(
+      announcementActions.clearAssertiveAnnouncement,
+    ).toHaveBeenCalledTimes(1)
   })
 })

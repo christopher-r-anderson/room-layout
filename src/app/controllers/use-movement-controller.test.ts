@@ -11,6 +11,16 @@ import { sceneCommands } from '@/scene/scene-commands'
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
 import { useMovementController } from './use-movement-controller'
 
+vi.mock('@/editor-state/announcement-store', () => ({
+  announcementActions: {
+    announcePolite: vi.fn(),
+    announceAssertive: vi.fn(),
+    clearAssertiveAnnouncement: vi.fn(),
+    queueMovementAnnouncement: vi.fn(),
+    clearQueuedMovementAnnouncement: vi.fn(),
+  },
+}))
+
 const CHAIR: FurnitureItem = {
   id: 'chair-1',
   catalogId: 'chair',
@@ -24,13 +34,6 @@ const CHAIR: FurnitureItem = {
   sourcePath: '/models/chair.glb',
 }
 
-function createAnnouncements() {
-  return {
-    announcePolite: vi.fn(),
-    queueMovementAnnouncement: vi.fn(),
-  }
-}
-
 describe('useMovementController', () => {
   beforeEach(() => {
     resetSceneStateStore()
@@ -40,6 +43,7 @@ describe('useMovementController', () => {
 
   afterEach(() => {
     vi.restoreAllMocks()
+    vi.clearAllMocks()
   })
 
   it('does not invoke scene movement commands while interactions are disabled', () => {
@@ -53,11 +57,9 @@ describe('useMovementController', () => {
     const setSelectionTransform = vi
       .spyOn(sceneCommands, 'setSelectionTransform')
       .mockReturnValue({ ok: true, item: CHAIR })
-    const announcements = createAnnouncements()
 
     const { result } = renderHook(() =>
       useMovementController({
-        announcements,
         editorInteractionsEnabled: false,
         rotationStepRadians: Math.PI / 12,
       }),
@@ -93,11 +95,9 @@ describe('useMovementController', () => {
     const rotateSelection = vi
       .spyOn(sceneCommands, 'rotateSelection')
       .mockImplementation(() => undefined)
-    const announcements = createAnnouncements()
 
     const { result } = renderHook(() =>
       useMovementController({
-        announcements,
         editorInteractionsEnabled: true,
         rotationStepRadians: Math.PI / 12,
       }),

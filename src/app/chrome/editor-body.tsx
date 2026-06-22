@@ -16,6 +16,10 @@ import {
   useEditorInteractionsEnabled,
   useStartupLoadingActive,
 } from '@/editor-state/editor-runtime-store'
+import {
+  useAssertiveAnnouncement,
+  usePoliteAnnouncement,
+} from '@/editor-state/announcement-store'
 import { useKeyboardShortcuts } from '@/features/keyboard/use-keyboard-shortcuts'
 import { useCameraKeyState } from '@/features/keyboard/use-camera-key-state'
 import { useCommandDispatch } from '@/editor-state/command-dispatch-context'
@@ -71,8 +75,6 @@ export interface EditorBodyProps {
   onSceneAssetsReady: NonNullable<SceneProps['onAssetsReady']>
   onSceneAssetError: (error: Error) => void
   onClearSelection: () => void
-  politeAnnouncement: string
-  assertiveAnnouncement: string
   editorOverlay: EditorOverlayProps
 }
 
@@ -95,8 +97,6 @@ export function EditorBody({
   onSceneAssetsReady,
   onSceneAssetError,
   onClearSelection,
-  politeAnnouncement,
-  assertiveAnnouncement,
   editorOverlay,
 }: EditorBodyProps) {
   const [roomViewHasFocus, setRoomViewHasFocus] = useState(false)
@@ -104,6 +104,8 @@ export function EditorBody({
   const isBlockingOverlayOpen = useIsBlockingOverlayOpen()
   const startupLoadingActive = useStartupLoadingActive()
   const selectedFurniture = useSelectedFurniture()
+  const politeAnnouncement = usePoliteAnnouncement()
+  const assertiveAnnouncement = useAssertiveAnnouncement()
   const { roomViewRef } = useEditorRefs()
   const dispatch = useCommandDispatch()
 

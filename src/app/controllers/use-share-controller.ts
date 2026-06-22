@@ -1,20 +1,14 @@
 import { useCallback } from 'react'
+import { announcementActions } from '@/editor-state/announcement-store'
 import { sceneStateActions, useItems } from '@/editor-state/scene-state-store'
 import { serializeSceneToUrl } from '@/features/url-scene/scene-url'
 
-interface AnnouncementsApi {
-  announcePolite: (message: string) => void
-  announceAssertive: (message: string) => void
-}
-
 interface ShareControllerOptions {
-  announcements: AnnouncementsApi
   activeFloorFinishId: string
   activeWallFinishId: string
 }
 
 export function useShareController({
-  announcements,
   activeFloorFinishId,
   activeWallFinishId,
 }: ShareControllerOptions) {
@@ -30,7 +24,9 @@ export function useShareController({
       sceneStateActions.setEditorMessage(
         'Scene is too large to share as a URL.',
       )
-      announcements.announceAssertive('Scene is too large to share as a URL.')
+      announcementActions.announceAssertive(
+        'Scene is too large to share as a URL.',
+      )
       return null
     }
 
@@ -53,7 +49,7 @@ export function useShareController({
       try {
         await navigator.share(shareData)
         sceneStateActions.clearEditorMessage()
-        announcements.announcePolite('Room layout shared.')
+        announcementActions.announcePolite('Room layout shared.')
         return 'shared'
       } catch (error) {
         if (error instanceof DOMException && error.name === 'AbortError') {
@@ -61,7 +57,7 @@ export function useShareController({
         }
 
         sceneStateActions.setEditorMessage('Could not open share options.')
-        announcements.announceAssertive('Could not open share options.')
+        announcementActions.announceAssertive('Could not open share options.')
         return null
       }
     }
@@ -69,14 +65,14 @@ export function useShareController({
     try {
       await navigator.clipboard.writeText(url)
       sceneStateActions.clearEditorMessage()
-      announcements.announcePolite('Scene URL copied to clipboard.')
+      announcementActions.announcePolite('Scene URL copied to clipboard.')
       return 'copied'
     } catch {
       sceneStateActions.setEditorMessage('Could not copy URL to clipboard.')
-      announcements.announceAssertive('Could not copy URL to clipboard.')
+      announcementActions.announceAssertive('Could not copy URL to clipboard.')
       return null
     }
-  }, [activeFloorFinishId, activeWallFinishId, announcements, items])
+  }, [activeFloorFinishId, activeWallFinishId, items])
 
   return {
     handleShareSceneUrl,

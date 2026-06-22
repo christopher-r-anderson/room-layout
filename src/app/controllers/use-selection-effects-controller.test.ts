@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   resetSelectionMetaStore,
   selectionMetaStore,
@@ -10,7 +10,18 @@ import {
   sceneStateActions,
 } from '@/editor-state/scene-state-store'
 import { createHistoryState } from '@/shared/lib/ui/editor-history'
+import { announcementActions } from '@/editor-state/announcement-store'
 import { useSelectionEffectsController } from './use-selection-effects-controller'
+
+vi.mock('@/editor-state/announcement-store', () => ({
+  announcementActions: {
+    announcePolite: vi.fn(),
+    announceAssertive: vi.fn(),
+    clearAssertiveAnnouncement: vi.fn(),
+    queueMovementAnnouncement: vi.fn(),
+    clearQueuedMovementAnnouncement: vi.fn(),
+  },
+}))
 
 const CHAIR = {
   id: 'chair-1',
@@ -25,23 +36,19 @@ const CHAIR = {
   sourcePath: '/models/chair.glb',
 }
 
-function createAnnouncements() {
-  return {
-    announcePolite: vi.fn(),
-  }
-}
-
 beforeEach(() => {
   resetSceneStateStore()
   resetSelectionMetaStore()
 })
 
+afterEach(() => {
+  vi.clearAllMocks()
+})
+
 describe('useSelectionEffectsController', () => {
   it('requests outliner focus after delete when an index is queued', () => {
-    const announcements = createAnnouncements()
     const { result } = renderHook(() =>
       useSelectionEffectsController({
-        announcements,
         editorInteractionsEnabled: true,
       }),
     )
@@ -57,7 +64,6 @@ describe('useSelectionEffectsController', () => {
   })
 
   it('reconciles the next selection source only when selection changes', () => {
-    const announcements = createAnnouncements()
     const setSelectedSourceSpy = vi.spyOn(
       selectionMetaStore.getState(),
       'setSelectedSource',
@@ -65,7 +71,6 @@ describe('useSelectionEffectsController', () => {
 
     const { result } = renderHook(() =>
       useSelectionEffectsController({
-        announcements,
         editorInteractionsEnabled: true,
       }),
     )
@@ -87,10 +92,8 @@ describe('useSelectionEffectsController', () => {
   })
 
   it('announces selection changes for each special mode', () => {
-    const announcements = createAnnouncements()
     const { result } = renderHook(() =>
       useSelectionEffectsController({
-        announcements,
         editorInteractionsEnabled: true,
       }),
     )
@@ -104,7 +107,7 @@ describe('useSelectionEffectsController', () => {
       sceneStateActions.setSelectedId(CHAIR.id)
     })
 
-    expect(announcements.announcePolite).toHaveBeenCalledWith(
+    expect(announcementActions.announcePolite).toHaveBeenCalledWith(
       'Chair added to room.',
     )
 
@@ -120,7 +123,9 @@ describe('useSelectionEffectsController', () => {
       sceneStateActions.setSelectedId(CHAIR.id)
     })
 
-    expect(announcements.announcePolite).toHaveBeenCalledWith('Chair selected.')
+    expect(announcementActions.announcePolite).toHaveBeenCalledWith(
+      'Chair selected.',
+    )
 
     act(() => {
       sceneStateActions.setSelectedId(null)
@@ -134,7 +139,7 @@ describe('useSelectionEffectsController', () => {
       sceneStateActions.setSelectedId(CHAIR.id)
     })
 
-    expect(announcements.announcePolite).toHaveBeenCalledWith(
+    expect(announcementActions.announcePolite).toHaveBeenCalledWith(
       'Chair selected. Press Tab to reach selected item actions and details.',
     )
   })
@@ -142,10 +147,8 @@ describe('useSelectionEffectsController', () => {
   it('clears stale pending behavior when items change without selection changing', () => {
     sceneStateActions.setHistory(createHistoryState([CHAIR]))
     sceneStateActions.setSelectedId(CHAIR.id)
-    const announcements = createAnnouncements()
     const { result } = renderHook(() =>
       useSelectionEffectsController({
-        announcements,
         editorInteractionsEnabled: true,
       }),
     )

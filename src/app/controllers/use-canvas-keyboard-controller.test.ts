@@ -3,7 +3,18 @@
 import { act, renderHook } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { sceneCommands } from '@/scene/scene-commands'
+import { announcementActions } from '@/editor-state/announcement-store'
 import { useCanvasKeyboardController } from './use-canvas-keyboard-controller'
+
+vi.mock('@/editor-state/announcement-store', () => ({
+  announcementActions: {
+    announcePolite: vi.fn(),
+    announceAssertive: vi.fn(),
+    clearAssertiveAnnouncement: vi.fn(),
+    queueMovementAnnouncement: vi.fn(),
+    clearQueuedMovementAnnouncement: vi.fn(),
+  },
+}))
 
 function createOptions(
   overrides?: Partial<Parameters<typeof useCanvasKeyboardController>[0]>,
@@ -12,9 +23,6 @@ function createOptions(
     previewedId: null,
     applyCanvasKeyboardPreviewChange: vi.fn(),
     handleSelectById: vi.fn(() => ({ ok: true, status: 'selected' }) as const),
-    announcements: {
-      announcePolite: vi.fn(),
-    },
     ...overrides,
   }
 }
@@ -42,6 +50,7 @@ const SNAPSHOT = {
 describe('useCanvasKeyboardController', () => {
   afterEach(() => {
     vi.restoreAllMocks()
+    vi.clearAllMocks()
   })
 
   it('keeps previewedIdRef synchronized with the previewedId option', () => {
@@ -85,7 +94,7 @@ describe('useCanvasKeyboardController', () => {
     expect(options.applyCanvasKeyboardPreviewChange).toHaveBeenLastCalledWith(
       'left',
     )
-    expect(options.announcements.announcePolite).toHaveBeenLastCalledWith(
+    expect(announcementActions.announcePolite).toHaveBeenLastCalledWith(
       'Left Chair',
     )
 
@@ -96,7 +105,7 @@ describe('useCanvasKeyboardController', () => {
     expect(options.applyCanvasKeyboardPreviewChange).toHaveBeenLastCalledWith(
       'right',
     )
-    expect(options.announcements.announcePolite).toHaveBeenLastCalledWith(
+    expect(announcementActions.announcePolite).toHaveBeenLastCalledWith(
       'Right Chair',
     )
   })
@@ -113,7 +122,7 @@ describe('useCanvasKeyboardController', () => {
     })
 
     expect(options.applyCanvasKeyboardPreviewChange).not.toHaveBeenCalled()
-    expect(options.announcements.announcePolite).not.toHaveBeenCalled()
+    expect(announcementActions.announcePolite).not.toHaveBeenCalled()
   })
 
   it('selects the synchronously tracked preview and clears it', () => {
