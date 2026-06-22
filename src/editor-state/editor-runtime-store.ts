@@ -19,8 +19,12 @@ interface EditorRuntimeStoreState {
   restoreOutcome: RestoreOutcome | null
   restoreAttemptCount: number
   floorFinishLoading: boolean
+  sceneEpoch: number
+  retryToken: number
   markLoading: () => void
   markAssetsReady: () => void
+  beginAssetLoad: () => void
+  requestRetry: () => void
   setAssetError: (error: EditorAssetError) => void
   clearAssetError: () => void
   recordRestoreOutcome: (outcome: RestoreOutcome | null) => void
@@ -36,6 +40,8 @@ const INITIAL_EDITOR_RUNTIME_STATE = {
   restoreOutcome: null,
   restoreAttemptCount: 0,
   floorFinishLoading: false,
+  sceneEpoch: 0,
+  retryToken: 0,
 }
 
 function getInitialEditorRuntimeState() {
@@ -72,6 +78,29 @@ export const editorRuntimeStore = createStore<EditorRuntimeStoreState>()(
           assetError: null,
         }
       })
+    },
+    beginAssetLoad: () => {
+      // A manifest has arrived; start a fresh asset-load cycle. Bumping the
+      // scene epoch forces the Scene to remount and reload GLTFs.
+      set((state) => ({
+        ...state,
+        startupPhase: 'loading',
+        assetError: null,
+        sceneEpoch: state.sceneEpoch + 1,
+      }))
+    },
+    requestRetry: () => {
+      // Re-run startup from the manifest fetch. The retry token re-triggers the
+      // bootstrap fetch effect; the scene epoch remounts the Scene. Restore
+      // tracking is preserved so the one-time restore flow does not re-run.
+      set((state) => ({
+        ...state,
+        startupPhase: 'loading',
+        assetError: null,
+        floorFinishLoading: false,
+        sceneEpoch: state.sceneEpoch + 1,
+        retryToken: state.retryToken + 1,
+      }))
     },
     setAssetError: (error) => {
       set((state) => {
@@ -173,6 +202,12 @@ export const editorRuntimeActions = {
   markAssetsReady: () => {
     editorRuntimeStore.getState().markAssetsReady()
   },
+  beginAssetLoad: () => {
+    editorRuntimeStore.getState().beginAssetLoad()
+  },
+  requestRetry: () => {
+    editorRuntimeStore.getState().requestRetry()
+  },
   setAssetError: (error: EditorAssetError) => {
     editorRuntimeStore.getState().setAssetError(error)
   },
@@ -210,6 +245,10 @@ export const useRestoreAttemptCount = () =>
   useEditorRuntimeStore((state) => state.restoreAttemptCount)
 export const useFloorFinishLoading = () =>
   useEditorRuntimeStore((state) => state.floorFinishLoading)
+export const useSceneEpoch = () =>
+  useEditorRuntimeStore((state) => state.sceneEpoch)
+export const useRetryToken = () =>
+  useEditorRuntimeStore((state) => state.retryToken)
 export const useEditorInteractionsEnabled = () =>
   useEditorRuntimeStore((state) => state.startupPhase === 'ready')
 export const useStartupOverlayActive = () =>

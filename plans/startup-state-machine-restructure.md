@@ -1,71 +1,200 @@
-# Plan: Startup State-Machine Restructure (scheduled — §6.3 Part B)
+# Plan: Startup State-Machine Restructure (§6.3 Part B)
 
-> **Status:** scheduled, **needs its own design review** before implementation.
-> This is the deepest remaining seam in the de-threading effort and a genuine
+> **Status:** designed, **decisions confirmed** — ready to implement in slices.
+> This is the deepest remaining seam in the de-threading effort — a genuine
 > "wrong seam," not a relocation. Branch
 > `editor-surface-keyboard-architecture-refactor`.
+> **Seam model (decided in §6.3):** cross-cutting coordinators live in
+> `editor-state`; features import them from there (never sibling features); app
+> keeps only composition concerns. editor-state must not import app/features.
 
-## The finding: two startup state machines
+## The finding: two startup state machines, one mirrors the other
 
-There are **two** startup phase machines that mirror each other:
+There are **two** phase machines, and the second is a mirror of the first:
 
 - **`features/startup/use-startup-state.ts`** — a `useReducer` owning
   `loading-manifest → loading-assets → ready/error`, plus the manifest **fetch
-  lifecycle** (AbortController + timeout), `retryKey`, and `cacheInvalidationKey`
-  (which forces the `Scene` remount). It also runs the **mirror effects** that
-  push phase → `editor-runtime-store` and data → `scene-assets-store`.
+  lifecycle** (AbortController + 5s timeout), `retryKey`, `cacheInvalidationKey`
+  (forces the `Scene` remount), and the manifest payload. It runs two **mirror
+  effects** that push phase → `editor-runtime-store` and manifest →
+  `scene-assets-store`.
 - **`editor-state/editor-runtime-store.ts`** — `loading → ready → errored` (+
-  restore tracking, floor-finish loading). This is the **app-facing** phase every
-  consumer reads (`useStartupPhase`, `useEditorInteractionsEnabled`, …).
+  restore tracking + floor-finish loading). This is the **app-facing** machine
+  every consumer reads (`useStartupPhase`, `useEditorInteractionsEnabled`, …).
 
-The reducer is the source; the store is the mirror. The phase is duplicated.
+**The reducer is the source; the store is the mirror; the phase is duplicated.**
 
-## Why it blocks the last threads
+### What the reducer actually owns, and where it really belongs
 
-`use-asset-lifecycle-controller` (the remaining action controller) wraps the
-scene asset-ready/error callbacks + the one-time **restore flow**, and drives the
-**reducer's** dispatchers. Critically, **retry re-runs the manifest-fetch effect**
-(keyed on `retryKey`) and clears the GLTF cache — mechanics tied to the React
-fetch effect. So:
+| Reducer state                         | True home today                              | Verdict                                  |
+| ------------------------------------- | -------------------------------------------- | ---------------------------------------- |
+| `phase`                               | mirrored → `editor-runtime-store.startupPhase` | **duplicate** — store should own it      |
+| `manifestCatalog/Collections/Environment` | mirrored → `scene-assets-store`          | **duplicate** — store already owns it    |
+| `assetError` / `assetErrorKind`       | mirrored → `editor-runtime-store.assetError` | **duplicate**                            |
+| `cacheInvalidationKey`                | reducer only → EditorBody prop → remount key | a counter; can live in the store         |
+| `retryKey`                            | reducer only → re-triggers fetch effect      | a counter; can be a store token          |
 
-- `onRetryAssetLoading` (threaded to `InitializationError`) can't be cleanly
-  de-threaded — its one startup-coupled piece (`retryAssetLoading`) is the
-  cache-clear + re-fetch trigger.
-- `onSceneAssetsReady` / `onSceneAssetError` (threaded to the scene canvas in
-  `EditorBody`) likewise drive reducer transitions + the restore flow.
+So the reducer exists **only** to (a) hold state it then mirrors elsewhere, and
+(b) bump two counters that drive a React remount and a React fetch effect. Both
+counters are plain integers — nothing about them requires a reducer.
 
-These are the last `EditorOverlay`/scene threads besides `share` (deferred).
+### What is genuinely React-coupled (and must stay an effect)
 
-## Options
+- **The manifest fetch** (`fetchCatalogManifest` + AbortController + timeout +
+  cleanup, keyed today on `retryKey`). This is a real side-effecting lifecycle.
+- **The `Scene` remount** — `cacheInvalidationKey` is the `SceneAssetErrorBoundary`
+  `key` in `editor-body.tsx`. A render concern, but the *value* is just a counter
+  a component can read from a store.
 
-- **B1 — surgical.** Give `editor-runtime-store` a `retryToken`; the startup
-  fetch effect keys on it instead of an internal `retryKey`. A coordinator
-  (`requestAssetRetry()`: clear GLTF cache + bump token) lets asset-ready/error/
-  retry become store-driven coordinators while a **thin** startup hook keeps only
-  the fetch effect. Lower risk; resolves the retry thread. The restore flow
-  likely extracts to its own startup coordinator.
-- **B2 — full.** Collapse the two phase machines into `editor-runtime-store` as
-  the single owner, reducing `use-startup-state` to a bootstrap effect (fetch →
-  store actions). Cleanest end-state; bigger and riskier — touches the manifest
-  fetch, GLTF cache, restore flow, and the `cacheInvalidationKey`-driven `Scene`
-  remount.
+### Imperative scene seams (callable from anywhere, no React needed)
 
-Leaning **B1** first, with B2 as a later cleanup.
+- `preloadFurnitureCollections(paths)` / `clearFurnitureCollectionCache(paths)`
+  (`scene/objects/furniture-catalog.ts`, thin `useGLTF.preload/clear` wrappers).
+- `sceneCommands.restoreInitialLayout`, `clearSceneServices`.
 
-## Scope to design (when picked up)
+### The mirror is already the real read-model
 
-- Where the **restore flow** (`handleSceneAssetsReady`'s draft/URL → apply
-  orchestration, currently in the asset-lifecycle controller + `_shared/restore-flow`)
-  should live — likely a startup coordinator in `editor-state` or `features/startup`.
-- How `cacheInvalidationKey` (Scene remount key) is owned once the reducer is
-  thinned/removed.
-- The GLTF cache clear (`clearFurnitureCollectionCache`) home — it's a scene
-  concern reached from retry.
-- De-threading `onSceneAssetsReady`/`onSceneAssetError`/`onRetryAssetLoading`
-  to feature self-sourcing once the transitions are store actions.
+`App` destructures the hook for `catalog`, `collections`, `environmentConfig`,
+`cacheInvalidationKey`, and the three handlers — **but every phase/flag it reads
+(`editorInteractionsEnabled`, `startupLoadingActive`, `assetError`, …) it reads
+from `editor-runtime-store`, not from the hook.** The hook's phase/flag returns
+are already dead. That confirms the direction: make the store the sole owner and
+the hook collapses to a bootstrap effect.
+
+## Why this blocks the last threads
+
+`use-asset-lifecycle-controller` (the last action controller) wraps the scene
+asset-ready/error callbacks + the one-time **restore flow**, and drives the
+**reducer's** dispatchers. Retry re-runs the fetch effect (via `retryKey`) and
+clears the GLTF cache. So `onRetryAssetLoading`, `onSceneAssetsReady`, and
+`onSceneAssetError` (the last `EditorOverlay`/scene threads besides `share`)
+can't be cleanly de-threaded while the reducer is the source of truth.
+
+## Recommendation: full collapse (not the surgical token)
+
+The earlier draft floated **B1 (surgical: add a `retryToken`, keep the reducer
+thin)** vs **B2 (full collapse)**. **I recommend the full collapse**, because the
+duplication *is* the defect: B1 resolves the retry thread but leaves two phase
+machines and the mirror effects in place — the exact smell this phase exists to
+remove. Valuing end quality over change size, the right end-state is:
+
+**`editor-runtime-store` becomes the single startup state machine.** No reducer,
+no mirror. `use-startup-state` collapses to a thin bootstrap hook that runs only
+the fetch effect and writes to stores. The asset-ready/error/retry transitions
+become **editor-state coordinators**; the scene callbacks and the retry button
+call them directly, de-threading the last props.
+
+### Does the 3-phase store lose information? No.
+
+The reducer's `loading-manifest` vs `loading-assets` split is **never surfaced** —
+`startupLoadingActive` is `manifest || assets`, and `InitializationProgress` only
+reads that boolean. The store's single `loading` covers both. The two counters
+(`cacheInvalidationKey`, `retryKey`) move into the store as `sceneEpoch` and
+`retryToken`; they stay *two* counters because their bump rules differ (epoch
+bumps on every asset-load cycle so the Scene remounts; retryToken bumps only on
+retry so the fetch re-runs).
+
+## Target architecture
+
+```
+editor-runtime-store (editor-state)         ← SINGLE source of truth
+  startupPhase: loading | ready | errored
+  assetError, restoreOutcome, restoreAttemptCount, floorFinishLoading
+  sceneEpoch   (was cacheInvalidationKey)   bump: beginAssetLoad + requestRetry
+  retryToken   (was retryKey)               bump: requestRetry
+  actions: markAssetsReady, setAssetError, beginAssetLoad(), requestRetry(), …
+
+scene-assets-store (editor-state)           ← manifest payload (already exists)
+  catalog, collections, environmentConfig   + useCollections() selector (new)
+
+startup-coordinator (editor-state)          ← the transitions (was the controller)
+  completeAssetLoad()   restore-once + markAssetsReady
+  notifyAssetError(err) setAssetError + closeDialogs + resetStartupShell
+  requestAssetRetry()   clearFurnitureCollectionCache + requestRetry() + reset
+  resetStartupShell()   scene-state + selection-meta reset + clearSceneServices
+  (imports: stores, sceneCommands, scene-draft, scene-url, restore-flow, toast)
+
+scene-url (editor-state)                    ← MOVED out of features/url-scene
+restore-flow (editor-state)                 ← MOVED out of app/controllers/_shared
+
+use-startup-bootstrap (features/startup)    ← thin; only React-coupled work
+  effect keyed on useRetryToken():
+    fetchCatalogManifest → on ok:  sceneAssetsActions.setSceneAssets(...)
+                                   runtimeActions.beginAssetLoad()
+                                   preloadFurnitureCollections(...)
+                           on err: runtimeActions.setAssetError(classified)
+  (keeps catalog-manifest fetch + error classification — genuinely startup+effect)
+
+EditorBody self-sources catalog / collections / sceneEpoch from the stores;
+Scene onAssetsReady → completeAssetLoad; error boundary → notifyAssetError;
+InitializationError retry → requestAssetRetry. No startup props threaded.
+```
+
+### Dependency-direction check
+
+- `startup-coordinator` lives in editor-state, so it **cannot** import
+  `features/url-scene` (scene-url) or `features/startup` (catalog-manifest).
+  - scene-url is **relocated** to editor-state (see Decision D2) — it is
+    scene-state↔URL serialization, not feature UI.
+  - the coordinator does **not** need `fetchCatalogManifest`: retry just bumps
+    `retryToken` (the bootstrap effect re-fetches) and clears the GLTF cache.
+- `use-startup-bootstrap` (features/startup) imports editor-state actions +
+  `catalog-manifest` (own feature) + `preloadFurnitureCollections` (scene). All
+  allowed (feature → editor-state/scene/own-feature).
+- `restore-flow.types` already imports `editor-runtime-store` (a type) — same
+  layer once moved. ✓
+
+## Decisions (confirmed)
+
+- **D1 — Approach: full collapse.** Remove the second phase machine and the
+  mirror; `editor-runtime-store` becomes the single owner. (Rejected: surgical
+  retry-token, which would leave both phase machines in place.)
+- **D2 — `scene-url` home: `editor-state/scene-url`.** Relocated out of
+  `features/url-scene`, co-located with `scene-draft` and the restore
+  coordinator; the three app importers + url-scene repoint there. (Rejected:
+  `shared/lib/three`, which would split scene-persistence across two layers.)
+- **D3 — EditorBody scene-data: self-source now.** EditorBody reads
+  `catalog`/`collections`/`sceneEpoch` from the stores; the three props are
+  removed in the flip slice rather than deferred.
+
+## Slice plan (each: full validation gate + a11y/hotkeys/startup e2e)
+
+1. **Store becomes capable.** Add `sceneEpoch`, `retryToken`, `beginAssetLoad()`,
+   `requestRetry()` (+ `useSceneEpoch`, `useRetryToken`) to `editor-runtime-store`.
+   Pure addition, unit-tested, nothing wired. No behavior change. GREEN.
+2. **Relocate `scene-url`** (D2) out of `features/url-scene`; repoint the three
+   app importers + url-scene. Pure move. GREEN.
+3. **Build the coordinator.** Move `restore-flow` + `restore-flow.types` into
+   editor-state; create `editor-state/startup-coordinator.ts`
+   (`completeAssetLoad`, `notifyAssetError`, `requestAssetRetry`,
+   `resetStartupShell`) reading scene-assets-store for catalog/finishes.
+   Unit-tested. Wired in the flip (slice 4) to avoid a transient knip orphan, or
+   wired here behind the old controller — TBD at build time.
+4. **Flip the source of truth.** Replace the `use-startup-state` reducer with
+   `use-startup-bootstrap` (fetch effect keyed on `useRetryToken()` → store
+   writes). `App` drops the `startup` object + asset-lifecycle controller; Scene
+   asset-ready/error wired to coordinators; EditorBody self-sources
+   catalog/collections/sceneEpoch (D3). Delete `use-startup-state` reducer,
+   `use-asset-lifecycle-controller`, `startup-transitions`.
+5. **De-thread the last props.** Remove `onRetryAssetLoading` /
+   `onSceneAssetsReady` / `onSceneAssetError` from EditorBody / EditorOverlay /
+   InitializationError; the retry button calls `requestAssetRetry` directly.
+   Confirm knip at baseline. (May fold into slice 4.)
+
+## Risk
+
+Startup, retry, restore-from-URL, restore-from-draft, and asset-error recovery
+are the highest-stakes flows in the app and are e2e-guarded. The flip (slice 4)
+is the one substantive change; slices 1–3 are additive/relocations that keep the
+mirror intact, so the flip is mechanical once they land. The Scene-remount key
+moving from a prop to a store read is the subtlest part — verify a retry still
+remounts the canvas and reloads GLTFs.
 
 ## Out of scope / deferred
 
 - `share` stays a callback (Promise-returning result; handover-deferred).
+- `use-draft-persistence` (features/url-scene) stays put — it is a scene-state
+  subscription reconciler, not part of the startup machine. (Its eventual home
+  is a separate question once url-scene is otherwise emptied.)
 - Documentation reconciliation remains the final stage
   (`plans/documentation-reconciliation.md`).

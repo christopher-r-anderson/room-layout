@@ -11,6 +11,8 @@ import {
   useFloorFinishLoading,
   useRestoreAttemptCount,
   useRestoreOutcome,
+  useRetryToken,
+  useSceneEpoch,
   useStartupLoadingActive,
   useStartupOverlayActive,
   useStartupPhase,
@@ -29,6 +31,45 @@ describe('editorRuntimeStore', () => {
     expect(state.restoreOutcome).toBeNull()
     expect(state.restoreAttemptCount).toBe(0)
     expect(state.floorFinishLoading).toBe(false)
+    expect(state.sceneEpoch).toBe(0)
+    expect(state.retryToken).toBe(0)
+  })
+
+  it('bumps the scene epoch and clears errors when a manifest begins loading assets', () => {
+    editorRuntimeActions.setAssetError({
+      kind: 'manifest-network',
+      message: 'offline',
+    })
+
+    editorRuntimeActions.beginAssetLoad()
+
+    const state = editorRuntimeStore.getState()
+    expect(state.startupPhase).toBe('loading')
+    expect(state.assetError).toBeNull()
+    expect(state.sceneEpoch).toBe(1)
+    expect(state.retryToken).toBe(0)
+  })
+
+  it('bumps both epoch and retry token on retry while preserving restore tracking', () => {
+    editorRuntimeActions.incrementRestoreAttempt()
+    editorRuntimeActions.recordRestoreOutcome('restored')
+    editorRuntimeActions.setFloorFinishLoading(true)
+    editorRuntimeActions.setAssetError({
+      kind: 'asset-load',
+      message: 'asset load failed',
+    })
+
+    editorRuntimeActions.requestRetry()
+
+    const state = editorRuntimeStore.getState()
+    expect(state.startupPhase).toBe('loading')
+    expect(state.assetError).toBeNull()
+    expect(state.floorFinishLoading).toBe(false)
+    expect(state.sceneEpoch).toBe(1)
+    expect(state.retryToken).toBe(1)
+    // Restore tracking is preserved so the one-time restore flow does not re-run.
+    expect(state.restoreAttemptCount).toBe(1)
+    expect(state.restoreOutcome).toBe('restored')
   })
 
   it('transitions between loading, ready, and errored phases', () => {
@@ -79,6 +120,8 @@ describe('editorRuntimeStore', () => {
     const { result: floorFinishLoading } = renderHook(() =>
       useFloorFinishLoading(),
     )
+    const { result: sceneEpoch } = renderHook(() => useSceneEpoch())
+    const { result: retryToken } = renderHook(() => useRetryToken())
 
     expect(phase.current).toBe('loading')
     expect(loading.current).toBe(true)
@@ -88,6 +131,8 @@ describe('editorRuntimeStore', () => {
     expect(outcome.current).toBeNull()
     expect(attempts.current).toBe(0)
     expect(floorFinishLoading.current).toBe(false)
+    expect(sceneEpoch.current).toBe(0)
+    expect(retryToken.current).toBe(0)
 
     act(() => {
       editorRuntimeActions.incrementRestoreAttempt()
@@ -103,5 +148,13 @@ describe('editorRuntimeStore', () => {
     expect(outcome.current).toBe('invalid')
     expect(attempts.current).toBe(1)
     expect(floorFinishLoading.current).toBe(true)
+
+    act(() => {
+      editorRuntimeActions.requestRetry()
+    })
+
+    expect(sceneEpoch.current).toBe(1)
+    expect(retryToken.current).toBe(1)
+    expect(phase.current).toBe('loading')
   })
 })
