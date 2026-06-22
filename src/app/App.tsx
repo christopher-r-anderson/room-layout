@@ -11,11 +11,18 @@ import {
   sceneStateActions,
   useFloorFinishId,
   useItems,
+  usePreviewedId,
   useSelectedFurniture,
   useWallFinishId,
 } from '@/editor-state/scene-state-store'
 import { announcementActions } from '@/editor-state/announcement-store'
-import { usePreviewController } from '@/app/controllers/use-preview-controller'
+import {
+  clearPreviewOnCanvasMiss,
+  previewFromCanvasKeyboard,
+  previewFromOutliner,
+  previewFromScene,
+} from '@/editor-state/preview-actions'
+import { usePreviewReconciler } from '@/editor-state/use-preview-reconciler'
 import { startSelectionEffectsReconciler } from '@/editor-state/selection-effects'
 import {
   clearSelection,
@@ -206,13 +213,8 @@ function App() {
     return startup.catalog[0]?.id ?? ''
   }, [catalogIdToAdd, startup.catalog])
 
-  const {
-    previewedId,
-    handleScenePreviewChange,
-    handleOutlinerPreviewChange,
-    handleCanvasKeyboardPreviewChange: applyCanvasKeyboardPreviewChange,
-    clearPreviewOnCanvasMiss,
-  } = usePreviewController({
+  usePreviewReconciler()
+  const previewedId = usePreviewedId({
     isBlockingOverlayOpen,
     editorInteractionsEnabled: startup.editorInteractionsEnabled,
   })
@@ -337,7 +339,6 @@ function App() {
   const { previewedIdRef, handleCanvasBrowse, handleCanvasSelectPreviewed } =
     useCanvasKeyboardController({
       previewedId,
-      applyCanvasKeyboardPreviewChange,
     })
 
   const handleFocusInspector = useCallback(() => {
@@ -373,14 +374,9 @@ function App() {
     focusRoomView()
 
     if (selectedFurniture !== null) {
-      applyCanvasKeyboardPreviewChange(selectedFurniture.id)
+      previewFromCanvasKeyboard(selectedFurniture.id)
     }
-  }, [
-    applyCanvasKeyboardPreviewChange,
-    focusRoomView,
-    selectedFurniture,
-    startup.editorInteractionsEnabled,
-  ])
+  }, [focusRoomView, selectedFurniture, startup.editorInteractionsEnabled])
 
   const handleFocusOutliner = useCallback(() => {
     if (!startup.editorInteractionsEnabled) {
@@ -448,7 +444,7 @@ function App() {
               selectedFloorOption={selectedFloorOption}
               selectedWallOption={selectedWallOption}
               clearPreviewOnCanvasMiss={clearPreviewOnCanvasMiss}
-              onScenePreviewChange={handleScenePreviewChange}
+              onScenePreviewChange={previewFromScene}
               onFloorLoadingChange={handleFloorLoadingChange}
               onCanvasPointerSelection={selectByCanvasPointer}
               onSceneAssetsReady={handlers.handleSceneAssetsReady}
@@ -469,7 +465,7 @@ function App() {
                   onConfirmStartOver: handlers.handleConfirmStartOver,
                 },
                 outliner: {
-                  onPreviewChange: handleOutlinerPreviewChange,
+                  onPreviewChange: previewFromOutliner,
                 },
                 onConfirmDeleteSelection: handlers.handleConfirmDeleteSelection,
                 onRetryAssetLoading: handlers.handleRetryAssetLoading,

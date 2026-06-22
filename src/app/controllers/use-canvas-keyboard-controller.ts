@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useRef, type RefObject } from 'react'
 import { announcementActions } from '@/editor-state/announcement-store'
 import { selectById } from '@/editor-state/selection-actions'
+import { previewFromCanvasKeyboard } from '@/editor-state/preview-actions'
 import { sceneCommands } from '@/scene/scene-commands'
 import { sortSpatially } from '@/shared/lib/three/spatial-sort'
 
 interface UseCanvasKeyboardControllerOptions {
   previewedId: string | null
-  applyCanvasKeyboardPreviewChange: (id: string | null) => void
 }
 
 interface CanvasKeyboardController {
@@ -18,7 +18,6 @@ interface CanvasKeyboardController {
 
 export function useCanvasKeyboardController({
   previewedId,
-  applyCanvasKeyboardPreviewChange,
 }: UseCanvasKeyboardControllerOptions): CanvasKeyboardController {
   const previewedIdRef = useRef<string | null>(null)
 
@@ -26,15 +25,12 @@ export function useCanvasKeyboardController({
     previewedIdRef.current = previewedId
   }, [previewedId])
 
-  const handleCanvasKeyboardPreviewChange = useCallback(
-    (id: string | null) => {
-      // Keep keyboard preview reads synchronous so a quick browse+select
-      // sequence cannot observe a stale ref before effects flush.
-      previewedIdRef.current = id
-      applyCanvasKeyboardPreviewChange(id)
-    },
-    [applyCanvasKeyboardPreviewChange],
-  )
+  const handleCanvasKeyboardPreviewChange = useCallback((id: string | null) => {
+    // Keep keyboard preview reads synchronous so a quick browse+select
+    // sequence cannot observe a stale ref before effects flush.
+    previewedIdRef.current = id
+    previewFromCanvasKeyboard(id)
+  }, [])
 
   const handleCanvasBrowse = useCallback(
     (direction: 'next' | 'prev' | 'first' | 'last') => {

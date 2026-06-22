@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { sceneCommands } from '@/scene/scene-commands'
 import { announcementActions } from '@/editor-state/announcement-store'
 import { selectById } from '@/editor-state/selection-actions'
+import { previewFromCanvasKeyboard } from '@/editor-state/preview-actions'
 import { useCanvasKeyboardController } from './use-canvas-keyboard-controller'
 
 vi.mock('@/editor-state/announcement-store', () => ({
@@ -23,12 +24,15 @@ vi.mock('@/editor-state/selection-actions', () => ({
   clearSelection: vi.fn(),
 }))
 
+vi.mock('@/editor-state/preview-actions', () => ({
+  previewFromCanvasKeyboard: vi.fn(),
+}))
+
 function createOptions(
   overrides?: Partial<Parameters<typeof useCanvasKeyboardController>[0]>,
 ) {
   return {
     previewedId: null,
-    applyCanvasKeyboardPreviewChange: vi.fn(),
     ...overrides,
   }
 }
@@ -83,9 +87,7 @@ describe('useCanvasKeyboardController', () => {
     })
 
     expect(result.current.previewedIdRef.current).toBe('right')
-    expect(options.applyCanvasKeyboardPreviewChange).toHaveBeenCalledWith(
-      'right',
-    )
+    expect(previewFromCanvasKeyboard).toHaveBeenCalledWith('right')
   })
 
   it('browses spatially sorted scene items and announces the previewed item', () => {
@@ -97,9 +99,7 @@ describe('useCanvasKeyboardController', () => {
       result.current.handleCanvasBrowse('next')
     })
 
-    expect(options.applyCanvasKeyboardPreviewChange).toHaveBeenLastCalledWith(
-      'left',
-    )
+    expect(previewFromCanvasKeyboard).toHaveBeenLastCalledWith('left')
     expect(announcementActions.announcePolite).toHaveBeenLastCalledWith(
       'Left Chair',
     )
@@ -108,9 +108,7 @@ describe('useCanvasKeyboardController', () => {
       result.current.handleCanvasBrowse('next')
     })
 
-    expect(options.applyCanvasKeyboardPreviewChange).toHaveBeenLastCalledWith(
-      'right',
-    )
+    expect(previewFromCanvasKeyboard).toHaveBeenLastCalledWith('right')
     expect(announcementActions.announcePolite).toHaveBeenLastCalledWith(
       'Right Chair',
     )
@@ -127,7 +125,7 @@ describe('useCanvasKeyboardController', () => {
       result.current.handleCanvasBrowse('next')
     })
 
-    expect(options.applyCanvasKeyboardPreviewChange).not.toHaveBeenCalled()
+    expect(previewFromCanvasKeyboard).not.toHaveBeenCalled()
     expect(announcementActions.announcePolite).not.toHaveBeenCalled()
   })
 
@@ -143,9 +141,7 @@ describe('useCanvasKeyboardController', () => {
     })
 
     expect(selectById).toHaveBeenCalledWith('right', 'canvas-keyboard')
-    expect(options.applyCanvasKeyboardPreviewChange).toHaveBeenLastCalledWith(
-      null,
-    )
+    expect(previewFromCanvasKeyboard).toHaveBeenLastCalledWith(null)
     expect(result.current.previewedIdRef.current).toBeNull()
   })
 })
