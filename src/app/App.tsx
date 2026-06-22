@@ -19,7 +19,7 @@ import { usePreviewController } from '@/app/controllers/use-preview-controller'
 import { startSelectionEffectsReconciler } from '@/editor-state/selection-effects'
 import { useSelectionController } from '@/app/controllers/use-selection-controller'
 import { useMovementController } from '@/app/controllers/use-movement-controller'
-import { useHistoryController } from '@/app/controllers/use-history-controller'
+import { redo, undo } from '@/features/history/history-actions'
 import { useDeletionController } from '@/app/controllers/use-deletion-controller'
 import { useCatalogController } from '@/app/controllers/use-catalog-controller'
 import { useStartOverController } from '@/app/controllers/use-start-over-controller'
@@ -261,9 +261,6 @@ function App() {
     editorInteractionsEnabled: startup.editorInteractionsEnabled,
     rotationStepRadians: ROTATION_STEP_RADIANS,
   })
-  const historyController = useHistoryController({
-    editorInteractionsEnabled: startup.editorInteractionsEnabled,
-  })
   const deletionController = useDeletionController({
     closeActiveDialog: dialogActions.closeActiveDialog,
     openDeleteDialog: () => dialogActions.openDialog(DIALOG_IDS.delete),
@@ -331,7 +328,6 @@ function App() {
   const handlers = {
     ...selectionController,
     ...movementController,
-    ...historyController,
     ...deletionController,
     ...catalogController,
     ...startOverController,
@@ -414,8 +410,8 @@ function App() {
     focusInspector: handleFocusInspector,
     focusRoomView: handleFocusRoomView,
     focusOutliner: handleFocusOutliner,
-    undo: handlers.handleUndo,
-    redo: handlers.handleRedo,
+    undo,
+    redo,
     startOverIntent: handlers.handleOpenStartOverDialog,
     openDeleteDialog: (returnFocusTo) => {
       if (returnFocusTo === 'room-view') {

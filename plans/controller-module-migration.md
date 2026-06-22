@@ -33,11 +33,11 @@ Inputs are only `editorInteractionsEnabled` (→ `editorRuntimeStore.getState()`
 constants, and store selectors (→ `.getState()`). No App callbacks, no
 App-local state, no startup config.
 
-| Controller | New module | Functions | Sourced reads |
-| --- | --- | --- | --- |
-| `use-history-controller` | `features/history/history-actions.ts` | `undo`, `redo` | enabled→store |
-| `use-movement-controller` | `features/selection/movement-actions.ts` | `moveSelection`, `rotateSelection` | enabled→store, `ROTATION_STEP_RADIANS` constant, selected furniture→`selectSelectedFurniture(getState())` |
-| `use-selection-controller` | `features/selection/selection-actions.ts` | `selectByCanvasPointer`, `selectById`, `clearSelection` | enabled→store, `selectedId`→`getState()` |
+| Controller                 | New module                                | Functions                                               | Sourced reads                                                                                             |
+| -------------------------- | ----------------------------------------- | ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `use-history-controller`   | `features/history/history-actions.ts`     | `undo`, `redo`                                          | enabled→store                                                                                             |
+| `use-movement-controller`  | `features/selection/movement-actions.ts`  | `moveSelection`, `rotateSelection`                      | enabled→store, `ROTATION_STEP_RADIANS` constant, selected furniture→`selectSelectedFurniture(getState())` |
+| `use-selection-controller` | `features/selection/selection-actions.ts` | `selectByCanvasPointer`, `selectById`, `clearSelection` | enabled→store, `selectedId`→`getState()`                                                                  |
 
 Consumers after conversion: `EditorCommandApi` calls module fns directly;
 `use-canvas-keyboard-controller` imports `selectById` directly (drops one thread);
@@ -47,7 +47,7 @@ the EditorBody/outliner threads keep passing module fns until §6.3.
 
 These cannot become clean feature modules without first deciding how their
 App-derived inputs are sourced, because a feature module **may not import
-`@/app/**`**:
+`@/app/**`\*\*:
 
 - `use-deletion-controller` — needs `focusRoomView` (App DOM callback over the
   editor-refs `roomViewRef`) and `pendingDeleteFurniture` (dialog payload).

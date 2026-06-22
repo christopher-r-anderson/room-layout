@@ -1,11 +1,13 @@
 // @vitest-environment jsdom
-
-import { act, renderHook } from '@testing-library/react'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { sceneCommands } from '@/scene/scene-commands'
 import { announcementActions } from '@/editor-state/announcement-store'
 import { selectionEffects } from '@/editor-state/selection-effects'
-import { useHistoryController } from './use-history-controller'
+import {
+  editorRuntimeActions,
+  resetEditorRuntimeStore,
+} from '@/editor-state/editor-runtime-store'
+import { redo, undo } from './history-actions'
 
 vi.mock('@/editor-state/announcement-store', () => ({
   announcementActions: {
@@ -27,52 +29,42 @@ vi.mock('@/editor-state/selection-effects', () => ({
   },
 }))
 
-describe('useHistoryController', () => {
-  afterEach(() => {
-    vi.restoreAllMocks()
-    vi.clearAllMocks()
-  })
+beforeEach(() => {
+  resetEditorRuntimeStore()
+  editorRuntimeActions.markAssetsReady()
+})
 
+afterEach(() => {
+  vi.restoreAllMocks()
+  vi.clearAllMocks()
+})
+
+describe('history-actions', () => {
   it('skips scene undo/redo when the scene is not ready', () => {
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(false)
-    const undo = vi.spyOn(sceneCommands, 'undo')
-    const redo = vi.spyOn(sceneCommands, 'redo')
+    const undoSpy = vi.spyOn(sceneCommands, 'undo')
+    const redoSpy = vi.spyOn(sceneCommands, 'redo')
 
-    const { result } = renderHook(() =>
-      useHistoryController({
-        editorInteractionsEnabled: true,
-      }),
-    )
+    undo()
+    redo()
 
-    act(() => {
-      result.current.handleUndo()
-      result.current.handleRedo()
-    })
-
-    expect(undo).not.toHaveBeenCalled()
-    expect(redo).not.toHaveBeenCalled()
+    expect(undoSpy).not.toHaveBeenCalled()
+    expect(redoSpy).not.toHaveBeenCalled()
     expect(selectionEffects.notePendingSelection).toHaveBeenCalledWith(null)
     expect(announcementActions.announcePolite).not.toHaveBeenCalled()
   })
 
   it('skips scene undo/redo when editor interactions are disabled', () => {
+    resetEditorRuntimeStore()
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
-    const undo = vi.spyOn(sceneCommands, 'undo')
-    const redo = vi.spyOn(sceneCommands, 'redo')
+    const undoSpy = vi.spyOn(sceneCommands, 'undo')
+    const redoSpy = vi.spyOn(sceneCommands, 'redo')
 
-    const { result } = renderHook(() =>
-      useHistoryController({
-        editorInteractionsEnabled: false,
-      }),
-    )
+    undo()
+    redo()
 
-    act(() => {
-      result.current.handleUndo()
-      result.current.handleRedo()
-    })
-
-    expect(undo).not.toHaveBeenCalled()
-    expect(redo).not.toHaveBeenCalled()
+    expect(undoSpy).not.toHaveBeenCalled()
+    expect(redoSpy).not.toHaveBeenCalled()
     expect(selectionEffects.notePendingSelection).toHaveBeenCalledWith(null)
     expect(announcementActions.announcePolite).not.toHaveBeenCalled()
   })
@@ -81,15 +73,7 @@ describe('useHistoryController', () => {
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
     vi.spyOn(sceneCommands, 'undo').mockReturnValue(true)
 
-    const { result } = renderHook(() =>
-      useHistoryController({
-        editorInteractionsEnabled: true,
-      }),
-    )
-
-    act(() => {
-      result.current.handleUndo()
-    })
+    undo()
 
     expect(announcementActions.announcePolite).toHaveBeenCalledWith(
       'Undo complete.',
@@ -104,15 +88,7 @@ describe('useHistoryController', () => {
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
     vi.spyOn(sceneCommands, 'redo').mockReturnValue(true)
 
-    const { result } = renderHook(() =>
-      useHistoryController({
-        editorInteractionsEnabled: true,
-      }),
-    )
-
-    act(() => {
-      result.current.handleRedo()
-    })
+    redo()
 
     expect(announcementActions.announcePolite).toHaveBeenCalledWith(
       'Redo complete.',
@@ -127,15 +103,7 @@ describe('useHistoryController', () => {
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
     vi.spyOn(sceneCommands, 'undo').mockReturnValue(false)
 
-    const { result } = renderHook(() =>
-      useHistoryController({
-        editorInteractionsEnabled: true,
-      }),
-    )
-
-    act(() => {
-      result.current.handleUndo()
-    })
+    undo()
 
     expect(announcementActions.announcePolite).not.toHaveBeenCalled()
     expect(selectionEffects.notePendingSelection).toHaveBeenCalledWith(null)
