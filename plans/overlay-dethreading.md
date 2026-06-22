@@ -85,12 +85,26 @@ coordinator — never by importing a sibling feature. E.g. the outliner's
    from the module. **Outliner is now fully de-threaded (zero props).**
    (`refactor(editor-state): extract preview actions and reconciler` +
    `refactor(scene-panel): self-source outliner preview from editor-state`)
-4. **catalog state relocation** → de-thread the catalog bundle + convert the
-   catalog controller to a module.
-5. **environmentConfig store seam** → finish options + `startOverDisabled` +
-   unblock start-over controller (and the start-over button dispatch from slice 1).
-6. **delete-confirm + retry** → via deletion/asset-lifecycle modules
-   (focus-intent + startup seams).
+4. ✅ **scene-assets store seam** — `editor-state/scene-assets-store` mirrors the
+   startup manifest; top-header reads `useEnvironmentConfig()` (environmentConfig
+   prop de-threaded). (`refactor(editor-state): add scene-assets store and
+   de-thread environment config`)
+5. ✅ **catalog feature de-thread** — `catalog-selection-store` +
+   `catalog-actions` in `features/catalog`; the drawer self-sources entries /
+   active id / enabled / open; catalog prop bundle gone from the top-header shell;
+   `use-catalog-controller` removed. (`refactor(catalog): self-source the catalog
+   drawer from the feature`)
+6. **start-over button → dispatch + `startOverDisabled`** — now unblocked: derive
+   `sceneIsAtDefaults`/`canStartOver` from scene-assets + scene-state (selector),
+   dispatch the `start-over` command from the button, drop the `startOverDisabled`
+   thread. (Mind the mobile more-actions/focus coordinator.)
+7. **start-over + asset-lifecycle controller conversions** — now unblocked by the
+   scene-assets store (defaults / finish-ids) and the preview module; convert to
+   editor-state coordinators.
+8. **delete-confirm + retry** → via deletion/asset-lifecycle modules
+   (post-delete focus-intent + startup seams).
+9. **Documentation reconciliation** (final stage) — see
+   `plans/documentation-reconciliation.md`.
 7. **Documentation reconciliation** (final stage) — see
    `plans/documentation-reconciliation.md`; run after the runtime work is green.
 
