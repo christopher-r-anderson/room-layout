@@ -45,10 +45,10 @@ vi.mock('@/editor-state/scene-draft', () => ({
   saveSceneDraft: vi.fn(),
 }))
 
-vi.mock('@/features/url-scene/scene-url', async () => {
+vi.mock('@/editor-state/scene-url', async () => {
   const actual = await vi.importActual<
-    typeof import('@/features/url-scene/scene-url')
-  >('@/features/url-scene/scene-url')
+    typeof import('@/editor-state/scene-url')
+  >('@/editor-state/scene-url')
   return {
     ...actual,
     parseSceneUrl: vi.fn().mockReturnValue({ ok: false, reason: 'no-param' }),

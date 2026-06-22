@@ -7,10 +7,10 @@ import {
   resetSceneStateStore,
   sceneStateActions,
 } from '@/editor-state/scene-state-store'
-import { serializeSceneToUrl } from '@/features/url-scene/scene-url'
+import { serializeSceneToUrl } from '@/editor-state/scene-url'
 import { useShareController } from './use-share-controller'
 
-vi.mock('@/features/url-scene/scene-url', () => ({
+vi.mock('@/editor-state/scene-url', () => ({
   serializeSceneToUrl: vi.fn(),
 }))
 

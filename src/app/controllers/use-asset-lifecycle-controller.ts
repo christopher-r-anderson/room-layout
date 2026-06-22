@@ -10,7 +10,7 @@ import {
   SCENE_URL_PARAM,
   parseSceneUrl,
   validateCatalogReferences,
-} from '@/features/url-scene/scene-url'
+} from '@/editor-state/scene-url'
 import { loadSceneDraft, saveSceneDraft } from '@/editor-state/scene-draft'
 import { createDefaultSceneState } from '@/shared/lib/three/scene-defaults'
 import { isSceneStateAtDefaults } from '@/shared/lib/three/scene-model'
