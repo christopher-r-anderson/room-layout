@@ -100,12 +100,17 @@ drawer from the feature`)
    props are gone. (`refactor(editor-state): derive scene-is-at-defaults via a
 selector`) — the start-over button **command dispatch** (and the
    `onOpenStartOverDialog` thread + mobile more-actions coupling) is still pending.
-7. **start-over button → dispatch** + **start-over / asset-lifecycle controller
-   conversions** — now unblocked by the scene-assets store (defaults / finish-ids)
-   and the preview module; convert to coordinators (mind the start-over home fork:
-   it touches url-scene draft + startup dialog id).
-8. **delete-confirm + retry** → via deletion/asset-lifecycle modules
-   (post-delete focus-intent + startup seams).
+7. ✅ **start-over decomposed** (not relocated): scene-draft persistence re-homed
+   to `editor-state`; reusable `editor-state/scene-reset` `resetSceneToDefaults`;
+   open gate moved into the start-over dialog `canOpen`; button + mobile hand-off
+   dispatch the `start-over` command; confirm runs the reset op with feedback +
+   focus owned by the top-header shell; `use-start-over-controller` removed.
+   (`refactor(editor-state): home scene-draft…`, `refactor(startup): gate
+start-over open…`, `refactor(startup): decompose start-over…`)
+8. **delete-confirm + retry** → deletion needs a post-delete room-view
+   focus-intent seam (selection-meta); retry needs the asset-lifecycle controller,
+   which is coupled to `useStartupState`'s reducer dispatchers (those would become
+   store actions first). share stays a callback (handover-deferred).
 9. **Documentation reconciliation** (final stage) — see
    `plans/documentation-reconciliation.md`; run after the runtime work is green.
 
