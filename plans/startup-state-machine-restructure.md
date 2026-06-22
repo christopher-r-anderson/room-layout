@@ -1,6 +1,8 @@
 # Plan: Startup State-Machine Restructure (§6.3 Part B)
 
-> **Status:** designed, **decisions confirmed** — ready to implement in slices.
+> **Status:** ✅ **shipped** (full collapse). The two startup phase machines are
+> collapsed into `editor-runtime-store`; the reducer and its mirror effects are
+> gone, and the last asset-lifecycle threads are de-threaded.
 > This is the deepest remaining seam in the de-threading effort — a genuine
 > "wrong seam," not a relocation. Branch
 > `editor-surface-keyboard-architecture-refactor`.
@@ -159,27 +161,29 @@ InitializationError retry → requestAssetRetry. No startup props threaded.
 
 ## Slice plan (each: full validation gate + a11y/hotkeys/startup e2e)
 
-1. **Store becomes capable.** Add `sceneEpoch`, `retryToken`, `beginAssetLoad()`,
-   `requestRetry()` (+ `useSceneEpoch`, `useRetryToken`) to `editor-runtime-store`.
-   Pure addition, unit-tested, nothing wired. No behavior change. GREEN.
-2. **Relocate `scene-url`** (D2) out of `features/url-scene`; repoint the three
-   app importers + url-scene. Pure move. GREEN.
-3. **Build the coordinator.** Move `restore-flow` + `restore-flow.types` into
-   editor-state; create `editor-state/startup-coordinator.ts`
-   (`completeAssetLoad`, `notifyAssetError`, `requestAssetRetry`,
-   `resetStartupShell`) reading scene-assets-store for catalog/finishes.
-   Unit-tested. Wired in the flip (slice 4) to avoid a transient knip orphan, or
-   wired here behind the old controller — TBD at build time.
-4. **Flip the source of truth.** Replace the `use-startup-state` reducer with
+All five slices shipped; each landed green (typecheck/lint, unit, knip at
+baseline) with the startup/retry/restore + a11y/hotkeys/dialogs e2e flows.
+
+1. ✅ **Store becomes capable.** Added `sceneEpoch`, `retryToken`,
+   `beginAssetLoad()`, `requestRetry()` (+ `useSceneEpoch`, `useRetryToken`) to
+   `editor-runtime-store`. Pure addition, nothing wired.
+2. ✅ **Relocate `scene-url`** (D2) out of `features/url-scene`; repointed the
+   share-controller, restore-flow, and asset-lifecycle importers.
+3. ✅ **Build the coordinator.** Moved `restore-flow` + `restore-flow.types`
+   into editor-state; added `editor-state/startup-coordinator.ts`
+   (`completeAssetLoad`, `notifyAssetError`, `requestAssetRetry`) sourcing
+   catalog/finishes/collections from scene-assets-store. Tested but dormant
+   (controller still wired) so the slice kept the mirror intact.
+4. ✅ **Flip the source of truth.** Replaced the `use-startup-state` reducer with
    `use-startup-bootstrap` (fetch effect keyed on `useRetryToken()` → store
-   writes). `App` drops the `startup` object + asset-lifecycle controller; Scene
-   asset-ready/error wired to coordinators; EditorBody self-sources
-   catalog/collections/sceneEpoch (D3). Delete `use-startup-state` reducer,
-   `use-asset-lifecycle-controller`, `startup-transitions`.
-5. **De-thread the last props.** Remove `onRetryAssetLoading` /
-   `onSceneAssetsReady` / `onSceneAssetError` from EditorBody / EditorOverlay /
-   InitializationError; the retry button calls `requestAssetRetry` directly.
-   Confirm knip at baseline. (May fold into slice 4.)
+   writes); EditorBody self-sources catalog/collections/sceneEpoch (D3); Scene
+   asset-ready/error + retry wired to the coordinator; deleted
+   `use-startup-state`, `use-asset-lifecycle-controller`, `startup-transitions`,
+   `reset-startup-state`, and the unused `whenSceneServicesReady` facade.
+5. ✅ **De-thread the last props.** EditorBody/EditorOverlay import the
+   coordinator directly; removed the `onSceneAssetsReady`/`onSceneAssetError`/
+   `onRetryAssetLoading` props. App's `editorOverlay` is now just
+   `{ topHeader: { onShareSceneUrl } }`.
 
 ## Risk
 

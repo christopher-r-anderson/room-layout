@@ -112,10 +112,12 @@ start-over open…`, `refactor(startup): decompose start-over…`)
    coordinator; confirm self-sourced from the overlay; opens via the command;
    `use-deletion-controller` removed. (`refactor(selection): decompose deletion via
 a room-view focus-intent`)
-9. **retry / asset-lifecycle** → scheduled as its own design: the **startup
-   state-machine restructure** (`plans/startup-state-machine-restructure.md`). It
-   de-threads `onRetryAssetLoading` + the scene `onSceneAssetsReady/Error` and
-   converts the asset-lifecycle controller. share stays a callback (deferred).
+9. ✅ **retry / asset-lifecycle** — shipped via the **startup state-machine
+   restructure** (`plans/startup-state-machine-restructure.md`): the two startup
+   phase machines collapsed into `editor-runtime-store`, the reducer replaced by
+   a thin `use-startup-bootstrap`, the asset-lifecycle controller replaced by an
+   `editor-state/startup-coordinator`, and `onRetryAssetLoading` +
+   `onSceneAssetsReady/Error` de-threaded. share stays a callback (deferred).
 10. **Documentation reconciliation** (final stage) — see
     `plans/documentation-reconciliation.md`; run after the runtime work is green.
 
