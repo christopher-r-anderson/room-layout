@@ -218,9 +218,9 @@ export default defineConfig([
               message: PARENT_RELATIVE_IMPORT_MESSAGE,
             },
             {
-              regex: '^@/features/[^/]+/.+',
+              regex: '^@/features/',
               message:
-                'Cross-feature deep imports should go through a feature public API (index.ts). Currently a warning while auditing dependencies.',
+                'Features must not import other features. Move shared coordination/state to src/editor-state (or pure utilities to src/shared); features depend downward only.',
             },
           ],
         },
