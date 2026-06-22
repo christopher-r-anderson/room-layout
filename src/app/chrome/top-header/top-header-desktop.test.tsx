@@ -76,14 +76,7 @@ function createProps(
   overrides: Partial<TopHeaderDesktopProps> = {},
 ): TopHeaderDesktopProps {
   return {
-    catalog: {
-      catalog: [],
-      catalogIdToAdd: '',
-      isCatalogDrawerOpen: false,
-      onAddFurniture: vi.fn(() => true),
-      onCatalogIdToAddChange: vi.fn(),
-      onCatalogDrawerOpenChange: vi.fn(),
-    },
+    isCatalogDrawerOpen: false,
     desktopRoomSidebarRef: undefined,
     editorInteractionsEnabled: true,
     floorFinishId: 'wood-floor',

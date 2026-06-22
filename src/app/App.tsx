@@ -30,7 +30,6 @@ import {
 import { moveSelection, rotateSelection } from '@/editor-state/movement-actions'
 import { redo, undo } from '@/editor-state/history-actions'
 import { useDeletionController } from '@/app/controllers/use-deletion-controller'
-import { useCatalogController } from '@/app/controllers/use-catalog-controller'
 import { useStartOverController } from '@/app/controllers/use-start-over-controller'
 import { useAssetLifecycleController } from '@/app/controllers/use-asset-lifecycle-controller'
 import { useShareController } from '@/app/controllers/use-share-controller'
@@ -82,7 +81,6 @@ function App() {
   const selectedFurniture = useSelectedFurniture()
   const floorFinishId = useFloorFinishId()
   const wallFinishId = useWallFinishId()
-  const [catalogIdToAdd, setCatalogIdToAdd] = useState('')
   const [testOverlaysHidden, setTestOverlaysHidden] = useState(false)
   const outlinerFocusRequest = useOutlinerFocusRequest()
   const requestOutlinerFocus = useRequestOutlinerFocus()
@@ -199,19 +197,6 @@ function App() {
   useEffect(() => startSelectionEffectsReconciler(), [])
   const wasBlockingOverlayOpenRef = useRef(isBlockingOverlayOpen)
 
-  const activeCatalogIdToAdd = useMemo(() => {
-    if (catalogIdToAdd) {
-      const exists = startup.catalog.some(
-        (entry) => entry.id === catalogIdToAdd,
-      )
-      if (exists) {
-        return catalogIdToAdd
-      }
-    }
-
-    return startup.catalog[0]?.id ?? ''
-  }, [catalogIdToAdd, startup.catalog])
-
   usePreviewReconciler()
   const previewedId = usePreviewedId({
     isBlockingOverlayOpen,
@@ -262,12 +247,6 @@ function App() {
     pendingDeleteFurniture,
     editorInteractionsEnabled: startup.editorInteractionsEnabled,
     focusRoomView,
-  })
-  const catalogController = useCatalogController({
-    setCatalogOpen: (open) =>
-      dialogActions.setDialogOpen(DIALOG_IDS.catalog, open),
-    catalogIdToAdd: activeCatalogIdToAdd,
-    editorInteractionsEnabled: startup.editorInteractionsEnabled,
   })
   const startOverController = useStartOverController({
     closeActiveDialog: dialogActions.closeActiveDialog,
@@ -322,7 +301,6 @@ function App() {
   }, [])
   const handlers = {
     ...deletionController,
-    ...catalogController,
     ...startOverController,
     ...assetLifecycleController,
     ...shareController,
@@ -452,12 +430,6 @@ function App() {
               editorOverlay={{
                 startOverDisabled: sceneIsAtDefaults,
                 topHeader: {
-                  catalog: startup.catalog,
-                  catalogIdToAdd: activeCatalogIdToAdd,
-                  onAddFurniture: handlers.handleAddFurniture,
-                  onCatalogIdToAddChange: setCatalogIdToAdd,
-                  onCatalogDrawerOpenChange:
-                    handlers.handleCatalogDrawerOpenChange,
                   onShareSceneUrl: handlers.handleShareSceneUrl,
                   onOpenStartOverDialog: handlers.handleOpenStartOverDialog,
                   onConfirmStartOver: handlers.handleConfirmStartOver,

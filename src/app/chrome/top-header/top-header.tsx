@@ -28,11 +28,6 @@ import { topHeaderDialogOpenChange } from './top-header-dialog-bindings'
 import { headerFocusRegistry } from './header-focus-registry'
 
 export function TopHeader({
-  catalog,
-  catalogIdToAdd,
-  onAddFurniture,
-  onCatalogDrawerOpenChange,
-  onCatalogIdToAddChange,
   onConfirmStartOver,
   onOpenStartOverDialog,
   onShareSceneUrl,
@@ -106,14 +101,7 @@ export function TopHeader({
   }
 
   const sharedToolbarProps = {
-    catalog: {
-      catalog,
-      catalogIdToAdd,
-      isCatalogDrawerOpen,
-      onAddFurniture,
-      onCatalogIdToAddChange,
-      onCatalogDrawerOpenChange,
-    },
+    isCatalogDrawerOpen,
     editorInteractionsEnabled,
     floorFinishId,
     floorFinishLoading,

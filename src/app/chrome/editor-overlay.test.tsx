@@ -260,11 +260,6 @@ describe('EditorOverlay integration', () => {
                       <EditorOverlay
                         startOverDisabled={false}
                         topHeader={{
-                          catalog: [],
-                          catalogIdToAdd: '',
-                          onAddFurniture: vi.fn(() => true),
-                          onCatalogIdToAddChange: vi.fn(),
-                          onCatalogDrawerOpenChange: vi.fn(),
                           onShareSceneUrl: vi.fn(() =>
                             Promise.resolve<'shared' | 'copied' | null>(
                               'copied',

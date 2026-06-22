@@ -13,7 +13,7 @@ import { headerFocusRegistry } from './header-focus-registry'
 import type { TopHeaderDesktopProps } from './top-header.types'
 
 export function TopHeaderDesktop({
-  catalog,
+  isCatalogDrawerOpen,
   desktopRoomSidebarRef,
   editorInteractionsEnabled,
   floorFinishId,
@@ -44,16 +44,7 @@ export function TopHeaderDesktop({
           aria-label="Scene building actions"
           className="flex flex-wrap items-center gap-2 rounded-xl border border-border/70 bg-background/75 p-2 backdrop-blur-[2px]"
         >
-          <CatalogDrawer
-            open={catalog.isCatalogDrawerOpen}
-            onOpenChange={catalog.onCatalogDrawerOpenChange}
-            triggerButton={<CatalogAddButton />}
-            catalog={catalog.catalog}
-            catalogIdToAdd={catalog.catalogIdToAdd}
-            editorInteractionsEnabled={editorInteractionsEnabled}
-            onAddFurniture={catalog.onAddFurniture}
-            onCatalogIdToAddChange={catalog.onCatalogIdToAddChange}
-          />
+          <CatalogDrawer triggerButton={<CatalogAddButton />} />
           <div className="flex items-center">
             <Tooltip>
               <TooltipTrigger
@@ -119,7 +110,7 @@ export function TopHeaderDesktop({
         <div className="rounded-xl border border-border/70 bg-background/75 p-2 backdrop-blur-[2px]">
           <div
             className="flex items-center justify-end gap-2"
-            inert={catalog.isCatalogDrawerOpen}
+            inert={isCatalogDrawerOpen}
           >
             <button
               type="button"

@@ -77,11 +77,6 @@ vi.mock('@/features/selection/start-over-confirmation-dialog', () => ({
 function renderTopHeader() {
   return render(
     <TopHeader
-      catalog={[]}
-      catalogIdToAdd=""
-      onAddFurniture={vi.fn(() => true)}
-      onCatalogDrawerOpenChange={vi.fn()}
-      onCatalogIdToAddChange={vi.fn()}
       onConfirmStartOver={vi.fn()}
       onOpenStartOverDialog={vi.fn()}
       onShareSceneUrl={vi.fn(() =>

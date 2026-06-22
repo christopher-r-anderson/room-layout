@@ -30,7 +30,7 @@ function getInitialSceneAssetsState(): SceneAssets {
 // App-facing mirror of the startup-loaded catalog manifest. Startup owns the
 // load; this store lets features read the resolved catalog/collections/finishes
 // through narrow hooks instead of receiving them threaded through app chrome.
-const sceneAssetsStore = createStore<SceneAssetsStoreState>()(
+export const sceneAssetsStore = createStore<SceneAssetsStoreState>()(
   subscribeWithSelector((set, get) => ({
     ...getInitialSceneAssetsState(),
     setSceneAssets: (assets) => {
@@ -66,5 +66,7 @@ export function resetSceneAssetsStore() {
   sceneAssetsActions.reset()
 }
 
+export const useCatalogEntries = () =>
+  useSceneAssetsStore((state) => state.catalog)
 export const useEnvironmentConfig = () =>
   useSceneAssetsStore((state) => state.environmentConfig)

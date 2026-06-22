@@ -11,7 +11,15 @@ import {
   DrawerTrigger,
 } from '@/shared/ui/drawer'
 import { cn } from '@/shared/lib/utils'
-import type { FurnitureCatalogEntry } from '@/scene/objects/furniture-catalog'
+import { useDialogOpen } from '@/editor-state/dialog-store'
+import { useEditorInteractionsEnabled } from '@/editor-state/editor-runtime-store'
+import { useCatalogEntries } from '@/editor-state/scene-assets-store'
+import { addFurniture, setCatalogDrawerOpen } from './catalog-actions'
+import { catalogDialogId } from './catalog-dialog-definition'
+import {
+  catalogSelectionActions,
+  useActiveCatalogId,
+} from './catalog-selection-store'
 
 function formatMeasurement(value: number) {
   return Number(value.toFixed(2)).toString()
@@ -22,26 +30,17 @@ function formatFootprintLabel(width: number, depth: number) {
 }
 
 export function CatalogDrawer({
-  catalog,
-  catalogIdToAdd,
-  editorInteractionsEnabled,
-  onOpenChange,
-  onAddFurniture,
-  onCatalogIdToAddChange,
-  open,
   triggerButton,
 }: {
-  catalog: FurnitureCatalogEntry[]
-  catalogIdToAdd: string
-  editorInteractionsEnabled: boolean
-  onAddFurniture: () => boolean
-  onCatalogIdToAddChange: (catalogId: string) => void
-  onOpenChange: (open: boolean) => void
-  open: boolean
   triggerButton: ReactElement
 }) {
+  const catalog = useCatalogEntries()
+  const catalogIdToAdd = useActiveCatalogId()
+  const editorInteractionsEnabled = useEditorInteractionsEnabled()
+  const open = useDialogOpen(catalogDialogId)
+
   return (
-    <Drawer open={open} onOpenChange={onOpenChange}>
+    <Drawer open={open} onOpenChange={setCatalogDrawerOpen}>
       <DrawerTrigger asChild>{triggerButton}</DrawerTrigger>
       <DrawerContent>
         <DrawerHeader>
@@ -68,7 +67,9 @@ export function CatalogDrawer({
                     checked={isSelected}
                     disabled={!editorInteractionsEnabled}
                     onChange={(event) => {
-                      onCatalogIdToAddChange(event.target.value)
+                      catalogSelectionActions.setSelectedCatalogId(
+                        event.target.value,
+                      )
                     }}
                   />
                   <span
@@ -109,10 +110,10 @@ export function CatalogDrawer({
           <Button
             disabled={!editorInteractionsEnabled || !catalogIdToAdd}
             onClick={() => {
-              const added = onAddFurniture()
+              const added = addFurniture()
 
               if (added) {
-                onOpenChange(false)
+                setCatalogDrawerOpen(false)
               }
             }}
           >

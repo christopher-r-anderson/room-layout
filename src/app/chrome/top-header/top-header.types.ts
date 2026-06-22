@@ -1,4 +1,3 @@
-import type { FurnitureCatalogEntry } from '@/scene/objects/furniture-catalog'
 import type { AppDialogOpenRequest } from '@/app/dialogs/dialog-requests'
 import type {
   FloorFinishOption,
@@ -7,14 +6,7 @@ import type {
 import type { Ref } from 'react'
 
 interface TopHeaderProps {
-  catalog: {
-    catalog: FurnitureCatalogEntry[]
-    catalogIdToAdd: string
-    isCatalogDrawerOpen: boolean
-    onAddFurniture: () => boolean
-    onCatalogIdToAddChange: (catalogId: string) => void
-    onCatalogDrawerOpenChange: (open: boolean) => void
-  }
+  isCatalogDrawerOpen: boolean
   editorInteractionsEnabled: boolean
   history: {
     canRedo: boolean
@@ -36,7 +28,7 @@ interface TopHeaderProps {
 
 type TopHeaderToolbarProps = Pick<
   TopHeaderProps,
-  | 'catalog'
+  | 'isCatalogDrawerOpen'
   | 'editorInteractionsEnabled'
   | 'floorFinishId'
   | 'floorFinishLoading'
@@ -51,11 +43,6 @@ type TopHeaderToolbarProps = Pick<
 >
 
 export interface TopHeaderShellProps {
-  catalog: FurnitureCatalogEntry[]
-  catalogIdToAdd: string
-  onAddFurniture: () => boolean
-  onCatalogIdToAddChange: (catalogId: string) => void
-  onCatalogDrawerOpenChange: (open: boolean) => void
   onShareSceneUrl: () => Promise<'shared' | 'copied' | null>
   onOpenStartOverDialog: (request?: AppDialogOpenRequest) => void
   onConfirmStartOver: () => void

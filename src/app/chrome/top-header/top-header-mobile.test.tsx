@@ -56,14 +56,7 @@ function createProps(
   overrides: Partial<TopHeaderMobileProps> = {},
 ): TopHeaderMobileProps {
   return {
-    catalog: {
-      catalog: [],
-      catalogIdToAdd: '',
-      isCatalogDrawerOpen: false,
-      onAddFurniture: vi.fn(() => true),
-      onCatalogIdToAddChange: vi.fn(),
-      onCatalogDrawerOpenChange: vi.fn(),
-    },
+    isCatalogDrawerOpen: false,
     editorInteractionsEnabled: true,
     floorFinishId: 'wood-floor',
     floorFinishLoading: false,

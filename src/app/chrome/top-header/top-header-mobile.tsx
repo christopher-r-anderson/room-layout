@@ -15,7 +15,7 @@ import { headerFocusRegistry } from './header-focus-registry'
 import type { TopHeaderMobileProps } from './top-header.types'
 
 export function TopHeaderMobile({
-  catalog,
+  isCatalogDrawerOpen,
   editorInteractionsEnabled,
   floorFinishId,
   floorFinishLoading,
@@ -49,16 +49,7 @@ export function TopHeaderMobile({
       >
         <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2">
           <div className="flex min-w-0 flex-wrap items-center gap-2">
-            <CatalogDrawer
-              open={catalog.isCatalogDrawerOpen}
-              onOpenChange={catalog.onCatalogDrawerOpenChange}
-              triggerButton={<CatalogAddButton />}
-              catalog={catalog.catalog}
-              catalogIdToAdd={catalog.catalogIdToAdd}
-              editorInteractionsEnabled={editorInteractionsEnabled}
-              onAddFurniture={catalog.onAddFurniture}
-              onCatalogIdToAddChange={catalog.onCatalogIdToAddChange}
-            />
+            <CatalogDrawer triggerButton={<CatalogAddButton />} />
             <div className="flex items-center">
               <Tooltip>
                 <TooltipTrigger
@@ -90,7 +81,7 @@ export function TopHeaderMobile({
           </div>
           <div
             className="flex items-center gap-2 justify-self-end"
-            inert={catalog.isCatalogDrawerOpen}
+            inert={isCatalogDrawerOpen}
           >
             <HistoryTools
               canRedo={history.canRedo}
