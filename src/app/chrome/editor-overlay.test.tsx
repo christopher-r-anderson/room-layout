@@ -261,26 +261,6 @@ describe('EditorOverlay integration', () => {
                         startOverDisabled={false}
                         topHeader={{
                           catalog: [],
-                          environmentConfig: {
-                            defaultFloorFinishId: 'wood-floor',
-                            defaultWallFinishId: 'light-gray',
-                            floorFinishes: [
-                              {
-                                id: 'wood-floor',
-                                label: 'Wood',
-                                diffusePath: '/textures/wood.jpg',
-                                normalPath: '/textures/wood-normal.png',
-                                tileSizeMeters: { width: 0.5, depth: 0.5 },
-                              },
-                            ],
-                            wallFinishes: [
-                              {
-                                id: 'light-gray',
-                                label: 'Light Gray',
-                                color: 0xf5f5f5,
-                              },
-                            ],
-                          },
                           catalogIdToAdd: '',
                           onAddFurniture: vi.fn(() => true),
                           onCatalogIdToAddChange: vi.fn(),

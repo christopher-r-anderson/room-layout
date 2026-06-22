@@ -1,7 +1,6 @@
 import type { FurnitureCatalogEntry } from '@/scene/objects/furniture-catalog'
 import type { AppDialogOpenRequest } from '@/app/dialogs/dialog-requests'
 import type {
-  EnvironmentMaterialConfig,
   FloorFinishOption,
   WallFinishOption,
 } from '@/shared/lib/three/environment-materials'
@@ -53,7 +52,6 @@ type TopHeaderToolbarProps = Pick<
 
 export interface TopHeaderShellProps {
   catalog: FurnitureCatalogEntry[]
-  environmentConfig: EnvironmentMaterialConfig | null
   catalogIdToAdd: string
   onAddFurniture: () => boolean
   onCatalogIdToAddChange: (catalogId: string) => void

@@ -16,6 +16,7 @@ import {
   useEditorInteractionsEnabled,
   useFloorFinishLoading,
 } from '@/editor-state/editor-runtime-store'
+import { useEnvironmentConfig } from '@/editor-state/scene-assets-store'
 import { useActiveFinishIds } from '@/app/controllers/_shared/use-active-finish-ids'
 import {
   sceneStateActions,
@@ -28,7 +29,6 @@ import { headerFocusRegistry } from './header-focus-registry'
 
 export function TopHeader({
   catalog,
-  environmentConfig,
   catalogIdToAdd,
   onAddFurniture,
   onCatalogDrawerOpenChange,
@@ -41,6 +41,7 @@ export function TopHeader({
   desktopRoomSidebarRef,
   mobileRoomDrawerRef,
 }: TopHeaderContainerProps) {
+  const environmentConfig = useEnvironmentConfig()
   const editorInteractionsEnabled = useEditorInteractionsEnabled()
   const historyAvailability = useHistoryAvailability()
   const storedFloorFinishId = useFloorFinishId()

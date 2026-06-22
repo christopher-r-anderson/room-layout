@@ -14,6 +14,7 @@ import {
   type FurnitureCollection,
 } from '@/scene/objects/furniture-catalog'
 import { editorRuntimeActions } from '@/editor-state/editor-runtime-store'
+import { sceneAssetsActions } from '@/editor-state/scene-assets-store'
 import type { StartupErrorKind } from '@/editor-state/types/startup.types'
 import {
   fetchCatalogManifest,
@@ -232,6 +233,16 @@ export function useStartupState(): StartupState {
 
     editorRuntimeActions.markLoading()
   }, [assetError, assetErrorKind, assetsReady])
+
+  // Mirror the loaded manifest into the scene-assets store so features can read
+  // catalog/collections/finishes through narrow hooks instead of threaded props.
+  useEffect(() => {
+    sceneAssetsActions.setSceneAssets({
+      catalog,
+      collections,
+      environmentConfig,
+    })
+  }, [catalog, collections, environmentConfig])
 
   // Fetch the runtime catalog manifest and preload the resolved collections.
   useEffect(() => {

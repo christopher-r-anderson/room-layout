@@ -8,11 +8,37 @@ import {
   resetEditorRuntimeStore,
 } from '@/editor-state/editor-runtime-store'
 import { sceneStateActions } from '@/editor-state/scene-state-store'
+import {
+  resetSceneAssetsStore,
+  sceneAssetsActions,
+} from '@/editor-state/scene-assets-store'
+import type { EnvironmentMaterialConfig } from '@/shared/lib/three/environment-materials'
 import { TopHeader } from './top-header'
 import type {
   TopHeaderDesktopProps,
   TopHeaderMobileProps,
 } from './top-header.types'
+
+const ENVIRONMENT: EnvironmentMaterialConfig = {
+  defaultFloorFinishId: 'wood-floor',
+  defaultWallFinishId: 'light-gray',
+  floorFinishes: [
+    {
+      id: 'wood-floor',
+      label: 'Wood',
+      diffusePath: '/textures/wood.jpg',
+      normalPath: '/textures/wood-normal.png',
+      tileSizeMeters: { width: 0.5, depth: 0.5 },
+    },
+  ],
+  wallFinishes: [
+    {
+      id: 'light-gray',
+      label: 'Light Gray',
+      color: 0xf5f5f5,
+    },
+  ],
+}
 
 vi.mock('@/features/shell/use-header-layout-mode', () => ({
   useHeaderLayoutMode: () => 'desktop' as const,
@@ -52,26 +78,6 @@ function renderTopHeader() {
   return render(
     <TopHeader
       catalog={[]}
-      environmentConfig={{
-        defaultFloorFinishId: 'wood-floor',
-        defaultWallFinishId: 'light-gray',
-        floorFinishes: [
-          {
-            id: 'wood-floor',
-            label: 'Wood',
-            diffusePath: '/textures/wood.jpg',
-            normalPath: '/textures/wood-normal.png',
-            tileSizeMeters: { width: 0.5, depth: 0.5 },
-          },
-        ],
-        wallFinishes: [
-          {
-            id: 'light-gray',
-            label: 'Light Gray',
-            color: 0xf5f5f5,
-          },
-        ],
-      }}
       catalogIdToAdd=""
       onAddFurniture={vi.fn(() => true)}
       onCatalogDrawerOpenChange={vi.fn()}
@@ -90,6 +96,12 @@ describe('TopHeader', () => {
     resetDialogStore()
     resetEditorRuntimeStore()
     sceneStateActions.resetSceneState()
+    resetSceneAssetsStore()
+    sceneAssetsActions.setSceneAssets({
+      catalog: [],
+      collections: [],
+      environmentConfig: ENVIRONMENT,
+    })
     editorRuntimeActions.markAssetsReady()
   })
 

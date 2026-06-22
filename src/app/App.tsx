@@ -453,7 +453,6 @@ function App() {
                 startOverDisabled: sceneIsAtDefaults,
                 topHeader: {
                   catalog: startup.catalog,
-                  environmentConfig,
                   catalogIdToAdd: activeCatalogIdToAdd,
                   onAddFurniture: handlers.handleAddFurniture,
                   onCatalogIdToAddChange: setCatalogIdToAdd,
