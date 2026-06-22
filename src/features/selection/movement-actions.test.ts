@@ -1,15 +1,17 @@
 // @vitest-environment jsdom
-
-import { act, renderHook } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createHistoryState } from '@/shared/lib/ui/editor-history'
 import {
   resetSceneStateStore,
   sceneStateActions,
 } from '@/editor-state/scene-state-store'
+import {
+  editorRuntimeActions,
+  resetEditorRuntimeStore,
+} from '@/editor-state/editor-runtime-store'
 import { sceneCommands } from '@/scene/scene-commands'
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
-import { useMovementController } from './use-movement-controller'
+import { moveSelection, rotateSelection } from './movement-actions'
 
 vi.mock('@/editor-state/announcement-store', () => ({
   announcementActions: {
@@ -34,11 +36,13 @@ const CHAIR: FurnitureItem = {
   sourcePath: '/models/chair.glb',
 }
 
-describe('useMovementController', () => {
+describe('movement-actions', () => {
   beforeEach(() => {
     resetSceneStateStore()
+    resetEditorRuntimeStore()
     sceneStateActions.setHistory(createHistoryState([CHAIR]))
     sceneStateActions.setSelectedId(CHAIR.id)
+    editorRuntimeActions.markAssetsReady()
   })
 
   afterEach(() => {
@@ -47,64 +51,44 @@ describe('useMovementController', () => {
   })
 
   it('does not invoke scene movement commands while interactions are disabled', () => {
+    resetEditorRuntimeStore()
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
-    const moveSelection = vi
+    const moveSelectionSpy = vi
       .spyOn(sceneCommands, 'moveSelection')
       .mockReturnValue({ ok: true, position: [1, 0, 0] })
-    const rotateSelection = vi
+    const rotateSelectionSpy = vi
       .spyOn(sceneCommands, 'rotateSelection')
       .mockImplementation(() => undefined)
 
-    const { result } = renderHook(() =>
-      useMovementController({
-        editorInteractionsEnabled: false,
-        rotationStepRadians: Math.PI / 12,
-      }),
-    )
-
-    expect(result.current.handleMoveSelection({ x: 1, z: 0 })).toEqual({
+    expect(moveSelection({ x: 1, z: 0 })).toEqual({
       ok: false,
       reason: 'no-selection',
     })
-    result.current.handleRotateSelection(1)
+    rotateSelection(1)
 
-    expect(moveSelection).not.toHaveBeenCalled()
-    expect(rotateSelection).not.toHaveBeenCalled()
+    expect(moveSelectionSpy).not.toHaveBeenCalled()
+    expect(rotateSelectionSpy).not.toHaveBeenCalled()
   })
 
   it('forwards enabled move and rotate commands to the scene', () => {
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
-    const moveSelection = vi
+    const moveSelectionSpy = vi
       .spyOn(sceneCommands, 'moveSelection')
       .mockReturnValue({ ok: true, position: [1, 0, 0] })
-    const rotateSelection = vi
+    const rotateSelectionSpy = vi
       .spyOn(sceneCommands, 'rotateSelection')
       .mockImplementation(() => undefined)
 
-    const { result } = renderHook(() =>
-      useMovementController({
-        editorInteractionsEnabled: true,
-        rotationStepRadians: Math.PI / 12,
-      }),
-    )
-
-    expect(
-      result.current.handleMoveSelection(
-        { x: 1, z: 0 },
-        { source: 'keyboard' },
-      ),
-    ).toEqual({
+    expect(moveSelection({ x: 1, z: 0 }, { source: 'keyboard' })).toEqual({
       ok: true,
       position: [1, 0, 0],
     })
-    act(() => {
-      result.current.handleRotateSelection(1)
-    })
+    rotateSelection(1)
 
-    expect(moveSelection).toHaveBeenCalledWith(
+    expect(moveSelectionSpy).toHaveBeenCalledWith(
       { x: 1, z: 0 },
       { source: 'keyboard' },
     )
-    expect(rotateSelection).toHaveBeenCalledWith(Math.PI / 12)
+    expect(rotateSelectionSpy).toHaveBeenCalledWith(Math.PI / 12)
   })
 })

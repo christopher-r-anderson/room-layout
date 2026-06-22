@@ -18,7 +18,10 @@ import { announcementActions } from '@/editor-state/announcement-store'
 import { usePreviewController } from '@/app/controllers/use-preview-controller'
 import { startSelectionEffectsReconciler } from '@/editor-state/selection-effects'
 import { useSelectionController } from '@/app/controllers/use-selection-controller'
-import { useMovementController } from '@/app/controllers/use-movement-controller'
+import {
+  moveSelection,
+  rotateSelection,
+} from '@/features/selection/movement-actions'
 import { redo, undo } from '@/features/history/history-actions'
 import { useDeletionController } from '@/app/controllers/use-deletion-controller'
 import { useCatalogController } from '@/app/controllers/use-catalog-controller'
@@ -54,7 +57,6 @@ import { useRequestOutlinerFocus } from '@/app/controllers/use-request-outliner-
 import { perfCounters } from '@/shared/debug/perf-counters'
 import { useDraftPersistence } from '@/features/url-scene/use-draft-persistence'
 import { sceneCommands } from '@/scene/scene-commands'
-import { ROTATION_STEP_RADIANS } from '@/app/controllers/_shared/constants'
 import { useActiveFinishIds } from '@/app/controllers/_shared/use-active-finish-ids'
 import { useTestStateBridge } from './testing/use-test-state-bridge'
 import {
@@ -257,10 +259,6 @@ function App() {
     editorInteractionsEnabled: startup.editorInteractionsEnabled,
   })
   const { handleSelectById } = selectionController
-  const movementController = useMovementController({
-    editorInteractionsEnabled: startup.editorInteractionsEnabled,
-    rotationStepRadians: ROTATION_STEP_RADIANS,
-  })
   const deletionController = useDeletionController({
     closeActiveDialog: dialogActions.closeActiveDialog,
     openDeleteDialog: () => dialogActions.openDialog(DIALOG_IDS.delete),
@@ -327,7 +325,6 @@ function App() {
   }, [])
   const handlers = {
     ...selectionController,
-    ...movementController,
     ...deletionController,
     ...catalogController,
     ...startOverController,
@@ -422,13 +419,13 @@ function App() {
     },
     focusSelected: handlers.handleFocusSelected,
     moveSelection: (delta) => {
-      handlers.handleMoveSelection(delta, { source: 'keyboard' })
+      moveSelection(delta, { source: 'keyboard' })
     },
     clearSelection: () => {
       handlers.handleClearSelection()
       clearPreviewOnCanvasMiss()
     },
-    rotate: handlers.handleRotateSelection,
+    rotate: rotateSelection,
     setCameraPreset: handlers.handleSetCameraPreset,
     canvasBrowse: handleCanvasBrowse,
     canvasSelectPreviewed: handleCanvasSelectPreviewed,
