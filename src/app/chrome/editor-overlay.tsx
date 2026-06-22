@@ -62,9 +62,7 @@ function EditorOverlayDialogs() {
   )
 }
 
-export function EditorOverlay({
-  topHeader,
-}: EditorOverlayProps) {
+export function EditorOverlay({ topHeader }: EditorOverlayProps) {
   const { registerExclusionElement } = useOverlayLayout()
   const hasSelection = useHasSelection()
   const startupOverlayActive = useStartupOverlayActive()

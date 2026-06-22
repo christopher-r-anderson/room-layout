@@ -5,7 +5,10 @@ import { sceneCommands, clearSceneServices } from '@/scene/scene-commands'
 import { clearFurnitureCollectionCache } from '@/scene/objects/furniture-catalog'
 import { announcementActions } from './announcement-store'
 import { dialogActions } from './dialog-store'
-import { editorRuntimeActions, editorRuntimeStore } from './editor-runtime-store'
+import {
+  editorRuntimeActions,
+  editorRuntimeStore,
+} from './editor-runtime-store'
 import { sceneAssetsStore } from './scene-assets-store'
 import { sceneStateActions } from './scene-state-store'
 import { resetSelectionMetaStore } from './selection-meta-store'
@@ -19,7 +22,8 @@ import {
 import { runStartupRestoreFlow } from './restore-flow'
 import type { RestorableState } from './restore-flow.types'
 
-const ASSET_ERROR_MESSAGE = 'Unable to load room editor assets. Retry available.'
+const ASSET_ERROR_MESSAGE =
+  'Unable to load room editor assets. Retry available.'
 
 // Resets the editor surface back to a clean slate. Used by the asset-error and
 // retry transitions so a failed or restarted load never leaves stale scene or

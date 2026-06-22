@@ -5,10 +5,7 @@ import {
   editorRuntimeStore,
   resetEditorRuntimeStore,
 } from './editor-runtime-store'
-import {
-  resetSceneAssetsStore,
-  sceneAssetsActions,
-} from './scene-assets-store'
+import { resetSceneAssetsStore, sceneAssetsActions } from './scene-assets-store'
 import { dialogActions } from './dialog-store'
 import { announcementActions } from './announcement-store'
 import { selectionEffects } from './selection-effects'
