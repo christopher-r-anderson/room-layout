@@ -1,9 +1,23 @@
 # Plan: Documentation Reconciliation (final stage)
 
-> **Status:** deferred — run as the **final stage**, after the runtime refactors
-> (§6.1 selection-effects, §6.2 controller→coordinator migration, §6.3 overlay
-> de-threading, and the seam-model/lint changes) have landed and stabilized.
-> Branch `editor-surface-keyboard-architecture-refactor`.
+> **Status:** ✅ **done.** The runtime refactors (§6.1–6.3 + the startup
+> restructure) landed; the canonical docs, all five layer READMEs, and the agent
+> architecture policy were reconciled to the editor-state coordinator model, and
+> the shipped per-phase plans were retired. Branch
+> `editor-surface-keyboard-architecture-refactor`.
+>
+> What was reconciled:
+>
+> - `docs/architecture-boundaries.md` — cross-feature ban, coordinators-in-
+>   editor-state, app composition-only placement rules; controller-ownership note.
+> - `docs/editor-state-architecture.md` — coordination modules, selection-effects
+>   startup-subscription, `scene-assets-store`, runtime-store epoch/token; stale
+>   "controller" framing replaced with editor-state coordinators.
+> - `src/{app,features,editor-state}/README.md` + `.agents/policies/architecture.md`
+>   — coordinator placement, cross-feature ban, dialog-store cross-store framing.
+> - Feature-facing docs needed no change (the refactor was internal; no behavior
+>   or user-facing naming changed).
+> - Retired the shipped per-phase plans; kept this doc and the handover narrative.
 
 ## Why this is deferred
 

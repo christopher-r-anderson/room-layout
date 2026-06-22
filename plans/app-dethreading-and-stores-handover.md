@@ -161,8 +161,8 @@ content unchanged). Run `git log --format='%h %s' main..HEAD` for the live list.
 `refactor(surface/layout/editor-surface): inspector parity, DOM order, flatten
 overlay`. Established a canonical selection inspector, deterministic DOM/focus
 order, explicit pane-navigation shortcuts, and **explicit focus-intent state**
-(no persisted "selected-source" inference). Canonical doc:
-`plans/editor-surface-keyboard-architecture-refactor.md`. **Why it's relevant:**
+(no persisted "selected-source" inference). (Plan retired; shipped.)
+**Why it's relevant:**
 it created `selection-meta-store` (selection source + outliner focus requests)
 and the focus-intent model that the later selection-effects logic and the
 command focus-pane actions depend on.
@@ -171,8 +171,9 @@ command focus-pane actions depend on.
 
 `refactor(dialogs): migrate to registry-driven active surface model` →
 `harden selection interactivity and sharpen dialog boundaries` →
-`refactor(top-header): own dialog focus return via header registry`. Plan:
-`plans/dialog-refactor-cleanup.md`. Replaced hardcoded per-dialog App wiring with
+`refactor(top-header): own dialog focus return via header registry`. (Plan
+retired; shipped — see `docs/editor-state-architecture.md` § Dialog
+Orchestration.) Replaced hardcoded per-dialog App wiring with
 a **generic `dialog-store` + feature-owned `DialogDefinition`s + a single app
 bootstrap** (`src/app/dialogs/`). Feature definitions declare `kind`, open
 guards, and payload derivation without importing app-shell code.
@@ -399,7 +400,7 @@ it warrants a dedicated spike + plan before code.
 
 - Boundary policy: `docs/architecture-boundaries.md`, `eslint.config.js`.
 - Editor-state responsibilities: `docs/editor-state-architecture.md`.
-- Dialog reorg (the template): `plans/dialog-refactor-cleanup.md`.
-- Surface/keyboard precursor: `plans/editor-surface-keyboard-architecture-refactor.md`.
+- Dialog reorg + surface/keyboard precursor: plans retired (shipped); durable
+  detail lives in `docs/editor-state-architecture.md` and the git history.
 - Agent contract + task routing: `AGENTS.md`, `.agents/policies/*`.
 - Live history: `git log --format='%h %s' main..HEAD`.
