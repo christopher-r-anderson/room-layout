@@ -25,7 +25,7 @@ type SaveSceneDraftArgs = [
 const saveSceneDraft = vi.fn<(...args: SaveSceneDraftArgs) => void>()
 const clearSceneDraft = vi.fn<() => void>()
 
-vi.mock('./scene-draft', () => ({
+vi.mock('@/editor-state/scene-draft', () => ({
   saveSceneDraft: (...args: SaveSceneDraftArgs) => {
     saveSceneDraft(...args)
   },

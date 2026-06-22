@@ -11,10 +11,7 @@ import {
   parseSceneUrl,
   validateCatalogReferences,
 } from '@/features/url-scene/scene-url'
-import {
-  loadSceneDraft,
-  saveSceneDraft,
-} from '@/features/url-scene/scene-draft'
+import { loadSceneDraft, saveSceneDraft } from '@/editor-state/scene-draft'
 import { createDefaultSceneState } from '@/shared/lib/three/scene-defaults'
 import { isSceneStateAtDefaults } from '@/shared/lib/three/scene-model'
 import { sceneCommands } from '@/scene/scene-commands'

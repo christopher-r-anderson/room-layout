@@ -7,7 +7,7 @@ import {
   sceneStateStore,
 } from '@/editor-state/scene-state-store'
 import { sceneCommands } from '@/scene/scene-commands'
-import { clearSceneDraft } from '@/features/url-scene/scene-draft'
+import { clearSceneDraft } from '@/editor-state/scene-draft'
 import { announcementActions } from '@/editor-state/announcement-store'
 import { selectionEffects } from '@/editor-state/selection-effects'
 import { useStartOverController } from './use-start-over-controller'
@@ -32,7 +32,7 @@ vi.mock('@/editor-state/announcement-store', () => ({
   },
 }))
 
-vi.mock('@/features/url-scene/scene-draft', () => ({
+vi.mock('@/editor-state/scene-draft', () => ({
   clearSceneDraft: vi.fn(),
 }))
 

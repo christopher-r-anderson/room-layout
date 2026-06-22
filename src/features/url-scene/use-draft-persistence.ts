@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import type { EnvironmentMaterialConfig } from '@/shared/lib/three/environment-materials'
 import { editorRuntimeStore } from '@/editor-state/editor-runtime-store'
 import { sceneStateStore } from '@/editor-state/scene-state-store'
-import { clearSceneDraft, saveSceneDraft } from './scene-draft'
+import { clearSceneDraft, saveSceneDraft } from '@/editor-state/scene-draft'
 import { isFreshSceneState } from '@/shared/lib/three/scene-defaults'
 
 interface UseDraftPersistenceOptions {

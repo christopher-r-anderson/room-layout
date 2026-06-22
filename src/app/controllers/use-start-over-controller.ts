@@ -3,7 +3,7 @@ import type { AppDialogOpenRequest } from '@/app/dialogs/dialog-requests'
 import { announcementActions } from '@/editor-state/announcement-store'
 import { sceneStateActions } from '@/editor-state/scene-state-store'
 import { sceneCommands } from '@/scene/scene-commands'
-import { clearSceneDraft } from '@/features/url-scene/scene-draft'
+import { clearSceneDraft } from '@/editor-state/scene-draft'
 import { toast } from 'sonner'
 import { selectionEffects } from '@/editor-state/selection-effects'
 

@@ -40,7 +40,7 @@ vi.mock('./_shared/restore-flow', () => ({
   runStartupRestoreFlow: vi.fn(),
 }))
 
-vi.mock('@/features/url-scene/scene-draft', () => ({
+vi.mock('@/editor-state/scene-draft', () => ({
   loadSceneDraft: vi.fn().mockReturnValue(null),
   saveSceneDraft: vi.fn(),
 }))
