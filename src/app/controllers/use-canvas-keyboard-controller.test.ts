@@ -4,6 +4,7 @@ import { act, renderHook } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { sceneCommands } from '@/scene/scene-commands'
 import { announcementActions } from '@/editor-state/announcement-store'
+import { selectById } from '@/features/selection/selection-actions'
 import { useCanvasKeyboardController } from './use-canvas-keyboard-controller'
 
 vi.mock('@/editor-state/announcement-store', () => ({
@@ -16,13 +17,18 @@ vi.mock('@/editor-state/announcement-store', () => ({
   },
 }))
 
+vi.mock('@/features/selection/selection-actions', () => ({
+  selectById: vi.fn(() => ({ ok: true, status: 'selected' }) as const),
+  selectByCanvasPointer: vi.fn(),
+  clearSelection: vi.fn(),
+}))
+
 function createOptions(
   overrides?: Partial<Parameters<typeof useCanvasKeyboardController>[0]>,
 ) {
   return {
     previewedId: null,
     applyCanvasKeyboardPreviewChange: vi.fn(),
-    handleSelectById: vi.fn(() => ({ ok: true, status: 'selected' }) as const),
     ...overrides,
   }
 }
@@ -136,10 +142,7 @@ describe('useCanvasKeyboardController', () => {
       result.current.handleCanvasSelectPreviewed()
     })
 
-    expect(options.handleSelectById).toHaveBeenCalledWith(
-      'right',
-      'canvas-keyboard',
-    )
+    expect(selectById).toHaveBeenCalledWith('right', 'canvas-keyboard')
     expect(options.applyCanvasKeyboardPreviewChange).toHaveBeenLastCalledWith(
       null,
     )

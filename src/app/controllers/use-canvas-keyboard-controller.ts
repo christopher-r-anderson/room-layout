@@ -1,17 +1,12 @@
 import { useCallback, useEffect, useRef, type RefObject } from 'react'
-import type { SelectByIdResult } from '@/scene/scene.types'
-import type { InteractionSource } from '@/editor-state/types/interaction.types'
 import { announcementActions } from '@/editor-state/announcement-store'
+import { selectById } from '@/features/selection/selection-actions'
 import { sceneCommands } from '@/scene/scene-commands'
 import { sortSpatially } from '@/shared/lib/three/spatial-sort'
 
 interface UseCanvasKeyboardControllerOptions {
   previewedId: string | null
   applyCanvasKeyboardPreviewChange: (id: string | null) => void
-  handleSelectById: (
-    id: string | null,
-    source?: InteractionSource,
-  ) => SelectByIdResult
 }
 
 interface CanvasKeyboardController {
@@ -24,7 +19,6 @@ interface CanvasKeyboardController {
 export function useCanvasKeyboardController({
   previewedId,
   applyCanvasKeyboardPreviewChange,
-  handleSelectById,
 }: UseCanvasKeyboardControllerOptions): CanvasKeyboardController {
   const previewedIdRef = useRef<string | null>(null)
 
@@ -88,9 +82,9 @@ export function useCanvasKeyboardController({
       return
     }
 
-    handleSelectById(id, 'canvas-keyboard')
+    selectById(id, 'canvas-keyboard')
     handleCanvasKeyboardPreviewChange(null)
-  }, [handleCanvasKeyboardPreviewChange, handleSelectById])
+  }, [handleCanvasKeyboardPreviewChange])
 
   return {
     previewedIdRef,

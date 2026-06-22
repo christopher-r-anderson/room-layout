@@ -17,7 +17,11 @@ import {
 import { announcementActions } from '@/editor-state/announcement-store'
 import { usePreviewController } from '@/app/controllers/use-preview-controller'
 import { startSelectionEffectsReconciler } from '@/editor-state/selection-effects'
-import { useSelectionController } from '@/app/controllers/use-selection-controller'
+import {
+  clearSelection,
+  selectByCanvasPointer,
+  selectById,
+} from '@/features/selection/selection-actions'
 import {
   moveSelection,
   rotateSelection,
@@ -255,10 +259,6 @@ function App() {
     selectionMetaActions.clearOutlinerFocusRequest()
   }, [isBlockingOverlayOpen, outlinerFocusRequest])
 
-  const selectionController = useSelectionController({
-    editorInteractionsEnabled: startup.editorInteractionsEnabled,
-  })
-  const { handleSelectById } = selectionController
   const deletionController = useDeletionController({
     closeActiveDialog: dialogActions.closeActiveDialog,
     openDeleteDialog: () => dialogActions.openDialog(DIALOG_IDS.delete),
@@ -324,7 +324,6 @@ function App() {
     editorRuntimeActions.setFloorFinishLoading(loading)
   }, [])
   const handlers = {
-    ...selectionController,
     ...deletionController,
     ...catalogController,
     ...startOverController,
@@ -343,7 +342,6 @@ function App() {
     useCanvasKeyboardController({
       previewedId,
       applyCanvasKeyboardPreviewChange,
-      handleSelectById,
     })
 
   const handleFocusInspector = useCallback(() => {
@@ -422,7 +420,7 @@ function App() {
       moveSelection(delta, { source: 'keyboard' })
     },
     clearSelection: () => {
-      handlers.handleClearSelection()
+      clearSelection()
       clearPreviewOnCanvasMiss()
     },
     rotate: rotateSelection,
@@ -456,10 +454,10 @@ function App() {
               clearPreviewOnCanvasMiss={clearPreviewOnCanvasMiss}
               onScenePreviewChange={handleScenePreviewChange}
               onFloorLoadingChange={handleFloorLoadingChange}
-              onCanvasPointerSelection={handlers.handleCanvasPointerSelection}
+              onCanvasPointerSelection={selectByCanvasPointer}
               onSceneAssetsReady={handlers.handleSceneAssetsReady}
               onSceneAssetError={handlers.handleSceneAssetError}
-              onClearSelection={handlers.handleClearSelection}
+              onClearSelection={clearSelection}
               editorOverlay={{
                 startOverDisabled: sceneIsAtDefaults,
                 topHeader: {
@@ -475,7 +473,7 @@ function App() {
                   onConfirmStartOver: handlers.handleConfirmStartOver,
                 },
                 outliner: {
-                  onSelectById: handlers.handleSelectById,
+                  onSelectById: selectById,
                   onPreviewChange: handleOutlinerPreviewChange,
                 },
                 onConfirmDeleteSelection: handlers.handleConfirmDeleteSelection,

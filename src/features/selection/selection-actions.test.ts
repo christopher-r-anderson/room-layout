@@ -1,6 +1,4 @@
 // @vitest-environment jsdom
-
-import { act, renderHook } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createHistoryState } from '@/shared/lib/ui/editor-history'
 import {
@@ -12,9 +10,17 @@ import {
   resetSelectionMetaStore,
   selectionMetaStore,
 } from '@/editor-state/selection-meta-store'
+import {
+  editorRuntimeActions,
+  resetEditorRuntimeStore,
+} from '@/editor-state/editor-runtime-store'
 import { sceneCommands } from '@/scene/scene-commands'
 import { selectionEffects } from '@/editor-state/selection-effects'
-import { useSelectionController } from './use-selection-controller'
+import {
+  clearSelection,
+  selectByCanvasPointer,
+  selectById,
+} from './selection-actions'
 
 vi.mock('@/editor-state/selection-effects', () => ({
   selectionEffects: {
@@ -39,11 +45,13 @@ const CHAIR = {
   sourcePath: '/models/chair.glb',
 }
 
-describe('useSelectionController', () => {
+describe('selection-actions', () => {
   beforeEach(() => {
     resetSceneStateStore()
     resetSelectionMetaStore()
+    resetEditorRuntimeStore()
     sceneStateActions.setHistory(createHistoryState([CHAIR]))
+    editorRuntimeActions.markAssetsReady()
   })
 
   afterEach(() => {
@@ -52,37 +60,23 @@ describe('useSelectionController', () => {
   })
 
   it('skips scene commands when interactions are disabled', () => {
+    resetEditorRuntimeStore()
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
-    const selectById = vi.spyOn(sceneCommands, 'selectById')
-    const clearSelection = vi.spyOn(sceneCommands, 'clearSelection')
+    const selectByIdSpy = vi.spyOn(sceneCommands, 'selectById')
+    const clearSelectionSpy = vi.spyOn(sceneCommands, 'clearSelection')
 
-    const { result } = renderHook(() =>
-      useSelectionController({
-        editorInteractionsEnabled: false,
-      }),
-    )
-
-    expect(
-      result.current.handleSelectById('chair-1', 'panel-keyboard'),
-    ).toEqual({ ok: false, status: 'not-found' })
-    act(() => {
-      result.current.handleClearSelection()
+    expect(selectById('chair-1', 'panel-keyboard')).toEqual({
+      ok: false,
+      status: 'not-found',
     })
+    clearSelection()
 
-    expect(selectById).not.toHaveBeenCalled()
-    expect(clearSelection).not.toHaveBeenCalled()
+    expect(selectByIdSpy).not.toHaveBeenCalled()
+    expect(clearSelectionSpy).not.toHaveBeenCalled()
   })
 
   it('reconciles canvas pointer selection through selectionEffects', () => {
-    const { result } = renderHook(() =>
-      useSelectionController({
-        editorInteractionsEnabled: true,
-      }),
-    )
-
-    act(() => {
-      result.current.handleCanvasPointerSelection('chair-1')
-    })
+    selectByCanvasPointer('chair-1')
 
     expect(selectionEffects.notePendingSelection).toHaveBeenCalledWith({
       announceMode: 'default',
@@ -97,15 +91,7 @@ describe('useSelectionController', () => {
   it('clears pending source when toggling the same selection off via canvas pointer', () => {
     sceneStateActions.setSelectedId('chair-1')
 
-    const { result } = renderHook(() =>
-      useSelectionController({
-        editorInteractionsEnabled: true,
-      }),
-    )
-
-    act(() => {
-      result.current.handleCanvasPointerSelection('chair-1')
-    })
+    selectByCanvasPointer('chair-1')
 
     expect(selectionEffects.notePendingSelection).toHaveBeenCalledWith(null)
     expect(selectionEffects.notePendingSource).toHaveBeenCalledWith(null)
@@ -118,15 +104,7 @@ describe('useSelectionController', () => {
       return { ok: true, status: 'selected' }
     })
 
-    const { result } = renderHook(() =>
-      useSelectionController({
-        editorInteractionsEnabled: true,
-      }),
-    )
-
-    act(() => {
-      result.current.handleSelectById('chair-1', 'panel-keyboard')
-    })
+    selectById('chair-1', 'panel-keyboard')
 
     expect(selectionEffects.notePendingSelection).toHaveBeenLastCalledWith({
       announceMode: 'panel-keyboard',
@@ -141,21 +119,13 @@ describe('useSelectionController', () => {
   it('clears the editor message and pending behavior on clear selection', () => {
     sceneStateActions.setEditorMessage('stale')
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
-    const clearSelection = vi
+    const clearSelectionSpy = vi
       .spyOn(sceneCommands, 'clearSelection')
       .mockImplementation(() => undefined)
 
-    const { result } = renderHook(() =>
-      useSelectionController({
-        editorInteractionsEnabled: true,
-      }),
-    )
+    clearSelection()
 
-    act(() => {
-      result.current.handleClearSelection()
-    })
-
-    expect(clearSelection).toHaveBeenCalled()
+    expect(clearSelectionSpy).toHaveBeenCalled()
     expect(selectionEffects.notePendingSelection).toHaveBeenCalledWith({
       announceMode: 'default',
       requestOutlinerFocus: false,
