@@ -30,7 +30,11 @@ import {
   openDeleteDialog,
   openDeleteDialogFromRoomView,
 } from '@/features/selection/deletion-actions'
-import { useAssetLifecycleController } from '@/app/controllers/use-asset-lifecycle-controller'
+import {
+  completeAssetLoad,
+  notifyAssetError,
+  requestAssetRetry,
+} from '@/editor-state/startup-coordinator'
 import { useShareController } from '@/app/controllers/use-share-controller'
 import { useCanvasKeyboardController } from '@/app/controllers/use-canvas-keyboard-controller'
 import { EditorRefsProvider } from '@/shared/providers/editor-refs-provider'
@@ -39,20 +43,15 @@ import { useCommandDispatchValue } from '@/editor-state/command-dispatch-context
 import type { EditorCommandApi } from '@/editor-state/editor-command'
 import {
   editorRuntimeActions,
-  useAssetError,
   useEditorInteractionsEnabled,
-  useStartupLoadingActive,
-  useStartupOverlayActive,
-  useStartupPhase,
 } from '@/editor-state/editor-runtime-store'
+import { useEnvironmentConfig } from '@/editor-state/scene-assets-store'
 import { TooltipProvider } from '@/shared/ui/tooltip'
-import { runStartupReset } from '@/features/startup/reset-startup-state'
-import { useStartupState } from '@/features/startup/use-startup-state'
+import { useStartupBootstrap } from '@/features/startup/use-startup-bootstrap'
 import { EditorBody } from './chrome/editor-body'
 import { EditorShell } from './chrome/editor-shell'
 import { findFirstActionableInspectorControl } from './chrome/focusable-controls'
 import {
-  resetSelectionMetaStore,
   selectionMetaActions,
   useOutlinerFocusRequest,
 } from '@/editor-state/selection-meta-store'
@@ -84,65 +83,9 @@ function App() {
     import.meta.env.DEV && import.meta.env.VITE_E2E_RENDER_QUALITY === 'low'
   const canvasShadowMode = isE2ELowRenderQuality ? false : 'percentage'
 
-  const resetOverlayShellState = useCallback(() => {
-    sceneStateActions.resetSceneState()
-    resetSelectionMetaStore()
-  }, [])
-
-  const {
-    catalog,
-    collections,
-    environmentConfig: startupEnvironmentConfig,
-    cacheInvalidationKey,
-    handleAssetError,
-    handleAssetsReady,
-    retryAssetLoading,
-  } = useStartupState()
-  const assetError = useAssetError()
+  useStartupBootstrap()
   const editorInteractionsEnabled = useEditorInteractionsEnabled()
-  const startupLoadingActive = useStartupLoadingActive()
-  const startupOverlayActive = useStartupOverlayActive()
-  const startupPhase = useStartupPhase()
-
-  const resetEditorShellState = useCallback(() => {
-    runStartupReset({ resetOverlayState: resetOverlayShellState })
-  }, [resetOverlayShellState])
-
-  const startup = useMemo(
-    () => ({
-      assetError,
-      assetErrorKind: assetError?.kind ?? null,
-      assetsReady: startupPhase === 'ready',
-      catalog,
-      collections,
-      environmentConfig: startupEnvironmentConfig,
-      editorInteractionsEnabled,
-      cacheInvalidationKey,
-      startupLoadingActive,
-      startupOverlayActive,
-      handleAssetError,
-      handleAssetsReady,
-      retryAssetLoading,
-      resetEditorShellState,
-    }),
-    [
-      assetError,
-      startupPhase,
-      catalog,
-      collections,
-      startupEnvironmentConfig,
-      editorInteractionsEnabled,
-      cacheInvalidationKey,
-      startupLoadingActive,
-      startupOverlayActive,
-      handleAssetError,
-      handleAssetsReady,
-      retryAssetLoading,
-      resetEditorShellState,
-    ],
-  )
-
-  const environmentConfig = startup.environmentConfig
+  const environmentConfig = useEnvironmentConfig()
 
   const {
     activeFloorFinishId,
@@ -178,7 +121,7 @@ function App() {
   usePreviewReconciler()
   const previewedId = usePreviewedId({
     isBlockingOverlayOpen,
-    editorInteractionsEnabled: startup.editorInteractionsEnabled,
+    editorInteractionsEnabled,
   })
 
   useEffect(() => {
@@ -196,48 +139,31 @@ function App() {
     selectionMetaActions.clearOutlinerFocusRequest()
   }, [isBlockingOverlayOpen, outlinerFocusRequest])
 
-  const assetLifecycleController = useAssetLifecycleController({
-    closeActiveDialog: dialogActions.closeActiveDialog,
-    startup: {
-      catalog: startup.catalog,
-      defaultFloorFinishId: environmentConfig?.defaultFloorFinishId ?? '',
-      defaultWallFinishId: environmentConfig?.defaultWallFinishId ?? '',
-      floorFinishIds:
-        environmentConfig?.floorFinishes.map((option) => option.id) ?? [],
-      wallFinishIds:
-        environmentConfig?.wallFinishes.map((option) => option.id) ?? [],
-      handleAssetError: startup.handleAssetError,
-      handleAssetsReady: startup.handleAssetsReady,
-      retryAssetLoading: startup.retryAssetLoading,
-      resetEditorShellState: startup.resetEditorShellState,
-    },
-  })
   const shareController = useShareController({
     activeFloorFinishId,
     activeWallFinishId,
   })
   const handleSetCameraPreset = useCallback(
     (preset: 'corner' | 'front' | 'side' | 'top') => {
-      if (!startup.editorInteractionsEnabled || !sceneCommands.isSceneReady()) {
+      if (!editorInteractionsEnabled || !sceneCommands.isSceneReady()) {
         return
       }
 
       sceneCommands.setCameraPreset(preset)
     },
-    [startup.editorInteractionsEnabled],
+    [editorInteractionsEnabled],
   )
   const handleFocusSelected = useCallback(() => {
-    if (!startup.editorInteractionsEnabled || !sceneCommands.isSceneReady()) {
+    if (!editorInteractionsEnabled || !sceneCommands.isSceneReady()) {
       return
     }
 
     sceneCommands.focusSelected()
-  }, [startup.editorInteractionsEnabled])
+  }, [editorInteractionsEnabled])
   const handleFloorLoadingChange = useCallback((loading: boolean) => {
     editorRuntimeActions.setFloorFinishLoading(loading)
   }, [])
   const handlers = {
-    ...assetLifecycleController,
     ...shareController,
     handleSetCameraPreset,
     handleFocusSelected,
@@ -254,7 +180,7 @@ function App() {
     })
 
   const handleFocusInspector = useCallback(() => {
-    if (!startup.editorInteractionsEnabled) {
+    if (!editorInteractionsEnabled) {
       return
     }
 
@@ -275,11 +201,11 @@ function App() {
     dockedInspectorRef,
     requestOutlinerFocus,
     selectedFurniture,
-    startup.editorInteractionsEnabled,
+    editorInteractionsEnabled,
   ])
 
   const handleFocusRoomView = useCallback(() => {
-    if (!startup.editorInteractionsEnabled) {
+    if (!editorInteractionsEnabled) {
       return
     }
 
@@ -288,15 +214,15 @@ function App() {
     if (selectedFurniture !== null) {
       previewFromCanvasKeyboard(selectedFurniture.id)
     }
-  }, [selectedFurniture, startup.editorInteractionsEnabled])
+  }, [selectedFurniture, editorInteractionsEnabled])
 
   const handleFocusOutliner = useCallback(() => {
-    if (!startup.editorInteractionsEnabled) {
+    if (!editorInteractionsEnabled) {
       return
     }
 
     requestOutlinerFocus()
-  }, [requestOutlinerFocus, startup.editorInteractionsEnabled])
+  }, [requestOutlinerFocus, editorInteractionsEnabled])
 
   useTestStateBridge({
     activeFloorFinishId,
@@ -349,9 +275,6 @@ function App() {
         <CommandDispatchProvider value={dispatchCommand}>
           <EditorShell>
             <EditorBody
-              catalog={startup.catalog}
-              collections={startup.collections}
-              cacheInvalidationKey={startup.cacheInvalidationKey}
               testOverlaysHidden={testOverlaysHidden}
               canvasShadowMode={canvasShadowMode}
               isE2ELowRenderQuality={isE2ELowRenderQuality}
@@ -362,14 +285,14 @@ function App() {
               onScenePreviewChange={previewFromScene}
               onFloorLoadingChange={handleFloorLoadingChange}
               onCanvasPointerSelection={selectByCanvasPointer}
-              onSceneAssetsReady={handlers.handleSceneAssetsReady}
-              onSceneAssetError={handlers.handleSceneAssetError}
+              onSceneAssetsReady={completeAssetLoad}
+              onSceneAssetError={notifyAssetError}
               onClearSelection={clearSelection}
               editorOverlay={{
                 topHeader: {
                   onShareSceneUrl: handlers.handleShareSceneUrl,
                 },
-                onRetryAssetLoading: handlers.handleRetryAssetLoading,
+                onRetryAssetLoading: requestAssetRetry,
               }}
             />
           </EditorShell>

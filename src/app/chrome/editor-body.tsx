@@ -7,7 +7,6 @@ import {
   useRef,
   useState,
   type ComponentProps,
-  type Key,
   type ReactNode,
 } from 'react'
 import { flushSync } from 'react-dom'
@@ -22,8 +21,13 @@ import {
 import { useSceneIsAtDefaults } from '@/editor-state/use-scene-is-at-defaults'
 import {
   useEditorInteractionsEnabled,
+  useSceneEpoch,
   useStartupLoadingActive,
 } from '@/editor-state/editor-runtime-store'
+import {
+  useCatalogEntries,
+  useCollections,
+} from '@/editor-state/scene-assets-store'
 import {
   useAssertiveAnnouncement,
   usePoliteAnnouncement,
@@ -65,9 +69,6 @@ class SceneAssetErrorBoundary extends Component<
 type SceneProps = ComponentProps<typeof Scene>
 
 export interface EditorBodyProps {
-  catalog: SceneProps['catalog']
-  collections: SceneProps['collections']
-  cacheInvalidationKey: Key
   testOverlaysHidden: boolean
   canvasShadowMode: false | 'percentage'
   isE2ELowRenderQuality: boolean
@@ -85,9 +86,6 @@ export interface EditorBodyProps {
 }
 
 export function EditorBody({
-  catalog,
-  collections,
-  cacheInvalidationKey,
   testOverlaysHidden,
   canvasShadowMode,
   isE2ELowRenderQuality,
@@ -104,6 +102,9 @@ export function EditorBody({
   editorOverlay,
 }: EditorBodyProps) {
   const [roomViewHasFocus, setRoomViewHasFocus] = useState(false)
+  const catalog = useCatalogEntries()
+  const collections = useCollections()
+  const sceneEpoch = useSceneEpoch()
   const sceneIsAtDefaults = useSceneIsAtDefaults()
   const editorInteractionsEnabled = useEditorInteractionsEnabled()
   const isBlockingOverlayOpen = useIsBlockingOverlayOpen()
@@ -220,7 +221,7 @@ export function EditorBody({
           shadows={canvasShadowMode}
         >
           <SceneAssetErrorBoundary
-            key={cacheInvalidationKey}
+            key={sceneEpoch}
             onError={onSceneAssetError}
           >
             <Suspense fallback={null}>

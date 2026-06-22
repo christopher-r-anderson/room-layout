@@ -2,7 +2,6 @@ import {
   clearSceneServices as clearSceneServicesInternal,
   getSceneServices,
   getSceneServicesIfReady,
-  whenSceneServicesReady as whenSceneServicesReadyInternal,
 } from './internal/scene-services'
 import type { FurnitureInstance } from './objects/furniture.types'
 import type {
@@ -81,8 +80,4 @@ export const sceneCommands = {
 
 export function clearSceneServices() {
   clearSceneServicesInternal()
-}
-
-export function whenSceneServicesReady() {
-  return whenSceneServicesReadyInternal()
 }

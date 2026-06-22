@@ -68,5 +68,7 @@ export function resetSceneAssetsStore() {
 
 export const useCatalogEntries = () =>
   useSceneAssetsStore((state) => state.catalog)
+export const useCollections = () =>
+  useSceneAssetsStore((state) => state.collections)
 export const useEnvironmentConfig = () =>
   useSceneAssetsStore((state) => state.environmentConfig)
