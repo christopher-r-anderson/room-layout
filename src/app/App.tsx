@@ -21,12 +21,9 @@ import {
   clearSelection,
   selectByCanvasPointer,
   selectById,
-} from '@/features/selection/selection-actions'
-import {
-  moveSelection,
-  rotateSelection,
-} from '@/features/selection/movement-actions'
-import { redo, undo } from '@/features/history/history-actions'
+} from '@/editor-state/selection-actions'
+import { moveSelection, rotateSelection } from '@/editor-state/movement-actions'
+import { redo, undo } from '@/editor-state/history-actions'
 import { useDeletionController } from '@/app/controllers/use-deletion-controller'
 import { useCatalogController } from '@/app/controllers/use-catalog-controller'
 import { useStartOverController } from '@/app/controllers/use-start-over-controller'

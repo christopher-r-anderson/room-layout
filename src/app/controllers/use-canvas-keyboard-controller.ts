@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, type RefObject } from 'react'
 import { announcementActions } from '@/editor-state/announcement-store'
-import { selectById } from '@/features/selection/selection-actions'
+import { selectById } from '@/editor-state/selection-actions'
 import { sceneCommands } from '@/scene/scene-commands'
 import { sortSpatially } from '@/shared/lib/three/spatial-sort'
 

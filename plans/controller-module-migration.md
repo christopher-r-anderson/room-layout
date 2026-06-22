@@ -103,7 +103,7 @@ Each remaining controller is blocked on state/callbacks that live in App and are
 - **start-over** — needs `canStartOver`/`defaults` (derived from
   `environmentConfig`, which is **not** in a store) and `clearPreview` (a method
   of the preview hook, which stays a hook). Coupled to environmentConfig access
-  + preview seam.
+  - preview seam.
 - **asset-lifecycle** — needs startup config (catalog, finish ids from
   `environmentConfig`, startup handlers from `useStartupState`) and owns
   `restoreAttemptedRef`. Most startup-coupled; likely moves only when startup
