@@ -17,8 +17,8 @@ import { isSceneStateAtDefaults } from '@/shared/lib/three/scene-model'
 import { sceneCommands } from '@/scene/scene-commands'
 import type { FurnitureCatalogEntry } from '@/scene/objects/furniture-catalog'
 import { toast } from 'sonner'
-import { runStartupRestoreFlow } from './_shared/restore-flow'
-import type { RestorableState } from './_shared/restore-flow.types'
+import { runStartupRestoreFlow } from '@/editor-state/restore-flow'
+import type { RestorableState } from '@/editor-state/restore-flow.types'
 import { selectionEffects } from '@/editor-state/selection-effects'
 
 interface AssetLifecycleControllerOptions {

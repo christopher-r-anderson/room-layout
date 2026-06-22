@@ -6,7 +6,7 @@ import {
   runStartupAssetErrorTransition,
   runStartupRetryTransition,
 } from '@/features/startup/startup-transitions'
-import { runStartupRestoreFlow } from './_shared/restore-flow'
+import { runStartupRestoreFlow } from '@/editor-state/restore-flow'
 import { announcementActions } from '@/editor-state/announcement-store'
 import { selectionEffects } from '@/editor-state/selection-effects'
 import { useAssetLifecycleController } from './use-asset-lifecycle-controller'
@@ -36,7 +36,7 @@ vi.mock('@/features/startup/startup-transitions', () => ({
   runStartupRetryTransition: vi.fn(),
 }))
 
-vi.mock('./_shared/restore-flow', () => ({
+vi.mock('@/editor-state/restore-flow', () => ({
   runStartupRestoreFlow: vi.fn(),
 }))
 
