@@ -107,12 +107,17 @@ selector`) — the start-over button **command dispatch** (and the
    focus owned by the top-header shell; `use-start-over-controller` removed.
    (`refactor(editor-state): home scene-draft…`, `refactor(startup): gate
 start-over open…`, `refactor(startup): decompose start-over…`)
-8. **delete-confirm + retry** → deletion needs a post-delete room-view
-   focus-intent seam (selection-meta); retry needs the asset-lifecycle controller,
-   which is coupled to `useStartupState`'s reducer dispatchers (those would become
-   store actions first). share stays a callback (handover-deferred).
-9. **Documentation reconciliation** (final stage) — see
-   `plans/documentation-reconciliation.md`; run after the runtime work is green.
+8. ✅ **delete-confirm decomposed** — room-view focus-intent in
+   `selection-meta-store` consumed by EditorBody; `features/selection/deletion-actions`
+   coordinator; confirm self-sourced from the overlay; opens via the command;
+   `use-deletion-controller` removed. (`refactor(selection): decompose deletion via
+a room-view focus-intent`)
+9. **retry / asset-lifecycle** → scheduled as its own design: the **startup
+   state-machine restructure** (`plans/startup-state-machine-restructure.md`). It
+   de-threads `onRetryAssetLoading` + the scene `onSceneAssetsReady/Error` and
+   converts the asset-lifecycle controller. share stays a callback (deferred).
+10. **Documentation reconciliation** (final stage) — see
+    `plans/documentation-reconciliation.md`; run after the runtime work is green.
 
 Each slice: full validation gate + the a11y/hotkeys e2e flows.
 
