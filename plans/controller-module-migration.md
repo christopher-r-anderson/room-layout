@@ -1,6 +1,9 @@
 # Plan: Migrate Action-Shaped Controllers Into Store-Reading Modules (Handover §6.2)
 
-> **Status:** proposed. Branch `editor-surface-keyboard-architecture-refactor`.
+> **Status:** Tier 1 shipped (green) — history, movement, selection are feature
+> action modules; App no longer instantiates those hooks. Tier 2 blocked on a
+> direction decision (see below). Branch
+> `editor-surface-keyboard-architecture-refactor`.
 > **Depends on:** §6.1 (shipped) — `selectionEffects` is now a module, so
 > controllers no longer receive it as a param.
 > **Precedent:** `src/features/selection/selected-item-detail-actions.ts`
@@ -84,14 +87,48 @@ Validation gate per slice: `pnpm fix` → `pnpm typecheck` → `pnpm lint` →
 `pnpm test:run` → `pnpm knip`; for the selection/movement/history behavior also
 `pnpm test:e2e e2e/editor-accessibility-flows.spec.ts e2e/editor-hotkeys.spec.ts`.
 
-## The fork to settle before Tier 2
+## Tier 2 — concrete blockers found (post Tier 1)
 
-How to source each Tier-2 controller's App-derived deps (and whether to convert
-in §6.2 or fold into §6.3). Options span: read from a store/getState where the
-value already lives; pass remaining values as call-time arguments; relocate the
-state into the owning feature first (catalog id); model the post-delete focus
-hand-off as a focus-intent (like outliner focus requests) instead of an App
-callback. I will surface this with concrete options after Tier 1 lands.
+Each remaining controller is blocked on state/callbacks that live in App and are
+**not** in a store, so a feature module cannot reach them without new seams:
+
+- **deletion** — only blocker is `focusRoomView` (App rAF + editor-refs
+  `roomViewRef`). `pendingDeleteFurniture` is readable from the dialog store;
+  dialog actions are importable; items/source/enabled are `getState()`. Cleanly
+  unblocked by modelling **post-delete room-view focus as a focus-intent** in
+  `selection-meta-store` (mirrors the existing outliner-focus request) that
+  EditorBody consumes — a contained, architecturally consistent addition.
+- **catalog** — `handleAddFurniture` needs `catalogIdToAdd` (App `useState`).
+  Coupled to §6.3's plan to move catalog-id state into the catalog feature.
+- **start-over** — needs `canStartOver`/`defaults` (derived from
+  `environmentConfig`, which is **not** in a store) and `clearPreview` (a method
+  of the preview hook, which stays a hook). Coupled to environmentConfig access
+  + preview seam.
+- **asset-lifecycle** — needs startup config (catalog, finish ids from
+  `environmentConfig`, startup handlers from `useStartupState`) and owns
+  `restoreAttemptedRef`. Most startup-coupled; likely moves only when startup
+  state is restructured.
+- **share** — needs App-derived `activeFloor/WallFinishId`; returns a Promise;
+  handover defers it as a callback.
+
+**Finding:** the handover assumed these convert via `getState()`, but the real
+blockers are App-held state not yet in stores (`environmentConfig`,
+`catalogIdToAdd`) and an App DOM callback (`focusRoomView`) — i.e. §6.3-style
+relocations. Tier 1 was the genuinely-decoupled subset.
+
+### Direction options (awaiting decision)
+
+- **D1 — pivot to §6.3 next (recommended).** Tier 1 banked the decoupled §6.2
+  wins. Do §6.3 (de-thread overlay/top-header; relocate catalog-id state and
+  environmentConfig access; add the post-delete focus-intent), and convert each
+  remaining controller as its seam lands. Matches the handover's "6.3 removes the
+  reason the threading exists" logic.
+- **D2 — push §6.2 further now** by adding the enabling seams first (focus-intent
+  for room-view; an environmentConfig/defaults store), then convert
+  deletion/start-over/catalog. More work; overlaps §6.3.
+- **D3 — convert only deletion now** via the post-delete focus-intent (the one
+  self-contained case), and leave start-over/catalog/asset-lifecycle/share for
+  §6.3.
 
 ## Risks
 
