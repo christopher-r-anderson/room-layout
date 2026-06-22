@@ -6,7 +6,7 @@ import {
   ADD_FURNITURE_NO_SPACE_MESSAGE,
   ADD_FURNITURE_UNKNOWN_CATALOG_MESSAGE,
 } from '@/shared/messages/command-messages'
-import type { SelectionEffectsApi } from './use-selection-effects-controller'
+import type { SelectionEffectsApi } from '@/editor-state/selection-effects'
 
 interface CatalogControllerOptions {
   setCatalogOpen: (open: boolean) => boolean

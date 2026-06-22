@@ -9,9 +9,17 @@ import {
   resetSceneStateStore,
   sceneStateActions,
 } from '@/editor-state/scene-state-store'
+import {
+  editorRuntimeActions,
+  resetEditorRuntimeStore,
+} from '@/editor-state/editor-runtime-store'
 import { createHistoryState } from '@/shared/lib/ui/editor-history'
 import { announcementActions } from '@/editor-state/announcement-store'
-import { useSelectionEffectsController } from './use-selection-effects-controller'
+import {
+  resetSelectionEffects,
+  selectionEffects,
+  useSelectionEffectsReconciler,
+} from '@/editor-state/selection-effects'
 
 vi.mock('@/editor-state/announcement-store', () => ({
   announcementActions: {
@@ -39,22 +47,23 @@ const CHAIR = {
 beforeEach(() => {
   resetSceneStateStore()
   resetSelectionMetaStore()
+  resetEditorRuntimeStore()
+  resetSelectionEffects()
+  editorRuntimeActions.markAssetsReady()
 })
 
 afterEach(() => {
   vi.clearAllMocks()
 })
 
-describe('useSelectionEffectsController', () => {
+describe('useSelectionEffectsReconciler', () => {
   it('requests outliner focus after delete when an index is queued', () => {
-    const { result } = renderHook(() =>
-      useSelectionEffectsController({
-        editorInteractionsEnabled: true,
-      }),
-    )
+    renderHook(() => {
+      useSelectionEffectsReconciler()
+    })
 
     act(() => {
-      result.current.notePostDeleteOutlinerFocusIndex(2)
+      selectionEffects.notePostDeleteOutlinerFocusIndex(2)
       sceneStateActions.setHistory(createHistoryState([CHAIR]))
     })
 
@@ -69,15 +78,13 @@ describe('useSelectionEffectsController', () => {
       'setSelectedSource',
     )
 
-    const { result } = renderHook(() =>
-      useSelectionEffectsController({
-        editorInteractionsEnabled: true,
-      }),
-    )
+    renderHook(() => {
+      useSelectionEffectsReconciler()
+    })
 
     act(() => {
       sceneStateActions.setHistory(createHistoryState([CHAIR]))
-      result.current.notePendingSource('panel-pointer')
+      selectionEffects.notePendingSource('panel-pointer')
       sceneStateActions.setSelectedId(CHAIR.id)
     })
 
@@ -92,15 +99,13 @@ describe('useSelectionEffectsController', () => {
   })
 
   it('announces selection changes for each special mode', () => {
-    const { result } = renderHook(() =>
-      useSelectionEffectsController({
-        editorInteractionsEnabled: true,
-      }),
-    )
+    renderHook(() => {
+      useSelectionEffectsReconciler()
+    })
 
     act(() => {
       sceneStateActions.setHistory(createHistoryState([CHAIR]))
-      result.current.notePendingSelection({
+      selectionEffects.notePendingSelection({
         announceMode: 'added',
         requestOutlinerFocus: false,
       })
@@ -116,7 +121,7 @@ describe('useSelectionEffectsController', () => {
     })
 
     act(() => {
-      result.current.notePendingSelection({
+      selectionEffects.notePendingSelection({
         announceMode: 'panel-keyboard',
         requestOutlinerFocus: false,
       })
@@ -132,7 +137,7 @@ describe('useSelectionEffectsController', () => {
     })
 
     act(() => {
-      result.current.notePendingSelection({
+      selectionEffects.notePendingSelection({
         announceMode: 'canvas-keyboard',
         requestOutlinerFocus: false,
       })
@@ -147,14 +152,12 @@ describe('useSelectionEffectsController', () => {
   it('clears stale pending behavior when items change without selection changing', () => {
     sceneStateActions.setHistory(createHistoryState([CHAIR]))
     sceneStateActions.setSelectedId(CHAIR.id)
-    const { result } = renderHook(() =>
-      useSelectionEffectsController({
-        editorInteractionsEnabled: true,
-      }),
-    )
+    renderHook(() => {
+      useSelectionEffectsReconciler()
+    })
 
     act(() => {
-      result.current.notePendingSelection({
+      selectionEffects.notePendingSelection({
         announceMode: 'suppress',
         requestOutlinerFocus: true,
       })

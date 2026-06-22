@@ -22,7 +22,7 @@ import type { FurnitureCatalogEntry } from '@/scene/objects/furniture-catalog'
 import { toast } from 'sonner'
 import { runStartupRestoreFlow } from './_shared/restore-flow'
 import type { RestorableState } from './_shared/restore-flow.types'
-import type { SelectionEffectsApi } from './use-selection-effects-controller'
+import type { SelectionEffectsApi } from '@/editor-state/selection-effects'
 
 interface AssetLifecycleControllerOptions {
   closeActiveDialog: () => void

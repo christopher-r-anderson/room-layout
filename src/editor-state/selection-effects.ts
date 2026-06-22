@@ -1,27 +1,25 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react'
-import { announcementActions } from '@/editor-state/announcement-store'
+import { useEffect, useRef } from 'react'
+import { announcementActions } from './announcement-store'
+import { useEditorInteractionsEnabled } from './editor-runtime-store'
 import {
   selectionMetaActions,
   useOutlinerFocusRequest,
-} from '@/editor-state/selection-meta-store'
-import { useItems, useSceneStateStore } from '@/editor-state/scene-state-store'
-import type { InteractionSource } from '@/editor-state/types/interaction.types'
+} from './selection-meta-store'
+import { useItems, useSceneStateStore } from './scene-state-store'
+import type { InteractionSource } from './types/interaction.types'
 import type {
   PendingSelectionChangeBehavior,
   SelectionAnnouncementMode,
-} from './_shared/selection-effects.types'
+} from './selection-effects.types'
 
-export interface SelectionEffectsApi {
-  notePendingSelection(behavior: PendingSelectionChangeBehavior | null): void
-  notePendingSource(source: InteractionSource): void
-  notePostDeleteOutlinerFocusIndex(index: number | null): void
-  notePostDeleteFocusTarget(target: 'room-view' | 'outliner' | null): void
-  consumePostDeleteFocusTarget(): 'room-view' | 'outliner' | null
-}
-
-interface SelectionEffectsControllerOptions {
-  editorInteractionsEnabled: boolean
-}
+// Imperative scratch cells live at module scope rather than in store state: they
+// record pending selection intent between a synchronous scene mutation and the
+// deferred reconciliation that reads them. Nothing renders from them; consumers
+// write them around their mutations via `selectionEffects`.
+let pendingSelectionSource: InteractionSource = null
+let pendingSelectionChangeBehavior: PendingSelectionChangeBehavior | null = null
+let pendingPostDeleteOutlinerFocusIndex: number | null = null
+let pendingDeleteFocusTarget: 'room-view' | 'outliner' | null = null
 
 function announceSelectionChange(options: {
   announceMode: SelectionAnnouncementMode
@@ -79,33 +77,66 @@ function announceSelectionChange(options: {
   }
 }
 
-export function useSelectionEffectsController({
-  editorInteractionsEnabled,
-}: SelectionEffectsControllerOptions): SelectionEffectsApi {
+/**
+ * Imperative seam consumers call around scene mutations to record how the next
+ * selection change should be reconciled (source, announce mode, outliner focus)
+ * and to hand off post-delete focus intent. The reconciliation itself runs in
+ * `useSelectionEffectsReconciler`.
+ */
+export const selectionEffects = {
+  notePendingSelection(behavior: PendingSelectionChangeBehavior | null) {
+    pendingSelectionChangeBehavior = behavior
+  },
+  notePendingSource(source: InteractionSource) {
+    pendingSelectionSource = source
+  },
+  notePostDeleteOutlinerFocusIndex(index: number | null) {
+    pendingPostDeleteOutlinerFocusIndex = index
+  },
+  notePostDeleteFocusTarget(target: 'room-view' | 'outliner' | null) {
+    pendingDeleteFocusTarget = target
+  },
+  consumePostDeleteFocusTarget(): 'room-view' | 'outliner' | null {
+    const target = pendingDeleteFocusTarget
+    pendingDeleteFocusTarget = null
+    return target
+  },
+}
+
+export type SelectionEffectsApi = typeof selectionEffects
+
+export function resetSelectionEffects() {
+  pendingSelectionSource = null
+  pendingSelectionChangeBehavior = null
+  pendingPostDeleteOutlinerFocusIndex = null
+  pendingDeleteFocusTarget = null
+}
+
+/**
+ * Reconciles selection metadata and screen-reader announcements after scene
+ * state changes. The effects stay deferred past the synchronous handler that
+ * mutated the scene, so the pending intent recorded via `selectionEffects` has
+ * already landed by the time they read the module cells.
+ */
+export function useSelectionEffectsReconciler(): void {
   const items = useItems()
   const selectedId = useSceneStateStore((state) => state.selectedId)
   const outlinerFocusRequest = useOutlinerFocusRequest()
+  const editorInteractionsEnabled = useEditorInteractionsEnabled()
 
-  const pendingSelectionSourceRef = useRef<InteractionSource>(null)
   const previousReconciledSelectedIdRef = useRef<string | null>(null)
   const previousSelectionSideEffectSelectedIdRef = useRef<string | null>(
     selectedId,
   )
-  const pendingPostDeleteOutlinerFocusIndexRef = useRef<number | null>(null)
-  const pendingSelectionChangeBehaviorRef =
-    useRef<PendingSelectionChangeBehavior | null>(null)
-  const pendingDeleteFocusTargetRef = useRef<'room-view' | 'outliner' | null>(
-    null,
-  )
 
   useEffect(() => {
-    const preferredIndex = pendingPostDeleteOutlinerFocusIndexRef.current
+    const preferredIndex = pendingPostDeleteOutlinerFocusIndex
 
     if (preferredIndex === null) {
       return
     }
 
-    pendingPostDeleteOutlinerFocusIndexRef.current = null
+    pendingPostDeleteOutlinerFocusIndex = null
     selectionMetaActions.requestOutlinerFocus({
       token: Date.now(),
       preferredIndex,
@@ -121,8 +152,8 @@ export function useSelectionEffectsController({
       return
     }
 
-    const pendingSource = pendingSelectionSourceRef.current
-    pendingSelectionSourceRef.current = null
+    const pendingSource = pendingSelectionSource
+    pendingSelectionSource = null
     previousReconciledSelectedIdRef.current = selectedId
 
     selectionMetaActions.setSelectedSource(
@@ -141,11 +172,11 @@ export function useSelectionEffectsController({
       return
     }
 
-    const pendingBehavior = pendingSelectionChangeBehaviorRef.current ?? {
+    const pendingBehavior = pendingSelectionChangeBehavior ?? {
       announceMode: 'default' as const,
       requestOutlinerFocus: false,
     }
-    pendingSelectionChangeBehaviorRef.current = null
+    pendingSelectionChangeBehavior = null
 
     announceSelectionChange({
       announceMode: pendingBehavior.announceMode,
@@ -181,54 +212,6 @@ export function useSelectionEffectsController({
       return
     }
 
-    pendingSelectionChangeBehaviorRef.current = null
+    pendingSelectionChangeBehavior = null
   }, [editorInteractionsEnabled, items, selectedId])
-
-  const notePendingSelection = useCallback(
-    (behavior: PendingSelectionChangeBehavior | null) => {
-      pendingSelectionChangeBehaviorRef.current = behavior
-    },
-    [],
-  )
-
-  const notePendingSource = useCallback((source: InteractionSource) => {
-    pendingSelectionSourceRef.current = source
-  }, [])
-
-  const notePostDeleteOutlinerFocusIndex = useCallback(
-    (index: number | null) => {
-      pendingPostDeleteOutlinerFocusIndexRef.current = index
-    },
-    [],
-  )
-
-  const notePostDeleteFocusTarget = useCallback(
-    (target: 'room-view' | 'outliner' | null) => {
-      pendingDeleteFocusTargetRef.current = target
-    },
-    [],
-  )
-
-  const consumePostDeleteFocusTarget = useCallback(() => {
-    const target = pendingDeleteFocusTargetRef.current
-    pendingDeleteFocusTargetRef.current = null
-    return target
-  }, [])
-
-  return useMemo(
-    () => ({
-      notePendingSelection,
-      notePendingSource,
-      notePostDeleteOutlinerFocusIndex,
-      notePostDeleteFocusTarget,
-      consumePostDeleteFocusTarget,
-    }),
-    [
-      notePendingSelection,
-      notePendingSource,
-      notePostDeleteOutlinerFocusIndex,
-      notePostDeleteFocusTarget,
-      consumePostDeleteFocusTarget,
-    ],
-  )
 }

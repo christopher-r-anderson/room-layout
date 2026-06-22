@@ -5,7 +5,7 @@ import { sceneStateActions, useItems } from '@/editor-state/scene-state-store'
 import { useSelectedSource } from '@/editor-state/selection-meta-store'
 import { sceneCommands } from '@/scene/scene-commands'
 import { DELETE_SELECTION_MISSING_MESSAGE } from '@/shared/messages/command-messages'
-import type { SelectionEffectsApi } from './use-selection-effects-controller'
+import type { SelectionEffectsApi } from '@/editor-state/selection-effects'
 
 interface DeletionControllerOptions {
   closeActiveDialog: () => void

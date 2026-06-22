@@ -5,7 +5,7 @@ import { sceneStateActions } from '@/editor-state/scene-state-store'
 import { sceneCommands } from '@/scene/scene-commands'
 import { clearSceneDraft } from '@/features/url-scene/scene-draft'
 import { toast } from 'sonner'
-import type { SelectionEffectsApi } from './use-selection-effects-controller'
+import type { SelectionEffectsApi } from '@/editor-state/selection-effects'
 
 interface StartOverControllerOptions {
   closeActiveDialog: () => void
