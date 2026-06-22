@@ -293,9 +293,6 @@ describe('EditorOverlay integration', () => {
                           onOpenStartOverDialog: vi.fn(),
                           onConfirmStartOver: vi.fn(),
                         }}
-                        outliner={{
-                          onPreviewChange: vi.fn(),
-                        }}
                         onConfirmDeleteSelection={vi.fn()}
                         onRetryAssetLoading={vi.fn()}
                       />

@@ -25,12 +25,17 @@ import {
 } from '@/editor-state/selection-meta-store'
 import type { ScenePanelReadModel } from '@/editor-state/types/scene-panel.types'
 import { selectById } from '@/editor-state/selection-actions'
+import { previewFromOutliner } from '@/editor-state/preview-actions'
 import { Outliner } from './outliner'
 
 vi.mock('@/editor-state/selection-actions', () => ({
   selectById: vi.fn(() => ({ ok: true, status: 'selected' }) as const),
   selectByCanvasPointer: vi.fn(),
   clearSelection: vi.fn(),
+}))
+
+vi.mock('@/editor-state/preview-actions', () => ({
+  previewFromOutliner: vi.fn(),
 }))
 
 const OUTLINER_EXPANDED_PREFERENCE_KEY = 'outliner-expanded'
@@ -70,17 +75,8 @@ function seedScene(readModel: ScenePanelReadModel = READ_MODEL) {
   sceneStateActions.setSelectedId(readModel.selectedId)
 }
 
-function renderOutliner({
-  onPreviewChange,
-}: {
-  onPreviewChange?: (
-    id: string | null,
-    source: 'outliner-hover' | 'outliner-focus',
-  ) => void
-} = {}) {
-  const handlePreviewChange = onPreviewChange ?? vi.fn()
-
-  render(<Outliner onPreviewChange={handlePreviewChange} />)
+function renderOutliner() {
+  render(<Outliner />)
 }
 
 describe('SceneOutliner', () => {
@@ -244,64 +240,65 @@ describe('SceneOutliner', () => {
   })
 
   describe('preview callbacks', () => {
-    it('calls onPreviewChange with id and source on pointer enter', async () => {
+    it('previews on pointer enter', async () => {
       const user = userEvent.setup()
-      const onPreviewChange = vi.fn()
 
-      renderOutliner({ onPreviewChange })
+      renderOutliner()
       await user.hover(screen.getByRole('button', { name: /leather couch/i }))
 
-      expect(onPreviewChange).toHaveBeenCalledWith('item-1', 'outliner-hover')
+      expect(previewFromOutliner).toHaveBeenCalledWith(
+        'item-1',
+        'outliner-hover',
+      )
     })
 
-    it('calls onPreviewChange with null on pointer leave', async () => {
+    it('clears preview on pointer leave', async () => {
       const user = userEvent.setup()
-      const onPreviewChange = vi.fn()
 
-      renderOutliner({ onPreviewChange })
+      renderOutliner()
       await user.hover(screen.getByRole('button', { name: /leather couch/i }))
       await user.unhover(screen.getByRole('button', { name: /leather couch/i }))
 
-      expect(onPreviewChange).toHaveBeenLastCalledWith(null, 'outliner-hover')
+      expect(previewFromOutliner).toHaveBeenLastCalledWith(
+        null,
+        'outliner-hover',
+      )
     })
 
-    it('calls onPreviewChange with id and source on focus', async () => {
+    it('previews on focus', async () => {
       const user = userEvent.setup()
-      const onPreviewChange = vi.fn()
 
-      renderOutliner({ onPreviewChange })
+      renderOutliner()
       await user.tab()
       await user.tab()
 
-      expect(onPreviewChange).toHaveBeenCalledWith(
+      expect(previewFromOutliner).toHaveBeenCalledWith(
         expect.any(String),
         'outliner-focus',
       )
     })
 
-    it('calls onPreviewChange with null on blur', async () => {
+    it('clears preview on blur', async () => {
       const user = userEvent.setup()
-      const onPreviewChange = vi.fn()
 
-      renderOutliner({ onPreviewChange })
+      renderOutliner()
       await user.tab()
       await user.tab()
       await user.tab()
 
-      expect(onPreviewChange).toHaveBeenCalledWith(null, 'outliner-focus')
+      expect(previewFromOutliner).toHaveBeenCalledWith(null, 'outliner-focus')
     })
 
-    it('does not call onPreviewChange while a blocking dialog is open', async () => {
+    it('does not preview while a blocking dialog is open', async () => {
       const user = userEvent.setup()
-      const onPreviewChange = vi.fn()
       dialogActions.openDialog(DIALOG_IDS.delete)
 
-      renderOutliner({ onPreviewChange })
+      renderOutliner()
       const button = screen.getByRole('button', { name: /leather couch/i })
       await user.hover(button)
 
       expect(button).toBeDisabled()
-      expect(onPreviewChange).not.toHaveBeenCalled()
+      expect(previewFromOutliner).not.toHaveBeenCalled()
     })
   })
 })

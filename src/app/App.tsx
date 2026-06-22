@@ -19,7 +19,6 @@ import { announcementActions } from '@/editor-state/announcement-store'
 import {
   clearPreviewOnCanvasMiss,
   previewFromCanvasKeyboard,
-  previewFromOutliner,
   previewFromScene,
 } from '@/editor-state/preview-actions'
 import { usePreviewReconciler } from '@/editor-state/use-preview-reconciler'
@@ -463,9 +462,6 @@ function App() {
                   onShareSceneUrl: handlers.handleShareSceneUrl,
                   onOpenStartOverDialog: handlers.handleOpenStartOverDialog,
                   onConfirmStartOver: handlers.handleConfirmStartOver,
-                },
-                outliner: {
-                  onPreviewChange: previewFromOutliner,
                 },
                 onConfirmDeleteSelection: handlers.handleConfirmDeleteSelection,
                 onRetryAssetLoading: handlers.handleRetryAssetLoading,

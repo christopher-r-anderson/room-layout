@@ -26,17 +26,9 @@ import type { TopHeaderShellProps } from './top-header/top-header.types'
 import { useOverlayLayout } from '@/shared/layout/overlay-layout-context'
 import { useHeaderLayoutMode } from '@/shared/layout/use-header-layout-mode'
 
-interface OutlinerShellProps {
-  onPreviewChange: (
-    id: string | null,
-    source: 'outliner-hover' | 'outliner-focus',
-  ) => void
-}
-
 export interface EditorOverlayProps {
   startOverDisabled: boolean
   topHeader: TopHeaderShellProps
-  outliner: OutlinerShellProps
   onConfirmDeleteSelection: () => void
   onRetryAssetLoading: () => void
 }
@@ -78,7 +70,6 @@ function EditorOverlayDialogs({
 export function EditorOverlay({
   startOverDisabled,
   topHeader,
-  outliner,
   onConfirmDeleteSelection,
   onRetryAssetLoading,
 }: EditorOverlayProps) {
@@ -134,7 +125,7 @@ export function EditorOverlay({
               ref={registerExclusionElement('outliner')}
               className="md:min-w-80 pointer-events-auto"
             >
-              <Outliner onPreviewChange={outliner.onPreviewChange} />
+              <Outliner />
             </div>
           )}
 

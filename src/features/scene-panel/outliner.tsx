@@ -22,6 +22,7 @@ import {
 } from '@/shared/lib/ui/storage'
 import type { PanelInteractionSource } from '@/editor-state/types/interaction.types'
 import { selectById } from '@/editor-state/selection-actions'
+import { previewFromOutliner } from '@/editor-state/preview-actions'
 import {
   selectionMetaActions,
   useOutlinerFocusRequest,
@@ -40,14 +41,7 @@ function loadStoredExpandedState() {
   return loadBooleanPreference(OUTLINER_EXPANDED_PREFERENCE_KEY, true)
 }
 
-export function Outliner({
-  onPreviewChange,
-}: {
-  onPreviewChange: (
-    id: string | null,
-    source: 'outliner-hover' | 'outliner-focus',
-  ) => void
-}) {
+export function Outliner() {
   const items = useItems()
   const selectedId = useSceneStateStore((state) => state.selectedId)
   const editorInteractionsEnabled = useEditorInteractionsEnabled()
@@ -195,22 +189,22 @@ export function Outliner({
                           }}
                           onFocus={() => {
                             if (!disabled) {
-                              onPreviewChange(item.id, 'outliner-focus')
+                              previewFromOutliner(item.id, 'outliner-focus')
                             }
                           }}
                           onBlur={() => {
                             if (!disabled) {
-                              onPreviewChange(null, 'outliner-focus')
+                              previewFromOutliner(null, 'outliner-focus')
                             }
                           }}
                           onPointerEnter={() => {
                             if (!disabled) {
-                              onPreviewChange(item.id, 'outliner-hover')
+                              previewFromOutliner(item.id, 'outliner-hover')
                             }
                           }}
                           onPointerLeave={() => {
                             if (!disabled) {
-                              onPreviewChange(null, 'outliner-hover')
+                              previewFromOutliner(null, 'outliner-hover')
                             }
                           }}
                         >
