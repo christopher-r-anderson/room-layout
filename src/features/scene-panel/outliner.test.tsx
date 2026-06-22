@@ -23,9 +23,15 @@ import {
   selectionMetaActions,
   selectionMetaStore,
 } from '@/editor-state/selection-meta-store'
-import type { PanelInteractionSource } from '@/editor-state/types/interaction.types'
 import type { ScenePanelReadModel } from '@/editor-state/types/scene-panel.types'
+import { selectById } from '@/editor-state/selection-actions'
 import { Outliner } from './outliner'
+
+vi.mock('@/editor-state/selection-actions', () => ({
+  selectById: vi.fn(() => ({ ok: true, status: 'selected' }) as const),
+  selectByCanvasPointer: vi.fn(),
+  clearSelection: vi.fn(),
+}))
 
 const OUTLINER_EXPANDED_PREFERENCE_KEY = 'outliner-expanded'
 
@@ -65,28 +71,21 @@ function seedScene(readModel: ScenePanelReadModel = READ_MODEL) {
 }
 
 function renderOutliner({
-  onSelectById,
   onPreviewChange,
 }: {
-  onSelectById?: (id: string, source: PanelInteractionSource) => void
   onPreviewChange?: (
     id: string | null,
     source: 'outliner-hover' | 'outliner-focus',
   ) => void
 } = {}) {
-  const handleSelectById = onSelectById ?? vi.fn()
   const handlePreviewChange = onPreviewChange ?? vi.fn()
 
-  render(
-    <Outliner
-      onSelectById={handleSelectById}
-      onPreviewChange={handlePreviewChange}
-    />,
-  )
+  render(<Outliner onPreviewChange={handlePreviewChange} />)
 }
 
 describe('SceneOutliner', () => {
   beforeEach(() => {
+    vi.clearAllMocks()
     window.localStorage.clear()
     resetDialogStore()
     resetEditorRuntimeStore()
@@ -138,25 +137,23 @@ describe('SceneOutliner', () => {
 
   it('forwards selection through item buttons with pointer source', async () => {
     const user = userEvent.setup()
-    const onSelectById = vi.fn()
 
-    renderOutliner({ onSelectById })
+    renderOutliner()
 
     await user.click(screen.getByRole('button', { name: /end table/i }))
 
-    expect(onSelectById).toHaveBeenCalledWith('item-2', 'panel-pointer')
+    expect(selectById).toHaveBeenCalledWith('item-2', 'panel-pointer')
   })
 
   it('forwards selection with keyboard source when activated via keyboard', async () => {
     const user = userEvent.setup()
-    const onSelectById = vi.fn()
 
-    renderOutliner({ onSelectById })
+    renderOutliner()
     await user.tab()
     await user.tab()
     await user.keyboard('{Enter}')
 
-    expect(onSelectById).toHaveBeenCalledWith(
+    expect(selectById).toHaveBeenCalledWith(
       expect.any(String),
       'panel-keyboard',
     )

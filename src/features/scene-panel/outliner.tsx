@@ -20,10 +20,8 @@ import {
   loadBooleanPreference,
   saveBooleanPreference,
 } from '@/shared/lib/ui/storage'
-import type {
-  PanelInteractionSource,
-  PanelSelectById,
-} from '@/editor-state/types/interaction.types'
+import type { PanelInteractionSource } from '@/editor-state/types/interaction.types'
+import { selectById } from '@/editor-state/selection-actions'
 import {
   selectionMetaActions,
   useOutlinerFocusRequest,
@@ -43,10 +41,8 @@ function loadStoredExpandedState() {
 }
 
 export function Outliner({
-  onSelectById,
   onPreviewChange,
 }: {
-  onSelectById: PanelSelectById
   onPreviewChange: (
     id: string | null,
     source: 'outliner-hover' | 'outliner-focus',
@@ -195,7 +191,7 @@ export function Outliner({
                               e.detail === 0
                                 ? 'panel-keyboard'
                                 : 'panel-pointer'
-                            onSelectById(item.id, source)
+                            selectById(item.id, source)
                           }}
                           onFocus={() => {
                             if (!disabled) {

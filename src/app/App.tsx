@@ -20,7 +20,6 @@ import { startSelectionEffectsReconciler } from '@/editor-state/selection-effect
 import {
   clearSelection,
   selectByCanvasPointer,
-  selectById,
 } from '@/editor-state/selection-actions'
 import { moveSelection, rotateSelection } from '@/editor-state/movement-actions'
 import { redo, undo } from '@/editor-state/history-actions'
@@ -470,7 +469,6 @@ function App() {
                   onConfirmStartOver: handlers.handleConfirmStartOver,
                 },
                 outliner: {
-                  onSelectById: selectById,
                   onPreviewChange: handleOutlinerPreviewChange,
                 },
                 onConfirmDeleteSelection: handlers.handleConfirmDeleteSelection,

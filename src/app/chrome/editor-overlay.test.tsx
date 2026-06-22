@@ -294,7 +294,6 @@ describe('EditorOverlay integration', () => {
                           onConfirmStartOver: vi.fn(),
                         }}
                         outliner={{
-                          onSelectById: vi.fn(),
                           onPreviewChange: vi.fn(),
                         }}
                         onConfirmDeleteSelection={vi.fn()}

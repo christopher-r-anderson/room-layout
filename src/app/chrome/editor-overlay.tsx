@@ -18,7 +18,6 @@ import { StatusMessage } from './status-message'
 import { InitializationError } from '@/features/startup/initialization-error'
 import { InitializationProgress } from '@/features/startup/initialization-progress'
 import { Outliner } from '@/features/scene-panel/outliner'
-import type { PanelSelectById } from '@/editor-state/types/interaction.types'
 import { DockedSelectedItemSite } from '@/features/selection/docked-selected-item-site'
 import { FloatingSelectedItemSite } from '@/features/selection/floating-selected-item-site'
 import { SelectedDetailsPlaceholder } from '@/features/selection/selected-details-view'
@@ -28,7 +27,6 @@ import { useOverlayLayout } from '@/shared/layout/overlay-layout-context'
 import { useHeaderLayoutMode } from '@/shared/layout/use-header-layout-mode'
 
 interface OutlinerShellProps {
-  onSelectById: PanelSelectById
   onPreviewChange: (
     id: string | null,
     source: 'outliner-hover' | 'outliner-focus',
@@ -136,10 +134,7 @@ export function EditorOverlay({
               ref={registerExclusionElement('outliner')}
               className="md:min-w-80 pointer-events-auto"
             >
-              <Outliner
-                onSelectById={outliner.onSelectById}
-                onPreviewChange={outliner.onPreviewChange}
-              />
+              <Outliner onPreviewChange={outliner.onPreviewChange} />
             </div>
           )}
 
