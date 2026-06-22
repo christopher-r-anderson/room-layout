@@ -43,6 +43,7 @@ import { isFreshSceneState } from '@/shared/lib/three/scene-defaults'
 import { runStartupReset } from '@/features/startup/reset-startup-state'
 import { useStartupState } from '@/features/startup/use-startup-state'
 import { EditorBody } from './chrome/editor-body'
+import { EditorShell } from './chrome/editor-shell'
 import { findFirstActionableInspectorControl } from './chrome/focusable-controls'
 import {
   resetSelectionMetaStore,
@@ -471,55 +472,57 @@ function App() {
     <TooltipProvider>
       <EditorRefsProvider value={editorRefs}>
         <CommandDispatchProvider value={dispatchCommand}>
-          <EditorBody
-            catalog={startup.catalog}
-            collections={startup.collections}
-            cacheInvalidationKey={startup.cacheInvalidationKey}
-            testOverlaysHidden={testOverlaysHidden}
-            sceneIsAtDefaults={sceneIsAtDefaults}
-            focusRoomView={focusRoomView}
-            canvasShadowMode={canvasShadowMode}
-            isE2ELowRenderQuality={isE2ELowRenderQuality}
-            previewedId={previewedId}
-            selectedFloorOption={selectedFloorOption}
-            selectedWallOption={selectedWallOption}
-            clearPreviewOnCanvasMiss={clearPreviewOnCanvasMiss}
-            onScenePreviewChange={handleScenePreviewChange}
-            onFloorLoadingChange={handleFloorLoadingChange}
-            onCanvasPointerSelection={handlers.handleCanvasPointerSelection}
-            onSceneAssetsReady={handlers.handleSceneAssetsReady}
-            onSceneAssetError={handlers.handleSceneAssetError}
-            onClearSelection={handlers.handleClearSelection}
-            politeAnnouncement={announcements.politeAnnouncement}
-            assertiveAnnouncement={announcements.assertiveAnnouncement}
-            editorOverlay={{
-              startOverDisabled: sceneIsAtDefaults,
-              topHeader: {
-                catalog: startup.catalog,
-                environmentConfig,
-                catalogIdToAdd: activeCatalogIdToAdd,
-                onAddFurniture: handlers.handleAddFurniture,
-                onCatalogIdToAddChange: setCatalogIdToAdd,
-                onCatalogDrawerOpenChange:
-                  handlers.handleCatalogDrawerOpenChange,
-                onShareSceneUrl: handlers.handleShareSceneUrl,
-                onOpenStartOverDialog: handlers.handleOpenStartOverDialog,
-                onConfirmStartOver: handlers.handleConfirmStartOver,
-              },
-              outliner: {
-                onSelectById: handlers.handleSelectById,
-                onPreviewChange: handleOutlinerPreviewChange,
-              },
-              dockedSelectedItem: {
-                onInvalidSelectedItemDetailValue:
-                  handlers.handleInvalidSelectedItemDetailValue,
-                onUpdateSelectedItemDetails:
-                  handlers.handleUpdateSelectedItemDetails,
-              },
-              onConfirmDeleteSelection: handlers.handleConfirmDeleteSelection,
-              onRetryAssetLoading: handlers.handleRetryAssetLoading,
-            }}
-          />
+          <EditorShell>
+            <EditorBody
+              catalog={startup.catalog}
+              collections={startup.collections}
+              cacheInvalidationKey={startup.cacheInvalidationKey}
+              testOverlaysHidden={testOverlaysHidden}
+              sceneIsAtDefaults={sceneIsAtDefaults}
+              focusRoomView={focusRoomView}
+              canvasShadowMode={canvasShadowMode}
+              isE2ELowRenderQuality={isE2ELowRenderQuality}
+              previewedId={previewedId}
+              selectedFloorOption={selectedFloorOption}
+              selectedWallOption={selectedWallOption}
+              clearPreviewOnCanvasMiss={clearPreviewOnCanvasMiss}
+              onScenePreviewChange={handleScenePreviewChange}
+              onFloorLoadingChange={handleFloorLoadingChange}
+              onCanvasPointerSelection={handlers.handleCanvasPointerSelection}
+              onSceneAssetsReady={handlers.handleSceneAssetsReady}
+              onSceneAssetError={handlers.handleSceneAssetError}
+              onClearSelection={handlers.handleClearSelection}
+              politeAnnouncement={announcements.politeAnnouncement}
+              assertiveAnnouncement={announcements.assertiveAnnouncement}
+              editorOverlay={{
+                startOverDisabled: sceneIsAtDefaults,
+                topHeader: {
+                  catalog: startup.catalog,
+                  environmentConfig,
+                  catalogIdToAdd: activeCatalogIdToAdd,
+                  onAddFurniture: handlers.handleAddFurniture,
+                  onCatalogIdToAddChange: setCatalogIdToAdd,
+                  onCatalogDrawerOpenChange:
+                    handlers.handleCatalogDrawerOpenChange,
+                  onShareSceneUrl: handlers.handleShareSceneUrl,
+                  onOpenStartOverDialog: handlers.handleOpenStartOverDialog,
+                  onConfirmStartOver: handlers.handleConfirmStartOver,
+                },
+                outliner: {
+                  onSelectById: handlers.handleSelectById,
+                  onPreviewChange: handleOutlinerPreviewChange,
+                },
+                dockedSelectedItem: {
+                  onInvalidSelectedItemDetailValue:
+                    handlers.handleInvalidSelectedItemDetailValue,
+                  onUpdateSelectedItemDetails:
+                    handlers.handleUpdateSelectedItemDetails,
+                },
+                onConfirmDeleteSelection: handlers.handleConfirmDeleteSelection,
+                onRetryAssetLoading: handlers.handleRetryAssetLoading,
+              }}
+            />
+          </EditorShell>
         </CommandDispatchProvider>
       </EditorRefsProvider>
     </TooltipProvider>
