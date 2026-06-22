@@ -29,6 +29,10 @@ import {
   useCollections,
 } from '@/editor-state/scene-assets-store'
 import {
+  completeAssetLoad,
+  notifyAssetError,
+} from '@/editor-state/startup-coordinator'
+import {
   useAssertiveAnnouncement,
   usePoliteAnnouncement,
 } from '@/editor-state/announcement-store'
@@ -79,8 +83,6 @@ export interface EditorBodyProps {
   onScenePreviewChange: NonNullable<SceneProps['onPreviewChange']>
   onFloorLoadingChange: NonNullable<SceneProps['onFloorLoadingChange']>
   onCanvasPointerSelection: NonNullable<SceneProps['onCanvasPointerSelection']>
-  onSceneAssetsReady: NonNullable<SceneProps['onAssetsReady']>
-  onSceneAssetError: (error: Error) => void
   onClearSelection: () => void
   editorOverlay: EditorOverlayProps
 }
@@ -96,8 +98,6 @@ export function EditorBody({
   onScenePreviewChange,
   onFloorLoadingChange,
   onCanvasPointerSelection,
-  onSceneAssetsReady,
-  onSceneAssetError,
   onClearSelection,
   editorOverlay,
 }: EditorBodyProps) {
@@ -220,17 +220,14 @@ export function EditorBody({
           }}
           shadows={canvasShadowMode}
         >
-          <SceneAssetErrorBoundary
-            key={sceneEpoch}
-            onError={onSceneAssetError}
-          >
+          <SceneAssetErrorBoundary key={sceneEpoch} onError={notifyAssetError}>
             <Suspense fallback={null}>
               <Scene
                 renderQuality={isE2ELowRenderQuality ? 'e2e-low' : 'default'}
                 catalog={catalog}
                 collections={collections}
                 onCanvasPointerSelection={onCanvasPointerSelection}
-                onAssetsReady={onSceneAssetsReady}
+                onAssetsReady={completeAssetLoad}
                 previewedId={previewedId}
                 onPreviewChange={onScenePreviewChange}
                 floorOption={selectedFloorOption}

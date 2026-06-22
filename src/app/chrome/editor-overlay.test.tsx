@@ -265,7 +265,6 @@ describe('EditorOverlay integration', () => {
                             ),
                           ),
                         }}
-                        onRetryAssetLoading={vi.fn()}
                       />
                     </div>
                   </CommandDispatchProvider>

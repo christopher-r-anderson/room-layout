@@ -30,11 +30,6 @@ import {
   openDeleteDialog,
   openDeleteDialogFromRoomView,
 } from '@/features/selection/deletion-actions'
-import {
-  completeAssetLoad,
-  notifyAssetError,
-  requestAssetRetry,
-} from '@/editor-state/startup-coordinator'
 import { useShareController } from '@/app/controllers/use-share-controller'
 import { useCanvasKeyboardController } from '@/app/controllers/use-canvas-keyboard-controller'
 import { EditorRefsProvider } from '@/shared/providers/editor-refs-provider'
@@ -285,14 +280,11 @@ function App() {
               onScenePreviewChange={previewFromScene}
               onFloorLoadingChange={handleFloorLoadingChange}
               onCanvasPointerSelection={selectByCanvasPointer}
-              onSceneAssetsReady={completeAssetLoad}
-              onSceneAssetError={notifyAssetError}
               onClearSelection={clearSelection}
               editorOverlay={{
                 topHeader: {
                   onShareSceneUrl: handlers.handleShareSceneUrl,
                 },
-                onRetryAssetLoading: requestAssetRetry,
               }}
             />
           </EditorShell>
