@@ -312,15 +312,19 @@ export const useItemIds = () =>
     areStringArraysEqual,
   )
 export const useSelectedFurniture = () =>
-  useSceneStateStore((state) => {
-    if (state.selectedId === null) {
-      return null
-    }
+  useSceneStateStore(selectSelectedFurniture)
 
-    return (
-      state.history.present.find((item) => item.id === state.selectedId) ?? null
-    )
-  })
+export function selectSelectedFurniture(
+  state: Pick<SceneStateStoreState, 'selectedId' | 'history'>,
+): FurnitureItem | null {
+  if (state.selectedId === null) {
+    return null
+  }
+
+  return (
+    state.history.present.find((item) => item.id === state.selectedId) ?? null
+  )
+}
 
 export function usePreviewedId(options: {
   isBlockingOverlayOpen: boolean

@@ -3,6 +3,7 @@ import { announcementActions } from '@/editor-state/announcement-store'
 import {
   sceneStateActions,
   sceneStateStore,
+  selectSelectedFurniture,
 } from '@/editor-state/scene-state-store'
 import { editorRuntimeStore } from '@/editor-state/editor-runtime-store'
 import { selectionMetaActions } from '@/editor-state/selection-meta-store'
@@ -22,18 +23,6 @@ function normalizeDegreesRadians(valueDegrees: number) {
   return (counterclockwiseDegrees * Math.PI) / 180
 }
 
-function getSelectedFurniture() {
-  const state = sceneStateStore.getState()
-
-  if (state.selectedId === null) {
-    return null
-  }
-
-  return (
-    state.history.present.find((item) => item.id === state.selectedId) ?? null
-  )
-}
-
 export function invalidSelectedItemDetailValueMessage(fieldLabel: string) {
   return formatSelectedItemDetailsInvalidValueMessage(fieldLabel)
 }
@@ -43,7 +32,7 @@ export function updateSelectedItemDetails(
 ): UpdateSelectedItemDetailsResult {
   sceneStateActions.clearEditorMessage()
 
-  const selectedFurniture = getSelectedFurniture()
+  const selectedFurniture = selectSelectedFurniture(sceneStateStore.getState())
   const editorInteractionsEnabled =
     editorRuntimeStore.getState().startupPhase === 'ready'
 
