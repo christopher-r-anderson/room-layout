@@ -74,16 +74,21 @@ coordinator — never by importing a sibling feature. E.g. the outliner's
 
 ## Suggested slice order (after forks settle)
 
-1. **start-over button → command dispatch** (`start-over` command exists; F-C).
-   Removes `onOpenStartOverDialog`. `startOverDisabled` handled via env seam or
-   left until the env-store slice.
-2. **outliner `onSelectById`** → import `selectById` from `@/editor-state/selection-actions`.
-3. **preview split (P-A)** → outliner `onPreviewChange` self-sourced; then scene
-   and canvas-keyboard preview too.
+1. **start-over button → command dispatch** — **NOT a clean swap**: the mobile
+   path (`onOpenStartOverFromHeaderMoreActions`) wraps the open with
+   more-actions-drawer + focus coordination, and `startOverDisabled` is
+   env-derived. Deferred; tackle with the env seam / top-header coordinator.
+2. ✅ **outliner `onSelectById`** → imports `selectById` from `editor-state`
+   (`refactor(scene-panel): self-source outliner selection from editor-state`).
+3. ✅ **preview split (P-A)** — `editor-state/preview-actions` + `usePreviewReconciler`;
+   outliner `onPreviewChange` self-sourced; scene + canvas-keyboard preview sourced
+   from the module. **Outliner is now fully de-threaded (zero props).**
+   (`refactor(editor-state): extract preview actions and reconciler` +
+   `refactor(scene-panel): self-source outliner preview from editor-state`)
 4. **catalog state relocation** → de-thread the catalog bundle + convert the
    catalog controller to a module.
 5. **environmentConfig store seam** → finish options + `startOverDisabled` +
-   unblock start-over controller.
+   unblock start-over controller (and the start-over button dispatch from slice 1).
 6. **delete-confirm + retry** → via deletion/asset-lifecycle modules
    (focus-intent + startup seams).
 7. **Documentation reconciliation** (final stage) — see
