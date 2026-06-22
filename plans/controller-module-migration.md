@@ -1,9 +1,10 @@
 # Plan: Migrate Action-Shaped Controllers Into Store-Reading Modules (Handover §6.2)
 
-> **Status:** Tier 1 shipped (green) — history, movement, selection are feature
-> action modules; App no longer instantiates those hooks. Tier 2 blocked on a
-> direction decision (see below). Branch
-> `editor-surface-keyboard-architecture-refactor`.
+> **Status:** Tier 1 shipped (green) and re-homed — history, movement, selection
+> are now **`editor-state` coordination modules** (`editor-state/{history,
+movement,selection}-actions.ts`); App no longer instantiates those hooks.
+> Cross-feature imports are now hard-banned. Tier 2 deferred into §6.3 (decision
+> D1). Branch `editor-surface-keyboard-architecture-refactor`.
 > **Depends on:** §6.1 (shipped) — `selectionEffects` is now a module, so
 > controllers no longer receive it as a param.
 > **Precedent:** `src/features/selection/selected-item-detail-actions.ts`
@@ -15,10 +16,19 @@
 ## Goal
 
 Stop App from being the controller orchestrator. Action-shaped controllers
-become plain modules in their owning feature; the `EditorCommandApi` and feature
-components reference module functions directly instead of hook instances. Each
-controller that stops being a hook removes one reason App must instantiate it
-centrally.
+become plain modules; the `EditorCommandApi` and feature components reference
+module functions directly instead of hook instances. Each controller that stops
+being a hook removes one reason App must instantiate it centrally.
+
+**Home rule (decided).** A cross-cutting coordinator — consumed by more than one
+feature, or by app's command layer as coordination over scene + stores — lives
+in **`editor-state`** (the neutral coordination layer; importable by both app
+and features, with unrestricted scene access). Only genuinely feature-internal
+logic (used solely within one feature's own components, e.g.
+`selected-item-detail-actions`) lives in that feature. App keeps only
+composition-context concerns (editor-refs DOM, `environmentConfig`, startup
+wiring, command-api assembly). Cross-feature imports are banned outright
+(`eslint.config.js`); shared concerns route through `editor-state` or `shared`.
 
 ## Controller disposition
 
@@ -36,11 +46,11 @@ Inputs are only `editorInteractionsEnabled` (→ `editorRuntimeStore.getState()`
 constants, and store selectors (→ `.getState()`). No App callbacks, no
 App-local state, no startup config.
 
-| Controller                 | New module                                | Functions                                               | Sourced reads                                                                                             |
-| -------------------------- | ----------------------------------------- | ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| `use-history-controller`   | `features/history/history-actions.ts`     | `undo`, `redo`                                          | enabled→store                                                                                             |
-| `use-movement-controller`  | `features/selection/movement-actions.ts`  | `moveSelection`, `rotateSelection`                      | enabled→store, `ROTATION_STEP_RADIANS` constant, selected furniture→`selectSelectedFurniture(getState())` |
-| `use-selection-controller` | `features/selection/selection-actions.ts` | `selectByCanvasPointer`, `selectById`, `clearSelection` | enabled→store, `selectedId`→`getState()`                                                                  |
+| Controller                 | New module                          | Functions                                               | Sourced reads                                                                                             |
+| -------------------------- | ----------------------------------- | ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `use-history-controller`   | `editor-state/history-actions.ts`   | `undo`, `redo`                                          | enabled→store                                                                                             |
+| `use-movement-controller`  | `editor-state/movement-actions.ts`  | `moveSelection`, `rotateSelection`                      | enabled→store, `ROTATION_STEP_RADIANS` constant, selected furniture→`selectSelectedFurniture(getState())` |
+| `use-selection-controller` | `editor-state/selection-actions.ts` | `selectByCanvasPointer`, `selectById`, `clearSelection` | enabled→store, `selectedId`→`getState()`                                                                  |
 
 Consumers after conversion: `EditorCommandApi` calls module fns directly;
 `use-canvas-keyboard-controller` imports `selectById` directly (drops one thread);

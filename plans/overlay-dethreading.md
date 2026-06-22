@@ -1,9 +1,14 @@
 # Plan: De-thread Top Header & Remaining Overlay Props (Handover §6.3)
 
-> **Status:** proposed — forks to settle before implementing. Branch
+> **Status:** linchpin fork resolved; ready to implement in slices. Branch
 > `editor-surface-keyboard-architecture-refactor`.
-> **Prereq context:** §6.1 done (selection-effects module), §6.2 Tier 1 done
-> (history/movement/selection action modules).
+> **Prereq context:** §6.1 done (selection-effects module), §6.2 Tier 1 done and
+> re-homed to `editor-state` (history/movement/selection coordination modules),
+> cross-feature imports hard-banned.
+> **Seam model (decided):** cross-cutting coordinators live in `editor-state`;
+> features import them from there (never from sibling features); app keeps only
+> composition-context concerns. So a feature de-threading a callback either reads
+> a store, dispatches a command, or imports an `editor-state` coordinator.
 
 ## The threading surface (mapped)
 
@@ -33,38 +38,19 @@ history-tools **already dispatch via `useCommandDispatch()`** — established
 precedent for buttons mapping to existing `EditorCommand` kinds (`start-over`,
 `undo`, etc.).
 
-## Linchpin fork — where cross-feature-consumed action modules live
+## Linchpin fork — RESOLVED
 
-`eslint.config.js:221` forbids feature→feature **deep** imports
-(`@/features/<other>/<path>`); they must go through a feature **public API**
-(`@/features/<other>` → an `index.ts`). This blocks the obvious de-thread of
-`onSelectById` (outliner is `scene-panel`; `selectById` is in
-`features/selection`). It also means several §6.3 de-threads need a decision on
-where the shared action lives. (App-layer consumers like the canvas-keyboard
-controller are unaffected — `src/app` may deep-import features.)
+Decision: **cross-cutting coordinators live in `editor-state`; ban all
+cross-feature imports** (F-A). The deep-import-with-`index.ts`-escape option
+(F-B) was rejected in favour of a strictly-vertical dependency graph (app →
+features → editor-state → scene/shared). The selection/movement/history
+coordinators have been re-homed to `editor-state`, and `eslint.config.js` now
+hard-bans any `@/features/*` import from within a feature.
 
-**Options (apply consistently):**
-
-- **F-A — move cross-feature-consumed actions to `editor-state`.** selection/
-  movement actions are scene + selection-meta + selection-effects + announcement
-  coordination — arguably neutral coordination that belongs in `editor-state`,
-  which any feature may import. Clean imports, no new public-API surface. Cost:
-  re-homes Slice A3's `features/selection/selection-actions.ts` (and movement)
-  into `editor-state`; blurs "feature owns its action" slightly.
-- **F-B — add feature public APIs (`features/selection/index.ts`).** Keep actions
-  in their owning feature; expose the cross-feature-needed ones via `index.ts`;
-  consumers import `@/features/selection`. Preserves feature ownership; matches
-  the eslint message's intent ("go through a feature public API"). Cost: new
-  index modules + knip wiring; the `^@/features/[^/]+/.+` rule message says it is
-  "currently a warning while auditing" — confirm severity first.
-- **F-C — command dispatch where a command already exists.** For buttons whose
-  action is already an `EditorCommand` (`start-over`), dispatch instead of
-  importing (no cross-feature import at all). Does not cover `onSelectById`
-  (returns `SelectByIdResult`, not a command) or preview.
-
-Recommendation: **F-C wherever a command exists** (start-over button), **F-A for
-selection/movement** (they are coordination-shaped and already depend only on
-editor-state + scene), revisiting F-B only if we want strict feature ownership.
+Consequence for §6.3: a feature de-threads a callback by (a) reading a store,
+(b) dispatching an existing `EditorCommand`, or (c) importing an `editor-state`
+coordinator — never by importing a sibling feature. E.g. the outliner's
+`onSelectById` becomes `import { selectById } from '@/editor-state/selection-actions'`.
 
 ## Other forks
 
@@ -91,7 +77,7 @@ editor-state + scene), revisiting F-B only if we want strict feature ownership.
 1. **start-over button → command dispatch** (`start-over` command exists; F-C).
    Removes `onOpenStartOverDialog`. `startOverDisabled` handled via env seam or
    left until the env-store slice.
-2. **outliner `onSelectById`** via the chosen home (F-A/F-B).
+2. **outliner `onSelectById`** → import `selectById` from `@/editor-state/selection-actions`.
 3. **preview split (P-A)** → outliner `onPreviewChange` self-sourced; then scene
    and canvas-keyboard preview too.
 4. **catalog state relocation** → de-thread the catalog bundle + convert the
@@ -100,6 +86,8 @@ editor-state + scene), revisiting F-B only if we want strict feature ownership.
    unblock start-over controller.
 6. **delete-confirm + retry** → via deletion/asset-lifecycle modules
    (focus-intent + startup seams).
+7. **Documentation reconciliation** (final stage) — see
+   `plans/documentation-reconciliation.md`; run after the runtime work is green.
 
 Each slice: full validation gate + the a11y/hotkeys e2e flows.
 
