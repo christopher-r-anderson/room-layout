@@ -21,7 +21,10 @@ import {
   previewFromScene,
 } from '@/editor-state/preview-actions'
 import { usePreviewReconciler } from '@/editor-state/use-preview-reconciler'
-import { useSceneIsAtDefaults } from '@/editor-state/use-scene-is-at-defaults'
+import {
+  getSceneIsAtDefaults,
+  useSceneIsAtDefaults,
+} from '@/editor-state/use-scene-is-at-defaults'
 import { startSelectionEffectsReconciler } from '@/editor-state/selection-effects'
 import {
   clearSelection,
@@ -166,7 +169,7 @@ function App() {
   const dialogRuntimeContext = useMemo(
     () =>
       buildDialogRuntimeContext({
-        canStartOver: () => true,
+        canStartOver: () => !getSceneIsAtDefaults(),
       }),
     [],
   )
