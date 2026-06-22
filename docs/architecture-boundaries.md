@@ -60,14 +60,16 @@ For local context inside each area, see:
 ## Placement Rules
 
 1. If code is consumed by both `app` and `features`, it cannot live in `app`.
-2. Put feature orchestration in a feature folder unless it coordinates multiple features.
-3. Put cross-feature state in `editor-state`, not feature-local modules.
-4. Keep `shared/ui` dependency-free from app/features/state/scene runtime code.
-5. Keep `shared/layout` lower-level than `app/chrome`.
-6. Keep scene internals in `scene/internal` and avoid importing them outside scene.
-7. Use approved scene contract imports outside scene, not arbitrary `@/scene/**` paths.
-8. Do not import `src/test` from runtime code.
-9. Keep dialog definition ownership in features (or shell-only app chrome when shell-specific), with app responsible for registry bootstrap composition and editor-state responsible for generic dialog orchestration only.
+2. Put feature-internal orchestration in the owning feature folder. If logic coordinates multiple features, the coordinator lives in `editor-state`.
+3. Put cross-feature state **and** cross-cutting coordination (stores, actions, coordinator modules) in `editor-state`, not feature-local modules.
+4. Features must not import other features. `@/features/*` imports from within a feature are hard-banned in `eslint.config.js`. De-thread instead by reading a store, dispatching an `EditorCommand`, or importing an `editor-state` coordinator.
+5. Keep `app` composition-only: shell wiring, providers, and registry bootstrap. App does not own cross-cutting runtime coordination — that lives in `editor-state`.
+6. Keep `shared/ui` dependency-free from app/features/state/scene runtime code.
+7. Keep `shared/layout` lower-level than `app/chrome`.
+8. Keep scene internals in `scene/internal` and avoid importing them outside scene.
+9. Use approved scene contract imports outside scene, not arbitrary `@/scene/**` paths.
+10. Do not import `src/test` from runtime code.
+11. Keep dialog definition ownership in features (or shell-only app chrome when shell-specific), with app responsible for registry bootstrap composition and editor-state responsible for generic dialog orchestration only.
 
 ## Current Exceptions
 
@@ -83,8 +85,8 @@ These are temporary or intentionally narrow.
 2. Module public entrypoints
    - Introduce `index.ts` entrypoints for cross-layer modules that are imported externally.
    - Keep purely local modules private.
-3. Controller ownership
-   - Move feature-specific controllers from app-level orchestration into owning features when boundaries are clear.
+3. Coordinator ownership (largely realized)
+   - The former app-level controllers have moved out of `app`: cross-cutting coordinators now live in `editor-state` and feature-internal orchestration in the owning feature. Convert any remaining app controllers as their seams clarify.
 4. Feature internal structure
    - Add internal subfolders only where feature size and churn justify it.
 5. Shared lib type ownership

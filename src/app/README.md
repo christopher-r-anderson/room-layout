@@ -10,14 +10,16 @@ Contains
 
 - `App.tsx`: composition root.
 - `chrome/`: app-shell composition and connected orchestration.
-- `controllers/`: app-level orchestration hooks that coordinate multiple domains.
-- `hooks/`: app-level hooks used by composition or shell orchestration.
+- `controllers/`: thin shell-composition hooks (e.g. canvas-keyboard, share,
+  request-outliner-focus). Cross-cutting coordination lives in `editor-state`,
+  not here.
 - `dialogs/`: app-owned dialog runtime context builder and registry bootstrap composition.
 - `testing/`: runtime test harness hooks used by browser automation.
 
 Should not contain
 
 - Generic reusable primitives that belong in `src/shared`.
+- Cross-cutting runtime coordination (put coordinators in `src/editor-state`).
 - Scene internals.
 - Test-only infrastructure (put in `src/test`).
 

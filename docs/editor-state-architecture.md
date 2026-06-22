@@ -11,6 +11,12 @@ It allows app and feature code to coordinate dialog orchestration, startup
 runtime state, selection metadata, and app-facing scene mirrors without moving
 scene-domain mutation rules out of the scene layer.
 
+It is also the home for **cross-cutting coordinators**: module-level action
+functions that orchestrate writes across several stores (and scene commands) for
+behavior that spans features. These replaced the former app-level controller
+hooks. App is composition-only; feature-internal orchestration stays in the
+owning feature; only logic that coordinates multiple features lives here.
+
 This document is architecture reference guidance. It focuses on stable
 responsibility and boundaries, not migration history.
 
@@ -62,7 +68,7 @@ Dialog open behavior uses two layers of gating:
 
 Startup readiness is the only store-level global gate. Additional rules such as
 selection requirements or start-over eligibility belong in feature-level guards
-or controller-level intent handling.
+or coordinator-level intent handling.
 
 ### Active-Surface Invariant and Blocking Semantics
 
@@ -114,20 +120,23 @@ Dialog-store must not:
 - write to `selection-meta-store`
 - depend on shell layout context
 
-Cross-store writes stay in app/feature controller orchestration.
+Cross-store writes stay in the editor-state coordination modules (or
+feature-internal actions), not in the dialog store.
 
 ## Other Editor-State Stores
 
 `editor-runtime-store`
 
-- startup phase and runtime readiness state
-- startup errors and restore outcomes
+- the single owner of the startup phase machine (`loading | ready | errored`)
+- startup errors and restore outcomes/attempt tracking
 - runtime loading flags
+- the startup-cycle counters `sceneEpoch` (Scene remount key) and `retryToken`
+  (re-triggers the manifest fetch), bumped by `beginAssetLoad`/`requestRetry`
 
 `selection-meta-store`
 
 - app-side selection metadata and focus handoff intent
-- outliner focus reconciliation signals
+- outliner and room-view focus reconciliation signals
 
 `scene-state-store`
 
@@ -135,6 +144,46 @@ Cross-store writes stay in app/feature controller orchestration.
 - selection id, preview id, drag state, finishes, history availability,
   editor messages
 - remains an app-facing mirror for scene-owned mutation domain behavior
+
+`scene-assets-store`
+
+- app-facing mirror of the startup-loaded catalog manifest (catalog,
+  collections, environment config)
+- lets features read catalog/finishes through narrow hooks instead of threaded
+  props; populated by the startup bootstrap
+
+## Coordination Modules
+
+Cross-cutting behavior that spans features is implemented as module-level action
+functions in `editor-state`, not as app controller hooks. They read/write the
+stores above and call `sceneCommands`, and are imported directly by the UI
+(buttons, command dispatch, scene callbacks).
+
+- `history-actions`, `movement-actions`, `selection-actions` — undo/redo,
+  move/rotate, and selection coordination, gated on startup readiness.
+- `preview-actions` + `use-preview-reconciler` — preview hysteresis as module
+  cells plus a thin reconciler effect.
+- `startup-coordinator` — `completeAssetLoad` (one-time restore + mark ready),
+  `notifyAssetError`, and `requestAssetRetry`; sources catalog/finishes from
+  `scene-assets-store` and drives `editor-runtime-store`. The React-coupled
+  manifest fetch lives in the feature hook `use-startup-bootstrap`, keyed on the
+  store's `retryToken`.
+- `scene-reset`, `scene-draft`, `scene-url`, `restore-flow` — scene-persistence
+  coordination (reset op, localStorage autosave, URL serialization, restore
+  orchestration). Homed here so coordinators can use them without a
+  feature-to-feature import.
+
+Feature-internal coordination (for example `features/selection/deletion-actions`,
+`features/catalog/catalog-actions`) stays in the owning feature and imports
+editor-state coordinators rather than sibling features.
+
+### Selection-Effects (startup-subscription pattern)
+
+`selection-effects` holds pending selection/source/focus intent in module cells
+and reconciles it via a `scene-state-store` subscription started once at startup
+(`startSelectionEffectsReconciler`). It uses `queueMicrotask` to preserve
+note-before-reconcile ordering against synchronous `sceneCommands` writes. It
+has no React surface.
 
 ## Scene Ownership and App-to-Scene Seams
 
@@ -152,12 +201,12 @@ Steady-state flow:
 
 1. Scene code mutates scene-domain state.
 2. Scene code publishes app-facing mirrors to scene/editor runtime seams.
-3. Dialog definitions and app controllers read through store selectors and
-   context seams.
+3. Dialog definitions and editor-state coordinators read through store selectors
+   and context seams.
 4. App and feature UI use generic dialog actions/selectors for top-level
    surfaces.
-5. App-side side effects (announcements, focus reconciliation, restore
-   messaging) run in controller hooks.
+5. Cross-cutting side effects (announcements, focus reconciliation, restore
+   messaging) run in editor-state coordination modules.
 
 ## How to Use Dialog Store
 
@@ -180,7 +229,7 @@ Steady-state flow:
 
 - global readiness gate: dialog-store startup gate
 - feature guard logic: dialog definition `canOpen(...)` and/or feature
-  controller intent checks
+  coordinator intent checks
 - focus target resolution to DOM: top-header or owning UI coordinator
 
 ### What Not to Put in Dialog Store
@@ -198,5 +247,5 @@ These seams are intentional in the current architecture:
 - `scene-state-store` is app-facing mirror state for scene domain
 - projection-driven geometry data still comes from scene snapshot seams where
   needed
-- startup restore orchestration remains app-level coordination over
-  scene-owned restore execution
+- startup restore orchestration is editor-state coordination (the
+  `startup-coordinator`) over scene-owned restore execution

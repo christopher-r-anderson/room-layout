@@ -28,13 +28,13 @@ There are **two** phase machines, and the second is a mirror of the first:
 
 ### What the reducer actually owns, and where it really belongs
 
-| Reducer state                         | True home today                              | Verdict                                  |
-| ------------------------------------- | -------------------------------------------- | ---------------------------------------- |
-| `phase`                               | mirrored → `editor-runtime-store.startupPhase` | **duplicate** — store should own it      |
-| `manifestCatalog/Collections/Environment` | mirrored → `scene-assets-store`          | **duplicate** — store already owns it    |
-| `assetError` / `assetErrorKind`       | mirrored → `editor-runtime-store.assetError` | **duplicate**                            |
-| `cacheInvalidationKey`                | reducer only → EditorBody prop → remount key | a counter; can live in the store         |
-| `retryKey`                            | reducer only → re-triggers fetch effect      | a counter; can be a store token          |
+| Reducer state                             | True home today                                | Verdict                               |
+| ----------------------------------------- | ---------------------------------------------- | ------------------------------------- |
+| `phase`                                   | mirrored → `editor-runtime-store.startupPhase` | **duplicate** — store should own it   |
+| `manifestCatalog/Collections/Environment` | mirrored → `scene-assets-store`                | **duplicate** — store already owns it |
+| `assetError` / `assetErrorKind`           | mirrored → `editor-runtime-store.assetError`   | **duplicate**                         |
+| `cacheInvalidationKey`                    | reducer only → EditorBody prop → remount key   | a counter; can live in the store      |
+| `retryKey`                                | reducer only → re-triggers fetch effect        | a counter; can be a store token       |
 
 So the reducer exists **only** to (a) hold state it then mirrors elsewhere, and
 (b) bump two counters that drive a React remount and a React fetch effect. Both
@@ -45,7 +45,7 @@ counters are plain integers — nothing about them requires a reducer.
 - **The manifest fetch** (`fetchCatalogManifest` + AbortController + timeout +
   cleanup, keyed today on `retryKey`). This is a real side-effecting lifecycle.
 - **The `Scene` remount** — `cacheInvalidationKey` is the `SceneAssetErrorBoundary`
-  `key` in `editor-body.tsx`. A render concern, but the *value* is just a counter
+  `key` in `editor-body.tsx`. A render concern, but the _value_ is just a counter
   a component can read from a store.
 
 ### Imperative scene seams (callable from anywhere, no React needed)
@@ -76,7 +76,7 @@ can't be cleanly de-threaded while the reducer is the source of truth.
 
 The earlier draft floated **B1 (surgical: add a `retryToken`, keep the reducer
 thin)** vs **B2 (full collapse)**. **I recommend the full collapse**, because the
-duplication *is* the defect: B1 resolves the retry thread but leaves two phase
+duplication _is_ the defect: B1 resolves the retry thread but leaves two phase
 machines and the mirror effects in place — the exact smell this phase exists to
 remove. Valuing end quality over change size, the right end-state is:
 
@@ -92,7 +92,7 @@ The reducer's `loading-manifest` vs `loading-assets` split is **never surfaced**
 `startupLoadingActive` is `manifest || assets`, and `InitializationProgress` only
 reads that boolean. The store's single `loading` covers both. The two counters
 (`cacheInvalidationKey`, `retryKey`) move into the store as `sceneEpoch` and
-`retryToken`; they stay *two* counters because their bump rules differ (epoch
+`retryToken`; they stay _two_ counters because their bump rules differ (epoch
 bumps on every asset-load cycle so the Scene remounts; retryToken bumps only on
 retry so the fetch re-runs).
 
