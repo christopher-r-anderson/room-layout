@@ -13,17 +13,18 @@ import {
   selectionMetaStore,
 } from '@/editor-state/selection-meta-store'
 import { sceneCommands } from '@/scene/scene-commands'
+import { selectionEffects } from '@/editor-state/selection-effects'
 import { useSelectionController } from './use-selection-controller'
 
-function createSelectionEffects() {
-  return {
+vi.mock('@/editor-state/selection-effects', () => ({
+  selectionEffects: {
     notePendingSelection: vi.fn(),
     notePendingSource: vi.fn(),
     notePostDeleteOutlinerFocusIndex: vi.fn(),
     notePostDeleteFocusTarget: vi.fn(),
     consumePostDeleteFocusTarget: vi.fn(),
-  }
-}
+  },
+}))
 
 const CHAIR = {
   id: 'chair-1',
@@ -47,17 +48,16 @@ describe('useSelectionController', () => {
 
   afterEach(() => {
     vi.restoreAllMocks()
+    vi.clearAllMocks()
   })
 
   it('skips scene commands when interactions are disabled', () => {
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
     const selectById = vi.spyOn(sceneCommands, 'selectById')
     const clearSelection = vi.spyOn(sceneCommands, 'clearSelection')
-    const selectionEffects = createSelectionEffects()
 
     const { result } = renderHook(() =>
       useSelectionController({
-        selectionEffects,
         editorInteractionsEnabled: false,
       }),
     )
@@ -74,11 +74,8 @@ describe('useSelectionController', () => {
   })
 
   it('reconciles canvas pointer selection through selectionEffects', () => {
-    const selectionEffects = createSelectionEffects()
-
     const { result } = renderHook(() =>
       useSelectionController({
-        selectionEffects,
         editorInteractionsEnabled: true,
       }),
     )
@@ -99,11 +96,9 @@ describe('useSelectionController', () => {
 
   it('clears pending source when toggling the same selection off via canvas pointer', () => {
     sceneStateActions.setSelectedId('chair-1')
-    const selectionEffects = createSelectionEffects()
 
     const { result } = renderHook(() =>
       useSelectionController({
-        selectionEffects,
         editorInteractionsEnabled: true,
       }),
     )
@@ -122,11 +117,9 @@ describe('useSelectionController', () => {
       sceneStateActions.setSelectedId(id)
       return { ok: true, status: 'selected' }
     })
-    const selectionEffects = createSelectionEffects()
 
     const { result } = renderHook(() =>
       useSelectionController({
-        selectionEffects,
         editorInteractionsEnabled: true,
       }),
     )
@@ -151,11 +144,9 @@ describe('useSelectionController', () => {
     const clearSelection = vi
       .spyOn(sceneCommands, 'clearSelection')
       .mockImplementation(() => undefined)
-    const selectionEffects = createSelectionEffects()
 
     const { result } = renderHook(() =>
       useSelectionController({
-        selectionEffects,
         editorInteractionsEnabled: true,
       }),
     )

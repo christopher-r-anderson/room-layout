@@ -7,15 +7,13 @@ import { selectionMetaActions } from '@/editor-state/selection-meta-store'
 import { sceneCommands } from '@/scene/scene-commands'
 import type { SelectByIdResult } from '@/scene/scene.types'
 import type { InteractionSource } from '@/editor-state/types/interaction.types'
-import type { SelectionEffectsApi } from '@/editor-state/selection-effects'
+import { selectionEffects } from '@/editor-state/selection-effects'
 
 interface SelectionControllerOptions {
-  selectionEffects: SelectionEffectsApi
   editorInteractionsEnabled: boolean
 }
 
 export function useSelectionController({
-  selectionEffects,
   editorInteractionsEnabled,
 }: SelectionControllerOptions) {
   const selectedId = useSelectedId()
@@ -39,7 +37,7 @@ export function useSelectionController({
       )
       selectionMetaActions.setSelectedSource('canvas-pointer')
     },
-    [editorInteractionsEnabled, selectedId, selectionEffects],
+    [editorInteractionsEnabled, selectedId],
   )
 
   const handleSelectById = useCallback(
@@ -83,7 +81,7 @@ export function useSelectionController({
 
       return result
     },
-    [editorInteractionsEnabled, selectedId, selectionEffects],
+    [editorInteractionsEnabled, selectedId],
   )
 
   const handleClearSelection = useCallback(() => {
@@ -97,7 +95,7 @@ export function useSelectionController({
       requestOutlinerFocus: false,
     })
     sceneStateActions.clearEditorMessage()
-  }, [editorInteractionsEnabled, selectionEffects])
+  }, [editorInteractionsEnabled])
 
   return {
     handleCanvasPointerSelection,

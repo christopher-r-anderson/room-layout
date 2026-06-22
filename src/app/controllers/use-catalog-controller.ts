@@ -6,18 +6,16 @@ import {
   ADD_FURNITURE_NO_SPACE_MESSAGE,
   ADD_FURNITURE_UNKNOWN_CATALOG_MESSAGE,
 } from '@/shared/messages/command-messages'
-import type { SelectionEffectsApi } from '@/editor-state/selection-effects'
+import { selectionEffects } from '@/editor-state/selection-effects'
 
 interface CatalogControllerOptions {
   setCatalogOpen: (open: boolean) => boolean
-  selectionEffects: SelectionEffectsApi
   catalogIdToAdd: string
   editorInteractionsEnabled: boolean
 }
 
 export function useCatalogController({
   setCatalogOpen,
-  selectionEffects,
   catalogIdToAdd,
   editorInteractionsEnabled,
 }: CatalogControllerOptions) {
@@ -54,7 +52,7 @@ export function useCatalogController({
       requestOutlinerFocus: false,
     })
     return true
-  }, [catalogIdToAdd, editorInteractionsEnabled, selectionEffects])
+  }, [catalogIdToAdd, editorInteractionsEnabled])
 
   const handleCatalogDrawerOpenChange = useCallback(
     (open: boolean) => {

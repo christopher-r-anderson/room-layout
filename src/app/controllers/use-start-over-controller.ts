@@ -5,13 +5,12 @@ import { sceneStateActions } from '@/editor-state/scene-state-store'
 import { sceneCommands } from '@/scene/scene-commands'
 import { clearSceneDraft } from '@/features/url-scene/scene-draft'
 import { toast } from 'sonner'
-import type { SelectionEffectsApi } from '@/editor-state/selection-effects'
+import { selectionEffects } from '@/editor-state/selection-effects'
 
 interface StartOverControllerOptions {
   closeActiveDialog: () => void
   openStartOverDialog: (request?: AppDialogOpenRequest) => boolean
   canStartOver: boolean
-  selectionEffects: SelectionEffectsApi
   clearPreview: () => void
   defaults: {
     floorFinishId: string
@@ -23,7 +22,6 @@ export function useStartOverController({
   closeActiveDialog,
   openStartOverDialog,
   canStartOver,
-  selectionEffects,
   clearPreview,
   defaults,
 }: StartOverControllerOptions) {
@@ -66,7 +64,6 @@ export function useStartOverController({
     defaults.floorFinishId,
     defaults.wallFinishId,
     closeActiveDialog,
-    selectionEffects,
   ])
 
   return {

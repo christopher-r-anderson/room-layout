@@ -5,14 +5,13 @@ import { sceneStateActions, useItems } from '@/editor-state/scene-state-store'
 import { useSelectedSource } from '@/editor-state/selection-meta-store'
 import { sceneCommands } from '@/scene/scene-commands'
 import { DELETE_SELECTION_MISSING_MESSAGE } from '@/shared/messages/command-messages'
-import type { SelectionEffectsApi } from '@/editor-state/selection-effects'
+import { selectionEffects } from '@/editor-state/selection-effects'
 
 interface DeletionControllerOptions {
   closeActiveDialog: () => void
   openDeleteDialog: () => boolean
   pendingDeleteFurniture: FurnitureItem | null
   editorInteractionsEnabled: boolean
-  selectionEffects: SelectionEffectsApi
   focusRoomView: () => void
 }
 
@@ -21,7 +20,6 @@ export function useDeletionController({
   openDeleteDialog,
   pendingDeleteFurniture,
   editorInteractionsEnabled,
-  selectionEffects,
   focusRoomView,
 }: DeletionControllerOptions) {
   const items = useItems()
@@ -88,7 +86,6 @@ export function useDeletionController({
     items,
     pendingDeleteFurniture,
     selectedSource,
-    selectionEffects,
   ])
 
   const handleOpenDeleteDialog = useCallback(() => {
@@ -100,7 +97,7 @@ export function useDeletionController({
     } else {
       selectionEffects.notePostDeleteFocusTarget(null)
     }
-  }, [openDeleteDialog, selectionEffects])
+  }, [openDeleteDialog])
 
   const handleOpenDeleteDialogFromRoomView = useCallback(() => {
     const opened = openDeleteDialog()
@@ -111,7 +108,7 @@ export function useDeletionController({
     } else {
       selectionEffects.notePostDeleteFocusTarget(null)
     }
-  }, [openDeleteDialog, selectionEffects])
+  }, [openDeleteDialog])
 
   return {
     handleConfirmDeleteSelection,

@@ -15,6 +15,7 @@ import {
 import { sceneCommands } from '@/scene/scene-commands'
 import { DELETE_SELECTION_MISSING_MESSAGE } from '@/shared/messages/command-messages'
 import { announcementActions } from '@/editor-state/announcement-store'
+import { selectionEffects } from '@/editor-state/selection-effects'
 import { useDeletionController } from './use-deletion-controller'
 
 vi.mock('@/editor-state/announcement-store', () => ({
@@ -24,6 +25,16 @@ vi.mock('@/editor-state/announcement-store', () => ({
     clearAssertiveAnnouncement: vi.fn(),
     queueMovementAnnouncement: vi.fn(),
     clearQueuedMovementAnnouncement: vi.fn(),
+  },
+}))
+
+vi.mock('@/editor-state/selection-effects', () => ({
+  selectionEffects: {
+    notePendingSelection: vi.fn(),
+    notePendingSource: vi.fn(),
+    notePostDeleteOutlinerFocusIndex: vi.fn(),
+    notePostDeleteFocusTarget: vi.fn(),
+    consumePostDeleteFocusTarget: vi.fn().mockReturnValue(null),
   },
 }))
 
@@ -38,16 +49,6 @@ const CHAIR = {
   position: [0, 0, 0] as [number, number, number],
   rotationY: 0,
   sourcePath: '/models/chair.glb',
-}
-
-function createSelectionEffects() {
-  return {
-    notePendingSelection: vi.fn(),
-    notePendingSource: vi.fn(),
-    notePostDeleteOutlinerFocusIndex: vi.fn(),
-    notePostDeleteFocusTarget: vi.fn(),
-    consumePostDeleteFocusTarget: vi.fn().mockReturnValue(null),
-  }
 }
 
 function createDialogState(overrides?: {
@@ -79,7 +80,6 @@ describe('useDeletionController', () => {
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(false)
     const deleteSelection = vi.spyOn(sceneCommands, 'deleteSelection')
     const dialogState = createDialogState()
-    const selectionEffects = createSelectionEffects()
 
     const { result } = renderHook(() =>
       useDeletionController({
@@ -87,7 +87,6 @@ describe('useDeletionController', () => {
         openDeleteDialog: dialogState.openDeleteDialog,
         pendingDeleteFurniture: dialogState.pendingDeleteFurniture,
         editorInteractionsEnabled: true,
-        selectionEffects,
         focusRoomView: vi.fn(),
       }),
     )
@@ -108,7 +107,6 @@ describe('useDeletionController', () => {
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
     const deleteSelection = vi.spyOn(sceneCommands, 'deleteSelection')
     const dialogState = createDialogState()
-    const selectionEffects = createSelectionEffects()
 
     const { result } = renderHook(() =>
       useDeletionController({
@@ -116,7 +114,6 @@ describe('useDeletionController', () => {
         openDeleteDialog: dialogState.openDeleteDialog,
         pendingDeleteFurniture: dialogState.pendingDeleteFurniture,
         editorInteractionsEnabled: false,
-        selectionEffects,
         focusRoomView: vi.fn(),
       }),
     )
@@ -137,7 +134,6 @@ describe('useDeletionController', () => {
     selectionMetaActions.setSelectedSource('canvas-keyboard')
     const focusRoomView = vi.fn()
     const dialogState = createDialogState()
-    const selectionEffects = createSelectionEffects()
 
     const { result } = renderHook(() =>
       useDeletionController({
@@ -145,7 +141,6 @@ describe('useDeletionController', () => {
         openDeleteDialog: dialogState.openDeleteDialog,
         pendingDeleteFurniture: dialogState.pendingDeleteFurniture,
         editorInteractionsEnabled: true,
-        selectionEffects,
         focusRoomView,
       }),
     )
@@ -169,7 +164,6 @@ describe('useDeletionController', () => {
     selectionMetaActions.setSelectedSource('panel-keyboard')
     const focusRoomView = vi.fn()
     const dialogState = createDialogState()
-    const selectionEffects = createSelectionEffects()
 
     const { result } = renderHook(() =>
       useDeletionController({
@@ -177,7 +171,6 @@ describe('useDeletionController', () => {
         openDeleteDialog: dialogState.openDeleteDialog,
         pendingDeleteFurniture: dialogState.pendingDeleteFurniture,
         editorInteractionsEnabled: true,
-        selectionEffects,
         focusRoomView,
       }),
     )
@@ -194,7 +187,6 @@ describe('useDeletionController', () => {
 
   it('records post-delete focus target on open from outliner', () => {
     const dialogState = createDialogState()
-    const selectionEffects = createSelectionEffects()
 
     const { result } = renderHook(() =>
       useDeletionController({
@@ -202,7 +194,6 @@ describe('useDeletionController', () => {
         openDeleteDialog: dialogState.openDeleteDialog,
         pendingDeleteFurniture: dialogState.pendingDeleteFurniture,
         editorInteractionsEnabled: true,
-        selectionEffects,
         focusRoomView: vi.fn(),
       }),
     )
@@ -218,7 +209,6 @@ describe('useDeletionController', () => {
 
   it('records room-view focus target on open from room view', () => {
     const dialogState = createDialogState()
-    const selectionEffects = createSelectionEffects()
 
     const { result } = renderHook(() =>
       useDeletionController({
@@ -226,7 +216,6 @@ describe('useDeletionController', () => {
         openDeleteDialog: dialogState.openDeleteDialog,
         pendingDeleteFurniture: dialogState.pendingDeleteFurniture,
         editorInteractionsEnabled: true,
-        selectionEffects,
         focusRoomView: vi.fn(),
       }),
     )
@@ -243,7 +232,6 @@ describe('useDeletionController', () => {
   it('clears the post-delete target when the dialog refuses to open', () => {
     const dialogState = createDialogState()
     dialogState.openDeleteDialog.mockReturnValue(false)
-    const selectionEffects = createSelectionEffects()
 
     const { result } = renderHook(() =>
       useDeletionController({
@@ -251,7 +239,6 @@ describe('useDeletionController', () => {
         openDeleteDialog: dialogState.openDeleteDialog,
         pendingDeleteFurniture: dialogState.pendingDeleteFurniture,
         editorInteractionsEnabled: true,
-        selectionEffects,
         focusRoomView: vi.fn(),
       }),
     )

@@ -2,16 +2,14 @@ import { useCallback } from 'react'
 import { announcementActions } from '@/editor-state/announcement-store'
 import { sceneStateActions } from '@/editor-state/scene-state-store'
 import { sceneCommands } from '@/scene/scene-commands'
-import type { SelectionEffectsApi } from '@/editor-state/selection-effects'
+import { selectionEffects } from '@/editor-state/selection-effects'
 
 interface HistoryControllerOptions {
   editorInteractionsEnabled: boolean
-  selectionEffects: SelectionEffectsApi
 }
 
 export function useHistoryController({
   editorInteractionsEnabled,
-  selectionEffects,
 }: HistoryControllerOptions) {
   const handleUndo = useCallback(() => {
     const undid =
@@ -30,7 +28,7 @@ export function useHistoryController({
     if (undid) {
       announcementActions.announcePolite('Undo complete.')
     }
-  }, [editorInteractionsEnabled, selectionEffects])
+  }, [editorInteractionsEnabled])
 
   const handleRedo = useCallback(() => {
     const redid =
@@ -49,7 +47,7 @@ export function useHistoryController({
     if (redid) {
       announcementActions.announcePolite('Redo complete.')
     }
-  }, [editorInteractionsEnabled, selectionEffects])
+  }, [editorInteractionsEnabled])
 
   return {
     handleUndo,

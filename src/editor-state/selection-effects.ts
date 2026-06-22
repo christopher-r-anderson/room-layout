@@ -84,26 +84,24 @@ function announceSelectionChange(options: {
  * `useSelectionEffectsReconciler`.
  */
 export const selectionEffects = {
-  notePendingSelection(behavior: PendingSelectionChangeBehavior | null) {
+  notePendingSelection: (behavior: PendingSelectionChangeBehavior | null) => {
     pendingSelectionChangeBehavior = behavior
   },
-  notePendingSource(source: InteractionSource) {
+  notePendingSource: (source: InteractionSource) => {
     pendingSelectionSource = source
   },
-  notePostDeleteOutlinerFocusIndex(index: number | null) {
+  notePostDeleteOutlinerFocusIndex: (index: number | null) => {
     pendingPostDeleteOutlinerFocusIndex = index
   },
-  notePostDeleteFocusTarget(target: 'room-view' | 'outliner' | null) {
+  notePostDeleteFocusTarget: (target: 'room-view' | 'outliner' | null) => {
     pendingDeleteFocusTarget = target
   },
-  consumePostDeleteFocusTarget(): 'room-view' | 'outliner' | null {
+  consumePostDeleteFocusTarget: (): 'room-view' | 'outliner' | null => {
     const target = pendingDeleteFocusTarget
     pendingDeleteFocusTarget = null
     return target
   },
 }
-
-export type SelectionEffectsApi = typeof selectionEffects
 
 export function resetSelectionEffects() {
   pendingSelectionSource = null

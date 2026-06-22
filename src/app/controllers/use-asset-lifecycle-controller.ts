@@ -22,11 +22,10 @@ import type { FurnitureCatalogEntry } from '@/scene/objects/furniture-catalog'
 import { toast } from 'sonner'
 import { runStartupRestoreFlow } from './_shared/restore-flow'
 import type { RestorableState } from './_shared/restore-flow.types'
-import type { SelectionEffectsApi } from '@/editor-state/selection-effects'
+import { selectionEffects } from '@/editor-state/selection-effects'
 
 interface AssetLifecycleControllerOptions {
   closeActiveDialog: () => void
-  selectionEffects: SelectionEffectsApi
   startup: {
     catalog: FurnitureCatalogEntry[]
     defaultFloorFinishId: string
@@ -42,7 +41,6 @@ interface AssetLifecycleControllerOptions {
 
 export function useAssetLifecycleController({
   closeActiveDialog,
-  selectionEffects,
   startup,
 }: AssetLifecycleControllerOptions) {
   const restoreAttemptedRef = useRef(false)
@@ -185,7 +183,7 @@ export function useAssetLifecycleController({
     })
 
     startup.handleAssetsReady()
-  }, [selectionEffects, startup])
+  }, [startup])
 
   const handleRetryAssetLoading = useCallback(() => {
     runStartupRetryTransition({

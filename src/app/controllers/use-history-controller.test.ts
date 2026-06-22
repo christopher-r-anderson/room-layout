@@ -4,6 +4,7 @@ import { act, renderHook } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { sceneCommands } from '@/scene/scene-commands'
 import { announcementActions } from '@/editor-state/announcement-store'
+import { selectionEffects } from '@/editor-state/selection-effects'
 import { useHistoryController } from './use-history-controller'
 
 vi.mock('@/editor-state/announcement-store', () => ({
@@ -16,15 +17,15 @@ vi.mock('@/editor-state/announcement-store', () => ({
   },
 }))
 
-function createSelectionEffects() {
-  return {
+vi.mock('@/editor-state/selection-effects', () => ({
+  selectionEffects: {
     notePendingSelection: vi.fn(),
     notePendingSource: vi.fn(),
     notePostDeleteOutlinerFocusIndex: vi.fn(),
     notePostDeleteFocusTarget: vi.fn(),
     consumePostDeleteFocusTarget: vi.fn(),
-  }
-}
+  },
+}))
 
 describe('useHistoryController', () => {
   afterEach(() => {
@@ -36,12 +37,10 @@ describe('useHistoryController', () => {
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(false)
     const undo = vi.spyOn(sceneCommands, 'undo')
     const redo = vi.spyOn(sceneCommands, 'redo')
-    const selectionEffects = createSelectionEffects()
 
     const { result } = renderHook(() =>
       useHistoryController({
         editorInteractionsEnabled: true,
-        selectionEffects,
       }),
     )
 
@@ -60,12 +59,10 @@ describe('useHistoryController', () => {
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
     const undo = vi.spyOn(sceneCommands, 'undo')
     const redo = vi.spyOn(sceneCommands, 'redo')
-    const selectionEffects = createSelectionEffects()
 
     const { result } = renderHook(() =>
       useHistoryController({
         editorInteractionsEnabled: false,
-        selectionEffects,
       }),
     )
 
@@ -83,12 +80,10 @@ describe('useHistoryController', () => {
   it('announces and queues outliner focus on a successful undo', () => {
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
     vi.spyOn(sceneCommands, 'undo').mockReturnValue(true)
-    const selectionEffects = createSelectionEffects()
 
     const { result } = renderHook(() =>
       useHistoryController({
         editorInteractionsEnabled: true,
-        selectionEffects,
       }),
     )
 
@@ -108,12 +103,10 @@ describe('useHistoryController', () => {
   it('announces and queues outliner focus on a successful redo', () => {
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
     vi.spyOn(sceneCommands, 'redo').mockReturnValue(true)
-    const selectionEffects = createSelectionEffects()
 
     const { result } = renderHook(() =>
       useHistoryController({
         editorInteractionsEnabled: true,
-        selectionEffects,
       }),
     )
 
@@ -133,12 +126,10 @@ describe('useHistoryController', () => {
   it('does not announce when undo returns false', () => {
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
     vi.spyOn(sceneCommands, 'undo').mockReturnValue(false)
-    const selectionEffects = createSelectionEffects()
 
     const { result } = renderHook(() =>
       useHistoryController({
         editorInteractionsEnabled: true,
-        selectionEffects,
       }),
     )
 

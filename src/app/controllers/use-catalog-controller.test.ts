@@ -8,21 +8,23 @@ import {
   ADD_FURNITURE_NO_SPACE_MESSAGE,
   ADD_FURNITURE_UNKNOWN_CATALOG_MESSAGE,
 } from '@/shared/messages/command-messages'
+import { selectionEffects } from '@/editor-state/selection-effects'
 import { useCatalogController } from './use-catalog-controller'
 
-function createSelectionEffects() {
-  return {
+vi.mock('@/editor-state/selection-effects', () => ({
+  selectionEffects: {
     notePendingSelection: vi.fn(),
     notePendingSource: vi.fn(),
     notePostDeleteOutlinerFocusIndex: vi.fn(),
     notePostDeleteFocusTarget: vi.fn(),
     consumePostDeleteFocusTarget: vi.fn(),
-  }
-}
+  },
+}))
 
 describe('useCatalogController', () => {
   afterEach(() => {
     vi.restoreAllMocks()
+    vi.clearAllMocks()
   })
 
   it('clears stale add state without invoking the scene while disabled', () => {
@@ -33,12 +35,10 @@ describe('useCatalogController', () => {
     const clearEditorMessage = vi
       .spyOn(sceneStateActions, 'clearEditorMessage')
       .mockImplementation(() => undefined)
-    const selectionEffects = createSelectionEffects()
 
     const { result } = renderHook(() =>
       useCatalogController({
         setCatalogOpen: vi.fn(() => true),
-        selectionEffects,
         catalogIdToAdd: 'chair',
         editorInteractionsEnabled: false,
       }),
@@ -57,13 +57,11 @@ describe('useCatalogController', () => {
     const setEditorMessage = vi
       .spyOn(sceneStateActions, 'setEditorMessage')
       .mockImplementation(() => undefined)
-    const selectionEffects = createSelectionEffects()
 
     const { result, rerender } = renderHook(
       ({ catalogIdToAdd }) =>
         useCatalogController({
           setCatalogOpen: vi.fn(() => true),
-          selectionEffects,
           catalogIdToAdd,
           editorInteractionsEnabled: true,
         }),
@@ -94,12 +92,10 @@ describe('useCatalogController', () => {
       ok: true,
       id: 'item-1',
     })
-    const selectionEffects = createSelectionEffects()
 
     const { result } = renderHook(() =>
       useCatalogController({
         setCatalogOpen: vi.fn(() => true),
-        selectionEffects,
         catalogIdToAdd: 'chair',
         editorInteractionsEnabled: true,
       }),

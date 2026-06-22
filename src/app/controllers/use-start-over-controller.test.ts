@@ -9,7 +9,18 @@ import {
 import { sceneCommands } from '@/scene/scene-commands'
 import { clearSceneDraft } from '@/features/url-scene/scene-draft'
 import { announcementActions } from '@/editor-state/announcement-store'
+import { selectionEffects } from '@/editor-state/selection-effects'
 import { useStartOverController } from './use-start-over-controller'
+
+vi.mock('@/editor-state/selection-effects', () => ({
+  selectionEffects: {
+    notePendingSelection: vi.fn(),
+    notePendingSource: vi.fn(),
+    notePostDeleteOutlinerFocusIndex: vi.fn(),
+    notePostDeleteFocusTarget: vi.fn(),
+    consumePostDeleteFocusTarget: vi.fn(),
+  },
+}))
 
 vi.mock('@/editor-state/announcement-store', () => ({
   announcementActions: {
@@ -33,16 +44,6 @@ vi.mock('sonner', () => ({
   },
 }))
 
-function createSelectionEffects() {
-  return {
-    notePendingSelection: vi.fn(),
-    notePendingSource: vi.fn(),
-    notePostDeleteOutlinerFocusIndex: vi.fn(),
-    notePostDeleteFocusTarget: vi.fn(),
-    consumePostDeleteFocusTarget: vi.fn(),
-  }
-}
-
 describe('useStartOverController', () => {
   beforeEach(() => {
     resetSceneStateStore()
@@ -60,14 +61,12 @@ describe('useStartOverController', () => {
       closeActiveDialog: vi.fn(),
       openStartOverDialog: vi.fn().mockReturnValue(true),
     }
-    const selectionEffects = createSelectionEffects()
 
     const { result } = renderHook(() =>
       useStartOverController({
         closeActiveDialog: dialogState.closeActiveDialog,
         openStartOverDialog: dialogState.openStartOverDialog,
         canStartOver: true,
-        selectionEffects,
         clearPreview: vi.fn(),
         defaults: {
           floorFinishId: 'floor-default',
@@ -96,7 +95,6 @@ describe('useStartOverController', () => {
       closeActiveDialog: vi.fn(),
       openStartOverDialog: vi.fn().mockReturnValue(true),
     }
-    const selectionEffects = createSelectionEffects()
     const clearPreview = vi.fn()
 
     const { result } = renderHook(() =>
@@ -104,7 +102,6 @@ describe('useStartOverController', () => {
         closeActiveDialog: dialogState.closeActiveDialog,
         openStartOverDialog: dialogState.openStartOverDialog,
         canStartOver: true,
-        selectionEffects,
         clearPreview,
         defaults: {
           floorFinishId: 'floor-default',
@@ -152,7 +149,6 @@ describe('useStartOverController', () => {
         closeActiveDialog: dialogState.closeActiveDialog,
         openStartOverDialog: dialogState.openStartOverDialog,
         canStartOver: true,
-        selectionEffects: createSelectionEffects(),
         clearPreview,
         defaults: { floorFinishId: 'floor', wallFinishId: 'wall' },
       }),

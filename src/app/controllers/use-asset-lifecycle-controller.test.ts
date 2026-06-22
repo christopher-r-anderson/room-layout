@@ -8,7 +8,18 @@ import {
 } from '@/features/startup/startup-transitions'
 import { runStartupRestoreFlow } from './_shared/restore-flow'
 import { announcementActions } from '@/editor-state/announcement-store'
+import { selectionEffects } from '@/editor-state/selection-effects'
 import { useAssetLifecycleController } from './use-asset-lifecycle-controller'
+
+vi.mock('@/editor-state/selection-effects', () => ({
+  selectionEffects: {
+    notePendingSelection: vi.fn(),
+    notePendingSource: vi.fn(),
+    notePostDeleteOutlinerFocusIndex: vi.fn(),
+    notePostDeleteFocusTarget: vi.fn(),
+    consumePostDeleteFocusTarget: vi.fn(),
+  },
+}))
 
 vi.mock('@/editor-state/announcement-store', () => ({
   announcementActions: {
@@ -53,16 +64,6 @@ vi.mock('sonner', () => ({
   },
 }))
 
-function createSelectionEffects() {
-  return {
-    notePendingSelection: vi.fn(),
-    notePendingSource: vi.fn(),
-    notePostDeleteOutlinerFocusIndex: vi.fn(),
-    notePostDeleteFocusTarget: vi.fn(),
-    consumePostDeleteFocusTarget: vi.fn(),
-  }
-}
-
 function createStartup() {
   return {
     catalog: [],
@@ -96,7 +97,6 @@ describe('useAssetLifecycleController', () => {
     const { result } = renderHook(() =>
       useAssetLifecycleController({
         closeActiveDialog,
-        selectionEffects: createSelectionEffects(),
         startup,
       }),
     )
@@ -113,12 +113,10 @@ describe('useAssetLifecycleController', () => {
 
   it('runs the restore flow exactly once across multiple ready notifications', () => {
     const startup = createStartup()
-    const selectionEffects = createSelectionEffects()
 
     const { result } = renderHook(() =>
       useAssetLifecycleController({
         closeActiveDialog: vi.fn(),
-        selectionEffects,
         startup,
       }),
     )
@@ -142,7 +140,6 @@ describe('useAssetLifecycleController', () => {
     const { result } = renderHook(() =>
       useAssetLifecycleController({
         closeActiveDialog: vi.fn(),
-        selectionEffects: createSelectionEffects(),
         startup,
       }),
     )

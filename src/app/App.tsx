@@ -16,10 +16,7 @@ import {
 } from '@/editor-state/scene-state-store'
 import { announcementActions } from '@/editor-state/announcement-store'
 import { usePreviewController } from '@/app/controllers/use-preview-controller'
-import {
-  selectionEffects,
-  useSelectionEffectsReconciler,
-} from '@/editor-state/selection-effects'
+import { useSelectionEffectsReconciler } from '@/editor-state/selection-effects'
 import { useSelectionController } from '@/app/controllers/use-selection-controller'
 import { useMovementController } from '@/app/controllers/use-movement-controller'
 import { useHistoryController } from '@/app/controllers/use-history-controller'
@@ -257,7 +254,6 @@ function App() {
   }, [isBlockingOverlayOpen, outlinerFocusRequest])
 
   const selectionController = useSelectionController({
-    selectionEffects,
     editorInteractionsEnabled: startup.editorInteractionsEnabled,
   })
   const { handleSelectById } = selectionController
@@ -267,20 +263,17 @@ function App() {
   })
   const historyController = useHistoryController({
     editorInteractionsEnabled: startup.editorInteractionsEnabled,
-    selectionEffects,
   })
   const deletionController = useDeletionController({
     closeActiveDialog: dialogActions.closeActiveDialog,
     openDeleteDialog: () => dialogActions.openDialog(DIALOG_IDS.delete),
     pendingDeleteFurniture,
     editorInteractionsEnabled: startup.editorInteractionsEnabled,
-    selectionEffects,
     focusRoomView,
   })
   const catalogController = useCatalogController({
     setCatalogOpen: (open) =>
       dialogActions.setDialogOpen(DIALOG_IDS.catalog, open),
-    selectionEffects,
     catalogIdToAdd: activeCatalogIdToAdd,
     editorInteractionsEnabled: startup.editorInteractionsEnabled,
   })
@@ -289,7 +282,6 @@ function App() {
     openStartOverDialog: (request?: AppDialogOpenRequest) =>
       dialogActions.openDialog(DIALOG_IDS.startOver, request),
     canStartOver: !sceneIsAtDefaults,
-    selectionEffects,
     clearPreview: clearPreviewOnCanvasMiss,
     defaults: {
       floorFinishId: environmentConfig?.defaultFloorFinishId ?? '',
@@ -298,7 +290,6 @@ function App() {
   })
   const assetLifecycleController = useAssetLifecycleController({
     closeActiveDialog: dialogActions.closeActiveDialog,
-    selectionEffects,
     startup: {
       catalog: startup.catalog,
       defaultFloorFinishId: environmentConfig?.defaultFloorFinishId ?? '',
