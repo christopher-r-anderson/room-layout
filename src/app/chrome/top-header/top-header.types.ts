@@ -1,4 +1,3 @@
-import type { AppDialogOpenRequest } from '@/app/dialogs/dialog-requests'
 import type {
   FloorFinishOption,
   WallFinishOption,
@@ -44,8 +43,6 @@ type TopHeaderToolbarProps = Pick<
 
 export interface TopHeaderShellProps {
   onShareSceneUrl: () => Promise<'shared' | 'copied' | null>
-  onOpenStartOverDialog: (request?: AppDialogOpenRequest) => void
-  onConfirmStartOver: () => void
 }
 
 export interface TopHeaderContainerProps extends TopHeaderShellProps {
@@ -71,5 +68,4 @@ export interface TopHeaderDesktopProps extends TopHeaderToolbarProps {
   isRoomSurfaceOpen: boolean
   isKeyboardShortcutsOpen: boolean
   isProjectInfoOpen: boolean
-  onOpenStartOverDialog: (request?: AppDialogOpenRequest) => void
 }

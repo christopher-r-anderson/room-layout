@@ -8,6 +8,7 @@ import {
   resetEditorRuntimeStore,
 } from '@/editor-state/editor-runtime-store'
 import { sceneStateActions } from '@/editor-state/scene-state-store'
+import { CommandDispatchProvider } from '@/editor-state/command-dispatch-provider'
 import {
   resetSceneAssetsStore,
   sceneAssetsActions,
@@ -76,13 +77,13 @@ vi.mock('@/features/selection/start-over-confirmation-dialog', () => ({
 
 function renderTopHeader() {
   return render(
-    <TopHeader
-      onConfirmStartOver={vi.fn()}
-      onOpenStartOverDialog={vi.fn()}
-      onShareSceneUrl={vi.fn(() =>
-        Promise.resolve<'shared' | 'copied' | null>(null),
-      )}
-    />,
+    <CommandDispatchProvider value={vi.fn()}>
+      <TopHeader
+        onShareSceneUrl={vi.fn(() =>
+          Promise.resolve<'shared' | 'copied' | null>(null),
+        )}
+      />
+    </CommandDispatchProvider>,
   )
 }
 

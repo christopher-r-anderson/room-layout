@@ -23,7 +23,6 @@ export function TopHeaderDesktop({
   isRoomSurfaceOpen,
   isKeyboardShortcutsOpen,
   isProjectInfoOpen,
-  onOpenStartOverDialog,
   startOverDisabled,
   topHeaderRef,
   onFloorFinishChange,
@@ -100,9 +99,6 @@ export function TopHeaderDesktop({
                 ? 'Editor interactions are unavailable while loading'
                 : 'Scene already matches defaults'
             }
-            onOpenStartOverDialog={() => {
-              onOpenStartOverDialog()
-            }}
             size="toolbar"
           />
         </div>

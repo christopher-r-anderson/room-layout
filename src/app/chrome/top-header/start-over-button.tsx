@@ -1,5 +1,6 @@
 import { IconRotate2 } from '@tabler/icons-react'
 import { ToolButton } from '@/shared/ui/tool-button'
+import { useCommandDispatch } from '@/editor-state/command-dispatch-context'
 import type { ComponentProps, Ref } from 'react'
 
 export function StartOverButton({
@@ -7,7 +8,6 @@ export function StartOverButton({
   buttonRef,
   disabled,
   disabledMessage,
-  onOpenStartOverDialog,
   className,
   size,
 }: {
@@ -15,16 +15,19 @@ export function StartOverButton({
   buttonRef?: Ref<HTMLButtonElement>
   disabled: boolean
   disabledMessage: string
-  onOpenStartOverDialog: () => void
   className?: string
   labelVisibility?: ComponentProps<typeof ToolButton>['displayLabel']
   size?: ComponentProps<typeof ToolButton>['size']
 }) {
+  const dispatch = useCommandDispatch()
+
   return (
     <ToolButton
       id={buttonId}
       buttonRef={buttonRef}
-      action={onOpenStartOverDialog}
+      action={() => {
+        dispatch({ kind: 'start-over' })
+      }}
       disabled={disabled}
       disabledMessage={disabledMessage}
       shortcuts="Control+Alt+N Meta+Alt+N"

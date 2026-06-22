@@ -5,7 +5,6 @@ import {
   useDialogPayload,
   useIsBlockingOverlayOpen,
 } from '@/editor-state/dialog-store'
-import type { AppDialogOpenRequest } from '@/app/dialogs/dialog-requests'
 import { DIALOG_IDS } from '@/app/dialogs/dialog-registry'
 import {
   sceneStateActions,
@@ -21,10 +20,7 @@ import {
   previewFromScene,
 } from '@/editor-state/preview-actions'
 import { usePreviewReconciler } from '@/editor-state/use-preview-reconciler'
-import {
-  getSceneIsAtDefaults,
-  useSceneIsAtDefaults,
-} from '@/editor-state/use-scene-is-at-defaults'
+import { getSceneIsAtDefaults } from '@/editor-state/use-scene-is-at-defaults'
 import { startSelectionEffectsReconciler } from '@/editor-state/selection-effects'
 import {
   clearSelection,
@@ -33,7 +29,6 @@ import {
 import { moveSelection, rotateSelection } from '@/editor-state/movement-actions'
 import { redo, undo } from '@/editor-state/history-actions'
 import { useDeletionController } from '@/app/controllers/use-deletion-controller'
-import { useStartOverController } from '@/app/controllers/use-start-over-controller'
 import { useAssetLifecycleController } from '@/app/controllers/use-asset-lifecycle-controller'
 import { useShareController } from '@/app/controllers/use-share-controller'
 import { useCanvasKeyboardController } from '@/app/controllers/use-canvas-keyboard-controller'
@@ -164,8 +159,6 @@ function App() {
     environmentConfig,
   })
 
-  const sceneIsAtDefaults = useSceneIsAtDefaults()
-
   const dialogRuntimeContext = useMemo(
     () =>
       buildDialogRuntimeContext({
@@ -236,17 +229,6 @@ function App() {
     editorInteractionsEnabled: startup.editorInteractionsEnabled,
     focusRoomView,
   })
-  const startOverController = useStartOverController({
-    closeActiveDialog: dialogActions.closeActiveDialog,
-    openStartOverDialog: (request?: AppDialogOpenRequest) =>
-      dialogActions.openDialog(DIALOG_IDS.startOver, request),
-    canStartOver: !sceneIsAtDefaults,
-    clearPreview: clearPreviewOnCanvasMiss,
-    defaults: {
-      floorFinishId: environmentConfig?.defaultFloorFinishId ?? '',
-      wallFinishId: environmentConfig?.defaultWallFinishId ?? '',
-    },
-  })
   const assetLifecycleController = useAssetLifecycleController({
     closeActiveDialog: dialogActions.closeActiveDialog,
     startup: {
@@ -289,7 +271,6 @@ function App() {
   }, [])
   const handlers = {
     ...deletionController,
-    ...startOverController,
     ...assetLifecycleController,
     ...shareController,
     handleSetCameraPreset,
@@ -364,7 +345,12 @@ function App() {
     focusOutliner: handleFocusOutliner,
     undo,
     redo,
-    startOverIntent: handlers.handleOpenStartOverDialog,
+    startOverIntent: () => {
+      const opened = dialogActions.openDialog(DIALOG_IDS.startOver)
+      if (opened) {
+        sceneStateActions.clearEditorMessage()
+      }
+    },
     openDeleteDialog: (returnFocusTo) => {
       if (returnFocusTo === 'room-view') {
         handlers.handleOpenDeleteDialogFromRoomView()
@@ -417,8 +403,6 @@ function App() {
               editorOverlay={{
                 topHeader: {
                   onShareSceneUrl: handlers.handleShareSceneUrl,
-                  onOpenStartOverDialog: handlers.handleOpenStartOverDialog,
-                  onConfirmStartOver: handlers.handleConfirmStartOver,
                 },
                 onConfirmDeleteSelection: handlers.handleConfirmDeleteSelection,
                 onRetryAssetLoading: handlers.handleRetryAssetLoading,

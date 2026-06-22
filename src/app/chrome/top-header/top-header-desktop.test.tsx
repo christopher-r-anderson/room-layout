@@ -89,7 +89,6 @@ function createProps(
     isRoomSurfaceOpen: false,
     isKeyboardShortcutsOpen: false,
     isProjectInfoOpen: false,
-    onOpenStartOverDialog: vi.fn(),
     startOverDisabled: false,
     onFloorFinishChange: vi.fn(),
     onShareSceneUrl: vi.fn(() =>

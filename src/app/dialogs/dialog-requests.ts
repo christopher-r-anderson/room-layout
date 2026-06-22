@@ -1,4 +1,4 @@
-export interface AppDialogOpenRequest<TPayload = unknown> {
+interface AppDialogOpenRequest<TPayload = unknown> {
   payload?: TPayload
 }
 

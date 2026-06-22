@@ -264,8 +264,6 @@ describe('EditorOverlay integration', () => {
                               'copied',
                             ),
                           ),
-                          onOpenStartOverDialog: vi.fn(),
-                          onConfirmStartOver: vi.fn(),
                         }}
                         onConfirmDeleteSelection={vi.fn()}
                         onRetryAssetLoading={vi.fn()}

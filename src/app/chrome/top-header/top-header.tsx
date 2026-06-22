@@ -18,6 +18,9 @@ import {
 } from '@/editor-state/editor-runtime-store'
 import { useEnvironmentConfig } from '@/editor-state/scene-assets-store'
 import { useSceneIsAtDefaults } from '@/editor-state/use-scene-is-at-defaults'
+import { resetSceneToDefaults } from '@/editor-state/scene-reset'
+import { announcementActions } from '@/editor-state/announcement-store'
+import { useCommandDispatch } from '@/editor-state/command-dispatch-context'
 import { useActiveFinishIds } from '@/app/controllers/_shared/use-active-finish-ids'
 import {
   sceneStateActions,
@@ -25,17 +28,19 @@ import {
   useHistoryAvailability,
   useWallFinishId,
 } from '@/editor-state/scene-state-store'
+import { toast } from 'sonner'
 import { topHeaderDialogOpenChange } from './top-header-dialog-bindings'
 import { headerFocusRegistry } from './header-focus-registry'
 
+const STARTED_OVER_MESSAGE = 'Started over. Your changes were cleared.'
+
 export function TopHeader({
-  onConfirmStartOver,
-  onOpenStartOverDialog,
   onShareSceneUrl,
   topHeaderRef,
   desktopRoomSidebarRef,
   mobileRoomDrawerRef,
 }: TopHeaderContainerProps) {
+  const dispatch = useCommandDispatch()
   const environmentConfig = useEnvironmentConfig()
   const startOverDisabled = useSceneIsAtDefaults()
   const editorInteractionsEnabled = useEditorInteractionsEnabled()
@@ -97,7 +102,7 @@ export function TopHeader({
 
   const onOpenStartOverFromHeaderMoreActions = () => {
     openFromHeaderMoreActions(() => {
-      onOpenStartOverDialog()
+      dispatch({ kind: 'start-over' })
     })
   }
 
@@ -146,7 +151,6 @@ export function TopHeader({
           isRoomSurfaceOpen={isRoomSurfaceOpen}
           isKeyboardShortcutsOpen={isKeyboardShortcutsDialogOpen}
           isProjectInfoOpen={isInfoDialogOpen}
-          onOpenStartOverDialog={onOpenStartOverDialog}
         />
       )}
 
@@ -187,7 +191,10 @@ export function TopHeader({
           }
         }}
         onConfirm={() => {
-          onConfirmStartOver()
+          dialogActions.closeActiveDialog()
+          resetSceneToDefaults()
+          announcementActions.announcePolite(STARTED_OVER_MESSAGE)
+          toast.success(STARTED_OVER_MESSAGE)
 
           // The Start Over button becomes disabled after the reset, so move
           // focus to the next enabled header control on desktop. On mobile the
