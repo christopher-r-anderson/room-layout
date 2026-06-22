@@ -14,6 +14,7 @@ import {
 import { useHasSelection } from '@/editor-state/scene-state-store'
 import { CameraTools } from '@/features/camera/camera-tools'
 import { DeleteConfirmationDialog } from '@/features/selection/delete-confirmation-dialog'
+import { confirmDeleteSelection } from '@/features/selection/deletion-actions'
 import { StatusMessage } from './status-message'
 import { InitializationError } from '@/features/startup/initialization-error'
 import { InitializationProgress } from '@/features/startup/initialization-progress'
@@ -28,15 +29,12 @@ import { useHeaderLayoutMode } from '@/shared/layout/use-header-layout-mode'
 
 export interface EditorOverlayProps {
   topHeader: TopHeaderShellProps
-  onConfirmDeleteSelection: () => void
   onRetryAssetLoading: () => void
 }
 
 function EditorOverlayDialogs({
-  onConfirmDeleteSelection,
   onRetryAssetLoading,
 }: {
-  onConfirmDeleteSelection: () => void
   onRetryAssetLoading: () => void
 }) {
   const isDeleteDialogOpen = useDialogOpen(DIALOG_IDS.delete)
@@ -52,7 +50,9 @@ function EditorOverlayDialogs({
         open={isDeleteDialogOpen}
         pendingDeleteFurniture={pendingDeleteFurniture}
         onClose={dialogActions.closeActiveDialog}
-        onConfirm={onConfirmDeleteSelection}
+        onConfirm={() => {
+          confirmDeleteSelection(pendingDeleteFurniture)
+        }}
       />
       <InitializationProgress visible={startupLoadingActive} />
       {assetError ? (
@@ -68,7 +68,6 @@ function EditorOverlayDialogs({
 
 export function EditorOverlay({
   topHeader,
-  onConfirmDeleteSelection,
   onRetryAssetLoading,
 }: EditorOverlayProps) {
   const { registerExclusionElement } = useOverlayLayout()
@@ -143,10 +142,7 @@ export function EditorOverlay({
           </div>
         </div>
       </div>
-      <EditorOverlayDialogs
-        onConfirmDeleteSelection={onConfirmDeleteSelection}
-        onRetryAssetLoading={onRetryAssetLoading}
-      />
+      <EditorOverlayDialogs onRetryAssetLoading={onRetryAssetLoading} />
     </>
   )
 }

@@ -1,8 +1,6 @@
-import type { FurnitureItem } from '@/scene/objects/furniture.types'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   dialogActions,
-  useDialogPayload,
   useIsBlockingOverlayOpen,
 } from '@/editor-state/dialog-store'
 import { DIALOG_IDS } from '@/app/dialogs/dialog-registry'
@@ -28,7 +26,10 @@ import {
 } from '@/editor-state/selection-actions'
 import { moveSelection, rotateSelection } from '@/editor-state/movement-actions'
 import { redo, undo } from '@/editor-state/history-actions'
-import { useDeletionController } from '@/app/controllers/use-deletion-controller'
+import {
+  openDeleteDialog,
+  openDeleteDialogFromRoomView,
+} from '@/features/selection/deletion-actions'
 import { useAssetLifecycleController } from '@/app/controllers/use-asset-lifecycle-controller'
 import { useShareController } from '@/app/controllers/use-share-controller'
 import { useCanvasKeyboardController } from '@/app/controllers/use-canvas-keyboard-controller'
@@ -73,7 +74,6 @@ function App() {
   const roomViewRef = useRef<HTMLElement | null>(null)
   const selectedItemControlsRef = useRef<HTMLDivElement | null>(null)
   const dockedInspectorRef = useRef<HTMLDivElement | null>(null)
-  const roomViewFocusFrameRef = useRef<number | null>(null)
   const selectedFurniture = useSelectedFurniture()
   const floorFinishId = useFloorFinishId()
   const wallFinishId = useWallFinishId()
@@ -171,9 +171,6 @@ function App() {
   }, [dialogRuntimeContext])
 
   const isBlockingOverlayOpen = useIsBlockingOverlayOpen()
-  const pendingDeleteFurniture = useDialogPayload(
-    DIALOG_IDS.delete,
-  ) as FurnitureItem | null
 
   useEffect(() => startSelectionEffectsReconciler(), [])
   const wasBlockingOverlayOpenRef = useRef(isBlockingOverlayOpen)
@@ -183,29 +180,6 @@ function App() {
     isBlockingOverlayOpen,
     editorInteractionsEnabled: startup.editorInteractionsEnabled,
   })
-
-  const focusRoomView = useCallback(() => {
-    if (!startup.editorInteractionsEnabled) {
-      return
-    }
-
-    if (roomViewFocusFrameRef.current !== null) {
-      cancelAnimationFrame(roomViewFocusFrameRef.current)
-    }
-
-    roomViewFocusFrameRef.current = requestAnimationFrame(() => {
-      roomViewFocusFrameRef.current = null
-      roomViewRef.current?.focus()
-    })
-  }, [startup.editorInteractionsEnabled])
-
-  useEffect(() => {
-    return () => {
-      if (roomViewFocusFrameRef.current !== null) {
-        cancelAnimationFrame(roomViewFocusFrameRef.current)
-      }
-    }
-  }, [])
 
   useEffect(() => {
     const wasBlockingOverlayOpen = wasBlockingOverlayOpenRef.current
@@ -222,13 +196,6 @@ function App() {
     selectionMetaActions.clearOutlinerFocusRequest()
   }, [isBlockingOverlayOpen, outlinerFocusRequest])
 
-  const deletionController = useDeletionController({
-    closeActiveDialog: dialogActions.closeActiveDialog,
-    openDeleteDialog: () => dialogActions.openDialog(DIALOG_IDS.delete),
-    pendingDeleteFurniture,
-    editorInteractionsEnabled: startup.editorInteractionsEnabled,
-    focusRoomView,
-  })
   const assetLifecycleController = useAssetLifecycleController({
     closeActiveDialog: dialogActions.closeActiveDialog,
     startup: {
@@ -270,7 +237,6 @@ function App() {
     editorRuntimeActions.setFloorFinishLoading(loading)
   }, [])
   const handlers = {
-    ...deletionController,
     ...assetLifecycleController,
     ...shareController,
     handleSetCameraPreset,
@@ -317,12 +283,12 @@ function App() {
       return
     }
 
-    focusRoomView()
+    selectionMetaActions.requestRoomViewFocus()
 
     if (selectedFurniture !== null) {
       previewFromCanvasKeyboard(selectedFurniture.id)
     }
-  }, [focusRoomView, selectedFurniture, startup.editorInteractionsEnabled])
+  }, [selectedFurniture, startup.editorInteractionsEnabled])
 
   const handleFocusOutliner = useCallback(() => {
     if (!startup.editorInteractionsEnabled) {
@@ -353,9 +319,9 @@ function App() {
     },
     openDeleteDialog: (returnFocusTo) => {
       if (returnFocusTo === 'room-view') {
-        handlers.handleOpenDeleteDialogFromRoomView()
+        openDeleteDialogFromRoomView()
       } else {
-        handlers.handleOpenDeleteDialog()
+        openDeleteDialog()
       }
     },
     focusSelected: handlers.handleFocusSelected,
@@ -387,7 +353,6 @@ function App() {
               collections={startup.collections}
               cacheInvalidationKey={startup.cacheInvalidationKey}
               testOverlaysHidden={testOverlaysHidden}
-              focusRoomView={focusRoomView}
               canvasShadowMode={canvasShadowMode}
               isE2ELowRenderQuality={isE2ELowRenderQuality}
               previewedId={previewedId}
@@ -404,7 +369,6 @@ function App() {
                 topHeader: {
                   onShareSceneUrl: handlers.handleShareSceneUrl,
                 },
-                onConfirmDeleteSelection: handlers.handleConfirmDeleteSelection,
                 onRetryAssetLoading: handlers.handleRetryAssetLoading,
               }}
             />

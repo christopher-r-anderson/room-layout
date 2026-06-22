@@ -265,7 +265,6 @@ describe('EditorOverlay integration', () => {
                             ),
                           ),
                         }}
-                        onConfirmDeleteSelection={vi.fn()}
                         onRetryAssetLoading={vi.fn()}
                       />
                     </div>

@@ -2,6 +2,9 @@ import { Canvas } from '@react-three/fiber'
 import {
   Component,
   Suspense,
+  useCallback,
+  useEffect,
+  useRef,
   useState,
   type ComponentProps,
   type Key,
@@ -12,6 +15,10 @@ import { NeutralToneMapping, SRGBColorSpace } from 'three'
 import { Scene } from '@/scene/scene'
 import { useIsBlockingOverlayOpen } from '@/editor-state/dialog-store'
 import { useSelectedFurniture } from '@/editor-state/scene-state-store'
+import {
+  selectionMetaActions,
+  useRoomViewFocusRequest,
+} from '@/editor-state/selection-meta-store'
 import { useSceneIsAtDefaults } from '@/editor-state/use-scene-is-at-defaults'
 import {
   useEditorInteractionsEnabled,
@@ -62,7 +69,6 @@ export interface EditorBodyProps {
   collections: SceneProps['collections']
   cacheInvalidationKey: Key
   testOverlaysHidden: boolean
-  focusRoomView: () => void
   canvasShadowMode: false | 'percentage'
   isE2ELowRenderQuality: boolean
   previewedId: string | null
@@ -83,7 +89,6 @@ export function EditorBody({
   collections,
   cacheInvalidationKey,
   testOverlaysHidden,
-  focusRoomView,
   canvasShadowMode,
   isE2ELowRenderQuality,
   previewedId,
@@ -108,6 +113,42 @@ export function EditorBody({
   const assertiveAnnouncement = useAssertiveAnnouncement()
   const { roomViewRef } = useEditorRefs()
   const dispatch = useCommandDispatch()
+  const roomViewFocusRequest = useRoomViewFocusRequest()
+  const roomViewFocusFrameRef = useRef<number | null>(null)
+
+  const focusRoomView = useCallback(() => {
+    if (!editorInteractionsEnabled) {
+      return
+    }
+
+    if (roomViewFocusFrameRef.current !== null) {
+      cancelAnimationFrame(roomViewFocusFrameRef.current)
+    }
+
+    roomViewFocusFrameRef.current = requestAnimationFrame(() => {
+      roomViewFocusFrameRef.current = null
+      roomViewRef.current?.focus()
+    })
+  }, [editorInteractionsEnabled, roomViewRef])
+
+  useEffect(() => {
+    return () => {
+      if (roomViewFocusFrameRef.current !== null) {
+        cancelAnimationFrame(roomViewFocusFrameRef.current)
+      }
+    }
+  }, [])
+
+  // Consume room-view focus-intent requests (e.g. post-delete) from external
+  // coordinators; EditorBody owns the room-view element.
+  useEffect(() => {
+    if (roomViewFocusRequest === null) {
+      return
+    }
+
+    focusRoomView()
+    selectionMetaActions.clearRoomViewFocusRequest()
+  }, [roomViewFocusRequest, focusRoomView])
 
   useKeyboardShortcuts({
     enabled: editorInteractionsEnabled,

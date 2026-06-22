@@ -11,10 +11,13 @@ interface SelectionMetaStoreState {
   selectedSource: InteractionSource
   toolbarGeometry: SelectedToolbarGeometry
   outlinerFocusRequest: SceneOutlinerFocusRequest | null
+  roomViewFocusRequest: number | null
   setSelectedSource: (source: InteractionSource) => void
   setToolbarGeometry: (geometry: SelectedToolbarGeometry) => void
   requestOutlinerFocus: (request: SceneOutlinerFocusRequest) => void
   clearOutlinerFocusRequest: () => void
+  requestRoomViewFocus: (token: number) => void
+  clearRoomViewFocusRequest: () => void
   reset: () => void
 }
 
@@ -69,6 +72,7 @@ function getInitialSelectionMetaState() {
     selectedSource: null,
     toolbarGeometry: INITIAL_SELECTED_TOOLBAR_GEOMETRY,
     outlinerFocusRequest: null,
+    roomViewFocusRequest: null,
   }
 }
 
@@ -126,6 +130,24 @@ export const selectionMetaStore = createStore<SelectionMetaStoreState>()(
         }
       })
     },
+    requestRoomViewFocus: (token) => {
+      set((state) => ({
+        ...state,
+        roomViewFocusRequest: token,
+      }))
+    },
+    clearRoomViewFocusRequest: () => {
+      set((state) => {
+        if (state.roomViewFocusRequest === null) {
+          return state
+        }
+
+        return {
+          ...state,
+          roomViewFocusRequest: null,
+        }
+      })
+    },
     reset: () => {
       set(() => ({
         ...getInitialSelectionMetaState(),
@@ -133,6 +155,8 @@ export const selectionMetaStore = createStore<SelectionMetaStoreState>()(
         setToolbarGeometry: get().setToolbarGeometry,
         requestOutlinerFocus: get().requestOutlinerFocus,
         clearOutlinerFocusRequest: get().clearOutlinerFocusRequest,
+        requestRoomViewFocus: get().requestRoomViewFocus,
+        clearRoomViewFocusRequest: get().clearRoomViewFocusRequest,
         reset: get().reset,
       }))
     },
@@ -159,6 +183,12 @@ export const selectionMetaActions = {
   clearOutlinerFocusRequest: () => {
     selectionMetaStore.getState().clearOutlinerFocusRequest()
   },
+  requestRoomViewFocus: () => {
+    selectionMetaStore.getState().requestRoomViewFocus(Date.now())
+  },
+  clearRoomViewFocusRequest: () => {
+    selectionMetaStore.getState().clearRoomViewFocusRequest()
+  },
   reset: () => {
     selectionMetaStore.getState().reset()
   },
@@ -168,9 +198,9 @@ export function resetSelectionMetaStore() {
   selectionMetaActions.reset()
 }
 
-export const useSelectedSource = () =>
-  useSelectionMetaStore((state) => state.selectedSource)
 export const useToolbarGeometry = () =>
   useSelectionMetaStore((state) => state.toolbarGeometry)
 export const useOutlinerFocusRequest = () =>
   useSelectionMetaStore((state) => state.outlinerFocusRequest)
+export const useRoomViewFocusRequest = () =>
+  useSelectionMetaStore((state) => state.roomViewFocusRequest)
