@@ -6,10 +6,10 @@
  * in eslint.config.js (the scene restriction block).
  */
 export {
-  sceneStateActions,
-  sceneStateStore,
+  sceneDocumentActions,
+  sceneDocumentStore,
   useItems,
   useSelectedId,
-} from './stores/scene-state-store'
+} from './stores/scene-document-store'
 
 export { selectionMetaActions } from './stores/selection-meta-store'

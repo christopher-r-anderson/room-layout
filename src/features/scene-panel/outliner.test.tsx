@@ -15,9 +15,9 @@ import {
   resetEditorLifecycleStore,
 } from '@/core/stores/editor-lifecycle-store'
 import {
-  resetSceneStateStore,
-  sceneStateActions,
-} from '@/core/stores/scene-state-store'
+  resetSceneDocumentStore,
+  sceneDocumentActions,
+} from '@/core/stores/scene-document-store'
 import {
   resetSelectionMetaStore,
   selectionMetaActions,
@@ -71,8 +71,8 @@ const READ_MODEL: ScenePanelReadModel = {
 }
 
 function seedScene(readModel: ScenePanelReadModel = READ_MODEL) {
-  sceneStateActions.setHistory(createHistoryState(readModel.items))
-  sceneStateActions.setSelectedId(readModel.selectedId)
+  sceneDocumentActions.setHistory(createHistoryState(readModel.items))
+  sceneDocumentActions.setSelectedId(readModel.selectedId)
 }
 
 function renderOutliner() {
@@ -85,7 +85,7 @@ describe('SceneOutliner', () => {
     window.localStorage.clear()
     resetDialogStore()
     resetEditorLifecycleStore()
-    resetSceneStateStore()
+    resetSceneDocumentStore()
     resetSelectionMetaStore()
     dialogActions.configureRuntimeContext({
       isDialogsEnabled: () => true,
@@ -156,7 +156,7 @@ describe('SceneOutliner', () => {
   })
 
   it('applies preview styling to the previewed non-selected item', async () => {
-    sceneStateActions.setPreviewedId('item-2')
+    sceneDocumentActions.setPreviewedId('item-2')
 
     renderOutliner()
 
@@ -167,7 +167,7 @@ describe('SceneOutliner', () => {
   })
 
   it('does not apply preview styling to the selected item even if it matches previewedId', async () => {
-    sceneStateActions.setPreviewedId('item-1')
+    sceneDocumentActions.setPreviewedId('item-1')
 
     renderOutliner()
 

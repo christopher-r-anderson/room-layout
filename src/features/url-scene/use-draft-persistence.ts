@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import type { EnvironmentMaterialConfig } from '@/shared/lib/three/environment-materials'
 import { editorLifecycleStore } from '@/core/stores/editor-lifecycle-store'
-import { sceneStateStore } from '@/core/stores/scene-state-store'
+import { sceneDocumentStore } from '@/core/stores/scene-document-store'
 import { clearSceneDraft, saveSceneDraft } from '@/core/persistence/scene-draft'
 import { isFreshSceneState } from '@/shared/lib/three/scene-defaults'
 
@@ -10,7 +10,7 @@ interface UseDraftPersistenceOptions {
 }
 
 interface DraftSceneState {
-  items: ReturnType<typeof sceneStateStore.getState>['history']['present']
+  items: ReturnType<typeof sceneDocumentStore.getState>['history']['present']
   isDragging: boolean
   floorFinishId: string
   wallFinishId: string
@@ -29,7 +29,7 @@ function areDraftSceneStatesEqual(
 }
 
 function getDraftSceneState(): DraftSceneState {
-  const sceneState = sceneStateStore.getState()
+  const sceneState = sceneDocumentStore.getState()
 
   return {
     items: sceneState.history.present,
@@ -106,7 +106,7 @@ export function useDraftPersistence({
       persistDraft(environmentConfig)
     }
 
-    const unsubscribeScene = sceneStateStore.subscribe(
+    const unsubscribeScene = sceneDocumentStore.subscribe(
       (state) => ({
         items: state.history.present,
         isDragging: state.isDragging,

@@ -1,6 +1,6 @@
 import { announcementActions } from '@/core/stores/announcement-store'
 import { editorLifecycleStore } from '@/core/stores/editor-lifecycle-store'
-import { sceneStateActions } from '@/core/stores/scene-state-store'
+import { sceneDocumentActions } from '@/core/stores/scene-document-store'
 import { selectionEffects } from '@/core/operations/selection-effects'
 import { sceneCommands } from '@/scene/scene-commands'
 
@@ -20,7 +20,7 @@ export function undo() {
         }
       : null,
   )
-  sceneStateActions.clearEditorMessage()
+  sceneDocumentActions.clearEditorMessage()
 
   if (undid) {
     announcementActions.announcePolite('Undo complete.')
@@ -43,7 +43,7 @@ export function redo() {
         }
       : null,
   )
-  sceneStateActions.clearEditorMessage()
+  sceneDocumentActions.clearEditorMessage()
 
   if (redid) {
     announcementActions.announcePolite('Redo complete.')

@@ -5,12 +5,12 @@ import {
 } from '@/core/stores/dialog-store'
 import { DIALOG_IDS } from '@/app/dialogs/dialog-registry'
 import {
-  sceneStateActions,
+  sceneDocumentActions,
   useFloorFinishId,
   usePreviewedId,
   useSelectedFurniture,
   useWallFinishId,
-} from '@/core/stores/scene-state-store'
+} from '@/core/stores/scene-document-store'
 import { announcementActions } from '@/core/stores/announcement-store'
 import {
   clearPreviewOnCanvasMiss,
@@ -238,7 +238,7 @@ function App() {
     startOverIntent: () => {
       const opened = dialogActions.openDialog(DIALOG_IDS.startOver)
       if (opened) {
-        sceneStateActions.clearEditorMessage()
+        sceneDocumentActions.clearEditorMessage()
       }
     },
     openDeleteDialog: (returnFocusTo) => {

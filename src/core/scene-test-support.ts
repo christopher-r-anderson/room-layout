@@ -5,4 +5,4 @@
  * `@/core/scene-contracts`. Tests may use this module for setup and
  * reset helpers without reaching into individual store files.
  */
-export { resetSceneStateStore } from './stores/scene-state-store'
+export { resetSceneDocumentStore } from './stores/scene-document-store'

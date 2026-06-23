@@ -1,10 +1,10 @@
 import { resolvePositionFromWallClearances } from '@/shared/lib/three/wall-clearance'
 import { announcementActions } from '@/core/stores/announcement-store'
 import {
-  sceneStateActions,
-  sceneStateStore,
+  sceneDocumentActions,
+  sceneDocumentStore,
   selectSelectedFurniture,
-} from '@/core/stores/scene-state-store'
+} from '@/core/stores/scene-document-store'
 import { editorLifecycleStore } from '@/core/stores/editor-lifecycle-store'
 import { selectionMetaActions } from '@/core/stores/selection-meta-store'
 import { sceneCommands } from '@/scene/scene-commands'
@@ -30,9 +30,9 @@ export function invalidSelectedItemDetailValueMessage(fieldLabel: string) {
 export function updateSelectedItemDetails(
   input: UpdateSelectedItemDetailsInput,
 ): UpdateSelectedItemDetailsResult {
-  sceneStateActions.clearEditorMessage()
+  sceneDocumentActions.clearEditorMessage()
 
-  const selectedFurniture = selectSelectedFurniture(sceneStateStore.getState())
+  const selectedFurniture = selectSelectedFurniture(sceneDocumentStore.getState())
   const editorInteractionsEnabled =
     editorLifecycleStore.getState().startupPhase === 'ready'
 

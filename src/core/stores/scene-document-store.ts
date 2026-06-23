@@ -11,7 +11,7 @@ import type { HistoryAvailability } from '../types/history.types'
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
 import type { EqualityChecker } from '../types/store.types'
 
-interface SceneStateStoreState {
+interface SceneDocumentStoreState {
   history: HistoryState<FurnitureItem[]>
   instanceIdCounter: number
   selectedId: string | null
@@ -35,7 +35,7 @@ interface SceneStateStoreState {
   setWallFinishId: (id: string) => void
   setEditorMessage: (message: string | null) => void
   clearEditorMessage: () => void
-  resetSceneState: () => void
+  resetSceneDocument: () => void
 }
 
 const INITIAL_HISTORY_AVAILABILITY: HistoryAvailability = {
@@ -60,7 +60,7 @@ function areStringArraysEqual(
   )
 }
 
-function getInitialSceneState() {
+function getInitialSceneDocument() {
   return {
     history: createHistoryState<FurnitureItem[]>([]),
     instanceIdCounter: 0,
@@ -84,9 +84,9 @@ function getDerivedHistoryAvailability(
   }
 }
 
-export const sceneStateStore = createStore<SceneStateStoreState>()(
+export const sceneDocumentStore = createStore<SceneDocumentStoreState>()(
   subscribeWithSelector((set, get) => ({
-    ...getInitialSceneState(),
+    ...getInitialSceneDocument(),
     setHistory: (history) => {
       set((state) => {
         if (state.history === history) {
@@ -213,109 +213,109 @@ export const sceneStateStore = createStore<SceneStateStoreState>()(
     clearEditorMessage: () => {
       get().setEditorMessage(null)
     },
-    resetSceneState: () => {
+    resetSceneDocument: () => {
       set((state) => ({
         ...state,
-        ...getInitialSceneState(),
+        ...getInitialSceneDocument(),
       }))
     },
   })),
 )
 
-sceneStateStore.subscribe(
+sceneDocumentStore.subscribe(
   (state) => state.history.present,
   (items) => {
-    const previewedId = sceneStateStore.getState().previewedIdRaw
+    const previewedId = sceneDocumentStore.getState().previewedIdRaw
 
     if (
       previewedId !== null &&
       !items.some((item) => item.id === previewedId)
     ) {
-      sceneStateStore.getState().setPreviewedId(null)
+      sceneDocumentStore.getState().setPreviewedId(null)
     }
   },
 )
 
-export function useSceneStateStore<T>(
-  selector: (state: SceneStateStoreState) => T,
+export function useSceneDocumentStore<T>(
+  selector: (state: SceneDocumentStoreState) => T,
   equalityFn?: EqualityChecker<T>,
 ) {
-  return useStoreWithEqualityFn(sceneStateStore, selector, equalityFn)
+  return useStoreWithEqualityFn(sceneDocumentStore, selector, equalityFn)
 }
 
-export const sceneStateActions = {
+export const sceneDocumentActions = {
   setHistory: (history: HistoryState<FurnitureItem[]>) => {
-    sceneStateStore.getState().setHistory(history)
+    sceneDocumentStore.getState().setHistory(history)
   },
   updateHistory: (
     updater: (
       history: HistoryState<FurnitureItem[]>,
     ) => HistoryState<FurnitureItem[]>,
   ) => {
-    sceneStateStore.getState().updateHistory(updater)
+    sceneDocumentStore.getState().updateHistory(updater)
   },
   setInstanceIdCounter: (counter: number) => {
-    sceneStateStore.getState().setInstanceIdCounter(counter)
+    sceneDocumentStore.getState().setInstanceIdCounter(counter)
   },
   setSelectedId: (id: string | null) => {
-    sceneStateStore.getState().setSelectedId(id)
+    sceneDocumentStore.getState().setSelectedId(id)
   },
   setPreviewedId: (id: string | null) => {
-    sceneStateStore.getState().setPreviewedId(id)
+    sceneDocumentStore.getState().setPreviewedId(id)
   },
   setDragging: (dragging: boolean) => {
-    sceneStateStore.getState().setDragging(dragging)
+    sceneDocumentStore.getState().setDragging(dragging)
   },
   setFloorFinishId: (id: string) => {
-    sceneStateStore.getState().setFloorFinishId(id)
+    sceneDocumentStore.getState().setFloorFinishId(id)
   },
   setWallFinishId: (id: string) => {
-    sceneStateStore.getState().setWallFinishId(id)
+    sceneDocumentStore.getState().setWallFinishId(id)
   },
   setEditorMessage: (message: string | null) => {
-    sceneStateStore.getState().setEditorMessage(message)
+    sceneDocumentStore.getState().setEditorMessage(message)
   },
   clearEditorMessage: () => {
-    sceneStateStore.getState().clearEditorMessage()
+    sceneDocumentStore.getState().clearEditorMessage()
   },
-  resetSceneState: () => {
-    sceneStateStore.getState().resetSceneState()
+  resetSceneDocument: () => {
+    sceneDocumentStore.getState().resetSceneDocument()
   },
 }
 
-export function resetSceneStateStore() {
-  sceneStateActions.resetSceneState()
+export function resetSceneDocumentStore() {
+  sceneDocumentActions.resetSceneDocument()
 }
 
 export const useItems = () =>
-  useSceneStateStore((state) => state.history.present)
+  useSceneDocumentStore((state) => state.history.present)
 export const useSelectedId = () =>
-  useSceneStateStore((state) => state.selectedId)
+  useSceneDocumentStore((state) => state.selectedId)
 export const useHasSelection = () =>
-  useSceneStateStore((state) => state.selectedId !== null)
+  useSceneDocumentStore((state) => state.selectedId !== null)
 export const useHistoryAvailability = () =>
-  useSceneStateStore(
+  useSceneDocumentStore(
     (state) => state.historyAvailability,
     areHistoryAvailabilityEqual,
   )
 export const useEditorMessage = () =>
-  useSceneStateStore((state) => state.editorMessage)
+  useSceneDocumentStore((state) => state.editorMessage)
 export const useIsDragging = () =>
-  useSceneStateStore((state) => state.isDragging)
+  useSceneDocumentStore((state) => state.isDragging)
 export const useFloorFinishId = () =>
-  useSceneStateStore((state) => state.floorFinishId)
+  useSceneDocumentStore((state) => state.floorFinishId)
 export const useWallFinishId = () =>
-  useSceneStateStore((state) => state.wallFinishId)
+  useSceneDocumentStore((state) => state.wallFinishId)
 export const useItemIds = () =>
-  useSceneStateStore(
+  useSceneDocumentStore(
     (state) => state.history.present.map((item) => item.id),
     areStringArraysEqual,
   )
 export const useSelectedFurniture = () =>
-  useSceneStateStore(selectSelectedFurniture)
+  useSceneDocumentStore(selectSelectedFurniture)
 
 export function selectSelectedFurniture(
-  state: Pick<SceneStateStoreState, 'selectedId' | 'history'>,
+  state: Pick<SceneDocumentStoreState, 'selectedId' | 'history'>,
 ): FurnitureItem | null {
   if (state.selectedId === null) {
     return null
@@ -330,7 +330,7 @@ export function usePreviewedId(options: {
   isBlockingOverlayOpen: boolean
   editorInteractionsEnabled: boolean
 }) {
-  return useSceneStateStore((state) => {
+  return useSceneDocumentStore((state) => {
     const candidateId = state.previewedIdRaw
 
     if (candidateId === null) {

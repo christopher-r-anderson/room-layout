@@ -8,7 +8,7 @@ import {
   editorLifecycleStore,
   type RestoreOutcome,
 } from '@/core/stores/editor-lifecycle-store'
-import { sceneStateStore } from '@/core/stores/scene-state-store'
+import { sceneDocumentStore } from '@/core/stores/scene-document-store'
 import { sceneCommands } from '@/scene/scene-commands'
 import {
   type PerfCounterSnapshot,
@@ -71,7 +71,7 @@ export function useTestStateBridge({
 
     window.__ROOM_LAYOUT_TEST__ = {
       getState: () => {
-        const storeState = sceneStateStore.getState()
+        const storeState = sceneDocumentStore.getState()
         const snapshotItems = sceneCommands.getSnapshot()?.items ?? []
         const pointerTargetsById = new Map(
           snapshotItems.map((item) => [item.id, item.pointerTarget] as const),

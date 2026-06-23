@@ -1,10 +1,10 @@
 import { announcementActions } from '@/core/stores/announcement-store'
 import { editorLifecycleStore } from '@/core/stores/editor-lifecycle-store'
 import {
-  sceneStateActions,
-  sceneStateStore,
+  sceneDocumentActions,
+  sceneDocumentStore,
   selectSelectedFurniture,
-} from '@/core/stores/scene-state-store'
+} from '@/core/stores/scene-document-store'
 import { sceneCommands } from '@/scene/scene-commands'
 import type { MoveSelectionResult, MoveSource } from '@/scene/scene.types'
 
@@ -38,8 +38,8 @@ export function moveSelection(
   const editorInteractionsEnabled =
     editorLifecycleStore.getState().startupPhase === 'ready'
   const movedItemName =
-    selectSelectedFurniture(sceneStateStore.getState())?.name ?? null
-  sceneStateActions.clearEditorMessage()
+    selectSelectedFurniture(sceneDocumentStore.getState())?.name ?? null
+  sceneDocumentActions.clearEditorMessage()
 
   const result =
     editorInteractionsEnabled && sceneCommands.isSceneReady()
@@ -71,8 +71,8 @@ export function rotateSelection(direction: -1 | 1) {
   const editorInteractionsEnabled =
     editorLifecycleStore.getState().startupPhase === 'ready'
   const rotatingName =
-    selectSelectedFurniture(sceneStateStore.getState())?.name ?? null
-  sceneStateActions.clearEditorMessage()
+    selectSelectedFurniture(sceneDocumentStore.getState())?.name ?? null
+  sceneDocumentActions.clearEditorMessage()
 
   if (!editorInteractionsEnabled || !sceneCommands.isSceneReady()) {
     return

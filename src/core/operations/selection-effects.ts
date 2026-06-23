@@ -5,7 +5,7 @@ import {
   selectionMetaActions,
   selectionMetaStore,
 } from '../stores/selection-meta-store'
-import { sceneStateStore } from '../stores/scene-state-store'
+import { sceneDocumentStore } from '../stores/scene-document-store'
 import type { InteractionSource } from '../types/interaction.types'
 import type {
   PendingSelectionChangeBehavior,
@@ -24,10 +24,10 @@ let pendingDeleteFocusTarget: 'room-view' | 'outliner' | null = null
 // Reconciliation trackers: the values the subscription has already reconciled
 // against. They live at module scope so reconciliation can run fully outside
 // React.
-let previousItems: FurnitureItem[] = sceneStateStore.getState().history.present
+let previousItems: FurnitureItem[] = sceneDocumentStore.getState().history.present
 let previousReconciledSelectedId: string | null = null
 let previousSideEffectSelectedId: string | null =
-  sceneStateStore.getState().selectedId
+  sceneDocumentStore.getState().selectedId
 
 function announceSelectionChange(options: {
   announceMode: SelectionAnnouncementMode
@@ -119,7 +119,7 @@ export function resetSelectionEffects() {
 }
 
 function syncReconcilerTrackers() {
-  const state = sceneStateStore.getState()
+  const state = sceneDocumentStore.getState()
   previousItems = state.history.present
   previousReconciledSelectedId = null
   previousSideEffectSelectedId = state.selectedId
@@ -130,7 +130,7 @@ function syncReconcilerTrackers() {
 // to run; reads pending intent recorded via `selectionEffects` and the live
 // outliner-focus request, then advances the trackers.
 function reconcileSelectionEffects() {
-  const state = sceneStateStore.getState()
+  const state = sceneDocumentStore.getState()
   const items = state.history.present
   const selectedId = state.selectedId
   const itemsChanged = items !== previousItems
@@ -239,7 +239,7 @@ export function startSelectionEffectsReconciler(): () => void {
 
   syncReconcilerTrackers()
 
-  const unsubscribe = sceneStateStore.subscribe(
+  const unsubscribe = sceneDocumentStore.subscribe(
     (state) => ({
       items: state.history.present,
       selectedId: state.selectedId,

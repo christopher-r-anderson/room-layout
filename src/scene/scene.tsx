@@ -64,8 +64,8 @@ import {
 import { computeSelectedToolbarGeometry } from './internal/selected-toolbar-geometry'
 import { perfCounters } from '@/shared/debug/perf-counters'
 import {
-  sceneStateActions,
-  sceneStateStore,
+  sceneDocumentActions,
+  sceneDocumentStore,
   useItems,
 } from '@/core/scene-contracts'
 import { selectionMetaActions } from '@/core/scene-contracts'
@@ -261,7 +261,7 @@ export function Scene({
 
   const updateFurniturePosition = useCallback(
     (id: string, nextPosition: [number, number, number]) => {
-      sceneStateActions.updateHistory((currentHistory) => {
+      sceneDocumentActions.updateHistory((currentHistory) => {
         return updateFurniturePositionInHistory(
           currentHistory,
           id,
@@ -282,7 +282,7 @@ export function Scene({
     furniture,
     selectFurniture,
     updateFurniturePosition,
-    updateHistory: sceneStateActions.updateHistory,
+    updateHistory: sceneDocumentActions.updateHistory,
     bounds: ROOM_BOUNDS,
     floorPlaneY: FLOOR_PLANE_Y,
     snapSize: SNAP_SIZE,
@@ -299,9 +299,9 @@ export function Scene({
         sourceScenesByPath,
       })
 
-      sceneStateActions.setInstanceIdCounter(restoredState.instanceIdSeed)
-      sceneStateActions.setHistory(restoredState.history)
-      sceneStateActions.setSelectedId(null)
+      sceneDocumentActions.setInstanceIdCounter(restoredState.instanceIdSeed)
+      sceneDocumentActions.setHistory(restoredState.history)
+      sceneDocumentActions.setSelectedId(null)
     },
     [catalog, collections, sourceScenesByPath],
   )
@@ -315,14 +315,14 @@ export function Scene({
   }, [dragState, selectFurniture])
 
   const handleDeleteSelection = useCallback(() => {
-    const { history, selectedId } = sceneStateStore.getState()
+    const { history, selectedId } = sceneDocumentStore.getState()
     const operationResult = deleteSelectionFromHistory(history, selectedId)
 
     if (!operationResult.deleted) {
       return false
     }
 
-    sceneStateActions.setHistory(operationResult.history)
+    sceneDocumentActions.setHistory(operationResult.history)
 
     if (
       operationResult.deletedId &&
@@ -331,14 +331,14 @@ export function Scene({
       clearDragState()
     }
 
-    sceneStateActions.setSelectedId(null)
+    sceneDocumentActions.setSelectedId(null)
 
     return true
   }, [clearDragState, dragState])
 
   const handleSelectById = useCallback(
     (id: string | null) => {
-      const furnitureItems = sceneStateStore.getState().history.present
+      const furnitureItems = sceneDocumentStore.getState().history.present
 
       if (dragState) {
         return {
@@ -375,7 +375,7 @@ export function Scene({
   )
 
   const handleUndo = useCallback(() => {
-    const { history, selectedId } = sceneStateStore.getState()
+    const { history, selectedId } = sceneDocumentStore.getState()
     const undoResult = undoSceneHistory({
       history,
       selectedId,
@@ -386,14 +386,14 @@ export function Scene({
       return false
     }
 
-    sceneStateActions.setHistory(undoResult.history)
-    sceneStateActions.setSelectedId(undoResult.selectedId)
+    sceneDocumentActions.setHistory(undoResult.history)
+    sceneDocumentActions.setSelectedId(undoResult.selectedId)
 
     return true
   }, [dragState])
 
   const handleRedo = useCallback(() => {
-    const { history, selectedId } = sceneStateStore.getState()
+    const { history, selectedId } = sceneDocumentStore.getState()
     const redoResult = redoSceneHistory({
       history,
       selectedId,
@@ -404,8 +404,8 @@ export function Scene({
       return false
     }
 
-    sceneStateActions.setHistory(redoResult.history)
-    sceneStateActions.setSelectedId(redoResult.selectedId)
+    sceneDocumentActions.setHistory(redoResult.history)
+    sceneDocumentActions.setSelectedId(redoResult.selectedId)
 
     return true
   }, [dragState])
@@ -416,7 +416,7 @@ export function Scene({
       _options?: { source?: MoveSource },
     ): MoveSelectionResult => {
       void _options
-      const { history, selectedId } = sceneStateStore.getState()
+      const { history, selectedId } = sceneDocumentStore.getState()
       const furnitureItems = history.present
 
       if (dragState) {
@@ -490,7 +490,7 @@ export function Scene({
         }
       })
 
-      sceneStateActions.updateHistory((currentHistory) =>
+      sceneDocumentActions.updateHistory((currentHistory) =>
         commitHistoryPresent(currentHistory, nextFurniture),
       )
 
@@ -507,7 +507,7 @@ export function Scene({
       position?: [number, number, number]
       rotationY?: number
     }): UpdateSelectionTransformResult => {
-      const { history, selectedId } = sceneStateStore.getState()
+      const { history, selectedId } = sceneDocumentStore.getState()
       const furnitureItems = history.present
 
       if (dragState) {
@@ -595,7 +595,7 @@ export function Scene({
         }
       }
 
-      sceneStateActions.setHistory(nextHistory)
+      sceneDocumentActions.setHistory(nextHistory)
 
       return {
         ok: true,
@@ -606,7 +606,7 @@ export function Scene({
   )
 
   const handleRotateSelection = useCallback((deltaRadians: number) => {
-    const { history, selectedId } = sceneStateStore.getState()
+    const { history, selectedId } = sceneDocumentStore.getState()
     const nextHistory = rotateSelectedFurnitureInHistory({
       history,
       selectedId,
@@ -614,12 +614,12 @@ export function Scene({
       bounds: ROOM_BOUNDS,
     })
 
-    sceneStateActions.setHistory(nextHistory)
+    sceneDocumentActions.setHistory(nextHistory)
   }, [])
 
   const handleAddFurniture = useCallback(
     (catalogId: string): AddFurnitureResult => {
-      const { history, instanceIdCounter } = sceneStateStore.getState()
+      const { history, instanceIdCounter } = sceneDocumentStore.getState()
       const operationResult = addFurnitureToHistory({
         history,
         sourceScenesByPath,
@@ -632,11 +632,11 @@ export function Scene({
         snapSize: SNAP_SIZE,
       })
 
-      sceneStateActions.setHistory(operationResult.history)
+      sceneDocumentActions.setHistory(operationResult.history)
 
       if (operationResult.incrementInstanceId) {
-        sceneStateActions.setInstanceIdCounter(instanceIdCounter + 1)
-        sceneStateActions.setSelectedId(
+        sceneDocumentActions.setInstanceIdCounter(instanceIdCounter + 1)
+        sceneDocumentActions.setSelectedId(
           operationResult.result.ok ? operationResult.result.id : null,
         )
       }
@@ -682,7 +682,7 @@ export function Scene({
   })
 
   const handleFocusSelected = useCallback(() => {
-    const { selectedId } = sceneStateStore.getState()
+    const { selectedId } = sceneDocumentStore.getState()
     const controls = cameraControlsRef.current
 
     if (!controls || !selectedId) {
@@ -752,7 +752,7 @@ export function Scene({
   const isDragging = Boolean(dragState)
 
   useEffect(() => {
-    sceneStateActions.setDragging(isDragging)
+    sceneDocumentActions.setDragging(isDragging)
   }, [isDragging])
 
   useEffect(() => {

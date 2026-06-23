@@ -2,10 +2,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createHistoryState } from '@/shared/lib/ui/editor-history'
 import {
-  resetSceneStateStore,
-  sceneStateActions,
-  sceneStateStore,
-} from '@/core/stores/scene-state-store'
+  resetSceneDocumentStore,
+  sceneDocumentActions,
+  sceneDocumentStore,
+} from '@/core/stores/scene-document-store'
 import {
   clearPreviewOnCanvasMiss,
   previewFromCanvasKeyboard,
@@ -27,12 +27,12 @@ const makeItem = (id: string) => ({
   rotationY: 0,
 })
 
-const previewedIdRaw = () => sceneStateStore.getState().previewedIdRaw
+const previewedIdRaw = () => sceneDocumentStore.getState().previewedIdRaw
 
 beforeEach(() => {
-  resetSceneStateStore()
+  resetSceneDocumentStore()
   resetPreviewState()
-  sceneStateActions.setHistory(
+  sceneDocumentActions.setHistory(
     createHistoryState([makeItem('item-1'), makeItem('item-2')]),
   )
 })
@@ -40,7 +40,7 @@ beforeEach(() => {
 afterEach(() => {
   vi.useRealTimers()
   resetPreviewState()
-  resetSceneStateStore()
+  resetSceneDocumentStore()
 })
 
 describe('preview-actions', () => {

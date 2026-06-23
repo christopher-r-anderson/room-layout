@@ -2,10 +2,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createHistoryState } from '@/shared/lib/ui/editor-history'
 import {
-  resetSceneStateStore,
-  sceneStateActions,
-  sceneStateStore,
-} from '@/core/stores/scene-state-store'
+  resetSceneDocumentStore,
+  sceneDocumentActions,
+  sceneDocumentStore,
+} from '@/core/stores/scene-document-store'
 import {
   resetSelectionMetaStore,
   selectionMetaStore,
@@ -47,10 +47,10 @@ const CHAIR = {
 
 describe('selection-actions', () => {
   beforeEach(() => {
-    resetSceneStateStore()
+    resetSceneDocumentStore()
     resetSelectionMetaStore()
     resetEditorLifecycleStore()
-    sceneStateActions.setHistory(createHistoryState([CHAIR]))
+    sceneDocumentActions.setHistory(createHistoryState([CHAIR]))
     editorLifecycleActions.markAssetsReady()
   })
 
@@ -89,7 +89,7 @@ describe('selection-actions', () => {
   })
 
   it('clears pending source when toggling the same selection off via canvas pointer', () => {
-    sceneStateActions.setSelectedId('chair-1')
+    sceneDocumentActions.setSelectedId('chair-1')
 
     selectByCanvasPointer('chair-1')
 
@@ -100,7 +100,7 @@ describe('selection-actions', () => {
   it('routes selectById announce mode based on the interaction source', () => {
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
     vi.spyOn(sceneCommands, 'selectById').mockImplementation((id) => {
-      sceneStateActions.setSelectedId(id)
+      sceneDocumentActions.setSelectedId(id)
       return { ok: true, status: 'selected' }
     })
 
@@ -117,7 +117,7 @@ describe('selection-actions', () => {
   })
 
   it('clears the editor message and pending behavior on clear selection', () => {
-    sceneStateActions.setEditorMessage('stale')
+    sceneDocumentActions.setEditorMessage('stale')
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
     const clearSelectionSpy = vi
       .spyOn(sceneCommands, 'clearSelection')
@@ -130,6 +130,6 @@ describe('selection-actions', () => {
       announceMode: 'default',
       requestOutlinerFocus: false,
     })
-    expect(sceneStateStore.getState().editorMessage).toBeNull()
+    expect(sceneDocumentStore.getState().editorMessage).toBeNull()
   })
 })

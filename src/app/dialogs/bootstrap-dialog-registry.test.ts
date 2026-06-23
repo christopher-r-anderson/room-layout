@@ -11,9 +11,9 @@ import {
   resetEditorLifecycleStore,
 } from '@/core/stores/editor-lifecycle-store'
 import {
-  resetSceneStateStore,
-  sceneStateActions,
-} from '@/core/stores/scene-state-store'
+  resetSceneDocumentStore,
+  sceneDocumentActions,
+} from '@/core/stores/scene-document-store'
 import { createHistoryState } from '@/shared/lib/ui/editor-history'
 import { DIALOG_IDS } from '@/app/dialogs/dialog-registry'
 import {
@@ -75,7 +75,7 @@ describe('bootstrapDialogRegistry', () => {
 describe('buildDialogRuntimeContext', () => {
   beforeEach(() => {
     resetEditorLifecycleStore()
-    resetSceneStateStore()
+    resetSceneDocumentStore()
   })
 
   it('derives dialog readiness from editor runtime store', () => {
@@ -95,8 +95,8 @@ describe('buildDialogRuntimeContext', () => {
       canStartOver: () => false,
     })
 
-    sceneStateActions.setHistory(createHistoryState([CHAIR]))
-    sceneStateActions.setSelectedId(CHAIR.id)
+    sceneDocumentActions.setHistory(createHistoryState([CHAIR]))
+    sceneDocumentActions.setSelectedId(CHAIR.id)
 
     expect(context.getSelectedFurniture()).toEqual(CHAIR)
     expect(context.canStartOver()).toBe(false)

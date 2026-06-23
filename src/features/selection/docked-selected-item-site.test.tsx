@@ -15,9 +15,9 @@ import {
 } from '@/core/stores/editor-lifecycle-store'
 import { resetDialogStore } from '@/core/stores/dialog-store'
 import {
-  sceneStateActions,
-  resetSceneStateStore,
-} from '@/core/stores/scene-state-store'
+  sceneDocumentActions,
+  resetSceneDocumentStore,
+} from '@/core/stores/scene-document-store'
 import { DockedSelectedItemSite } from './docked-selected-item-site'
 import { FloatingSelectedItemSite } from './floating-selected-item-site'
 import { SelectedItemInteractionProvider } from './selected-item-interaction-provider'
@@ -27,10 +27,10 @@ import { FURNITURE_ITEM } from './test-fixtures'
 beforeEach(() => {
   resetDialogStore()
   resetEditorLifecycleStore()
-  resetSceneStateStore()
+  resetSceneDocumentStore()
   editorLifecycleActions.markAssetsReady()
-  sceneStateActions.setHistory(createHistoryState([FURNITURE_ITEM]))
-  sceneStateActions.setSelectedId(FURNITURE_ITEM.id)
+  sceneDocumentActions.setHistory(createHistoryState([FURNITURE_ITEM]))
+  sceneDocumentActions.setSelectedId(FURNITURE_ITEM.id)
 })
 
 describe('DockedSelectedItemSite', () => {

@@ -16,9 +16,9 @@ import {
 } from '@/scene/internal/scene-services'
 import { sceneCommands } from '@/scene/scene-commands'
 import {
-  resetSceneStateStore,
-  sceneStateActions,
-  sceneStateStore,
+  resetSceneDocumentStore,
+  sceneDocumentActions,
+  sceneDocumentStore,
   useEditorMessage,
   useFloorFinishId,
   useHasSelection,
@@ -29,7 +29,7 @@ import {
   useSelectedId,
   useSelectedFurniture,
   useWallFinishId,
-} from './scene-state-store'
+} from './scene-document-store'
 
 const FURNITURE_ITEM: FurnitureItem = {
   id: 'item-1',
@@ -45,7 +45,7 @@ const FURNITURE_ITEM: FurnitureItem = {
 }
 
 beforeEach(() => {
-  resetSceneStateStore()
+  resetSceneDocumentStore()
   clearSceneServices()
 })
 
@@ -53,8 +53,8 @@ function seedSceneItems(
   items: FurnitureItem[],
   options?: { selectedId?: string | null },
 ) {
-  sceneStateActions.setHistory(createHistoryState(items))
-  sceneStateActions.setSelectedId(options?.selectedId ?? null)
+  sceneDocumentActions.setHistory(createHistoryState(items))
+  sceneDocumentActions.setSelectedId(options?.selectedId ?? null)
 }
 
 function registerDefaultSceneServices(
@@ -83,7 +83,7 @@ function registerDefaultSceneServices(
   })
 }
 
-describe('sceneStateStore', () => {
+describe('sceneDocumentStore', () => {
   it('derives selected furniture and selection presence from history and selected id', () => {
     const { result: items } = renderHook(() => useItems())
     const { result: selectedId } = renderHook(() => useSelectedId())
@@ -102,7 +102,7 @@ describe('sceneStateStore', () => {
     expect(hasSelection.current).toBe(true)
 
     act(() => {
-      sceneStateActions.setSelectedId(null)
+      sceneDocumentActions.setSelectedId(null)
     })
 
     expect(hasSelection.current).toBe(false)
@@ -115,12 +115,12 @@ describe('sceneStateStore', () => {
     const { result: editorMessage } = renderHook(() => useEditorMessage())
 
     act(() => {
-      sceneStateActions.setHistory(
+      sceneDocumentActions.setHistory(
         commitHistoryPresent(createHistoryState<FurnitureItem[]>([]), [
           FURNITURE_ITEM,
         ]),
       )
-      sceneStateActions.setEditorMessage('Unable to place furniture')
+      sceneDocumentActions.setEditorMessage('Unable to place furniture')
     })
 
     expect(historyAvailability.current).toEqual({
@@ -130,7 +130,7 @@ describe('sceneStateStore', () => {
     expect(editorMessage.current).toBe('Unable to place furniture')
 
     act(() => {
-      sceneStateActions.clearEditorMessage()
+      sceneDocumentActions.clearEditorMessage()
     })
 
     expect(editorMessage.current).toBeNull()
@@ -142,7 +142,7 @@ describe('sceneStateStore', () => {
     )
 
     act(() => {
-      sceneStateActions.setHistory(
+      sceneDocumentActions.setHistory(
         commitHistoryPresent(createHistoryState<FurnitureItem[]>([]), [
           FURNITURE_ITEM,
         ]),
@@ -155,7 +155,7 @@ describe('sceneStateStore', () => {
     })
 
     act(() => {
-      sceneStateActions.setDragging(true)
+      sceneDocumentActions.setDragging(true)
     })
 
     expect(historyAvailability.current).toEqual({
@@ -169,8 +169,8 @@ describe('sceneStateStore', () => {
     const { result: wallFinishId } = renderHook(() => useWallFinishId())
 
     act(() => {
-      sceneStateActions.setFloorFinishId('oak-floor')
-      sceneStateActions.setWallFinishId('white-wall')
+      sceneDocumentActions.setFloorFinishId('oak-floor')
+      sceneDocumentActions.setWallFinishId('white-wall')
     })
 
     expect(floorFinishId.current).toBe('oak-floor')
@@ -179,20 +179,20 @@ describe('sceneStateStore', () => {
 
   it('updates selected id directly and clears preview when selection changes', () => {
     act(() => {
-      sceneStateActions.setPreviewedId('item-1')
-      sceneStateActions.setSelectedId('item-1')
+      sceneDocumentActions.setPreviewedId('item-1')
+      sceneDocumentActions.setSelectedId('item-1')
     })
 
-    expect(sceneStateStore.getState().selectedId).toBe('item-1')
-    expect(sceneStateStore.getState().previewedIdRaw).toBeNull()
+    expect(sceneDocumentStore.getState().selectedId).toBe('item-1')
+    expect(sceneDocumentStore.getState().previewedIdRaw).toBeNull()
 
     act(() => {
-      sceneStateActions.setPreviewedId('item-2')
-      sceneStateActions.setSelectedId(null)
+      sceneDocumentActions.setPreviewedId('item-2')
+      sceneDocumentActions.setSelectedId(null)
     })
 
-    expect(sceneStateStore.getState().selectedId).toBeNull()
-    expect(sceneStateStore.getState().previewedIdRaw).toBeNull()
+    expect(sceneDocumentStore.getState().selectedId).toBeNull()
+    expect(sceneDocumentStore.getState().previewedIdRaw).toBeNull()
   })
 
   it('returns stable item ids until the id list changes', () => {
@@ -228,17 +228,17 @@ describe('sceneStateStore', () => {
 
     act(() => {
       seedSceneItems([FURNITURE_ITEM])
-      sceneStateActions.setPreviewedId('item-1')
+      sceneDocumentActions.setPreviewedId('item-1')
     })
     expect(result.current).toBe('item-1')
 
     act(() => {
-      sceneStateActions.setDragging(true)
+      sceneDocumentActions.setDragging(true)
     })
     expect(result.current).toBeNull()
 
     act(() => {
-      sceneStateActions.setDragging(false)
+      sceneDocumentActions.setDragging(false)
     })
     expect(result.current).toBe('item-1')
 
@@ -272,16 +272,16 @@ describe('sceneStateStore', () => {
 
     act(() => {
       seedSceneItems([FURNITURE_ITEM], { selectedId: FURNITURE_ITEM.id })
-      sceneStateActions.setPreviewedId(FURNITURE_ITEM.id)
+      sceneDocumentActions.setPreviewedId(FURNITURE_ITEM.id)
     })
 
-    expect(sceneStateStore.getState().previewedIdRaw).toBe(FURNITURE_ITEM.id)
+    expect(sceneDocumentStore.getState().previewedIdRaw).toBe(FURNITURE_ITEM.id)
 
     act(() => {
       seedSceneItems([])
     })
 
-    expect(sceneStateStore.getState().previewedIdRaw).toBeNull()
+    expect(sceneDocumentStore.getState().previewedIdRaw).toBeNull()
     expect(consoleErrorSpy).not.toHaveBeenCalled()
 
     consoleErrorSpy.mockRestore()

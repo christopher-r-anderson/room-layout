@@ -30,8 +30,8 @@ import {
 import {
   useItems,
   usePreviewedId,
-  useSceneStateStore,
-} from '@/core/stores/scene-state-store'
+  useSceneDocumentStore,
+} from '@/core/stores/scene-document-store'
 import { useEditorInteractionsEnabled } from '@/core/stores/editor-lifecycle-store'
 import { useIsBlockingOverlayOpen } from '@/core/stores/dialog-store'
 
@@ -43,7 +43,7 @@ function loadStoredExpandedState() {
 
 export function Outliner() {
   const items = useItems()
-  const selectedId = useSceneStateStore((state) => state.selectedId)
+  const selectedId = useSceneDocumentStore((state) => state.selectedId)
   const editorInteractionsEnabled = useEditorInteractionsEnabled()
   const isBlockingOverlayOpen = useIsBlockingOverlayOpen()
   const derivedFocusRequest = useOutlinerFocusRequest()

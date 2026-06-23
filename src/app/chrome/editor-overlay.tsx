@@ -11,7 +11,7 @@ import {
   useAssetError,
   useEditorInteractionsEnabled,
 } from '@/core/stores/editor-lifecycle-store'
-import { useHasSelection } from '@/core/stores/scene-state-store'
+import { useHasSelection } from '@/core/stores/scene-document-store'
 import { CameraTools } from '@/features/camera/camera-tools'
 import { DeleteConfirmationDialog } from '@/features/selection/delete-confirmation-dialog'
 import { confirmDeleteSelection } from '@/features/selection/deletion-actions'

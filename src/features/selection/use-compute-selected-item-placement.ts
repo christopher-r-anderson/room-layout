@@ -4,7 +4,7 @@ import { useElementSize } from '@/shared/hooks/use-element-size'
 import { useEditorRefs } from '@/shared/providers/editor-refs-context'
 import { useExclusionRects } from '@/shared/layout/overlay-exclusion-context'
 import { useHeaderLayoutMode } from '@/shared/layout/use-header-layout-mode'
-import { useSelectedFurniture } from '@/core/stores/scene-state-store'
+import { useSelectedFurniture } from '@/core/stores/scene-document-store'
 import { useToolbarGeometry } from '@/core/stores/selection-meta-store'
 import {
   computeSelectedToolbarPlacement,

@@ -10,7 +10,7 @@ import {
   editorLifecycleStore,
 } from '../stores/editor-lifecycle-store'
 import { assetsStore } from '../stores/assets-store'
-import { sceneStateActions } from '../stores/scene-state-store'
+import { sceneDocumentActions } from '../stores/scene-document-store'
 import { resetSelectionMetaStore } from '../stores/selection-meta-store'
 import { selectionEffects } from './selection-effects'
 import { loadSceneDraft, saveSceneDraft } from '../persistence/scene-draft'
@@ -29,7 +29,7 @@ const ASSET_ERROR_MESSAGE =
 // retry transitions so a failed or restarted load never leaves stale scene or
 // selection state behind.
 function resetStartupShell() {
-  sceneStateActions.resetSceneState()
+  sceneDocumentActions.resetSceneDocument()
   resetSelectionMetaStore()
   clearSceneServices()
 }
@@ -75,11 +75,11 @@ function runRestoreOnce() {
     wallFinishId: string | undefined,
   ) => {
     if (floorFinishId && finish.floorFinishIds.includes(floorFinishId)) {
-      sceneStateActions.setFloorFinishId(floorFinishId)
+      sceneDocumentActions.setFloorFinishId(floorFinishId)
     }
 
     if (wallFinishId && finish.wallFinishIds.includes(wallFinishId)) {
-      sceneStateActions.setWallFinishId(wallFinishId)
+      sceneDocumentActions.setWallFinishId(wallFinishId)
     }
   }
 
@@ -143,7 +143,7 @@ function runRestoreOnce() {
     notifications: {
       announcePolite: announcementActions.announcePolite,
       announceAssertive: announcementActions.announceAssertive,
-      setEditorMessage: sceneStateActions.setEditorMessage,
+      setEditorMessage: sceneDocumentActions.setEditorMessage,
       setRestoreOutcome: editorLifecycleActions.recordRestoreOutcome,
       toastSuccess: (message) => toast.success(message),
       toastWarning: (message) => toast.warning(message),

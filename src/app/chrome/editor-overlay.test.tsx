@@ -14,7 +14,7 @@ import {
   editorLifecycleActions,
   resetEditorLifecycleStore,
 } from '@/core/stores/editor-lifecycle-store'
-import { sceneStateActions } from '@/core/stores/scene-state-store'
+import { sceneDocumentActions } from '@/core/stores/scene-document-store'
 import { OverlayExclusionProvider } from '../../shared/layout/overlay-exclusion-provider'
 import { EditorRefsProvider } from '../../shared/providers/editor-refs-provider'
 import { CommandDispatchProvider } from '@/core/commands/command-dispatch-provider'
@@ -194,7 +194,7 @@ function createSelectedFurniture(): FurnitureItem {
 beforeEach(() => {
   resetDialogStore()
   resetEditorLifecycleStore()
-  sceneStateActions.resetSceneState()
+  sceneDocumentActions.resetSceneDocument()
   dialogActions.configureRuntimeContext({
     isDialogsEnabled: () => true,
     getSelectedFurniture: () => null,
@@ -220,10 +220,10 @@ describe('EditorOverlay integration', () => {
     const selectedFurniture = createSelectedFurniture()
     const registerExclusionElement = vi.fn(() => vi.fn())
 
-    sceneStateActions.setHistory(createHistoryState([selectedFurniture]))
-    sceneStateActions.setSelectedId(selectedFurniture.id)
-    sceneStateActions.setFloorFinishId('wood-floor')
-    sceneStateActions.setWallFinishId('light-gray')
+    sceneDocumentActions.setHistory(createHistoryState([selectedFurniture]))
+    sceneDocumentActions.setSelectedId(selectedFurniture.id)
+    sceneDocumentActions.setFloorFinishId('wood-floor')
+    sceneDocumentActions.setWallFinishId('light-gray')
 
     function TestHarness() {
       const selectedItemControlsRef = React.useRef<HTMLDivElement | null>(null)

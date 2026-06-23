@@ -3,9 +3,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createHistoryState } from '@/shared/lib/ui/editor-history'
 import {
-  resetSceneStateStore,
-  sceneStateActions,
-} from '@/core/stores/scene-state-store'
+  resetSceneDocumentStore,
+  sceneDocumentActions,
+} from '@/core/stores/scene-document-store'
 import {
   editorLifecycleActions,
   resetEditorLifecycleStore,
@@ -47,11 +47,11 @@ const CHAIR: FurnitureItem = {
 
 describe('selected-item-detail-actions', () => {
   beforeEach(() => {
-    resetSceneStateStore()
+    resetSceneDocumentStore()
     resetSelectionMetaStore()
     resetEditorLifecycleStore()
-    sceneStateActions.setHistory(createHistoryState([CHAIR]))
-    sceneStateActions.setSelectedId(CHAIR.id)
+    sceneDocumentActions.setHistory(createHistoryState([CHAIR]))
+    sceneDocumentActions.setSelectedId(CHAIR.id)
   })
 
   afterEach(() => {

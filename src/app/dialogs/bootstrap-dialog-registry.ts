@@ -1,7 +1,7 @@
 import type { DialogRuntimeContext } from '@/core/dialog-contract'
 import { dialogActions } from '@/core/stores/dialog-store'
 import { editorLifecycleStore } from '@/core/stores/editor-lifecycle-store'
-import { sceneStateStore } from '@/core/stores/scene-state-store'
+import { sceneDocumentStore } from '@/core/stores/scene-document-store'
 import { DIALOG_DEFINITIONS } from './dialog-registry'
 
 interface BuildDialogRuntimeContextOptions {
@@ -9,7 +9,7 @@ interface BuildDialogRuntimeContextOptions {
 }
 
 function getSelectedFurnitureFromState() {
-  const state = sceneStateStore.getState()
+  const state = sceneDocumentStore.getState()
 
   if (state.selectedId === null) {
     return null

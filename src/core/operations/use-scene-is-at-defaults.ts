@@ -9,11 +9,11 @@ import {
   useEnvironmentConfig,
 } from '@/core/stores/assets-store'
 import {
-  sceneStateStore,
+  sceneDocumentStore,
   useFloorFinishId,
   useItems,
   useWallFinishId,
-} from '@/core/stores/scene-state-store'
+} from '@/core/stores/scene-document-store'
 
 function computeSceneIsAtDefaults(
   environmentConfig: EnvironmentMaterialConfig | null,
@@ -65,7 +65,7 @@ export function useSceneIsAtDefaults(): boolean {
 // `canOpen` gate) that need the current value outside React.
 export function getSceneIsAtDefaults(): boolean {
   const { environmentConfig } = assetsStore.getState()
-  const { history, floorFinishId, wallFinishId } = sceneStateStore.getState()
+  const { history, floorFinishId, wallFinishId } = sceneDocumentStore.getState()
 
   return computeSceneIsAtDefaults(
     environmentConfig,

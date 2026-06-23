@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 import { announcementActions } from '@/core/stores/announcement-store'
-import { sceneStateActions, useItems } from '@/core/stores/scene-state-store'
+import { sceneDocumentActions, useItems } from '@/core/stores/scene-document-store'
 import { serializeSceneToUrl } from '@/core/persistence/scene-url'
 
 interface ShareControllerOptions {
@@ -21,7 +21,7 @@ export function useShareController({
     })
 
     if (!url) {
-      sceneStateActions.setEditorMessage(
+      sceneDocumentActions.setEditorMessage(
         'Scene is too large to share as a URL.',
       )
       announcementActions.announceAssertive(
@@ -48,7 +48,7 @@ export function useShareController({
     if (canUseNativeShare) {
       try {
         await navigator.share(shareData)
-        sceneStateActions.clearEditorMessage()
+        sceneDocumentActions.clearEditorMessage()
         announcementActions.announcePolite('Room layout shared.')
         return 'shared'
       } catch (error) {
@@ -56,7 +56,7 @@ export function useShareController({
           return null
         }
 
-        sceneStateActions.setEditorMessage('Could not open share options.')
+        sceneDocumentActions.setEditorMessage('Could not open share options.')
         announcementActions.announceAssertive('Could not open share options.')
         return null
       }
@@ -64,11 +64,11 @@ export function useShareController({
 
     try {
       await navigator.clipboard.writeText(url)
-      sceneStateActions.clearEditorMessage()
+      sceneDocumentActions.clearEditorMessage()
       announcementActions.announcePolite('Scene URL copied to clipboard.')
       return 'copied'
     } catch {
-      sceneStateActions.setEditorMessage('Could not copy URL to clipboard.')
+      sceneDocumentActions.setEditorMessage('Could not copy URL to clipboard.')
       announcementActions.announceAssertive('Could not copy URL to clipboard.')
       return null
     }

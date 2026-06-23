@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useRef, useState, type RefObject } from 'react'
 import { type Object3D } from 'three'
 import { getMeshes } from '@/shared/lib/three/get-meshes'
-import { sceneStateActions, useSelectedId } from '@/core/scene-contracts'
+import { sceneDocumentActions, useSelectedId } from '@/core/scene-contracts'
 import type { FurnitureItem } from '../objects/furniture.types'
 
 interface SceneSelectionState {
@@ -38,7 +38,7 @@ export function useSceneSelection({
   )
 
   const setSelectedIdAndResolveObject = useCallback((id: string | null) => {
-    sceneStateActions.setSelectedId(id)
+    sceneDocumentActions.setSelectedId(id)
   }, [])
 
   const setSelection = useCallback(

@@ -1,9 +1,9 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
-  resetSceneStateStore,
-  sceneStateStore,
-} from '@/core/stores/scene-state-store'
+  resetSceneDocumentStore,
+  sceneDocumentStore,
+} from '@/core/stores/scene-document-store'
 import {
   resetSelectionMetaStore,
   selectionMetaStore,
@@ -47,7 +47,7 @@ const CHAIR: FurnitureCatalogEntry = {
 }
 
 beforeEach(() => {
-  resetSceneStateStore()
+  resetSceneDocumentStore()
   resetSelectionMetaStore()
   resetEditorLifecycleStore()
   resetAssetsStore()
@@ -83,7 +83,7 @@ describe('addFurniture', () => {
 
     addFurnitureCommand.mockReturnValueOnce({ ok: false, reason: 'no-space' })
     expect(addFurniture()).toBe(false)
-    expect(sceneStateStore.getState().editorMessage).toBe(
+    expect(sceneDocumentStore.getState().editorMessage).toBe(
       ADD_FURNITURE_NO_SPACE_MESSAGE,
     )
 
@@ -92,7 +92,7 @@ describe('addFurniture', () => {
       reason: 'unknown-catalog',
     })
     expect(addFurniture()).toBe(false)
-    expect(sceneStateStore.getState().editorMessage).toBe(
+    expect(sceneDocumentStore.getState().editorMessage).toBe(
       ADD_FURNITURE_UNKNOWN_CATALOG_MESSAGE,
     )
   })

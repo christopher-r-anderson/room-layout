@@ -3,10 +3,10 @@ import { act, renderHook } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { createHistoryState } from '@/shared/lib/ui/editor-history'
 import {
-  resetSceneStateStore,
-  sceneStateActions,
-  sceneStateStore,
-} from '@/core/stores/scene-state-store'
+  resetSceneDocumentStore,
+  sceneDocumentActions,
+  sceneDocumentStore,
+} from '@/core/stores/scene-document-store'
 import {
   editorLifecycleActions,
   resetEditorLifecycleStore,
@@ -28,16 +28,16 @@ const CHAIR = {
 }
 
 beforeEach(() => {
-  resetSceneStateStore()
+  resetSceneDocumentStore()
   resetEditorLifecycleStore()
   resetPreviewState()
-  sceneStateActions.setHistory(createHistoryState([CHAIR]))
+  sceneDocumentActions.setHistory(createHistoryState([CHAIR]))
   editorLifecycleActions.markAssetsReady()
 })
 
 afterEach(() => {
   resetPreviewState()
-  resetSceneStateStore()
+  resetSceneDocumentStore()
   resetEditorLifecycleStore()
 })
 
@@ -50,16 +50,16 @@ describe('usePreviewReconciler', () => {
     act(() => {
       previewFromScene('item-1')
     })
-    expect(sceneStateStore.getState().previewedIdRaw).toBe('item-1')
+    expect(sceneDocumentStore.getState().previewedIdRaw).toBe('item-1')
 
     act(() => {
-      sceneStateActions.setDragging(true)
+      sceneDocumentActions.setDragging(true)
     })
-    expect(sceneStateStore.getState().previewedIdRaw).toBeNull()
+    expect(sceneDocumentStore.getState().previewedIdRaw).toBeNull()
 
     act(() => {
-      sceneStateActions.setDragging(false)
+      sceneDocumentActions.setDragging(false)
     })
-    expect(sceneStateStore.getState().previewedIdRaw).toBeNull()
+    expect(sceneDocumentStore.getState().previewedIdRaw).toBeNull()
   })
 })

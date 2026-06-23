@@ -9,9 +9,9 @@ import {
   resetEditorLifecycleStore,
 } from '@/core/stores/editor-lifecycle-store'
 import {
-  resetSceneStateStore,
-  sceneStateActions,
-} from '@/core/stores/scene-state-store'
+  resetSceneDocumentStore,
+  sceneDocumentActions,
+} from '@/core/stores/scene-document-store'
 import { useDraftPersistence } from './use-draft-persistence'
 
 type SaveSceneDraftArgs = [
@@ -84,14 +84,14 @@ function createFurnitureItem(id: string) {
 
 describe('useDraftPersistence', () => {
   beforeEach(() => {
-    resetSceneStateStore()
+    resetSceneDocumentStore()
     resetEditorLifecycleStore()
     saveSceneDraft.mockReset()
     clearSceneDraft.mockReset()
   })
 
   afterEach(() => {
-    resetSceneStateStore()
+    resetSceneDocumentStore()
     resetEditorLifecycleStore()
   })
 
@@ -101,7 +101,7 @@ describe('useDraftPersistence', () => {
     })
 
     act(() => {
-      sceneStateActions.setHistory(
+      sceneDocumentActions.setHistory(
         createHistoryState([createFurnitureItem('item-1')]),
       )
     })
@@ -120,7 +120,7 @@ describe('useDraftPersistence', () => {
         kind: 'asset-load',
         message: 'Unable to load asset',
       })
-      sceneStateActions.setHistory(
+      sceneDocumentActions.setHistory(
         createHistoryState([createFurnitureItem('item-1')]),
       )
     })
@@ -129,7 +129,7 @@ describe('useDraftPersistence', () => {
     expect(clearSceneDraft).not.toHaveBeenCalled()
 
     act(() => {
-      sceneStateActions.resetSceneState()
+      sceneDocumentActions.resetSceneDocument()
     })
 
     expect(saveSceneDraft).not.toHaveBeenCalled()
@@ -151,7 +151,7 @@ describe('useDraftPersistence', () => {
     clearSceneDraft.mockClear()
 
     act(() => {
-      sceneStateActions.setHistory(
+      sceneDocumentActions.setHistory(
         createHistoryState([createFurnitureItem('item-1')]),
       )
     })
@@ -181,8 +181,8 @@ describe('useDraftPersistence', () => {
     clearSceneDraft.mockClear()
 
     act(() => {
-      sceneStateActions.setDragging(true)
-      sceneStateActions.setHistory(
+      sceneDocumentActions.setDragging(true)
+      sceneDocumentActions.setHistory(
         createHistoryState([createFurnitureItem('item-1')]),
       )
     })
@@ -191,7 +191,7 @@ describe('useDraftPersistence', () => {
     expect(clearSceneDraft).not.toHaveBeenCalled()
 
     act(() => {
-      sceneStateActions.setDragging(false)
+      sceneDocumentActions.setDragging(false)
     })
 
     expect(saveSceneDraft).toHaveBeenLastCalledWith(
@@ -215,7 +215,7 @@ describe('useDraftPersistence', () => {
     expect(clearSceneDraft).toHaveBeenCalled()
 
     act(() => {
-      sceneStateActions.setFloorFinishId('floor-alt')
+      sceneDocumentActions.setFloorFinishId('floor-alt')
     })
 
     expect(saveSceneDraft).toHaveBeenLastCalledWith([], {
@@ -224,7 +224,7 @@ describe('useDraftPersistence', () => {
     })
 
     act(() => {
-      sceneStateActions.setFloorFinishId('floor-default')
+      sceneDocumentActions.setFloorFinishId('floor-default')
     })
 
     expect(clearSceneDraft).toHaveBeenCalledTimes(2)

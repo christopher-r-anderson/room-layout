@@ -2,10 +2,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createHistoryState } from '@/shared/lib/ui/editor-history'
 import {
-  resetSceneStateStore,
-  sceneStateActions,
-  sceneStateStore,
-} from '@/core/stores/scene-state-store'
+  resetSceneDocumentStore,
+  sceneDocumentActions,
+  sceneDocumentStore,
+} from '@/core/stores/scene-document-store'
 import {
   resetSelectionMetaStore,
   selectionMetaActions,
@@ -60,10 +60,10 @@ const CHAIR = {
 }
 
 beforeEach(() => {
-  resetSceneStateStore()
+  resetSceneDocumentStore()
   resetSelectionMetaStore()
   resetEditorLifecycleStore()
-  sceneStateActions.setHistory(createHistoryState([CHAIR]))
+  sceneDocumentActions.setHistory(createHistoryState([CHAIR]))
   editorLifecycleActions.markAssetsReady()
 })
 
@@ -82,7 +82,7 @@ describe('deletion-actions', () => {
 
     expect(closeActiveDialog).toHaveBeenCalled()
     expect(deleteSelection).not.toHaveBeenCalled()
-    expect(sceneStateStore.getState().editorMessage).toBe(
+    expect(sceneDocumentStore.getState().editorMessage).toBe(
       DELETE_SELECTION_MISSING_MESSAGE,
     )
     expect(selectionEffects.notePendingSelection).toHaveBeenCalledWith(null)
@@ -98,7 +98,7 @@ describe('deletion-actions', () => {
 
     expect(closeActiveDialog).toHaveBeenCalled()
     expect(deleteSelection).not.toHaveBeenCalled()
-    expect(sceneStateStore.getState().editorMessage).toBeNull()
+    expect(sceneDocumentStore.getState().editorMessage).toBeNull()
     expect(selectionEffects.notePendingSelection).toHaveBeenCalledWith(null)
   })
 

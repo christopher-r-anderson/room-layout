@@ -23,11 +23,11 @@ import { announcementActions } from '@/core/stores/announcement-store'
 import { useCommandDispatch } from '@/core/commands/command-dispatch-context'
 import { useActiveFinishIds } from '@/app/controllers/_shared/use-active-finish-ids'
 import {
-  sceneStateActions,
+  sceneDocumentActions,
   useFloorFinishId,
   useHistoryAvailability,
   useWallFinishId,
-} from '@/core/stores/scene-state-store'
+} from '@/core/stores/scene-document-store'
 import { toast } from 'sonner'
 import { topHeaderDialogOpenChange } from './top-header-dialog-bindings'
 import { headerFocusRegistry } from './header-focus-registry'
@@ -116,8 +116,8 @@ export function TopHeader({
       canRedo: historyAvailability.canRedo,
       canUndo: historyAvailability.canUndo,
     },
-    onFloorFinishChange: sceneStateActions.setFloorFinishId,
-    onWallFinishChange: sceneStateActions.setWallFinishId,
+    onFloorFinishChange: sceneDocumentActions.setFloorFinishId,
+    onWallFinishChange: sceneDocumentActions.setWallFinishId,
     startOverDisabled,
     onShareSceneUrl,
     topHeaderRef,

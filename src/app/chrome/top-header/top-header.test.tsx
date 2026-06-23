@@ -7,7 +7,7 @@ import {
   editorLifecycleActions,
   resetEditorLifecycleStore,
 } from '@/core/stores/editor-lifecycle-store'
-import { sceneStateActions } from '@/core/stores/scene-state-store'
+import { sceneDocumentActions } from '@/core/stores/scene-document-store'
 import { CommandDispatchProvider } from '@/core/commands/command-dispatch-provider'
 import {
   resetAssetsStore,
@@ -91,7 +91,7 @@ describe('TopHeader', () => {
   beforeEach(() => {
     resetDialogStore()
     resetEditorLifecycleStore()
-    sceneStateActions.resetSceneState()
+    sceneDocumentActions.resetSceneDocument()
     resetAssetsStore()
     assetsActions.setAssets({
       catalog: [],
@@ -102,8 +102,8 @@ describe('TopHeader', () => {
   })
 
   it('passes active default finish ids to header layouts when stored ids are invalid', () => {
-    sceneStateActions.setFloorFinishId('missing-floor')
-    sceneStateActions.setWallFinishId('missing-wall')
+    sceneDocumentActions.setFloorFinishId('missing-floor')
+    sceneDocumentActions.setWallFinishId('missing-wall')
 
     renderTopHeader()
 

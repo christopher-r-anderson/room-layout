@@ -1,7 +1,7 @@
 import {
-  sceneStateActions,
-  sceneStateStore,
-} from '@/core/stores/scene-state-store'
+  sceneDocumentActions,
+  sceneDocumentStore,
+} from '@/core/stores/scene-document-store'
 import { editorLifecycleStore } from '@/core/stores/editor-lifecycle-store'
 import { selectionMetaActions } from '@/core/stores/selection-meta-store'
 import { selectionEffects } from '@/core/operations/selection-effects'
@@ -17,7 +17,7 @@ export function selectByCanvasPointer(id: string) {
     return
   }
 
-  const selectedId = sceneStateStore.getState().selectedId
+  const selectedId = sceneDocumentStore.getState().selectedId
 
   selectionEffects.notePendingSelection(
     selectedId === id
@@ -47,10 +47,10 @@ export function selectById(
     }
   }
 
-  const selectedId = sceneStateStore.getState().selectedId
+  const selectedId = sceneDocumentStore.getState().selectedId
   const selectionWillChange = selectedId !== id
   const result = sceneCommands.selectById(id)
-  sceneStateActions.clearEditorMessage()
+  sceneDocumentActions.clearEditorMessage()
 
   if (result.ok && selectionWillChange) {
     selectionEffects.notePendingSelection({
@@ -94,5 +94,5 @@ export function clearSelection() {
     announceMode: 'default',
     requestOutlinerFocus: false,
   })
-  sceneStateActions.clearEditorMessage()
+  sceneDocumentActions.clearEditorMessage()
 }

@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { useIsBlockingOverlayOpen } from '@/core/stores/dialog-store'
 import { useEditorInteractionsEnabled } from '@/core/stores/editor-lifecycle-store'
-import { useIsDragging } from '@/core/stores/scene-state-store'
+import { useIsDragging } from '@/core/stores/scene-document-store'
 import {
   cancelScenePreviewClear,
   forceClearPreview,

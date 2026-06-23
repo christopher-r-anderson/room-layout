@@ -1,4 +1,4 @@
-import { useEditorMessage } from '@/core/stores/scene-state-store'
+import { useEditorMessage } from '@/core/stores/scene-document-store'
 
 export function StatusMessage({ message }: { message?: string | null }) {
   const storeMessage = useEditorMessage()

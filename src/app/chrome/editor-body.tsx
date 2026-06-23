@@ -13,7 +13,7 @@ import { flushSync } from 'react-dom'
 import { NeutralToneMapping, SRGBColorSpace } from 'three'
 import { Scene } from '@/scene/scene'
 import { useIsBlockingOverlayOpen } from '@/core/stores/dialog-store'
-import { useSelectedFurniture } from '@/core/stores/scene-state-store'
+import { useSelectedFurniture } from '@/core/stores/scene-document-store'
 import {
   selectionMetaActions,
   useRoomViewFocusRequest,

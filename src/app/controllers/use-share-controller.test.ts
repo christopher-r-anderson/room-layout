@@ -4,9 +4,9 @@ import { act, renderHook } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createHistoryState } from '@/shared/lib/ui/editor-history'
 import {
-  resetSceneStateStore,
-  sceneStateActions,
-} from '@/core/stores/scene-state-store'
+  resetSceneDocumentStore,
+  sceneDocumentActions,
+} from '@/core/stores/scene-document-store'
 import { serializeSceneToUrl } from '@/core/persistence/scene-url'
 import { useShareController } from './use-share-controller'
 
@@ -42,7 +42,7 @@ describe('useShareController', () => {
   const clipboardWriteText = vi.fn<(text: string) => Promise<void>>()
 
   beforeEach(() => {
-    resetSceneStateStore()
+    resetSceneDocumentStore()
     serializeSceneToUrlMock.mockReset()
     clipboardWriteText.mockReset()
     clipboardWriteText.mockResolvedValue(undefined)
@@ -56,7 +56,7 @@ describe('useShareController', () => {
   })
 
   it('serializes the share URL with the active finish ids supplied by the app shell', async () => {
-    sceneStateActions.setHistory(createHistoryState([CHAIR]))
+    sceneDocumentActions.setHistory(createHistoryState([CHAIR]))
     serializeSceneToUrlMock.mockReturnValue('https://example.com/shared')
 
     const { result } = renderHook(() =>
