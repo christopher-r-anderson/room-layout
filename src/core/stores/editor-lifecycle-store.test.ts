@@ -83,22 +83,7 @@ describe('editorLifecycleStore', () => {
       message: 'asset load failed',
     })
 
-    editorLifecycleActions.resetEditorLifecycle()
-    expect(editorLifecycleStore.getState().startupPhase).toBe('loading')
-    expect(editorLifecycleStore.getState().assetError).toBeNull()
-  })
-
-  it('records restore outcome and attempt count independently from startup retries', () => {
-    editorLifecycleActions.incrementRestoreAttempt()
-    editorLifecycleActions.recordRestoreOutcome('restored')
-    editorLifecycleActions.setAssetError({
-      kind: 'asset-load',
-      message: 'asset load failed',
-    })
-    editorLifecycleActions.resetEditorLifecycle()
-
-    expect(editorLifecycleStore.getState().restoreAttemptCount).toBe(1)
-    expect(editorLifecycleStore.getState().restoreOutcome).toBe('restored')
+    editorLifecycleActions.requestRetry()
     expect(editorLifecycleStore.getState().startupPhase).toBe('loading')
     expect(editorLifecycleStore.getState().assetError).toBeNull()
   })

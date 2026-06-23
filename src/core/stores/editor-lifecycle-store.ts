@@ -20,15 +20,12 @@ interface EditorLifecycleStoreState {
   restoreAttemptCount: number
   sceneEpoch: number
   retryToken: number
-  markLoading: () => void
   markAssetsReady: () => void
   beginAssetLoad: () => void
   requestRetry: () => void
   setAssetError: (error: EditorAssetError) => void
-  clearAssetError: () => void
   recordRestoreOutcome: (outcome: RestoreOutcome | null) => void
   incrementRestoreAttempt: () => void
-  resetEditorLifecycle: () => void
   reset: () => void
 }
 
@@ -50,19 +47,6 @@ function getInitialEditorLifecycleState() {
 export const editorLifecycleStore = createStore<EditorLifecycleStoreState>()(
   subscribeWithSelector((set) => ({
     ...getInitialEditorLifecycleState(),
-    markLoading: () => {
-      set((state) => {
-        if (state.startupPhase === 'loading' && state.assetError === null) {
-          return state
-        }
-
-        return {
-          ...state,
-          startupPhase: 'loading',
-          assetError: null,
-        }
-      })
-    },
     markAssetsReady: () => {
       set((state) => {
         if (state.startupPhase === 'ready' && state.assetError === null) {
@@ -115,18 +99,6 @@ export const editorLifecycleStore = createStore<EditorLifecycleStoreState>()(
         }
       })
     },
-    clearAssetError: () => {
-      set((state) => {
-        if (state.assetError === null) {
-          return state
-        }
-
-        return {
-          ...state,
-          assetError: null,
-        }
-      })
-    },
     recordRestoreOutcome: (outcome) => {
       set((state) => {
         if (state.restoreOutcome === outcome) {
@@ -145,19 +117,6 @@ export const editorLifecycleStore = createStore<EditorLifecycleStoreState>()(
         restoreAttemptCount: state.restoreAttemptCount + 1,
       }))
     },
-    resetEditorLifecycle: () => {
-      set((state) => {
-        if (state.startupPhase === 'loading' && state.assetError === null) {
-          return state
-        }
-
-        return {
-          ...state,
-          startupPhase: 'loading',
-          assetError: null,
-        }
-      })
-    },
     reset: () => {
       set((state) => ({
         ...state,
@@ -175,9 +134,6 @@ function useEditorLifecycleStore<T>(
 }
 
 export const editorLifecycleActions = {
-  markLoading: () => {
-    editorLifecycleStore.getState().markLoading()
-  },
   markAssetsReady: () => {
     editorLifecycleStore.getState().markAssetsReady()
   },
@@ -190,17 +146,11 @@ export const editorLifecycleActions = {
   setAssetError: (error: EditorAssetError) => {
     editorLifecycleStore.getState().setAssetError(error)
   },
-  clearAssetError: () => {
-    editorLifecycleStore.getState().clearAssetError()
-  },
   recordRestoreOutcome: (outcome: RestoreOutcome | null) => {
     editorLifecycleStore.getState().recordRestoreOutcome(outcome)
   },
   incrementRestoreAttempt: () => {
     editorLifecycleStore.getState().incrementRestoreAttempt()
-  },
-  resetEditorLifecycle: () => {
-    editorLifecycleStore.getState().resetEditorLifecycle()
   },
   reset: () => {
     editorLifecycleStore.getState().reset()
