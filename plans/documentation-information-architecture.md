@@ -1,9 +1,11 @@
 # Plan: Documentation Information Architecture
 
-> **Status:** design for review. A top-down restructure of the whole doc surface
-> (`docs/`, root `README.md`, the layer `README.md`s, `AGENTS.md` + `.agents/`)
-> so each concept has one canonical home at one altitude — before resuming the
-> code audits. Branch `editor-surface-keyboard-architecture-refactor`.
+> **Status:** ✅ **shipped** (all three steps). The doc surface is tiered into
+> `docs/{architecture,guide,reference}`, `core-architecture.md` is split into
+> `core.md` + `scene-and-core.md` + `dialogs-and-overlays.md` (the latter folding
+> in `overlay-interaction-model.md`), and catalog validation is de-duplicated.
+> Each concept now has one canonical home at one altitude. Branch
+> `editor-surface-keyboard-architecture-refactor`.
 
 ## Why now
 
