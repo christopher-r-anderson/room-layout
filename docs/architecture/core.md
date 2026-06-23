@@ -81,6 +81,13 @@ the ref-backed dispatch context (`useCommandDispatch`). UI controls dispatch a
 command rather than wiring a handler; the command maps to an operation or scene
 call. See `core/commands/editor-command.ts` for the vocabulary.
 
+The React dispatch binding lives in `core` (not `app` or `shared`) on purpose: it
+imports the command vocabulary yet must be importable by feature buttons, and the
+boundary rules forbid features importing `app` and forbid `shared` importing
+`core` — so `core` is the only valid home. `core` already contains React anyway
+(store selector hooks, the preview reconciler), so this is consistent, not an
+exception.
+
 ## Persistence
 
 `core/persistence` serializes the `scene-state-store` data model: `scene-draft`
