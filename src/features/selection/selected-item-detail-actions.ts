@@ -1,5 +1,5 @@
 import { resolvePositionFromWallClearances } from '@/shared/lib/three/wall-clearance'
-import { announcementActions } from '@/core/stores/announcement-store'
+import { feedbackActions } from '@/core/stores/feedback-store'
 import {
   sceneDocumentActions,
   sceneDocumentStore,
@@ -73,7 +73,7 @@ export function updateSelectedItemDetails(
 
   if (result.ok) {
     selectionFocusActions.setSelectedSource('panel-keyboard')
-    announcementActions.announcePolite(`${result.item.name} details updated.`)
+    feedbackActions.announcePolite(`${result.item.name} details updated.`)
     return { ok: true, item: result.item }
   }
 

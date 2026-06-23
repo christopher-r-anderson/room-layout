@@ -18,7 +18,7 @@ import {
 import { dialogActions } from '@/core/stores/dialog-store'
 import { sceneCommands } from '@/scene/scene-commands'
 import { DELETE_SELECTION_MISSING_MESSAGE } from '@/shared/messages/command-messages'
-import { announcementActions } from '@/core/stores/announcement-store'
+import { feedbackActions } from '@/core/stores/feedback-store'
 import { selectionEffects } from '@/core/operations/selection-effects'
 import {
   confirmDeleteSelection,
@@ -26,8 +26,8 @@ import {
   openDeleteDialogFromRoomView,
 } from './deletion-actions'
 
-vi.mock('@/core/stores/announcement-store', () => ({
-  announcementActions: {
+vi.mock('@/core/stores/feedback-store', () => ({
+  feedbackActions: {
     announcePolite: vi.fn(),
     announceAssertive: vi.fn(),
     clearAssertiveAnnouncement: vi.fn(),
@@ -116,7 +116,7 @@ describe('deletion-actions', () => {
     expect(
       selectionEffects.notePostDeleteOutlinerFocusIndex,
     ).toHaveBeenCalledWith(null)
-    expect(announcementActions.announcePolite).toHaveBeenCalledWith(
+    expect(feedbackActions.announcePolite).toHaveBeenCalledWith(
       `${CHAIR.name} removed from room.`,
     )
   })

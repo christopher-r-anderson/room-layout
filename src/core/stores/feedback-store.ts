@@ -5,7 +5,7 @@ import type { EqualityChecker } from '../types/store.types'
 
 const MOVEMENT_ANNOUNCEMENT_DELAY_MS = 180
 
-interface AnnouncementStoreState {
+interface FeedbackStoreState {
   politeAnnouncement: string
   assertiveAnnouncement: string
   announcePolite: (message: string) => void
@@ -40,7 +40,7 @@ function clearPendingAnnouncementTimers() {
   }
 }
 
-export const announcementStore = createStore<AnnouncementStoreState>()(
+export const feedbackStore = createStore<FeedbackStoreState>()(
   subscribeWithSelector((set) => {
     const clearQueuedMovementAnnouncement = () => {
       if (movementAnnouncementTimeout !== null) {
@@ -129,39 +129,39 @@ export const announcementStore = createStore<AnnouncementStoreState>()(
   }),
 )
 
-function useAnnouncementStore<T>(
-  selector: (state: AnnouncementStoreState) => T,
+function useFeedbackStore<T>(
+  selector: (state: FeedbackStoreState) => T,
   equalityFn?: EqualityChecker<T>,
 ) {
-  return useStoreWithEqualityFn(announcementStore, selector, equalityFn)
+  return useStoreWithEqualityFn(feedbackStore, selector, equalityFn)
 }
 
-export const announcementActions = {
+export const feedbackActions = {
   announcePolite: (message: string) => {
-    announcementStore.getState().announcePolite(message)
+    feedbackStore.getState().announcePolite(message)
   },
   announceAssertive: (message: string) => {
-    announcementStore.getState().announceAssertive(message)
+    feedbackStore.getState().announceAssertive(message)
   },
   clearAssertiveAnnouncement: () => {
-    announcementStore.getState().clearAssertiveAnnouncement()
+    feedbackStore.getState().clearAssertiveAnnouncement()
   },
   queueMovementAnnouncement: (message: string) => {
-    announcementStore.getState().queueMovementAnnouncement(message)
+    feedbackStore.getState().queueMovementAnnouncement(message)
   },
   clearQueuedMovementAnnouncement: () => {
-    announcementStore.getState().clearQueuedMovementAnnouncement()
+    feedbackStore.getState().clearQueuedMovementAnnouncement()
   },
   reset: () => {
-    announcementStore.getState().reset()
+    feedbackStore.getState().reset()
   },
 }
 
-export function resetAnnouncementStore() {
-  announcementActions.reset()
+export function resetFeedbackStore() {
+  feedbackActions.reset()
 }
 
 export const usePoliteAnnouncement = () =>
-  useAnnouncementStore((state) => state.politeAnnouncement)
+  useFeedbackStore((state) => state.politeAnnouncement)
 export const useAssertiveAnnouncement = () =>
-  useAnnouncementStore((state) => state.assertiveAnnouncement)
+  useFeedbackStore((state) => state.assertiveAnnouncement)

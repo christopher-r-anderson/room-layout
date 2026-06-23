@@ -1,5 +1,5 @@
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
-import { announcementActions } from '@/core/stores/announcement-store'
+import { feedbackActions } from '@/core/stores/feedback-store'
 import { dialogActions } from '@/core/stores/dialog-store'
 import { isEditorInteractive } from '@/core/stores/editor-lifecycle-store'
 import {
@@ -73,7 +73,7 @@ export function confirmDeleteSelection(
   }
 
   if (deletedName) {
-    announcementActions.announcePolite(`${deletedName} removed from room.`)
+    feedbackActions.announcePolite(`${deletedName} removed from room.`)
   }
 }
 

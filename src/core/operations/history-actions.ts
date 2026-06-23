@@ -1,4 +1,4 @@
-import { announcementActions } from '@/core/stores/announcement-store'
+import { feedbackActions } from '@/core/stores/feedback-store'
 import { isEditorInteractive } from '@/core/stores/editor-lifecycle-store'
 import { sceneDocumentActions } from '@/core/stores/scene-document-store'
 import { selectionEffects } from '@/core/operations/selection-effects'
@@ -23,7 +23,7 @@ export function undo() {
   sceneDocumentActions.clearEditorMessage()
 
   if (undid) {
-    announcementActions.announcePolite('Undo complete.')
+    feedbackActions.announcePolite('Undo complete.')
   }
 }
 
@@ -46,6 +46,6 @@ export function redo() {
   sceneDocumentActions.clearEditorMessage()
 
   if (redid) {
-    announcementActions.announcePolite('Redo complete.')
+    feedbackActions.announcePolite('Redo complete.')
   }
 }

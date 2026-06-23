@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { sceneCommands } from '@/scene/scene-commands'
-import { announcementActions } from '@/core/stores/announcement-store'
+import { feedbackActions } from '@/core/stores/feedback-store'
 import { selectionEffects } from '@/core/operations/selection-effects'
 import {
   editorLifecycleActions,
@@ -9,8 +9,8 @@ import {
 } from '@/core/stores/editor-lifecycle-store'
 import { redo, undo } from './history-actions'
 
-vi.mock('@/core/stores/announcement-store', () => ({
-  announcementActions: {
+vi.mock('@/core/stores/feedback-store', () => ({
+  feedbackActions: {
     announcePolite: vi.fn(),
     announceAssertive: vi.fn(),
     clearAssertiveAnnouncement: vi.fn(),
@@ -51,7 +51,7 @@ describe('history-actions', () => {
     expect(undoSpy).not.toHaveBeenCalled()
     expect(redoSpy).not.toHaveBeenCalled()
     expect(selectionEffects.notePendingSelection).toHaveBeenCalledWith(null)
-    expect(announcementActions.announcePolite).not.toHaveBeenCalled()
+    expect(feedbackActions.announcePolite).not.toHaveBeenCalled()
   })
 
   it('skips scene undo/redo when editor interactions are disabled', () => {
@@ -66,7 +66,7 @@ describe('history-actions', () => {
     expect(undoSpy).not.toHaveBeenCalled()
     expect(redoSpy).not.toHaveBeenCalled()
     expect(selectionEffects.notePendingSelection).toHaveBeenCalledWith(null)
-    expect(announcementActions.announcePolite).not.toHaveBeenCalled()
+    expect(feedbackActions.announcePolite).not.toHaveBeenCalled()
   })
 
   it('announces and queues outliner focus on a successful undo', () => {
@@ -75,7 +75,7 @@ describe('history-actions', () => {
 
     undo()
 
-    expect(announcementActions.announcePolite).toHaveBeenCalledWith(
+    expect(feedbackActions.announcePolite).toHaveBeenCalledWith(
       'Undo complete.',
     )
     expect(selectionEffects.notePendingSelection).toHaveBeenCalledWith({
@@ -90,7 +90,7 @@ describe('history-actions', () => {
 
     redo()
 
-    expect(announcementActions.announcePolite).toHaveBeenCalledWith(
+    expect(feedbackActions.announcePolite).toHaveBeenCalledWith(
       'Redo complete.',
     )
     expect(selectionEffects.notePendingSelection).toHaveBeenCalledWith({
@@ -105,7 +105,7 @@ describe('history-actions', () => {
 
     undo()
 
-    expect(announcementActions.announcePolite).not.toHaveBeenCalled()
+    expect(feedbackActions.announcePolite).not.toHaveBeenCalled()
     expect(selectionEffects.notePendingSelection).toHaveBeenCalledWith(null)
   })
 })

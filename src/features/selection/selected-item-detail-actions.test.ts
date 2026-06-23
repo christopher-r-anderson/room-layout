@@ -15,15 +15,15 @@ import {
   selectionFocusStore,
 } from '@/core/stores/selection-focus-store'
 import { sceneCommands } from '@/scene/scene-commands'
-import { announcementActions } from '@/core/stores/announcement-store'
+import { feedbackActions } from '@/core/stores/feedback-store'
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
 import {
   invalidSelectedItemDetailValueMessage,
   updateSelectedItemDetails,
 } from './selected-item-detail-actions'
 
-vi.mock('@/core/stores/announcement-store', () => ({
-  announcementActions: {
+vi.mock('@/core/stores/feedback-store', () => ({
+  feedbackActions: {
     announcePolite: vi.fn(),
     announceAssertive: vi.fn(),
     clearAssertiveAnnouncement: vi.fn(),
@@ -108,7 +108,7 @@ describe('selected-item-detail-actions', () => {
       expect(selectionFocusStore.getState().selectedSource).toBe(
         'panel-keyboard',
       )
-      expect(announcementActions.announcePolite).toHaveBeenCalledWith(
+      expect(feedbackActions.announcePolite).toHaveBeenCalledWith(
         'Chair details updated.',
       )
     })
@@ -128,7 +128,7 @@ describe('selected-item-detail-actions', () => {
           value: 1,
         }),
       ).toEqual({ ok: false, reason: 'no-op' })
-      expect(announcementActions.announcePolite).not.toHaveBeenCalled()
+      expect(feedbackActions.announcePolite).not.toHaveBeenCalled()
     })
 
     it('surfaces a blocked message when the transform is rejected', () => {

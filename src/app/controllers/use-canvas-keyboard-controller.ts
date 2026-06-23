@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, type RefObject } from 'react'
-import { announcementActions } from '@/core/stores/announcement-store'
+import { feedbackActions } from '@/core/stores/feedback-store'
 import { selectById } from '@/core/operations/selection-actions'
 import { previewFromCanvasKeyboard } from '@/core/operations/preview-actions'
 import { sceneCommands } from '@/scene/scene-commands'
@@ -66,7 +66,7 @@ export function useCanvasKeyboardController({
 
       const item = snapshot.items.find((sceneItem) => sceneItem.id === nextId)
       if (item) {
-        announcementActions.announcePolite(item.name)
+        feedbackActions.announcePolite(item.name)
       }
     },
     [handleCanvasKeyboardPreviewChange],

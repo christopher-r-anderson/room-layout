@@ -11,7 +11,7 @@ import {
   useSelectedFurniture,
   useWallFinishId,
 } from '@/core/stores/scene-document-store'
-import { announcementActions } from '@/core/stores/announcement-store'
+import { feedbackActions } from '@/core/stores/feedback-store'
 import {
   clearPreviewOnCanvasMiss,
   previewFromCanvasKeyboard,
@@ -181,7 +181,7 @@ function App() {
 
     if (selectedFurniture === null) {
       requestOutlinerFocus()
-      announcementActions.announcePolite(
+      feedbackActions.announcePolite(
         'No item selected. Focus moved to Furniture in room.',
       )
       return

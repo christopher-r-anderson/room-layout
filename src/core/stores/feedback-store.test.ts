@@ -2,17 +2,17 @@
 
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
-  announcementActions,
-  announcementStore,
-  resetAnnouncementStore,
-} from './announcement-store'
+  feedbackActions,
+  feedbackStore,
+  resetFeedbackStore,
+} from './feedback-store'
 
-const polite = () => announcementStore.getState().politeAnnouncement
-const assertive = () => announcementStore.getState().assertiveAnnouncement
+const polite = () => feedbackStore.getState().politeAnnouncement
+const assertive = () => feedbackStore.getState().assertiveAnnouncement
 
 describe('announcement store', () => {
   afterEach(() => {
-    resetAnnouncementStore()
+    resetFeedbackStore()
     vi.useRealTimers()
   })
 
@@ -24,7 +24,7 @@ describe('announcement store', () => {
   it('queues movement announcements with a delay', () => {
     vi.useFakeTimers()
 
-    announcementActions.queueMovementAnnouncement('Moved to x 1.0, z 2.0.')
+    feedbackActions.queueMovementAnnouncement('Moved to x 1.0, z 2.0.')
     expect(polite()).toBe('')
 
     vi.advanceTimersByTime(179)
@@ -40,13 +40,13 @@ describe('announcement store', () => {
   it('re-announces when the same polite message is repeated', () => {
     vi.useFakeTimers()
 
-    announcementActions.announcePolite('Coffee Table rotated.')
+    feedbackActions.announcePolite('Coffee Table rotated.')
     vi.runAllTimers()
     expect(polite()).toBe('Coffee Table rotated.')
 
     // Announcing the same message again must produce a DOM mutation so screen
     // readers re-announce it. The intermediate '' clear ensures this.
-    announcementActions.announcePolite('Coffee Table rotated.')
+    feedbackActions.announcePolite('Coffee Table rotated.')
     expect(polite()).toBe('')
 
     vi.runAllTimers()
@@ -56,8 +56,8 @@ describe('announcement store', () => {
   it('cancels queued movement announcements when announcePolite is called', () => {
     vi.useFakeTimers()
 
-    announcementActions.queueMovementAnnouncement('Queued movement')
-    announcementActions.announcePolite('Immediate selection')
+    feedbackActions.queueMovementAnnouncement('Queued movement')
+    feedbackActions.announcePolite('Immediate selection')
     vi.runAllTimers()
 
     expect(polite()).toBe('Immediate selection')
@@ -66,21 +66,21 @@ describe('announcement store', () => {
   it('clears queued movement announcements when assertive message updates', () => {
     vi.useFakeTimers()
 
-    announcementActions.queueMovementAnnouncement('Queued movement')
-    announcementActions.announceAssertive('Asset load error')
+    feedbackActions.queueMovementAnnouncement('Queued movement')
+    feedbackActions.announceAssertive('Asset load error')
     vi.runAllTimers()
 
     expect(assertive()).toBe('Asset load error')
     expect(polite()).toBe('')
 
-    announcementActions.clearAssertiveAnnouncement()
+    feedbackActions.clearAssertiveAnnouncement()
     expect(assertive()).toBe('')
   })
 
   it('re-announces when the same assertive message is repeated', () => {
     vi.useFakeTimers()
 
-    announcementActions.announceAssertive(
+    feedbackActions.announceAssertive(
       'Unable to load room editor assets. Retry available.',
     )
     vi.runAllTimers()
@@ -88,7 +88,7 @@ describe('announcement store', () => {
       'Unable to load room editor assets. Retry available.',
     )
 
-    announcementActions.announceAssertive(
+    feedbackActions.announceAssertive(
       'Unable to load room editor assets. Retry available.',
     )
     expect(assertive()).toBe('')
@@ -102,7 +102,7 @@ describe('announcement store', () => {
   it('cancels the pending inner set-timer when clearQueuedMovementAnnouncement fires after the 180ms outer timer', () => {
     vi.useFakeTimers()
 
-    announcementActions.queueMovementAnnouncement('Moved to x 1.0, z 2.0.')
+    feedbackActions.queueMovementAnnouncement('Moved to x 1.0, z 2.0.')
 
     // Advance past the 180ms outer timer so it fires and schedules the 0ms inner timer.
     vi.advanceTimersByTime(180)
@@ -110,7 +110,7 @@ describe('announcement store', () => {
     expect(polite()).toBe('')
 
     // Cancel arrives in the ~0ms window before the inner timer drains.
-    announcementActions.clearQueuedMovementAnnouncement()
+    feedbackActions.clearQueuedMovementAnnouncement()
     vi.runAllTimers()
 
     // Inner timer was cancelled — live region must stay empty.
@@ -120,11 +120,11 @@ describe('announcement store', () => {
   it('cancels the pending assertive set-timer when clearAssertiveAnnouncement fires before it drains', () => {
     vi.useFakeTimers()
 
-    announcementActions.announceAssertive('Asset load error')
+    feedbackActions.announceAssertive('Asset load error')
     // '' clear has committed; inner timer is pending.
     expect(assertive()).toBe('')
 
-    announcementActions.clearAssertiveAnnouncement()
+    feedbackActions.clearAssertiveAnnouncement()
     vi.runAllTimers()
 
     // Inner timer was cancelled — live region stays empty.
@@ -136,10 +136,10 @@ describe('announcement store', () => {
 
     const clearTimeoutSpy = vi.spyOn(window, 'clearTimeout')
 
-    announcementActions.queueMovementAnnouncement('Queued movement')
-    announcementActions.announceAssertive('Assertive message')
+    feedbackActions.queueMovementAnnouncement('Queued movement')
+    feedbackActions.announceAssertive('Assertive message')
 
-    resetAnnouncementStore()
+    resetFeedbackStore()
 
     expect(clearTimeoutSpy).toHaveBeenCalled()
   })

@@ -1,5 +1,5 @@
 import { useCallback } from 'react'
-import { announcementActions } from '@/core/stores/announcement-store'
+import { feedbackActions } from '@/core/stores/feedback-store'
 import { sceneDocumentActions, useItems } from '@/core/stores/scene-document-store'
 import { serializeSceneToUrl } from '@/core/persistence/scene-url'
 
@@ -24,7 +24,7 @@ export function useShareController({
       sceneDocumentActions.setEditorMessage(
         'Scene is too large to share as a URL.',
       )
-      announcementActions.announceAssertive(
+      feedbackActions.announceAssertive(
         'Scene is too large to share as a URL.',
       )
       return null
@@ -49,7 +49,7 @@ export function useShareController({
       try {
         await navigator.share(shareData)
         sceneDocumentActions.clearEditorMessage()
-        announcementActions.announcePolite('Room layout shared.')
+        feedbackActions.announcePolite('Room layout shared.')
         return 'shared'
       } catch (error) {
         if (error instanceof DOMException && error.name === 'AbortError') {
@@ -57,7 +57,7 @@ export function useShareController({
         }
 
         sceneDocumentActions.setEditorMessage('Could not open share options.')
-        announcementActions.announceAssertive('Could not open share options.')
+        feedbackActions.announceAssertive('Could not open share options.')
         return null
       }
     }
@@ -65,11 +65,11 @@ export function useShareController({
     try {
       await navigator.clipboard.writeText(url)
       sceneDocumentActions.clearEditorMessage()
-      announcementActions.announcePolite('Scene URL copied to clipboard.')
+      feedbackActions.announcePolite('Scene URL copied to clipboard.')
       return 'copied'
     } catch {
       sceneDocumentActions.setEditorMessage('Could not copy URL to clipboard.')
-      announcementActions.announceAssertive('Could not copy URL to clipboard.')
+      feedbackActions.announceAssertive('Could not copy URL to clipboard.')
       return null
     }
   }, [activeFloorFinishId, activeWallFinishId, items])

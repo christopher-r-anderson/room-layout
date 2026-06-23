@@ -1,5 +1,5 @@
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
-import { announcementActions } from '../stores/announcement-store'
+import { feedbackActions } from '../stores/feedback-store'
 import { isEditorInteractive } from '../stores/editor-lifecycle-store'
 import {
   selectionFocusActions,
@@ -175,7 +175,7 @@ function reconcileSelectionEffects() {
 
       announceSelectionChange({
         announceMode: pendingBehavior.announceMode,
-        announcePolite: announcementActions.announcePolite,
+        announcePolite: feedbackActions.announcePolite,
         items,
         newId: selectedId,
         previousSelectedId,

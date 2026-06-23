@@ -3,13 +3,13 @@
 import { act, renderHook } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { sceneCommands } from '@/scene/scene-commands'
-import { announcementActions } from '@/core/stores/announcement-store'
+import { feedbackActions } from '@/core/stores/feedback-store'
 import { selectById } from '@/core/operations/selection-actions'
 import { previewFromCanvasKeyboard } from '@/core/operations/preview-actions'
 import { useCanvasKeyboardController } from './use-canvas-keyboard-controller'
 
-vi.mock('@/core/stores/announcement-store', () => ({
-  announcementActions: {
+vi.mock('@/core/stores/feedback-store', () => ({
+  feedbackActions: {
     announcePolite: vi.fn(),
     announceAssertive: vi.fn(),
     clearAssertiveAnnouncement: vi.fn(),
@@ -100,7 +100,7 @@ describe('useCanvasKeyboardController', () => {
     })
 
     expect(previewFromCanvasKeyboard).toHaveBeenLastCalledWith('left')
-    expect(announcementActions.announcePolite).toHaveBeenLastCalledWith(
+    expect(feedbackActions.announcePolite).toHaveBeenLastCalledWith(
       'Left Chair',
     )
 
@@ -109,7 +109,7 @@ describe('useCanvasKeyboardController', () => {
     })
 
     expect(previewFromCanvasKeyboard).toHaveBeenLastCalledWith('right')
-    expect(announcementActions.announcePolite).toHaveBeenLastCalledWith(
+    expect(feedbackActions.announcePolite).toHaveBeenLastCalledWith(
       'Right Chair',
     )
   })
@@ -126,7 +126,7 @@ describe('useCanvasKeyboardController', () => {
     })
 
     expect(previewFromCanvasKeyboard).not.toHaveBeenCalled()
-    expect(announcementActions.announcePolite).not.toHaveBeenCalled()
+    expect(feedbackActions.announcePolite).not.toHaveBeenCalled()
   })
 
   it('selects the synchronously tracked preview and clears it', () => {

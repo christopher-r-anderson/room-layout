@@ -1,4 +1,4 @@
-import { announcementActions } from '@/core/stores/announcement-store'
+import { feedbackActions } from '@/core/stores/feedback-store'
 import { isEditorInteractive } from '@/core/stores/editor-lifecycle-store'
 import {
   sceneDocumentActions,
@@ -50,7 +50,7 @@ export function moveSelection(
 
   if (result.ok) {
     if (movedItemName) {
-      announcementActions.queueMovementAnnouncement(
+      feedbackActions.queueMovementAnnouncement(
         `${movedItemName} moved to X ${formatCoordinate(result.position[0])} and Z ${formatCoordinate(result.position[2])}.`,
       )
     }
@@ -61,7 +61,7 @@ export function moveSelection(
   const blockedMessage = formatMoveBlockedMessage(result.reason)
 
   if (blockedMessage) {
-    announcementActions.queueMovementAnnouncement(blockedMessage)
+    feedbackActions.queueMovementAnnouncement(blockedMessage)
   }
 
   return result
@@ -81,6 +81,6 @@ export function rotateSelection(direction: -1 | 1) {
   sceneCommands.rotateSelection(direction * ROTATION_STEP_RADIANS)
 
   if (rotatingName) {
-    announcementActions.announcePolite(`${rotatingName} rotated.`)
+    feedbackActions.announcePolite(`${rotatingName} rotated.`)
   }
 }

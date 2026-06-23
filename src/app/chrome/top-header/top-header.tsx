@@ -16,7 +16,7 @@ import { useEditorInteractionsEnabled } from '@/core/stores/editor-lifecycle-sto
 import { useEnvironmentConfig } from '@/core/stores/assets-store'
 import { useSceneIsAtDefaults } from '@/core/operations/use-scene-is-at-defaults'
 import { resetSceneToDefaults } from '@/core/persistence/scene-reset'
-import { announcementActions } from '@/core/stores/announcement-store'
+import { feedbackActions } from '@/core/stores/feedback-store'
 import { useCommandDispatch } from '@/core/commands/command-dispatch-context'
 import { useActiveFinishIds } from '@/app/controllers/_shared/use-active-finish-ids'
 import {
@@ -191,7 +191,7 @@ export function TopHeader({
         onConfirm={() => {
           dialogActions.closeActiveDialog()
           resetSceneToDefaults()
-          announcementActions.announcePolite(STARTED_OVER_MESSAGE)
+          feedbackActions.announcePolite(STARTED_OVER_MESSAGE)
           toast.success(STARTED_OVER_MESSAGE)
 
           // The Start Over button becomes disabled after the reset, so move

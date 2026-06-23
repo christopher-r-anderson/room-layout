@@ -3,7 +3,7 @@ import { createDefaultSceneState } from '@/shared/lib/three/scene-defaults'
 import { isSceneStateAtDefaults } from '@/shared/lib/three/scene-model'
 import { sceneCommands, clearSceneServices } from '@/scene/scene-commands'
 import { clearFurnitureCollectionCache } from '@/scene/objects/furniture-catalog'
-import { announcementActions } from '../stores/announcement-store'
+import { feedbackActions } from '../stores/feedback-store'
 import { dialogActions } from '../stores/dialog-store'
 import {
   editorLifecycleActions,
@@ -143,8 +143,8 @@ function runRestoreOnce() {
       )
     },
     notifications: {
-      announcePolite: announcementActions.announcePolite,
-      announceAssertive: announcementActions.announceAssertive,
+      announcePolite: feedbackActions.announcePolite,
+      announceAssertive: feedbackActions.announceAssertive,
       setEditorMessage: sceneDocumentActions.setEditorMessage,
       setRestoreOutcome: editorLifecycleActions.recordRestoreOutcome,
       toastSuccess: (message) => toast.success(message),
@@ -183,7 +183,7 @@ export function notifyAssetError(error: Error) {
   dialogActions.closeActiveDialog()
   resetStartupShell()
   toast.error(ASSET_ERROR_MESSAGE)
-  announcementActions.announceAssertive(ASSET_ERROR_MESSAGE)
+  feedbackActions.announceAssertive(ASSET_ERROR_MESSAGE)
 }
 
 // The user asked to retry startup. Clear any open dialog and the surface, drop
@@ -199,5 +199,5 @@ export function requestAssetRetry() {
   clearFurnitureCollectionCache(paths)
 
   editorLifecycleActions.requestRetry()
-  announcementActions.clearAssertiveAnnouncement()
+  feedbackActions.clearAssertiveAnnouncement()
 }

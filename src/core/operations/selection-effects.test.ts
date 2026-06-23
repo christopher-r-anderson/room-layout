@@ -13,15 +13,15 @@ import {
   resetEditorLifecycleStore,
 } from '@/core/stores/editor-lifecycle-store'
 import { createHistoryState } from '@/shared/lib/ui/editor-history'
-import { announcementActions } from '@/core/stores/announcement-store'
+import { feedbackActions } from '@/core/stores/feedback-store'
 import {
   resetSelectionEffects,
   selectionEffects,
   startSelectionEffectsReconciler,
 } from '@/core/operations/selection-effects'
 
-vi.mock('@/core/stores/announcement-store', () => ({
-  announcementActions: {
+vi.mock('@/core/stores/feedback-store', () => ({
+  feedbackActions: {
     announcePolite: vi.fn(),
     announceAssertive: vi.fn(),
     clearAssertiveAnnouncement: vi.fn(),
@@ -103,7 +103,7 @@ describe('startSelectionEffectsReconciler', () => {
     sceneDocumentActions.setSelectedId(CHAIR.id)
     await flushReconcile()
 
-    expect(announcementActions.announcePolite).toHaveBeenCalledWith(
+    expect(feedbackActions.announcePolite).toHaveBeenCalledWith(
       'Chair added to room.',
     )
 
@@ -117,7 +117,7 @@ describe('startSelectionEffectsReconciler', () => {
     sceneDocumentActions.setSelectedId(CHAIR.id)
     await flushReconcile()
 
-    expect(announcementActions.announcePolite).toHaveBeenCalledWith(
+    expect(feedbackActions.announcePolite).toHaveBeenCalledWith(
       'Chair selected.',
     )
 
@@ -131,7 +131,7 @@ describe('startSelectionEffectsReconciler', () => {
     sceneDocumentActions.setSelectedId(CHAIR.id)
     await flushReconcile()
 
-    expect(announcementActions.announcePolite).toHaveBeenCalledWith(
+    expect(feedbackActions.announcePolite).toHaveBeenCalledWith(
       'Chair selected. Press Tab to reach selected item actions and details.',
     )
   })
@@ -165,8 +165,8 @@ describe('startSelectionEffectsReconciler', () => {
     })
     await flushReconcile()
 
-    expect(announcementActions.announcePolite).toHaveBeenCalledTimes(1)
-    expect(announcementActions.announcePolite).toHaveBeenCalledWith(
+    expect(feedbackActions.announcePolite).toHaveBeenCalledTimes(1)
+    expect(feedbackActions.announcePolite).toHaveBeenCalledWith(
       'Chair selected.',
     )
   })

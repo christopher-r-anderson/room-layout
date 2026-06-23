@@ -10,7 +10,7 @@ import {
   assetsActions,
 } from '../stores/assets-store'
 import { dialogActions } from '../stores/dialog-store'
-import { announcementActions } from '../stores/announcement-store'
+import { feedbackActions } from '../stores/feedback-store'
 import { selectionEffects } from './selection-effects'
 import { runStartupRestoreFlow } from '../persistence/restore-flow'
 import { clearFurnitureCollectionCache } from '@/scene/objects/furniture-catalog'
@@ -36,8 +36,8 @@ vi.mock('./selection-effects', () => ({
   },
 }))
 
-vi.mock('../stores/announcement-store', () => ({
-  announcementActions: {
+vi.mock('../stores/feedback-store', () => ({
+  feedbackActions: {
     announcePolite: vi.fn(),
     announceAssertive: vi.fn(),
     clearAssertiveAnnouncement: vi.fn(),
@@ -104,7 +104,7 @@ describe('startup-coordinator', () => {
     expect(state.assetError).toEqual({ kind: 'asset-load', message: 'boom' })
     expect(closeActiveDialog).toHaveBeenCalledTimes(1)
     expect(clearSceneServices).toHaveBeenCalledTimes(1)
-    expect(announcementActions.announceAssertive).toHaveBeenCalledWith(
+    expect(feedbackActions.announceAssertive).toHaveBeenCalledWith(
       'Unable to load room editor assets. Retry available.',
     )
   })
@@ -128,7 +128,7 @@ describe('startup-coordinator', () => {
     expect(editorLifecycleStore.getState().retryToken).toBe(1)
     expect(editorLifecycleStore.getState().sceneEpoch).toBe(1)
     expect(
-      announcementActions.clearAssertiveAnnouncement,
+      feedbackActions.clearAssertiveAnnouncement,
     ).toHaveBeenCalledTimes(1)
   })
 })

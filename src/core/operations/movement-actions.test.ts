@@ -13,8 +13,8 @@ import { sceneCommands } from '@/scene/scene-commands'
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
 import { moveSelection, rotateSelection } from './movement-actions'
 
-vi.mock('@/core/stores/announcement-store', () => ({
-  announcementActions: {
+vi.mock('@/core/stores/feedback-store', () => ({
+  feedbackActions: {
     announcePolite: vi.fn(),
     announceAssertive: vi.fn(),
     clearAssertiveAnnouncement: vi.fn(),

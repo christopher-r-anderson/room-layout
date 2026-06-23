@@ -14,8 +14,8 @@ vi.mock('@/core/persistence/scene-url', () => ({
   serializeSceneToUrl: vi.fn(),
 }))
 
-vi.mock('@/core/stores/announcement-store', () => ({
-  announcementActions: {
+vi.mock('@/core/stores/feedback-store', () => ({
+  feedbackActions: {
     announcePolite: vi.fn(),
     announceAssertive: vi.fn(),
     clearAssertiveAnnouncement: vi.fn(),
