@@ -211,6 +211,14 @@ export function resetEditorLifecycleStore() {
   editorLifecycleActions.reset()
 }
 
+// Imperative (non-React) read of whether the editor is interactive: startup has
+// finished and assets are ready. The single predicate operations gate on, so the
+// readiness rule lives in one place instead of being re-derived from the store
+// internals at every call site. The React equivalent is useEditorInteractionsEnabled.
+export function isEditorInteractive() {
+  return editorLifecycleStore.getState().startupPhase === 'ready'
+}
+
 export const useStartupPhase = () =>
   useEditorLifecycleStore((state) => state.startupPhase)
 export const useAssetError = () =>

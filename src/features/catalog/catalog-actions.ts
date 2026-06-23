@@ -1,5 +1,5 @@
 import { dialogActions } from '@/core/stores/dialog-store'
-import { editorLifecycleStore } from '@/core/stores/editor-lifecycle-store'
+import { isEditorInteractive } from '@/core/stores/editor-lifecycle-store'
 import { sceneDocumentActions } from '@/core/stores/scene-document-store'
 import { selectionFocusActions } from '@/core/stores/selection-focus-store'
 import { selectionEffects } from '@/core/operations/selection-effects'
@@ -16,7 +16,7 @@ export function addFurniture(): boolean {
 
   const catalogIdToAdd = getActiveCatalogId()
   const editorInteractionsEnabled =
-    editorLifecycleStore.getState().startupPhase === 'ready'
+    isEditorInteractive()
 
   if (
     !catalogIdToAdd ||

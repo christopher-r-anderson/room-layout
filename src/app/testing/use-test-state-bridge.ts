@@ -6,6 +6,7 @@ import {
 } from 'react'
 import {
   editorLifecycleStore,
+  isEditorInteractive,
   type RestoreOutcome,
 } from '@/core/stores/editor-lifecycle-store'
 import { sceneDocumentStore } from '@/core/stores/scene-document-store'
@@ -84,7 +85,7 @@ export function useTestStateBridge({
           : null
 
         return {
-          assetsReady: editorLifecycleStore.getState().startupPhase === 'ready',
+          assetsReady: isEditorInteractive(),
           assetError: editorLifecycleStore.getState().assetError !== null,
           cameraPosition,
           floorFinishId: activeFloorFinishId,

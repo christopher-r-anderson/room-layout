@@ -1,7 +1,7 @@
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
 import { announcementActions } from '@/core/stores/announcement-store'
 import { dialogActions } from '@/core/stores/dialog-store'
-import { editorLifecycleStore } from '@/core/stores/editor-lifecycle-store'
+import { isEditorInteractive } from '@/core/stores/editor-lifecycle-store'
 import {
   sceneDocumentActions,
   sceneDocumentStore,
@@ -21,7 +21,7 @@ export function confirmDeleteSelection(
   const items = sceneDocumentStore.getState().history.present
   const selectedSource = selectionFocusStore.getState().selectedSource
   const editorInteractionsEnabled =
-    editorLifecycleStore.getState().startupPhase === 'ready'
+    isEditorInteractive()
 
   const pendingId = pendingDeleteFurniture?.id ?? null
   const deletedIndex = pendingId

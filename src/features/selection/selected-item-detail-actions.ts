@@ -5,7 +5,7 @@ import {
   sceneDocumentStore,
   selectSelectedFurniture,
 } from '@/core/stores/scene-document-store'
-import { editorLifecycleStore } from '@/core/stores/editor-lifecycle-store'
+import { isEditorInteractive } from '@/core/stores/editor-lifecycle-store'
 import { selectionFocusActions } from '@/core/stores/selection-focus-store'
 import { sceneCommands } from '@/scene/scene-commands'
 import type {
@@ -34,7 +34,7 @@ export function updateSelectedItemDetails(
 
   const selectedFurniture = selectSelectedFurniture(sceneDocumentStore.getState())
   const editorInteractionsEnabled =
-    editorLifecycleStore.getState().startupPhase === 'ready'
+    isEditorInteractive()
 
   if (
     !selectedFurniture ||
