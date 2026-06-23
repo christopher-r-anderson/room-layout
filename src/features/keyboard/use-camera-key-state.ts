@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 import {
   isDialogTarget,
   isEditingTarget,
-} from '@/shared/lib/ui/keyboard-event-target'
+} from './keyboard-event-target'
 import { sceneCommands } from '@/scene/scene-commands'
 import type { CameraKeyName, CameraKeyState } from '@/scene/scene.types'
 

@@ -5,11 +5,11 @@ import {
   isContentEditableTarget,
   isDialogTarget,
   isTextInputLikeTagName,
-} from '@/shared/lib/ui/keyboard-event-target'
+} from './keyboard-event-target'
 import {
   matchesKeyCombo,
   type KeyCombo,
-} from '@/shared/lib/ui/keyboard-shortcut-matcher'
+} from './keyboard-shortcut-matcher'
 import {
   USE_KEYBOARD_SHORTCUT_DEFINITIONS,
   type SuppressionMode,

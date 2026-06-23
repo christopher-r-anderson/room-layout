@@ -1,5 +1,5 @@
 import type { EditorCommand } from '@/core/commands/editor-command'
-import type { KeyCombo } from '@/shared/lib/ui/keyboard-shortcut-matcher'
+import type { KeyCombo } from './keyboard-shortcut-matcher'
 
 export type SuppressionMode = 'always-on-match' | 'on-execute'
 
