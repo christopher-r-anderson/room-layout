@@ -6,10 +6,7 @@ import {
   isDialogTarget,
   isTextInputLikeTagName,
 } from './keyboard-event-target'
-import {
-  matchesKeyCombo,
-  type KeyCombo,
-} from './keyboard-shortcut-matcher'
+import { matchesKeyCombo, type KeyCombo } from './keyboard-shortcut-matcher'
 import {
   USE_KEYBOARD_SHORTCUT_DEFINITIONS,
   type SuppressionMode,

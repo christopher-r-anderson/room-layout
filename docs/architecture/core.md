@@ -15,6 +15,7 @@ Two concepts have their own docs:
 
 - `stores/` — the state owners (below).
 - `operations/` — cross-cutting operations over the stores.
+- `model/` — pure scene-document helpers (defaults, at-defaults comparison).
 - `persistence/` — scene state ↔ storage/URL.
 - `commands/` — the `EditorCommand` vocabulary and its dispatch binding.
 - `types/` — shared types.

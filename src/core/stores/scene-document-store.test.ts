@@ -6,10 +6,7 @@ import {
   commitHistoryPresent,
   createHistoryState,
 } from '@/shared/lib/ui/editor-history'
-import type {
-  FurnitureInstance,
-  FurnitureItem,
-} from '@/domain/furniture'
+import type { FurnitureInstance, FurnitureItem } from '@/domain/furniture'
 import {
   clearSceneServices,
   registerSceneServices,

@@ -4,10 +4,7 @@ import {
   removeKey,
   saveJson,
 } from '@/shared/lib/ui/storage'
-import {
-  isValidFurnitureInstance,
-  roundTo3,
-} from './furniture-serialization'
+import { isValidFurnitureInstance, roundTo3 } from './furniture-serialization'
 
 const SCENE_DRAFT_STORAGE_KEY = 'scene-draft'
 const SCENE_DRAFT_VERSION = 1

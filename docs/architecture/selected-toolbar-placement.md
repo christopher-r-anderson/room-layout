@@ -4,13 +4,13 @@ This document is an overview of how the selected-item action toolbar chooses its
 
 - `src/scene/internal/selected-toolbar-geometry.ts`
 - `src/scene/scene.types.ts`
-- `src/app/selection/use-compute-selected-item-placement.ts`
-- `src/app/selection/floating-selected-item-site.tsx`
-- `src/app/selection/docked-selected-item-site.tsx`
-- `src/app/selection/selected-actions-view.tsx`
-- `src/app/selection/selected-details-view.tsx`
-- `src/app/hooks/use-element-rect.ts`
-- `src/lib/ui/selected-toolbar-placement.ts`
+- `src/features/selection/use-compute-selected-item-placement.ts`
+- `src/features/selection/floating-selected-item-site.tsx`
+- `src/features/selection/docked-selected-item-site.tsx`
+- `src/features/selection/selected-actions-view.tsx`
+- `src/features/selection/selected-details-view.tsx`
+- `src/shared/hooks/use-element-rect.ts`
+- `src/features/selection/selected-toolbar-placement.ts`
 
 ## Bounds Selection
 

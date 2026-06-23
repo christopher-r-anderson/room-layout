@@ -14,10 +14,7 @@ import type {
   FurnitureCollection,
 } from '@/domain/catalog'
 import { getCollection } from '@/domain/catalog'
-import type {
-  FurnitureInstance,
-  FurnitureItem,
-} from '@/domain/furniture'
+import type { FurnitureInstance, FurnitureItem } from '@/domain/furniture'
 
 export type AddFurnitureResult =
   | { ok: true; id: string }

@@ -6,10 +6,7 @@ import { buildFurnitureItemsFromInstances } from './furniture-operations'
 import { createHistoryState } from '@/shared/lib/ui/editor-history'
 import { createSceneSnapshot } from './scene-snapshot'
 import type { CameraKeyState } from '../scene.types'
-import type {
-  FurnitureInstance,
-  FurnitureItem,
-} from '@/domain/furniture'
+import type { FurnitureInstance, FurnitureItem } from '@/domain/furniture'
 import type {
   FurnitureCatalogEntry,
   FurnitureCollection,

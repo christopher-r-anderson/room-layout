@@ -12,7 +12,8 @@ flowchart TD
   features["features\neditor capabilities"]
   core["core\nstores, operations, contracts"]
   shared["shared\nreusable infra and primitives"]
-  scene["scene\nrendering and scene domain"]
+  scene["scene\nrendering engine and scene internals"]
+  domain["domain\nmodel vocabulary and pure model logic"]
   test["test\n test-only support"]
 
   app --> features
@@ -28,12 +29,21 @@ flowchart TD
   core -. scene contracts only .-> scene
 
   scene --> shared
+
+  app --> domain
+  features --> domain
+  core --> domain
+  scene --> domain
+
   scene -. core contracts only .-> core
 ```
 
 Notes:
 
 - `app` is the composition root and may read across layers.
+- `domain` is the lowest leaf: the furniture/room model types plus pure logic over
+  them (catalog lookup, geometry/placement). Every layer may import it; it imports
+  nothing internal. `shared` no longer depends on the model at all.
 - `shared/ui` is stricter than other `shared` folders.
 - `test` is test-only support and not a runtime dependency target.
 
@@ -41,9 +51,10 @@ Notes:
 
 - `src/app`: composition root, app shell wiring, runtime harness wiring.
 - `src/features`: user-facing editor capabilities and feature-local behavior.
-- `src/core`: shared stores, actions, selectors, contracts, and shared state types.
-- `src/shared`: reusable runtime primitives and infra used by app/features/core/scene.
-- `src/scene`: scene rendering domain and scene internals.
+- `src/core`: shared stores, actions, selectors, contracts, scene-model helpers, and shared state types.
+- `src/shared`: reusable runtime primitives and infra used by app/features/core/scene; carries no model knowledge.
+- `src/scene`: scene rendering engine, three helpers, and scene internals.
+- `src/domain`: the furniture/room model vocabulary and pure logic over it (catalog, geometry/placement). The lowest leaf; imports nothing internal.
 - `src/test`: test-only infrastructure.
 
 Keep this document concise and move layer-local detail to the matching
@@ -56,6 +67,7 @@ For local context inside each area, see:
 - `src/core/README.md`
 - `src/shared/README.md`
 - `src/scene/README.md`
+- `src/domain/README.md`
 
 ## Placement Rules
 
@@ -66,10 +78,11 @@ For local context inside each area, see:
 5. Keep `app` composition-only: shell wiring, providers, and registry bootstrap. App does not own cross-cutting runtime operations — those live in `core/operations`.
 6. Keep `shared/ui` dependency-free from app/features/core/scene runtime code.
 7. Keep `shared/layout` lower-level than `app/chrome`.
-8. Keep scene internals in `scene/internal` and avoid importing them outside scene.
+8. Keep scene internals in `scene/internal` (including `scene/internal/three` render helpers) and avoid importing them outside scene.
 9. Use approved scene contract imports outside scene, not arbitrary `@/scene/**` paths.
 10. Do not import `src/test` from runtime code.
 11. Keep dialog definition ownership in features (or shell-only app chrome when shell-specific), with app responsible for registry bootstrap composition and core responsible for generic dialog orchestration only.
+12. Put the model vocabulary and pure logic over it (types, catalog, geometry/placement) in `src/domain`. Never reach up into `scene` for model types; `domain` is the shared, dependency-free home every layer imports downward.
 
 > The cross-feature ban (rule 4) is the strict end of a deliberate dial, not a
 > law. If a feature ever grows a real public API that a sibling should build on,
@@ -81,8 +94,7 @@ For local context inside each area, see:
 
 These are temporary or intentionally narrow.
 
-- Scene runtime imports in app/features/shared are currently allowlisted to a small contract surface.
-- `shared/lib` still has a few scene-type dependencies and is not yet fully scene-independent.
+- Scene runtime imports in app/features are allowlisted to a small contract surface (`scene-commands`, `scene.types`, and the `furniture-catalog` GLTF runtime). `shared` no longer imports scene at all.
 
 ## Future Improvements
 
@@ -95,9 +107,8 @@ These are temporary or intentionally narrow.
    - The former app-level controllers have moved out of `app`: cross-cutting operations now live in `core/operations` and feature-internal orchestration in the owning feature. Convert any remaining app controllers as their seams clarify.
 4. Feature internal structure
    - Add internal subfolders only where feature size and churn justify it.
-5. Shared lib type ownership
-   - Reduce `shared/lib` dependency on scene-owned types.
-   - Revisit neutral foundational type ownership once scene public surface is finalized.
+5. Neutral model ownership (realized)
+   - The furniture/room model and its pure logic now live in `src/domain`, the dependency-free leaf. `shared` carries no model knowledge. Remaining scene contract allowlisting is the only cross-layer scene surface left to formalize (see item 1).
 
 ## Related Docs
 

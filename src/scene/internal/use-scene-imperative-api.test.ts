@@ -16,10 +16,7 @@ import type {
   FurnitureCatalogEntry,
   FurnitureCollection,
 } from '@/domain/catalog'
-import type {
-  FurnitureInstance,
-  FurnitureItem,
-} from '@/domain/furniture'
+import type { FurnitureInstance, FurnitureItem } from '@/domain/furniture'
 
 const {
   mockBuildFurnitureItemsFromInstances,

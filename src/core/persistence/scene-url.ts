@@ -1,12 +1,6 @@
 import type { FurnitureCatalogEntry } from '@/domain/catalog'
-import type {
-  FurnitureInstance,
-  FurnitureItem,
-} from '@/domain/furniture'
-import {
-  isValidFurnitureInstance,
-  roundTo3,
-} from './furniture-serialization'
+import type { FurnitureInstance, FurnitureItem } from '@/domain/furniture'
+import { isValidFurnitureInstance, roundTo3 } from './furniture-serialization'
 
 export const SCENE_URL_PARAM = 'scene'
 export const SCENE_URL_MAX_ENCODED_LENGTH = 4000
