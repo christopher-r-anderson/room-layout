@@ -1,7 +1,7 @@
 import { dialogActions } from '@/core/stores/dialog-store'
 import { editorLifecycleStore } from '@/core/stores/editor-lifecycle-store'
 import { sceneDocumentActions } from '@/core/stores/scene-document-store'
-import { selectionMetaActions } from '@/core/stores/selection-meta-store'
+import { selectionFocusActions } from '@/core/stores/selection-focus-store'
 import { selectionEffects } from '@/core/operations/selection-effects'
 import { sceneCommands } from '@/scene/scene-commands'
 import {
@@ -41,7 +41,7 @@ export function addFurniture(): boolean {
     return false
   }
 
-  selectionMetaActions.setSelectedSource('toolbar')
+  selectionFocusActions.setSelectedSource('toolbar')
   selectionEffects.notePendingSource('toolbar')
   selectionEffects.notePendingSelection({
     announceMode: 'added',

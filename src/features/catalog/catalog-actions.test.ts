@@ -5,9 +5,9 @@ import {
   sceneDocumentStore,
 } from '@/core/stores/scene-document-store'
 import {
-  resetSelectionMetaStore,
-  selectionMetaStore,
-} from '@/core/stores/selection-meta-store'
+  resetSelectionFocusStore,
+  selectionFocusStore,
+} from '@/core/stores/selection-focus-store'
 import {
   editorLifecycleActions,
   resetEditorLifecycleStore,
@@ -48,7 +48,7 @@ const CHAIR: FurnitureCatalogEntry = {
 
 beforeEach(() => {
   resetSceneDocumentStore()
-  resetSelectionMetaStore()
+  resetSelectionFocusStore()
   resetEditorLifecycleStore()
   resetAssetsStore()
   resetCatalogSelectionStore()
@@ -105,7 +105,7 @@ describe('addFurniture', () => {
     })
 
     expect(addFurniture()).toBe(true)
-    expect(selectionMetaStore.getState().selectedSource).toBe('toolbar')
+    expect(selectionFocusStore.getState().selectedSource).toBe('toolbar')
     expect(selectionEffects.notePendingSource).toHaveBeenCalledWith('toolbar')
     expect(selectionEffects.notePendingSelection).toHaveBeenCalledWith({
       announceMode: 'added',

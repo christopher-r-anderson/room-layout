@@ -11,9 +11,9 @@ import {
   resetEditorLifecycleStore,
 } from '@/core/stores/editor-lifecycle-store'
 import {
-  resetSelectionMetaStore,
-  selectionMetaStore,
-} from '@/core/stores/selection-meta-store'
+  resetSelectionFocusStore,
+  selectionFocusStore,
+} from '@/core/stores/selection-focus-store'
 import { sceneCommands } from '@/scene/scene-commands'
 import { announcementActions } from '@/core/stores/announcement-store'
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
@@ -48,7 +48,7 @@ const CHAIR: FurnitureItem = {
 describe('selected-item-detail-actions', () => {
   beforeEach(() => {
     resetSceneDocumentStore()
-    resetSelectionMetaStore()
+    resetSelectionFocusStore()
     resetEditorLifecycleStore()
     sceneDocumentActions.setHistory(createHistoryState([CHAIR]))
     sceneDocumentActions.setSelectedId(CHAIR.id)
@@ -105,7 +105,7 @@ describe('selected-item-detail-actions', () => {
           value: 90,
         }),
       ).toEqual({ ok: true, item: updatedItem })
-      expect(selectionMetaStore.getState().selectedSource).toBe(
+      expect(selectionFocusStore.getState().selectedSource).toBe(
         'panel-keyboard',
       )
       expect(announcementActions.announcePolite).toHaveBeenCalledWith(

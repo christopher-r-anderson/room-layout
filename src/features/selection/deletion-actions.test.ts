@@ -7,10 +7,10 @@ import {
   sceneDocumentStore,
 } from '@/core/stores/scene-document-store'
 import {
-  resetSelectionMetaStore,
-  selectionMetaActions,
-  selectionMetaStore,
-} from '@/core/stores/selection-meta-store'
+  resetSelectionFocusStore,
+  selectionFocusActions,
+  selectionFocusStore,
+} from '@/core/stores/selection-focus-store'
 import {
   editorLifecycleActions,
   resetEditorLifecycleStore,
@@ -61,7 +61,7 @@ const CHAIR = {
 
 beforeEach(() => {
   resetSceneDocumentStore()
-  resetSelectionMetaStore()
+  resetSelectionFocusStore()
   resetEditorLifecycleStore()
   sceneDocumentActions.setHistory(createHistoryState([CHAIR]))
   editorLifecycleActions.markAssetsReady()
@@ -106,11 +106,11 @@ describe('deletion-actions', () => {
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
     vi.spyOn(sceneCommands, 'deleteSelection').mockReturnValue(true)
     vi.spyOn(dialogActions, 'closeActiveDialog')
-    selectionMetaActions.setSelectedSource('canvas-keyboard')
+    selectionFocusActions.setSelectedSource('canvas-keyboard')
 
     confirmDeleteSelection(CHAIR)
 
-    expect(selectionMetaStore.getState().roomViewFocusRequest).toEqual(
+    expect(selectionFocusStore.getState().roomViewFocusRequest).toEqual(
       expect.any(Number),
     )
     expect(
@@ -125,11 +125,11 @@ describe('deletion-actions', () => {
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
     vi.spyOn(sceneCommands, 'deleteSelection').mockReturnValue(true)
     vi.spyOn(dialogActions, 'closeActiveDialog')
-    selectionMetaActions.setSelectedSource('panel-keyboard')
+    selectionFocusActions.setSelectedSource('panel-keyboard')
 
     confirmDeleteSelection(CHAIR)
 
-    expect(selectionMetaStore.getState().roomViewFocusRequest).toBeNull()
+    expect(selectionFocusStore.getState().roomViewFocusRequest).toBeNull()
     expect(
       selectionEffects.notePostDeleteOutlinerFocusIndex,
     ).toHaveBeenCalledWith(0)

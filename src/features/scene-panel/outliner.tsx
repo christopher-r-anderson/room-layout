@@ -24,9 +24,9 @@ import type { PanelInteractionSource } from '@/core/types/interaction.types'
 import { selectById } from '@/core/operations/selection-actions'
 import { previewFromOutliner } from '@/core/operations/preview-actions'
 import {
-  selectionMetaActions,
+  selectionFocusActions,
   useOutlinerFocusRequest,
-} from '@/core/stores/selection-meta-store'
+} from '@/core/stores/selection-focus-store'
 import {
   useItems,
   usePreviewedId,
@@ -72,13 +72,13 @@ export function Outliner() {
     if (!isExpanded) {
       // Keep focus on a visible control when collapsed instead of targeting hidden content.
       toggleButtonRef.current?.focus()
-      selectionMetaActions.clearOutlinerFocusRequest()
+      selectionFocusActions.clearOutlinerFocusRequest()
       return
     }
 
     if (focusRequest.focusContainer) {
       containerRef.current?.focus()
-      selectionMetaActions.clearOutlinerFocusRequest()
+      selectionFocusActions.clearOutlinerFocusRequest()
       return
     }
 
@@ -89,14 +89,14 @@ export function Outliner() {
 
       if (selectedButton) {
         selectedButton.focus()
-        selectionMetaActions.clearOutlinerFocusRequest()
+        selectionFocusActions.clearOutlinerFocusRequest()
         return
       }
     }
 
     if (items.length === 0) {
       containerRef.current?.focus()
-      selectionMetaActions.clearOutlinerFocusRequest()
+      selectionFocusActions.clearOutlinerFocusRequest()
       return
     }
 
@@ -113,7 +113,7 @@ export function Outliner() {
 
     nextButton.focus()
 
-    selectionMetaActions.clearOutlinerFocusRequest()
+    selectionFocusActions.clearOutlinerFocusRequest()
   }, [disabled, focusRequest, isExpanded, items])
 
   return (

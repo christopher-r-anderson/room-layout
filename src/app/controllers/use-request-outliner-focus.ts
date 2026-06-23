@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 import { useItems, useSelectedFurniture } from '@/core/stores/scene-document-store'
-import { selectionMetaActions } from '@/core/stores/selection-meta-store'
+import { selectionFocusActions } from '@/core/stores/selection-focus-store'
 
 /**
  * Hook that provides a callback to request outliner focus with intelligent fallback.
@@ -16,7 +16,7 @@ export function useRequestOutlinerFocus() {
 
   return useCallback(() => {
     if (selectedFurniture !== null) {
-      selectionMetaActions.requestOutlinerFocus({
+      selectionFocusActions.requestOutlinerFocus({
         token: Date.now(),
         targetSelectedId: selectedFurniture.id,
       })
@@ -24,14 +24,14 @@ export function useRequestOutlinerFocus() {
     }
 
     if (items.length > 0) {
-      selectionMetaActions.requestOutlinerFocus({
+      selectionFocusActions.requestOutlinerFocus({
         token: Date.now(),
         preferredIndex: 0,
       })
       return
     }
 
-    selectionMetaActions.requestOutlinerFocus({
+    selectionFocusActions.requestOutlinerFocus({
       token: Date.now(),
       focusContainer: true,
     })

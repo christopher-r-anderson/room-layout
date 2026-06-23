@@ -2,9 +2,9 @@ import type { FurnitureItem } from '@/scene/objects/furniture.types'
 import { announcementActions } from '../stores/announcement-store'
 import { editorLifecycleStore } from '../stores/editor-lifecycle-store'
 import {
-  selectionMetaActions,
-  selectionMetaStore,
-} from '../stores/selection-meta-store'
+  selectionFocusActions,
+  selectionFocusStore,
+} from '../stores/selection-focus-store'
 import { sceneDocumentStore } from '../stores/scene-document-store'
 import type { InteractionSource } from '../types/interaction.types'
 import type {
@@ -135,7 +135,7 @@ function reconcileSelectionEffects() {
   const selectedId = state.selectedId
   const itemsChanged = items !== previousItems
   const outlinerFocusRequest =
-    selectionMetaStore.getState().outlinerFocusRequest
+    selectionFocusStore.getState().outlinerFocusRequest
   const editorInteractionsEnabled =
     editorLifecycleStore.getState().startupPhase === 'ready'
 
@@ -146,7 +146,7 @@ function reconcileSelectionEffects() {
 
     if (preferredIndex !== null) {
       pendingPostDeleteOutlinerFocusIndex = null
-      selectionMetaActions.requestOutlinerFocus({
+      selectionFocusActions.requestOutlinerFocus({
         token: Date.now(),
         preferredIndex,
       })
@@ -159,7 +159,7 @@ function reconcileSelectionEffects() {
       pendingSelectionSource = null
       previousReconciledSelectedId = selectedId
 
-      selectionMetaActions.setSelectedSource(
+      selectionFocusActions.setSelectedSource(
         selectedId === null ? null : pendingSource,
       )
     }
@@ -186,12 +186,12 @@ function reconcileSelectionEffects() {
         outlinerFocusRequest === null
       ) {
         if (selectedId) {
-          selectionMetaActions.requestOutlinerFocus({
+          selectionFocusActions.requestOutlinerFocus({
             token: Date.now(),
             targetSelectedId: selectedId,
           })
         } else if (previousSelectedId) {
-          selectionMetaActions.requestOutlinerFocus({
+          selectionFocusActions.requestOutlinerFocus({
             token: Date.now(),
             focusContainer: true,
           })

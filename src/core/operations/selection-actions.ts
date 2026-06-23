@@ -3,7 +3,7 @@ import {
   sceneDocumentStore,
 } from '@/core/stores/scene-document-store'
 import { editorLifecycleStore } from '@/core/stores/editor-lifecycle-store'
-import { selectionMetaActions } from '@/core/stores/selection-meta-store'
+import { selectionFocusActions } from '@/core/stores/selection-focus-store'
 import { selectionEffects } from '@/core/operations/selection-effects'
 import { sceneCommands } from '@/scene/scene-commands'
 import type { SelectByIdResult } from '@/scene/scene.types'
@@ -30,7 +30,7 @@ export function selectByCanvasPointer(id: string) {
   selectionEffects.notePendingSource(
     selectedId === id ? null : 'canvas-pointer',
   )
-  selectionMetaActions.setSelectedSource('canvas-pointer')
+  selectionFocusActions.setSelectedSource('canvas-pointer')
 }
 
 export function selectById(
@@ -69,11 +69,11 @@ export function selectById(
   if (source) {
     if (result.ok && selectionWillChange) {
       selectionEffects.notePendingSource(source)
-      selectionMetaActions.setSelectedSource(source)
+      selectionFocusActions.setSelectedSource(source)
     } else {
       selectionEffects.notePendingSource(null)
       if (result.ok) {
-        selectionMetaActions.setSelectedSource(source)
+        selectionFocusActions.setSelectedSource(source)
       }
     }
   }

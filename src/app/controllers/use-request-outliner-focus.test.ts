@@ -4,13 +4,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook } from '@testing-library/react'
 import { useRequestOutlinerFocus } from '@/app/controllers/use-request-outliner-focus'
-import { selectionMetaActions } from '@/core/stores/selection-meta-store'
+import { selectionFocusActions } from '@/core/stores/selection-focus-store'
 import * as sceneDocumentStore from '@/core/stores/scene-document-store'
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
 
 vi.mock('@/core/stores/scene-document-store')
-vi.mock('@/core/stores/selection-meta-store', () => ({
-  selectionMetaActions: {
+vi.mock('@/core/stores/selection-focus-store', () => ({
+  selectionFocusActions: {
     requestOutlinerFocus: vi.fn(),
   },
 }))
@@ -32,7 +32,7 @@ describe('useRequestOutlinerFocus', () => {
     const { result } = renderHook(() => useRequestOutlinerFocus())
     result.current()
 
-    expect(selectionMetaActions.requestOutlinerFocus).toHaveBeenCalledWith(
+    expect(selectionFocusActions.requestOutlinerFocus).toHaveBeenCalledWith(
       expect.objectContaining({
         targetSelectedId: 'furniture-1',
       }),
@@ -52,7 +52,7 @@ describe('useRequestOutlinerFocus', () => {
     const { result } = renderHook(() => useRequestOutlinerFocus())
     result.current()
 
-    expect(selectionMetaActions.requestOutlinerFocus).toHaveBeenCalledWith(
+    expect(selectionFocusActions.requestOutlinerFocus).toHaveBeenCalledWith(
       expect.objectContaining({
         preferredIndex: 0,
       }),
@@ -66,7 +66,7 @@ describe('useRequestOutlinerFocus', () => {
     const { result } = renderHook(() => useRequestOutlinerFocus())
     result.current()
 
-    expect(selectionMetaActions.requestOutlinerFocus).toHaveBeenCalledWith(
+    expect(selectionFocusActions.requestOutlinerFocus).toHaveBeenCalledWith(
       expect.objectContaining({
         focusContainer: true,
       }),

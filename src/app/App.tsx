@@ -50,9 +50,9 @@ import { EditorBody } from './chrome/editor-body'
 import { EditorShell } from './chrome/editor-shell'
 import { findFirstActionableInspectorControl } from './chrome/focusable-controls'
 import {
-  selectionMetaActions,
+  selectionFocusActions,
   useOutlinerFocusRequest,
-} from '@/core/stores/selection-meta-store'
+} from '@/core/stores/selection-focus-store'
 import { useRequestOutlinerFocus } from '@/app/controllers/use-request-outliner-focus'
 import { perfCounters } from '@/shared/debug/perf-counters'
 import { useDraftPersistence } from '@/features/url-scene/use-draft-persistence'
@@ -134,7 +134,7 @@ function App() {
       return
     }
 
-    selectionMetaActions.clearOutlinerFocusRequest()
+    selectionFocusActions.clearOutlinerFocusRequest()
   }, [isBlockingOverlayOpen, outlinerFocusRequest])
 
   const shareController = useShareController({
@@ -207,7 +207,7 @@ function App() {
       return
     }
 
-    selectionMetaActions.requestRoomViewFocus()
+    selectionFocusActions.requestRoomViewFocus()
 
     if (selectedFurniture !== null) {
       previewFromCanvasKeyboard(selectedFurniture.id)

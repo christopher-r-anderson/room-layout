@@ -7,9 +7,9 @@ import {
   sceneDocumentStore,
 } from '@/core/stores/scene-document-store'
 import {
-  selectionMetaActions,
-  selectionMetaStore,
-} from '@/core/stores/selection-meta-store'
+  selectionFocusActions,
+  selectionFocusStore,
+} from '@/core/stores/selection-focus-store'
 import { selectionEffects } from '@/core/operations/selection-effects'
 import { sceneCommands } from '@/scene/scene-commands'
 import { DELETE_SELECTION_MISSING_MESSAGE } from '@/shared/messages/command-messages'
@@ -19,7 +19,7 @@ export function confirmDeleteSelection(
   pendingDeleteFurniture: FurnitureItem | null,
 ) {
   const items = sceneDocumentStore.getState().history.present
-  const selectedSource = selectionMetaStore.getState().selectedSource
+  const selectedSource = selectionFocusStore.getState().selectedSource
   const editorInteractionsEnabled =
     editorLifecycleStore.getState().startupPhase === 'ready'
 
@@ -65,7 +65,7 @@ export function confirmDeleteSelection(
 
   if (shouldFocusRoomView) {
     selectionEffects.notePostDeleteOutlinerFocusIndex(null)
-    selectionMetaActions.requestRoomViewFocus()
+    selectionFocusActions.requestRoomViewFocus()
   } else {
     selectionEffects.notePostDeleteOutlinerFocusIndex(
       deletedIndex >= 0 ? deletedIndex : 0,

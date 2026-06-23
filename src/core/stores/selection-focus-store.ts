@@ -5,7 +5,12 @@ import type { InteractionSource } from '../types/interaction.types'
 import type { SceneOutlinerFocusRequest } from '../types/scene-panel.types'
 import type { EqualityChecker } from '../types/store.types'
 
-interface SelectionMetaStoreState {
+// View-side routing that reacts to selection: how the selection was made
+// (`selectedSource`, read to decide where focus lands after a delete) and where
+// focus should be sent (outliner / room-view focus requests). The selection
+// pointer itself lives in scene-document-store; this store is the presentation
+// overlay reconciled on top of it.
+interface SelectionFocusStoreState {
   selectedSource: InteractionSource
   outlinerFocusRequest: SceneOutlinerFocusRequest | null
   roomViewFocusRequest: number | null
@@ -17,7 +22,7 @@ interface SelectionMetaStoreState {
   reset: () => void
 }
 
-function getInitialSelectionMetaState() {
+function getInitialSelectionFocusState() {
   return {
     selectedSource: null,
     outlinerFocusRequest: null,
@@ -25,9 +30,9 @@ function getInitialSelectionMetaState() {
   }
 }
 
-export const selectionMetaStore = createStore<SelectionMetaStoreState>()(
+export const selectionFocusStore = createStore<SelectionFocusStoreState>()(
   subscribeWithSelector((set, get) => ({
-    ...getInitialSelectionMetaState(),
+    ...getInitialSelectionFocusState(),
     setSelectedSource: (source) => {
       set((state) => {
         if (state.selectedSource === source) {
@@ -78,7 +83,7 @@ export const selectionMetaStore = createStore<SelectionMetaStoreState>()(
     },
     reset: () => {
       set(() => ({
-        ...getInitialSelectionMetaState(),
+        ...getInitialSelectionFocusState(),
         setSelectedSource: get().setSelectedSource,
         requestOutlinerFocus: get().requestOutlinerFocus,
         clearOutlinerFocusRequest: get().clearOutlinerFocusRequest,
@@ -90,39 +95,39 @@ export const selectionMetaStore = createStore<SelectionMetaStoreState>()(
   })),
 )
 
-function useSelectionMetaStore<T>(
-  selector: (state: SelectionMetaStoreState) => T,
+function useSelectionFocusStore<T>(
+  selector: (state: SelectionFocusStoreState) => T,
   equalityFn?: EqualityChecker<T>,
 ) {
-  return useStoreWithEqualityFn(selectionMetaStore, selector, equalityFn)
+  return useStoreWithEqualityFn(selectionFocusStore, selector, equalityFn)
 }
 
-export const selectionMetaActions = {
+export const selectionFocusActions = {
   setSelectedSource: (source: InteractionSource) => {
-    selectionMetaStore.getState().setSelectedSource(source)
+    selectionFocusStore.getState().setSelectedSource(source)
   },
   requestOutlinerFocus: (request: SceneOutlinerFocusRequest) => {
-    selectionMetaStore.getState().requestOutlinerFocus(request)
+    selectionFocusStore.getState().requestOutlinerFocus(request)
   },
   clearOutlinerFocusRequest: () => {
-    selectionMetaStore.getState().clearOutlinerFocusRequest()
+    selectionFocusStore.getState().clearOutlinerFocusRequest()
   },
   requestRoomViewFocus: () => {
-    selectionMetaStore.getState().requestRoomViewFocus(Date.now())
+    selectionFocusStore.getState().requestRoomViewFocus(Date.now())
   },
   clearRoomViewFocusRequest: () => {
-    selectionMetaStore.getState().clearRoomViewFocusRequest()
+    selectionFocusStore.getState().clearRoomViewFocusRequest()
   },
   reset: () => {
-    selectionMetaStore.getState().reset()
+    selectionFocusStore.getState().reset()
   },
 }
 
-export function resetSelectionMetaStore() {
-  selectionMetaActions.reset()
+export function resetSelectionFocusStore() {
+  selectionFocusActions.reset()
 }
 
 export const useOutlinerFocusRequest = () =>
-  useSelectionMetaStore((state) => state.outlinerFocusRequest)
+  useSelectionFocusStore((state) => state.outlinerFocusRequest)
 export const useRoomViewFocusRequest = () =>
-  useSelectionMetaStore((state) => state.roomViewFocusRequest)
+  useSelectionFocusStore((state) => state.roomViewFocusRequest)

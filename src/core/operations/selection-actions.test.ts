@@ -7,9 +7,9 @@ import {
   sceneDocumentStore,
 } from '@/core/stores/scene-document-store'
 import {
-  resetSelectionMetaStore,
-  selectionMetaStore,
-} from '@/core/stores/selection-meta-store'
+  resetSelectionFocusStore,
+  selectionFocusStore,
+} from '@/core/stores/selection-focus-store'
 import {
   editorLifecycleActions,
   resetEditorLifecycleStore,
@@ -48,7 +48,7 @@ const CHAIR = {
 describe('selection-actions', () => {
   beforeEach(() => {
     resetSceneDocumentStore()
-    resetSelectionMetaStore()
+    resetSelectionFocusStore()
     resetEditorLifecycleStore()
     sceneDocumentActions.setHistory(createHistoryState([CHAIR]))
     editorLifecycleActions.markAssetsReady()
@@ -85,7 +85,7 @@ describe('selection-actions', () => {
     expect(selectionEffects.notePendingSource).toHaveBeenCalledWith(
       'canvas-pointer',
     )
-    expect(selectionMetaStore.getState().selectedSource).toBe('canvas-pointer')
+    expect(selectionFocusStore.getState().selectedSource).toBe('canvas-pointer')
   })
 
   it('clears pending source when toggling the same selection off via canvas pointer', () => {
@@ -113,7 +113,7 @@ describe('selection-actions', () => {
     expect(selectionEffects.notePendingSource).toHaveBeenCalledWith(
       'panel-keyboard',
     )
-    expect(selectionMetaStore.getState().selectedSource).toBe('panel-keyboard')
+    expect(selectionFocusStore.getState().selectedSource).toBe('panel-keyboard')
   })
 
   it('clears the editor message and pending behavior on clear selection', () => {

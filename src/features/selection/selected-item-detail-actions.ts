@@ -6,7 +6,7 @@ import {
   selectSelectedFurniture,
 } from '@/core/stores/scene-document-store'
 import { editorLifecycleStore } from '@/core/stores/editor-lifecycle-store'
-import { selectionMetaActions } from '@/core/stores/selection-meta-store'
+import { selectionFocusActions } from '@/core/stores/selection-focus-store'
 import { sceneCommands } from '@/scene/scene-commands'
 import type {
   UpdateSelectedItemDetailsInput,
@@ -72,7 +72,7 @@ export function updateSelectedItemDetails(
   })
 
   if (result.ok) {
-    selectionMetaActions.setSelectedSource('panel-keyboard')
+    selectionFocusActions.setSelectedSource('panel-keyboard')
     announcementActions.announcePolite(`${result.item.name} details updated.`)
     return { ok: true, item: result.item }
   }

@@ -15,9 +15,9 @@ import { Scene } from '@/scene/scene'
 import { useIsBlockingOverlayOpen } from '@/core/stores/dialog-store'
 import { useSelectedFurniture } from '@/core/stores/scene-document-store'
 import {
-  selectionMetaActions,
+  selectionFocusActions,
   useRoomViewFocusRequest,
-} from '@/core/stores/selection-meta-store'
+} from '@/core/stores/selection-focus-store'
 import { useSceneIsAtDefaults } from '@/core/operations/use-scene-is-at-defaults'
 import {
   useEditorInteractionsEnabled,
@@ -148,7 +148,7 @@ export function EditorBody({
     }
 
     focusRoomView()
-    selectionMetaActions.clearRoomViewFocusRequest()
+    selectionFocusActions.clearRoomViewFocusRequest()
   }, [roomViewFocusRequest, focusRoomView])
 
   useKeyboardShortcuts({
