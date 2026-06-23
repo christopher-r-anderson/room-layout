@@ -1,6 +1,6 @@
 import { useEditorRefs } from '@/shared/providers/editor-refs-context'
 import { useExclusionRegistry } from '@/shared/layout/overlay-exclusion-context'
-import { useEditorInteractionsEnabled } from '@/core/stores/editor-runtime-store'
+import { useEditorInteractionsEnabled } from '@/core/stores/editor-lifecycle-store'
 import { useSelectedFurniture } from '@/core/stores/scene-state-store'
 import { useCommandDispatch } from '@/core/commands/command-dispatch-context'
 import { SelectedDetailsView } from './selected-details-view'

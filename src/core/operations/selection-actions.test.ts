@@ -11,9 +11,9 @@ import {
   selectionMetaStore,
 } from '@/core/stores/selection-meta-store'
 import {
-  editorRuntimeActions,
-  resetEditorRuntimeStore,
-} from '@/core/stores/editor-runtime-store'
+  editorLifecycleActions,
+  resetEditorLifecycleStore,
+} from '@/core/stores/editor-lifecycle-store'
 import { sceneCommands } from '@/scene/scene-commands'
 import { selectionEffects } from '@/core/operations/selection-effects'
 import {
@@ -49,9 +49,9 @@ describe('selection-actions', () => {
   beforeEach(() => {
     resetSceneStateStore()
     resetSelectionMetaStore()
-    resetEditorRuntimeStore()
+    resetEditorLifecycleStore()
     sceneStateActions.setHistory(createHistoryState([CHAIR]))
-    editorRuntimeActions.markAssetsReady()
+    editorLifecycleActions.markAssetsReady()
   })
 
   afterEach(() => {
@@ -60,7 +60,7 @@ describe('selection-actions', () => {
   })
 
   it('skips scene commands when interactions are disabled', () => {
-    resetEditorRuntimeStore()
+    resetEditorLifecycleStore()
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
     const selectByIdSpy = vi.spyOn(sceneCommands, 'selectById')
     const clearSelectionSpy = vi.spyOn(sceneCommands, 'clearSelection')

@@ -1,9 +1,9 @@
 import { useEffect } from 'react'
 import { preloadFurnitureCollections } from '@/scene/objects/furniture-catalog'
 import {
-  editorRuntimeActions,
+  editorLifecycleActions,
   useRetryToken,
-} from '@/core/stores/editor-runtime-store'
+} from '@/core/stores/editor-lifecycle-store'
 import { assetsActions } from '@/core/stores/assets-store'
 import type { StartupErrorKind } from '@/core/types/startup.types'
 import {
@@ -59,7 +59,7 @@ function classifyManifestError(
 // Bootstraps the editor: fetches the catalog manifest, mirrors it into the
 // scene-assets store, and drives the runtime store's startup phase. The fetch
 // re-runs whenever the runtime store's retry token changes (the retry path),
-// and the editor-runtime-store is the single owner of the startup phase — this
+// and the editor-lifecycle-store is the single owner of the startup phase — this
 // hook only performs the React-coupled fetch lifecycle.
 export function useStartupBootstrap() {
   const retryToken = useRetryToken()
@@ -91,7 +91,7 @@ export function useStartupBootstrap() {
           collections: result.collections,
           environmentConfig: result.environment,
         })
-        editorRuntimeActions.beginAssetLoad()
+        editorLifecycleActions.beginAssetLoad()
 
         preloadFurnitureCollections(result.collections.map((c) => c.sourcePath))
       } catch (error) {
@@ -105,7 +105,7 @@ export function useStartupBootstrap() {
           error: error instanceof Error ? error.message : String(error),
         })
 
-        editorRuntimeActions.setAssetError({
+        editorLifecycleActions.setAssetError({
           kind: classified.kind,
           message: classified.error.message,
         })

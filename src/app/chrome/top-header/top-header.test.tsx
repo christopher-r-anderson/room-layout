@@ -4,9 +4,9 @@ import { render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { resetDialogStore } from '@/core/stores/dialog-store'
 import {
-  editorRuntimeActions,
-  resetEditorRuntimeStore,
-} from '@/core/stores/editor-runtime-store'
+  editorLifecycleActions,
+  resetEditorLifecycleStore,
+} from '@/core/stores/editor-lifecycle-store'
 import { sceneStateActions } from '@/core/stores/scene-state-store'
 import { CommandDispatchProvider } from '@/core/commands/command-dispatch-provider'
 import {
@@ -90,7 +90,7 @@ function renderTopHeader() {
 describe('TopHeader', () => {
   beforeEach(() => {
     resetDialogStore()
-    resetEditorRuntimeStore()
+    resetEditorLifecycleStore()
     sceneStateActions.resetSceneState()
     resetAssetsStore()
     assetsActions.setAssets({
@@ -98,7 +98,7 @@ describe('TopHeader', () => {
       collections: [],
       environmentConfig: ENVIRONMENT,
     })
-    editorRuntimeActions.markAssetsReady()
+    editorLifecycleActions.markAssetsReady()
   })
 
   it('passes active default finish ids to header layouts when stored ids are invalid', () => {

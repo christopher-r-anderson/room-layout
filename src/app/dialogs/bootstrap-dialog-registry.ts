@@ -1,6 +1,6 @@
 import type { DialogRuntimeContext } from '@/core/dialog-contract'
 import { dialogActions } from '@/core/stores/dialog-store'
-import { editorRuntimeStore } from '@/core/stores/editor-runtime-store'
+import { editorLifecycleStore } from '@/core/stores/editor-lifecycle-store'
 import { sceneStateStore } from '@/core/stores/scene-state-store'
 import { DIALOG_DEFINITIONS } from './dialog-registry'
 
@@ -25,7 +25,7 @@ export function buildDialogRuntimeContext(
 ): DialogRuntimeContext {
   return {
     isDialogsEnabled: () =>
-      editorRuntimeStore.getState().startupPhase === 'ready',
+      editorLifecycleStore.getState().startupPhase === 'ready',
     getSelectedFurniture: () => getSelectedFurnitureFromState(),
     canStartOver: () => options.canStartOver(),
   }

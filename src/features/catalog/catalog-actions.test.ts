@@ -9,9 +9,9 @@ import {
   selectionMetaStore,
 } from '@/core/stores/selection-meta-store'
 import {
-  editorRuntimeActions,
-  resetEditorRuntimeStore,
-} from '@/core/stores/editor-runtime-store'
+  editorLifecycleActions,
+  resetEditorLifecycleStore,
+} from '@/core/stores/editor-lifecycle-store'
 import {
   resetAssetsStore,
   assetsActions,
@@ -49,7 +49,7 @@ const CHAIR: FurnitureCatalogEntry = {
 beforeEach(() => {
   resetSceneStateStore()
   resetSelectionMetaStore()
-  resetEditorRuntimeStore()
+  resetEditorLifecycleStore()
   resetAssetsStore()
   resetCatalogSelectionStore()
   assetsActions.setAssets({
@@ -57,7 +57,7 @@ beforeEach(() => {
     collections: [],
     environmentConfig: null,
   })
-  editorRuntimeActions.markAssetsReady()
+  editorLifecycleActions.markAssetsReady()
 })
 
 afterEach(() => {
@@ -67,7 +67,7 @@ afterEach(() => {
 
 describe('addFurniture', () => {
   it('clears stale add state without invoking the scene while disabled', () => {
-    resetEditorRuntimeStore()
+    resetEditorLifecycleStore()
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
     const addFurnitureCommand = vi.spyOn(sceneCommands, 'addFurniture')
 

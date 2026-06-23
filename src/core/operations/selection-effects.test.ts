@@ -9,9 +9,9 @@ import {
   sceneStateActions,
 } from '@/core/stores/scene-state-store'
 import {
-  editorRuntimeActions,
-  resetEditorRuntimeStore,
-} from '@/core/stores/editor-runtime-store'
+  editorLifecycleActions,
+  resetEditorLifecycleStore,
+} from '@/core/stores/editor-lifecycle-store'
 import { createHistoryState } from '@/shared/lib/ui/editor-history'
 import { announcementActions } from '@/core/stores/announcement-store'
 import {
@@ -52,9 +52,9 @@ let stopReconciler: () => void
 beforeEach(() => {
   resetSceneStateStore()
   resetSelectionMetaStore()
-  resetEditorRuntimeStore()
+  resetEditorLifecycleStore()
   resetSelectionEffects()
-  editorRuntimeActions.markAssetsReady()
+  editorLifecycleActions.markAssetsReady()
   stopReconciler = startSelectionEffectsReconciler()
 })
 

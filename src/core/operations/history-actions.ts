@@ -1,12 +1,12 @@
 import { announcementActions } from '@/core/stores/announcement-store'
-import { editorRuntimeStore } from '@/core/stores/editor-runtime-store'
+import { editorLifecycleStore } from '@/core/stores/editor-lifecycle-store'
 import { sceneStateActions } from '@/core/stores/scene-state-store'
 import { selectionEffects } from '@/core/operations/selection-effects'
 import { sceneCommands } from '@/scene/scene-commands'
 
 export function undo() {
   const editorInteractionsEnabled =
-    editorRuntimeStore.getState().startupPhase === 'ready'
+    editorLifecycleStore.getState().startupPhase === 'ready'
   const undid =
     editorInteractionsEnabled && sceneCommands.isSceneReady()
       ? sceneCommands.undo()
@@ -29,7 +29,7 @@ export function undo() {
 
 export function redo() {
   const editorInteractionsEnabled =
-    editorRuntimeStore.getState().startupPhase === 'ready'
+    editorLifecycleStore.getState().startupPhase === 'ready'
   const redid =
     editorInteractionsEnabled && sceneCommands.isSceneReady()
       ? sceneCommands.redo()

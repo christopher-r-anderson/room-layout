@@ -2,9 +2,9 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
-  editorRuntimeStore,
-  resetEditorRuntimeStore,
-} from '../stores/editor-runtime-store'
+  editorLifecycleStore,
+  resetEditorLifecycleStore,
+} from '../stores/editor-lifecycle-store'
 import {
   resetAssetsStore,
   assetsActions,
@@ -64,7 +64,7 @@ vi.mock('sonner', () => ({
 }))
 
 beforeEach(() => {
-  resetEditorRuntimeStore()
+  resetEditorLifecycleStore()
   resetAssetsStore()
 })
 
@@ -78,8 +78,8 @@ describe('startup-coordinator', () => {
     completeAssetLoad()
 
     expect(runStartupRestoreFlow).toHaveBeenCalledTimes(1)
-    expect(editorRuntimeStore.getState().restoreAttemptCount).toBe(1)
-    expect(editorRuntimeStore.getState().startupPhase).toBe('ready')
+    expect(editorLifecycleStore.getState().restoreAttemptCount).toBe(1)
+    expect(editorLifecycleStore.getState().startupPhase).toBe('ready')
     expect(selectionEffects.notePendingSelection).toHaveBeenCalledWith({
       announceMode: 'suppress',
       requestOutlinerFocus: false,
@@ -94,12 +94,12 @@ describe('startup-coordinator', () => {
     expect(runStartupRestoreFlow).toHaveBeenCalledTimes(1)
   })
 
-  it('records the runtime error, resets the shell, and announces on asset error', () => {
+  it('records the asset error, resets the shell, and announces on asset error', () => {
     const closeActiveDialog = vi.spyOn(dialogActions, 'closeActiveDialog')
 
     notifyAssetError(new Error('boom'))
 
-    const state = editorRuntimeStore.getState()
+    const state = editorLifecycleStore.getState()
     expect(state.startupPhase).toBe('errored')
     expect(state.assetError).toEqual({ kind: 'asset-load', message: 'boom' })
     expect(closeActiveDialog).toHaveBeenCalledTimes(1)
@@ -125,8 +125,8 @@ describe('startup-coordinator', () => {
       '/models/a.glb',
       '/models/b.glb',
     ])
-    expect(editorRuntimeStore.getState().retryToken).toBe(1)
-    expect(editorRuntimeStore.getState().sceneEpoch).toBe(1)
+    expect(editorLifecycleStore.getState().retryToken).toBe(1)
+    expect(editorLifecycleStore.getState().sceneEpoch).toBe(1)
     expect(
       announcementActions.clearAssertiveAnnouncement,
     ).toHaveBeenCalledTimes(1)

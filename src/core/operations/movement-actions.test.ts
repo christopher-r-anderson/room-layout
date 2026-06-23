@@ -6,9 +6,9 @@ import {
   sceneStateActions,
 } from '@/core/stores/scene-state-store'
 import {
-  editorRuntimeActions,
-  resetEditorRuntimeStore,
-} from '@/core/stores/editor-runtime-store'
+  editorLifecycleActions,
+  resetEditorLifecycleStore,
+} from '@/core/stores/editor-lifecycle-store'
 import { sceneCommands } from '@/scene/scene-commands'
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
 import { moveSelection, rotateSelection } from './movement-actions'
@@ -39,10 +39,10 @@ const CHAIR: FurnitureItem = {
 describe('movement-actions', () => {
   beforeEach(() => {
     resetSceneStateStore()
-    resetEditorRuntimeStore()
+    resetEditorLifecycleStore()
     sceneStateActions.setHistory(createHistoryState([CHAIR]))
     sceneStateActions.setSelectedId(CHAIR.id)
-    editorRuntimeActions.markAssetsReady()
+    editorLifecycleActions.markAssetsReady()
   })
 
   afterEach(() => {
@@ -51,7 +51,7 @@ describe('movement-actions', () => {
   })
 
   it('does not invoke scene movement commands while interactions are disabled', () => {
-    resetEditorRuntimeStore()
+    resetEditorLifecycleStore()
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
     const moveSelectionSpy = vi
       .spyOn(sceneCommands, 'moveSelection')

@@ -11,9 +11,9 @@ import {
 import { DIALOG_IDS } from '@/app/dialogs/dialog-registry'
 import { dialogActions, resetDialogStore } from '@/core/stores/dialog-store'
 import {
-  editorRuntimeActions,
-  resetEditorRuntimeStore,
-} from '@/core/stores/editor-runtime-store'
+  editorLifecycleActions,
+  resetEditorLifecycleStore,
+} from '@/core/stores/editor-lifecycle-store'
 import {
   resetSceneStateStore,
   sceneStateActions,
@@ -84,7 +84,7 @@ describe('SceneOutliner', () => {
     vi.clearAllMocks()
     window.localStorage.clear()
     resetDialogStore()
-    resetEditorRuntimeStore()
+    resetEditorLifecycleStore()
     resetSceneStateStore()
     resetSelectionMetaStore()
     dialogActions.configureRuntimeContext({
@@ -97,7 +97,7 @@ describe('SceneOutliner', () => {
       kind: 'blocking',
       canOpen: (context) => context.getSelectedFurniture() !== null,
     })
-    editorRuntimeActions.markAssetsReady()
+    editorLifecycleActions.markAssetsReady()
     seedScene()
   })
 

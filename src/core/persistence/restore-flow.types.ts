@@ -1,4 +1,4 @@
-import type { RestoreOutcome } from '@/core/stores/editor-runtime-store'
+import type { RestoreOutcome } from '@/core/stores/editor-lifecycle-store'
 import type { FurnitureInstance } from '@/scene/objects/furniture.types'
 
 export interface RestorableState {

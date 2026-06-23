@@ -10,9 +10,9 @@ import { CommandDispatchProvider } from '@/core/commands/command-dispatch-provid
 import type { CommandDispatch } from '@/core/commands/command-dispatch-context'
 import { createHistoryState } from '@/shared/lib/ui/editor-history'
 import {
-  editorRuntimeActions,
-  resetEditorRuntimeStore,
-} from '@/core/stores/editor-runtime-store'
+  editorLifecycleActions,
+  resetEditorLifecycleStore,
+} from '@/core/stores/editor-lifecycle-store'
 import { resetDialogStore } from '@/core/stores/dialog-store'
 import {
   sceneStateActions,
@@ -26,9 +26,9 @@ import { FURNITURE_ITEM } from './test-fixtures'
 
 beforeEach(() => {
   resetDialogStore()
-  resetEditorRuntimeStore()
+  resetEditorLifecycleStore()
   resetSceneStateStore()
-  editorRuntimeActions.markAssetsReady()
+  editorLifecycleActions.markAssetsReady()
   sceneStateActions.setHistory(createHistoryState([FURNITURE_ITEM]))
   sceneStateActions.setSelectedId(FURNITURE_ITEM.id)
 })

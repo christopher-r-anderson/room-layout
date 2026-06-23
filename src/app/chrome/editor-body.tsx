@@ -23,7 +23,7 @@ import {
   useEditorInteractionsEnabled,
   useSceneEpoch,
   useStartupLoadingActive,
-} from '@/core/stores/editor-runtime-store'
+} from '@/core/stores/editor-lifecycle-store'
 import {
   useCatalogEntries,
   useCollections,

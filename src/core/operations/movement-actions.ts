@@ -1,5 +1,5 @@
 import { announcementActions } from '@/core/stores/announcement-store'
-import { editorRuntimeStore } from '@/core/stores/editor-runtime-store'
+import { editorLifecycleStore } from '@/core/stores/editor-lifecycle-store'
 import {
   sceneStateActions,
   sceneStateStore,
@@ -36,7 +36,7 @@ export function moveSelection(
   options?: { source?: MoveSource },
 ): MoveSelectionResult {
   const editorInteractionsEnabled =
-    editorRuntimeStore.getState().startupPhase === 'ready'
+    editorLifecycleStore.getState().startupPhase === 'ready'
   const movedItemName =
     selectSelectedFurniture(sceneStateStore.getState())?.name ?? null
   sceneStateActions.clearEditorMessage()
@@ -69,7 +69,7 @@ export function moveSelection(
 
 export function rotateSelection(direction: -1 | 1) {
   const editorInteractionsEnabled =
-    editorRuntimeStore.getState().startupPhase === 'ready'
+    editorLifecycleStore.getState().startupPhase === 'ready'
   const rotatingName =
     selectSelectedFurniture(sceneStateStore.getState())?.name ?? null
   sceneStateActions.clearEditorMessage()

@@ -5,9 +5,9 @@ import {
   type SetStateAction,
 } from 'react'
 import {
-  editorRuntimeStore,
+  editorLifecycleStore,
   type RestoreOutcome,
-} from '@/core/stores/editor-runtime-store'
+} from '@/core/stores/editor-lifecycle-store'
 import { sceneStateStore } from '@/core/stores/scene-state-store'
 import { sceneCommands } from '@/scene/scene-commands'
 import {
@@ -84,8 +84,8 @@ export function useTestStateBridge({
           : null
 
         return {
-          assetsReady: editorRuntimeStore.getState().startupPhase === 'ready',
-          assetError: editorRuntimeStore.getState().assetError !== null,
+          assetsReady: editorLifecycleStore.getState().startupPhase === 'ready',
+          assetError: editorLifecycleStore.getState().assetError !== null,
           cameraPosition,
           floorFinishId: activeFloorFinishId,
           wallFinishId: activeWallFinishId,
@@ -101,9 +101,9 @@ export function useTestStateBridge({
             rotationY: item.rotationY,
             pointerTarget: pointerTargetsById.get(item.id) ?? null,
           })),
-          restoreOutcome: editorRuntimeStore.getState().restoreOutcome,
+          restoreOutcome: editorLifecycleStore.getState().restoreOutcome,
           restoreAttemptCount:
-            editorRuntimeStore.getState().restoreAttemptCount,
+            editorLifecycleStore.getState().restoreAttemptCount,
         }
       },
       setOverlaysHidden: (hidden: boolean) => {

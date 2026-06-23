@@ -11,9 +11,9 @@ import { DIALOG_IDS } from '@/app/dialogs/dialog-registry'
 import { resetDialogStore } from '@/core/stores/dialog-store'
 import { dialogActions } from '@/core/stores/dialog-store'
 import {
-  editorRuntimeActions,
-  resetEditorRuntimeStore,
-} from '@/core/stores/editor-runtime-store'
+  editorLifecycleActions,
+  resetEditorLifecycleStore,
+} from '@/core/stores/editor-lifecycle-store'
 import { sceneStateActions } from '@/core/stores/scene-state-store'
 import { OverlayExclusionProvider } from '../../shared/layout/overlay-exclusion-provider'
 import { EditorRefsProvider } from '../../shared/providers/editor-refs-provider'
@@ -193,7 +193,7 @@ function createSelectedFurniture(): FurnitureItem {
 
 beforeEach(() => {
   resetDialogStore()
-  resetEditorRuntimeStore()
+  resetEditorLifecycleStore()
   sceneStateActions.resetSceneState()
   dialogActions.configureRuntimeContext({
     isDialogsEnabled: () => true,
@@ -211,7 +211,7 @@ beforeEach(() => {
       canOpen: (context) => context.isDialogsEnabled(),
     },
   ])
-  editorRuntimeActions.markAssetsReady()
+  editorLifecycleActions.markAssetsReady()
 })
 
 describe('EditorOverlay integration', () => {

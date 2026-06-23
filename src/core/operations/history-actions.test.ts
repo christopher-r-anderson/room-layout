@@ -4,9 +4,9 @@ import { sceneCommands } from '@/scene/scene-commands'
 import { announcementActions } from '@/core/stores/announcement-store'
 import { selectionEffects } from '@/core/operations/selection-effects'
 import {
-  editorRuntimeActions,
-  resetEditorRuntimeStore,
-} from '@/core/stores/editor-runtime-store'
+  editorLifecycleActions,
+  resetEditorLifecycleStore,
+} from '@/core/stores/editor-lifecycle-store'
 import { redo, undo } from './history-actions'
 
 vi.mock('@/core/stores/announcement-store', () => ({
@@ -30,8 +30,8 @@ vi.mock('@/core/operations/selection-effects', () => ({
 }))
 
 beforeEach(() => {
-  resetEditorRuntimeStore()
-  editorRuntimeActions.markAssetsReady()
+  resetEditorLifecycleStore()
+  editorLifecycleActions.markAssetsReady()
 })
 
 afterEach(() => {
@@ -55,7 +55,7 @@ describe('history-actions', () => {
   })
 
   it('skips scene undo/redo when editor interactions are disabled', () => {
-    resetEditorRuntimeStore()
+    resetEditorLifecycleStore()
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
     const undoSpy = vi.spyOn(sceneCommands, 'undo')
     const redoSpy = vi.spyOn(sceneCommands, 'redo')

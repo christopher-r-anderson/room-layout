@@ -3,9 +3,9 @@
 import { act, renderHook } from '@testing-library/react'
 import { beforeEach, describe, expect, it } from 'vitest'
 import {
-  editorRuntimeActions,
-  editorRuntimeStore,
-  resetEditorRuntimeStore,
+  editorLifecycleActions,
+  editorLifecycleStore,
+  resetEditorLifecycleStore,
   useAssetError,
   useEditorInteractionsEnabled,
   useFloorFinishLoading,
@@ -16,15 +16,15 @@ import {
   useStartupLoadingActive,
   useStartupOverlayActive,
   useStartupPhase,
-} from './editor-runtime-store'
+} from './editor-lifecycle-store'
 
 beforeEach(() => {
-  resetEditorRuntimeStore()
+  resetEditorLifecycleStore()
 })
 
-describe('editorRuntimeStore', () => {
+describe('editorLifecycleStore', () => {
   it('starts in loading mode with no asset error and no restore metadata', () => {
-    const state = editorRuntimeStore.getState()
+    const state = editorLifecycleStore.getState()
 
     expect(state.startupPhase).toBe('loading')
     expect(state.assetError).toBeNull()
@@ -36,14 +36,14 @@ describe('editorRuntimeStore', () => {
   })
 
   it('bumps the scene epoch and clears errors when a manifest begins loading assets', () => {
-    editorRuntimeActions.setAssetError({
+    editorLifecycleActions.setAssetError({
       kind: 'manifest-network',
       message: 'offline',
     })
 
-    editorRuntimeActions.beginAssetLoad()
+    editorLifecycleActions.beginAssetLoad()
 
-    const state = editorRuntimeStore.getState()
+    const state = editorLifecycleStore.getState()
     expect(state.startupPhase).toBe('loading')
     expect(state.assetError).toBeNull()
     expect(state.sceneEpoch).toBe(1)
@@ -51,17 +51,17 @@ describe('editorRuntimeStore', () => {
   })
 
   it('bumps both epoch and retry token on retry while preserving restore tracking', () => {
-    editorRuntimeActions.incrementRestoreAttempt()
-    editorRuntimeActions.recordRestoreOutcome('restored')
-    editorRuntimeActions.setFloorFinishLoading(true)
-    editorRuntimeActions.setAssetError({
+    editorLifecycleActions.incrementRestoreAttempt()
+    editorLifecycleActions.recordRestoreOutcome('restored')
+    editorLifecycleActions.setFloorFinishLoading(true)
+    editorLifecycleActions.setAssetError({
       kind: 'asset-load',
       message: 'asset load failed',
     })
 
-    editorRuntimeActions.requestRetry()
+    editorLifecycleActions.requestRetry()
 
-    const state = editorRuntimeStore.getState()
+    const state = editorLifecycleStore.getState()
     expect(state.startupPhase).toBe('loading')
     expect(state.assetError).toBeNull()
     expect(state.floorFinishLoading).toBe(false)
@@ -73,40 +73,40 @@ describe('editorRuntimeStore', () => {
   })
 
   it('transitions between loading, ready, and errored phases', () => {
-    editorRuntimeActions.markAssetsReady()
-    expect(editorRuntimeStore.getState().startupPhase).toBe('ready')
-    expect(editorRuntimeStore.getState().assetError).toBeNull()
+    editorLifecycleActions.markAssetsReady()
+    expect(editorLifecycleStore.getState().startupPhase).toBe('ready')
+    expect(editorLifecycleStore.getState().assetError).toBeNull()
 
-    editorRuntimeActions.setAssetError({
+    editorLifecycleActions.setAssetError({
       kind: 'asset-load',
       message: 'asset load failed',
     })
-    expect(editorRuntimeStore.getState().startupPhase).toBe('errored')
-    expect(editorRuntimeStore.getState().assetError).toEqual({
+    expect(editorLifecycleStore.getState().startupPhase).toBe('errored')
+    expect(editorLifecycleStore.getState().assetError).toEqual({
       kind: 'asset-load',
       message: 'asset load failed',
     })
 
-    editorRuntimeActions.resetEditorRuntime()
-    expect(editorRuntimeStore.getState().startupPhase).toBe('loading')
-    expect(editorRuntimeStore.getState().assetError).toBeNull()
+    editorLifecycleActions.resetEditorLifecycle()
+    expect(editorLifecycleStore.getState().startupPhase).toBe('loading')
+    expect(editorLifecycleStore.getState().assetError).toBeNull()
   })
 
   it('records restore outcome and attempt count independently from startup retries', () => {
-    editorRuntimeActions.incrementRestoreAttempt()
-    editorRuntimeActions.recordRestoreOutcome('restored')
-    editorRuntimeActions.setFloorFinishLoading(true)
-    editorRuntimeActions.setAssetError({
+    editorLifecycleActions.incrementRestoreAttempt()
+    editorLifecycleActions.recordRestoreOutcome('restored')
+    editorLifecycleActions.setFloorFinishLoading(true)
+    editorLifecycleActions.setAssetError({
       kind: 'asset-load',
       message: 'asset load failed',
     })
-    editorRuntimeActions.resetEditorRuntime()
+    editorLifecycleActions.resetEditorLifecycle()
 
-    expect(editorRuntimeStore.getState().restoreAttemptCount).toBe(1)
-    expect(editorRuntimeStore.getState().restoreOutcome).toBe('restored')
-    expect(editorRuntimeStore.getState().startupPhase).toBe('loading')
-    expect(editorRuntimeStore.getState().assetError).toBeNull()
-    expect(editorRuntimeStore.getState().floorFinishLoading).toBe(false)
+    expect(editorLifecycleStore.getState().restoreAttemptCount).toBe(1)
+    expect(editorLifecycleStore.getState().restoreOutcome).toBe('restored')
+    expect(editorLifecycleStore.getState().startupPhase).toBe('loading')
+    expect(editorLifecycleStore.getState().assetError).toBeNull()
+    expect(editorLifecycleStore.getState().floorFinishLoading).toBe(false)
   })
 
   it('exposes derived selectors for startup gating', () => {
@@ -135,10 +135,10 @@ describe('editorRuntimeStore', () => {
     expect(retryToken.current).toBe(0)
 
     act(() => {
-      editorRuntimeActions.incrementRestoreAttempt()
-      editorRuntimeActions.recordRestoreOutcome('invalid')
-      editorRuntimeActions.setFloorFinishLoading(true)
-      editorRuntimeActions.markAssetsReady()
+      editorLifecycleActions.incrementRestoreAttempt()
+      editorLifecycleActions.recordRestoreOutcome('invalid')
+      editorLifecycleActions.setFloorFinishLoading(true)
+      editorLifecycleActions.markAssetsReady()
     })
 
     expect(phase.current).toBe('ready')
@@ -150,7 +150,7 @@ describe('editorRuntimeStore', () => {
     expect(floorFinishLoading.current).toBe(true)
 
     act(() => {
-      editorRuntimeActions.requestRetry()
+      editorLifecycleActions.requestRetry()
     })
 
     expect(sceneEpoch.current).toBe(1)

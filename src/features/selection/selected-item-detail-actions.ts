@@ -5,7 +5,7 @@ import {
   sceneStateStore,
   selectSelectedFurniture,
 } from '@/core/stores/scene-state-store'
-import { editorRuntimeStore } from '@/core/stores/editor-runtime-store'
+import { editorLifecycleStore } from '@/core/stores/editor-lifecycle-store'
 import { selectionMetaActions } from '@/core/stores/selection-meta-store'
 import { sceneCommands } from '@/scene/scene-commands'
 import type {
@@ -34,7 +34,7 @@ export function updateSelectedItemDetails(
 
   const selectedFurniture = selectSelectedFurniture(sceneStateStore.getState())
   const editorInteractionsEnabled =
-    editorRuntimeStore.getState().startupPhase === 'ready'
+    editorLifecycleStore.getState().startupPhase === 'ready'
 
   if (
     !selectedFurniture ||

@@ -32,7 +32,7 @@ import {
   usePreviewedId,
   useSceneStateStore,
 } from '@/core/stores/scene-state-store'
-import { useEditorInteractionsEnabled } from '@/core/stores/editor-runtime-store'
+import { useEditorInteractionsEnabled } from '@/core/stores/editor-lifecycle-store'
 import { useIsBlockingOverlayOpen } from '@/core/stores/dialog-store'
 
 const OUTLINER_EXPANDED_PREFERENCE_KEY = 'outliner-expanded'

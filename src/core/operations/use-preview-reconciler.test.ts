@@ -8,9 +8,9 @@ import {
   sceneStateStore,
 } from '@/core/stores/scene-state-store'
 import {
-  editorRuntimeActions,
-  resetEditorRuntimeStore,
-} from '@/core/stores/editor-runtime-store'
+  editorLifecycleActions,
+  resetEditorLifecycleStore,
+} from '@/core/stores/editor-lifecycle-store'
 import { previewFromScene, resetPreviewState } from './preview-actions'
 import { usePreviewReconciler } from './use-preview-reconciler'
 
@@ -29,16 +29,16 @@ const CHAIR = {
 
 beforeEach(() => {
   resetSceneStateStore()
-  resetEditorRuntimeStore()
+  resetEditorLifecycleStore()
   resetPreviewState()
   sceneStateActions.setHistory(createHistoryState([CHAIR]))
-  editorRuntimeActions.markAssetsReady()
+  editorLifecycleActions.markAssetsReady()
 })
 
 afterEach(() => {
   resetPreviewState()
   resetSceneStateStore()
-  resetEditorRuntimeStore()
+  resetEditorLifecycleStore()
 })
 
 describe('usePreviewReconciler', () => {

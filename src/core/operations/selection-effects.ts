@@ -1,6 +1,6 @@
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
 import { announcementActions } from '../stores/announcement-store'
-import { editorRuntimeStore } from '../stores/editor-runtime-store'
+import { editorLifecycleStore } from '../stores/editor-lifecycle-store'
 import {
   selectionMetaActions,
   selectionMetaStore,
@@ -137,7 +137,7 @@ function reconcileSelectionEffects() {
   const outlinerFocusRequest =
     selectionMetaStore.getState().outlinerFocusRequest
   const editorInteractionsEnabled =
-    editorRuntimeStore.getState().startupPhase === 'ready'
+    editorLifecycleStore.getState().startupPhase === 'ready'
 
   // Post-delete outliner focus runs without a readiness guard, matching the
   // original items-keyed effect.

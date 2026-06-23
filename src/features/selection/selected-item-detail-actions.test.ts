@@ -7,9 +7,9 @@ import {
   sceneStateActions,
 } from '@/core/stores/scene-state-store'
 import {
-  editorRuntimeActions,
-  resetEditorRuntimeStore,
-} from '@/core/stores/editor-runtime-store'
+  editorLifecycleActions,
+  resetEditorLifecycleStore,
+} from '@/core/stores/editor-lifecycle-store'
 import {
   resetSelectionMetaStore,
   selectionMetaStore,
@@ -49,7 +49,7 @@ describe('selected-item-detail-actions', () => {
   beforeEach(() => {
     resetSceneStateStore()
     resetSelectionMetaStore()
-    resetEditorRuntimeStore()
+    resetEditorLifecycleStore()
     sceneStateActions.setHistory(createHistoryState([CHAIR]))
     sceneStateActions.setSelectedId(CHAIR.id)
   })
@@ -90,7 +90,7 @@ describe('selected-item-detail-actions', () => {
     })
 
     it('applies the transform, marks panel-keyboard source, and announces on success', () => {
-      editorRuntimeActions.markAssetsReady()
+      editorLifecycleActions.markAssetsReady()
       vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
       const updatedItem = { ...CHAIR, name: 'Chair' }
       vi.spyOn(sceneCommands, 'setSelectionTransform').mockReturnValue({
@@ -114,7 +114,7 @@ describe('selected-item-detail-actions', () => {
     })
 
     it('returns a bare no-op result without announcing when nothing changed', () => {
-      editorRuntimeActions.markAssetsReady()
+      editorLifecycleActions.markAssetsReady()
       vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
       vi.spyOn(sceneCommands, 'setSelectionTransform').mockReturnValue({
         ok: false,
@@ -132,7 +132,7 @@ describe('selected-item-detail-actions', () => {
     })
 
     it('surfaces a blocked message when the transform is rejected', () => {
-      editorRuntimeActions.markAssetsReady()
+      editorLifecycleActions.markAssetsReady()
       vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
       vi.spyOn(sceneCommands, 'setSelectionTransform').mockReturnValue({
         ok: false,

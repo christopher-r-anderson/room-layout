@@ -6,9 +6,9 @@ import { clearFurnitureCollectionCache } from '@/scene/objects/furniture-catalog
 import { announcementActions } from '../stores/announcement-store'
 import { dialogActions } from '../stores/dialog-store'
 import {
-  editorRuntimeActions,
-  editorRuntimeStore,
-} from '../stores/editor-runtime-store'
+  editorLifecycleActions,
+  editorLifecycleStore,
+} from '../stores/editor-lifecycle-store'
 import { assetsStore } from '../stores/assets-store'
 import { sceneStateActions } from '../stores/scene-state-store'
 import { resetSelectionMetaStore } from '../stores/selection-meta-store'
@@ -144,7 +144,7 @@ function runRestoreOnce() {
       announcePolite: announcementActions.announcePolite,
       announceAssertive: announcementActions.announceAssertive,
       setEditorMessage: sceneStateActions.setEditorMessage,
-      setRestoreOutcome: editorRuntimeActions.recordRestoreOutcome,
+      setRestoreOutcome: editorLifecycleActions.recordRestoreOutcome,
       toastSuccess: (message) => toast.success(message),
       toastWarning: (message) => toast.warning(message),
       toastError: (message) => toast.error(message),
@@ -155,11 +155,11 @@ function runRestoreOnce() {
 // The scene reported its assets are ready. On the first ready notification of a
 // session, run the one-time restore flow (shared link → draft → defaults); on
 // every notification, suppress the pending-selection announcement and mark the
-// runtime ready. The restore is guarded by the runtime store's attempt count so
+// editor ready. The restore is guarded by the lifecycle store's attempt count so
 // it does not re-run on a Scene remount or after a retry.
 export function completeAssetLoad() {
-  if (editorRuntimeStore.getState().restoreAttemptCount === 0) {
-    editorRuntimeActions.incrementRestoreAttempt()
+  if (editorLifecycleStore.getState().restoreAttemptCount === 0) {
+    editorLifecycleActions.incrementRestoreAttempt()
     runRestoreOnce()
   }
 
@@ -168,13 +168,13 @@ export function completeAssetLoad() {
     requestOutlinerFocus: false,
   })
 
-  editorRuntimeActions.markAssetsReady()
+  editorLifecycleActions.markAssetsReady()
 }
 
-// The scene failed to load assets. Record the runtime error, dismiss any open
+// The scene failed to load assets. Record the asset error, dismiss any open
 // dialog, reset the surface, and surface the failure to the user.
 export function notifyAssetError(error: Error) {
-  editorRuntimeActions.setAssetError({
+  editorLifecycleActions.setAssetError({
     kind: 'asset-load',
     message: error.message,
   })
@@ -185,7 +185,7 @@ export function notifyAssetError(error: Error) {
 }
 
 // The user asked to retry startup. Clear any open dialog and the surface, drop
-// the cached GLTFs for the loaded collections, then bump the runtime retry
+// the cached GLTFs for the loaded collections, then bump the lifecycle retry
 // token so the bootstrap fetch effect re-runs and the Scene remounts.
 export function requestAssetRetry() {
   dialogActions.closeActiveDialog()
@@ -196,6 +196,6 @@ export function requestAssetRetry() {
     .collections.map((collection) => collection.sourcePath)
   clearFurnitureCollectionCache(paths)
 
-  editorRuntimeActions.requestRetry()
+  editorLifecycleActions.requestRetry()
   announcementActions.clearAssertiveAnnouncement()
 }

@@ -10,7 +10,7 @@ import {
   useStartupOverlayActive,
   useAssetError,
   useEditorInteractionsEnabled,
-} from '@/core/stores/editor-runtime-store'
+} from '@/core/stores/editor-lifecycle-store'
 import { useHasSelection } from '@/core/stores/scene-state-store'
 import { CameraTools } from '@/features/camera/camera-tools'
 import { DeleteConfirmationDialog } from '@/features/selection/delete-confirmation-dialog'

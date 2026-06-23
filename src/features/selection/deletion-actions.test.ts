@@ -12,9 +12,9 @@ import {
   selectionMetaStore,
 } from '@/core/stores/selection-meta-store'
 import {
-  editorRuntimeActions,
-  resetEditorRuntimeStore,
-} from '@/core/stores/editor-runtime-store'
+  editorLifecycleActions,
+  resetEditorLifecycleStore,
+} from '@/core/stores/editor-lifecycle-store'
 import { dialogActions } from '@/core/stores/dialog-store'
 import { sceneCommands } from '@/scene/scene-commands'
 import { DELETE_SELECTION_MISSING_MESSAGE } from '@/shared/messages/command-messages'
@@ -62,9 +62,9 @@ const CHAIR = {
 beforeEach(() => {
   resetSceneStateStore()
   resetSelectionMetaStore()
-  resetEditorRuntimeStore()
+  resetEditorLifecycleStore()
   sceneStateActions.setHistory(createHistoryState([CHAIR]))
-  editorRuntimeActions.markAssetsReady()
+  editorLifecycleActions.markAssetsReady()
 })
 
 afterEach(() => {
@@ -89,7 +89,7 @@ describe('deletion-actions', () => {
   })
 
   it('skips delete without writing an editor message when interactions are disabled', () => {
-    resetEditorRuntimeStore()
+    resetEditorLifecycleStore()
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
     const deleteSelection = vi.spyOn(sceneCommands, 'deleteSelection')
     const closeActiveDialog = vi.spyOn(dialogActions, 'closeActiveDialog')

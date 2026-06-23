@@ -7,9 +7,9 @@ import {
   resetDialogStore,
 } from '@/core/stores/dialog-store'
 import {
-  editorRuntimeActions,
-  resetEditorRuntimeStore,
-} from '@/core/stores/editor-runtime-store'
+  editorLifecycleActions,
+  resetEditorLifecycleStore,
+} from '@/core/stores/editor-lifecycle-store'
 import {
   resetSceneStateStore,
   sceneStateActions,
@@ -74,7 +74,7 @@ describe('bootstrapDialogRegistry', () => {
 
 describe('buildDialogRuntimeContext', () => {
   beforeEach(() => {
-    resetEditorRuntimeStore()
+    resetEditorLifecycleStore()
     resetSceneStateStore()
   })
 
@@ -85,7 +85,7 @@ describe('buildDialogRuntimeContext', () => {
 
     expect(context.isDialogsEnabled()).toBe(false)
 
-    editorRuntimeActions.markAssetsReady()
+    editorLifecycleActions.markAssetsReady()
 
     expect(context.isDialogsEnabled()).toBe(true)
   })

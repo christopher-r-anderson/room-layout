@@ -1,4 +1,4 @@
-import { useEditorInteractionsEnabled } from '@/core/stores/editor-runtime-store'
+import { useEditorInteractionsEnabled } from '@/core/stores/editor-lifecycle-store'
 import { useSelectedFurniture } from '@/core/stores/scene-state-store'
 import { useCommandDispatch } from '@/core/commands/command-dispatch-context'
 import { useSelectedItemInteraction } from './selected-item-interaction-context'

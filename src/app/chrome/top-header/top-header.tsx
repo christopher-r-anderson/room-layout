@@ -15,7 +15,7 @@ import { DIALOG_IDS } from '@/app/dialogs/dialog-registry'
 import {
   useEditorInteractionsEnabled,
   useFloorFinishLoading,
-} from '@/core/stores/editor-runtime-store'
+} from '@/core/stores/editor-lifecycle-store'
 import { useEnvironmentConfig } from '@/core/stores/assets-store'
 import { useSceneIsAtDefaults } from '@/core/operations/use-scene-is-at-defaults'
 import { resetSceneToDefaults } from '@/core/persistence/scene-reset'

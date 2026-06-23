@@ -12,7 +12,7 @@ import {
 } from '@/shared/ui/drawer'
 import { cn } from '@/shared/lib/utils'
 import { useDialogOpen } from '@/core/stores/dialog-store'
-import { useEditorInteractionsEnabled } from '@/core/stores/editor-runtime-store'
+import { useEditorInteractionsEnabled } from '@/core/stores/editor-lifecycle-store'
 import { useCatalogEntries } from '@/core/stores/assets-store'
 import { addFurniture, setCatalogDrawerOpen } from './catalog-actions'
 import { catalogDialogId } from './catalog-dialog-definition'

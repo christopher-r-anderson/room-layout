@@ -5,9 +5,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createHistoryState } from '@/shared/lib/ui/editor-history'
 import type { EnvironmentMaterialConfig } from '@/shared/lib/three/environment-materials'
 import {
-  editorRuntimeActions,
-  resetEditorRuntimeStore,
-} from '@/core/stores/editor-runtime-store'
+  editorLifecycleActions,
+  resetEditorLifecycleStore,
+} from '@/core/stores/editor-lifecycle-store'
 import {
   resetSceneStateStore,
   sceneStateActions,
@@ -85,14 +85,14 @@ function createFurnitureItem(id: string) {
 describe('useDraftPersistence', () => {
   beforeEach(() => {
     resetSceneStateStore()
-    resetEditorRuntimeStore()
+    resetEditorLifecycleStore()
     saveSceneDraft.mockReset()
     clearSceneDraft.mockReset()
   })
 
   afterEach(() => {
     resetSceneStateStore()
-    resetEditorRuntimeStore()
+    resetEditorLifecycleStore()
   })
 
   it('does not persist while startup is still loading', () => {
@@ -116,7 +116,7 @@ describe('useDraftPersistence', () => {
     })
 
     act(() => {
-      editorRuntimeActions.setAssetError({
+      editorLifecycleActions.setAssetError({
         kind: 'asset-load',
         message: 'Unable to load asset',
       })
@@ -142,7 +142,7 @@ describe('useDraftPersistence', () => {
     })
 
     act(() => {
-      editorRuntimeActions.markAssetsReady()
+      editorLifecycleActions.markAssetsReady()
     })
 
     expect(clearSceneDraft).toHaveBeenCalledTimes(1)
@@ -172,7 +172,7 @@ describe('useDraftPersistence', () => {
     })
 
     act(() => {
-      editorRuntimeActions.markAssetsReady()
+      editorLifecycleActions.markAssetsReady()
     })
 
     expect(clearSceneDraft).toHaveBeenCalledTimes(1)
@@ -209,7 +209,7 @@ describe('useDraftPersistence', () => {
     })
 
     act(() => {
-      editorRuntimeActions.markAssetsReady()
+      editorLifecycleActions.markAssetsReady()
     })
 
     expect(clearSceneDraft).toHaveBeenCalled()
