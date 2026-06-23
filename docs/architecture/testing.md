@@ -70,5 +70,5 @@ See also:
 
 - [../../README.md](../../README.md)
 - [editor-workflow.md](editor-workflow.md)
-- [overlay-interaction-model.md](overlay-interaction-model.md)
+- [dialogs-and-overlays.md](dialogs-and-overlays.md)
 - [.agents/policies/testing.md](../../.agents/policies/testing.md)

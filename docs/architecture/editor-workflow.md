@@ -75,5 +75,5 @@ guidance.
 
 - [testing.md](testing.md)
 - [editor-shortcuts-reference.md](../reference/editor-shortcuts-reference.md)
-- [overlay-interaction-model.md](overlay-interaction-model.md)
+- [dialogs-and-overlays.md](dialogs-and-overlays.md)
 - [url-scene-sharing.md](../guide/url-scene-sharing.md)

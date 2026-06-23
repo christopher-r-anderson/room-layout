@@ -123,7 +123,9 @@ In addition to this README, project-specific guides are available:
 ### Architecture
 
 - [Architecture](docs/architecture/architecture.md): Layer map, placement rules, current exceptions, and planned boundary improvements.
-- [Core Architecture](docs/architecture/core-architecture.md): Runtime core ownership, dialog orchestration model, and app/scene data-flow seams.
+- [Core](docs/architecture/core.md): The core layer — store inventory, operations, commands, and persistence.
+- [Scene and Core](docs/architecture/scene-and-core.md): The data-model/engine seam — who owns furniture data vs. the rules that change it.
+- [Dialogs and Overlays](docs/architecture/dialogs-and-overlays.md): The active-surface dialog/overlay model, blocking semantics, mutual exclusion, and focus return.
 
 ### Contributor Workflows
 
@@ -140,7 +142,6 @@ In addition to this README, project-specific guides are available:
 - [Assets Attribution](docs/reference/assets-attribution.md): third-party asset source and license attribution.
 - [Editor Shortcuts Reference](docs/reference/editor-shortcuts-reference.md): End-user shortcut map for camera, object, and scene actions.
 - [Keyboard Shortcuts (Engineering)](docs/architecture/keyboard.md): Input architecture, matching/suppression/execution rules, and held-key camera behavior.
-- [Overlay Interaction Model](docs/architecture/overlay-interaction-model.md): Blocking overlays vs the non-blocking Room surface, including focus and breakpoint behavior.
 - [Selected Toolbar Placement](docs/architecture/selected-toolbar-placement.md): Bounds source order, viewport-space placement, floating candidate scoring, and docked fallback behavior.
 
 ### Automation

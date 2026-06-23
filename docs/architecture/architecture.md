@@ -103,6 +103,7 @@ These are temporary or intentionally narrow.
 
 - Root overview and scripts: `README.md`
 - Agent operating contract and policy routing: `AGENTS.md`, `.agents/README.md`
-- Overlay model and behavior: `docs/architecture/overlay-interaction-model.md`
+- Core layer reference: `docs/architecture/core.md`
+- Scene⇄core data-model/engine seam: `docs/architecture/scene-and-core.md`
+- Dialog and overlay model: `docs/architecture/dialogs-and-overlays.md`
 - Selected toolbar placement details: `docs/architecture/selected-toolbar-placement.md`
-- Core architecture: `docs/architecture/core-architecture.md`
