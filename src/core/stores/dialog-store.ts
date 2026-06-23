@@ -10,7 +10,7 @@ import type {
   DialogRuntimeContext,
 } from '../dialog-contract'
 
-export interface ActiveSurfaceState<TPayload = unknown> {
+interface ActiveSurfaceState<TPayload = unknown> {
   id: DialogId
   kind: DialogKind
   payload: TPayload | null
@@ -33,15 +33,6 @@ interface DialogStoreState {
   isDialogOpen: (id: DialogId) => boolean
   reset: () => void
 }
-
-const INITIAL_DIALOG_STORE_STATE = {
-  activeSurface: null,
-  runtimeContext: null,
-  registry: {},
-} as const satisfies Pick<
-  DialogStoreState,
-  'activeSurface' | 'runtimeContext' | 'registry'
->
 
 function getInitialDialogStoreState(): Pick<
   DialogStoreState,
@@ -261,5 +252,3 @@ export const useIsBlockingOverlayOpen = () =>
 export const dialogStoreForTests = {
   getState: () => dialogStore.getState(),
 }
-
-export { INITIAL_DIALOG_STORE_STATE }

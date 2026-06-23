@@ -1,6 +1,6 @@
 import type { DialogDefinition } from '@/core/dialog-contract'
 
-export const startOverDialogId = 'start-over' as const
+const startOverDialogId = 'start-over' as const
 
 export const startOverDialogDefinition = {
   id: startOverDialogId,
