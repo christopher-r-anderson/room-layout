@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, type RefObject } from 'react'
-import { announcementActions } from '@/editor-state/announcement-store'
-import { selectById } from '@/editor-state/selection-actions'
-import { previewFromCanvasKeyboard } from '@/editor-state/preview-actions'
+import { announcementActions } from '@/core/stores/announcement-store'
+import { selectById } from '@/core/operations/selection-actions'
+import { previewFromCanvasKeyboard } from '@/core/operations/preview-actions'
 import { sceneCommands } from '@/scene/scene-commands'
 import { sortSpatially } from '@/shared/lib/three/spatial-sort'
 

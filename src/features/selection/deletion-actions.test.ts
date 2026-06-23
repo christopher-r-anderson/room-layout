@@ -5,28 +5,28 @@ import {
   resetSceneStateStore,
   sceneStateActions,
   sceneStateStore,
-} from '@/editor-state/scene-state-store'
+} from '@/core/stores/scene-state-store'
 import {
   resetSelectionMetaStore,
   selectionMetaActions,
   selectionMetaStore,
-} from '@/editor-state/selection-meta-store'
+} from '@/core/stores/selection-meta-store'
 import {
   editorRuntimeActions,
   resetEditorRuntimeStore,
-} from '@/editor-state/editor-runtime-store'
-import { dialogActions } from '@/editor-state/dialog-store'
+} from '@/core/stores/editor-runtime-store'
+import { dialogActions } from '@/core/stores/dialog-store'
 import { sceneCommands } from '@/scene/scene-commands'
 import { DELETE_SELECTION_MISSING_MESSAGE } from '@/shared/messages/command-messages'
-import { announcementActions } from '@/editor-state/announcement-store'
-import { selectionEffects } from '@/editor-state/selection-effects'
+import { announcementActions } from '@/core/stores/announcement-store'
+import { selectionEffects } from '@/core/operations/selection-effects'
 import {
   confirmDeleteSelection,
   openDeleteDialog,
   openDeleteDialogFromRoomView,
 } from './deletion-actions'
 
-vi.mock('@/editor-state/announcement-store', () => ({
+vi.mock('@/core/stores/announcement-store', () => ({
   announcementActions: {
     announcePolite: vi.fn(),
     announceAssertive: vi.fn(),
@@ -36,7 +36,7 @@ vi.mock('@/editor-state/announcement-store', () => ({
   },
 }))
 
-vi.mock('@/editor-state/selection-effects', () => ({
+vi.mock('@/core/operations/selection-effects', () => ({
   selectionEffects: {
     notePendingSelection: vi.fn(),
     notePendingSource: vi.fn(),

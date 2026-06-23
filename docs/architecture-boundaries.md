@@ -10,25 +10,25 @@ Architecture boundaries are enforced by ESLint. This document is the policy. `es
 flowchart TD
   app["app\ncomposition and shell wiring"]
   features["features\neditor capabilities"]
-  state["editor-state\nstores, actions, contracts"]
+  core["core\nstores, operations, contracts"]
   shared["shared\nreusable infra and primitives"]
   scene["scene\nrendering and scene domain"]
   test["test\n test-only support"]
 
   app --> features
-  app --> state
+  app --> core
   app --> shared
   app --> scene
 
-  features --> state
+  features --> core
   features --> shared
   features -. approved scene contracts .-> scene
 
-  state --> shared
-  state -. scene contracts only .-> scene
+  core --> shared
+  core -. scene contracts only .-> scene
 
   scene --> shared
-  scene -. editor-state contracts only .-> state
+  scene -. core contracts only .-> core
 ```
 
 Notes:
@@ -41,8 +41,8 @@ Notes:
 
 - `src/app`: composition root, app shell wiring, runtime harness wiring.
 - `src/features`: user-facing editor capabilities and feature-local behavior.
-- `src/editor-state`: shared stores, actions, selectors, contracts, and shared state types.
-- `src/shared`: reusable runtime primitives and infra used by app/features/state/scene.
+- `src/core`: shared stores, actions, selectors, contracts, and shared state types.
+- `src/shared`: reusable runtime primitives and infra used by app/features/core/scene.
 - `src/scene`: scene rendering domain and scene internals.
 - `src/test`: test-only infrastructure.
 
@@ -53,23 +53,29 @@ For local context inside each area, see:
 
 - `src/app/README.md`
 - `src/features/README.md`
-- `src/editor-state/README.md`
+- `src/core/README.md`
 - `src/shared/README.md`
 - `src/scene/README.md`
 
 ## Placement Rules
 
 1. If code is consumed by both `app` and `features`, it cannot live in `app`.
-2. Put feature-internal orchestration in the owning feature folder. If logic coordinates multiple features, the coordinator lives in `editor-state`.
-3. Put cross-feature state **and** cross-cutting coordination (stores, actions, coordinator modules) in `editor-state`, not feature-local modules.
-4. Features must not import other features. `@/features/*` imports from within a feature are hard-banned in `eslint.config.js`. De-thread instead by reading a store, dispatching an `EditorCommand`, or importing an `editor-state` coordinator.
-5. Keep `app` composition-only: shell wiring, providers, and registry bootstrap. App does not own cross-cutting runtime coordination — that lives in `editor-state`.
-6. Keep `shared/ui` dependency-free from app/features/state/scene runtime code.
+2. Put feature-internal orchestration in the owning feature folder. If logic coordinates multiple features, it lives in `core/operations`.
+3. Put cross-feature state (`core/stores`) **and** cross-cutting operations (`core/operations`) in `core`, not feature-local modules.
+4. Features must not import other features. `@/features/*` imports from within a feature are hard-banned in `eslint.config.js`. De-thread instead by reading a store, dispatching an `EditorCommand`, or importing a `core` operation.
+5. Keep `app` composition-only: shell wiring, providers, and registry bootstrap. App does not own cross-cutting runtime operations — those live in `core/operations`.
+6. Keep `shared/ui` dependency-free from app/features/core/scene runtime code.
 7. Keep `shared/layout` lower-level than `app/chrome`.
 8. Keep scene internals in `scene/internal` and avoid importing them outside scene.
 9. Use approved scene contract imports outside scene, not arbitrary `@/scene/**` paths.
 10. Do not import `src/test` from runtime code.
-11. Keep dialog definition ownership in features (or shell-only app chrome when shell-specific), with app responsible for registry bootstrap composition and editor-state responsible for generic dialog orchestration only.
+11. Keep dialog definition ownership in features (or shell-only app chrome when shell-specific), with app responsible for registry bootstrap composition and core responsible for generic dialog orchestration only.
+
+> The cross-feature ban (rule 4) is the strict end of a deliberate dial, not a
+> law. If a feature ever grows a real public API that a sibling should build on,
+> the intended relaxation is per-feature public `index.ts` entrypoints (allow
+> importing a sibling's entrypoint, not its internals). It's set strict because a
+> ban is cheap to loosen later and costly to impose once sideways imports spread.
 
 ## Current Exceptions
 
@@ -85,8 +91,8 @@ These are temporary or intentionally narrow.
 2. Module public entrypoints
    - Introduce `index.ts` entrypoints for cross-layer modules that are imported externally.
    - Keep purely local modules private.
-3. Coordinator ownership (largely realized)
-   - The former app-level controllers have moved out of `app`: cross-cutting coordinators now live in `editor-state` and feature-internal orchestration in the owning feature. Convert any remaining app controllers as their seams clarify.
+3. Operation ownership (largely realized)
+   - The former app-level controllers have moved out of `app`: cross-cutting operations now live in `core/operations` and feature-internal orchestration in the owning feature. Convert any remaining app controllers as their seams clarify.
 4. Feature internal structure
    - Add internal subfolders only where feature size and churn justify it.
 5. Shared lib type ownership
@@ -99,4 +105,4 @@ These are temporary or intentionally narrow.
 - Agent operating contract and policy routing: `AGENTS.md`, `.agents/README.md`
 - Overlay model and behavior: `docs/overlay-interaction-model.md`
 - Selected toolbar placement details: `docs/selected-toolbar-placement.md`
-- Editor state details: `docs/editor-state-architecture.md`
+- Core architecture: `docs/core-architecture.md`

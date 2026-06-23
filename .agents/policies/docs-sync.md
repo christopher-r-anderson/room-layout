@@ -12,7 +12,7 @@ Canonical ownership:
 When to update docs in the same change:
 
 1. Architecture boundaries or allowed import surfaces change.
-2. Folder ownership changes (`app`, `features`, `editor-state`, `shared`, `scene`).
+2. Folder ownership changes (`app`, `features`, `core`, `shared`, `scene`).
 3. Validation expectations change (required checks, test lane selection).
 4. User-facing workflow docs become incorrect due to code changes.
 

@@ -4,7 +4,7 @@ import { createStore } from 'zustand/vanilla'
 import {
   sceneAssetsStore,
   useCatalogEntries,
-} from '@/editor-state/scene-assets-store'
+} from '@/core/stores/scene-assets-store'
 
 // Catalog-only UI state: which catalog entry the Add Furniture drawer will place.
 // Feature-local (not cross-cutting), but store-backed so the non-React add action

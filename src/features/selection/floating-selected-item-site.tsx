@@ -1,6 +1,6 @@
-import { useEditorInteractionsEnabled } from '@/editor-state/editor-runtime-store'
-import { useSelectedFurniture } from '@/editor-state/scene-state-store'
-import { useCommandDispatch } from '@/editor-state/command-dispatch-context'
+import { useEditorInteractionsEnabled } from '@/core/stores/editor-runtime-store'
+import { useSelectedFurniture } from '@/core/stores/scene-state-store'
+import { useCommandDispatch } from '@/core/commands/command-dispatch-context'
 import { useSelectedItemInteraction } from './selected-item-interaction-context'
 import {
   useSelectedItemActionsSizeRef,

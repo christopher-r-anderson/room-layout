@@ -7,11 +7,11 @@ import type { EnvironmentMaterialConfig } from '@/shared/lib/three/environment-m
 import {
   editorRuntimeActions,
   resetEditorRuntimeStore,
-} from '@/editor-state/editor-runtime-store'
+} from '@/core/stores/editor-runtime-store'
 import {
   resetSceneStateStore,
   sceneStateActions,
-} from '@/editor-state/scene-state-store'
+} from '@/core/stores/scene-state-store'
 import { useDraftPersistence } from './use-draft-persistence'
 
 type SaveSceneDraftArgs = [
@@ -25,7 +25,7 @@ type SaveSceneDraftArgs = [
 const saveSceneDraft = vi.fn<(...args: SaveSceneDraftArgs) => void>()
 const clearSceneDraft = vi.fn<() => void>()
 
-vi.mock('@/editor-state/scene-draft', () => ({
+vi.mock('@/core/persistence/scene-draft', () => ({
   saveSceneDraft: (...args: SaveSceneDraftArgs) => {
     saveSceneDraft(...args)
   },

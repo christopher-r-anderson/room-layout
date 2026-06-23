@@ -20,20 +20,20 @@ import {
   loadBooleanPreference,
   saveBooleanPreference,
 } from '@/shared/lib/ui/storage'
-import type { PanelInteractionSource } from '@/editor-state/types/interaction.types'
-import { selectById } from '@/editor-state/selection-actions'
-import { previewFromOutliner } from '@/editor-state/preview-actions'
+import type { PanelInteractionSource } from '@/core/types/interaction.types'
+import { selectById } from '@/core/operations/selection-actions'
+import { previewFromOutliner } from '@/core/operations/preview-actions'
 import {
   selectionMetaActions,
   useOutlinerFocusRequest,
-} from '@/editor-state/selection-meta-store'
+} from '@/core/stores/selection-meta-store'
 import {
   useItems,
   usePreviewedId,
   useSceneStateStore,
-} from '@/editor-state/scene-state-store'
-import { useEditorInteractionsEnabled } from '@/editor-state/editor-runtime-store'
-import { useIsBlockingOverlayOpen } from '@/editor-state/dialog-store'
+} from '@/core/stores/scene-state-store'
+import { useEditorInteractionsEnabled } from '@/core/stores/editor-runtime-store'
+import { useIsBlockingOverlayOpen } from '@/core/stores/dialog-store'
 
 const OUTLINER_EXPANDED_PREFERENCE_KEY = 'outliner-expanded'
 

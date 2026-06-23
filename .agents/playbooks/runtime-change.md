@@ -21,5 +21,5 @@ Validation:
 Review focus:
 
 - regressions in focus/keyboard/a11y behavior
-- boundary contract drift across app/features/state/scene
+- boundary contract drift across app/features/core/scene
 - stale test fixtures after model or state-shape changes

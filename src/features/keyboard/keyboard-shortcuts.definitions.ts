@@ -1,4 +1,4 @@
-import type { EditorCommand } from '@/editor-state/editor-command'
+import type { EditorCommand } from '@/core/commands/editor-command'
 import type { KeyCombo } from '@/shared/lib/ui/keyboard-shortcut-matcher'
 
 export type SuppressionMode = 'always-on-match' | 'on-execute'

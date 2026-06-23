@@ -1,4 +1,4 @@
-import type { DialogDefinition } from '@/editor-state/dialog-contract'
+import type { DialogDefinition } from '@/core/dialog-contract'
 
 export const catalogDialogId = 'catalog' as const
 

@@ -1,4 +1,4 @@
-import type { DialogDefinition } from '@/editor-state/dialog-contract'
+import type { DialogDefinition } from '@/core/dialog-contract'
 import { headerMoreActionsDialogDefinition } from '@/app/chrome/top-header/header-more-actions-dialog-definition'
 import { catalogDialogDefinition } from '@/features/catalog/catalog-dialog-definition'
 import { keyboardShortcutsDialogDefinition } from '@/features/keyboard/keyboard-shortcuts-dialog-definition'

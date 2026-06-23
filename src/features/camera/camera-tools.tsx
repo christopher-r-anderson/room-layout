@@ -8,7 +8,7 @@ import {
   IconFocus2,
 } from '@tabler/icons-react'
 import { ToolButton } from '@/shared/ui/tool-button'
-import { useCommandDispatch } from '@/editor-state/command-dispatch-context'
+import { useCommandDispatch } from '@/core/commands/command-dispatch-context'
 
 export interface CameraToolsProps {
   editorInteractionsEnabled: boolean

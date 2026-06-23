@@ -1,17 +1,17 @@
 import { resolvePositionFromWallClearances } from '@/shared/lib/three/wall-clearance'
-import { announcementActions } from '@/editor-state/announcement-store'
+import { announcementActions } from '@/core/stores/announcement-store'
 import {
   sceneStateActions,
   sceneStateStore,
   selectSelectedFurniture,
-} from '@/editor-state/scene-state-store'
-import { editorRuntimeStore } from '@/editor-state/editor-runtime-store'
-import { selectionMetaActions } from '@/editor-state/selection-meta-store'
+} from '@/core/stores/scene-state-store'
+import { editorRuntimeStore } from '@/core/stores/editor-runtime-store'
+import { selectionMetaActions } from '@/core/stores/selection-meta-store'
 import { sceneCommands } from '@/scene/scene-commands'
 import type {
   UpdateSelectedItemDetailsInput,
   UpdateSelectedItemDetailsResult,
-} from '@/editor-state/types/selected-item.types'
+} from '@/core/types/selected-item.types'
 import {
   formatSelectedItemDetailsBlockedMessage,
   formatSelectedItemDetailsInvalidValueMessage,

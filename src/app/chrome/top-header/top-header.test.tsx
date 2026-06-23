@@ -2,17 +2,17 @@
 
 import { render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { resetDialogStore } from '@/editor-state/dialog-store'
+import { resetDialogStore } from '@/core/stores/dialog-store'
 import {
   editorRuntimeActions,
   resetEditorRuntimeStore,
-} from '@/editor-state/editor-runtime-store'
-import { sceneStateActions } from '@/editor-state/scene-state-store'
-import { CommandDispatchProvider } from '@/editor-state/command-dispatch-provider'
+} from '@/core/stores/editor-runtime-store'
+import { sceneStateActions } from '@/core/stores/scene-state-store'
+import { CommandDispatchProvider } from '@/core/commands/command-dispatch-provider'
 import {
   resetSceneAssetsStore,
   sceneAssetsActions,
-} from '@/editor-state/scene-assets-store'
+} from '@/core/stores/scene-assets-store'
 import type { EnvironmentMaterialConfig } from '@/shared/lib/three/environment-materials'
 import { TopHeader } from './top-header'
 import type {

@@ -1,8 +1,8 @@
-import { dialogActions } from '@/editor-state/dialog-store'
-import { editorRuntimeStore } from '@/editor-state/editor-runtime-store'
-import { sceneStateActions } from '@/editor-state/scene-state-store'
-import { selectionMetaActions } from '@/editor-state/selection-meta-store'
-import { selectionEffects } from '@/editor-state/selection-effects'
+import { dialogActions } from '@/core/stores/dialog-store'
+import { editorRuntimeStore } from '@/core/stores/editor-runtime-store'
+import { sceneStateActions } from '@/core/stores/scene-state-store'
+import { selectionMetaActions } from '@/core/stores/selection-meta-store'
+import { selectionEffects } from '@/core/operations/selection-effects'
 import { sceneCommands } from '@/scene/scene-commands'
 import {
   ADD_FURNITURE_NO_SPACE_MESSAGE,

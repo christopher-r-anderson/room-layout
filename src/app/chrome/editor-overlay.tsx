@@ -2,7 +2,7 @@ import {
   dialogActions,
   useDialogOpen,
   useDialogPayload,
-} from '@/editor-state/dialog-store'
+} from '@/core/stores/dialog-store'
 import { DIALOG_IDS } from '@/app/dialogs/dialog-registry'
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
 import {
@@ -10,12 +10,12 @@ import {
   useStartupOverlayActive,
   useAssetError,
   useEditorInteractionsEnabled,
-} from '@/editor-state/editor-runtime-store'
-import { useHasSelection } from '@/editor-state/scene-state-store'
+} from '@/core/stores/editor-runtime-store'
+import { useHasSelection } from '@/core/stores/scene-state-store'
 import { CameraTools } from '@/features/camera/camera-tools'
 import { DeleteConfirmationDialog } from '@/features/selection/delete-confirmation-dialog'
 import { confirmDeleteSelection } from '@/features/selection/deletion-actions'
-import { requestAssetRetry } from '@/editor-state/startup-coordinator'
+import { requestAssetRetry } from '@/core/operations/startup-coordinator'
 import { StatusMessage } from './status-message'
 import { InitializationError } from '@/features/startup/initialization-error'
 import { InitializationProgress } from '@/features/startup/initialization-progress'

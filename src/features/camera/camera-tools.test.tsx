@@ -4,8 +4,8 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import type { ReactElement } from 'react'
-import { CommandDispatchProvider } from '@/editor-state/command-dispatch-provider'
-import type { CommandDispatch } from '@/editor-state/command-dispatch-context'
+import { CommandDispatchProvider } from '@/core/commands/command-dispatch-provider'
+import type { CommandDispatch } from '@/core/commands/command-dispatch-context'
 import { CameraTools } from './camera-tools'
 
 function renderWithDispatch(ui: ReactElement, dispatch: CommandDispatch) {

@@ -9,32 +9,32 @@ import {
   saveBooleanPreference,
 } from '@/shared/lib/ui/storage'
 import { DIALOG_IDS } from '@/app/dialogs/dialog-registry'
-import { dialogActions, resetDialogStore } from '@/editor-state/dialog-store'
+import { dialogActions, resetDialogStore } from '@/core/stores/dialog-store'
 import {
   editorRuntimeActions,
   resetEditorRuntimeStore,
-} from '@/editor-state/editor-runtime-store'
+} from '@/core/stores/editor-runtime-store'
 import {
   resetSceneStateStore,
   sceneStateActions,
-} from '@/editor-state/scene-state-store'
+} from '@/core/stores/scene-state-store'
 import {
   resetSelectionMetaStore,
   selectionMetaActions,
   selectionMetaStore,
-} from '@/editor-state/selection-meta-store'
-import type { ScenePanelReadModel } from '@/editor-state/types/scene-panel.types'
-import { selectById } from '@/editor-state/selection-actions'
-import { previewFromOutliner } from '@/editor-state/preview-actions'
+} from '@/core/stores/selection-meta-store'
+import type { ScenePanelReadModel } from '@/core/types/scene-panel.types'
+import { selectById } from '@/core/operations/selection-actions'
+import { previewFromOutliner } from '@/core/operations/preview-actions'
 import { Outliner } from './outliner'
 
-vi.mock('@/editor-state/selection-actions', () => ({
+vi.mock('@/core/operations/selection-actions', () => ({
   selectById: vi.fn(() => ({ ok: true, status: 'selected' }) as const),
   selectByCanvasPointer: vi.fn(),
   clearSelection: vi.fn(),
 }))
 
-vi.mock('@/editor-state/preview-actions', () => ({
+vi.mock('@/core/operations/preview-actions', () => ({
   previewFromOutliner: vi.fn(),
 }))
 

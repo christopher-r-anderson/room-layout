@@ -1,9 +1,6 @@
 import { useCallback } from 'react'
-import {
-  useItems,
-  useSelectedFurniture,
-} from '@/editor-state/scene-state-store'
-import { selectionMetaActions } from '@/editor-state/selection-meta-store'
+import { useItems, useSelectedFurniture } from '@/core/stores/scene-state-store'
+import { selectionMetaActions } from '@/core/stores/selection-meta-store'
 
 /**
  * Hook that provides a callback to request outliner focus with intelligent fallback.

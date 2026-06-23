@@ -3,9 +3,9 @@ import { preloadFurnitureCollections } from '@/scene/objects/furniture-catalog'
 import {
   editorRuntimeActions,
   useRetryToken,
-} from '@/editor-state/editor-runtime-store'
-import { sceneAssetsActions } from '@/editor-state/scene-assets-store'
-import type { StartupErrorKind } from '@/editor-state/types/startup.types'
+} from '@/core/stores/editor-runtime-store'
+import { sceneAssetsActions } from '@/core/stores/scene-assets-store'
+import type { StartupErrorKind } from '@/core/types/startup.types'
 import {
   fetchCatalogManifest,
   ManifestNetworkError,

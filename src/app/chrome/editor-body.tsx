@@ -12,33 +12,33 @@ import {
 import { flushSync } from 'react-dom'
 import { NeutralToneMapping, SRGBColorSpace } from 'three'
 import { Scene } from '@/scene/scene'
-import { useIsBlockingOverlayOpen } from '@/editor-state/dialog-store'
-import { useSelectedFurniture } from '@/editor-state/scene-state-store'
+import { useIsBlockingOverlayOpen } from '@/core/stores/dialog-store'
+import { useSelectedFurniture } from '@/core/stores/scene-state-store'
 import {
   selectionMetaActions,
   useRoomViewFocusRequest,
-} from '@/editor-state/selection-meta-store'
-import { useSceneIsAtDefaults } from '@/editor-state/use-scene-is-at-defaults'
+} from '@/core/stores/selection-meta-store'
+import { useSceneIsAtDefaults } from '@/core/operations/use-scene-is-at-defaults'
 import {
   useEditorInteractionsEnabled,
   useSceneEpoch,
   useStartupLoadingActive,
-} from '@/editor-state/editor-runtime-store'
+} from '@/core/stores/editor-runtime-store'
 import {
   useCatalogEntries,
   useCollections,
-} from '@/editor-state/scene-assets-store'
+} from '@/core/stores/scene-assets-store'
 import {
   completeAssetLoad,
   notifyAssetError,
-} from '@/editor-state/startup-coordinator'
+} from '@/core/operations/startup-coordinator'
 import {
   useAssertiveAnnouncement,
   usePoliteAnnouncement,
-} from '@/editor-state/announcement-store'
+} from '@/core/stores/announcement-store'
 import { useKeyboardShortcuts } from '@/features/keyboard/use-keyboard-shortcuts'
 import { useCameraKeyState } from '@/features/keyboard/use-camera-key-state'
-import { useCommandDispatch } from '@/editor-state/command-dispatch-context'
+import { useCommandDispatch } from '@/core/commands/command-dispatch-context'
 import { useEditorRefs } from '@/shared/providers/editor-refs-context'
 import { Announcer } from '@/features/scene-panel/announcer'
 import { Toaster } from '@/shared/ui/sonner'

@@ -5,15 +5,15 @@ import {
   dialogActions,
   dialogStoreForTests,
   resetDialogStore,
-} from '@/editor-state/dialog-store'
+} from '@/core/stores/dialog-store'
 import {
   editorRuntimeActions,
   resetEditorRuntimeStore,
-} from '@/editor-state/editor-runtime-store'
+} from '@/core/stores/editor-runtime-store'
 import {
   resetSceneStateStore,
   sceneStateActions,
-} from '@/editor-state/scene-state-store'
+} from '@/core/stores/scene-state-store'
 import { createHistoryState } from '@/shared/lib/ui/editor-history'
 import { DIALOG_IDS } from '@/app/dialogs/dialog-registry'
 import {

@@ -6,15 +6,15 @@ import { createHistoryState } from '@/shared/lib/ui/editor-history'
 import {
   resetSceneStateStore,
   sceneStateActions,
-} from '@/editor-state/scene-state-store'
-import { serializeSceneToUrl } from '@/editor-state/scene-url'
+} from '@/core/stores/scene-state-store'
+import { serializeSceneToUrl } from '@/core/persistence/scene-url'
 import { useShareController } from './use-share-controller'
 
-vi.mock('@/editor-state/scene-url', () => ({
+vi.mock('@/core/persistence/scene-url', () => ({
   serializeSceneToUrl: vi.fn(),
 }))
 
-vi.mock('@/editor-state/announcement-store', () => ({
+vi.mock('@/core/stores/announcement-store', () => ({
   announcementActions: {
     announcePolite: vi.fn(),
     announceAssertive: vi.fn(),

@@ -13,7 +13,7 @@ Contains
 Should not contain
 
 - Imports from `src/app` or `src/features`.
-- Direct usage of editor-state modules outside approved scene contracts.
+- Direct usage of core modules outside approved scene contracts.
 
 Guideline
 

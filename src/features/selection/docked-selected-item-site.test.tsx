@@ -6,18 +6,18 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { TooltipProvider } from '@/shared/ui/tooltip'
 import { EditorRefsProvider } from '@/shared/providers/editor-refs-provider'
 import { OverlayLayoutProvider } from '@/shared/layout/overlay-layout-provider'
-import { CommandDispatchProvider } from '@/editor-state/command-dispatch-provider'
-import type { CommandDispatch } from '@/editor-state/command-dispatch-context'
+import { CommandDispatchProvider } from '@/core/commands/command-dispatch-provider'
+import type { CommandDispatch } from '@/core/commands/command-dispatch-context'
 import { createHistoryState } from '@/shared/lib/ui/editor-history'
 import {
   editorRuntimeActions,
   resetEditorRuntimeStore,
-} from '@/editor-state/editor-runtime-store'
-import { resetDialogStore } from '@/editor-state/dialog-store'
+} from '@/core/stores/editor-runtime-store'
+import { resetDialogStore } from '@/core/stores/dialog-store'
 import {
   sceneStateActions,
   resetSceneStateStore,
-} from '@/editor-state/scene-state-store'
+} from '@/core/stores/scene-state-store'
 import { DockedSelectedItemSite } from './docked-selected-item-site'
 import { FloatingSelectedItemSite } from './floating-selected-item-site'
 import { SelectedItemInteractionProvider } from './selected-item-interaction-provider'

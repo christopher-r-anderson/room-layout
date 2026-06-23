@@ -1,1 +1,1 @@
-export type { StartupErrorKind } from '@/editor-state/types/startup.types'
+export type { StartupErrorKind } from '@/core/types/startup.types'

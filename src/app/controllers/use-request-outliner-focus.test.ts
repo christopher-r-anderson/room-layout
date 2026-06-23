@@ -4,12 +4,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook } from '@testing-library/react'
 import { useRequestOutlinerFocus } from '@/app/controllers/use-request-outliner-focus'
-import { selectionMetaActions } from '@/editor-state/selection-meta-store'
-import * as sceneStateStore from '@/editor-state/scene-state-store'
+import { selectionMetaActions } from '@/core/stores/selection-meta-store'
+import * as sceneStateStore from '@/core/stores/scene-state-store'
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
 
-vi.mock('@/editor-state/scene-state-store')
-vi.mock('@/editor-state/selection-meta-store', () => ({
+vi.mock('@/core/stores/scene-state-store')
+vi.mock('@/core/stores/selection-meta-store', () => ({
   selectionMetaActions: {
     requestOutlinerFocus: vi.fn(),
   },

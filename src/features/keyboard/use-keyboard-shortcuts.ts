@@ -1,6 +1,6 @@
 import { useEffect, useEffectEvent } from 'react'
-import type { EditorCommand } from '@/editor-state/editor-command'
-import type { CommandDispatch } from '@/editor-state/command-dispatch-context'
+import type { EditorCommand } from '@/core/commands/editor-command'
+import type { CommandDispatch } from '@/core/commands/command-dispatch-context'
 import {
   isContentEditableTarget,
   isDialogTarget,

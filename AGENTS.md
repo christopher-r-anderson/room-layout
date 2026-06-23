@@ -43,7 +43,7 @@ task-specific policy files.
 - Layer-local context:
   - `src/app/README.md`
   - `src/features/README.md`
-  - `src/editor-state/README.md`
+  - `src/core/README.md`
   - `src/shared/README.md`
   - `src/scene/README.md`
 

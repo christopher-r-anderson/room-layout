@@ -11,9 +11,9 @@ import {
   DrawerTrigger,
 } from '@/shared/ui/drawer'
 import { cn } from '@/shared/lib/utils'
-import { useDialogOpen } from '@/editor-state/dialog-store'
-import { useEditorInteractionsEnabled } from '@/editor-state/editor-runtime-store'
-import { useCatalogEntries } from '@/editor-state/scene-assets-store'
+import { useDialogOpen } from '@/core/stores/dialog-store'
+import { useEditorInteractionsEnabled } from '@/core/stores/editor-runtime-store'
+import { useCatalogEntries } from '@/core/stores/scene-assets-store'
 import { addFurniture, setCatalogDrawerOpen } from './catalog-actions'
 import { catalogDialogId } from './catalog-dialog-definition'
 import {

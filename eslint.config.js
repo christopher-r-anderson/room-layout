@@ -12,8 +12,8 @@ const RUNTIME_APP_FEATURE_EDITOR_SCENE_IMPORT_GROUP = [
   '@/app/**',
   '@/features',
   '@/features/**',
-  '@/editor-state',
-  '@/editor-state/**',
+  '@/core',
+  '@/core/**',
   '@/scene',
   '@/scene/**',
 ]
@@ -32,10 +32,9 @@ const SCENE_ALLOWED_RUNTIME_IMPORTS =
 const RESTRICT_SCENE_IMPORTS_FOR_FEATURES_AND_SHARED = `^@/scene/(?!${SCENE_ALLOWED_RUNTIME_IMPORTS}).+`
 const RESTRICT_SCENE_IMPORTS_FOR_APP = `^@/scene/(?!scene$|${SCENE_ALLOWED_RUNTIME_IMPORTS}).+`
 
-const RESTRICT_EDITOR_STATE_IMPORTS_FOR_SCENE =
-  '^@/editor-state/(?!scene-contracts$).+'
+const RESTRICT_EDITOR_STATE_IMPORTS_FOR_SCENE = '^@/core/(?!scene-contracts$).+'
 const RESTRICT_EDITOR_STATE_IMPORTS_FOR_SCENE_TESTS =
-  '^@/editor-state/(?!scene-contracts$|scene-test-support$).+'
+  '^@/core/(?!scene-contracts$|scene-test-support$).+'
 
 export default defineConfig([
   // Flat config replaces rule values from later matching blocks.
@@ -78,9 +77,9 @@ export default defineConfig([
         {
           paths: [
             {
-              name: '@/editor-state',
+              name: '@/core',
               message:
-                'Scene code must import editor-state only via @/editor-state/scene-contracts.',
+                'Scene code must import core only via @/core/scene-contracts.',
             },
           ],
           patterns: [
@@ -92,7 +91,7 @@ export default defineConfig([
             {
               regex: RESTRICT_EDITOR_STATE_IMPORTS_FOR_SCENE,
               message:
-                'Scene code must import editor-state only via @/editor-state/scene-contracts.',
+                'Scene code must import core only via @/core/scene-contracts.',
             },
           ],
         },
@@ -109,9 +108,9 @@ export default defineConfig([
         {
           paths: [
             {
-              name: '@/editor-state',
+              name: '@/core',
               message:
-                'Scene tests must import editor-state via @/editor-state/scene-contracts or @/editor-state/scene-test-support only.',
+                'Scene tests must import core via @/core/scene-contracts or @/core/scene-test-support only.',
             },
           ],
           patterns: [
@@ -123,7 +122,7 @@ export default defineConfig([
             {
               regex: RESTRICT_EDITOR_STATE_IMPORTS_FOR_SCENE_TESTS,
               message:
-                'Scene tests must import editor-state via @/editor-state/scene-contracts or @/editor-state/scene-test-support only.',
+                'Scene tests must import core via @/core/scene-contracts or @/core/scene-test-support only.',
             },
           ],
         },
@@ -133,7 +132,7 @@ export default defineConfig([
 
   // Editor-state boundaries.
   {
-    files: ['src/editor-state/**/*.{ts,tsx}'],
+    files: ['src/core/**/*.{ts,tsx}'],
     rules: {
       'no-restricted-imports': [
         'error',
@@ -141,12 +140,11 @@ export default defineConfig([
           patterns: [
             {
               group: ['@/app', '@/app/**', '@/features', '@/features/**'],
-              message:
-                'src/editor-state must not import from src/app or src/features.',
+              message: 'src/core must not import from src/app or src/features.',
             },
             {
               group: ['@/shared/ui', '@/shared/ui/**'],
-              message: 'src/editor-state must not import UI component modules.',
+              message: 'src/core must not import UI component modules.',
             },
             {
               group: RUNTIME_TEST_IMPORT_GROUP,
@@ -172,13 +170,13 @@ export default defineConfig([
                 '@/app/**',
                 '@/features',
                 '@/features/**',
-                '@/editor-state',
-                '@/editor-state/**',
+                '@/core',
+                '@/core/**',
                 '@/scene',
                 '@/scene/**',
               ],
               message:
-                'Shared UI primitives must not import app, features, editor-state, or scene modules.',
+                'Shared UI primitives must not import app, features, core, or scene modules.',
             },
             {
               group: RUNTIME_TEST_IMPORT_GROUP,
@@ -220,7 +218,7 @@ export default defineConfig([
             {
               regex: '^@/features/',
               message:
-                'Features must not import other features. Move shared coordination/state to src/editor-state (or pure utilities to src/shared); features depend downward only.',
+                'Features must not import other features. Move shared coordination/state to src/core (or pure utilities to src/shared); features depend downward only.',
             },
           ],
         },
@@ -301,7 +299,7 @@ export default defineConfig([
             {
               group: RUNTIME_APP_FEATURE_EDITOR_SCENE_IMPORT_GROUP,
               message:
-                'src/shared/hooks is a low-level shared layer and must not import from app, features, editor-state, or scene modules.',
+                'src/shared/hooks is a low-level shared layer and must not import from app, features, core, or scene modules.',
             },
             {
               regex: PARENT_RELATIVE_IMPORT_REGEX,
@@ -330,7 +328,7 @@ export default defineConfig([
             {
               group: RUNTIME_APP_FEATURE_EDITOR_SCENE_IMPORT_GROUP,
               message:
-                'src/shared/providers is a low-level shared layer and must not import from app, features, editor-state, or scene modules.',
+                'src/shared/providers is a low-level shared layer and must not import from app, features, core, or scene modules.',
             },
             {
               regex: PARENT_RELATIVE_IMPORT_REGEX,
@@ -359,7 +357,7 @@ export default defineConfig([
             {
               group: RUNTIME_APP_FEATURE_EDITOR_SCENE_IMPORT_GROUP,
               message:
-                'src/shared/messages is a low-level shared layer and must not import from app, features, editor-state, or scene modules.',
+                'src/shared/messages is a low-level shared layer and must not import from app, features, core, or scene modules.',
             },
             {
               regex: PARENT_RELATIVE_IMPORT_REGEX,
@@ -391,11 +389,11 @@ export default defineConfig([
                 '@/app/**',
                 '@/features',
                 '@/features/**',
-                '@/editor-state',
-                '@/editor-state/**',
+                '@/core',
+                '@/core/**',
               ],
               message:
-                'src/shared/lib must not import from app, features, or editor-state modules.',
+                'src/shared/lib must not import from app, features, or core modules.',
             },
             {
               regex: RESTRICT_SCENE_IMPORTS_FOR_FEATURES_AND_SHARED,

@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
-import { announcementActions } from '@/editor-state/announcement-store'
-import { sceneStateActions, useItems } from '@/editor-state/scene-state-store'
-import { serializeSceneToUrl } from '@/editor-state/scene-url'
+import { announcementActions } from '@/core/stores/announcement-store'
+import { sceneStateActions, useItems } from '@/core/stores/scene-state-store'
+import { serializeSceneToUrl } from '@/core/persistence/scene-url'
 
 interface ShareControllerOptions {
   activeFloorFinishId: string

@@ -10,24 +10,24 @@ import {
   dialogActions,
   useDialogOpen,
   useIsBlockingOverlayOpen,
-} from '@/editor-state/dialog-store'
+} from '@/core/stores/dialog-store'
 import { DIALOG_IDS } from '@/app/dialogs/dialog-registry'
 import {
   useEditorInteractionsEnabled,
   useFloorFinishLoading,
-} from '@/editor-state/editor-runtime-store'
-import { useEnvironmentConfig } from '@/editor-state/scene-assets-store'
-import { useSceneIsAtDefaults } from '@/editor-state/use-scene-is-at-defaults'
-import { resetSceneToDefaults } from '@/editor-state/scene-reset'
-import { announcementActions } from '@/editor-state/announcement-store'
-import { useCommandDispatch } from '@/editor-state/command-dispatch-context'
+} from '@/core/stores/editor-runtime-store'
+import { useEnvironmentConfig } from '@/core/stores/scene-assets-store'
+import { useSceneIsAtDefaults } from '@/core/operations/use-scene-is-at-defaults'
+import { resetSceneToDefaults } from '@/core/persistence/scene-reset'
+import { announcementActions } from '@/core/stores/announcement-store'
+import { useCommandDispatch } from '@/core/commands/command-dispatch-context'
 import { useActiveFinishIds } from '@/app/controllers/_shared/use-active-finish-ids'
 import {
   sceneStateActions,
   useFloorFinishId,
   useHistoryAvailability,
   useWallFinishId,
-} from '@/editor-state/scene-state-store'
+} from '@/core/stores/scene-state-store'
 import { toast } from 'sonner'
 import { topHeaderDialogOpenChange } from './top-header-dialog-bindings'
 import { headerFocusRegistry } from './header-focus-registry'

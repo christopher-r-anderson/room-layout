@@ -3,20 +3,20 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   resetSceneStateStore,
   sceneStateStore,
-} from '@/editor-state/scene-state-store'
+} from '@/core/stores/scene-state-store'
 import {
   resetSelectionMetaStore,
   selectionMetaStore,
-} from '@/editor-state/selection-meta-store'
+} from '@/core/stores/selection-meta-store'
 import {
   editorRuntimeActions,
   resetEditorRuntimeStore,
-} from '@/editor-state/editor-runtime-store'
+} from '@/core/stores/editor-runtime-store'
 import {
   resetSceneAssetsStore,
   sceneAssetsActions,
-} from '@/editor-state/scene-assets-store'
-import { selectionEffects } from '@/editor-state/selection-effects'
+} from '@/core/stores/scene-assets-store'
+import { selectionEffects } from '@/core/operations/selection-effects'
 import { sceneCommands } from '@/scene/scene-commands'
 import type { FurnitureCatalogEntry } from '@/scene/objects/furniture-catalog'
 import {
@@ -26,7 +26,7 @@ import {
 import { resetCatalogSelectionStore } from './catalog-selection-store'
 import { addFurniture } from './catalog-actions'
 
-vi.mock('@/editor-state/selection-effects', () => ({
+vi.mock('@/core/operations/selection-effects', () => ({
   selectionEffects: {
     notePendingSelection: vi.fn(),
     notePendingSource: vi.fn(),

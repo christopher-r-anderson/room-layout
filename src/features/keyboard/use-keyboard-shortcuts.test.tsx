@@ -4,7 +4,7 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useEffect, useRef } from 'react'
 import { describe, expect, it, vi } from 'vitest'
-import type { EditorCommand } from '@/editor-state/editor-command'
+import type { EditorCommand } from '@/core/commands/editor-command'
 import { useKeyboardShortcuts } from './use-keyboard-shortcuts'
 
 const createDispatchSpy = () => vi.fn<(command: EditorCommand) => void>()

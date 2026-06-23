@@ -1,7 +1,7 @@
-import type { DialogRuntimeContext } from '@/editor-state/dialog-contract'
-import { dialogActions } from '@/editor-state/dialog-store'
-import { editorRuntimeStore } from '@/editor-state/editor-runtime-store'
-import { sceneStateStore } from '@/editor-state/scene-state-store'
+import type { DialogRuntimeContext } from '@/core/dialog-contract'
+import { dialogActions } from '@/core/stores/dialog-store'
+import { editorRuntimeStore } from '@/core/stores/editor-runtime-store'
+import { sceneStateStore } from '@/core/stores/scene-state-store'
 import { DIALOG_DEFINITIONS } from './dialog-registry'
 
 interface BuildDialogRuntimeContextOptions {

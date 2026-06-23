@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   dialogActions,
   useIsBlockingOverlayOpen,
-} from '@/editor-state/dialog-store'
+} from '@/core/stores/dialog-store'
 import { DIALOG_IDS } from '@/app/dialogs/dialog-registry'
 import {
   sceneStateActions,
@@ -10,22 +10,25 @@ import {
   usePreviewedId,
   useSelectedFurniture,
   useWallFinishId,
-} from '@/editor-state/scene-state-store'
-import { announcementActions } from '@/editor-state/announcement-store'
+} from '@/core/stores/scene-state-store'
+import { announcementActions } from '@/core/stores/announcement-store'
 import {
   clearPreviewOnCanvasMiss,
   previewFromCanvasKeyboard,
   previewFromScene,
-} from '@/editor-state/preview-actions'
-import { usePreviewReconciler } from '@/editor-state/use-preview-reconciler'
-import { getSceneIsAtDefaults } from '@/editor-state/use-scene-is-at-defaults'
-import { startSelectionEffectsReconciler } from '@/editor-state/selection-effects'
+} from '@/core/operations/preview-actions'
+import { usePreviewReconciler } from '@/core/operations/use-preview-reconciler'
+import { getSceneIsAtDefaults } from '@/core/operations/use-scene-is-at-defaults'
+import { startSelectionEffectsReconciler } from '@/core/operations/selection-effects'
 import {
   clearSelection,
   selectByCanvasPointer,
-} from '@/editor-state/selection-actions'
-import { moveSelection, rotateSelection } from '@/editor-state/movement-actions'
-import { redo, undo } from '@/editor-state/history-actions'
+} from '@/core/operations/selection-actions'
+import {
+  moveSelection,
+  rotateSelection,
+} from '@/core/operations/movement-actions'
+import { redo, undo } from '@/core/operations/history-actions'
 import {
   openDeleteDialog,
   openDeleteDialogFromRoomView,
@@ -33,14 +36,14 @@ import {
 import { useShareController } from '@/app/controllers/use-share-controller'
 import { useCanvasKeyboardController } from '@/app/controllers/use-canvas-keyboard-controller'
 import { EditorRefsProvider } from '@/shared/providers/editor-refs-provider'
-import { CommandDispatchProvider } from '@/editor-state/command-dispatch-provider'
-import { useCommandDispatchValue } from '@/editor-state/command-dispatch-context'
-import type { EditorCommandApi } from '@/editor-state/editor-command'
+import { CommandDispatchProvider } from '@/core/commands/command-dispatch-provider'
+import { useCommandDispatchValue } from '@/core/commands/command-dispatch-context'
+import type { EditorCommandApi } from '@/core/commands/editor-command'
 import {
   editorRuntimeActions,
   useEditorInteractionsEnabled,
-} from '@/editor-state/editor-runtime-store'
-import { useEnvironmentConfig } from '@/editor-state/scene-assets-store'
+} from '@/core/stores/editor-runtime-store'
+import { useEnvironmentConfig } from '@/core/stores/scene-assets-store'
 import { TooltipProvider } from '@/shared/ui/tooltip'
 import { useStartupBootstrap } from '@/features/startup/use-startup-bootstrap'
 import { EditorBody } from './chrome/editor-body'
@@ -49,7 +52,7 @@ import { findFirstActionableInspectorControl } from './chrome/focusable-controls
 import {
   selectionMetaActions,
   useOutlinerFocusRequest,
-} from '@/editor-state/selection-meta-store'
+} from '@/core/stores/selection-meta-store'
 import { useRequestOutlinerFocus } from '@/app/controllers/use-request-outliner-focus'
 import { perfCounters } from '@/shared/debug/perf-counters'
 import { useDraftPersistence } from '@/features/url-scene/use-draft-persistence'

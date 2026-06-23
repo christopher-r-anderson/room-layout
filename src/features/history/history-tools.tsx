@@ -1,7 +1,7 @@
 import { ButtonGroup } from '@/shared/ui/button-group'
 import { IconArrowBackUp, IconArrowForwardUp } from '@tabler/icons-react'
 import { ToolButton } from '@/shared/ui/tool-button'
-import { useCommandDispatch } from '@/editor-state/command-dispatch-context'
+import { useCommandDispatch } from '@/core/commands/command-dispatch-context'
 import type { ComponentProps } from 'react'
 
 export function HistoryTools({

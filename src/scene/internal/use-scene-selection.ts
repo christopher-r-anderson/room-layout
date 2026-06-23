@@ -1,10 +1,7 @@
 import { useCallback, useMemo, useRef, useState, type RefObject } from 'react'
 import { type Object3D } from 'three'
 import { getMeshes } from '@/shared/lib/three/get-meshes'
-import {
-  sceneStateActions,
-  useSelectedId,
-} from '@/editor-state/scene-contracts'
+import { sceneStateActions, useSelectedId } from '@/core/scene-contracts'
 import type { FurnitureItem } from '../objects/furniture.types'
 
 interface SceneSelectionState {

@@ -3,12 +3,12 @@
 import { act, renderHook } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { sceneCommands } from '@/scene/scene-commands'
-import { announcementActions } from '@/editor-state/announcement-store'
-import { selectById } from '@/editor-state/selection-actions'
-import { previewFromCanvasKeyboard } from '@/editor-state/preview-actions'
+import { announcementActions } from '@/core/stores/announcement-store'
+import { selectById } from '@/core/operations/selection-actions'
+import { previewFromCanvasKeyboard } from '@/core/operations/preview-actions'
 import { useCanvasKeyboardController } from './use-canvas-keyboard-controller'
 
-vi.mock('@/editor-state/announcement-store', () => ({
+vi.mock('@/core/stores/announcement-store', () => ({
   announcementActions: {
     announcePolite: vi.fn(),
     announceAssertive: vi.fn(),
@@ -18,13 +18,13 @@ vi.mock('@/editor-state/announcement-store', () => ({
   },
 }))
 
-vi.mock('@/editor-state/selection-actions', () => ({
+vi.mock('@/core/operations/selection-actions', () => ({
   selectById: vi.fn(() => ({ ok: true, status: 'selected' }) as const),
   selectByCanvasPointer: vi.fn(),
   clearSelection: vi.fn(),
 }))
 
-vi.mock('@/editor-state/preview-actions', () => ({
+vi.mock('@/core/operations/preview-actions', () => ({
   previewFromCanvasKeyboard: vi.fn(),
 }))
 

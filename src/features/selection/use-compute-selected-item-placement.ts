@@ -4,8 +4,8 @@ import { useElementSize } from '@/shared/hooks/use-element-size'
 import { useEditorRefs } from '@/shared/providers/editor-refs-context'
 import { useOverlayLayout } from '@/shared/layout/overlay-layout-context'
 import { useHeaderLayoutMode } from '@/shared/layout/use-header-layout-mode'
-import { useSelectedFurniture } from '@/editor-state/scene-state-store'
-import { useToolbarGeometry } from '@/editor-state/selection-meta-store'
+import { useSelectedFurniture } from '@/core/stores/scene-state-store'
+import { useToolbarGeometry } from '@/core/stores/selection-meta-store'
 import {
   computeSelectedToolbarPlacement,
   type ToolbarFloatingCandidateId,

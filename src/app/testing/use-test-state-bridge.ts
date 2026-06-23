@@ -7,8 +7,8 @@ import {
 import {
   editorRuntimeStore,
   type RestoreOutcome,
-} from '@/editor-state/editor-runtime-store'
-import { sceneStateStore } from '@/editor-state/scene-state-store'
+} from '@/core/stores/editor-runtime-store'
+import { sceneStateStore } from '@/core/stores/scene-state-store'
 import { sceneCommands } from '@/scene/scene-commands'
 import {
   type PerfCounterSnapshot,

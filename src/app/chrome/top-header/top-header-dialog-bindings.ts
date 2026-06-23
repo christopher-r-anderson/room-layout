@@ -1,6 +1,6 @@
 import type { AppDialogOpenChange } from '@/app/dialogs/dialog-requests'
 import { DIALOG_IDS } from '@/app/dialogs/dialog-registry'
-import { dialogActions } from '@/editor-state/dialog-store'
+import { dialogActions } from '@/core/stores/dialog-store'
 
 /**
  * Stable DOM id for the mobile "More actions" drawer content. It is referenced

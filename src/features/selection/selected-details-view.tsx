@@ -3,7 +3,7 @@ import type {
   SelectedItemDetailField,
   UpdateSelectedItemDetailsInput,
   UpdateSelectedItemDetailsResult,
-} from '@/editor-state/types/selected-item.types'
+} from '@/core/types/selected-item.types'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
 import { cn } from '@/shared/lib/utils'

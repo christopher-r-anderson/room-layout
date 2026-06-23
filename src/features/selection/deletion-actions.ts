@@ -1,16 +1,16 @@
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
-import { announcementActions } from '@/editor-state/announcement-store'
-import { dialogActions } from '@/editor-state/dialog-store'
-import { editorRuntimeStore } from '@/editor-state/editor-runtime-store'
+import { announcementActions } from '@/core/stores/announcement-store'
+import { dialogActions } from '@/core/stores/dialog-store'
+import { editorRuntimeStore } from '@/core/stores/editor-runtime-store'
 import {
   sceneStateActions,
   sceneStateStore,
-} from '@/editor-state/scene-state-store'
+} from '@/core/stores/scene-state-store'
 import {
   selectionMetaActions,
   selectionMetaStore,
-} from '@/editor-state/selection-meta-store'
-import { selectionEffects } from '@/editor-state/selection-effects'
+} from '@/core/stores/selection-meta-store'
+import { selectionEffects } from '@/core/operations/selection-effects'
 import { sceneCommands } from '@/scene/scene-commands'
 import { DELETE_SELECTION_MISSING_MESSAGE } from '@/shared/messages/command-messages'
 import { deleteDialogId } from './delete-dialog-definition'

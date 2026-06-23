@@ -9,7 +9,7 @@ Layer intent:
 
 - `src/app`: composition and shell wiring.
 - `src/features`: feature-owned user-facing capability.
-- `src/editor-state`: shared stores, actions, and contracts.
+- `src/core`: shared stores, actions, and contracts.
 - `src/shared`: reusable runtime primitives and infra.
 - `src/scene`: rendering and scene domain internals.
 - `src/test`: test-only support.
@@ -21,14 +21,14 @@ Placement rules:
 
 1. If consumed by multiple features, do not keep it in one feature folder.
 2. If consumed by both app and features, do not keep it in app.
-3. Cross-cutting coordination (cross-feature stores, actions, coordinators) lives
-   in `editor-state`. App is composition-only.
+3. Cross-cutting operations (cross-feature stores, actions) live
+   in `core`. App is composition-only.
 4. Features must not import other features (`@/features/*` is hard-banned);
-   coordinate via a store, an `EditorCommand`, or an `editor-state` coordinator.
+   coordinate via a store, an `EditorCommand`, or a `core` operation.
 5. Keep scene internals in `src/scene/internal`.
 6. Outside scene, import only approved scene contracts.
 7. Do not import runtime code from `src/test`.
-8. Keep `shared/ui` free of app/features/state/scene runtime dependencies.
+8. Keep `shared/ui` free of app/features/core/scene runtime dependencies.
 
 Move/refactor guidance:
 
