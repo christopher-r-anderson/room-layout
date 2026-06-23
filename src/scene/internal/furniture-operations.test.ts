@@ -21,14 +21,14 @@ const layoutMocks = vi.hoisted(() => ({
   resolveRotatedFurnitureTransform: vi.fn(),
 }))
 
-vi.mock('@/shared/lib/three/furniture-spawn', () => ({
+vi.mock('@/domain/geometry/furniture-spawn', () => ({
   findFurnitureSpawnPosition: spawnMocks.findFurnitureSpawnPosition,
 }))
 
-vi.mock('@/shared/lib/three/furniture-layout', async () => {
+vi.mock('@/domain/geometry/furniture-layout', async () => {
   const actual = await vi.importActual<
-    typeof import('@/shared/lib/three/furniture-layout')
-  >('@/shared/lib/three/furniture-layout')
+    typeof import('@/domain/geometry/furniture-layout')
+  >('@/domain/geometry/furniture-layout')
 
   return {
     ...actual,

@@ -7,7 +7,7 @@ import {
 import {
   resolveMovedFurniturePosition,
   type LayoutBounds,
-} from '@/shared/lib/three/furniture-layout'
+} from '@/domain/geometry/furniture-layout'
 import {
   finalizeHistoryPresent,
   type HistoryState,

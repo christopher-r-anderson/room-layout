@@ -1,4 +1,4 @@
-import { resolvePositionFromWallClearances } from '@/shared/lib/three/wall-clearance'
+import { resolvePositionFromWallClearances } from '@/domain/geometry/wall-clearance'
 import { feedbackActions } from '@/core/stores/feedback-store'
 import {
   sceneDocumentStore,

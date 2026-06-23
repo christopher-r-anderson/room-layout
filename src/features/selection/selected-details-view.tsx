@@ -7,7 +7,7 @@ import type {
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import type { FurnitureItem } from '@/domain/furniture'
 import { cn } from '@/shared/lib/utils'
-import { getWallClearances } from '@/shared/lib/three/wall-clearance'
+import { getWallClearances } from '@/domain/geometry/wall-clearance'
 import {
   RotateCounterclockwiseButton,
   RotateClockwiseButton,

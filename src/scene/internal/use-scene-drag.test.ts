@@ -5,7 +5,7 @@ import { describe, expect, it, beforeEach, vi } from 'vitest'
 import { Ray, Vector3 } from 'three'
 import type { HistoryState } from '@/shared/lib/ui/editor-history'
 import { useSceneDrag } from './use-scene-drag'
-import type { LayoutBounds } from '@/shared/lib/three/furniture-layout'
+import type { LayoutBounds } from '@/domain/geometry/furniture-layout'
 import type { FurnitureItem } from '@/domain/furniture'
 
 const {
@@ -23,7 +23,7 @@ vi.mock('@/scene/internal/three/furniture-drag', () => ({
   getDraggedFurniturePosition: mockGetDraggedFurniturePosition,
 }))
 
-vi.mock('@/shared/lib/three/furniture-layout', () => ({
+vi.mock('@/domain/geometry/furniture-layout', () => ({
   resolveMovedFurniturePosition: mockResolveMovedFurniturePosition,
 }))
 

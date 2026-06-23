@@ -22,7 +22,7 @@ import {
   resolveAbsoluteFurnitureTransform,
   resolveMovedFurniturePosition,
   type LayoutBounds,
-} from '@/shared/lib/three/furniture-layout'
+} from '@/domain/geometry/furniture-layout'
 import { commitHistoryPresent } from '@/shared/lib/ui/editor-history'
 import type { FurnitureInstance } from '@/domain/furniture'
 import type {

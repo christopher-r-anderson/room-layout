@@ -1,8 +1,8 @@
-import { findFurnitureSpawnPosition } from '@/shared/lib/three/furniture-spawn'
+import { findFurnitureSpawnPosition } from '@/domain/geometry/furniture-spawn'
 import {
   resolveRotatedFurnitureTransform,
   type LayoutBounds,
-} from '@/shared/lib/three/furniture-layout'
+} from '@/domain/geometry/furniture-layout'
 import {
   commitHistoryPresent,
   replaceHistoryPresent,
