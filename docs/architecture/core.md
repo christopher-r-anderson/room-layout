@@ -26,26 +26,34 @@ Two concepts have their own docs:
 Each store is a Zustand vanilla store exposing selector hooks. "Written by" names
 the only modules that should mutate it.
 
-- **`scene-state-store`** — the app-facing scene **data model**: furniture
+- **`scene-document-store`** — the app-facing scene **data model**: furniture
   history (the undo/redo timeline), selection id, preview id, drag state,
-  finishes, editor messages. Written by scene (publishing committed results up
-  through `scene-contracts`) and by core operations. Ownership vs. the scene
-  itself is the subject of [scene-and-core.md](scene-and-core.md).
-- **`editor-runtime-store`** — the single owner of the startup phase machine
+  finishes, and the floor-finish loading flag. Written by scene (publishing
+  committed results up through `scene-contracts`) and by core operations.
+  Ownership vs. the scene itself is the subject of
+  [scene-and-core.md](scene-and-core.md).
+- **`editor-lifecycle-store`** — the single owner of the startup phase machine
   (`loading | ready | errored`), asset errors, restore outcome/attempt tracking,
-  floor-finish loading, and the startup-cycle counters `sceneEpoch` (Scene
-  remount key) and `retryToken` (re-triggers the manifest fetch). Written by the
-  startup bootstrap and `startup-coordinator`.
-- **`scene-assets-store`** — the startup-loaded catalog manifest (catalog,
+  and the startup-cycle counters `sceneEpoch` (Scene remount key) and
+  `retryToken` (re-triggers the manifest fetch). `isEditorInteractive()` is the
+  shared non-React readiness predicate operations gate on. Written by the startup
+  bootstrap and `startup-coordinator`.
+- **`assets-store`** — the startup-loaded catalog manifest (catalog,
   collections, environment config). Lets features read catalog/finishes through
   narrow hooks instead of threaded props. Written by the startup bootstrap.
-- **`selection-meta-store`** — selection metadata and focus-intent tokens
-  (outliner and room-view focus handoff). Written by core operations and scene.
+- **`selection-focus-store`** — selection provenance (`selectedSource`, read to
+  decide post-delete focus) plus focus-intent tokens (outliner and room-view
+  focus handoff). The selection _pointer_ lives in `scene-document-store`; this
+  is the view-side routing reconciled on top of it. Written by core operations.
+- **`toolbar-geometry-store`** — the selected item's projected toolbar geometry,
+  a one-writer (scene raf loop) / one-reader (placement hook) data pipe kept
+  apart from selection focus routing. Written by scene via `scene-contracts`.
 - **`dialog-store`** — generic active-surface dialog state, open/close
   operations, and dialog-open selectors. Model and invariants live in
   [dialogs-and-overlays.md](dialogs-and-overlays.md). Written by dialog actions.
-- **`announcement-store`** — polite/assertive a11y announcements and the
-  movement-announcement queue. Written by operations and features.
+- **`feedback-store`** — transient user-facing feedback channels: polite/
+  assertive a11y announcements (plus the movement-announcement queue) and the
+  visible `statusMessage` status line. Written by operations and features.
 
 ## Operations
 
@@ -62,13 +70,19 @@ operation, never by importing a sibling feature.
   cells plus a thin reconciler effect.
 - `startup-coordinator` — `completeAssetLoad` (one-time restore + mark ready),
   `notifyAssetError`, `requestAssetRetry`. Sources catalog/finishes from
-  `scene-assets-store`, drives `editor-runtime-store`. The React-coupled manifest
+  `assets-store`, drives `editor-lifecycle-store`. The React-coupled manifest
   fetch lives in the feature hook `use-startup-bootstrap`, keyed on `retryToken`.
 - `selection-effects` — pending selection/source/focus intent held in module
-  cells and reconciled via a `scene-state-store` subscription started once at
+  cells and reconciled via a `scene-document-store` subscription started once at
   startup (`startSelectionEffectsReconciler`). Uses `queueMicrotask` to keep
-  note-before-reconcile ordering against synchronous `sceneCommands` writes. No
-  React surface. (The most intricate operation — read it before changing it.)
+  note-before-reconcile ordering against synchronous `sceneCommands` writes.
+  `selectedSource` is written twice on purpose: eagerly by the selection ops for
+  an immediate value, then again by the reconciler once the scene-driven
+  `selectedId` settles. That double write is the deliberate cost of selection
+  identity living in `scene-document-store` while its provenance lives in
+  `selection-focus-store` — the scene drives the id asynchronously, so source can
+  only be applied as pending intent on top. No React surface. (The most intricate
+  operation — read it before changing it.)
 
 Feature-internal orchestration (e.g. `features/selection/deletion-actions`,
 `features/catalog/catalog-actions`) stays in the owning feature and imports core
@@ -90,7 +104,7 @@ exception.
 
 ## Persistence
 
-`core/persistence` serializes the `scene-state-store` data model: `scene-draft`
+`core/persistence` serializes the `scene-document-store` data model: `scene-draft`
 (localStorage autosave), `scene-url` (shareable URL codec), `scene-reset`, and
 `restore-flow` (startup restore orchestration). Consumed by operations — chiefly
 `startup-coordinator`. These are homed in `core` (not the `url-scene` feature) so
