@@ -1,5 +1,5 @@
 import { useEditorRefs } from '@/shared/providers/editor-refs-context'
-import { useOverlayLayout } from '@/shared/layout/overlay-layout-context'
+import { useExclusionRegistry } from '@/shared/layout/overlay-exclusion-context'
 import { useEditorInteractionsEnabled } from '@/core/stores/editor-runtime-store'
 import { useSelectedFurniture } from '@/core/stores/scene-state-store'
 import { useCommandDispatch } from '@/core/commands/command-dispatch-context'
@@ -20,7 +20,7 @@ export function DockedSelectedItemSite({
 }: DockedSelectedItemSiteProps) {
   const interaction = useSelectedItemInteraction()
   const { dockedInspectorRef, selectedItemControlsRef } = useEditorRefs()
-  const { registerExclusionElement } = useOverlayLayout()
+  const registerExclusionElement = useExclusionRegistry()
   const selectedFurniture = useSelectedFurniture()
   const editorInteractionsEnabled = useEditorInteractionsEnabled()
   const dispatch = useCommandDispatch()

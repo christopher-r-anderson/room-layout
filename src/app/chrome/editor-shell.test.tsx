@@ -5,20 +5,18 @@ import { createRef } from 'react'
 import { describe, expect, it } from 'vitest'
 import { EditorRefsProvider } from '../../shared/providers/editor-refs-provider'
 import { useSelectedItemPlacement } from '@/features/selection/selected-item-placement-context'
-import { useOverlayLayout } from '../../shared/layout/overlay-layout-context'
+import { useExclusionRects } from '../../shared/layout/overlay-exclusion-context'
 import { EditorShell } from './editor-shell'
 
 function ShellContextProbe() {
-  const overlayLayout = useOverlayLayout()
+  const exclusionRects = useExclusionRects()
   const placement = useSelectedItemPlacement()
 
   return (
     <div
       data-testid="shell-context-probe"
       data-placement-site={placement.site}
-      data-exclusion-count={String(
-        Object.keys(overlayLayout.exclusionRects).length,
-      )}
+      data-exclusion-count={String(Object.keys(exclusionRects).length)}
     />
   )
 }

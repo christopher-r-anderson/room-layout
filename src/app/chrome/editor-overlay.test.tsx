@@ -15,7 +15,7 @@ import {
   resetEditorRuntimeStore,
 } from '@/core/stores/editor-runtime-store'
 import { sceneStateActions } from '@/core/stores/scene-state-store'
-import { OverlayLayoutProvider } from '../../shared/layout/overlay-layout-provider'
+import { OverlayExclusionProvider } from '../../shared/layout/overlay-exclusion-provider'
 import { EditorRefsProvider } from '../../shared/providers/editor-refs-provider'
 import { CommandDispatchProvider } from '@/core/commands/command-dispatch-provider'
 import { SelectedItemInteractionProvider } from '@/features/selection/selected-item-interaction-provider'
@@ -247,11 +247,9 @@ describe('EditorOverlay integration', () => {
           <EditorRefsProvider
             value={{ roomViewRef, selectedItemControlsRef, dockedInspectorRef }}
           >
-            <OverlayLayoutProvider
-              value={{
-                exclusionRects: {},
-                registerExclusionElement,
-              }}
+            <OverlayExclusionProvider
+              registerExclusionElement={registerExclusionElement}
+              exclusionRects={{}}
             >
               <SelectedItemInteractionProvider>
                 <SelectedItemPlacementProvider value={placementValue}>
@@ -270,7 +268,7 @@ describe('EditorOverlay integration', () => {
                   </CommandDispatchProvider>
                 </SelectedItemPlacementProvider>
               </SelectedItemInteractionProvider>
-            </OverlayLayoutProvider>
+            </OverlayExclusionProvider>
           </EditorRefsProvider>
         </TooltipProvider>
       )

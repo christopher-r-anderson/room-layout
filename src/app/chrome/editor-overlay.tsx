@@ -25,7 +25,7 @@ import { FloatingSelectedItemSite } from '@/features/selection/floating-selected
 import { SelectedDetailsPlaceholder } from '@/features/selection/selected-details-view'
 import { TopHeader } from './top-header/top-header'
 import type { TopHeaderShellProps } from './top-header/top-header.types'
-import { useOverlayLayout } from '@/shared/layout/overlay-layout-context'
+import { useExclusionRegistry } from '@/shared/layout/overlay-exclusion-context'
 import { useHeaderLayoutMode } from '@/shared/layout/use-header-layout-mode'
 
 export interface EditorOverlayProps {
@@ -63,7 +63,7 @@ function EditorOverlayDialogs() {
 }
 
 export function EditorOverlay({ topHeader }: EditorOverlayProps) {
-  const { registerExclusionElement } = useOverlayLayout()
+  const registerExclusionElement = useExclusionRegistry()
   const hasSelection = useHasSelection()
   const startupOverlayActive = useStartupOverlayActive()
   const interactionsEnabled = useEditorInteractionsEnabled()

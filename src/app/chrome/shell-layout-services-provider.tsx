@@ -1,5 +1,5 @@
-import { useMemo, type ReactNode } from 'react'
-import { OverlayLayoutProvider } from '@/shared/layout/overlay-layout-provider'
+import { type ReactNode } from 'react'
+import { OverlayExclusionProvider } from '@/shared/layout/overlay-exclusion-provider'
 import { useOverlayExclusionRects } from '@/shared/layout/use-overlay-exclusion-rects'
 
 interface ShellLayoutServicesProviderProps {
@@ -11,17 +11,12 @@ export function ShellLayoutServicesProvider({
 }: ShellLayoutServicesProviderProps) {
   const { rects, registerExclusionElement } = useOverlayExclusionRects()
 
-  const overlayLayout = useMemo(
-    () => ({
-      exclusionRects: rects,
-      registerExclusionElement,
-    }),
-    [rects, registerExclusionElement],
-  )
-
   return (
-    <OverlayLayoutProvider value={overlayLayout}>
+    <OverlayExclusionProvider
+      registerExclusionElement={registerExclusionElement}
+      exclusionRects={rects}
+    >
       {children}
-    </OverlayLayoutProvider>
+    </OverlayExclusionProvider>
   )
 }

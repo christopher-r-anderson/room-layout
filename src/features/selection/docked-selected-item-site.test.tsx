@@ -5,7 +5,7 @@ import { createRef } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { TooltipProvider } from '@/shared/ui/tooltip'
 import { EditorRefsProvider } from '@/shared/providers/editor-refs-provider'
-import { OverlayLayoutProvider } from '@/shared/layout/overlay-layout-provider'
+import { OverlayExclusionProvider } from '@/shared/layout/overlay-exclusion-provider'
 import { CommandDispatchProvider } from '@/core/commands/command-dispatch-provider'
 import type { CommandDispatch } from '@/core/commands/command-dispatch-context'
 import { createHistoryState } from '@/shared/lib/ui/editor-history'
@@ -45,11 +45,9 @@ describe('DockedSelectedItemSite', () => {
         <EditorRefsProvider
           value={{ roomViewRef, selectedItemControlsRef, dockedInspectorRef }}
         >
-          <OverlayLayoutProvider
-            value={{
-              exclusionRects: {},
-              registerExclusionElement,
-            }}
+          <OverlayExclusionProvider
+            registerExclusionElement={registerExclusionElement}
+            exclusionRects={{}}
           >
             <SelectedItemInteractionProvider>
               <SelectedItemPlacementProvider
@@ -66,7 +64,7 @@ describe('DockedSelectedItemSite', () => {
                 </CommandDispatchProvider>
               </SelectedItemPlacementProvider>
             </SelectedItemInteractionProvider>
-          </OverlayLayoutProvider>
+          </OverlayExclusionProvider>
         </EditorRefsProvider>
       </TooltipProvider>,
     )
@@ -99,11 +97,9 @@ describe('DockedSelectedItemSite', () => {
         <EditorRefsProvider
           value={{ roomViewRef, selectedItemControlsRef, dockedInspectorRef }}
         >
-          <OverlayLayoutProvider
-            value={{
-              exclusionRects: {},
-              registerExclusionElement,
-            }}
+          <OverlayExclusionProvider
+            registerExclusionElement={registerExclusionElement}
+            exclusionRects={{}}
           >
             <SelectedItemInteractionProvider>
               <SelectedItemPlacementProvider
@@ -123,7 +119,7 @@ describe('DockedSelectedItemSite', () => {
                 </CommandDispatchProvider>
               </SelectedItemPlacementProvider>
             </SelectedItemInteractionProvider>
-          </OverlayLayoutProvider>
+          </OverlayExclusionProvider>
         </EditorRefsProvider>
       </TooltipProvider>,
     )
@@ -153,11 +149,9 @@ describe('DockedSelectedItemSite', () => {
         <EditorRefsProvider
           value={{ roomViewRef, selectedItemControlsRef, dockedInspectorRef }}
         >
-          <OverlayLayoutProvider
-            value={{
-              exclusionRects: {},
-              registerExclusionElement,
-            }}
+          <OverlayExclusionProvider
+            registerExclusionElement={registerExclusionElement}
+            exclusionRects={{}}
           >
             <SelectedItemInteractionProvider>
               <SelectedItemPlacementProvider
@@ -177,7 +171,7 @@ describe('DockedSelectedItemSite', () => {
                 </CommandDispatchProvider>
               </SelectedItemPlacementProvider>
             </SelectedItemInteractionProvider>
-          </OverlayLayoutProvider>
+          </OverlayExclusionProvider>
         </EditorRefsProvider>
       </TooltipProvider>,
     )

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useSyncExternalStore } from 'react'
 import { useElementRect } from '@/shared/hooks/use-element-rect'
 import { useElementSize } from '@/shared/hooks/use-element-size'
 import { useEditorRefs } from '@/shared/providers/editor-refs-context'
-import { useOverlayLayout } from '@/shared/layout/overlay-layout-context'
+import { useExclusionRects } from '@/shared/layout/overlay-exclusion-context'
 import { useHeaderLayoutMode } from '@/shared/layout/use-header-layout-mode'
 import { useSelectedFurniture } from '@/core/stores/scene-state-store'
 import { useToolbarGeometry } from '@/core/stores/selection-meta-store'
@@ -52,7 +52,7 @@ export function useComputeSelectedItemPlacement(): ComputeSelectedItemPlacementR
   const selectedFurniture = useSelectedFurniture()
   const selectedToolbarGeometry = useToolbarGeometry()
   const { roomViewRef } = useEditorRefs()
-  const { exclusionRects } = useOverlayLayout()
+  const exclusionRects = useExclusionRects()
   const headerLayoutMode = useHeaderLayoutMode()
   const { ref: actionsSizeRef, size: actionSize } = useElementSize()
   const roomViewRect = useElementRect(roomViewRef)
