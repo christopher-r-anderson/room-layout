@@ -1,4 +1,4 @@
-import type { EnvironmentMaterialConfig } from './environment-materials'
+import type { EnvironmentMaterialConfig } from '@/shared/lib/three/environment-materials'
 import {
   isSceneStateAtDefaults,
   type SceneComparableState,

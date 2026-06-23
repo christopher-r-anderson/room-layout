@@ -1,6 +1,6 @@
 import { toast } from 'sonner'
-import { createDefaultSceneState } from '@/shared/lib/three/scene-defaults'
-import { isSceneStateAtDefaults } from '@/shared/lib/three/scene-model'
+import { createDefaultSceneState } from '@/core/model/scene-defaults'
+import { isSceneStateAtDefaults } from '@/core/model/scene-model'
 import { sceneCommands, clearSceneServices } from '@/scene/scene-commands'
 import { clearFurnitureCollectionCache } from '@/scene/objects/furniture-catalog'
 import { feedbackActions } from '../stores/feedback-store'

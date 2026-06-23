@@ -3,7 +3,7 @@ import type { EnvironmentMaterialConfig } from '@/shared/lib/three/environment-m
 import { editorLifecycleStore } from '@/core/stores/editor-lifecycle-store'
 import { sceneDocumentStore } from '@/core/stores/scene-document-store'
 import { clearSceneDraft, saveSceneDraft } from '@/core/persistence/scene-draft'
-import { isFreshSceneState } from '@/shared/lib/three/scene-defaults'
+import { isFreshSceneState } from '@/core/model/scene-defaults'
 
 interface UseDraftPersistenceOptions {
   environmentConfig: EnvironmentMaterialConfig | null
