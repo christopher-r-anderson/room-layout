@@ -2,9 +2,9 @@ import { useStoreWithEqualityFn } from 'zustand/traditional'
 import { subscribeWithSelector } from 'zustand/middleware'
 import { createStore } from 'zustand/vanilla'
 import {
-  sceneAssetsStore,
+  assetsStore,
   useCatalogEntries,
-} from '@/core/stores/scene-assets-store'
+} from '@/core/stores/assets-store'
 
 // Catalog-only UI state: which catalog entry the Add Furniture drawer will place.
 // Feature-local (not cross-cutting), but store-backed so the non-React add action
@@ -42,7 +42,7 @@ export function resetCatalogSelectionStore() {
 
 function resolveActiveCatalogId(
   selectedCatalogId: string,
-  catalog: ReturnType<typeof sceneAssetsStore.getState>['catalog'],
+  catalog: ReturnType<typeof assetsStore.getState>['catalog'],
 ): string {
   if (
     selectedCatalogId &&
@@ -59,7 +59,7 @@ function resolveActiveCatalogId(
 export function getActiveCatalogId(): string {
   return resolveActiveCatalogId(
     catalogSelectionStore.getState().selectedCatalogId,
-    sceneAssetsStore.getState().catalog,
+    assetsStore.getState().catalog,
   )
 }
 

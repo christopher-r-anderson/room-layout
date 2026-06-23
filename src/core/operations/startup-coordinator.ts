@@ -9,7 +9,7 @@ import {
   editorRuntimeActions,
   editorRuntimeStore,
 } from '../stores/editor-runtime-store'
-import { sceneAssetsStore } from '../stores/scene-assets-store'
+import { assetsStore } from '../stores/assets-store'
 import { sceneStateActions } from '../stores/scene-state-store'
 import { resetSelectionMetaStore } from '../stores/selection-meta-store'
 import { selectionEffects } from './selection-effects'
@@ -35,7 +35,7 @@ function resetStartupShell() {
 }
 
 function resolveFinishContext() {
-  const { catalog, environmentConfig } = sceneAssetsStore.getState()
+  const { catalog, environmentConfig } = assetsStore.getState()
 
   return {
     catalog,
@@ -191,7 +191,7 @@ export function requestAssetRetry() {
   dialogActions.closeActiveDialog()
   resetStartupShell()
 
-  const paths = sceneAssetsStore
+  const paths = assetsStore
     .getState()
     .collections.map((collection) => collection.sourcePath)
   clearFurnitureCollectionCache(paths)

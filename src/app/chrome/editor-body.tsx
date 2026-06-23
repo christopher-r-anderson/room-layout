@@ -27,7 +27,7 @@ import {
 import {
   useCatalogEntries,
   useCollections,
-} from '@/core/stores/scene-assets-store'
+} from '@/core/stores/assets-store'
 import {
   completeAssetLoad,
   notifyAssetError,

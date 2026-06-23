@@ -4,7 +4,7 @@ import {
   editorRuntimeActions,
   useRetryToken,
 } from '@/core/stores/editor-runtime-store'
-import { sceneAssetsActions } from '@/core/stores/scene-assets-store'
+import { assetsActions } from '@/core/stores/assets-store'
 import type { StartupErrorKind } from '@/core/types/startup.types'
 import {
   fetchCatalogManifest,
@@ -86,7 +86,7 @@ export function useStartupBootstrap() {
           catalog: result.catalog.length,
         })
 
-        sceneAssetsActions.setSceneAssets({
+        assetsActions.setAssets({
           catalog: result.catalog,
           collections: result.collections,
           environmentConfig: result.environment,

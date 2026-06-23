@@ -43,7 +43,7 @@ import {
   editorRuntimeActions,
   useEditorInteractionsEnabled,
 } from '@/core/stores/editor-runtime-store'
-import { useEnvironmentConfig } from '@/core/stores/scene-assets-store'
+import { useEnvironmentConfig } from '@/core/stores/assets-store'
 import { TooltipProvider } from '@/shared/ui/tooltip'
 import { useStartupBootstrap } from '@/features/startup/use-startup-bootstrap'
 import { EditorBody } from './chrome/editor-body'

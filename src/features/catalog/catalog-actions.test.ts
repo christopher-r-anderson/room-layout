@@ -13,9 +13,9 @@ import {
   resetEditorRuntimeStore,
 } from '@/core/stores/editor-runtime-store'
 import {
-  resetSceneAssetsStore,
-  sceneAssetsActions,
-} from '@/core/stores/scene-assets-store'
+  resetAssetsStore,
+  assetsActions,
+} from '@/core/stores/assets-store'
 import { selectionEffects } from '@/core/operations/selection-effects'
 import { sceneCommands } from '@/scene/scene-commands'
 import type { FurnitureCatalogEntry } from '@/scene/objects/furniture-catalog'
@@ -50,9 +50,9 @@ beforeEach(() => {
   resetSceneStateStore()
   resetSelectionMetaStore()
   resetEditorRuntimeStore()
-  resetSceneAssetsStore()
+  resetAssetsStore()
   resetCatalogSelectionStore()
-  sceneAssetsActions.setSceneAssets({
+  assetsActions.setAssets({
     catalog: [CHAIR],
     collections: [],
     environmentConfig: null,

@@ -8,18 +8,18 @@ import type {
 } from '@/scene/objects/furniture-catalog'
 import type { EqualityChecker } from '../types/store.types'
 
-interface SceneAssets {
+interface Assets {
   catalog: FurnitureCatalogEntry[]
   collections: FurnitureCollection[]
   environmentConfig: EnvironmentMaterialConfig | null
 }
 
-interface SceneAssetsStoreState extends SceneAssets {
-  setSceneAssets: (assets: SceneAssets) => void
+interface AssetsStoreState extends Assets {
+  setAssets: (assets: Assets) => void
   reset: () => void
 }
 
-function getInitialSceneAssetsState(): SceneAssets {
+function getInitialAssetsState(): Assets {
   return {
     catalog: [],
     collections: [],
@@ -30,45 +30,45 @@ function getInitialSceneAssetsState(): SceneAssets {
 // App-facing mirror of the startup-loaded catalog manifest. Startup owns the
 // load; this store lets features read the resolved catalog/collections/finishes
 // through narrow hooks instead of receiving them threaded through app chrome.
-export const sceneAssetsStore = createStore<SceneAssetsStoreState>()(
+export const assetsStore = createStore<AssetsStoreState>()(
   subscribeWithSelector((set, get) => ({
-    ...getInitialSceneAssetsState(),
-    setSceneAssets: (assets) => {
+    ...getInitialAssetsState(),
+    setAssets: (assets) => {
       set((state) => ({ ...state, ...assets }))
     },
     reset: () => {
       set(() => ({
-        ...getInitialSceneAssetsState(),
-        setSceneAssets: get().setSceneAssets,
+        ...getInitialAssetsState(),
+        setAssets: get().setAssets,
         reset: get().reset,
       }))
     },
   })),
 )
 
-function useSceneAssetsStore<T>(
-  selector: (state: SceneAssetsStoreState) => T,
+function useAssetsStore<T>(
+  selector: (state: AssetsStoreState) => T,
   equalityFn?: EqualityChecker<T>,
 ) {
-  return useStoreWithEqualityFn(sceneAssetsStore, selector, equalityFn)
+  return useStoreWithEqualityFn(assetsStore, selector, equalityFn)
 }
 
-export const sceneAssetsActions = {
-  setSceneAssets: (assets: SceneAssets) => {
-    sceneAssetsStore.getState().setSceneAssets(assets)
+export const assetsActions = {
+  setAssets: (assets: Assets) => {
+    assetsStore.getState().setAssets(assets)
   },
   reset: () => {
-    sceneAssetsStore.getState().reset()
+    assetsStore.getState().reset()
   },
 }
 
-export function resetSceneAssetsStore() {
-  sceneAssetsActions.reset()
+export function resetAssetsStore() {
+  assetsActions.reset()
 }
 
 export const useCatalogEntries = () =>
-  useSceneAssetsStore((state) => state.catalog)
+  useAssetsStore((state) => state.catalog)
 export const useCollections = () =>
-  useSceneAssetsStore((state) => state.collections)
+  useAssetsStore((state) => state.collections)
 export const useEnvironmentConfig = () =>
-  useSceneAssetsStore((state) => state.environmentConfig)
+  useAssetsStore((state) => state.environmentConfig)

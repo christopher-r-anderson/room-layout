@@ -1,4 +1,4 @@
-import { sceneAssetsStore } from '@/core/stores/scene-assets-store'
+import { assetsStore } from '@/core/stores/assets-store'
 import { sceneStateActions } from '@/core/stores/scene-state-store'
 import { selectionEffects } from '@/core/operations/selection-effects'
 import { clearPreviewOnCanvasMiss } from '@/core/operations/preview-actions'
@@ -12,7 +12,7 @@ import { sceneCommands } from '@/scene/scene-commands'
  * coordination; feedback (announce/toast) is owned by the caller.
  */
 export function resetSceneToDefaults() {
-  const { environmentConfig } = sceneAssetsStore.getState()
+  const { environmentConfig } = assetsStore.getState()
 
   clearPreviewOnCanvasMiss()
   sceneStateActions.clearEditorMessage()

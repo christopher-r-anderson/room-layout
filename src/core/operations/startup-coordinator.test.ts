@@ -6,9 +6,9 @@ import {
   resetEditorRuntimeStore,
 } from '../stores/editor-runtime-store'
 import {
-  resetSceneAssetsStore,
-  sceneAssetsActions,
-} from '../stores/scene-assets-store'
+  resetAssetsStore,
+  assetsActions,
+} from '../stores/assets-store'
 import { dialogActions } from '../stores/dialog-store'
 import { announcementActions } from '../stores/announcement-store'
 import { selectionEffects } from './selection-effects'
@@ -65,7 +65,7 @@ vi.mock('sonner', () => ({
 
 beforeEach(() => {
   resetEditorRuntimeStore()
-  resetSceneAssetsStore()
+  resetAssetsStore()
 })
 
 afterEach(() => {
@@ -110,7 +110,7 @@ describe('startup-coordinator', () => {
   })
 
   it('clears the GLTF cache for loaded collections and bumps the retry token', () => {
-    sceneAssetsActions.setSceneAssets({
+    assetsActions.setAssets({
       catalog: [],
       collections: [
         { id: 'a', sourcePath: '/models/a.glb' },

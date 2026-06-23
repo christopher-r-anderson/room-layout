@@ -16,7 +16,7 @@ import {
   useEditorInteractionsEnabled,
   useFloorFinishLoading,
 } from '@/core/stores/editor-runtime-store'
-import { useEnvironmentConfig } from '@/core/stores/scene-assets-store'
+import { useEnvironmentConfig } from '@/core/stores/assets-store'
 import { useSceneIsAtDefaults } from '@/core/operations/use-scene-is-at-defaults'
 import { resetSceneToDefaults } from '@/core/persistence/scene-reset'
 import { announcementActions } from '@/core/stores/announcement-store'

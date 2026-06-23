@@ -10,9 +10,9 @@ import {
 import { sceneStateActions } from '@/core/stores/scene-state-store'
 import { CommandDispatchProvider } from '@/core/commands/command-dispatch-provider'
 import {
-  resetSceneAssetsStore,
-  sceneAssetsActions,
-} from '@/core/stores/scene-assets-store'
+  resetAssetsStore,
+  assetsActions,
+} from '@/core/stores/assets-store'
 import type { EnvironmentMaterialConfig } from '@/shared/lib/three/environment-materials'
 import { TopHeader } from './top-header'
 import type {
@@ -92,8 +92,8 @@ describe('TopHeader', () => {
     resetDialogStore()
     resetEditorRuntimeStore()
     sceneStateActions.resetSceneState()
-    resetSceneAssetsStore()
-    sceneAssetsActions.setSceneAssets({
+    resetAssetsStore()
+    assetsActions.setAssets({
       catalog: [],
       collections: [],
       environmentConfig: ENVIRONMENT,
