@@ -6,7 +6,7 @@ import type {
 import {
   isValidFurnitureInstance,
   roundTo3,
-} from '@/shared/lib/furniture-serialization'
+} from './furniture-serialization'
 
 export const SCENE_URL_PARAM = 'scene'
 export const SCENE_URL_MAX_ENCODED_LENGTH = 4000

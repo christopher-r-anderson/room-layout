@@ -7,7 +7,7 @@ import {
 import {
   isValidFurnitureInstance,
   roundTo3,
-} from '@/shared/lib/furniture-serialization'
+} from './furniture-serialization'
 
 const SCENE_DRAFT_STORAGE_KEY = 'scene-draft'
 const SCENE_DRAFT_VERSION = 1
