@@ -1,6 +1,6 @@
 import { type Camera, type Object3D, Vector3 } from 'three'
 import type { FurnitureItem } from '@/domain/furniture'
-import { getVisualObjectBounds } from '@/shared/lib/three/get-visual-object-bounds'
+import { getVisualObjectBounds } from '@/scene/internal/three/get-visual-object-bounds'
 
 interface SceneSnapshotItem {
   id: string

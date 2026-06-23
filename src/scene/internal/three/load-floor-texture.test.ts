@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { FloorFinishOption } from './environment-materials'
+import type { FloorFinishOption } from '@/shared/lib/three/environment-materials'
 
 const expectedBasisTranscoderPath = `${import.meta.env.BASE_URL}basis/`
 

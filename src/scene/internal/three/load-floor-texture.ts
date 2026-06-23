@@ -7,7 +7,7 @@ import {
   type Texture,
 } from 'three'
 import { KTX2Loader } from 'three/addons/loaders/KTX2Loader.js'
-import type { FloorFinishOption } from './environment-materials'
+import type { FloorFinishOption } from '@/shared/lib/three/environment-materials'
 
 export interface FloorTextures {
   diffuse: Texture

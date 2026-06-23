@@ -1,9 +1,9 @@
-import { getMeshes } from '@/shared/lib/three/get-meshes'
-import { getVisualObjectBounds } from '@/shared/lib/three/get-visual-object-bounds'
+import { getMeshes } from '@/scene/internal/three/get-meshes'
+import { getVisualObjectBounds } from '@/scene/internal/three/get-visual-object-bounds'
 import {
   CAMERA_PRESETS,
   type CameraPreset,
-} from '@/shared/lib/three/camera-presets'
+} from '@/scene/internal/three/camera-presets'
 import { Room } from './internal/environment/room'
 import { Lighting } from './internal/environment/lighting'
 import type {

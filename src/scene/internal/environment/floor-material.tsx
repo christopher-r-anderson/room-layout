@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { useThree } from '@react-three/fiber'
-import type { FloorTextures } from '@/shared/lib/three/load-floor-texture'
+import type { FloorTextures } from '@/scene/internal/three/load-floor-texture'
 import type { FloorFinishOption } from '@/shared/lib/three/environment-materials'
-import { getFloorTextureRepeat } from '@/shared/lib/three/floor-texture-repeat'
-import { loadFloorTexture } from '@/shared/lib/three/load-floor-texture'
+import { getFloorTextureRepeat } from '@/scene/internal/three/floor-texture-repeat'
+import { loadFloorTexture } from '@/scene/internal/three/load-floor-texture'
 
 const FLOOR_TEXTURE_RETRY_DELAY_MS = 500
 const FLOOR_TEXTURE_MAX_RETRIES = 2

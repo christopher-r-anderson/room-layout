@@ -3,7 +3,7 @@ import { type ThreeEvent } from '@react-three/fiber'
 import {
   getFloorIntersection,
   getDraggedFurniturePosition,
-} from '@/shared/lib/three/furniture-drag'
+} from '@/scene/internal/three/furniture-drag'
 import {
   resolveMovedFurniturePosition,
   type LayoutBounds,

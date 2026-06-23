@@ -10,7 +10,7 @@ const { mockLoadFloorTexture } = vi.hoisted(() => ({
   mockLoadFloorTexture: vi.fn(),
 }))
 
-vi.mock('@/shared/lib/three/load-floor-texture', () => ({
+vi.mock('@/scene/internal/three/load-floor-texture', () => ({
   loadFloorTexture: mockLoadFloorTexture,
 }))
 
