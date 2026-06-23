@@ -68,7 +68,7 @@ import {
   sceneDocumentStore,
   useItems,
 } from '@/core/scene-contracts'
-import { selectionMetaActions } from '@/core/scene-contracts'
+import { toolbarGeometryActions } from '@/core/scene-contracts'
 import {
   clearSceneServices,
   registerSceneServices,
@@ -841,7 +841,7 @@ export function Scene({
       perfCounters.incrToolbarEmission()
       perfCounters.incrToolbarEmissionFromEffect()
     }
-    selectionMetaActions.setToolbarGeometry(nextGeometry)
+    toolbarGeometryActions.setToolbarGeometry(nextGeometry)
   }, [camera, canvasSize, objectRefs, selectedId])
 
   useFrame((_, delta) => {
@@ -872,7 +872,7 @@ export function Scene({
       perfCounters.incrToolbarEmission()
       perfCounters.incrToolbarEmissionFromFrame()
     }
-    selectionMetaActions.setToolbarGeometry(nextGeometry)
+    toolbarGeometryActions.setToolbarGeometry(nextGeometry)
   })
 
   return (

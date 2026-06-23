@@ -12,6 +12,7 @@ import {
 import { assetsStore } from '../stores/assets-store'
 import { sceneDocumentActions } from '../stores/scene-document-store'
 import { resetSelectionMetaStore } from '../stores/selection-meta-store'
+import { resetToolbarGeometryStore } from '../stores/toolbar-geometry-store'
 import { selectionEffects } from './selection-effects'
 import { loadSceneDraft, saveSceneDraft } from '../persistence/scene-draft'
 import {
@@ -31,6 +32,7 @@ const ASSET_ERROR_MESSAGE =
 function resetStartupShell() {
   sceneDocumentActions.resetSceneDocument()
   resetSelectionMetaStore()
+  resetToolbarGeometryStore()
   clearSceneServices()
 }
 

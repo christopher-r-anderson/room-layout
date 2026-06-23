@@ -12,4 +12,4 @@ export {
   useSelectedId,
 } from './stores/scene-document-store'
 
-export { selectionMetaActions } from './stores/selection-meta-store'
+export { toolbarGeometryActions } from './stores/toolbar-geometry-store'
