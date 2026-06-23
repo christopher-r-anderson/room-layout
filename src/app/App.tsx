@@ -52,6 +52,7 @@ import {
 } from '@/core/stores/selection-focus-store'
 import { useRequestOutlinerFocus } from '@/app/controllers/use-request-outliner-focus'
 import { perfCounters } from '@/shared/debug/perf-counters'
+import { IS_E2E_BUILD } from '@/shared/env/e2e'
 import { useDraftPersistence } from '@/features/url-scene/use-draft-persistence'
 import { sceneCommands } from '@/scene/scene-commands'
 import { useActiveFinishIds } from '@/app/controllers/_shared/use-active-finish-ids'
@@ -62,7 +63,7 @@ import {
 } from './dialogs/bootstrap-dialog-registry'
 
 function App() {
-  if (import.meta.env.DEV) {
+  if (import.meta.env.DEV || IS_E2E_BUILD) {
     perfCounters.incrAppRender()
   }
   const roomViewRef = useRef<HTMLElement | null>(null)
@@ -75,7 +76,7 @@ function App() {
   const outlinerFocusRequest = useOutlinerFocusRequest()
   const requestOutlinerFocus = useRequestOutlinerFocus()
   const isE2ELowRenderQuality =
-    import.meta.env.DEV && import.meta.env.VITE_E2E_RENDER_QUALITY === 'low'
+    import.meta.env.VITE_E2E_RENDER_QUALITY === 'low'
   const canvasShadowMode = isE2ELowRenderQuality ? false : 'percentage'
 
   useStartupBootstrap()

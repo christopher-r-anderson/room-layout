@@ -53,6 +53,24 @@ For dialog architecture changes, include coverage for:
 If pointer behavior is not the feature being tested, prefer keyboard
 focus/activation paths to keep tests less brittle.
 
+## Determinism
+
+Browser tests run in parallel against one shared server, so timing-coupled tests
+flake intermittently — usually only in full runs, not when run alone. Two rules
+keep them stable:
+
+- e2e runs against a production `vite preview` build, never the dev server. The
+  dev server's dependency optimizer and HMR can trigger full-page reloads
+  mid-test, which restart the app and reset its state. Test-only instrumentation
+  (the scene-state bridge, perf counters) is gated on the `VITE_E2E` build flag
+  rather than `import.meta.env.DEV` so it still works in that production build.
+- Drive interactions with bounded, deterministic inputs. Do not hold an input
+  "until a polled condition is observed" (e.g. holding a key until the camera
+  has moved): release/poll latency makes the real magnitude unbounded under
+  load. Use a fixed, small input and assert the durable invariant, not an exact
+  value that only a precisely-bounded input would guarantee — push exact-value
+  checks down to deterministic unit tests.
+
 ## Accessibility Test Coverage
 
 Run `e2e/editor-a11y-audits.spec.ts` when semantics, focus management, or

@@ -32,3 +32,8 @@ Execution notes:
 - Prefer tolerant float assertions (`toBeCloseTo`) for geometry-derived values.
 - For scene-only Playwright assertions, use shared overlay-hidden harness helpers.
 - Keep overlays visible when testing accessibility/layout/hit-target contracts.
+- e2e runs against the preview build (`pnpm test:e2e` already does this); never
+  point it at the dev server — optimizer/HMR reloads cause intermittent flakes.
+- Use bounded, deterministic inputs in browser tests; never hold an input until a
+  CDP-polled condition (release latency makes the magnitude unbounded under
+  load). Keep exact-value checks in unit tests.

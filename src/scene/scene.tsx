@@ -63,6 +63,7 @@ import {
 } from './internal/environment/room-constants'
 import { computeSelectedToolbarGeometry } from './internal/selected-toolbar-geometry'
 import { perfCounters } from '@/shared/debug/perf-counters'
+import { IS_E2E_BUILD } from '@/shared/env/e2e'
 import {
   sceneDocumentActions,
   sceneDocumentStore,
@@ -177,7 +178,7 @@ export function Scene({
   onFloorLoadingChange?: (isLoading: boolean) => void
 }) {
   const isE2ELowQuality = renderQuality === 'e2e-low'
-  if (import.meta.env.DEV) {
+  if (import.meta.env.DEV || IS_E2E_BUILD) {
     perfCounters.incrSceneRender()
   }
   const camera = useThree((state) => state.camera)
@@ -837,7 +838,7 @@ export function Scene({
     }
 
     lastToolbarGeometryRef.current = nextGeometry
-    if (import.meta.env.DEV) {
+    if (import.meta.env.DEV || IS_E2E_BUILD) {
       perfCounters.incrToolbarEmission()
       perfCounters.incrToolbarEmissionFromEffect()
     }
@@ -868,7 +869,7 @@ export function Scene({
     }
 
     lastToolbarGeometryRef.current = nextGeometry
-    if (import.meta.env.DEV) {
+    if (import.meta.env.DEV || IS_E2E_BUILD) {
       perfCounters.incrToolbarEmission()
       perfCounters.incrToolbarEmissionFromFrame()
     }

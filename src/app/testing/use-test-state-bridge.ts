@@ -15,6 +15,7 @@ import {
   type PerfCounterSnapshot,
   perfCounters,
 } from '@/shared/debug/perf-counters'
+import { IS_E2E_BUILD } from '@/shared/env/e2e'
 
 interface BrowserSceneState {
   assetsReady: boolean
@@ -66,7 +67,7 @@ export function useTestStateBridge({
   setTestOverlaysHidden,
 }: UseTestStateBridgeOptions) {
   useEffect(() => {
-    if (!import.meta.env.DEV) {
+    if (!import.meta.env.DEV && !IS_E2E_BUILD) {
       return
     }
 

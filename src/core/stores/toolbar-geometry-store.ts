@@ -3,6 +3,7 @@ import { subscribeWithSelector } from 'zustand/middleware'
 import { createStore } from 'zustand/vanilla'
 import type { ScreenPoint, SelectedToolbarGeometry } from '@/scene/scene.types'
 import { perfCounters } from '@/shared/debug/perf-counters'
+import { IS_E2E_BUILD } from '@/shared/env/e2e'
 import type { EqualityChecker } from '../types/store.types'
 
 // The selected item's toolbar geometry: the scene projects the selected item's
@@ -76,13 +77,13 @@ export const toolbarGeometryStore = createStore<ToolbarGeometryStoreState>()(
         if (
           areSelectedToolbarGeometriesEqual(state.toolbarGeometry, geometry)
         ) {
-          if (import.meta.env.DEV) {
+          if (import.meta.env.DEV || IS_E2E_BUILD) {
             perfCounters.incrToolbarSinkNoOp()
           }
           return state
         }
 
-        if (import.meta.env.DEV) {
+        if (import.meta.env.DEV || IS_E2E_BUILD) {
           perfCounters.incrToolbarSinkWrite()
         }
 
