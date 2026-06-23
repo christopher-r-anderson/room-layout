@@ -1,8 +1,6 @@
-import {
-  sceneDocumentActions,
-  sceneDocumentStore,
-} from '@/core/stores/scene-document-store'
+import { sceneDocumentStore } from '@/core/stores/scene-document-store'
 import { isEditorInteractive } from '@/core/stores/editor-lifecycle-store'
+import { feedbackActions } from '@/core/stores/feedback-store'
 import { selectionFocusActions } from '@/core/stores/selection-focus-store'
 import { selectionEffects } from '@/core/operations/selection-effects'
 import { sceneCommands } from '@/scene/scene-commands'
@@ -10,8 +8,7 @@ import type { SelectByIdResult } from '@/scene/scene.types'
 import type { InteractionSource } from '@/core/types/interaction.types'
 
 export function selectByCanvasPointer(id: string) {
-  const editorInteractionsEnabled =
-    isEditorInteractive()
+  const editorInteractionsEnabled = isEditorInteractive()
 
   if (!editorInteractionsEnabled) {
     return
@@ -37,8 +34,7 @@ export function selectById(
   id: string | null,
   source?: InteractionSource,
 ): SelectByIdResult {
-  const editorInteractionsEnabled =
-    isEditorInteractive()
+  const editorInteractionsEnabled = isEditorInteractive()
 
   if (!editorInteractionsEnabled || !sceneCommands.isSceneReady()) {
     return {
@@ -50,7 +46,7 @@ export function selectById(
   const selectedId = sceneDocumentStore.getState().selectedId
   const selectionWillChange = selectedId !== id
   const result = sceneCommands.selectById(id)
-  sceneDocumentActions.clearEditorMessage()
+  feedbackActions.clearStatusMessage()
 
   if (result.ok && selectionWillChange) {
     selectionEffects.notePendingSelection({
@@ -82,8 +78,7 @@ export function selectById(
 }
 
 export function clearSelection() {
-  const editorInteractionsEnabled =
-    isEditorInteractive()
+  const editorInteractionsEnabled = isEditorInteractive()
 
   if (!editorInteractionsEnabled || !sceneCommands.isSceneReady()) {
     return
@@ -94,5 +89,5 @@ export function clearSelection() {
     announceMode: 'default',
     requestOutlinerFocus: false,
   })
-  sceneDocumentActions.clearEditorMessage()
+  feedbackActions.clearStatusMessage()
 }

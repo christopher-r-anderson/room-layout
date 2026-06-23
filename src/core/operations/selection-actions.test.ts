@@ -4,8 +4,8 @@ import { createHistoryState } from '@/shared/lib/ui/editor-history'
 import {
   resetSceneDocumentStore,
   sceneDocumentActions,
-  sceneDocumentStore,
 } from '@/core/stores/scene-document-store'
+import { feedbackActions, feedbackStore } from '@/core/stores/feedback-store'
 import {
   resetSelectionFocusStore,
   selectionFocusStore,
@@ -117,7 +117,7 @@ describe('selection-actions', () => {
   })
 
   it('clears the editor message and pending behavior on clear selection', () => {
-    sceneDocumentActions.setEditorMessage('stale')
+    feedbackActions.setStatusMessage('stale')
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
     const clearSelectionSpy = vi
       .spyOn(sceneCommands, 'clearSelection')
@@ -130,6 +130,6 @@ describe('selection-actions', () => {
       announceMode: 'default',
       requestOutlinerFocus: false,
     })
-    expect(sceneDocumentStore.getState().editorMessage).toBeNull()
+    expect(feedbackStore.getState().statusMessage).toBeNull()
   })
 })

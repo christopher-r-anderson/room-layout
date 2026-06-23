@@ -32,7 +32,7 @@ function reportInvalidRestore(
   invalidCase: InvalidRestoreCase,
 ) {
   notifications.setRestoreOutcome('invalid')
-  notifications.setEditorMessage(invalidCase.editorMessage)
+  notifications.setStatusMessage(invalidCase.statusMessage)
   notifications.announceAssertive(invalidCase.assertiveMessage)
   notifications.toastError(invalidCase.toastMessage)
 }
@@ -44,7 +44,7 @@ function reportRecoveredDraftAfterInvalidLink(
   const recoveredMessage =
     'Shared link could not be restored. Recovered your local draft.'
   notifications.setRestoreOutcome('invalid')
-  notifications.setEditorMessage(recoveredMessage)
+  notifications.setStatusMessage(recoveredMessage)
   notifications.announceAssertive(recoveredMessage)
   notifications.toastWarning(toastMessage)
 }
@@ -110,14 +110,14 @@ export function runStartupRestoreFlow(options: {
             recoveredToastMessage:
               'Shared link was invalid. Recovered your local draft.',
             whenDraftMissing: {
-              editorMessage:
+              statusMessage:
                 'Shared link could not be restored. Starting with an empty room.',
               assertiveMessage:
                 'Shared link could not be restored. Starting with an empty room.',
               toastMessage: 'Shared link could not be restored.',
             },
             whenDraftFailed: {
-              editorMessage:
+              statusMessage:
                 'Shared link could not be restored. Draft also failed to restore. Starting with an empty room.',
               assertiveMessage:
                 'Shared link and draft could not be restored. Starting with an empty room.',
@@ -137,14 +137,14 @@ export function runStartupRestoreFlow(options: {
         recoveredToastMessage:
           'Shared link contained unknown furniture. Draft restored.',
         whenDraftMissing: {
-          editorMessage:
+          statusMessage:
             'Shared link contained unrecognized furniture. Starting with an empty room.',
           assertiveMessage:
             'Shared link could not be restored. Starting with an empty room.',
           toastMessage: 'Shared link contained unrecognized furniture.',
         },
         whenDraftFailed: {
-          editorMessage:
+          statusMessage:
             'Shared link had unknown furniture. Draft also failed to restore. Starting with an empty room.',
           assertiveMessage:
             'Shared link and draft could not be restored. Starting with an empty room.',
@@ -164,14 +164,14 @@ export function runStartupRestoreFlow(options: {
         recoveredToastMessage:
           'Shared link was invalid. Recovered your local draft.',
         whenDraftMissing: {
-          editorMessage:
+          statusMessage:
             'Shared link could not be restored. Starting with an empty room.',
           assertiveMessage:
             'Shared link could not be restored. Starting with an empty room.',
           toastMessage: 'Shared link could not be restored.',
         },
         whenDraftFailed: {
-          editorMessage:
+          statusMessage:
             'Shared link was invalid. Draft also failed to restore. Starting with an empty room.',
           assertiveMessage:
             'Shared link and draft could not be restored. Starting with an empty room.',
@@ -191,7 +191,7 @@ export function runStartupRestoreFlow(options: {
       }
     } catch {
       reportInvalidRestore(notifications, {
-        editorMessage: 'Draft failed to restore. Starting with an empty room.',
+        statusMessage: 'Draft failed to restore. Starting with an empty room.',
         assertiveMessage:
           'Draft could not be restored. Starting with an empty room.',
         toastMessage: 'Draft could not be restored.',

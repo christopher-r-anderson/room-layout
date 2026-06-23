@@ -1,5 +1,8 @@
 import { useCallback } from 'react'
-import { useItems, useSelectedFurniture } from '@/core/stores/scene-document-store'
+import {
+  useItems,
+  useSelectedFurniture,
+} from '@/core/stores/scene-document-store'
 import { selectionFocusActions } from '@/core/stores/selection-focus-store'
 
 /**

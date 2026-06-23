@@ -29,6 +29,8 @@ vi.mock('@/core/stores/feedback-store', () => ({
     clearAssertiveAnnouncement: vi.fn(),
     queueMovementAnnouncement: vi.fn(),
     clearQueuedMovementAnnouncement: vi.fn(),
+    setStatusMessage: vi.fn(),
+    clearStatusMessage: vi.fn(),
   },
 }))
 

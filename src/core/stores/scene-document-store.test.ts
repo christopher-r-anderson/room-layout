@@ -19,7 +19,6 @@ import {
   resetSceneDocumentStore,
   sceneDocumentActions,
   sceneDocumentStore,
-  useEditorMessage,
   useFloorFinishId,
   useFloorFinishLoading,
   useHasSelection,
@@ -107,34 +106,6 @@ describe('sceneDocumentStore', () => {
     })
 
     expect(hasSelection.current).toBe(false)
-  })
-
-  it('tracks history availability and editor message', () => {
-    const { result: historyAvailability } = renderHook(() =>
-      useHistoryAvailability(),
-    )
-    const { result: editorMessage } = renderHook(() => useEditorMessage())
-
-    act(() => {
-      sceneDocumentActions.setHistory(
-        commitHistoryPresent(createHistoryState<FurnitureItem[]>([]), [
-          FURNITURE_ITEM,
-        ]),
-      )
-      sceneDocumentActions.setEditorMessage('Unable to place furniture')
-    })
-
-    expect(historyAvailability.current).toEqual({
-      canUndo: true,
-      canRedo: false,
-    })
-    expect(editorMessage.current).toBe('Unable to place furniture')
-
-    act(() => {
-      sceneDocumentActions.clearEditorMessage()
-    })
-
-    expect(editorMessage.current).toBeNull()
   })
 
   it('derives history availability from store-owned history and dragging state', () => {

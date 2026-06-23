@@ -4,7 +4,6 @@ import { createHistoryState } from '@/shared/lib/ui/editor-history'
 import {
   resetSceneDocumentStore,
   sceneDocumentActions,
-  sceneDocumentStore,
 } from '@/core/stores/scene-document-store'
 import {
   resetSelectionFocusStore,
@@ -33,6 +32,8 @@ vi.mock('@/core/stores/feedback-store', () => ({
     clearAssertiveAnnouncement: vi.fn(),
     queueMovementAnnouncement: vi.fn(),
     clearQueuedMovementAnnouncement: vi.fn(),
+    setStatusMessage: vi.fn(),
+    clearStatusMessage: vi.fn(),
   },
 }))
 
@@ -82,7 +83,7 @@ describe('deletion-actions', () => {
 
     expect(closeActiveDialog).toHaveBeenCalled()
     expect(deleteSelection).not.toHaveBeenCalled()
-    expect(sceneDocumentStore.getState().editorMessage).toBe(
+    expect(feedbackActions.setStatusMessage).toHaveBeenCalledWith(
       DELETE_SELECTION_MISSING_MESSAGE,
     )
     expect(selectionEffects.notePendingSelection).toHaveBeenCalledWith(null)
@@ -98,7 +99,7 @@ describe('deletion-actions', () => {
 
     expect(closeActiveDialog).toHaveBeenCalled()
     expect(deleteSelection).not.toHaveBeenCalled()
-    expect(sceneDocumentStore.getState().editorMessage).toBeNull()
+    expect(feedbackActions.setStatusMessage).not.toHaveBeenCalled()
     expect(selectionEffects.notePendingSelection).toHaveBeenCalledWith(null)
   })
 

@@ -21,7 +21,6 @@ interface SceneDocumentStoreState {
   floorFinishId: string
   wallFinishId: string
   floorFinishLoading: boolean
-  editorMessage: string | null
   setHistory: (history: HistoryState<FurnitureItem[]>) => void
   updateHistory: (
     updater: (
@@ -35,8 +34,6 @@ interface SceneDocumentStoreState {
   setFloorFinishId: (id: string) => void
   setWallFinishId: (id: string) => void
   setFloorFinishLoading: (loading: boolean) => void
-  setEditorMessage: (message: string | null) => void
-  clearEditorMessage: () => void
   resetSceneDocument: () => void
 }
 
@@ -73,7 +70,6 @@ function getInitialSceneDocument() {
     floorFinishId: '',
     wallFinishId: '',
     floorFinishLoading: false,
-    editorMessage: null,
   }
 }
 
@@ -88,7 +84,7 @@ function getDerivedHistoryAvailability(
 }
 
 export const sceneDocumentStore = createStore<SceneDocumentStoreState>()(
-  subscribeWithSelector((set, get) => ({
+  subscribeWithSelector((set) => ({
     ...getInitialSceneDocument(),
     setHistory: (history) => {
       set((state) => {
@@ -213,21 +209,6 @@ export const sceneDocumentStore = createStore<SceneDocumentStoreState>()(
         }
       })
     },
-    setEditorMessage: (message) => {
-      set((state) => {
-        if (state.editorMessage === message) {
-          return state
-        }
-
-        return {
-          ...state,
-          editorMessage: message,
-        }
-      })
-    },
-    clearEditorMessage: () => {
-      get().setEditorMessage(null)
-    },
     resetSceneDocument: () => {
       set((state) => ({
         ...state,
@@ -290,12 +271,6 @@ export const sceneDocumentActions = {
   setFloorFinishLoading: (loading: boolean) => {
     sceneDocumentStore.getState().setFloorFinishLoading(loading)
   },
-  setEditorMessage: (message: string | null) => {
-    sceneDocumentStore.getState().setEditorMessage(message)
-  },
-  clearEditorMessage: () => {
-    sceneDocumentStore.getState().clearEditorMessage()
-  },
   resetSceneDocument: () => {
     sceneDocumentStore.getState().resetSceneDocument()
   },
@@ -316,8 +291,6 @@ export const useHistoryAvailability = () =>
     (state) => state.historyAvailability,
     areHistoryAvailabilityEqual,
   )
-export const useEditorMessage = () =>
-  useSceneDocumentStore((state) => state.editorMessage)
 export const useIsDragging = () =>
   useSceneDocumentStore((state) => state.isDragging)
 export const useFloorFinishId = () =>

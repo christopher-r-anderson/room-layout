@@ -1,10 +1,7 @@
 import { useStoreWithEqualityFn } from 'zustand/traditional'
 import { subscribeWithSelector } from 'zustand/middleware'
 import { createStore } from 'zustand/vanilla'
-import {
-  assetsStore,
-  useCatalogEntries,
-} from '@/core/stores/assets-store'
+import { assetsStore, useCatalogEntries } from '@/core/stores/assets-store'
 
 // Catalog-only UI state: which catalog entry the Add Furniture drawer will place.
 // Feature-local (not cross-cutting), but store-backed so the non-React add action

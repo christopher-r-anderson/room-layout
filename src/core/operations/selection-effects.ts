@@ -24,7 +24,8 @@ let pendingDeleteFocusTarget: 'room-view' | 'outliner' | null = null
 // Reconciliation trackers: the values the subscription has already reconciled
 // against. They live at module scope so reconciliation can run fully outside
 // React.
-let previousItems: FurnitureItem[] = sceneDocumentStore.getState().history.present
+let previousItems: FurnitureItem[] =
+  sceneDocumentStore.getState().history.present
 let previousReconciledSelectedId: string | null = null
 let previousSideEffectSelectedId: string | null =
   sceneDocumentStore.getState().selectedId
@@ -136,8 +137,7 @@ function reconcileSelectionEffects() {
   const itemsChanged = items !== previousItems
   const outlinerFocusRequest =
     selectionFocusStore.getState().outlinerFocusRequest
-  const editorInteractionsEnabled =
-    isEditorInteractive()
+  const editorInteractionsEnabled = isEditorInteractive()
 
   // Post-delete outliner focus runs without a readiness guard, matching the
   // original items-keyed effect.

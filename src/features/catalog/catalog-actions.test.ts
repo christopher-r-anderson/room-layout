@@ -1,9 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import {
-  resetSceneDocumentStore,
-  sceneDocumentStore,
-} from '@/core/stores/scene-document-store'
+import { resetSceneDocumentStore } from '@/core/stores/scene-document-store'
+import { feedbackStore, resetFeedbackStore } from '@/core/stores/feedback-store'
 import {
   resetSelectionFocusStore,
   selectionFocusStore,
@@ -12,10 +10,7 @@ import {
   editorLifecycleActions,
   resetEditorLifecycleStore,
 } from '@/core/stores/editor-lifecycle-store'
-import {
-  resetAssetsStore,
-  assetsActions,
-} from '@/core/stores/assets-store'
+import { resetAssetsStore, assetsActions } from '@/core/stores/assets-store'
 import { selectionEffects } from '@/core/operations/selection-effects'
 import { sceneCommands } from '@/scene/scene-commands'
 import type { FurnitureCatalogEntry } from '@/scene/objects/furniture-catalog'
@@ -52,6 +47,7 @@ beforeEach(() => {
   resetEditorLifecycleStore()
   resetAssetsStore()
   resetCatalogSelectionStore()
+  resetFeedbackStore()
   assetsActions.setAssets({
     catalog: [CHAIR],
     collections: [],
@@ -83,7 +79,7 @@ describe('addFurniture', () => {
 
     addFurnitureCommand.mockReturnValueOnce({ ok: false, reason: 'no-space' })
     expect(addFurniture()).toBe(false)
-    expect(sceneDocumentStore.getState().editorMessage).toBe(
+    expect(feedbackStore.getState().statusMessage).toBe(
       ADD_FURNITURE_NO_SPACE_MESSAGE,
     )
 
@@ -92,7 +88,7 @@ describe('addFurniture', () => {
       reason: 'unknown-catalog',
     })
     expect(addFurniture()).toBe(false)
-    expect(sceneDocumentStore.getState().editorMessage).toBe(
+    expect(feedbackStore.getState().statusMessage).toBe(
       ADD_FURNITURE_UNKNOWN_CATALOG_MESSAGE,
     )
   })

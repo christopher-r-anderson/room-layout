@@ -12,7 +12,7 @@ export type DraftRestoreAttempt = 'restored' | 'failed' | 'missing'
 export interface RestoreFlowNotifications {
   announcePolite: (message: string) => void
   announceAssertive: (message: string) => void
-  setEditorMessage: (message: string) => void
+  setStatusMessage: (message: string) => void
   setRestoreOutcome: (outcome: RestoreOutcome) => void
   toastSuccess: (message: string) => void
   toastWarning: (message: string) => void
@@ -20,7 +20,7 @@ export interface RestoreFlowNotifications {
 }
 
 export interface InvalidRestoreCase {
-  editorMessage: string
+  statusMessage: string
   assertiveMessage: string
   toastMessage: string
 }

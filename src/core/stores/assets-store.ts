@@ -66,9 +66,7 @@ export function resetAssetsStore() {
   assetsActions.reset()
 }
 
-export const useCatalogEntries = () =>
-  useAssetsStore((state) => state.catalog)
-export const useCollections = () =>
-  useAssetsStore((state) => state.collections)
+export const useCatalogEntries = () => useAssetsStore((state) => state.catalog)
+export const useCollections = () => useAssetsStore((state) => state.collections)
 export const useEnvironmentConfig = () =>
   useAssetsStore((state) => state.environmentConfig)

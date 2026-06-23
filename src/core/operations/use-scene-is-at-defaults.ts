@@ -4,10 +4,7 @@ import {
 } from '@/shared/lib/three/environment-materials'
 import { isFreshSceneState } from '@/shared/lib/three/scene-defaults'
 import type { FurnitureItem } from '@/scene/objects/furniture.types'
-import {
-  assetsStore,
-  useEnvironmentConfig,
-} from '@/core/stores/assets-store'
+import { assetsStore, useEnvironmentConfig } from '@/core/stores/assets-store'
 import {
   sceneDocumentStore,
   useFloorFinishId,

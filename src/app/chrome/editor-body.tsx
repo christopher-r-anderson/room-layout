@@ -24,10 +24,7 @@ import {
   useSceneEpoch,
   useStartupLoadingActive,
 } from '@/core/stores/editor-lifecycle-store'
-import {
-  useCatalogEntries,
-  useCollections,
-} from '@/core/stores/assets-store'
+import { useCatalogEntries, useCollections } from '@/core/stores/assets-store'
 import {
   completeAssetLoad,
   notifyAssetError,

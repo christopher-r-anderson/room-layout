@@ -5,14 +5,21 @@ import type { EqualityChecker } from '../types/store.types'
 
 const MOVEMENT_ANNOUNCEMENT_DELAY_MS = 180
 
+// Transient user-facing feedback channels. `politeAnnouncement` /
+// `assertiveAnnouncement` are the a11y live regions; `statusMessage` is the
+// visible status line. They share nothing but their nature — ephemeral messages
+// surfaced to the user — which is exactly why they live together here.
 interface FeedbackStoreState {
   politeAnnouncement: string
   assertiveAnnouncement: string
+  statusMessage: string | null
   announcePolite: (message: string) => void
   announceAssertive: (message: string) => void
   clearAssertiveAnnouncement: () => void
   queueMovementAnnouncement: (message: string) => void
   clearQueuedMovementAnnouncement: () => void
+  setStatusMessage: (message: string | null) => void
+  clearStatusMessage: () => void
   reset: () => void
 }
 
@@ -59,6 +66,7 @@ export const feedbackStore = createStore<FeedbackStoreState>()(
     return {
       politeAnnouncement: '',
       assertiveAnnouncement: '',
+      statusMessage: null,
       announcePolite: (message) => {
         if (!message) {
           return
@@ -121,9 +129,23 @@ export const feedbackStore = createStore<FeedbackStoreState>()(
         set({ assertiveAnnouncement: '' })
       },
       clearQueuedMovementAnnouncement,
+      setStatusMessage: (message) => {
+        set((state) =>
+          state.statusMessage === message ? state : { statusMessage: message },
+        )
+      },
+      clearStatusMessage: () => {
+        set((state) =>
+          state.statusMessage === null ? state : { statusMessage: null },
+        )
+      },
       reset: () => {
         clearPendingAnnouncementTimers()
-        set({ politeAnnouncement: '', assertiveAnnouncement: '' })
+        set({
+          politeAnnouncement: '',
+          assertiveAnnouncement: '',
+          statusMessage: null,
+        })
       },
     }
   }),
@@ -152,6 +174,12 @@ export const feedbackActions = {
   clearQueuedMovementAnnouncement: () => {
     feedbackStore.getState().clearQueuedMovementAnnouncement()
   },
+  setStatusMessage: (message: string | null) => {
+    feedbackStore.getState().setStatusMessage(message)
+  },
+  clearStatusMessage: () => {
+    feedbackStore.getState().clearStatusMessage()
+  },
   reset: () => {
     feedbackStore.getState().reset()
   },
@@ -165,3 +193,5 @@ export const usePoliteAnnouncement = () =>
   useFeedbackStore((state) => state.politeAnnouncement)
 export const useAssertiveAnnouncement = () =>
   useFeedbackStore((state) => state.assertiveAnnouncement)
+export const useStatusMessage = () =>
+  useFeedbackStore((state) => state.statusMessage)

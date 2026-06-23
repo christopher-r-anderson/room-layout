@@ -5,10 +5,7 @@ import {
   editorLifecycleStore,
   resetEditorLifecycleStore,
 } from '../stores/editor-lifecycle-store'
-import {
-  resetAssetsStore,
-  assetsActions,
-} from '../stores/assets-store'
+import { resetAssetsStore, assetsActions } from '../stores/assets-store'
 import { dialogActions } from '../stores/dialog-store'
 import { feedbackActions } from '../stores/feedback-store'
 import { selectionEffects } from './selection-effects'
@@ -127,8 +124,6 @@ describe('startup-coordinator', () => {
     ])
     expect(editorLifecycleStore.getState().retryToken).toBe(1)
     expect(editorLifecycleStore.getState().sceneEpoch).toBe(1)
-    expect(
-      feedbackActions.clearAssertiveAnnouncement,
-    ).toHaveBeenCalledTimes(1)
+    expect(feedbackActions.clearAssertiveAnnouncement).toHaveBeenCalledTimes(1)
   })
 })

@@ -9,16 +9,34 @@ import {
 
 const polite = () => feedbackStore.getState().politeAnnouncement
 const assertive = () => feedbackStore.getState().assertiveAnnouncement
+const status = () => feedbackStore.getState().statusMessage
 
-describe('announcement store', () => {
+describe('feedback store', () => {
   afterEach(() => {
     resetFeedbackStore()
     vi.useRealTimers()
   })
 
-  it('starts with empty polite and assertive announcements', () => {
+  it('starts with empty polite and assertive announcements and no status message', () => {
     expect(polite()).toBe('')
     expect(assertive()).toBe('')
+    expect(status()).toBeNull()
+  })
+
+  it('sets and clears the visible status message', () => {
+    feedbackActions.setStatusMessage('Unable to place furniture')
+    expect(status()).toBe('Unable to place furniture')
+
+    feedbackActions.clearStatusMessage()
+    expect(status()).toBeNull()
+  })
+
+  it('clears the status message on reset', () => {
+    feedbackActions.setStatusMessage('Could not copy URL')
+
+    resetFeedbackStore()
+
+    expect(status()).toBeNull()
   })
 
   it('queues movement announcements with a delay', () => {

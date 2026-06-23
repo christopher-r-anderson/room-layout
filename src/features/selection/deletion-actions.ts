@@ -2,10 +2,7 @@ import type { FurnitureItem } from '@/scene/objects/furniture.types'
 import { feedbackActions } from '@/core/stores/feedback-store'
 import { dialogActions } from '@/core/stores/dialog-store'
 import { isEditorInteractive } from '@/core/stores/editor-lifecycle-store'
-import {
-  sceneDocumentActions,
-  sceneDocumentStore,
-} from '@/core/stores/scene-document-store'
+import { sceneDocumentStore } from '@/core/stores/scene-document-store'
 import {
   selectionFocusActions,
   selectionFocusStore,
@@ -20,8 +17,7 @@ export function confirmDeleteSelection(
 ) {
   const items = sceneDocumentStore.getState().history.present
   const selectedSource = selectionFocusStore.getState().selectedSource
-  const editorInteractionsEnabled =
-    isEditorInteractive()
+  const editorInteractionsEnabled = isEditorInteractive()
 
   const pendingId = pendingDeleteFurniture?.id ?? null
   const deletedIndex = pendingId
@@ -37,7 +33,7 @@ export function confirmDeleteSelection(
   }
 
   if (!sceneCommands.isSceneReady()) {
-    sceneDocumentActions.setEditorMessage(DELETE_SELECTION_MISSING_MESSAGE)
+    feedbackActions.setStatusMessage(DELETE_SELECTION_MISSING_MESSAGE)
     selectionEffects.notePendingSelection(null)
     return
   }
@@ -45,12 +41,12 @@ export function confirmDeleteSelection(
   const deleted = sceneCommands.deleteSelection()
 
   if (!deleted) {
-    sceneDocumentActions.setEditorMessage(DELETE_SELECTION_MISSING_MESSAGE)
+    feedbackActions.setStatusMessage(DELETE_SELECTION_MISSING_MESSAGE)
     selectionEffects.notePendingSelection(null)
     return
   }
 
-  sceneDocumentActions.clearEditorMessage()
+  feedbackActions.clearStatusMessage()
   selectionEffects.notePendingSelection({
     announceMode: 'suppress',
     requestOutlinerFocus: false,
@@ -82,7 +78,7 @@ export function openDeleteDialog() {
 
   if (opened) {
     selectionEffects.notePostDeleteFocusTarget('outliner')
-    sceneDocumentActions.clearEditorMessage()
+    feedbackActions.clearStatusMessage()
   } else {
     selectionEffects.notePostDeleteFocusTarget(null)
   }
@@ -93,7 +89,7 @@ export function openDeleteDialogFromRoomView() {
 
   if (opened) {
     selectionEffects.notePostDeleteFocusTarget('room-view')
-    sceneDocumentActions.clearEditorMessage()
+    feedbackActions.clearStatusMessage()
   } else {
     selectionEffects.notePostDeleteFocusTarget(null)
   }

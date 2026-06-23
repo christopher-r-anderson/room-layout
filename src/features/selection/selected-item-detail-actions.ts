@@ -1,7 +1,6 @@
 import { resolvePositionFromWallClearances } from '@/shared/lib/three/wall-clearance'
 import { feedbackActions } from '@/core/stores/feedback-store'
 import {
-  sceneDocumentActions,
   sceneDocumentStore,
   selectSelectedFurniture,
 } from '@/core/stores/scene-document-store'
@@ -30,11 +29,12 @@ export function invalidSelectedItemDetailValueMessage(fieldLabel: string) {
 export function updateSelectedItemDetails(
   input: UpdateSelectedItemDetailsInput,
 ): UpdateSelectedItemDetailsResult {
-  sceneDocumentActions.clearEditorMessage()
+  feedbackActions.clearStatusMessage()
 
-  const selectedFurniture = selectSelectedFurniture(sceneDocumentStore.getState())
-  const editorInteractionsEnabled =
-    isEditorInteractive()
+  const selectedFurniture = selectSelectedFurniture(
+    sceneDocumentStore.getState(),
+  )
+  const editorInteractionsEnabled = isEditorInteractive()
 
   if (
     !selectedFurniture ||

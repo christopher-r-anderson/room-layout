@@ -1,6 +1,6 @@
 import { dialogActions } from '@/core/stores/dialog-store'
 import { isEditorInteractive } from '@/core/stores/editor-lifecycle-store'
-import { sceneDocumentActions } from '@/core/stores/scene-document-store'
+import { feedbackActions } from '@/core/stores/feedback-store'
 import { selectionFocusActions } from '@/core/stores/selection-focus-store'
 import { selectionEffects } from '@/core/operations/selection-effects'
 import { sceneCommands } from '@/scene/scene-commands'
@@ -12,11 +12,10 @@ import { catalogDialogId } from './catalog-dialog-definition'
 import { getActiveCatalogId } from './catalog-selection-store'
 
 export function addFurniture(): boolean {
-  sceneDocumentActions.clearEditorMessage()
+  feedbackActions.clearStatusMessage()
 
   const catalogIdToAdd = getActiveCatalogId()
-  const editorInteractionsEnabled =
-    isEditorInteractive()
+  const editorInteractionsEnabled = isEditorInteractive()
 
   if (
     !catalogIdToAdd ||
@@ -31,7 +30,7 @@ export function addFurniture(): boolean {
   const result = sceneCommands.addFurniture(catalogIdToAdd)
 
   if (!result.ok) {
-    sceneDocumentActions.setEditorMessage(
+    feedbackActions.setStatusMessage(
       result.reason === 'no-space'
         ? ADD_FURNITURE_NO_SPACE_MESSAGE
         : ADD_FURNITURE_UNKNOWN_CATALOG_MESSAGE,
@@ -54,6 +53,6 @@ export function setCatalogDrawerOpen(open: boolean) {
   const changed = dialogActions.setDialogOpen(catalogDialogId, open)
 
   if (open && changed) {
-    sceneDocumentActions.clearEditorMessage()
+    feedbackActions.clearStatusMessage()
   }
 }

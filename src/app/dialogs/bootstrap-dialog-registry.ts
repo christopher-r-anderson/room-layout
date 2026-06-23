@@ -24,8 +24,7 @@ export function buildDialogRuntimeContext(
   options: BuildDialogRuntimeContextOptions,
 ): DialogRuntimeContext {
   return {
-    isDialogsEnabled: () =>
-      isEditorInteractive(),
+    isDialogsEnabled: () => isEditorInteractive(),
     getSelectedFurniture: () => getSelectedFurnitureFromState(),
     canStartOver: () => options.canStartOver(),
   }

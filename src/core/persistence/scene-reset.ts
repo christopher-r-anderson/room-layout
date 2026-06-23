@@ -1,5 +1,6 @@
 import { assetsStore } from '@/core/stores/assets-store'
 import { sceneDocumentActions } from '@/core/stores/scene-document-store'
+import { feedbackActions } from '@/core/stores/feedback-store'
 import { selectionEffects } from '@/core/operations/selection-effects'
 import { clearPreviewOnCanvasMiss } from '@/core/operations/preview-actions'
 import { clearSceneDraft } from '@/core/persistence/scene-draft'
@@ -15,7 +16,7 @@ export function resetSceneToDefaults() {
   const { environmentConfig } = assetsStore.getState()
 
   clearPreviewOnCanvasMiss()
-  sceneDocumentActions.clearEditorMessage()
+  feedbackActions.clearStatusMessage()
   sceneCommands.restoreInitialLayout([])
   sceneDocumentActions.setFloorFinishId(
     environmentConfig?.defaultFloorFinishId ?? '',

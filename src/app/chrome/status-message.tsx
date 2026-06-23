@@ -1,7 +1,7 @@
-import { useEditorMessage } from '@/core/stores/scene-document-store'
+import { useStatusMessage } from '@/core/stores/feedback-store'
 
 export function StatusMessage({ message }: { message?: string | null }) {
-  const storeMessage = useEditorMessage()
+  const storeMessage = useStatusMessage()
   const resolvedMessage = message === undefined ? storeMessage : message
 
   return (

@@ -145,7 +145,7 @@ function runRestoreOnce() {
     notifications: {
       announcePolite: feedbackActions.announcePolite,
       announceAssertive: feedbackActions.announceAssertive,
-      setEditorMessage: sceneDocumentActions.setEditorMessage,
+      setStatusMessage: feedbackActions.setStatusMessage,
       setRestoreOutcome: editorLifecycleActions.recordRestoreOutcome,
       toastSuccess: (message) => toast.success(message),
       toastWarning: (message) => toast.warning(message),

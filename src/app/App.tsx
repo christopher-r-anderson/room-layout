@@ -235,7 +235,7 @@ function App() {
     startOverIntent: () => {
       const opened = dialogActions.openDialog(DIALOG_IDS.startOver)
       if (opened) {
-        sceneDocumentActions.clearEditorMessage()
+        feedbackActions.clearStatusMessage()
       }
     },
     openDeleteDialog: (returnFocusTo) => {
