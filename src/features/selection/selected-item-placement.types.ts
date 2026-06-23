@@ -1,4 +1,4 @@
-import type { ToolbarFloatingCandidateId } from '@/shared/lib/ui/selected-toolbar-placement'
+import type { ToolbarFloatingCandidateId } from './selected-toolbar-placement'
 
 export type SelectedItemDockedReason =
   | 'mobile-layout'
