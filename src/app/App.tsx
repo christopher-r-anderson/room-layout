@@ -39,10 +39,7 @@ import { EditorRefsProvider } from '@/shared/providers/editor-refs-provider'
 import { CommandDispatchProvider } from '@/core/commands/command-dispatch-provider'
 import { useCommandDispatchValue } from '@/core/commands/command-dispatch-context'
 import type { EditorCommandApi } from '@/core/commands/editor-command'
-import {
-  editorLifecycleActions,
-  useEditorInteractionsEnabled,
-} from '@/core/stores/editor-lifecycle-store'
+import { useEditorInteractionsEnabled } from '@/core/stores/editor-lifecycle-store'
 import { useEnvironmentConfig } from '@/core/stores/assets-store'
 import { TooltipProvider } from '@/shared/ui/tooltip'
 import { useStartupBootstrap } from '@/features/startup/use-startup-bootstrap'
@@ -159,7 +156,7 @@ function App() {
     sceneCommands.focusSelected()
   }, [editorInteractionsEnabled])
   const handleFloorLoadingChange = useCallback((loading: boolean) => {
-    editorLifecycleActions.setFloorFinishLoading(loading)
+    sceneDocumentActions.setFloorFinishLoading(loading)
   }, [])
   const handlers = {
     ...shareController,

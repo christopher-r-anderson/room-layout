@@ -12,10 +12,7 @@ import {
   useIsBlockingOverlayOpen,
 } from '@/core/stores/dialog-store'
 import { DIALOG_IDS } from '@/app/dialogs/dialog-registry'
-import {
-  useEditorInteractionsEnabled,
-  useFloorFinishLoading,
-} from '@/core/stores/editor-lifecycle-store'
+import { useEditorInteractionsEnabled } from '@/core/stores/editor-lifecycle-store'
 import { useEnvironmentConfig } from '@/core/stores/assets-store'
 import { useSceneIsAtDefaults } from '@/core/operations/use-scene-is-at-defaults'
 import { resetSceneToDefaults } from '@/core/persistence/scene-reset'
@@ -25,6 +22,7 @@ import { useActiveFinishIds } from '@/app/controllers/_shared/use-active-finish-
 import {
   sceneDocumentActions,
   useFloorFinishId,
+  useFloorFinishLoading,
   useHistoryAvailability,
   useWallFinishId,
 } from '@/core/stores/scene-document-store'

@@ -20,6 +20,7 @@ interface SceneDocumentStoreState {
   isDragging: boolean
   floorFinishId: string
   wallFinishId: string
+  floorFinishLoading: boolean
   editorMessage: string | null
   setHistory: (history: HistoryState<FurnitureItem[]>) => void
   updateHistory: (
@@ -33,6 +34,7 @@ interface SceneDocumentStoreState {
   setDragging: (dragging: boolean) => void
   setFloorFinishId: (id: string) => void
   setWallFinishId: (id: string) => void
+  setFloorFinishLoading: (loading: boolean) => void
   setEditorMessage: (message: string | null) => void
   clearEditorMessage: () => void
   resetSceneDocument: () => void
@@ -70,6 +72,7 @@ function getInitialSceneDocument() {
     isDragging: false,
     floorFinishId: '',
     wallFinishId: '',
+    floorFinishLoading: false,
     editorMessage: null,
   }
 }
@@ -198,6 +201,18 @@ export const sceneDocumentStore = createStore<SceneDocumentStoreState>()(
         }
       })
     },
+    setFloorFinishLoading: (loading) => {
+      set((state) => {
+        if (state.floorFinishLoading === loading) {
+          return state
+        }
+
+        return {
+          ...state,
+          floorFinishLoading: loading,
+        }
+      })
+    },
     setEditorMessage: (message) => {
       set((state) => {
         if (state.editorMessage === message) {
@@ -272,6 +287,9 @@ export const sceneDocumentActions = {
   setWallFinishId: (id: string) => {
     sceneDocumentStore.getState().setWallFinishId(id)
   },
+  setFloorFinishLoading: (loading: boolean) => {
+    sceneDocumentStore.getState().setFloorFinishLoading(loading)
+  },
   setEditorMessage: (message: string | null) => {
     sceneDocumentStore.getState().setEditorMessage(message)
   },
@@ -306,6 +324,8 @@ export const useFloorFinishId = () =>
   useSceneDocumentStore((state) => state.floorFinishId)
 export const useWallFinishId = () =>
   useSceneDocumentStore((state) => state.wallFinishId)
+export const useFloorFinishLoading = () =>
+  useSceneDocumentStore((state) => state.floorFinishLoading)
 export const useItemIds = () =>
   useSceneDocumentStore(
     (state) => state.history.present.map((item) => item.id),

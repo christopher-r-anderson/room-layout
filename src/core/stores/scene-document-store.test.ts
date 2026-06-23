@@ -21,6 +21,7 @@ import {
   sceneDocumentStore,
   useEditorMessage,
   useFloorFinishId,
+  useFloorFinishLoading,
   useHasSelection,
   useHistoryAvailability,
   useItems,
@@ -175,6 +176,26 @@ describe('sceneDocumentStore', () => {
 
     expect(floorFinishId.current).toBe('oak-floor')
     expect(wallFinishId.current).toBe('white-wall')
+  })
+
+  it('tracks the floor finish loading flag', () => {
+    const { result: floorFinishLoading } = renderHook(() =>
+      useFloorFinishLoading(),
+    )
+
+    expect(floorFinishLoading.current).toBe(false)
+
+    act(() => {
+      sceneDocumentActions.setFloorFinishLoading(true)
+    })
+
+    expect(floorFinishLoading.current).toBe(true)
+
+    act(() => {
+      resetSceneDocumentStore()
+    })
+
+    expect(floorFinishLoading.current).toBe(false)
   })
 
   it('updates selected id directly and clears preview when selection changes', () => {

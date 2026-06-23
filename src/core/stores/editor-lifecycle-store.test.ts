@@ -8,7 +8,6 @@ import {
   resetEditorLifecycleStore,
   useAssetError,
   useEditorInteractionsEnabled,
-  useFloorFinishLoading,
   useRestoreAttemptCount,
   useRestoreOutcome,
   useRetryToken,
@@ -30,7 +29,6 @@ describe('editorLifecycleStore', () => {
     expect(state.assetError).toBeNull()
     expect(state.restoreOutcome).toBeNull()
     expect(state.restoreAttemptCount).toBe(0)
-    expect(state.floorFinishLoading).toBe(false)
     expect(state.sceneEpoch).toBe(0)
     expect(state.retryToken).toBe(0)
   })
@@ -53,7 +51,6 @@ describe('editorLifecycleStore', () => {
   it('bumps both epoch and retry token on retry while preserving restore tracking', () => {
     editorLifecycleActions.incrementRestoreAttempt()
     editorLifecycleActions.recordRestoreOutcome('restored')
-    editorLifecycleActions.setFloorFinishLoading(true)
     editorLifecycleActions.setAssetError({
       kind: 'asset-load',
       message: 'asset load failed',
@@ -64,7 +61,6 @@ describe('editorLifecycleStore', () => {
     const state = editorLifecycleStore.getState()
     expect(state.startupPhase).toBe('loading')
     expect(state.assetError).toBeNull()
-    expect(state.floorFinishLoading).toBe(false)
     expect(state.sceneEpoch).toBe(1)
     expect(state.retryToken).toBe(1)
     // Restore tracking is preserved so the one-time restore flow does not re-run.
@@ -95,7 +91,6 @@ describe('editorLifecycleStore', () => {
   it('records restore outcome and attempt count independently from startup retries', () => {
     editorLifecycleActions.incrementRestoreAttempt()
     editorLifecycleActions.recordRestoreOutcome('restored')
-    editorLifecycleActions.setFloorFinishLoading(true)
     editorLifecycleActions.setAssetError({
       kind: 'asset-load',
       message: 'asset load failed',
@@ -106,7 +101,6 @@ describe('editorLifecycleStore', () => {
     expect(editorLifecycleStore.getState().restoreOutcome).toBe('restored')
     expect(editorLifecycleStore.getState().startupPhase).toBe('loading')
     expect(editorLifecycleStore.getState().assetError).toBeNull()
-    expect(editorLifecycleStore.getState().floorFinishLoading).toBe(false)
   })
 
   it('exposes derived selectors for startup gating', () => {
@@ -117,9 +111,6 @@ describe('editorLifecycleStore', () => {
     const { result: assetError } = renderHook(() => useAssetError())
     const { result: outcome } = renderHook(() => useRestoreOutcome())
     const { result: attempts } = renderHook(() => useRestoreAttemptCount())
-    const { result: floorFinishLoading } = renderHook(() =>
-      useFloorFinishLoading(),
-    )
     const { result: sceneEpoch } = renderHook(() => useSceneEpoch())
     const { result: retryToken } = renderHook(() => useRetryToken())
 
@@ -130,14 +121,12 @@ describe('editorLifecycleStore', () => {
     expect(assetError.current).toBeNull()
     expect(outcome.current).toBeNull()
     expect(attempts.current).toBe(0)
-    expect(floorFinishLoading.current).toBe(false)
     expect(sceneEpoch.current).toBe(0)
     expect(retryToken.current).toBe(0)
 
     act(() => {
       editorLifecycleActions.incrementRestoreAttempt()
       editorLifecycleActions.recordRestoreOutcome('invalid')
-      editorLifecycleActions.setFloorFinishLoading(true)
       editorLifecycleActions.markAssetsReady()
     })
 
@@ -147,7 +136,6 @@ describe('editorLifecycleStore', () => {
     expect(enabled.current).toBe(true)
     expect(outcome.current).toBe('invalid')
     expect(attempts.current).toBe(1)
-    expect(floorFinishLoading.current).toBe(true)
 
     act(() => {
       editorLifecycleActions.requestRetry()

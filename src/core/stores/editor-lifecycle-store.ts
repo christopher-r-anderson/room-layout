@@ -18,7 +18,6 @@ interface EditorLifecycleStoreState {
   assetError: EditorAssetError | null
   restoreOutcome: RestoreOutcome | null
   restoreAttemptCount: number
-  floorFinishLoading: boolean
   sceneEpoch: number
   retryToken: number
   markLoading: () => void
@@ -29,7 +28,6 @@ interface EditorLifecycleStoreState {
   clearAssetError: () => void
   recordRestoreOutcome: (outcome: RestoreOutcome | null) => void
   incrementRestoreAttempt: () => void
-  setFloorFinishLoading: (loading: boolean) => void
   resetEditorLifecycle: () => void
   reset: () => void
 }
@@ -39,7 +37,6 @@ const INITIAL_EDITOR_LIFECYCLE_STATE = {
   assetError: null,
   restoreOutcome: null,
   restoreAttemptCount: 0,
-  floorFinishLoading: false,
   sceneEpoch: 0,
   retryToken: 0,
 }
@@ -97,7 +94,6 @@ export const editorLifecycleStore = createStore<EditorLifecycleStoreState>()(
         ...state,
         startupPhase: 'loading',
         assetError: null,
-        floorFinishLoading: false,
         sceneEpoch: state.sceneEpoch + 1,
         retryToken: state.retryToken + 1,
       }))
@@ -149,25 +145,9 @@ export const editorLifecycleStore = createStore<EditorLifecycleStoreState>()(
         restoreAttemptCount: state.restoreAttemptCount + 1,
       }))
     },
-    setFloorFinishLoading: (loading) => {
-      set((state) => {
-        if (state.floorFinishLoading === loading) {
-          return state
-        }
-
-        return {
-          ...state,
-          floorFinishLoading: loading,
-        }
-      })
-    },
     resetEditorLifecycle: () => {
       set((state) => {
-        if (
-          state.startupPhase === 'loading' &&
-          state.assetError === null &&
-          !state.floorFinishLoading
-        ) {
+        if (state.startupPhase === 'loading' && state.assetError === null) {
           return state
         }
 
@@ -175,7 +155,6 @@ export const editorLifecycleStore = createStore<EditorLifecycleStoreState>()(
           ...state,
           startupPhase: 'loading',
           assetError: null,
-          floorFinishLoading: false,
         }
       })
     },
@@ -220,9 +199,6 @@ export const editorLifecycleActions = {
   incrementRestoreAttempt: () => {
     editorLifecycleStore.getState().incrementRestoreAttempt()
   },
-  setFloorFinishLoading: (loading: boolean) => {
-    editorLifecycleStore.getState().setFloorFinishLoading(loading)
-  },
   resetEditorLifecycle: () => {
     editorLifecycleStore.getState().resetEditorLifecycle()
   },
@@ -243,8 +219,6 @@ export const useRestoreOutcome = () =>
   useEditorLifecycleStore((state) => state.restoreOutcome)
 export const useRestoreAttemptCount = () =>
   useEditorLifecycleStore((state) => state.restoreAttemptCount)
-export const useFloorFinishLoading = () =>
-  useEditorLifecycleStore((state) => state.floorFinishLoading)
 export const useSceneEpoch = () =>
   useEditorLifecycleStore((state) => state.sceneEpoch)
 export const useRetryToken = () =>
