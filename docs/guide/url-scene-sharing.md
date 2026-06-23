@@ -5,7 +5,8 @@ This guide documents the shared URL scene payload used by the editor.
 ## Summary
 
 The editor can encode room layouts in a `?scene=` query parameter and restore
-that layout on startup.
+that layout on startup. This doc is the overview; the exact encoder/decoder is
+`src/core/persistence/scene-url.ts`.
 
 ## Payload Shape
 

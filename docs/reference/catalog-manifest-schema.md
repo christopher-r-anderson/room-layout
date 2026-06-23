@@ -139,6 +139,10 @@ remains selectable.
 
 ## Validation Rules
 
+These are enforced at load by the validator in
+`src/features/startup/catalog-manifest.ts`, which is the exact contract; the list
+below is the human-readable summary.
+
 - All path fields (`modelPath`, catalog/floor `previewPath`, `diffusePath`,
   `normalPath`) must be relative paths that do not escape the public directory.
 - All `kind` values must match one of the known furniture kinds.
