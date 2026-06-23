@@ -1,4 +1,4 @@
-# Editor Workflow Reference
+# Editor Workflow
 
 This guide is a contributor-facing manual verification checklist.
 Use it when validating behavior changes, reproducing reports, or reviewing test
@@ -68,12 +68,12 @@ guidance.
 
 ## Out of Scope
 
-- end-user onboarding or usage walkthroughs (see [user-guide.md](user-guide.md))
-- deep implementation details of shortcut internals (see [keyboard-shortcuts.md](keyboard-shortcuts.md))
+- end-user onboarding or usage walkthroughs (see [user-guide.md](../guide/user-guide.md))
+- deep implementation details of shortcut internals (see [keyboard.md](keyboard.md))
 
 ## Related References
 
 - [testing.md](testing.md)
-- [editor-shortcuts-reference.md](editor-shortcuts-reference.md)
+- [editor-shortcuts-reference.md](../reference/editor-shortcuts-reference.md)
 - [overlay-interaction-model.md](overlay-interaction-model.md)
-- [url-scene-sharing.md](url-scene-sharing.md)
+- [url-scene-sharing.md](../guide/url-scene-sharing.md)

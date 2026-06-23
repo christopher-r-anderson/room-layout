@@ -26,7 +26,7 @@ Open the app at the local URL shown by Vite.
 
 ## 🖦 Using the Editor
 
-For a user-facing walkthrough, see [docs/user-guide.md](docs/user-guide.md).
+For a user-facing walkthrough, see [docs/guide/user-guide.md](docs/guide/user-guide.md).
 
 - Add furniture from `Add Furniture`, then select items in the room or from the
   `Furniture in room` panel.
@@ -37,7 +37,7 @@ For a user-facing walkthrough, see [docs/user-guide.md](docs/user-guide.md).
   URL.
 
 Shortcut details are documented in
-[docs/editor-shortcuts-reference.md](docs/editor-shortcuts-reference.md).
+[docs/reference/editor-shortcuts-reference.md](docs/reference/editor-shortcuts-reference.md).
 
 ## 🧑‍💻 Development
 
@@ -69,7 +69,7 @@ pnpm test:browser:perf # run browser perf scenarios and collect artifacts
 ```
 
 For current UI component policy and the temporary knip export exception, see
-`docs/ui-components.md`.
+`docs/architecture/ui-components.md`.
 
 ## 🤖 Testing
 
@@ -80,7 +80,7 @@ Use lane-specific tests based on the change scope:
 - `pnpm test:browser:perf`: scripted performance scenarios
 - `pnpm bench`: utility microbenchmarks
 
-Detailed testing workflow guidance lives in `docs/testing.md`.
+Detailed testing workflow guidance lives in `docs/architecture/testing.md`.
 It also includes first-time Playwright setup and test artifact locations.
 
 ## ✨ Accessibility
@@ -122,26 +122,26 @@ In addition to this README, project-specific guides are available:
 
 ### Architecture
 
-- [Architecture Boundaries](docs/architecture-boundaries.md): Layer map, placement rules, current exceptions, and planned boundary improvements.
-- [Editor State Architecture](docs/editor-state-architecture.md): Runtime editor-state ownership, dialog orchestration model, and app/scene data-flow seams.
+- [Architecture](docs/architecture/architecture.md): Layer map, placement rules, current exceptions, and planned boundary improvements.
+- [Core Architecture](docs/architecture/core-architecture.md): Runtime core ownership, dialog orchestration model, and app/scene data-flow seams.
 
 ### Contributor Workflows
 
-- [Testing Guide](docs/testing.md): Contributor test lane selection and browser test workflow guidance.
-- [Catalog and Assets](docs/catalog-and-assets.md): Manifest editing, validation, texture pipeline, and asset contract notes.
-- [Catalog Manifest Schema](docs/catalog-manifest-schema.md): Full catalog manifest field reference and validation constraints.
-- [UI Components Policy](docs/ui-components.md): shadcn ownership model and knip export exception.
+- [Testing Guide](docs/architecture/testing.md): Contributor test lane selection and browser test workflow guidance.
+- [Catalog and Assets](docs/architecture/catalog-and-assets.md): Manifest editing, validation, texture pipeline, and asset contract notes.
+- [Catalog Manifest Schema](docs/reference/catalog-manifest-schema.md): Full catalog manifest field reference and validation constraints.
+- [UI Components Policy](docs/architecture/ui-components.md): shadcn ownership model and knip export exception.
 
 ### Feature and Behavior References
 
-- [User Guide](docs/user-guide.md): End-user workflows and controls overview.
-- [Editor Workflow Reference](docs/editor-workflow-reference.md): Contributor-oriented manual workflow map for development and testing.
-- [URL Scene Sharing](docs/url-scene-sharing.md): Shared URL payload and restore behavior.
-- [Assets Attribution](docs/assets-attribution.md): third-party asset source and license attribution.
-- [Editor Shortcuts Reference](docs/editor-shortcuts-reference.md): End-user shortcut map for camera, object, and scene actions.
-- [Keyboard Shortcuts (Engineering)](docs/keyboard-shortcuts.md): Input architecture, matching/suppression/execution rules, and held-key camera behavior.
-- [Overlay Interaction Model](docs/overlay-interaction-model.md): Blocking overlays vs the non-blocking Room surface, including focus and breakpoint behavior.
-- [Selected Toolbar Placement](docs/selected-toolbar-placement.md): Bounds source order, viewport-space placement, floating candidate scoring, and docked fallback behavior.
+- [User Guide](docs/guide/user-guide.md): End-user workflows and controls overview.
+- [Editor Workflow Reference](docs/architecture/editor-workflow.md): Contributor-oriented manual workflow map for development and testing.
+- [URL Scene Sharing](docs/guide/url-scene-sharing.md): Shared URL payload and restore behavior.
+- [Assets Attribution](docs/reference/assets-attribution.md): third-party asset source and license attribution.
+- [Editor Shortcuts Reference](docs/reference/editor-shortcuts-reference.md): End-user shortcut map for camera, object, and scene actions.
+- [Keyboard Shortcuts (Engineering)](docs/architecture/keyboard.md): Input architecture, matching/suppression/execution rules, and held-key camera behavior.
+- [Overlay Interaction Model](docs/architecture/overlay-interaction-model.md): Blocking overlays vs the non-blocking Room surface, including focus and breakpoint behavior.
+- [Selected Toolbar Placement](docs/architecture/selected-toolbar-placement.md): Bounds source order, viewport-space placement, floating candidate scoring, and docked fallback behavior.
 
 ### Automation
 
@@ -161,9 +161,9 @@ Local architecture notes are also available in:
 The editor is catalog-driven through `public/catalog-manifest.json`.
 
 For manifest updates, validation rules, texture export requirements, and asset
-pipeline details, see `docs/catalog-and-assets.md`.
+pipeline details, see `docs/architecture/catalog-and-assets.md`.
 
-For schema details, see `docs/catalog-manifest-schema.md`.
+For schema details, see `docs/reference/catalog-manifest-schema.md`.
 
 ### URL Scene Sharing
 
@@ -171,11 +171,11 @@ The editor supports sharing a room layout via URL (`?scene=`). Use the desktop
 Share action or mobile More menu to invoke native share or clipboard fallback.
 
 For payload schema, constraints, and restore behavior details, see
-`docs/url-scene-sharing.md`.
+`docs/guide/url-scene-sharing.md`.
 
 ## 🛋️ Assets
 
-See `docs/assets-attribution.md` for full third-party attribution details.
+See `docs/reference/assets-attribution.md` for full third-party attribution details.
 
 ## 📄 License
 

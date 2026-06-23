@@ -2,7 +2,7 @@
 
 This is the end-user shortcut reference for room editor interactions.
 
-For implementation details and architecture, see [Keyboard Shortcuts](./keyboard-shortcuts.md).
+For implementation details and architecture, see [Keyboard Shortcuts](../architecture/keyboard.md).
 
 ## Camera
 

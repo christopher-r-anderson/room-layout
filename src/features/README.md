@@ -31,4 +31,4 @@ Guideline
 
 See also
 
-- `docs/architecture-boundaries.md`
+- `docs/architecture/architecture.md`

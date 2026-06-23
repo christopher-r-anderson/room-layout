@@ -10,7 +10,7 @@ Checklist:
    required to keep the build green.
 3. Move path-based tests, mocks, and fixtures with the code they cover.
 4. Update boundary config when ownership or layering changes.
-5. Update only overlapping docs (`docs/architecture-boundaries.md`,
+5. Update only overlapping docs (`docs/architecture/architecture.md`,
    `src/*/README.md`, root `README.md` pointers).
 
 Validation:

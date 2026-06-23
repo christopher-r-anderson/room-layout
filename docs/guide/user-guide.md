@@ -3,7 +3,7 @@
 Welcome to the Room Layout User Guide.
 
 This walkthrough focuses on the main ways to build and adjust a room layout, from placing furniture to sharing your final setup.
-If you need contributor-oriented reproduction steps, please use the [editor-workflow-reference.md](editor-workflow-reference.md).
+If you need contributor-oriented reproduction steps, please use the [editor-workflow.md](../architecture/editor-workflow.md).
 
 ## Start a Layout
 
@@ -55,7 +55,7 @@ Common shortcut groups include:
 - undo and redo
 - starting over
 
-For the full shortcut list, see [editor-shortcuts-reference.md](editor-shortcuts-reference.md).
+For the full shortcut list, see [editor-shortcuts-reference.md](../reference/editor-shortcuts-reference.md).
 
 ## Share a Layout
 

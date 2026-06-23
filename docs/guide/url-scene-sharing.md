@@ -37,4 +37,4 @@ share where available and clipboard fallback otherwise.
 ## Related Docs
 
 - `README.md`
-- `docs/catalog-and-assets.md`
+- `docs/architecture/catalog-and-assets.md`

@@ -6,7 +6,7 @@ task-specific policy files.
 ## Core Rules
 
 - Preserve architecture boundaries enforced in `eslint.config.js`.
-- Treat `docs/architecture-boundaries.md` as architecture policy source of truth.
+- Treat `docs/architecture/architecture.md` as architecture policy source of truth.
 - Keep runtime code independent from `src/test/**`.
 - Do not import `@/scene/internal/**` outside scene runtime/tests.
 - Use `@/` alias for source imports unless local relative import is more
@@ -39,7 +39,7 @@ task-specific policy files.
 ## Human Docs
 
 - Project overview and scripts: `README.md`
-- Architecture policy: `docs/architecture-boundaries.md`
+- Architecture policy: `docs/architecture/architecture.md`
 - Layer-local context:
   - `src/app/README.md`
   - `src/features/README.md`

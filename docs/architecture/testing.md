@@ -31,7 +31,7 @@ of the measurement goal.
 
 ## Browser Test Guidance
 
-Use [editor-workflow-reference.md](editor-workflow-reference.md)
+Use [editor-workflow.md](editor-workflow.md)
 as the manual workflow map when planning browser tests or reviewing coverage.
 
 For scene-only Playwright tests where overlay UI is incidental, use the shared
@@ -68,7 +68,7 @@ verification for high-impact accessibility changes.
 
 See also:
 
-- [../README.md](README.md)
-- [editor-workflow-reference.md](editor-workflow-reference.md)
+- [../../README.md](../../README.md)
+- [editor-workflow.md](editor-workflow.md)
 - [overlay-interaction-model.md](overlay-interaction-model.md)
-- [.agents/policies/testing.md](.agents/policies/testing.md)
+- [.agents/policies/testing.md](../../.agents/policies/testing.md)

@@ -19,7 +19,7 @@ ones that **won't** move in the upcoming audits, so this pass is durable.
 1. **One concept, one home.** Each concept has a single canonical doc. Every
    other doc links to it; none re-explains it.
 2. **Altitude = durable structure + invariants + rationale.** Prose describes the
-   shape, the invariants, and the *why*. Exact specifics (method lists, field
+   shape, the invariants, and the _why_. Exact specifics (method lists, field
    tables, key combos) live in code, types, tests, or schema — which can't drift —
    and the doc points there. If a section would break when a signature changes,
    it's at the wrong altitude.
@@ -37,7 +37,7 @@ ones that **won't** move in the upcoming audits, so this pass is durable.
   `overlay-interaction-model.md` (99 lines) re-covers blocking/non-blocking,
   mutual exclusion, and focus return. `editor-workflow-reference.md` has a
   "Dialog and Overlay Contracts" section too. Three docs, one concept.
-- **Keyboard.** `keyboard-shortcuts.md` (172 lines) is keyboard *architecture*
+- **Keyboard.** `keyboard-shortcuts.md` (172 lines) is keyboard _architecture_
   (input systems, shortcut model, held-key model) — but its name implies the
   user shortcut list, which actually lives in `editor-shortcuts-reference.md`.
   Naming inversion + overlap with the `user-guide` shortcuts section.
@@ -56,7 +56,7 @@ ones that **won't** move in the upcoming audits, so this pass is durable.
 **Over-detail (drift-prone):**
 
 - The dialog how-to in `core-architecture.md` enumerates the store API in prose.
-- `catalog-manifest-schema.md` (234 lines) field-by-field — justified *if* framed
+- `catalog-manifest-schema.md` (234 lines) field-by-field — justified _if_ framed
   as exact reference pointing at the validator, not as standalone prose.
 
 **Mislocation / misnaming:**
@@ -72,28 +72,28 @@ ones that **won't** move in the upcoming audits, so this pass is durable.
 
 ### Tier 1 — Architecture / contributor docs (the focus of this pass)
 
-| Doc | Owns (single concept) | Altitude | Action |
-| --- | --- | --- | --- |
-| `architecture.md` | layer map, dependency rules, placement rules, ESLint contract | structure + rules | **rename** from `architecture-boundaries.md` |
-| `core.md` | the `core` layer: real store inventory, operations, commands vocabulary, persistence | responsibilities, not API | **reframe** `core-architecture.md`, minus dialogs and scene-seam |
-| `scene-and-core.md` | the data-model/engine seam: data in core, rules+rendering in scene, commands-down / contract-up, the published `scene-contracts` surface | fundamental model + invariants | **new** — promote the buried "Scene Ownership"/"Data Flow" out of `core-architecture.md`; this is where the "mirror" reframing lives |
-| `dialogs-and-overlays.md` | dialog/overlay model: registry, active-surface invariant, blocking semantics, focus-return ownership | model + invariants | **merge** `core-architecture.md` dialog sections + `overlay-interaction-model.md`; drop the API how-to (point to code) |
-| `keyboard.md` | keyboard *system* architecture (input systems, shortcut model, held-key model) | subsystem model | **rename** from `keyboard-shortcuts.md`; clarify it is architecture, not the list |
-| `selected-toolbar-placement.md` | toolbar bounds + placement algorithm | feature algorithm | keep |
-| `catalog-manifest-schema.md` | the manifest schema (exact reference) | reference → points at the validator | keep; absorb the validation-rule dup |
-| `catalog-and-assets.md` | asset pipeline, locations, startup contract | overview | keep; drop validation dup → link to schema |
-| `testing.md` | test lanes + guidance | process | keep |
-| `ui-components.md` | shadcn/ui ownership policy | policy | keep |
-| `editor-workflow-reference.md` | verification/behavior catalog (QA flows) | reference | keep; its dialog/overlay/keyboard items **link out** instead of restating |
+| Doc                             | Owns (single concept)                                                                                                                    | Altitude                            | Action                                                                                                                               |
+| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `architecture.md`               | layer map, dependency rules, placement rules, ESLint contract                                                                            | structure + rules                   | **rename** from `architecture-boundaries.md`                                                                                         |
+| `core.md`                       | the `core` layer: real store inventory, operations, commands vocabulary, persistence                                                     | responsibilities, not API           | **reframe** `core-architecture.md`, minus dialogs and scene-seam                                                                     |
+| `scene-and-core.md`             | the data-model/engine seam: data in core, rules+rendering in scene, commands-down / contract-up, the published `scene-contracts` surface | fundamental model + invariants      | **new** — promote the buried "Scene Ownership"/"Data Flow" out of `core-architecture.md`; this is where the "mirror" reframing lives |
+| `dialogs-and-overlays.md`       | dialog/overlay model: registry, active-surface invariant, blocking semantics, focus-return ownership                                     | model + invariants                  | **merge** `core-architecture.md` dialog sections + `overlay-interaction-model.md`; drop the API how-to (point to code)               |
+| `keyboard.md`                   | keyboard _system_ architecture (input systems, shortcut model, held-key model)                                                           | subsystem model                     | **rename** from `keyboard-shortcuts.md`; clarify it is architecture, not the list                                                    |
+| `selected-toolbar-placement.md` | toolbar bounds + placement algorithm                                                                                                     | feature algorithm                   | keep                                                                                                                                 |
+| `catalog-manifest-schema.md`    | the manifest schema (exact reference)                                                                                                    | reference → points at the validator | keep; absorb the validation-rule dup                                                                                                 |
+| `catalog-and-assets.md`         | asset pipeline, locations, startup contract                                                                                              | overview                            | keep; drop validation dup → link to schema                                                                                           |
+| `testing.md`                    | test lanes + guidance                                                                                                                    | process                             | keep                                                                                                                                 |
+| `ui-components.md`              | shadcn/ui ownership policy                                                                                                               | policy                              | keep                                                                                                                                 |
+| `editor-workflow-reference.md`  | verification/behavior catalog (QA flows)                                                                                                 | reference                           | keep; its dialog/overlay/keyboard items **link out** instead of restating                                                            |
 
 ### Tier 2 — End-user / reference docs
 
-| Doc | Owns | Action |
-| --- | --- | --- |
-| `user-guide.md` | end-user how-to | keep |
-| `editor-shortcuts-reference.md` | the actual shortcut list | keep (optionally rename `shortcuts-reference.md` to pair clearly with `keyboard.md`) |
-| `url-scene-sharing.md` | the sharing feature + payload shape | keep; point to `scene-url` for exact payload |
-| `assets-attribution.md` | licenses / attribution | keep (standalone) |
+| Doc                             | Owns                                | Action                                                                               |
+| ------------------------------- | ----------------------------------- | ------------------------------------------------------------------------------------ |
+| `user-guide.md`                 | end-user how-to                     | keep                                                                                 |
+| `editor-shortcuts-reference.md` | the actual shortcut list            | keep (optionally rename `shortcuts-reference.md` to pair clearly with `keyboard.md`) |
+| `url-scene-sharing.md`          | the sharing feature + payload shape | keep; point to `scene-url` for exact payload                                         |
+| `assets-attribution.md`         | licenses / attribution              | keep (standalone)                                                                    |
 
 ### Tier 3 — Agent docs & layer READMEs (mostly unchanged)
 

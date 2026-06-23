@@ -2,7 +2,7 @@
 
 Canonical source:
 
-- `docs/architecture-boundaries.md`
+- `docs/architecture/architecture.md`
 - `eslint.config.js`
 
 Layer intent:
@@ -37,4 +37,4 @@ Move/refactor guidance:
 - Update imports, tests, and config in the same change set when they are part
   of the same ownership move.
 - Treat ESLint boundary violations as architectural issues, not lint noise.
-- When boundary intent changes, update `docs/architecture-boundaries.md`.
+- When boundary intent changes, update `docs/architecture/architecture.md`.

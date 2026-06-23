@@ -66,6 +66,6 @@ blocking error overlay with retry behavior.
 ## Related Docs
 
 - `README.md`
-- `docs/catalog-manifest-schema.md`
-- `docs/selected-toolbar-placement.md`
-- `docs/url-scene-sharing.md`
+- `docs/reference/catalog-manifest-schema.md`
+- `docs/architecture/selected-toolbar-placement.md`
+- `docs/guide/url-scene-sharing.md`

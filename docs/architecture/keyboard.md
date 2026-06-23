@@ -1,8 +1,8 @@
-# Keyboard Shortcuts
+# Keyboard System
 
 This document covers implementation rules for keyboard input behavior.
 
-For end-user key mappings, see [Editor Shortcuts Reference](./editor-shortcuts-reference.md).
+For end-user key mappings, see [Editor Shortcuts Reference](../reference/editor-shortcuts-reference.md).
 
 ## Input Systems
 

@@ -1,4 +1,4 @@
-# Architecture Boundaries
+# Architecture
 
 This document defines target architecture and placement rules for runtime code.
 
@@ -103,6 +103,6 @@ These are temporary or intentionally narrow.
 
 - Root overview and scripts: `README.md`
 - Agent operating contract and policy routing: `AGENTS.md`, `.agents/README.md`
-- Overlay model and behavior: `docs/overlay-interaction-model.md`
-- Selected toolbar placement details: `docs/selected-toolbar-placement.md`
-- Core architecture: `docs/core-architecture.md`
+- Overlay model and behavior: `docs/architecture/overlay-interaction-model.md`
+- Selected toolbar placement details: `docs/architecture/selected-toolbar-placement.md`
+- Core architecture: `docs/architecture/core-architecture.md`

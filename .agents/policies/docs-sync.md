@@ -4,7 +4,7 @@ Goal: keep agent policy and human docs aligned without duplication.
 
 Canonical ownership:
 
-- Architecture policy: `docs/architecture-boundaries.md`
+- Architecture policy: `docs/architecture/architecture.md`
 - Project overview, scripts, and contributor entrypoint: `README.md`
 - Layer-local intent: `src/*/README.md`
 - Agent operating rules: `AGENTS.md` and `.agents/policies/*`

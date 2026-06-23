@@ -21,4 +21,4 @@ Should not contain
 
 See also
 
-- `docs/architecture-boundaries.md`
+- `docs/architecture/architecture.md`
