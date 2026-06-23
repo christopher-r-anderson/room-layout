@@ -7,7 +7,7 @@ import type {
   SelectByIdResult,
   UpdateSelectionTransformResult,
 } from '../scene.types'
-import type { FurnitureInstance } from '../objects/furniture.types'
+import type { FurnitureInstance } from '@/domain/furniture'
 import type { SceneSnapshot } from './scene-snapshot'
 
 export interface SceneServices {

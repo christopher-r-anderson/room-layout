@@ -6,7 +6,7 @@ import { Group } from 'three'
 import { resetSceneDocumentStore } from '@/core/scene-test-support'
 import { createDummyMesh } from '@/test/support/three-fixtures'
 import { useSceneSelection } from './use-scene-selection'
-import type { FurnitureItem } from '../objects/furniture.types'
+import type { FurnitureItem } from '@/domain/furniture'
 
 function createFurnitureItem(id: string): FurnitureItem {
   return {

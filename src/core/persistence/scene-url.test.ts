@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import type { FurnitureItem } from '@/scene/objects/furniture.types'
-import type { FurnitureCatalogEntry } from '@/scene/objects/furniture-catalog'
+import type { FurnitureItem } from '@/domain/furniture'
+import type { FurnitureCatalogEntry } from '@/domain/catalog'
 import {
   SCENE_URL_MAX_ENCODED_LENGTH,
   SCENE_URL_PARAM,

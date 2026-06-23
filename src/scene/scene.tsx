@@ -24,11 +24,11 @@ import {
   type LayoutBounds,
 } from '@/shared/lib/three/furniture-layout'
 import { commitHistoryPresent } from '@/shared/lib/ui/editor-history'
-import type { FurnitureInstance } from './objects/furniture.types'
+import type { FurnitureInstance } from '@/domain/furniture'
 import type {
   FurnitureCatalogEntry,
   FurnitureCollection,
-} from './objects/furniture-catalog'
+} from '@/domain/catalog'
 import {
   addFurnitureToHistory,
   areFurnitureCollectionsEqual,

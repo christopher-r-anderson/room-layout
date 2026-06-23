@@ -9,11 +9,11 @@ import type { CameraKeyState } from '../scene.types'
 import type {
   FurnitureInstance,
   FurnitureItem,
-} from '../objects/furniture.types'
+} from '@/domain/furniture'
 import type {
   FurnitureCatalogEntry,
   FurnitureCollection,
-} from '../objects/furniture-catalog'
+} from '@/domain/catalog'
 
 interface UseSceneImperativeApiOptions {
   camera: Parameters<typeof createSceneSnapshot>[2]

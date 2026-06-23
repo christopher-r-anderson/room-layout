@@ -3,7 +3,7 @@ import {
   getSceneServices,
   getSceneServicesIfReady,
 } from './internal/scene-services'
-import type { FurnitureInstance } from './objects/furniture.types'
+import type { FurnitureInstance } from '@/domain/furniture'
 import type {
   AddFurnitureResult,
   CameraKeyState,

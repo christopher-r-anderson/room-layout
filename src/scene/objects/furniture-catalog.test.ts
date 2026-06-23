@@ -14,26 +14,13 @@ vi.mock('@react-three/drei', () => ({
 
 import {
   clearFurnitureCollectionCache,
-  getCollection,
   preloadFurnitureCollections,
 } from './furniture-catalog'
 import { resolvePublicAssetPath } from '@/shared/lib/asset-path'
-import type { FurnitureCollection } from './furniture-catalog'
 
 const TEST_PATHS = [
   resolvePublicAssetPath('models/leather-collection.glb'),
   resolvePublicAssetPath('models/end-table.glb'),
-]
-
-const TEST_COLLECTIONS: FurnitureCollection[] = [
-  {
-    id: 'leather-collection',
-    sourcePath: resolvePublicAssetPath('models/leather-collection.glb'),
-  },
-  {
-    id: 'end-table',
-    sourcePath: resolvePublicAssetPath('models/end-table.glb'),
-  },
 ]
 
 describe('resolvePublicAssetPath', () => {
@@ -69,20 +56,5 @@ describe('clearFurnitureCollectionCache', () => {
 
     expect(clearSpy).toHaveBeenCalledTimes(1)
     expect(clearSpy.mock.calls[0]).toEqual([TEST_PATHS])
-  })
-})
-
-describe('getCollection', () => {
-  it('returns the matching collection for a known collection id', () => {
-    expect(getCollection('end-table', TEST_COLLECTIONS)).toEqual({
-      id: 'end-table',
-      sourcePath: resolvePublicAssetPath('models/end-table.glb'),
-    })
-  })
-
-  it('throws for an unknown collection id', () => {
-    expect(() => getCollection('unknown', TEST_COLLECTIONS)).toThrow(
-      'unknown furniture collection: unknown',
-    )
   })
 })

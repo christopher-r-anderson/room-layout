@@ -1,4 +1,4 @@
-import type { FootprintSize } from '@/scene/objects/furniture.types'
+import type { FootprintSize } from '@/domain/furniture'
 import {
   footprintsOverlap,
   getEdgeSnapDelta,

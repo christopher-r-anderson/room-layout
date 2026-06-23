@@ -1,4 +1,4 @@
-import type { FurnitureInstance } from '@/scene/objects/furniture.types'
+import type { FurnitureInstance } from '@/domain/furniture'
 
 /**
  * Rounds a number to 3 decimal places using toFixed() for robust floating-point handling.

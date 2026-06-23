@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import { beforeEach, describe, expect, it } from 'vitest'
-import type { FurnitureItem } from '@/scene/objects/furniture.types'
+import type { FurnitureItem } from '@/domain/furniture'
 import { clearSceneDraft, loadSceneDraft, saveSceneDraft } from './scene-draft'
 
 function makeFurnitureItem(overrides?: Partial<FurnitureItem>): FurnitureItem {

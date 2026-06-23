@@ -12,7 +12,7 @@ import {
   finalizeHistoryPresent,
   type HistoryState,
 } from '@/shared/lib/ui/editor-history'
-import type { FurnitureItem } from '../objects/furniture.types'
+import type { FurnitureItem } from '@/domain/furniture'
 
 interface DragState {
   id: string

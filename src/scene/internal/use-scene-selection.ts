@@ -2,7 +2,7 @@ import { useCallback, useMemo, useRef, useState, type RefObject } from 'react'
 import { type Object3D } from 'three'
 import { getMeshes } from '@/shared/lib/three/get-meshes'
 import { sceneDocumentActions, useSelectedId } from '@/core/scene-contracts'
-import type { FurnitureItem } from '../objects/furniture.types'
+import type { FurnitureItem } from '@/domain/furniture'
 
 interface SceneSelectionState {
   objectRefs: RefObject<Map<string, Object3D>>

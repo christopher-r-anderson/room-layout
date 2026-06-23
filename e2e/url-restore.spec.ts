@@ -13,7 +13,7 @@
  *  - Error scenarios: scene too large, clipboard failures, invalid scenes
  */
 import { expect, test, type Page } from '@playwright/test'
-import type { FurnitureInstance } from '../src/scene/objects/furniture.types'
+import type { FurnitureInstance } from '../src/domain/furniture'
 import {
   addFurniture,
   openEditor,

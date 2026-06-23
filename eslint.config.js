@@ -28,7 +28,7 @@ const PARENT_RELATIVE_IMPORT_MESSAGE =
   'Prefer @/ alias imports over parent-relative path traversals.'
 
 const SCENE_ALLOWED_RUNTIME_IMPORTS =
-  'scene-commands$|scene\\.types$|objects/furniture\\.types$|objects/furniture-catalog$'
+  'scene-commands$|scene\\.types$|objects/furniture-catalog$'
 const RESTRICT_SCENE_IMPORTS_FOR_FEATURES_AND_SHARED = `^@/scene/(?!${SCENE_ALLOWED_RUNTIME_IMPORTS}).+`
 const RESTRICT_SCENE_IMPORTS_FOR_APP = `^@/scene/(?!scene$|${SCENE_ALLOWED_RUNTIME_IMPORTS}).+`
 
@@ -64,6 +64,45 @@ export default defineConfig([
         projectService: true,
         tsconfigRootDir: import.meta.dirname,
       },
+    },
+  },
+
+  // Domain leaf: the pure model vocabulary. The lowest layer — every other layer
+  // may import it; it imports nothing internal.
+  {
+    files: ['src/domain/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: [
+                '@/app',
+                '@/app/**',
+                '@/features',
+                '@/features/**',
+                '@/core',
+                '@/core/**',
+                '@/scene',
+                '@/scene/**',
+                '@/shared',
+                '@/shared/**',
+              ],
+              message:
+                'src/domain is the lowest layer and must not import from app, features, core, scene, or shared.',
+            },
+            {
+              group: RUNTIME_TEST_IMPORT_GROUP,
+              message: 'Runtime code must not import from src/test.',
+            },
+            {
+              regex: PARENT_RELATIVE_IMPORT_REGEX,
+              message: PARENT_RELATIVE_IMPORT_MESSAGE,
+            },
+          ],
+        },
+      ],
     },
   },
 

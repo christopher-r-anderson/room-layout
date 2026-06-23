@@ -1,4 +1,4 @@
-import type { FootprintSize } from '@/scene/objects/furniture.types'
+import type { FootprintSize } from '@/domain/furniture'
 
 const EPSILON = 1e-6
 

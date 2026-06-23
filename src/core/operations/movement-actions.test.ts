@@ -10,7 +10,7 @@ import {
   resetEditorLifecycleStore,
 } from '@/core/stores/editor-lifecycle-store'
 import { sceneCommands } from '@/scene/scene-commands'
-import type { FurnitureItem } from '@/scene/objects/furniture.types'
+import type { FurnitureItem } from '@/domain/furniture'
 import { moveSelection, rotateSelection } from './movement-actions'
 
 vi.mock('@/core/stores/feedback-store', () => ({

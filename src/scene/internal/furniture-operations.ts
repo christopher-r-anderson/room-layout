@@ -12,12 +12,12 @@ import { type Object3D } from 'three'
 import type {
   FurnitureCatalogEntry,
   FurnitureCollection,
-} from '../objects/furniture-catalog'
-import { getCollection } from '../objects/furniture-catalog'
+} from '@/domain/catalog'
+import { getCollection } from '@/domain/catalog'
 import type {
   FurnitureInstance,
   FurnitureItem,
-} from '../objects/furniture.types'
+} from '@/domain/furniture'
 
 export type AddFurnitureResult =
   | { ok: true; id: string }

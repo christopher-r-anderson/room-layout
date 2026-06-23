@@ -1,4 +1,4 @@
-import type { FurnitureItem } from '@/scene/objects/furniture.types'
+import type { FurnitureItem } from '@/domain/furniture'
 import { getFootprintBounds } from './furniture-footprint'
 import type { LayoutBounds } from './furniture-layout'
 import { ROOM_HALF_DEPTH_METERS, ROOM_HALF_WIDTH_METERS } from './room-metrics'

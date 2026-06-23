@@ -1,8 +1,8 @@
-import type { FurnitureCatalogEntry } from '@/scene/objects/furniture-catalog'
+import type { FurnitureCatalogEntry } from '@/domain/catalog'
 import type {
   FurnitureInstance,
   FurnitureItem,
-} from '@/scene/objects/furniture.types'
+} from '@/domain/furniture'
 import {
   isValidFurnitureInstance,
   roundTo3,

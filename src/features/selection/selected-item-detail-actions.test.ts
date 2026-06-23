@@ -16,7 +16,7 @@ import {
 } from '@/core/stores/selection-focus-store'
 import { sceneCommands } from '@/scene/scene-commands'
 import { feedbackActions } from '@/core/stores/feedback-store'
-import type { FurnitureItem } from '@/scene/objects/furniture.types'
+import type { FurnitureItem } from '@/domain/furniture'
 import {
   invalidSelectedItemDetailValueMessage,
   updateSelectedItemDetails,

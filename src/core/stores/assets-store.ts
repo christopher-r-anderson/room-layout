@@ -5,7 +5,7 @@ import type { EnvironmentMaterialConfig } from '@/shared/lib/three/environment-m
 import type {
   FurnitureCatalogEntry,
   FurnitureCollection,
-} from '@/scene/objects/furniture-catalog'
+} from '@/domain/catalog'
 import type { EqualityChecker } from '../types/store.types'
 
 interface Assets {

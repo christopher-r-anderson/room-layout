@@ -1,5 +1,5 @@
 import type { RestoreOutcome } from '@/core/stores/editor-lifecycle-store'
-import type { FurnitureInstance } from '@/scene/objects/furniture.types'
+import type { FurnitureInstance } from '@/domain/furniture'
 
 export interface RestorableState {
   items: FurnitureInstance[]

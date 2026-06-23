@@ -7,8 +7,8 @@ import {
 import type {
   FurnitureCatalogEntry,
   FurnitureCollection,
-} from '@/scene/objects/furniture-catalog'
-import type { FurnitureKind } from '@/scene/objects/furniture.types'
+} from '@/domain/catalog'
+import type { FurnitureKind } from '@/domain/furniture'
 import { createDevPerfLogger } from './perf-log'
 
 const perfLog = createDevPerfLogger('📦')

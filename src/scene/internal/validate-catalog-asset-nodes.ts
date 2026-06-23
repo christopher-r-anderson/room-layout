@@ -1,5 +1,5 @@
 import type { Object3D } from 'three'
-import type { FurnitureCatalogEntry } from '../objects/furniture-catalog'
+import type { FurnitureCatalogEntry } from '@/domain/catalog'
 
 export function validateCatalogAssetNodes({
   catalog,

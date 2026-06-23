@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { Group, Mesh } from 'three'
 import { validateCatalogAssetNodes } from './validate-catalog-asset-nodes'
-import type { FurnitureCatalogEntry } from '../objects/furniture-catalog'
+import type { FurnitureCatalogEntry } from '@/domain/catalog'
 
 function createCatalogEntry(
   overrides: Partial<FurnitureCatalogEntry> = {},

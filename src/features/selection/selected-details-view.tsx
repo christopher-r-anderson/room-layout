@@ -5,7 +5,7 @@ import type {
   UpdateSelectedItemDetailsResult,
 } from '@/core/types/selected-item.types'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
-import type { FurnitureItem } from '@/scene/objects/furniture.types'
+import type { FurnitureItem } from '@/domain/furniture'
 import { cn } from '@/shared/lib/utils'
 import { getWallClearances } from '@/shared/lib/three/wall-clearance'
 import {

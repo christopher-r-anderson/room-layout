@@ -13,7 +13,7 @@ import {
 import { resetAssetsStore, assetsActions } from '@/core/stores/assets-store'
 import { selectionEffects } from '@/core/operations/selection-effects'
 import { sceneCommands } from '@/scene/scene-commands'
-import type { FurnitureCatalogEntry } from '@/scene/objects/furniture-catalog'
+import type { FurnitureCatalogEntry } from '@/domain/catalog'
 import {
   ADD_FURNITURE_NO_SPACE_MESSAGE,
   ADD_FURNITURE_UNKNOWN_CATALOG_MESSAGE,

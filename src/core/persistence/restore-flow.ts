@@ -1,4 +1,4 @@
-import type { FurnitureCatalogEntry } from '@/scene/objects/furniture-catalog'
+import type { FurnitureCatalogEntry } from '@/domain/catalog'
 import {
   type ParseSceneUrlResult,
   validateCatalogReferences,

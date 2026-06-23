@@ -15,11 +15,11 @@ import type { CameraKeyName } from '../scene.types'
 import type {
   FurnitureCatalogEntry,
   FurnitureCollection,
-} from '../objects/furniture-catalog'
+} from '@/domain/catalog'
 import type {
   FurnitureInstance,
   FurnitureItem,
-} from '../objects/furniture.types'
+} from '@/domain/furniture'
 
 const {
   mockBuildFurnitureItemsFromInstances,

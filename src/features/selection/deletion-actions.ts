@@ -1,4 +1,4 @@
-import type { FurnitureItem } from '@/scene/objects/furniture.types'
+import type { FurnitureItem } from '@/domain/furniture'
 import { feedbackActions } from '@/core/stores/feedback-store'
 import { dialogActions } from '@/core/stores/dialog-store'
 import { isEditorInteractive } from '@/core/stores/editor-lifecycle-store'

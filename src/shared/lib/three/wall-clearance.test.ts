@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { FurnitureItem } from '@/scene/objects/furniture.types'
+import type { FurnitureItem } from '@/domain/furniture'
 import {
   getWallClearances,
   resolvePositionFromWallClearances,

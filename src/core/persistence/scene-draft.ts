@@ -1,4 +1,4 @@
-import type { FurnitureInstance } from '@/scene/objects/furniture.types'
+import type { FurnitureInstance } from '@/domain/furniture'
 import {
   loadJsonWithDefault,
   removeKey,

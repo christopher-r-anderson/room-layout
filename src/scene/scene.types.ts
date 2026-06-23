@@ -1,4 +1,4 @@
-import type { FurnitureItem } from './objects/furniture.types'
+import type { FurnitureItem } from '@/domain/furniture'
 export type { CameraPreset } from '@/shared/lib/three/camera-presets'
 
 export type MoveSource = 'keyboard' | 'inspector' | 'toolbar' | 'drag'

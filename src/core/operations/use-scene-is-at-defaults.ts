@@ -3,7 +3,7 @@ import {
   type EnvironmentMaterialConfig,
 } from '@/shared/lib/three/environment-materials'
 import { isFreshSceneState } from '@/shared/lib/three/scene-defaults'
-import type { FurnitureItem } from '@/scene/objects/furniture.types'
+import type { FurnitureItem } from '@/domain/furniture'
 import { assetsStore, useEnvironmentConfig } from '@/core/stores/assets-store'
 import {
   sceneDocumentStore,

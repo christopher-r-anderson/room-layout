@@ -4,7 +4,7 @@ import {
   useDialogPayload,
 } from '@/core/stores/dialog-store'
 import { DIALOG_IDS } from '@/app/dialogs/dialog-registry'
-import type { FurnitureItem } from '@/scene/objects/furniture.types'
+import type { FurnitureItem } from '@/domain/furniture'
 import {
   useStartupLoadingActive,
   useStartupOverlayActive,

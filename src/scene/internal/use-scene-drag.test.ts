@@ -6,7 +6,7 @@ import { Ray, Vector3 } from 'three'
 import type { HistoryState } from '@/shared/lib/ui/editor-history'
 import { useSceneDrag } from './use-scene-drag'
 import type { LayoutBounds } from '@/shared/lib/three/furniture-layout'
-import type { FurnitureItem } from '../objects/furniture.types'
+import type { FurnitureItem } from '@/domain/furniture'
 
 const {
   mockGetFloorIntersection,

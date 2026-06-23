@@ -1,4 +1,4 @@
-import type { FurnitureItem } from '@/scene/objects/furniture.types'
+import type { FurnitureItem } from '@/domain/furniture'
 
 export const FURNITURE_ITEM: FurnitureItem = {
   id: 'item-1',

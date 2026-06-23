@@ -6,7 +6,7 @@ import { renderHook } from '@testing-library/react'
 import { useRequestOutlinerFocus } from '@/app/controllers/use-request-outliner-focus'
 import { selectionFocusActions } from '@/core/stores/selection-focus-store'
 import * as sceneDocumentStore from '@/core/stores/scene-document-store'
-import type { FurnitureItem } from '@/scene/objects/furniture.types'
+import type { FurnitureItem } from '@/domain/furniture'
 
 vi.mock('@/core/stores/scene-document-store')
 vi.mock('@/core/stores/selection-focus-store', () => ({

@@ -9,7 +9,7 @@ import {
 import type {
   FurnitureInstance,
   FurnitureItem,
-} from '@/scene/objects/furniture.types'
+} from '@/domain/furniture'
 import {
   clearSceneServices,
   registerSceneServices,
