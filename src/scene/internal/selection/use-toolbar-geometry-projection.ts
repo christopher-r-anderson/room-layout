@@ -5,7 +5,7 @@ import { toolbarGeometryActions } from '@/core/scene-contracts'
 import { perfCounters } from '@/shared/debug/perf-counters'
 import { IS_E2E_BUILD } from '@/shared/env/e2e'
 import { computeSelectedToolbarGeometry } from './selected-toolbar-geometry'
-import type { SelectedToolbarGeometry } from '../scene.types'
+import type { SelectedToolbarGeometry } from '../../scene.types'
 
 const TOOLBAR_GEOMETRY_DEADBAND_PX = 0.5
 const TOOLBAR_GEOMETRY_FRAME_INTERVAL_SECONDS = 1 / 24

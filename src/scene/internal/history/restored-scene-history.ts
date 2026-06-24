@@ -5,7 +5,7 @@ import type {
   FurnitureCatalogEntry,
   FurnitureCollection,
 } from '@/domain/catalog'
-import { buildFurnitureItemsFromInstances } from './furniture-operations'
+import { buildFurnitureItemsFromInstances } from '../furniture/furniture-operations'
 
 export function getMaxRestoredInstanceSuffix(instances: FurnitureInstance[]) {
   return instances.reduce((max, item) => {

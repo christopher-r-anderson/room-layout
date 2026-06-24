@@ -14,7 +14,7 @@ const { mockBuildFurnitureItemsFromInstances } = vi.hoisted(() => ({
   mockBuildFurnitureItemsFromInstances: vi.fn(),
 }))
 
-vi.mock('./furniture-operations', () => ({
+vi.mock('../furniture/furniture-operations', () => ({
   buildFurnitureItemsFromInstances: mockBuildFurnitureItemsFromInstances,
 }))
 

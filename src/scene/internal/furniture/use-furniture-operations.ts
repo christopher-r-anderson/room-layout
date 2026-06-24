@@ -26,7 +26,7 @@ import type {
   MoveSelectionResult,
   MoveSource,
   UpdateSelectionTransformResult,
-} from '../scene.types'
+} from '../../scene.types'
 
 interface UseFurnitureOperationsOptions {
   dragState: { id: string } | null

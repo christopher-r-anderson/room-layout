@@ -6,7 +6,7 @@ import type {
   WallFinishOption,
 } from '@/shared/lib/three/environment-materials'
 import { CameraControls } from './internal/camera/camera-controls'
-import { InteractiveFurniture } from './internal/objects/interactive-furniture'
+import { InteractiveFurniture } from './internal/furniture/interactive-furniture'
 import { useGLTF } from '@react-three/drei'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import type { CameraControlsImpl } from '@react-three/drei'
@@ -21,23 +21,23 @@ import type {
 import {
   areFurnitureCollectionsEqual,
   updateFurniturePositionInHistory,
-} from './internal/furniture-operations'
+} from './internal/furniture/furniture-operations'
 import { validateCatalogAssetNodes } from './internal/validate-catalog-asset-nodes'
-import { useHistoryOperations } from './internal/use-history-operations'
+import { useHistoryOperations } from './internal/history/use-history-operations'
 import type { CameraKeyState } from './scene.types'
-import { useSceneDrag } from './internal/use-scene-drag'
-import { useSceneSnapshot } from './internal/use-scene-snapshot'
-import { useCameraOperations } from './internal/use-camera-operations'
-import { useCameraKeyMotion } from './internal/use-camera-key-motion'
-import { useSelectionOperations } from './internal/use-selection-operations'
-import { useFurnitureOperations } from './internal/use-furniture-operations'
-import { useSceneSelection } from './internal/use-scene-selection'
+import { useSceneDrag } from './internal/drag/use-scene-drag'
+import { useSceneSnapshot } from './internal/snapshot/use-scene-snapshot'
+import { useCameraOperations } from './internal/camera/use-camera-operations'
+import { useCameraKeyMotion } from './internal/camera/use-camera-key-motion'
+import { useSelectionOperations } from './internal/selection/use-selection-operations'
+import { useFurnitureOperations } from './internal/furniture/use-furniture-operations'
+import { useSceneSelection } from './internal/selection/use-scene-selection'
 import { BlendFunction } from 'postprocessing'
 import {
   ROOM_HALF_DEPTH_METERS,
   ROOM_HALF_WIDTH_METERS,
 } from './internal/environment/room-constants'
-import { useToolbarGeometryProjection } from './internal/use-toolbar-geometry-projection'
+import { useToolbarGeometryProjection } from './internal/selection/use-toolbar-geometry-projection'
 import { perfCounters } from '@/shared/debug/perf-counters'
 import { IS_E2E_BUILD } from '@/shared/env/e2e'
 import { sceneDocumentActions, useItems } from '@/core/scene-contracts'

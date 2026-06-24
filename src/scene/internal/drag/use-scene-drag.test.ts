@@ -18,7 +18,7 @@ const {
   mockResolveMovedFurniturePosition: vi.fn(),
 }))
 
-vi.mock('@/scene/internal/three/furniture-drag', () => ({
+vi.mock('./furniture-drag', () => ({
   getFloorIntersection: mockGetFloorIntersection,
   getDraggedFurniturePosition: mockGetDraggedFurniturePosition,
 }))
