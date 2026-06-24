@@ -4,7 +4,7 @@ import { useSelectedFurniture } from '@/core/stores/scene-document-store'
 import { useEditorInteractionsEnabled } from '@/core/stores/editor-lifecycle-store'
 import { selectionFocusActions } from '@/core/stores/selection-focus-store'
 import { previewFromCanvasKeyboard } from '@/core/operations/preview-actions'
-import { useRequestOutlinerFocus } from '@/app/controllers/use-request-outliner-focus'
+import { requestOutlinerFocus } from '@/core/operations/focus-actions'
 import { findFirstActionableInspectorControl } from '@/app/chrome/focusable-controls'
 
 interface UseEditorFocusCommandsOptions {
@@ -27,7 +27,6 @@ export function useEditorFocusCommands({
 }: UseEditorFocusCommandsOptions): EditorFocusCommands {
   const editorInteractionsEnabled = useEditorInteractionsEnabled()
   const selectedFurniture = useSelectedFurniture()
-  const requestOutlinerFocus = useRequestOutlinerFocus()
 
   const focusInspector = useCallback(() => {
     if (!editorInteractionsEnabled) {
@@ -47,12 +46,7 @@ export function useEditorFocusCommands({
     )
 
     firstFocusableControl?.focus()
-  }, [
-    dockedInspectorRef,
-    requestOutlinerFocus,
-    selectedFurniture,
-    editorInteractionsEnabled,
-  ])
+  }, [dockedInspectorRef, selectedFurniture, editorInteractionsEnabled])
 
   const focusRoomView = useCallback(() => {
     if (!editorInteractionsEnabled) {
@@ -72,7 +66,7 @@ export function useEditorFocusCommands({
     }
 
     requestOutlinerFocus()
-  }, [requestOutlinerFocus, editorInteractionsEnabled])
+  }, [editorInteractionsEnabled])
 
   return { focusInspector, focusRoomView, focusOutliner }
 }
