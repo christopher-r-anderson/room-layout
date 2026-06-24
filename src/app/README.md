@@ -8,11 +8,12 @@ Purpose
 
 Contains
 
-- `App.tsx`: composition root.
-- `chrome/`: app-shell composition and connected orchestration.
-- `controllers/`: thin shell-composition hooks (e.g. canvas-keyboard, share,
-  request-outliner-focus). Cross-cutting operations live in `core/operations`,
-  not here.
+- `App.tsx`: bootstrap and render — perf gate, dialog-registry bootstrap,
+  reconcilers, and the test bridge, composing the provider tree.
+- `chrome/`: app-shell composition (editor body/overlay, top header, feedback)
+  and the provider-composition root in `chrome/providers`.
+- `commands/`: assembles the editor command map and the view-bound focus command
+  impls. Command semantics live in `core`/features; this only wires them.
 - `dialogs/`: app-owned dialog runtime context builder and registry bootstrap composition.
 - `testing/`: runtime test harness hooks used by browser automation.
 

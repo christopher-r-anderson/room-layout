@@ -94,7 +94,7 @@ For local context inside each area, see:
 
 These are temporary or intentionally narrow.
 
-- Scene runtime imports in app/features are allowlisted to a small contract surface (`scene-commands`, `scene.types`, and the `furniture-catalog` GLTF runtime). `shared` no longer imports scene at all.
+- Scene runtime imports in app/features are allowlisted to a small contract surface (`scene-commands`, `scene.types`, and the `furniture-collection-cache` GLTF runtime). `shared` no longer imports scene at all.
 
 ## Future Improvements
 
@@ -103,12 +103,8 @@ These are temporary or intentionally narrow.
 2. Module public entrypoints
    - Introduce `index.ts` entrypoints for cross-layer modules that are imported externally.
    - Keep purely local modules private.
-3. Operation ownership (largely realized)
-   - The former app-level controllers have moved out of `app`: cross-cutting operations now live in `core/operations` and feature-internal orchestration in the owning feature. Convert any remaining app controllers as their seams clarify.
-4. Feature internal structure
+3. Feature internal structure
    - Add internal subfolders only where feature size and churn justify it.
-5. Neutral model ownership (realized)
-   - The furniture/room model and its pure logic now live in `src/domain`, the dependency-free leaf. `shared` carries no model knowledge. Remaining scene contract allowlisting is the only cross-layer scene surface left to formalize (see item 1).
 
 ## Related Docs
 

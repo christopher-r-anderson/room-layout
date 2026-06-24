@@ -59,8 +59,8 @@ the only modules that should mutate it.
 ## Operations
 
 Cross-cutting behavior that spans features is implemented as module-level
-functions in `core/operations`, not as app controller hooks. They read and write
-the stores above and call `sceneCommands`, and the UI imports them directly
+functions in `core/operations`. They read and write the stores above and call
+`sceneCommands`, and the UI imports them directly
 (buttons, command dispatch, scene callbacks). This is the home that makes the
 cross-feature import ban possible — features coordinate by calling a shared
 operation, never by importing a sibling feature.
