@@ -10,7 +10,7 @@ import { InteractiveFurniture } from './internal/objects/interactive-furniture'
 import { useGLTF } from '@react-three/drei'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import type { CameraControlsImpl } from '@react-three/drei'
-import { useFrame, useThree } from '@react-three/fiber'
+import { useThree } from '@react-three/fiber'
 import { type Object3D } from 'three'
 import { EffectComposer, Outline } from '@react-three/postprocessing'
 import { type LayoutBounds } from '@/domain/geometry/furniture-layout'
@@ -24,7 +24,7 @@ import {
 } from './internal/furniture-operations'
 import { validateCatalogAssetNodes } from './internal/validate-catalog-asset-nodes'
 import { useHistoryOperations } from './internal/use-history-operations'
-import type { CameraKeyState, SelectedToolbarGeometry } from './scene.types'
+import type { CameraKeyState } from './scene.types'
 import { useSceneDrag } from './internal/use-scene-drag'
 import { useSceneImperativeApi } from './internal/use-scene-imperative-api'
 import { useCameraOperations } from './internal/use-camera-operations'
@@ -37,11 +37,10 @@ import {
   ROOM_HALF_DEPTH_METERS,
   ROOM_HALF_WIDTH_METERS,
 } from './internal/environment/room-constants'
-import { computeSelectedToolbarGeometry } from './internal/selected-toolbar-geometry'
+import { useToolbarGeometryProjection } from './internal/use-toolbar-geometry-projection'
 import { perfCounters } from '@/shared/debug/perf-counters'
 import { IS_E2E_BUILD } from '@/shared/env/e2e'
 import { sceneDocumentActions, useItems } from '@/core/scene-contracts'
-import { toolbarGeometryActions } from '@/core/scene-contracts'
 import {
   clearSceneServices,
   registerSceneServices,
@@ -50,7 +49,6 @@ import {
 const FLOOR_PLANE_Y = 0
 const SNAP_SIZE = 0.5
 const EDGE_SNAP_THRESHOLD = 0.12
-const TOOLBAR_GEOMETRY_DEADBAND_PX = 0.5
 // These are Three.js render layers used by OutlineEffect selection, not z-order.
 const SELECTED_OUTLINE_LAYER = 10
 const PREVIEW_OUTLINE_LAYER = 11
@@ -59,67 +57,6 @@ const ROOM_BOUNDS: LayoutBounds = {
   maxX: ROOM_HALF_WIDTH_METERS,
   minZ: -ROOM_HALF_DEPTH_METERS,
   maxZ: ROOM_HALF_DEPTH_METERS,
-}
-
-function approximatelyEqualPx(left: number, right: number) {
-  return Math.abs(left - right) <= TOOLBAR_GEOMETRY_DEADBAND_PX
-}
-
-function isSameToolbarGeometry(
-  previousGeometry: SelectedToolbarGeometry,
-  nextGeometry: SelectedToolbarGeometry,
-) {
-  if (
-    previousGeometry.kind === 'unavailable' &&
-    nextGeometry.kind === 'unavailable'
-  ) {
-    return (
-      previousGeometry.selectedId === nextGeometry.selectedId &&
-      previousGeometry.reason === nextGeometry.reason
-    )
-  }
-
-  if (
-    previousGeometry.kind !== 'available' ||
-    nextGeometry.kind !== 'available'
-  ) {
-    return false
-  }
-
-  if (
-    previousGeometry.selectedId !== nextGeometry.selectedId ||
-    previousGeometry.source !== nextGeometry.source ||
-    previousGeometry.sourceNodeName !== nextGeometry.sourceNodeName ||
-    previousGeometry.sourcePointCount !== nextGeometry.sourcePointCount ||
-    previousGeometry.projectedPointCount !== nextGeometry.projectedPointCount
-  ) {
-    return false
-  }
-
-  if (
-    !approximatelyEqualPx(
-      previousGeometry.canvasSize.width,
-      nextGeometry.canvasSize.width,
-    ) ||
-    !approximatelyEqualPx(
-      previousGeometry.canvasSize.height,
-      nextGeometry.canvasSize.height,
-    )
-  ) {
-    return false
-  }
-
-  if (previousGeometry.points.length !== nextGeometry.points.length) {
-    return false
-  }
-
-  return previousGeometry.points.every((previousPoint, index) => {
-    const nextPoint = nextGeometry.points[index]
-    return (
-      approximatelyEqualPx(previousPoint.x, nextPoint.x) &&
-      approximatelyEqualPx(previousPoint.y, nextPoint.y)
-    )
-  })
 }
 
 export function Scene({
@@ -206,8 +143,6 @@ export function Scene({
   const hasReportedAssetsReadyRef = useRef(false)
   const cameraControlsRef = useRef<CameraControlsImpl | null>(null)
   const cameraKeyStateRef = useRef<CameraKeyState>(new Set())
-  const toolbarGeometryAccumulatorRef = useRef(0)
-  const lastToolbarGeometryRef = useRef<SelectedToolbarGeometry | null>(null)
   const furniture = useItems()
   const {
     objectRefs,
@@ -423,59 +358,11 @@ export function Scene({
     previewedId !== selectedId &&
     previewMeshes.length > 0
 
-  useEffect(() => {
-    const nextGeometry = computeSelectedToolbarGeometry({
-      selectedId,
-      object: selectedId ? (objectRefs.current.get(selectedId) ?? null) : null,
-      camera,
-      canvasSize,
-    })
-
-    const previousGeometry = lastToolbarGeometryRef.current
-    if (
-      previousGeometry &&
-      isSameToolbarGeometry(previousGeometry, nextGeometry)
-    ) {
-      return
-    }
-
-    lastToolbarGeometryRef.current = nextGeometry
-    if (import.meta.env.DEV || IS_E2E_BUILD) {
-      perfCounters.incrToolbarEmission()
-      perfCounters.incrToolbarEmissionFromEffect()
-    }
-    toolbarGeometryActions.setToolbarGeometry(nextGeometry)
-  }, [camera, canvasSize, objectRefs, selectedId])
-
-  useFrame((_, delta) => {
-    toolbarGeometryAccumulatorRef.current += delta
-    if (toolbarGeometryAccumulatorRef.current < 1 / 24) {
-      return
-    }
-
-    toolbarGeometryAccumulatorRef.current = 0
-
-    const nextGeometry = computeSelectedToolbarGeometry({
-      selectedId,
-      object: selectedId ? (objectRefs.current.get(selectedId) ?? null) : null,
-      camera,
-      canvasSize,
-    })
-
-    const previousGeometry = lastToolbarGeometryRef.current
-    if (
-      previousGeometry &&
-      isSameToolbarGeometry(previousGeometry, nextGeometry)
-    ) {
-      return
-    }
-
-    lastToolbarGeometryRef.current = nextGeometry
-    if (import.meta.env.DEV || IS_E2E_BUILD) {
-      perfCounters.incrToolbarEmission()
-      perfCounters.incrToolbarEmissionFromFrame()
-    }
-    toolbarGeometryActions.setToolbarGeometry(nextGeometry)
+  useToolbarGeometryProjection({
+    selectedId,
+    objectRefs,
+    camera,
+    canvasSize,
   })
 
   return (
