@@ -42,12 +42,15 @@ describe('runEditorCommand', () => {
     { kind: 'rotate-selection', direction: -1 },
     { kind: 'canvas-browse', direction: 'last' },
     { kind: 'open-delete-dialog', returnFocusTo: 'room-view' },
-  ])('routes %o to the handler for its kind with the full command', (command) => {
-    const handlers = createMockHandlers()
+  ])(
+    'routes %o to the handler for its kind with the full command',
+    (command) => {
+      const handlers = createMockHandlers()
 
-    runEditorCommand(command, handlers)
+      runEditorCommand(command, handlers)
 
-    expect(handlers[command.kind]).toHaveBeenCalledTimes(1)
-    expect(handlers[command.kind]).toHaveBeenCalledWith(command)
-  })
+      expect(handlers[command.kind]).toHaveBeenCalledTimes(1)
+      expect(handlers[command.kind]).toHaveBeenCalledWith(command)
+    },
+  )
 })
