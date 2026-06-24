@@ -186,6 +186,11 @@ export default defineConfig([
               message: 'src/core must not import UI component modules.',
             },
             {
+              group: ['@/scene/internal', '@/scene/internal/**'],
+              message:
+                'src/core must not reach into scene internals; use the scene public surface (scene-commands, scene.types, furniture-collection-cache, scene-test-support).',
+            },
+            {
               group: RUNTIME_TEST_IMPORT_GROUP,
               message: 'Runtime code must not import from src/test.',
             },
