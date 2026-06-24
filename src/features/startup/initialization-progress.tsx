@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef } from 'react'
-import { useProgress } from '@react-three/drei'
+import { useEffect, useRef } from 'react'
+import { useFurnitureAssetLoadingProgress } from '@/scene/furniture-collection-cache'
 import { Card, CardContent } from '@/shared/ui/card'
 import { Progress } from '@/shared/ui/progress'
 
@@ -15,15 +15,10 @@ function formatAssetLabel(item: string) {
 }
 
 export function InitializationProgress({ visible }: { visible: boolean }) {
-  const { active, item, loaded, progress, total } = useProgress()
+  const { active, currentItem, loaded, percent, total } =
+    useFurnitureAssetLoadingProgress()
   const panelRef = useRef<HTMLDivElement | null>(null)
-  const roundedProgress = useMemo(() => {
-    if (Number.isNaN(progress)) {
-      return 0
-    }
-
-    return Math.max(0, Math.min(100, Math.round(progress)))
-  }, [progress])
+  const roundedProgress = Math.round(percent)
 
   useEffect(() => {
     if (!visible) {
@@ -87,7 +82,7 @@ export function InitializationProgress({ visible }: { visible: boolean }) {
             id="startup-loading-progress-label"
             className="text-sm leading-relaxed text-foreground"
           >
-            Current item: {formatAssetLabel(item)}
+            Current item: {formatAssetLabel(currentItem)}
           </p>
         </CardContent>
       </Card>
