@@ -2,9 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useIsBlockingOverlayOpen } from '@/core/stores/dialog-store'
 import {
   sceneDocumentActions,
-  useFloorFinishId,
   usePreviewedId,
-  useWallFinishId,
 } from '@/core/stores/scene-document-store'
 import { previewFromScene } from '@/core/operations/preview-actions'
 import { usePreviewReconciler } from '@/core/operations/use-preview-reconciler'
@@ -33,7 +31,7 @@ import {
 import { perfCounters } from '@/shared/debug/perf-counters'
 import { IS_E2E_BUILD } from '@/shared/env/e2e'
 import { useDraftPersistence } from '@/features/url-scene/use-draft-persistence'
-import { useActiveFinishIds } from '@/app/controllers/_shared/use-active-finish-ids'
+import { useActiveFinishIds } from '@/core/operations/active-finish-ids'
 import { useTestStateBridge } from './testing/use-test-state-bridge'
 import {
   buildDialogRuntimeContext,
@@ -47,8 +45,6 @@ function App() {
   const roomViewRef = useRef<HTMLElement | null>(null)
   const selectedItemControlsRef = useRef<HTMLDivElement | null>(null)
   const dockedInspectorRef = useRef<HTMLDivElement | null>(null)
-  const floorFinishId = useFloorFinishId()
-  const wallFinishId = useWallFinishId()
   const [testOverlaysHidden, setTestOverlaysHidden] = useState(false)
   const outlinerFocusRequest = useOutlinerFocusRequest()
   const isE2ELowRenderQuality =
@@ -64,11 +60,7 @@ function App() {
     activeWallFinishId,
     selectedFloorOption,
     selectedWallOption,
-  } = useActiveFinishIds({
-    environmentConfig,
-    floorFinishId,
-    wallFinishId,
-  })
+  } = useActiveFinishIds()
 
   useDraftPersistence({
     environmentConfig,

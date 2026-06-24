@@ -18,13 +18,11 @@ import { useSceneIsAtDefaults } from '@/core/operations/use-scene-is-at-defaults
 import { resetSceneToDefaults } from '@/core/persistence/scene-reset'
 import { feedbackActions } from '@/core/stores/feedback-store'
 import { useCommandDispatch } from '@/core/commands/command-dispatch-context'
-import { useActiveFinishIds } from '@/app/controllers/_shared/use-active-finish-ids'
+import { useActiveFinishIds } from '@/core/operations/active-finish-ids'
 import {
   sceneDocumentActions,
-  useFloorFinishId,
   useFloorFinishLoading,
   useHistoryAvailability,
-  useWallFinishId,
 } from '@/core/stores/scene-document-store'
 import { toast } from 'sonner'
 import { topHeaderDialogOpenChange } from './top-header-dialog-bindings'
@@ -43,8 +41,6 @@ export function TopHeader({
   const startOverDisabled = useSceneIsAtDefaults()
   const editorInteractionsEnabled = useEditorInteractionsEnabled()
   const historyAvailability = useHistoryAvailability()
-  const storedFloorFinishId = useFloorFinishId()
-  const storedWallFinishId = useWallFinishId()
   const floorFinishLoading = useFloorFinishLoading()
   const isCatalogDrawerOpen = useDialogOpen(DIALOG_IDS.catalog)
   const isRoomSurfaceOpen = useDialogOpen(DIALOG_IDS.roomSurface)
@@ -59,11 +55,7 @@ export function TopHeader({
   const {
     activeFloorFinishId: floorFinishId,
     activeWallFinishId: wallFinishId,
-  } = useActiveFinishIds({
-    environmentConfig,
-    floorFinishId: storedFloorFinishId,
-    wallFinishId: storedWallFinishId,
-  })
+  } = useActiveFinishIds()
 
   // More actions is mobile-only and blocking. It has no desktop equivalent, so
   // if the viewport widens while it is open we close it to avoid leaving the
