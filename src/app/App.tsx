@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useIsBlockingOverlayOpen } from '@/core/stores/dialog-store'
 import { sceneDocumentActions } from '@/core/stores/scene-document-store'
-import { usePreviewedId } from '@/core/operations/previewed-id'
 import { previewFromScene } from '@/core/operations/preview-actions'
 import { usePreviewReconciler } from '@/core/operations/use-preview-reconciler'
 import { getSceneIsAtDefaults } from '@/core/operations/use-scene-is-at-defaults'
@@ -73,7 +72,6 @@ function App() {
   const wasBlockingOverlayOpenRef = useRef(isBlockingOverlayOpen)
 
   usePreviewReconciler()
-  const previewedId = usePreviewedId()
 
   useEffect(() => {
     const wasBlockingOverlayOpen = wasBlockingOverlayOpenRef.current
@@ -114,7 +112,6 @@ function App() {
         testOverlaysHidden={testOverlaysHidden}
         canvasShadowMode={canvasShadowMode}
         isE2ELowRenderQuality={isE2ELowRenderQuality}
-        previewedId={previewedId}
         selectedFloorOption={selectedFloorOption}
         selectedWallOption={selectedWallOption}
         onScenePreviewChange={previewFromScene}

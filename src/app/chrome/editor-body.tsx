@@ -18,6 +18,7 @@ import {
   selectionFocusActions,
   useRoomViewFocusRequest,
 } from '@/core/stores/selection-focus-store'
+import { usePreviewedId } from '@/core/operations/previewed-id'
 import { useSceneIsAtDefaults } from '@/core/operations/use-scene-is-at-defaults'
 import {
   useEditorInteractionsEnabled,
@@ -69,7 +70,6 @@ export interface EditorBodyProps {
   testOverlaysHidden: boolean
   canvasShadowMode: false | 'percentage'
   isE2ELowRenderQuality: boolean
-  previewedId: string | null
   selectedFloorOption: SceneProps['floorOption']
   selectedWallOption: SceneProps['wallOption']
   onScenePreviewChange: NonNullable<SceneProps['onPreviewChange']>
@@ -82,7 +82,6 @@ export function EditorBody({
   testOverlaysHidden,
   canvasShadowMode,
   isE2ELowRenderQuality,
-  previewedId,
   selectedFloorOption,
   selectedWallOption,
   onScenePreviewChange,
@@ -90,6 +89,7 @@ export function EditorBody({
   onCanvasPointerSelection,
   onClearCanvasSelection,
 }: EditorBodyProps) {
+  const previewedId = usePreviewedId()
   const [roomViewHasFocus, setRoomViewHasFocus] = useState(false)
   const catalog = useCatalogEntries()
   const collections = useCollections()
