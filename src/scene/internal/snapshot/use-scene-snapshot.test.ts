@@ -47,17 +47,19 @@ describe('useSceneSnapshot', () => {
   beforeEach(() => {
     mockCreateSceneSnapshot.mockReset()
 
-    mockCreateSceneSnapshot.mockImplementation((furniture: FurnitureItem[]) => ({
-      cameraPosition: [0, 0, 0] as [number, number, number],
-      items: furniture.map((item) => ({
-        id: item.id,
-        catalogId: item.catalogId,
-        name: item.name,
-        position: item.position,
-        rotationY: item.rotationY,
-        pointerTarget: null,
-      })),
-    }))
+    mockCreateSceneSnapshot.mockImplementation(
+      (furniture: FurnitureItem[]) => ({
+        cameraPosition: [0, 0, 0] as [number, number, number],
+        items: furniture.map((item) => ({
+          id: item.id,
+          catalogId: item.catalogId,
+          name: item.name,
+          position: item.position,
+          rotationY: item.rotationY,
+          pointerTarget: null,
+        })),
+      }),
+    )
   })
 
   it('getSnapshot returns latest items', () => {

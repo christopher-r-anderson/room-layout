@@ -9,7 +9,7 @@ For end-user key mappings, see [Editor Shortcuts Reference](../reference/editor-
 The app uses two keyboard systems:
 
 - **Discrete shortcuts (press-triggered):** Defined in `src/features/keyboard/use-keyboard-shortcuts.ts`.
-- **Held camera motion (state-driven):** Captured in `src/features/keyboard/use-camera-key-state.ts`, consumed per frame in `src/scene/internal/use-scene-imperative-api.ts`.
+- **Held camera motion (state-driven):** Captured in `src/features/keyboard/use-camera-key-state.ts`, consumed per frame in `src/scene/internal/camera/use-camera-key-motion.ts`.
 
 Shortcut metadata now lives in `src/features/keyboard/keyboard-shortcuts.definitions.ts`, and both the dispatcher and help dialog derive from that shared source so labels and execution rules stay in sync.
 

@@ -2,7 +2,7 @@
 
 This document is an overview of how the selected-item action toolbar chooses its geometry source and how it chooses a final screen position. The main code paths are:
 
-- `src/scene/internal/selected-toolbar-geometry.ts`
+- `src/scene/internal/selection/selected-toolbar-geometry.ts`
 - `src/scene/scene.types.ts`
 - `src/features/selection/use-compute-selected-item-placement.ts`
 - `src/features/selection/floating-selected-item-site.tsx`
