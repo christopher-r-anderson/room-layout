@@ -3,6 +3,7 @@ import { isEditorInteractive } from '@/core/stores/editor-lifecycle-store'
 import { feedbackActions } from '@/core/stores/feedback-store'
 import { selectionFocusActions } from '@/core/stores/selection-focus-store'
 import { selectionEffects } from '@/core/operations/selection-effects'
+import { clearPreviewOnCanvasMiss } from '@/core/operations/preview-actions'
 import { sceneCommands } from '@/scene/scene-commands'
 import type { SelectByIdResult } from '@/scene/scene.types'
 import type { InteractionSource } from '@/core/types/interaction.types'
@@ -90,4 +91,14 @@ export function clearSelection() {
     requestOutlinerFocus: false,
   })
   feedbackActions.clearStatusMessage()
+}
+
+/**
+ * Dismisses what is active in the room view: clears the selection and the
+ * canvas-miss preview together. Shared by the Escape ("clear-selection")
+ * command and a canvas pointer-miss so both paths behave identically.
+ */
+export function clearCanvasSelection() {
+  clearSelection()
+  clearPreviewOnCanvasMiss()
 }

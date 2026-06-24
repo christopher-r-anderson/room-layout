@@ -1,9 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import {
-  dialogActions,
-  useIsBlockingOverlayOpen,
-} from '@/core/stores/dialog-store'
-import { DIALOG_IDS } from '@/app/dialogs/dialog-registry'
+import { useIsBlockingOverlayOpen } from '@/core/stores/dialog-store'
 import {
   sceneDocumentActions,
   useFloorFinishId,
@@ -13,7 +9,6 @@ import {
 } from '@/core/stores/scene-document-store'
 import { feedbackActions } from '@/core/stores/feedback-store'
 import {
-  clearPreviewOnCanvasMiss,
   previewFromCanvasKeyboard,
   previewFromScene,
 } from '@/core/operations/preview-actions'
@@ -21,7 +16,7 @@ import { usePreviewReconciler } from '@/core/operations/use-preview-reconciler'
 import { getSceneIsAtDefaults } from '@/core/operations/use-scene-is-at-defaults'
 import { startSelectionEffectsReconciler } from '@/core/operations/selection-effects'
 import {
-  clearSelection,
+  clearCanvasSelection,
   selectByCanvasPointer,
 } from '@/core/operations/selection-actions'
 import {
@@ -30,9 +25,11 @@ import {
 } from '@/core/operations/movement-actions'
 import { redo, undo } from '@/core/operations/history-actions'
 import {
-  openDeleteDialog,
-  openDeleteDialogFromRoomView,
-} from '@/features/selection/deletion-actions'
+  focusSelectedInView,
+  setCameraPreset,
+} from '@/core/operations/view-actions'
+import { openDeleteDialog } from '@/features/selection/deletion-actions'
+import { startOverIntent } from '@/features/startup/start-over-actions'
 import { useShareController } from '@/app/controllers/use-share-controller'
 import { useCanvasKeyboardController } from '@/app/controllers/use-canvas-keyboard-controller'
 import { EditorRefsProvider } from '@/shared/providers/editor-refs-provider'
@@ -54,7 +51,6 @@ import { useRequestOutlinerFocus } from '@/app/controllers/use-request-outliner-
 import { perfCounters } from '@/shared/debug/perf-counters'
 import { IS_E2E_BUILD } from '@/shared/env/e2e'
 import { useDraftPersistence } from '@/features/url-scene/use-draft-persistence'
-import { sceneCommands } from '@/scene/scene-commands'
 import { useActiveFinishIds } from '@/app/controllers/_shared/use-active-finish-ids'
 import { useTestStateBridge } from './testing/use-test-state-bridge'
 import {
@@ -139,31 +135,9 @@ function App() {
     activeFloorFinishId,
     activeWallFinishId,
   })
-  const handleSetCameraPreset = useCallback(
-    (preset: 'corner' | 'front' | 'side' | 'top') => {
-      if (!editorInteractionsEnabled || !sceneCommands.isSceneReady()) {
-        return
-      }
-
-      sceneCommands.setCameraPreset(preset)
-    },
-    [editorInteractionsEnabled],
-  )
-  const handleFocusSelected = useCallback(() => {
-    if (!editorInteractionsEnabled || !sceneCommands.isSceneReady()) {
-      return
-    }
-
-    sceneCommands.focusSelected()
-  }, [editorInteractionsEnabled])
   const handleFloorLoadingChange = useCallback((loading: boolean) => {
     sceneDocumentActions.setFloorFinishLoading(loading)
   }, [])
-  const handlers = {
-    ...shareController,
-    handleSetCameraPreset,
-    handleFocusSelected,
-  }
 
   const editorRefs = useMemo(
     () => ({ roomViewRef, selectedItemControlsRef, dockedInspectorRef }),
@@ -237,39 +211,27 @@ function App() {
     redo: () => {
       redo()
     },
-    'start-over': () => {
-      const opened = dialogActions.openDialog(DIALOG_IDS.startOver)
-      if (opened) {
-        feedbackActions.clearStatusMessage()
-      }
-    },
+    'start-over': startOverIntent,
     'open-delete-dialog': (command) => {
-      if (command.returnFocusTo === 'room-view') {
-        openDeleteDialogFromRoomView()
-      } else {
-        openDeleteDialog()
-      }
+      openDeleteDialog(command.returnFocusTo)
     },
-    'focus-selected': handlers.handleFocusSelected,
+    'focus-selected': focusSelectedInView,
     'move-selection': (command) => {
       moveSelection(command.delta, { source: 'keyboard' })
     },
-    'clear-selection': () => {
-      clearSelection()
-      clearPreviewOnCanvasMiss()
-    },
+    'clear-selection': clearCanvasSelection,
     'rotate-selection': (command) => {
       rotateSelection(command.direction)
     },
     'set-camera-preset': (command) => {
-      handlers.handleSetCameraPreset(command.preset)
+      setCameraPreset(command.preset)
     },
     'canvas-browse': (command) => {
       handleCanvasBrowse(command.direction)
     },
     'canvas-select-previewed': handleCanvasSelectPreviewed,
     share: () => {
-      void handlers.handleShareSceneUrl()
+      void shareController.handleShareSceneUrl()
     },
   }
 
@@ -287,14 +249,13 @@ function App() {
               previewedId={previewedId}
               selectedFloorOption={selectedFloorOption}
               selectedWallOption={selectedWallOption}
-              clearPreviewOnCanvasMiss={clearPreviewOnCanvasMiss}
               onScenePreviewChange={previewFromScene}
               onFloorLoadingChange={handleFloorLoadingChange}
               onCanvasPointerSelection={selectByCanvasPointer}
-              onClearSelection={clearSelection}
+              onClearCanvasSelection={clearCanvasSelection}
               editorOverlay={{
                 topHeader: {
-                  onShareSceneUrl: handlers.handleShareSceneUrl,
+                  onShareSceneUrl: shareController.handleShareSceneUrl,
                 },
               }}
             />

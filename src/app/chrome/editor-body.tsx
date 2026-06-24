@@ -72,11 +72,10 @@ export interface EditorBodyProps {
   previewedId: string | null
   selectedFloorOption: SceneProps['floorOption']
   selectedWallOption: SceneProps['wallOption']
-  clearPreviewOnCanvasMiss: () => void
   onScenePreviewChange: NonNullable<SceneProps['onPreviewChange']>
   onFloorLoadingChange: NonNullable<SceneProps['onFloorLoadingChange']>
   onCanvasPointerSelection: NonNullable<SceneProps['onCanvasPointerSelection']>
-  onClearSelection: () => void
+  onClearCanvasSelection: () => void
   editorOverlay: EditorOverlayProps
 }
 
@@ -87,11 +86,10 @@ export function EditorBody({
   previewedId,
   selectedFloorOption,
   selectedWallOption,
-  clearPreviewOnCanvasMiss,
   onScenePreviewChange,
   onFloorLoadingChange,
   onCanvasPointerSelection,
-  onClearSelection,
+  onClearCanvasSelection,
   editorOverlay,
 }: EditorBodyProps) {
   const [roomViewHasFocus, setRoomViewHasFocus] = useState(false)
@@ -206,8 +204,7 @@ export function EditorBody({
             }
 
             focusRoomView()
-            clearPreviewOnCanvasMiss()
-            onClearSelection()
+            onClearCanvasSelection()
           }}
           shadows={canvasShadowMode}
         >

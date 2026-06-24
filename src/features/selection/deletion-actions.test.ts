@@ -19,11 +19,7 @@ import { sceneCommands } from '@/scene/scene-commands'
 import { DELETE_SELECTION_MISSING_MESSAGE } from '@/shared/messages/command-messages'
 import { feedbackActions } from '@/core/stores/feedback-store'
 import { selectionEffects } from '@/core/operations/selection-effects'
-import {
-  confirmDeleteSelection,
-  openDeleteDialog,
-  openDeleteDialogFromRoomView,
-} from './deletion-actions'
+import { confirmDeleteSelection, openDeleteDialog } from './deletion-actions'
 
 vi.mock('@/core/stores/feedback-store', () => ({
   feedbackActions: {
@@ -139,7 +135,7 @@ describe('deletion-actions', () => {
   it('records post-delete focus target on open from outliner', () => {
     vi.spyOn(dialogActions, 'openDialog').mockReturnValue(true)
 
-    openDeleteDialog()
+    openDeleteDialog('outliner')
 
     expect(selectionEffects.notePostDeleteFocusTarget).toHaveBeenCalledWith(
       'outliner',
@@ -149,7 +145,7 @@ describe('deletion-actions', () => {
   it('records room-view focus target on open from room view', () => {
     vi.spyOn(dialogActions, 'openDialog').mockReturnValue(true)
 
-    openDeleteDialogFromRoomView()
+    openDeleteDialog('room-view')
 
     expect(selectionEffects.notePostDeleteFocusTarget).toHaveBeenCalledWith(
       'room-view',
@@ -159,7 +155,7 @@ describe('deletion-actions', () => {
   it('clears the post-delete target when the dialog refuses to open', () => {
     vi.spyOn(dialogActions, 'openDialog').mockReturnValue(false)
 
-    openDeleteDialog()
+    openDeleteDialog('outliner')
 
     expect(selectionEffects.notePostDeleteFocusTarget).toHaveBeenCalledWith(
       null,

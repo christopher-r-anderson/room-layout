@@ -16,11 +16,17 @@ import {
 } from '@/core/stores/editor-lifecycle-store'
 import { sceneCommands } from '@/scene/scene-commands'
 import { selectionEffects } from '@/core/operations/selection-effects'
+import { clearPreviewOnCanvasMiss } from '@/core/operations/preview-actions'
 import {
+  clearCanvasSelection,
   clearSelection,
   selectByCanvasPointer,
   selectById,
 } from './selection-actions'
+
+vi.mock('@/core/operations/preview-actions', () => ({
+  clearPreviewOnCanvasMiss: vi.fn(),
+}))
 
 vi.mock('@/core/operations/selection-effects', () => ({
   selectionEffects: {
@@ -57,6 +63,18 @@ describe('selection-actions', () => {
   afterEach(() => {
     vi.restoreAllMocks()
     vi.clearAllMocks()
+  })
+
+  it('clearCanvasSelection clears the selection and the canvas-miss preview together', () => {
+    const clearSelectionSpy = vi
+      .spyOn(sceneCommands, 'clearSelection')
+      .mockReturnValue(undefined)
+    vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
+
+    clearCanvasSelection()
+
+    expect(clearSelectionSpy).toHaveBeenCalled()
+    expect(clearPreviewOnCanvasMiss).toHaveBeenCalledTimes(1)
   })
 
   it('skips scene commands when interactions are disabled', () => {

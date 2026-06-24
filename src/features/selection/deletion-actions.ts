@@ -73,22 +73,11 @@ export function confirmDeleteSelection(
   }
 }
 
-export function openDeleteDialog() {
+export function openDeleteDialog(returnFocusTo: 'room-view' | 'outliner') {
   const opened = dialogActions.openDialog(deleteDialogId)
 
   if (opened) {
-    selectionEffects.notePostDeleteFocusTarget('outliner')
-    feedbackActions.clearStatusMessage()
-  } else {
-    selectionEffects.notePostDeleteFocusTarget(null)
-  }
-}
-
-export function openDeleteDialogFromRoomView() {
-  const opened = dialogActions.openDialog(deleteDialogId)
-
-  if (opened) {
-    selectionEffects.notePostDeleteFocusTarget('room-view')
+    selectionEffects.notePostDeleteFocusTarget(returnFocusTo)
     feedbackActions.clearStatusMessage()
   } else {
     selectionEffects.notePostDeleteFocusTarget(null)
