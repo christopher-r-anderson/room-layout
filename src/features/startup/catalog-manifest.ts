@@ -14,7 +14,7 @@ import { createDevPerfLogger } from './perf-log'
 const perfLog = createDevPerfLogger('📦')
 
 // Adding a new kind here must be paired with updating the FurnitureKind union
-// in src/scene/objects/furniture.types.ts.
+// in src/domain/furniture.ts.
 const KNOWN_FURNITURE_KINDS: readonly FurnitureKind[] = [
   'armchair',
   'couch',

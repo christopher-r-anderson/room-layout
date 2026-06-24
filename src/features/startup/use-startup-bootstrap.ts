@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { preloadFurnitureCollections } from '@/scene/objects/furniture-catalog'
+import { preloadFurnitureCollections } from '@/scene/furniture-collection-cache'
 import {
   editorLifecycleActions,
   useRetryToken,

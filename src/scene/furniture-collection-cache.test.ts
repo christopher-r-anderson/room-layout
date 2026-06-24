@@ -15,7 +15,7 @@ vi.mock('@react-three/drei', () => ({
 import {
   clearFurnitureCollectionCache,
   preloadFurnitureCollections,
-} from './furniture-catalog'
+} from './furniture-collection-cache'
 import { resolvePublicAssetPath } from '@/shared/lib/asset-path'
 
 const TEST_PATHS = [

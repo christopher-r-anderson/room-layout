@@ -2,7 +2,7 @@ import { toast } from 'sonner'
 import { createDefaultSceneState } from '@/core/model/scene-defaults'
 import { isSceneStateAtDefaults } from '@/core/model/scene-model'
 import { sceneCommands, clearSceneServices } from '@/scene/scene-commands'
-import { clearFurnitureCollectionCache } from '@/scene/objects/furniture-catalog'
+import { clearFurnitureCollectionCache } from '@/scene/furniture-collection-cache'
 import { feedbackActions } from '../stores/feedback-store'
 import { dialogActions } from '../stores/dialog-store'
 import {

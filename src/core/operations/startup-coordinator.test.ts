@@ -10,7 +10,7 @@ import { dialogActions } from '../stores/dialog-store'
 import { feedbackActions } from '../stores/feedback-store'
 import { selectionEffects } from './selection-effects'
 import { runStartupRestoreFlow } from '../persistence/restore-flow'
-import { clearFurnitureCollectionCache } from '@/scene/objects/furniture-catalog'
+import { clearFurnitureCollectionCache } from '@/scene/furniture-collection-cache'
 import { clearSceneServices } from '@/scene/scene-commands'
 import {
   completeAssetLoad,
@@ -41,7 +41,7 @@ vi.mock('../stores/feedback-store', () => ({
   },
 }))
 
-vi.mock('@/scene/objects/furniture-catalog', () => ({
+vi.mock('@/scene/furniture-collection-cache', () => ({
   clearFurnitureCollectionCache: vi.fn(),
 }))
 

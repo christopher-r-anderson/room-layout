@@ -10,7 +10,7 @@ import type { FurnitureInstance, FurnitureItem } from '@/domain/furniture'
 import {
   clearSceneServices,
   registerSceneServices,
-} from '@/scene/internal/scene-services'
+} from '@/scene/scene-test-support'
 import { sceneCommands } from '@/scene/scene-commands'
 import {
   resetSceneDocumentStore,
