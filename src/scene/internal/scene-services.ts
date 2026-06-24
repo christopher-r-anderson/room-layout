@@ -35,20 +35,9 @@ export interface SceneServices {
 }
 
 let currentSceneServices: SceneServices | null = null
-let pendingResolvers: ((services: SceneServices) => void)[] = []
 
 export function registerSceneServices(services: SceneServices) {
   currentSceneServices = services
-
-  if (pendingResolvers.length === 0) {
-    return
-  }
-
-  const resolvers = pendingResolvers
-  pendingResolvers = []
-  resolvers.forEach((resolve) => {
-    resolve(services)
-  })
 }
 
 export function clearSceneServices() {
@@ -65,14 +54,4 @@ export function getSceneServices() {
 
 export function getSceneServicesIfReady() {
   return currentSceneServices
-}
-
-export function whenSceneServicesReady() {
-  if (currentSceneServices !== null) {
-    return Promise.resolve(currentSceneServices)
-  }
-
-  return new Promise<SceneServices>((resolve) => {
-    pendingResolvers.push(resolve)
-  })
 }
