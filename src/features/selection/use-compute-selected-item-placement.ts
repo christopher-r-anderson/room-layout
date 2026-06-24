@@ -9,7 +9,7 @@ import { useToolbarGeometry } from '@/core/stores/toolbar-geometry-store'
 import {
   computeSelectedToolbarPlacement,
   type ToolbarFloatingCandidateId,
-} from './selected-toolbar-placement'
+} from './toolbar-placement/selected-toolbar-placement'
 import type {
   SelectedItemDockedReason,
   SelectedItemPlacement,

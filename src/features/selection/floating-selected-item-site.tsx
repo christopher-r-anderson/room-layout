@@ -7,7 +7,7 @@ import {
   useSelectedItemPlacement,
 } from './selected-item-placement-context'
 import { resolveSelectionControlsInteractivity } from './selection-controls-interactivity'
-import { SelectionToolsOther } from './selection-tools-other'
+import { SelectedItemTools } from './selected-item-tools'
 
 export interface FloatingSelectedItemSiteProps {
   isCatalogDrawerOpen: boolean
@@ -56,7 +56,7 @@ export function FloatingSelectedItemSite({
       inert={interactivity.suppressed}
     >
       <div className="rounded-xl border bg-background/90 p-1.5 shadow-sm backdrop-blur-sm">
-        <SelectionToolsOther
+        <SelectedItemTools
           controlsDisabled={interactivity.disabled}
           disabledMessage={interactivity.disabledMessage}
           onOpenDeleteDialog={handleOpenDeleteDialog}

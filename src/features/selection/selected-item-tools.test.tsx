@@ -3,16 +3,16 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
-import { SelectionToolsOther } from './selection-tools-other'
+import { SelectedItemTools } from './selected-item-tools'
 
-describe('SelectionToolsOther', () => {
+describe('SelectedItemTools', () => {
   it('executes rotate and remove actions when selection is available', async () => {
     const user = userEvent.setup()
     const onRotateSelection = vi.fn()
     const onOpenDeleteDialog = vi.fn()
 
     render(
-      <SelectionToolsOther
+      <SelectedItemTools
         controlsDisabled={false}
         disabledMessage=""
         onOpenDeleteDialog={onOpenDeleteDialog}
@@ -48,7 +48,7 @@ describe('SelectionToolsOther', () => {
     const onOpenDeleteDialog = vi.fn()
 
     render(
-      <SelectionToolsOther
+      <SelectedItemTools
         controlsDisabled={true}
         disabledMessage="Editor interactions are unavailable while loading"
         onOpenDeleteDialog={onOpenDeleteDialog}

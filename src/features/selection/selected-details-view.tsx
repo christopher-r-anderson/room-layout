@@ -12,7 +12,7 @@ import {
   RotateCounterclockwiseButton,
   RotateClockwiseButton,
   DeleteButton,
-} from './components/selection-action-buttons'
+} from './selection-action-buttons'
 
 type FieldOverride =
   | {

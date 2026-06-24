@@ -3,9 +3,9 @@ import {
   DeleteButton,
   RotateClockwiseButton,
   RotateCounterclockwiseButton,
-} from './components/selection-action-buttons'
+} from './selection-action-buttons'
 
-export function SelectionToolsOther({
+export function SelectedItemTools({
   controlsDisabled,
   disabledMessage,
   onOpenDeleteDialog,

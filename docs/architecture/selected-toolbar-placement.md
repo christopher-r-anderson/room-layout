@@ -7,10 +7,10 @@ This document is an overview of how the selected-item action toolbar chooses its
 - `src/features/selection/use-compute-selected-item-placement.ts`
 - `src/features/selection/floating-selected-item-site.tsx`
 - `src/features/selection/docked-selected-item-site.tsx`
-- `src/features/selection/selected-actions-view.tsx`
+- `src/features/selection/selected-item-tools.tsx`
 - `src/features/selection/selected-details-view.tsx`
 - `src/shared/hooks/use-element-rect.ts`
-- `src/features/selection/selected-toolbar-placement.ts`
+- `src/features/selection/toolbar-placement/selected-toolbar-placement.ts`
 
 ## Bounds Selection
 
