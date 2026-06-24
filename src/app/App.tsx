@@ -38,7 +38,7 @@ import { useCanvasKeyboardController } from '@/app/controllers/use-canvas-keyboa
 import { EditorRefsProvider } from '@/shared/providers/editor-refs-provider'
 import { CommandDispatchProvider } from '@/core/commands/command-dispatch-provider'
 import { useCommandDispatchValue } from '@/core/commands/command-dispatch-context'
-import type { EditorCommandApi } from '@/core/commands/editor-command'
+import type { EditorCommandHandlers } from '@/core/commands/editor-command'
 import { useEditorInteractionsEnabled } from '@/core/stores/editor-lifecycle-store'
 import { useEnvironmentConfig } from '@/core/stores/assets-store'
 import { TooltipProvider } from '@/shared/ui/tooltip'
@@ -227,43 +227,53 @@ function App() {
     setTestOverlaysHidden,
   })
 
-  const commandApi: EditorCommandApi = {
-    focusInspector: handleFocusInspector,
-    focusRoomView: handleFocusRoomView,
-    focusOutliner: handleFocusOutliner,
-    undo,
-    redo,
-    startOverIntent: () => {
+  const commandHandlers: EditorCommandHandlers = {
+    'focus-inspector': handleFocusInspector,
+    'focus-room-view': handleFocusRoomView,
+    'focus-outliner': handleFocusOutliner,
+    undo: () => {
+      undo()
+    },
+    redo: () => {
+      redo()
+    },
+    'start-over': () => {
       const opened = dialogActions.openDialog(DIALOG_IDS.startOver)
       if (opened) {
         feedbackActions.clearStatusMessage()
       }
     },
-    openDeleteDialog: (returnFocusTo) => {
-      if (returnFocusTo === 'room-view') {
+    'open-delete-dialog': (command) => {
+      if (command.returnFocusTo === 'room-view') {
         openDeleteDialogFromRoomView()
       } else {
         openDeleteDialog()
       }
     },
-    focusSelected: handlers.handleFocusSelected,
-    moveSelection: (delta) => {
-      moveSelection(delta, { source: 'keyboard' })
+    'focus-selected': handlers.handleFocusSelected,
+    'move-selection': (command) => {
+      moveSelection(command.delta, { source: 'keyboard' })
     },
-    clearSelection: () => {
+    'clear-selection': () => {
       clearSelection()
       clearPreviewOnCanvasMiss()
     },
-    rotate: rotateSelection,
-    setCameraPreset: handlers.handleSetCameraPreset,
-    canvasBrowse: handleCanvasBrowse,
-    canvasSelectPreviewed: handleCanvasSelectPreviewed,
+    'rotate-selection': (command) => {
+      rotateSelection(command.direction)
+    },
+    'set-camera-preset': (command) => {
+      handlers.handleSetCameraPreset(command.preset)
+    },
+    'canvas-browse': (command) => {
+      handleCanvasBrowse(command.direction)
+    },
+    'canvas-select-previewed': handleCanvasSelectPreviewed,
     share: () => {
       void handlers.handleShareSceneUrl()
     },
   }
 
-  const dispatchCommand = useCommandDispatchValue(commandApi)
+  const dispatchCommand = useCommandDispatchValue(commandHandlers)
 
   return (
     <TooltipProvider>

@@ -2,106 +2,52 @@ import { describe, expect, it, vi } from 'vitest'
 import {
   runEditorCommand,
   type EditorCommand,
-  type EditorCommandApi,
+  type EditorCommandHandlers,
 } from './editor-command'
 
-function createMockCommandApi(): EditorCommandApi {
+function createMockHandlers(): EditorCommandHandlers {
   return {
-    focusInspector: vi.fn(),
-    focusRoomView: vi.fn(),
-    focusOutliner: vi.fn(),
+    'focus-inspector': vi.fn(),
+    'focus-room-view': vi.fn(),
+    'focus-outliner': vi.fn(),
     undo: vi.fn(),
     redo: vi.fn(),
-    startOverIntent: vi.fn(),
-    openDeleteDialog: vi.fn(),
-    focusSelected: vi.fn(),
-    moveSelection: vi.fn(),
-    clearSelection: vi.fn(),
-    rotate: vi.fn(),
-    setCameraPreset: vi.fn(),
-    canvasBrowse: vi.fn(),
-    canvasSelectPreviewed: vi.fn(),
+    'start-over': vi.fn(),
+    'open-delete-dialog': vi.fn(),
+    'focus-selected': vi.fn(),
+    'move-selection': vi.fn(),
+    'clear-selection': vi.fn(),
+    'rotate-selection': vi.fn(),
+    'set-camera-preset': vi.fn(),
+    'canvas-browse': vi.fn(),
+    'canvas-select-previewed': vi.fn(),
     share: vi.fn(),
   }
 }
 
 describe('runEditorCommand', () => {
-  it.each<[EditorCommand, keyof EditorCommandApi]>([
-    [{ kind: 'undo' }, 'undo'],
-    [{ kind: 'redo' }, 'redo'],
-    [{ kind: 'start-over' }, 'startOverIntent'],
-    [{ kind: 'focus-inspector' }, 'focusInspector'],
-    [{ kind: 'focus-room-view' }, 'focusRoomView'],
-    [{ kind: 'focus-outliner' }, 'focusOutliner'],
-    [{ kind: 'focus-selected' }, 'focusSelected'],
-    [{ kind: 'canvas-select-previewed' }, 'canvasSelectPreviewed'],
-    [{ kind: 'clear-selection' }, 'clearSelection'],
-    [{ kind: 'share' }, 'share'],
-  ])('routes %o to the matching no-arg api method', (command, method) => {
-    const api = createMockCommandApi()
+  it.each<EditorCommand>([
+    { kind: 'undo' },
+    { kind: 'redo' },
+    { kind: 'start-over' },
+    { kind: 'focus-inspector' },
+    { kind: 'focus-room-view' },
+    { kind: 'focus-outliner' },
+    { kind: 'focus-selected' },
+    { kind: 'canvas-select-previewed' },
+    { kind: 'clear-selection' },
+    { kind: 'share' },
+    { kind: 'set-camera-preset', preset: 'side' },
+    { kind: 'move-selection', delta: { x: -1, z: 0 } },
+    { kind: 'rotate-selection', direction: -1 },
+    { kind: 'canvas-browse', direction: 'last' },
+    { kind: 'open-delete-dialog', returnFocusTo: 'room-view' },
+  ])('routes %o to the handler for its kind with the full command', (command) => {
+    const handlers = createMockHandlers()
 
-    runEditorCommand(command, api)
+    runEditorCommand(command, handlers)
 
-    expect(api[method]).toHaveBeenCalledTimes(1)
-    expect(api[method]).toHaveBeenCalledWith()
-  })
-
-  it('routes set-camera-preset with the preset argument', () => {
-    const api = createMockCommandApi()
-
-    runEditorCommand({ kind: 'set-camera-preset', preset: 'side' }, api)
-
-    expect(api.setCameraPreset).toHaveBeenCalledTimes(1)
-    expect(api.setCameraPreset).toHaveBeenCalledWith('side')
-  })
-
-  it('routes move-selection with the delta argument', () => {
-    const api = createMockCommandApi()
-
-    runEditorCommand({ kind: 'move-selection', delta: { x: -1, z: 0 } }, api)
-
-    expect(api.moveSelection).toHaveBeenCalledTimes(1)
-    expect(api.moveSelection).toHaveBeenCalledWith({ x: -1, z: 0 })
-  })
-
-  it('routes rotate-selection with the direction argument', () => {
-    const api = createMockCommandApi()
-
-    runEditorCommand({ kind: 'rotate-selection', direction: -1 }, api)
-
-    expect(api.rotate).toHaveBeenCalledTimes(1)
-    expect(api.rotate).toHaveBeenCalledWith(-1)
-  })
-
-  it('routes canvas-browse with the direction argument', () => {
-    const api = createMockCommandApi()
-
-    runEditorCommand({ kind: 'canvas-browse', direction: 'last' }, api)
-
-    expect(api.canvasBrowse).toHaveBeenCalledTimes(1)
-    expect(api.canvasBrowse).toHaveBeenCalledWith('last')
-  })
-
-  it('routes open-delete-dialog with the room-view return focus', () => {
-    const api = createMockCommandApi()
-
-    runEditorCommand(
-      { kind: 'open-delete-dialog', returnFocusTo: 'room-view' },
-      api,
-    )
-
-    expect(api.openDeleteDialog).toHaveBeenCalledTimes(1)
-    expect(api.openDeleteDialog).toHaveBeenCalledWith('room-view')
-  })
-
-  it('routes open-delete-dialog with the outliner return focus', () => {
-    const api = createMockCommandApi()
-
-    runEditorCommand(
-      { kind: 'open-delete-dialog', returnFocusTo: 'outliner' },
-      api,
-    )
-
-    expect(api.openDeleteDialog).toHaveBeenCalledWith('outliner')
+    expect(handlers[command.kind]).toHaveBeenCalledTimes(1)
+    expect(handlers[command.kind]).toHaveBeenCalledWith(command)
   })
 })

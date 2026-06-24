@@ -8,7 +8,7 @@ import {
 import {
   runEditorCommand,
   type EditorCommand,
-  type EditorCommandApi,
+  type EditorCommandHandlers,
 } from './editor-command'
 
 export type CommandDispatch = (command: EditorCommand) => void
@@ -30,21 +30,21 @@ export function useCommandDispatch(): CommandDispatch {
 }
 
 /**
- * Builds a stable dispatch from a per-render command api. The api is rebuilt
- * each render (it closes over fresh handlers), so we keep it in a ref synced in
- * a layout effect and expose a referentially stable dispatch that reads the
- * latest api at call time.
+ * Builds a stable dispatch from a per-render handler map. The map is rebuilt
+ * each render (some handlers close over fresh component state), so we keep it in
+ * a ref synced in a layout effect and expose a referentially stable dispatch
+ * that reads the latest handlers at call time.
  */
 export function useCommandDispatchValue(
-  api: EditorCommandApi,
+  handlers: EditorCommandHandlers,
 ): CommandDispatch {
-  const apiRef = useRef(api)
+  const handlersRef = useRef(handlers)
 
   useLayoutEffect(() => {
-    apiRef.current = api
-  }, [api])
+    handlersRef.current = handlers
+  }, [handlers])
 
   return useCallback((command: EditorCommand) => {
-    runEditorCommand(command, apiRef.current)
+    runEditorCommand(command, handlersRef.current)
   }, [])
 }

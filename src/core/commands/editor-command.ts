@@ -28,77 +28,21 @@ export type EditorCommand =
   | { kind: 'canvas-browse'; direction: CanvasBrowseDirection }
   | { kind: 'open-delete-dialog'; returnFocusTo: DeleteDialogReturnFocus }
 
-export interface EditorCommandApi {
-  focusInspector: () => void
-  focusRoomView: () => void
-  focusOutliner: () => void
-  undo: () => void
-  redo: () => void
-  startOverIntent: () => void
-  openDeleteDialog: (returnFocusTo: DeleteDialogReturnFocus) => void
-  focusSelected: () => void
-  moveSelection: (delta: MoveSelectionDelta) => void
-  clearSelection: () => void
-  rotate: (direction: RotationDirection) => void
-  setCameraPreset: (preset: CameraPreset) => void
-  canvasBrowse: (direction: CanvasBrowseDirection) => void
-  canvasSelectPreviewed: () => void
-  share: () => void
+/**
+ * One handler per command kind, each receiving its exact command variant. The
+ * mapped type is keyed by `kind`, so adding a command to the union forces a
+ * matching handler here — no parallel interface or dispatch switch to maintain.
+ */
+export type EditorCommandHandlers = {
+  [Kind in EditorCommand['kind']]: (
+    command: Extract<EditorCommand, { kind: Kind }>,
+  ) => void
 }
 
 export function runEditorCommand(
   command: EditorCommand,
-  api: EditorCommandApi,
+  handlers: EditorCommandHandlers,
 ): void {
-  switch (command.kind) {
-    case 'undo':
-      api.undo()
-      return
-    case 'redo':
-      api.redo()
-      return
-    case 'start-over':
-      api.startOverIntent()
-      return
-    case 'focus-inspector':
-      api.focusInspector()
-      return
-    case 'focus-room-view':
-      api.focusRoomView()
-      return
-    case 'focus-outliner':
-      api.focusOutliner()
-      return
-    case 'focus-selected':
-      api.focusSelected()
-      return
-    case 'canvas-select-previewed':
-      api.canvasSelectPreviewed()
-      return
-    case 'clear-selection':
-      api.clearSelection()
-      return
-    case 'share':
-      api.share()
-      return
-    case 'set-camera-preset':
-      api.setCameraPreset(command.preset)
-      return
-    case 'move-selection':
-      api.moveSelection(command.delta)
-      return
-    case 'rotate-selection':
-      api.rotate(command.direction)
-      return
-    case 'canvas-browse':
-      api.canvasBrowse(command.direction)
-      return
-    case 'open-delete-dialog':
-      api.openDeleteDialog(command.returnFocusTo)
-      return
-    default: {
-      const unhandled: never = command
-      throw new Error(`Unhandled editor command: ${JSON.stringify(unhandled)}`)
-    }
-  }
+  const handler = handlers[command.kind] as (command: EditorCommand) => void
+  handler(command)
 }
