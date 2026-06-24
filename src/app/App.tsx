@@ -20,7 +20,6 @@ import {
 import { perfCounters } from '@/shared/debug/perf-counters'
 import { IS_E2E_BUILD } from '@/shared/env/e2e'
 import { useDraftPersistence } from '@/features/url-scene/use-draft-persistence'
-import { useActiveFinishIds } from '@/core/operations/active-finish-ids'
 import { useTestStateBridge } from './testing/use-test-state-bridge'
 import {
   buildDialogRuntimeContext,
@@ -39,13 +38,6 @@ function App() {
 
   useStartupBootstrap()
   const environmentConfig = useEnvironmentConfig()
-
-  const {
-    activeFloorFinishId,
-    activeWallFinishId,
-    selectedFloorOption,
-    selectedWallOption,
-  } = useActiveFinishIds()
 
   useDraftPersistence({
     environmentConfig,
@@ -89,8 +81,6 @@ function App() {
   }, [])
 
   useTestStateBridge({
-    activeFloorFinishId,
-    activeWallFinishId,
     setTestOverlaysHidden,
   })
 
@@ -100,8 +90,6 @@ function App() {
         testOverlaysHidden={testOverlaysHidden}
         canvasShadowMode={canvasShadowMode}
         isE2ELowRenderQuality={isE2ELowRenderQuality}
-        selectedFloorOption={selectedFloorOption}
-        selectedWallOption={selectedWallOption}
         onScenePreviewChange={previewFromScene}
         onFloorLoadingChange={handleFloorLoadingChange}
         onCanvasPointerSelection={selectByCanvasPointer}

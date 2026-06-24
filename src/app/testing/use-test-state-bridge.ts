@@ -6,6 +6,7 @@ import {
 } from '@/core/stores/editor-lifecycle-store'
 import { sceneDocumentStore } from '@/core/stores/scene-document-store'
 import { getPreviewedId } from '@/core/operations/previewed-id'
+import { getActiveFinishIds } from '@/core/operations/active-finish-ids'
 import { sceneCommands } from '@/scene/scene-commands'
 import {
   type PerfCounterSnapshot,
@@ -50,14 +51,10 @@ declare global {
 }
 
 interface UseTestStateBridgeOptions {
-  activeFloorFinishId: string
-  activeWallFinishId: string
   setTestOverlaysHidden: Dispatch<SetStateAction<boolean>>
 }
 
 export function useTestStateBridge({
-  activeFloorFinishId,
-  activeWallFinishId,
   setTestOverlaysHidden,
 }: UseTestStateBridgeOptions) {
   useEffect(() => {
@@ -73,6 +70,7 @@ export function useTestStateBridge({
           snapshotItems.map((item) => [item.id, item.pointerTarget] as const),
         )
         const cameraPosition = sceneCommands.getCameraPosition()
+        const { activeFloorFinishId, activeWallFinishId } = getActiveFinishIds()
         const selectedItem = storeState.selectedId
           ? (storeState.history.present.find(
               (item) => item.id === storeState.selectedId,
@@ -114,5 +112,5 @@ export function useTestStateBridge({
     return () => {
       delete window.__ROOM_LAYOUT_TEST__
     }
-  }, [activeFloorFinishId, activeWallFinishId, setTestOverlaysHidden])
+  }, [setTestOverlaysHidden])
 }
