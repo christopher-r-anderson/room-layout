@@ -45,6 +45,7 @@ import { useSceneDrag } from './internal/use-scene-drag'
 import { useSceneImperativeApi } from './internal/use-scene-imperative-api'
 import { useCameraOperations } from './internal/use-camera-operations'
 import { useCameraKeyMotion } from './internal/use-camera-key-motion'
+import { useSelectionOperations } from './internal/use-selection-operations'
 import { useSceneSelection } from './internal/use-scene-selection'
 import { BlendFunction } from 'postprocessing'
 import {
@@ -238,14 +239,6 @@ export function Scene({
     furniture,
   })
 
-  const handleSelect = useCallback(
-    (id: string) => {
-      onCanvasPointerSelection?.(id)
-      selectFurniture(id)
-    },
-    [onCanvasPointerSelection, selectFurniture],
-  )
-
   const updateFurniturePosition = useCallback(
     (id: string, nextPosition: [number, number, number]) => {
       sceneDocumentActions.updateHistory((currentHistory) => {
@@ -288,13 +281,16 @@ export function Scene({
     sourceScenesByPath,
   })
 
-  const handleClearSelection = useCallback(() => {
-    if (dragState) {
-      return
-    }
-
-    selectFurniture(null)
-  }, [dragState, selectFurniture])
+  const {
+    select: handleSelect,
+    clearSelection: handleClearSelection,
+    selectById: handleSelectById,
+  } = useSelectionOperations({
+    isDragging: Boolean(dragState),
+    onCanvasPointerSelection,
+    selectFurniture,
+    setSelectedIdAndResolveObject,
+  })
 
   const handleDeleteSelection = useCallback(() => {
     const { history, selectedId } = sceneDocumentStore.getState()
@@ -317,44 +313,6 @@ export function Scene({
 
     return true
   }, [clearDragState, dragState])
-
-  const handleSelectById = useCallback(
-    (id: string | null) => {
-      const furnitureItems = sceneDocumentStore.getState().history.present
-
-      if (dragState) {
-        return {
-          ok: false as const,
-          status: 'blocked-dragging' as const,
-        }
-      }
-
-      if (id === null) {
-        setSelectedIdAndResolveObject(null)
-        return {
-          ok: true as const,
-          status: 'cleared' as const,
-        }
-      }
-
-      const itemExists = furnitureItems.some((item) => item.id === id)
-
-      if (!itemExists) {
-        return {
-          ok: false as const,
-          status: 'not-found' as const,
-        }
-      }
-
-      setSelectedIdAndResolveObject(id)
-
-      return {
-        ok: true as const,
-        status: 'selected' as const,
-      }
-    },
-    [dragState, setSelectedIdAndResolveObject],
-  )
 
   const handleMoveSelection = useCallback(
     (
