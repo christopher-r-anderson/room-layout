@@ -202,7 +202,6 @@ describe('useSceneImperativeApi', () => {
       updatedOptions.canvasSize,
     )
   })
-
 })
 
 describe('buildRestoredSceneHistory', () => {

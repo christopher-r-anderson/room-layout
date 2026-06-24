@@ -5,7 +5,10 @@ import type {
   FurnitureCatalogEntry,
   FurnitureCollection,
 } from '@/domain/catalog'
-import { sceneDocumentActions, sceneDocumentStore } from '@/core/scene-contracts'
+import {
+  sceneDocumentActions,
+  sceneDocumentStore,
+} from '@/core/scene-contracts'
 import { redoSceneHistory, undoSceneHistory } from './scene-history-state'
 import { buildRestoredSceneHistory } from './use-scene-imperative-api'
 
