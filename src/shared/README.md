@@ -13,6 +13,7 @@ Contains
 - `providers/`: reusable provider/context wiring.
 - `messages/`: shared message constants.
 - `debug/`: runtime instrumentation.
+- `env/`: build/runtime environment flags.
 
 Should not contain
 

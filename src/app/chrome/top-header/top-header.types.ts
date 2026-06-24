@@ -1,7 +1,7 @@
 import type {
   FloorFinishOption,
   WallFinishOption,
-} from '@/shared/lib/three/environment-materials'
+} from '@/domain/environment-materials'
 import type { Ref } from 'react'
 
 interface TopHeaderProps {

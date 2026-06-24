@@ -8,6 +8,8 @@ like `three` for math types).
   `FootprintSize`, `FurnitureKind`).
 - `catalog.ts` — catalog manifest types (`FurnitureCatalogEntry`,
   `FurnitureCollection`) and the pure `getCollection` lookup.
+- `environment-materials.ts` — room finish vocabulary (`FloorFinishOption`,
+  `WallFinishOption`, `EnvironmentMaterialConfig`) and pure finish lookups.
 - `geometry/` — pure placement/geometry functions over the model (footprint,
   layout, spawn, wall clearance, room metrics), shared by scene and features.
 

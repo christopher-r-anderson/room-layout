@@ -3,7 +3,7 @@ import { act } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { MeshStandardMaterial, Texture } from 'three'
 import { createR3FTestScene } from '@/test/support/r3f-renderer'
-import type { FloorFinishOption } from '@/shared/lib/three/environment-materials'
+import type { FloorFinishOption } from '@/domain/environment-materials'
 import { FloorMaterial } from './floor-material'
 
 const { mockLoadFloorTexture } = vi.hoisted(() => ({

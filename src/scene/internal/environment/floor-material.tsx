@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useThree } from '@react-three/fiber'
 import type { FloorTextures } from '@/scene/internal/three/load-floor-texture'
-import type { FloorFinishOption } from '@/shared/lib/three/environment-materials'
+import type { FloorFinishOption } from '@/domain/environment-materials'
 import { getFloorTextureRepeat } from '@/scene/internal/three/floor-texture-repeat'
 import { loadFloorTexture } from '@/scene/internal/three/load-floor-texture'
 

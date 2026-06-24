@@ -4,7 +4,7 @@ import { Lighting } from './internal/environment/lighting'
 import type {
   FloorFinishOption,
   WallFinishOption,
-} from '@/shared/lib/three/environment-materials'
+} from '@/domain/environment-materials'
 import { CameraControls } from './internal/camera/camera-controls'
 import { InteractiveFurniture } from './internal/furniture/interactive-furniture'
 import { useGLTF } from '@react-three/drei'

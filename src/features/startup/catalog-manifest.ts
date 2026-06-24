@@ -3,7 +3,7 @@ import {
   type EnvironmentMaterialConfig,
   type FloorFinishOption,
   type WallFinishOption,
-} from '@/shared/lib/three/environment-materials'
+} from '@/domain/environment-materials'
 import type {
   FurnitureCatalogEntry,
   FurnitureCollection,

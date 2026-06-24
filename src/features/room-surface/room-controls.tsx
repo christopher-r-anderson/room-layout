@@ -2,7 +2,7 @@ import { IconLoader, IconSparkles } from '@tabler/icons-react'
 import type {
   FloorFinishOption,
   WallFinishOption,
-} from '@/shared/lib/three/environment-materials'
+} from '@/domain/environment-materials'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { cn } from '@/shared/lib/utils'
 import { FLOOR_FINISH_DESCRIPTION, WALL_FINISH_DESCRIPTION } from './room-copy'

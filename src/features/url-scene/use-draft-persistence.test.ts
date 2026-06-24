@@ -3,7 +3,7 @@
 import { act, renderHook } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createHistoryState } from '@/shared/lib/ui/editor-history'
-import type { EnvironmentMaterialConfig } from '@/shared/lib/three/environment-materials'
+import type { EnvironmentMaterialConfig } from '@/domain/environment-materials'
 import {
   editorLifecycleActions,
   resetEditorLifecycleStore,

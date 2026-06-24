@@ -1,7 +1,7 @@
 import { useStoreWithEqualityFn } from 'zustand/traditional'
 import { subscribeWithSelector } from 'zustand/middleware'
 import { createStore } from 'zustand/vanilla'
-import type { EnvironmentMaterialConfig } from '@/shared/lib/three/environment-materials'
+import type { EnvironmentMaterialConfig } from '@/domain/environment-materials'
 import type {
   FurnitureCatalogEntry,
   FurnitureCollection,

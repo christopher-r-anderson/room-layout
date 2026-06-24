@@ -1,7 +1,7 @@
 import {
   resolveActiveFinishIds,
   type EnvironmentMaterialConfig,
-} from '@/shared/lib/three/environment-materials'
+} from '@/domain/environment-materials'
 import { isFreshSceneState } from '@/core/model/scene-defaults'
 import type { FurnitureItem } from '@/domain/furniture'
 import { assetsStore, useEnvironmentConfig } from '@/core/stores/assets-store'

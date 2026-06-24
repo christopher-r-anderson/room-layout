@@ -3,7 +3,7 @@ import { feedbackActions } from '@/core/stores/feedback-store'
 import { selectById } from '@/core/operations/selection-actions'
 import { previewFromCanvasKeyboard } from '@/core/operations/preview-actions'
 import { sceneCommands } from '@/scene/scene-commands'
-import { sortSpatially } from '@/shared/lib/three/spatial-sort'
+import { sortSpatially } from '@/shared/lib/spatial-sort'
 
 interface UseCanvasKeyboardControllerOptions {
   previewedId: string | null

@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest'
 import type {
   FloorFinishOption,
   WallFinishOption,
-} from '@/shared/lib/three/environment-materials'
+} from '@/domain/environment-materials'
 import { RoomControls } from '@/features/room-surface/room-controls'
 
 function createFloorOptions(): FloorFinishOption[] {

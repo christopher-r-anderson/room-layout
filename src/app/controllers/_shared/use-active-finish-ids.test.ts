@@ -2,7 +2,7 @@
 
 import { renderHook } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
-import type { EnvironmentMaterialConfig } from '@/shared/lib/three/environment-materials'
+import type { EnvironmentMaterialConfig } from '@/domain/environment-materials'
 import { useActiveFinishIds } from './use-active-finish-ids'
 
 const ENVIRONMENT: EnvironmentMaterialConfig = {

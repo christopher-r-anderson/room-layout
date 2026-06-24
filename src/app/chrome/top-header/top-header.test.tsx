@@ -10,7 +10,7 @@ import {
 import { sceneDocumentActions } from '@/core/stores/scene-document-store'
 import { CommandDispatchProvider } from '@/core/commands/command-dispatch-provider'
 import { resetAssetsStore, assetsActions } from '@/core/stores/assets-store'
-import type { EnvironmentMaterialConfig } from '@/shared/lib/three/environment-materials'
+import type { EnvironmentMaterialConfig } from '@/domain/environment-materials'
 import { TopHeader } from './top-header'
 import type {
   TopHeaderDesktopProps,

@@ -5,7 +5,7 @@ import { describe, expect, it, vi } from 'vitest'
 import type {
   FloorFinishOption,
   WallFinishOption,
-} from '@/shared/lib/three/environment-materials'
+} from '@/domain/environment-materials'
 import { ROOM_TRIGGER_TOOLTIP } from '@/features/room-surface/room-copy'
 import { TopHeaderDesktop } from './top-header-desktop'
 import type { TopHeaderDesktopProps } from './top-header.types'

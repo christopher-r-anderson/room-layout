@@ -14,7 +14,7 @@ import type {
 import {
   formatSelectedItemDetailsBlockedMessage,
   formatSelectedItemDetailsInvalidValueMessage,
-} from '@/shared/messages/selected-item-detail-messages'
+} from './selected-item-detail-messages'
 
 function normalizeDegreesRadians(valueDegrees: number) {
   const normalizedDegrees = ((valueDegrees % 360) + 360) % 360

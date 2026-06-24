@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import type { EnvironmentMaterialConfig } from '@/shared/lib/three/environment-materials'
+import type { EnvironmentMaterialConfig } from '@/domain/environment-materials'
 import { editorLifecycleStore } from '@/core/stores/editor-lifecycle-store'
 import { sceneDocumentStore } from '@/core/stores/scene-document-store'
 import { clearSceneDraft, saveSceneDraft } from '@/core/persistence/scene-draft'
