@@ -226,7 +226,6 @@ describe('EditorOverlay integration', () => {
     sceneDocumentActions.setWallFinishId('light-gray')
 
     function TestHarness() {
-      const selectedItemControlsRef = React.useRef<HTMLDivElement | null>(null)
       const dockedInspectorRef = React.useRef<HTMLDivElement | null>(null)
       const roomViewRef = React.useRef<HTMLElement | null>(null)
       const placementValue = React.useMemo(
@@ -244,9 +243,7 @@ describe('EditorOverlay integration', () => {
 
       return (
         <TooltipProvider>
-          <EditorRefsProvider
-            value={{ roomViewRef, selectedItemControlsRef, dockedInspectorRef }}
-          >
+          <EditorRefsProvider value={{ roomViewRef, dockedInspectorRef }}>
             <OverlayExclusionProvider
               registerExclusionElement={registerExclusionElement}
               exclusionRects={{}}

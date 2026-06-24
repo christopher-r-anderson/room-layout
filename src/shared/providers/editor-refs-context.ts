@@ -1,8 +1,7 @@
 import { createContext, useContext, type RefObject } from 'react'
 
-interface EditorRefs {
+export interface EditorRefs {
   roomViewRef: RefObject<HTMLElement | null>
-  selectedItemControlsRef: RefObject<HTMLDivElement | null>
   dockedInspectorRef: RefObject<HTMLDivElement | null>
 }
 

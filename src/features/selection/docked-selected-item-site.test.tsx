@@ -36,15 +36,12 @@ beforeEach(() => {
 describe('DockedSelectedItemSite', () => {
   it('attaches the controls ref when hidden placement still shows details', () => {
     const roomViewRef = createRef<HTMLElement>()
-    const selectedItemControlsRef = createRef<HTMLDivElement>()
     const dockedInspectorRef = createRef<HTMLDivElement>()
     const registerExclusionElement = vi.fn(() => vi.fn())
 
     render(
       <TooltipProvider>
-        <EditorRefsProvider
-          value={{ roomViewRef, selectedItemControlsRef, dockedInspectorRef }}
-        >
+        <EditorRefsProvider value={{ roomViewRef, dockedInspectorRef }}>
           <OverlayExclusionProvider
             registerExclusionElement={registerExclusionElement}
             exclusionRects={{}}
@@ -75,28 +72,22 @@ describe('DockedSelectedItemSite', () => {
     expect(
       screen.queryByRole('region', { name: 'Selected item actions' }),
     ).not.toBeInTheDocument()
-    expect(selectedItemControlsRef.current).toContainElement(
-      screen.getByLabelText('Distance from left wall (m)'),
-    )
-    expect(selectedItemControlsRef.current).toContainElement(
-      screen.getByRole('button', { name: 'Rotate counterclockwise' }),
-    )
     expect(dockedInspectorRef.current).toContainElement(
       screen.getByLabelText('Distance from left wall (m)'),
+    )
+    expect(dockedInspectorRef.current).toContainElement(
+      screen.getByRole('button', { name: 'Rotate counterclockwise' }),
     )
   })
 
   it('keeps controls ref on docked inspector when floating supplemental actions also render', () => {
     const roomViewRef = createRef<HTMLElement>()
-    const selectedItemControlsRef = createRef<HTMLDivElement>()
     const dockedInspectorRef = createRef<HTMLDivElement>()
     const registerExclusionElement = vi.fn(() => vi.fn())
 
     render(
       <TooltipProvider>
-        <EditorRefsProvider
-          value={{ roomViewRef, selectedItemControlsRef, dockedInspectorRef }}
-        >
+        <EditorRefsProvider value={{ roomViewRef, dockedInspectorRef }}>
           <OverlayExclusionProvider
             registerExclusionElement={registerExclusionElement}
             exclusionRects={{}}
@@ -130,9 +121,6 @@ describe('DockedSelectedItemSite', () => {
     expect(
       screen.getAllByRole('region', { name: 'Selected item actions' }),
     ).toHaveLength(1)
-    expect(selectedItemControlsRef.current).toContainElement(
-      screen.getByLabelText('Distance from left wall (m)'),
-    )
     expect(dockedInspectorRef.current).toContainElement(
       screen.getByLabelText('Distance from left wall (m)'),
     )
@@ -140,15 +128,12 @@ describe('DockedSelectedItemSite', () => {
 
   it('does not render floating supplemental actions in mobile docked layout', () => {
     const roomViewRef = createRef<HTMLElement>()
-    const selectedItemControlsRef = createRef<HTMLDivElement>()
     const dockedInspectorRef = createRef<HTMLDivElement>()
     const registerExclusionElement = vi.fn(() => vi.fn())
 
     render(
       <TooltipProvider>
-        <EditorRefsProvider
-          value={{ roomViewRef, selectedItemControlsRef, dockedInspectorRef }}
-        >
+        <EditorRefsProvider value={{ roomViewRef, dockedInspectorRef }}>
           <OverlayExclusionProvider
             registerExclusionElement={registerExclusionElement}
             exclusionRects={{}}
@@ -179,7 +164,7 @@ describe('DockedSelectedItemSite', () => {
     expect(
       screen.queryAllByRole('region', { name: 'Selected item actions' }),
     ).toHaveLength(0)
-    expect(selectedItemControlsRef.current).toContainElement(
+    expect(dockedInspectorRef.current).toContainElement(
       screen.getByLabelText('Distance from left wall (m)'),
     )
   })

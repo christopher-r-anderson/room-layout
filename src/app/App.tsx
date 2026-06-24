@@ -14,15 +14,12 @@ import {
 } from '@/core/operations/selection-actions'
 import { useCanvasKeyboardController } from '@/app/controllers/use-canvas-keyboard-controller'
 import { useEditorCommandHandlers } from '@/app/commands/use-editor-command-handlers'
-import { EditorRefsProvider } from '@/shared/providers/editor-refs-provider'
-import { CommandDispatchProvider } from '@/core/commands/command-dispatch-provider'
 import { useCommandDispatchValue } from '@/core/commands/command-dispatch-context'
 import { useEditorInteractionsEnabled } from '@/core/stores/editor-lifecycle-store'
 import { useEnvironmentConfig } from '@/core/stores/assets-store'
-import { TooltipProvider } from '@/shared/ui/tooltip'
 import { useStartupBootstrap } from '@/features/startup/use-startup-bootstrap'
 import { EditorBody } from './chrome/editor-body'
-import { EditorShell } from './chrome/editor-shell'
+import { EditorProviders } from './chrome/providers/editor-providers'
 import {
   selectionFocusActions,
   useOutlinerFocusRequest,
@@ -42,7 +39,6 @@ function App() {
     perfCounters.incrAppRender()
   }
   const roomViewRef = useRef<HTMLElement | null>(null)
-  const selectedItemControlsRef = useRef<HTMLDivElement | null>(null)
   const dockedInspectorRef = useRef<HTMLDivElement | null>(null)
   const [testOverlaysHidden, setTestOverlaysHidden] = useState(false)
   const outlinerFocusRequest = useOutlinerFocusRequest()
@@ -106,10 +102,7 @@ function App() {
     sceneDocumentActions.setFloorFinishLoading(loading)
   }, [])
 
-  const editorRefs = useMemo(
-    () => ({ roomViewRef, selectedItemControlsRef, dockedInspectorRef }),
-    [],
-  )
+  const editorRefs = useMemo(() => ({ roomViewRef, dockedInspectorRef }), [])
 
   const { previewedIdRef, handleCanvasBrowse, handleCanvasSelectPreviewed } =
     useCanvasKeyboardController({
@@ -132,26 +125,20 @@ function App() {
   const dispatchCommand = useCommandDispatchValue(commandHandlers)
 
   return (
-    <TooltipProvider>
-      <EditorRefsProvider value={editorRefs}>
-        <CommandDispatchProvider value={dispatchCommand}>
-          <EditorShell>
-            <EditorBody
-              testOverlaysHidden={testOverlaysHidden}
-              canvasShadowMode={canvasShadowMode}
-              isE2ELowRenderQuality={isE2ELowRenderQuality}
-              previewedId={previewedId}
-              selectedFloorOption={selectedFloorOption}
-              selectedWallOption={selectedWallOption}
-              onScenePreviewChange={previewFromScene}
-              onFloorLoadingChange={handleFloorLoadingChange}
-              onCanvasPointerSelection={selectByCanvasPointer}
-              onClearCanvasSelection={clearCanvasSelection}
-            />
-          </EditorShell>
-        </CommandDispatchProvider>
-      </EditorRefsProvider>
-    </TooltipProvider>
+    <EditorProviders editorRefs={editorRefs} dispatchCommand={dispatchCommand}>
+      <EditorBody
+        testOverlaysHidden={testOverlaysHidden}
+        canvasShadowMode={canvasShadowMode}
+        isE2ELowRenderQuality={isE2ELowRenderQuality}
+        previewedId={previewedId}
+        selectedFloorOption={selectedFloorOption}
+        selectedWallOption={selectedWallOption}
+        onScenePreviewChange={previewFromScene}
+        onFloorLoadingChange={handleFloorLoadingChange}
+        onCanvasPointerSelection={selectByCanvasPointer}
+        onClearCanvasSelection={clearCanvasSelection}
+      />
+    </EditorProviders>
   )
 }
 

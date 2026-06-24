@@ -19,7 +19,7 @@ export function DockedSelectedItemSite({
   isCatalogDrawerOpen,
 }: DockedSelectedItemSiteProps) {
   const interaction = useSelectedItemInteraction()
-  const { dockedInspectorRef, selectedItemControlsRef } = useEditorRefs()
+  const { dockedInspectorRef } = useEditorRefs()
   const registerExclusionElement = useExclusionRegistry()
   const selectedFurniture = useSelectedFurniture()
   const editorInteractionsEnabled = useEditorInteractionsEnabled()
@@ -46,7 +46,6 @@ export function DockedSelectedItemSite({
     <div
       ref={(element) => {
         dockedInspectorRef.current = element
-        selectedItemControlsRef.current = element
       }}
       inert={interactivity.suppressed}
       className="contents"
