@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import { beforeEach, describe, expect, it } from 'vitest'
-import type { SceneOutlinerFocusRequest } from '../types/scene-panel.types'
+import type { OutlinerFocusRequest } from '../types/outliner.types'
 import {
   resetSelectionFocusStore,
   selectionFocusActions,
@@ -24,7 +24,7 @@ describe('selectionFocusStore', () => {
   })
 
   it('tracks outliner focus request lifecycle', () => {
-    const request: SceneOutlinerFocusRequest = {
+    const request: OutlinerFocusRequest = {
       token: 101,
       targetSelectedId: 'chair-1',
     }

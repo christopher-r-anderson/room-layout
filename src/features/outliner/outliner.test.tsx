@@ -23,7 +23,7 @@ import {
   selectionFocusActions,
   selectionFocusStore,
 } from '@/core/stores/selection-focus-store'
-import type { ScenePanelReadModel } from '@/core/types/scene-panel.types'
+import type { OutlinerReadModel } from '@/core/types/outliner.types'
 import { selectById } from '@/core/operations/selection-actions'
 import { previewFromOutliner } from '@/core/operations/preview-actions'
 import { Outliner } from './outliner'
@@ -40,7 +40,7 @@ vi.mock('@/core/operations/preview-actions', () => ({
 
 const OUTLINER_EXPANDED_PREFERENCE_KEY = 'outliner-expanded'
 
-const READ_MODEL: ScenePanelReadModel = {
+const READ_MODEL: OutlinerReadModel = {
   selectedId: 'item-1',
   items: [
     {
@@ -70,7 +70,7 @@ const READ_MODEL: ScenePanelReadModel = {
   ],
 }
 
-function seedScene(readModel: ScenePanelReadModel = READ_MODEL) {
+function seedScene(readModel: OutlinerReadModel = READ_MODEL) {
   sceneDocumentActions.setHistory(createHistoryState(readModel.items))
   sceneDocumentActions.setSelectedId(readModel.selectedId)
 }

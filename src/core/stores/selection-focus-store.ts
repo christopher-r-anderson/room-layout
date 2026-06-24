@@ -2,7 +2,7 @@ import { useStoreWithEqualityFn } from 'zustand/traditional'
 import { subscribeWithSelector } from 'zustand/middleware'
 import { createStore } from 'zustand/vanilla'
 import type { InteractionSource } from '../types/interaction.types'
-import type { SceneOutlinerFocusRequest } from '../types/scene-panel.types'
+import type { OutlinerFocusRequest } from '../types/outliner.types'
 import type { EqualityChecker } from '../types/store.types'
 
 // View-side routing that reacts to selection: how the selection was made
@@ -12,10 +12,10 @@ import type { EqualityChecker } from '../types/store.types'
 // overlay reconciled on top of it.
 interface SelectionFocusStoreState {
   selectedSource: InteractionSource
-  outlinerFocusRequest: SceneOutlinerFocusRequest | null
+  outlinerFocusRequest: OutlinerFocusRequest | null
   roomViewFocusRequest: number | null
   setSelectedSource: (source: InteractionSource) => void
-  requestOutlinerFocus: (request: SceneOutlinerFocusRequest) => void
+  requestOutlinerFocus: (request: OutlinerFocusRequest) => void
   clearOutlinerFocusRequest: () => void
   requestRoomViewFocus: (token: number) => void
   clearRoomViewFocusRequest: () => void
@@ -106,7 +106,7 @@ export const selectionFocusActions = {
   setSelectedSource: (source: InteractionSource) => {
     selectionFocusStore.getState().setSelectedSource(source)
   },
-  requestOutlinerFocus: (request: SceneOutlinerFocusRequest) => {
+  requestOutlinerFocus: (request: OutlinerFocusRequest) => {
     selectionFocusStore.getState().requestOutlinerFocus(request)
   },
   clearOutlinerFocusRequest: () => {
