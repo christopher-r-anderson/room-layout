@@ -55,6 +55,8 @@ pnpm format       # check formatting
 pnpm format:write # apply formatting
 pnpm fix          # lint + format fixes
 
+pnpm preflight    # full gate: lint, format, typecheck, test:run, knip, build, test:e2e
+
 pnpm knip         # check for unused files and exports
 pnpm knip:fix     # remove unused files and exports
 

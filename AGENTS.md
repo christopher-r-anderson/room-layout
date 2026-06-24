@@ -26,6 +26,7 @@ task-specific policy files.
 - Use `pnpm test:e2e` for browser-facing behavior changes.
 - Use `pnpm test:browser:perf` for frame-time-sensitive flow changes.
 - Run `pnpm fix` before finalizing edits.
+- Run `pnpm preflight` for the complete gate (lint, format, typecheck, test:run, knip, build, test:e2e) before finalizing a substantial change.
 
 ## Task Routing
 

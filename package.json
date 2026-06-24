@@ -11,6 +11,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "typecheck": "tsc -b",
+    "preflight": "pnpm run lint && pnpm run format && pnpm run typecheck && pnpm run test:run && pnpm run knip && pnpm run build && pnpm run test:e2e",
     "fix": "pnpm run lint:fix && pnpm run format:write",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
