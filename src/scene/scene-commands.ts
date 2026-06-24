@@ -17,11 +17,38 @@ import type {
 /**
  * Imperative command surface backed by the scene-services registry. App-side
  * code uses these to drive scene mutations that depend on three.js refs and
- * in-component closures (drag state, catalog, source scenes). Reads use
- * `getSceneServicesIfReady` and gracefully degrade when the scene is not
- * mounted; writes throw until the scene registers services.
+ * in-component closures (drag state, catalog, source scenes).
+ *
+ * Readiness policy (two tiers):
+ *
+ * - Reads and best-effort continuous input use `getSceneServicesIfReady` and
+ *   degrade to a safe default when the scene is not mounted, so callers may call
+ *   them anytime without guarding.
+ * - Discrete mutations use `getSceneServices` and throw if the scene has not
+ *   registered. The throw is a loud "mutation attempted without a ready scene"
+ *   signal, not an error to catch. The decision of whether to tolerate a
+ *   not-ready scene is the caller's: operations for which "not ready" is an
+ *   expected transient (user gestures during startup/teardown) guard with
+ *   `isSceneReady()` and skip the whole operation; load-critical callers with a
+ *   guaranteed-ready scene (startup restore, reset) intentionally do not guard,
+ *   so a broken readiness assumption surfaces instead of silently no-op-ing.
  */
 export const sceneCommands = {
+  // Reads + best-effort input — degrade when the scene is not mounted.
+  isSceneReady: () => {
+    return getSceneServicesIfReady() !== null
+  },
+  getCameraPosition: (): [number, number, number] => {
+    return getSceneServicesIfReady()?.getCameraPosition() ?? [0, 0, 0]
+  },
+  getSnapshot: () => {
+    return getSceneServicesIfReady()?.getSnapshot() ?? null
+  },
+  setCameraKeyState: (keyState: CameraKeyState) => {
+    getSceneServicesIfReady()?.setCameraKeyState(keyState)
+  },
+
+  // Mutations — require a ready scene; throw otherwise (see policy above).
   addFurniture: (catalogId: string): AddFurnitureResult => {
     return getSceneServices().addFurniture(catalogId)
   },
@@ -33,15 +60,6 @@ export const sceneCommands = {
   },
   focusSelected: () => {
     getSceneServices().focusSelected()
-  },
-  getCameraPosition: (): [number, number, number] => {
-    return getSceneServicesIfReady()?.getCameraPosition() ?? [0, 0, 0]
-  },
-  getSnapshot: () => {
-    return getSceneServicesIfReady()?.getSnapshot() ?? null
-  },
-  isSceneReady: () => {
-    return getSceneServicesIfReady() !== null
   },
   moveSelection: (
     delta: { x: number; z: number },
@@ -60,9 +78,6 @@ export const sceneCommands = {
   },
   selectById: (id: string | null): SelectByIdResult => {
     return getSceneServices().selectById(id)
-  },
-  setCameraKeyState: (keyState: CameraKeyState) => {
-    getSceneServicesIfReady()?.setCameraKeyState(keyState)
   },
   setCameraPreset: (preset: CameraPreset) => {
     getSceneServices().setCameraPreset(preset)

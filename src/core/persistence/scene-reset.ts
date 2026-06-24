@@ -17,6 +17,9 @@ export function resetSceneToDefaults() {
 
   clearPreviewOnCanvasMiss()
   feedbackActions.clearStatusMessage()
+  // Load-critical: clearing the room must happen. Reset only runs from a mounted
+  // editor, so the scene is ready; the unguarded call lets a broken assumption
+  // surface rather than silently leaving stale furniture in place.
   sceneCommands.restoreInitialLayout([])
   sceneDocumentActions.setFloorFinishId(
     environmentConfig?.defaultFloorFinishId ?? '',
@@ -25,6 +28,8 @@ export function resetSceneToDefaults() {
     environmentConfig?.defaultWallFinishId ?? '',
   )
 
+  // Cosmetic: recentering the camera is best-effort, so it is fine to skip if
+  // the scene is somehow not ready.
   if (sceneCommands.isSceneReady()) {
     sceneCommands.setCameraPreset('corner')
   }
