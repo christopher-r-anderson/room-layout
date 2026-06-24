@@ -9,8 +9,6 @@ import {
   clearCanvasSelection,
   selectByCanvasPointer,
 } from '@/core/operations/selection-actions'
-import { useEditorCommandHandlers } from '@/app/commands/use-editor-command-handlers'
-import { useCommandDispatchValue } from '@/core/commands/command-dispatch-context'
 import { useEnvironmentConfig } from '@/core/stores/assets-store'
 import { useStartupBootstrap } from '@/features/startup/use-startup-bootstrap'
 import { EditorBody } from './chrome/editor-body'
@@ -33,8 +31,6 @@ function App() {
   if (import.meta.env.DEV || IS_E2E_BUILD) {
     perfCounters.incrAppRender()
   }
-  const roomViewRef = useRef<HTMLElement | null>(null)
-  const dockedInspectorRef = useRef<HTMLDivElement | null>(null)
   const [testOverlaysHidden, setTestOverlaysHidden] = useState(false)
   const outlinerFocusRequest = useOutlinerFocusRequest()
   const isE2ELowRenderQuality =
@@ -92,22 +88,14 @@ function App() {
     sceneDocumentActions.setFloorFinishLoading(loading)
   }, [])
 
-  const editorRefs = useMemo(() => ({ roomViewRef, dockedInspectorRef }), [])
-
   useTestStateBridge({
     activeFloorFinishId,
     activeWallFinishId,
     setTestOverlaysHidden,
   })
 
-  const commandHandlers = useEditorCommandHandlers({
-    dockedInspectorRef,
-  })
-
-  const dispatchCommand = useCommandDispatchValue(commandHandlers)
-
   return (
-    <EditorProviders editorRefs={editorRefs} dispatchCommand={dispatchCommand}>
+    <EditorProviders>
       <EditorBody
         testOverlaysHidden={testOverlaysHidden}
         canvasShadowMode={canvasShadowMode}

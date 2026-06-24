@@ -1,4 +1,3 @@
-import type { RefObject } from 'react'
 import type { EditorCommandHandlers } from '@/core/commands/editor-command'
 import { redo, undo } from '@/core/operations/history-actions'
 import {
@@ -19,20 +18,14 @@ import {
 } from '@/core/operations/canvas-keyboard-actions'
 import { useEditorFocusCommands } from './use-editor-focus-commands'
 
-interface UseEditorCommandHandlersOptions {
-  dockedInspectorRef: RefObject<HTMLDivElement | null>
-}
-
 /**
  * Assembles the concrete editor command map: most kinds wire straight to a core
- * operation or feature action, while the genuinely view-bound impls (focus,
- * canvas browse, share) come from the controllers passed in. App owns no command
- * semantics — it only supplies the live controller closures.
+ * operation or feature action; the view-bound focus impls come from
+ * useEditorFocusCommands (which reads the editor refs from context). No command
+ * semantics are invented here.
  */
-export function useEditorCommandHandlers({
-  dockedInspectorRef,
-}: UseEditorCommandHandlersOptions): EditorCommandHandlers {
-  const focus = useEditorFocusCommands({ dockedInspectorRef })
+export function useEditorCommandHandlers(): EditorCommandHandlers {
+  const focus = useEditorFocusCommands()
 
   return {
     'focus-inspector': focus.focusInspector,

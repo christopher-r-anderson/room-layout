@@ -1,15 +1,12 @@
-import { useCallback, type RefObject } from 'react'
+import { useCallback } from 'react'
 import { feedbackActions } from '@/core/stores/feedback-store'
 import { useSelectedFurniture } from '@/core/stores/scene-document-store'
 import { useEditorInteractionsEnabled } from '@/core/stores/editor-lifecycle-store'
 import { selectionFocusActions } from '@/core/stores/selection-focus-store'
 import { previewFromCanvasKeyboard } from '@/core/operations/preview-actions'
 import { requestOutlinerFocus } from '@/core/operations/focus-actions'
+import { useEditorRefs } from '@/shared/providers/editor-refs-context'
 import { findFirstActionableInspectorControl } from '@/app/chrome/focusable-controls'
-
-interface UseEditorFocusCommandsOptions {
-  dockedInspectorRef: RefObject<HTMLDivElement | null>
-}
 
 export interface EditorFocusCommands {
   focusInspector: () => void
@@ -19,12 +16,11 @@ export interface EditorFocusCommands {
 
 /**
  * The focus-routing command implementations. They are view-bound (they read the
- * docked-inspector DOM ref and current selection) so they live in app rather
- * than core, but are isolated here so App only wires them into the command map.
+ * docked-inspector DOM ref from context and the current selection) so they live
+ * in app, isolated here so the command map only wires them in.
  */
-export function useEditorFocusCommands({
-  dockedInspectorRef,
-}: UseEditorFocusCommandsOptions): EditorFocusCommands {
+export function useEditorFocusCommands(): EditorFocusCommands {
+  const { dockedInspectorRef } = useEditorRefs()
   const editorInteractionsEnabled = useEditorInteractionsEnabled()
   const selectedFurniture = useSelectedFurniture()
 

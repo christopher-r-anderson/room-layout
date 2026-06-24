@@ -1,8 +1,7 @@
 // @vitest-environment jsdom
 
 import { render, screen } from '@testing-library/react'
-import { createRef } from 'react'
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { useSelectedItemPlacement } from '@/features/selection/selected-item-placement-context'
 import { useExclusionRects } from '@/shared/layout/overlay-exclusion-context'
 import { useCommandDispatch } from '@/core/commands/command-dispatch-context'
@@ -24,16 +23,10 @@ function ProvidersProbe() {
 }
 
 describe('EditorProviders', () => {
-  it('composes the editor provider tree from the supplied refs and dispatch', () => {
-    const roomViewRef = createRef<HTMLElement>()
-    const dockedInspectorRef = createRef<HTMLDivElement>()
-
+  it('composes the editor provider tree, owning the refs and building dispatch', () => {
     expect(() => {
       render(
-        <EditorProviders
-          editorRefs={{ roomViewRef, dockedInspectorRef }}
-          dispatchCommand={vi.fn()}
-        >
+        <EditorProviders>
           <ProvidersProbe />
         </EditorProviders>,
       )
