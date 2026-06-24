@@ -1,10 +1,12 @@
-export function Announcer({
-  politeMessage,
-  assertiveMessage,
-}: {
-  politeMessage: string
-  assertiveMessage: string
-}) {
+import {
+  useAssertiveAnnouncement,
+  usePoliteAnnouncement,
+} from '@/core/stores/feedback-store'
+
+export function Announcer() {
+  const politeMessage = usePoliteAnnouncement()
+  const assertiveMessage = useAssertiveAnnouncement()
+
   return (
     <div className="sr-only" data-announcer-root>
       <div

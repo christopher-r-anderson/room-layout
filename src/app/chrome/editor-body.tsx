@@ -29,15 +29,11 @@ import {
   completeAssetLoad,
   notifyAssetError,
 } from '@/core/operations/startup-coordinator'
-import {
-  useAssertiveAnnouncement,
-  usePoliteAnnouncement,
-} from '@/core/stores/feedback-store'
 import { useKeyboardShortcuts } from '@/features/keyboard/use-keyboard-shortcuts'
 import { useCameraKeyState } from '@/features/keyboard/use-camera-key-state'
 import { useCommandDispatch } from '@/core/commands/command-dispatch-context'
 import { useEditorRefs } from '@/shared/providers/editor-refs-context'
-import { Announcer } from '@/features/scene-panel/announcer'
+import { Announcer } from './feedback/announcer'
 import { Toaster } from '@/shared/ui/sonner'
 import { EditorOverlay, type EditorOverlayProps } from './editor-overlay'
 
@@ -107,8 +103,6 @@ export function EditorBody({
   const isBlockingOverlayOpen = useIsBlockingOverlayOpen()
   const startupLoadingActive = useStartupLoadingActive()
   const selectedFurniture = useSelectedFurniture()
-  const politeAnnouncement = usePoliteAnnouncement()
-  const assertiveAnnouncement = useAssertiveAnnouncement()
   const { roomViewRef } = useEditorRefs()
   const dispatch = useCommandDispatch()
   const roomViewFocusRequest = useRoomViewFocusRequest()
@@ -237,10 +231,7 @@ export function EditorBody({
       </section>
 
       {testOverlaysHidden ? null : <EditorOverlay {...editorOverlay} />}
-      <Announcer
-        politeMessage={politeAnnouncement}
-        assertiveMessage={assertiveAnnouncement}
-      />
+      <Announcer />
       <Toaster />
     </main>
   )
