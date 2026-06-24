@@ -1,9 +1,4 @@
 import { getMeshes } from '@/scene/internal/three/get-meshes'
-import { getVisualObjectBounds } from '@/scene/internal/three/get-visual-object-bounds'
-import {
-  CAMERA_PRESETS,
-  type CameraPreset,
-} from '@/scene/internal/three/camera-presets'
 import { Room } from './internal/environment/room'
 import { Lighting } from './internal/environment/lighting'
 import type {
@@ -48,6 +43,8 @@ import type {
 } from './scene.types'
 import { useSceneDrag } from './internal/use-scene-drag'
 import { useSceneImperativeApi } from './internal/use-scene-imperative-api'
+import { useCameraOperations } from './internal/use-camera-operations'
+import { useCameraKeyMotion } from './internal/use-camera-key-motion'
 import { useSceneSelection } from './internal/use-scene-selection'
 import { BlendFunction } from 'postprocessing'
 import {
@@ -80,10 +77,6 @@ const ROOM_BOUNDS: LayoutBounds = {
   maxX: ROOM_HALF_WIDTH_METERS,
   minZ: -ROOM_HALF_DEPTH_METERS,
   maxZ: ROOM_HALF_DEPTH_METERS,
-}
-
-function roundCameraCoordinate(value: number) {
-  return Math.round(value * 1000) / 1000
 }
 
 function approximatelyEqualPx(left: number, right: number) {
@@ -599,68 +592,27 @@ export function Scene({
     [catalog, collections, sourceScenesByPath],
   )
 
-  const handleSetCameraPreset = useCallback((preset: CameraPreset) => {
-    const view = CAMERA_PRESETS[preset]
-    void cameraControlsRef.current?.setLookAt(
-      ...view.position,
-      ...view.target,
-      true,
-    )
-  }, [])
+  const {
+    setCameraPreset: handleSetCameraPreset,
+    getCameraPosition: handleGetCameraPosition,
+    setCameraKeyState: handleSetCameraKeyState,
+    focusSelected: handleFocusSelected,
+  } = useCameraOperations({
+    camera,
+    cameraControlsRef,
+    cameraKeyStateRef,
+    objectRefs,
+    invalidate,
+  })
 
-  const handleGetCameraPosition = useCallback(() => {
-    return camera.position.toArray().map((coordinate) => {
-      return roundCameraCoordinate(coordinate)
-    }) as [number, number, number]
-  }, [camera])
-
-  const handleSetCameraKeyState = useCallback(
-    (keyState: CameraKeyState) => {
-      cameraKeyStateRef.current = keyState
-
-      if (keyState.size > 0) {
-        invalidate()
-      }
-    },
-    [invalidate],
-  )
+  useCameraKeyMotion({ cameraControlsRef, cameraKeyStateRef })
 
   const getSnapshot = useSceneImperativeApi({
     camera,
-    cameraKeyStateRef,
     canvasSize,
-    cameraControlsRef,
     furniture,
     objectRefs,
   })
-
-  const handleFocusSelected = useCallback(() => {
-    const { selectedId } = sceneDocumentStore.getState()
-    const controls = cameraControlsRef.current
-
-    if (!controls || !selectedId) {
-      return
-    }
-
-    const object = objectRefs.current.get(selectedId)
-
-    if (!object) {
-      return
-    }
-
-    const bounds = getVisualObjectBounds(object)
-
-    if (!bounds) {
-      return
-    }
-
-    void controls.fitToBox(bounds, true, {
-      paddingTop: 0.5,
-      paddingBottom: 0.5,
-      paddingLeft: 0.5,
-      paddingRight: 0.5,
-    })
-  }, [cameraControlsRef, objectRefs])
 
   useLayoutEffect(() => {
     registerSceneServices({

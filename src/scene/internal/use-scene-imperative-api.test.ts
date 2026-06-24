@@ -4,46 +4,23 @@ import { useEffect } from 'react'
 import { act, renderHook } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { Object3D, PerspectiveCamera } from 'three'
-import type { CameraControlsImpl } from '@react-three/drei'
 import {
   buildRestoredSceneHistory,
   getMaxRestoredInstanceSuffix,
   useSceneImperativeApi,
 } from './use-scene-imperative-api'
 import type { SceneSnapshot } from './scene-snapshot'
-import type { CameraKeyName } from '../scene.types'
 import type {
   FurnitureCatalogEntry,
   FurnitureCollection,
 } from '@/domain/catalog'
 import type { FurnitureInstance, FurnitureItem } from '@/domain/furniture'
 
-const {
-  mockBuildFurnitureItemsFromInstances,
-  mockCreateSceneSnapshot,
-  mockInvalidate,
-  mockUseFrame,
-  mockUseThree,
-} = vi.hoisted(() => {
-  const mockInvalidate = vi.fn()
-  const mockUseThree = vi.fn(
-    <T>(selector: (state: { invalidate: () => void }) => T): T =>
-      selector({ invalidate: mockInvalidate }),
-  )
-
-  return {
+const { mockBuildFurnitureItemsFromInstances, mockCreateSceneSnapshot } =
+  vi.hoisted(() => ({
     mockBuildFurnitureItemsFromInstances: vi.fn(),
     mockCreateSceneSnapshot: vi.fn(),
-    mockInvalidate,
-    mockUseFrame: vi.fn(),
-    mockUseThree,
-  }
-})
-
-vi.mock('@react-three/fiber', () => ({
-  useFrame: mockUseFrame,
-  useThree: mockUseThree,
-}))
+  }))
 
 vi.mock('./furniture-operations', () => ({
   buildFurnitureItemsFromInstances: mockBuildFurnitureItemsFromInstances,
@@ -73,9 +50,7 @@ function defaultOptions(
 ): Parameters<typeof useSceneImperativeApi>[0] {
   return {
     camera: new PerspectiveCamera(),
-    cameraKeyStateRef: { current: new Set() },
     canvasSize: { width: 800, height: 600 },
-    cameraControlsRef: { current: null },
     furniture: [],
     objectRefs: { current: new Map<string, Object3D>() },
     ...overrides,
@@ -90,9 +65,6 @@ describe('useSceneImperativeApi', () => {
   beforeEach(() => {
     mockBuildFurnitureItemsFromInstances.mockReset()
     mockCreateSceneSnapshot.mockReset()
-    mockInvalidate.mockReset()
-    mockUseFrame.mockReset()
-    mockUseThree.mockClear()
 
     mockBuildFurnitureItemsFromInstances.mockReturnValue([])
 
@@ -231,81 +203,6 @@ describe('useSceneImperativeApi', () => {
     )
   })
 
-  it('applies continuous camera motion using the render-loop delta', () => {
-    let frameCallback: ((state: unknown, delta: number) => void) | undefined
-    mockUseFrame.mockImplementation((callback) => {
-      frameCallback = callback as (state: unknown, delta: number) => void
-    })
-
-    const truck = vi
-      .fn<CameraControlsImpl['truck']>()
-      .mockResolvedValue(undefined)
-    const rotate = vi
-      .fn<CameraControlsImpl['rotate']>()
-      .mockResolvedValue(undefined)
-    const dolly = vi
-      .fn<CameraControlsImpl['dolly']>()
-      .mockResolvedValue(undefined)
-    const controls = {
-      truck,
-      rotate,
-      dolly,
-    } as unknown as CameraControlsImpl
-    const options = defaultOptions({
-      cameraControlsRef: {
-        current: controls,
-      },
-    })
-
-    renderHook(() => {
-      return useSceneImperativeApi(options)
-    })
-
-    const frameState = { invalidate: vi.fn() }
-
-    // Orbit (rotate) with W
-    act(() => {
-      const keyState = new Set<CameraKeyName>(['keyW'])
-      options.cameraKeyStateRef.current = keyState
-      frameCallback?.(frameState, 0.025)
-    })
-    expect(rotate).toHaveBeenCalledWith(0, -1.5 * 0.025, false)
-
-    // Pan (truck) with Shift+W
-    act(() => {
-      const keyState = new Set<CameraKeyName>(['keyW', 'shift'])
-      options.cameraKeyStateRef.current = keyState
-      frameCallback?.(frameState, 0.025)
-    })
-    expect(truck).toHaveBeenCalledWith(0, -3 * 0.025, false)
-
-    // Zoom in with =
-    act(() => {
-      const keyState = new Set<CameraKeyName>(['equal'])
-      options.cameraKeyStateRef.current = keyState
-      frameCallback?.(frameState, 0.025)
-    })
-    expect(dolly).toHaveBeenCalledWith(3 * 0.025, false)
-
-    // Zoom out with -
-    act(() => {
-      const keyState = new Set<CameraKeyName>(['minus'])
-      options.cameraKeyStateRef.current = keyState
-      frameCallback?.(frameState, 0.025)
-    })
-    expect(dolly).toHaveBeenCalledWith(-3 * 0.025, false)
-
-    // Shift+Minus still zooms and does not introduce pan/orbit side effects.
-    act(() => {
-      const keyState = new Set<CameraKeyName>(['shift', 'minus'])
-      options.cameraKeyStateRef.current = keyState
-      frameCallback?.(frameState, 0.025)
-    })
-    expect(dolly).toHaveBeenCalledWith(-3 * 0.025, false)
-    expect(truck).toHaveBeenCalledTimes(1)
-    expect(rotate).toHaveBeenCalledTimes(1)
-    expect(frameState.invalidate).toHaveBeenCalledTimes(5)
-  })
 })
 
 describe('buildRestoredSceneHistory', () => {
