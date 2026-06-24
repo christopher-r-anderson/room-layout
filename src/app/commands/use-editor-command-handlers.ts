@@ -13,12 +13,14 @@ import {
 import { openDeleteDialog } from '@/features/selection/deletion-actions'
 import { startOverIntent } from '@/features/startup/start-over-actions'
 import { shareScene } from '@/core/operations/share-scene'
+import {
+  browseCanvasPreview,
+  selectCanvasPreviewed,
+} from '@/core/operations/canvas-keyboard-actions'
 import { useEditorFocusCommands } from './use-editor-focus-commands'
 
 interface UseEditorCommandHandlersOptions {
   dockedInspectorRef: RefObject<HTMLDivElement | null>
-  canvasBrowse: (direction: 'next' | 'prev' | 'first' | 'last') => void
-  canvasSelectPreviewed: () => void
 }
 
 /**
@@ -29,8 +31,6 @@ interface UseEditorCommandHandlersOptions {
  */
 export function useEditorCommandHandlers({
   dockedInspectorRef,
-  canvasBrowse,
-  canvasSelectPreviewed,
 }: UseEditorCommandHandlersOptions): EditorCommandHandlers {
   const focus = useEditorFocusCommands({ dockedInspectorRef })
 
@@ -60,9 +60,9 @@ export function useEditorCommandHandlers({
       setCameraPreset(command.preset)
     },
     'canvas-browse': (command) => {
-      canvasBrowse(command.direction)
+      browseCanvasPreview(command.direction)
     },
-    'canvas-select-previewed': canvasSelectPreviewed,
+    'canvas-select-previewed': selectCanvasPreviewed,
     share: () => {
       void shareScene()
     },

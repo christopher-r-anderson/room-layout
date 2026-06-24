@@ -10,7 +10,6 @@ import {
   clearCanvasSelection,
   selectByCanvasPointer,
 } from '@/core/operations/selection-actions'
-import { useCanvasKeyboardController } from '@/app/controllers/use-canvas-keyboard-controller'
 import { useEditorCommandHandlers } from '@/app/commands/use-editor-command-handlers'
 import { useCommandDispatchValue } from '@/core/commands/command-dispatch-context'
 import { useEnvironmentConfig } from '@/core/stores/assets-store'
@@ -97,11 +96,6 @@ function App() {
 
   const editorRefs = useMemo(() => ({ roomViewRef, dockedInspectorRef }), [])
 
-  const { handleCanvasBrowse, handleCanvasSelectPreviewed } =
-    useCanvasKeyboardController({
-      previewedId,
-    })
-
   useTestStateBridge({
     activeFloorFinishId,
     activeWallFinishId,
@@ -110,8 +104,6 @@ function App() {
 
   const commandHandlers = useEditorCommandHandlers({
     dockedInspectorRef,
-    canvasBrowse: handleCanvasBrowse,
-    canvasSelectPreviewed: handleCanvasSelectPreviewed,
   })
 
   const dispatchCommand = useCommandDispatchValue(commandHandlers)
