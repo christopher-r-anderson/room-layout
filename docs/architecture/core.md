@@ -91,10 +91,18 @@ operations rather than sibling features.
 
 ## Commands
 
-`core/commands` defines the typed `EditorCommand` union, `runEditorCommand`, and
-the ref-backed dispatch context (`useCommandDispatch`). UI controls dispatch a
-command rather than wiring a handler; the command maps to an operation or scene
-call. See `core/commands/editor-command.ts` for the vocabulary.
+`core/commands` defines the typed `EditorCommand` union and the dispatch binding:
+`EditorCommandHandlers` (a handler-per-`kind` mapped type), `runEditorCommand` (a
+map lookup, not a switch), and the ref-backed dispatch context
+(`useCommandDispatch`). Adding a command is two type-enforced edits — a union
+member and a handler key.
+
+A command is a **declarative editor intent triggerable by the keyboard table or a
+toolbar button**. Its implementation lives with its owning concern — a core
+operation or feature action — and the command layer only wires `kind → impl`
+(assembled in `app/commands/use-editor-command-handlers.ts`); App invents no
+command semantics. Dispatch a command for that keyboard/toolbar vocabulary; call
+operations or `sceneCommands` directly for intra-feature or intra-component logic.
 
 The React dispatch binding lives in `core` (not `app` or `shared`) on purpose: it
 imports the command vocabulary yet must be importable by feature buttons, and the
