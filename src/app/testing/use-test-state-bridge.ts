@@ -1,15 +1,11 @@
-import {
-  useEffect,
-  type Dispatch,
-  type RefObject,
-  type SetStateAction,
-} from 'react'
+import { useEffect, type Dispatch, type SetStateAction } from 'react'
 import {
   editorLifecycleStore,
   isEditorInteractive,
   type RestoreOutcome,
 } from '@/core/stores/editor-lifecycle-store'
 import { sceneDocumentStore } from '@/core/stores/scene-document-store'
+import { getPreviewedId } from '@/core/operations/previewed-id'
 import { sceneCommands } from '@/scene/scene-commands'
 import {
   type PerfCounterSnapshot,
@@ -56,14 +52,12 @@ declare global {
 interface UseTestStateBridgeOptions {
   activeFloorFinishId: string
   activeWallFinishId: string
-  previewedIdRef: RefObject<string | null>
   setTestOverlaysHidden: Dispatch<SetStateAction<boolean>>
 }
 
 export function useTestStateBridge({
   activeFloorFinishId,
   activeWallFinishId,
-  previewedIdRef,
   setTestOverlaysHidden,
 }: UseTestStateBridgeOptions) {
   useEffect(() => {
@@ -92,7 +86,7 @@ export function useTestStateBridge({
           floorFinishId: activeFloorFinishId,
           wallFinishId: activeWallFinishId,
           selectedId: storeState.selectedId,
-          previewedId: previewedIdRef.current,
+          previewedId: getPreviewedId(),
           selectedName: selectedItem?.name ?? null,
           itemCount: storeState.history.present.length,
           items: storeState.history.present.map((item) => ({
@@ -120,10 +114,5 @@ export function useTestStateBridge({
     return () => {
       delete window.__ROOM_LAYOUT_TEST__
     }
-  }, [
-    activeFloorFinishId,
-    activeWallFinishId,
-    previewedIdRef,
-    setTestOverlaysHidden,
-  ])
+  }, [activeFloorFinishId, activeWallFinishId, setTestOverlaysHidden])
 }

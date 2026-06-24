@@ -249,6 +249,10 @@ export const useDialogPayload = (id: DialogId) =>
 export const useIsBlockingOverlayOpen = () =>
   useDialogStore((state) => state.activeSurface?.kind === 'blocking')
 
+export function isBlockingOverlayOpen() {
+  return dialogStore.getState().activeSurface?.kind === 'blocking'
+}
+
 export const dialogStoreForTests = {
   getState: () => dialogStore.getState(),
 }

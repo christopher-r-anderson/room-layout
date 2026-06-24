@@ -1,9 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useIsBlockingOverlayOpen } from '@/core/stores/dialog-store'
-import {
-  sceneDocumentActions,
-  usePreviewedId,
-} from '@/core/stores/scene-document-store'
+import { sceneDocumentActions } from '@/core/stores/scene-document-store'
+import { usePreviewedId } from '@/core/operations/previewed-id'
 import { previewFromScene } from '@/core/operations/preview-actions'
 import { usePreviewReconciler } from '@/core/operations/use-preview-reconciler'
 import { getSceneIsAtDefaults } from '@/core/operations/use-scene-is-at-defaults'
@@ -15,7 +13,6 @@ import {
 import { useCanvasKeyboardController } from '@/app/controllers/use-canvas-keyboard-controller'
 import { useEditorCommandHandlers } from '@/app/commands/use-editor-command-handlers'
 import { useCommandDispatchValue } from '@/core/commands/command-dispatch-context'
-import { useEditorInteractionsEnabled } from '@/core/stores/editor-lifecycle-store'
 import { useEnvironmentConfig } from '@/core/stores/assets-store'
 import { useStartupBootstrap } from '@/features/startup/use-startup-bootstrap'
 import { EditorBody } from './chrome/editor-body'
@@ -47,7 +44,6 @@ function App() {
   const canvasShadowMode = isE2ELowRenderQuality ? false : 'percentage'
 
   useStartupBootstrap()
-  const editorInteractionsEnabled = useEditorInteractionsEnabled()
   const environmentConfig = useEnvironmentConfig()
 
   const {
@@ -78,10 +74,7 @@ function App() {
   const wasBlockingOverlayOpenRef = useRef(isBlockingOverlayOpen)
 
   usePreviewReconciler()
-  const previewedId = usePreviewedId({
-    isBlockingOverlayOpen,
-    editorInteractionsEnabled,
-  })
+  const previewedId = usePreviewedId()
 
   useEffect(() => {
     const wasBlockingOverlayOpen = wasBlockingOverlayOpenRef.current
@@ -104,7 +97,7 @@ function App() {
 
   const editorRefs = useMemo(() => ({ roomViewRef, dockedInspectorRef }), [])
 
-  const { previewedIdRef, handleCanvasBrowse, handleCanvasSelectPreviewed } =
+  const { handleCanvasBrowse, handleCanvasSelectPreviewed } =
     useCanvasKeyboardController({
       previewedId,
     })
@@ -112,7 +105,6 @@ function App() {
   useTestStateBridge({
     activeFloorFinishId,
     activeWallFinishId,
-    previewedIdRef,
     setTestOverlaysHidden,
   })
 

@@ -22,7 +22,6 @@ import {
   useHistoryAvailability,
   useItems,
   useItemIds,
-  usePreviewedId,
   useSelectedId,
   useSelectedFurniture,
   useWallFinishId,
@@ -199,59 +198,6 @@ describe('sceneDocumentStore', () => {
     })
 
     expect(result.current).toBe(initialIds)
-  })
-
-  it('gates preview visibility during drag, overlays, disabled interactions, and missing ids', () => {
-    const { result, rerender } = renderHook(
-      (props: {
-        isBlockingOverlayOpen: boolean
-        editorInteractionsEnabled: boolean
-      }) => usePreviewedId(props),
-      {
-        initialProps: {
-          isBlockingOverlayOpen: false,
-          editorInteractionsEnabled: true,
-        },
-      },
-    )
-
-    act(() => {
-      seedSceneItems([FURNITURE_ITEM])
-      sceneDocumentActions.setPreviewedId('item-1')
-    })
-    expect(result.current).toBe('item-1')
-
-    act(() => {
-      sceneDocumentActions.setDragging(true)
-    })
-    expect(result.current).toBeNull()
-
-    act(() => {
-      sceneDocumentActions.setDragging(false)
-    })
-    expect(result.current).toBe('item-1')
-
-    rerender({
-      isBlockingOverlayOpen: true,
-      editorInteractionsEnabled: true,
-    })
-    expect(result.current).toBeNull()
-
-    rerender({
-      isBlockingOverlayOpen: false,
-      editorInteractionsEnabled: false,
-    })
-    expect(result.current).toBeNull()
-
-    act(() => {
-      seedSceneItems([])
-    })
-
-    rerender({
-      isBlockingOverlayOpen: false,
-      editorInteractionsEnabled: true,
-    })
-    expect(result.current).toBeNull()
   })
 
   it('reconciles removed preview ids from the backing scene items', () => {

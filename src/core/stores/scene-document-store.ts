@@ -318,28 +318,3 @@ export function selectSelectedFurniture(
     state.history.present.find((item) => item.id === state.selectedId) ?? null
   )
 }
-
-export function usePreviewedId(options: {
-  isBlockingOverlayOpen: boolean
-  editorInteractionsEnabled: boolean
-}) {
-  return useSceneDocumentStore((state) => {
-    const candidateId = state.previewedIdRaw
-
-    if (candidateId === null) {
-      return null
-    }
-
-    if (
-      state.isDragging ||
-      options.isBlockingOverlayOpen ||
-      !options.editorInteractionsEnabled
-    ) {
-      return null
-    }
-
-    return state.history.present.some((item) => item.id === candidateId)
-      ? candidateId
-      : null
-  })
-}

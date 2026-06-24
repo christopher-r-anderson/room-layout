@@ -29,9 +29,9 @@ import {
 } from '@/core/stores/selection-focus-store'
 import {
   useItems,
-  usePreviewedId,
   useSceneDocumentStore,
 } from '@/core/stores/scene-document-store'
+import { usePreviewedId } from '@/core/operations/previewed-id'
 import { useEditorInteractionsEnabled } from '@/core/stores/editor-lifecycle-store'
 import { useIsBlockingOverlayOpen } from '@/core/stores/dialog-store'
 
@@ -47,10 +47,7 @@ export function Outliner() {
   const editorInteractionsEnabled = useEditorInteractionsEnabled()
   const isBlockingOverlayOpen = useIsBlockingOverlayOpen()
   const derivedFocusRequest = useOutlinerFocusRequest()
-  const previewedId = usePreviewedId({
-    isBlockingOverlayOpen,
-    editorInteractionsEnabled,
-  })
+  const previewedId = usePreviewedId()
   const disabled = !editorInteractionsEnabled || isBlockingOverlayOpen
   const focusRequest = isBlockingOverlayOpen ? null : derivedFocusRequest
   const headingId = useId()
