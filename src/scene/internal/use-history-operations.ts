@@ -10,7 +10,7 @@ import {
   sceneDocumentStore,
 } from '@/core/scene-contracts'
 import { redoSceneHistory, undoSceneHistory } from './scene-history-state'
-import { buildRestoredSceneHistory } from './use-scene-imperative-api'
+import { buildRestoredSceneHistory } from './restored-scene-history'
 
 interface UseHistoryOperationsOptions {
   isDragging: boolean

@@ -26,7 +26,7 @@ import { validateCatalogAssetNodes } from './internal/validate-catalog-asset-nod
 import { useHistoryOperations } from './internal/use-history-operations'
 import type { CameraKeyState } from './scene.types'
 import { useSceneDrag } from './internal/use-scene-drag'
-import { useSceneImperativeApi } from './internal/use-scene-imperative-api'
+import { useSceneSnapshot } from './internal/use-scene-snapshot'
 import { useCameraOperations } from './internal/use-camera-operations'
 import { useCameraKeyMotion } from './internal/use-camera-key-motion'
 import { useSelectionOperations } from './internal/use-selection-operations'
@@ -240,7 +240,7 @@ export function Scene({
 
   useCameraKeyMotion({ cameraControlsRef, cameraKeyStateRef })
 
-  const getSnapshot = useSceneImperativeApi({
+  const getSnapshot = useSceneSnapshot({
     camera,
     canvasSize,
     furniture,
