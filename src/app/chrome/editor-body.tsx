@@ -1,13 +1,11 @@
 import { Canvas } from '@react-three/fiber'
 import {
-  Component,
   Suspense,
   useCallback,
   useEffect,
   useRef,
   useState,
   type ComponentProps,
-  type ReactNode,
 } from 'react'
 import { flushSync } from 'react-dom'
 import { NeutralToneMapping, SRGBColorSpace } from 'three'
@@ -37,32 +35,7 @@ import { useEditorRefs } from '@/shared/providers/editor-refs-context'
 import { Announcer } from './feedback/announcer'
 import { Toaster } from '@/shared/ui/sonner'
 import { EditorOverlay } from './editor-overlay'
-
-class SceneAssetErrorBoundary extends Component<
-  {
-    children: ReactNode
-    onError: (error: Error) => void
-  },
-  { hasError: boolean }
-> {
-  state = { hasError: false }
-
-  static getDerivedStateFromError() {
-    return { hasError: true }
-  }
-
-  componentDidCatch(error: Error) {
-    this.props.onError(error)
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return null
-    }
-
-    return this.props.children
-  }
-}
+import { SceneAssetErrorBoundary } from './scene-asset-error-boundary'
 
 type SceneProps = ComponentProps<typeof Scene>
 
