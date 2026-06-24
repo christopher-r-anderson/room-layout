@@ -253,6 +253,19 @@ export function isBlockingOverlayOpen() {
   return dialogStore.getState().activeSurface?.kind === 'blocking'
 }
 
+/**
+ * Subscribe to blocking-overlay open/close transitions. The listener receives
+ * the current and previous open state, so callers can act on a specific edge.
+ */
+export function subscribeToBlockingOverlay(
+  listener: (isOpen: boolean, wasOpen: boolean) => void,
+): () => void {
+  return dialogStore.subscribe(
+    (state) => state.activeSurface?.kind === 'blocking',
+    listener,
+  )
+}
+
 export const dialogStoreForTests = {
   getState: () => dialogStore.getState(),
 }

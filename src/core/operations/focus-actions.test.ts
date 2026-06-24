@@ -6,8 +6,16 @@ import {
   resetSceneDocumentStore,
   sceneDocumentActions,
 } from '@/core/stores/scene-document-store'
-import { selectionFocusActions } from '@/core/stores/selection-focus-store'
-import { requestOutlinerFocus } from './focus-actions'
+import {
+  resetSelectionFocusStore,
+  selectionFocusActions,
+  selectionFocusStore,
+} from '@/core/stores/selection-focus-store'
+import { dialogActions, resetDialogStore } from '@/core/stores/dialog-store'
+import {
+  requestOutlinerFocus,
+  startOutlinerFocusReconciler,
+} from './focus-actions'
 
 function item(id: string): FurnitureItem {
   return {
@@ -65,5 +73,53 @@ describe('requestOutlinerFocus', () => {
     expect(spy).toHaveBeenCalledWith(
       expect.objectContaining({ focusContainer: true }),
     )
+  })
+})
+
+describe('startOutlinerFocusReconciler', () => {
+  let stop: () => void
+
+  beforeEach(() => {
+    resetDialogStore()
+    resetSelectionFocusStore()
+    dialogActions.configureRuntimeContext({
+      isDialogsEnabled: () => true,
+      getSelectedFurniture: () => null,
+      canStartOver: () => true,
+    })
+    dialogActions.registerDialogDefinitions([
+      { id: 'delete', kind: 'blocking' },
+      { id: 'room-surface', kind: 'non-blocking' },
+    ])
+    stop = startOutlinerFocusReconciler()
+  })
+
+  afterEach(() => {
+    stop()
+    resetDialogStore()
+    resetSelectionFocusStore()
+  })
+
+  it('clears a pending outliner-focus request when a blocking overlay opens', () => {
+    selectionFocusActions.requestOutlinerFocus({
+      token: 1,
+      focusContainer: true,
+    })
+    expect(selectionFocusStore.getState().outlinerFocusRequest).not.toBeNull()
+
+    dialogActions.openDialog('delete')
+
+    expect(selectionFocusStore.getState().outlinerFocusRequest).toBeNull()
+  })
+
+  it('leaves the request when a non-blocking overlay opens', () => {
+    selectionFocusActions.requestOutlinerFocus({
+      token: 1,
+      focusContainer: true,
+    })
+
+    dialogActions.openDialog('room-surface', { payload: { layout: 'desktop' } })
+
+    expect(selectionFocusStore.getState().outlinerFocusRequest).not.toBeNull()
   })
 })
