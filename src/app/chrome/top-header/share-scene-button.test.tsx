@@ -2,35 +2,42 @@
 
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { shareScene } from '@/core/operations/share-scene'
 import { ShareSceneButton } from './share-scene-button'
 
+vi.mock('@/core/operations/share-scene', () => ({
+  shareScene: vi.fn(),
+}))
+
+const shareSceneMock = vi.mocked(shareScene)
+
 describe('ShareSceneButton', () => {
+  beforeEach(() => {
+    shareSceneMock.mockReset()
+  })
+
   it('shows shared feedback when native share succeeds', async () => {
     const user = userEvent.setup()
-    const onShareSceneUrl = vi
-      .fn<() => Promise<'shared' | 'copied' | null>>()
-      .mockResolvedValue('shared')
+    shareSceneMock.mockResolvedValue('shared')
 
-    render(<ShareSceneButton onShareSceneUrl={onShareSceneUrl} />)
+    render(<ShareSceneButton />)
 
     await user.click(screen.getByRole('button', { name: 'Share room layout' }))
 
-    expect(onShareSceneUrl).toHaveBeenCalledOnce()
+    expect(shareSceneMock).toHaveBeenCalledOnce()
     expect(screen.getByText('Shared')).toBeInTheDocument()
   })
 
   it('shows copied feedback when clipboard fallback succeeds', async () => {
     const user = userEvent.setup()
-    const onShareSceneUrl = vi
-      .fn<() => Promise<'shared' | 'copied' | null>>()
-      .mockResolvedValue('copied')
+    shareSceneMock.mockResolvedValue('copied')
 
-    render(<ShareSceneButton onShareSceneUrl={onShareSceneUrl} />)
+    render(<ShareSceneButton />)
 
     await user.click(screen.getByRole('button', { name: 'Share room layout' }))
 
-    expect(onShareSceneUrl).toHaveBeenCalledOnce()
+    expect(shareSceneMock).toHaveBeenCalledOnce()
     expect(screen.getByText('Copied')).toBeInTheDocument()
   })
 
@@ -40,15 +47,15 @@ describe('ShareSceneButton', () => {
     const pendingShare = new Promise<'shared' | 'copied' | null>((resolve) => {
       resolveShare = resolve
     })
-    const onShareSceneUrl = vi.fn(() => pendingShare)
+    shareSceneMock.mockReturnValue(pendingShare)
 
-    render(<ShareSceneButton onShareSceneUrl={onShareSceneUrl} />)
+    render(<ShareSceneButton />)
 
     const button = screen.getByRole('button', { name: 'Share room layout' })
     await user.click(button)
     await user.click(button)
 
-    expect(onShareSceneUrl).toHaveBeenCalledOnce()
+    expect(shareSceneMock).toHaveBeenCalledOnce()
     expect(button).toBeDisabled()
 
     resolveShare('shared')
@@ -56,13 +63,11 @@ describe('ShareSceneButton', () => {
     expect(await screen.findByText('Shared')).toBeInTheDocument()
   })
 
-  it('re-enables the button if the share callback rejects', async () => {
+  it('re-enables the button if the share attempt rejects', async () => {
     const user = userEvent.setup()
-    const onShareSceneUrl = vi
-      .fn<() => Promise<'shared' | 'copied' | null>>()
-      .mockRejectedValue(new Error('share failed'))
+    shareSceneMock.mockRejectedValue(new Error('share failed'))
 
-    render(<ShareSceneButton onShareSceneUrl={onShareSceneUrl} />)
+    render(<ShareSceneButton />)
 
     const button = screen.getByRole('button', { name: 'Share room layout' })
     await user.click(button)
@@ -75,7 +80,7 @@ describe('ShareSceneButton', () => {
   })
 
   it('supports explicit label visibility and toolbar sizing', () => {
-    render(<ShareSceneButton onShareSceneUrl={vi.fn()} size="toolbar" />)
+    render(<ShareSceneButton size="toolbar" />)
 
     const button = screen.getByRole('button', { name: 'Share room layout' })
     const label = screen.getByText('Share')

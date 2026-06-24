@@ -14,7 +14,6 @@ export function HeaderMoreActionsDrawer({
   shareDisabled,
   startOverDisabled,
   onOpenChange,
-  onShareSceneUrl,
   onOpenKeyboardShortcuts,
   onOpenStartOver,
   onOpenProjectInfo,
@@ -25,7 +24,6 @@ export function HeaderMoreActionsDrawer({
   shareDisabled: boolean
   startOverDisabled: boolean
   onOpenChange: (open: boolean) => void
-  onShareSceneUrl: () => Promise<'shared' | 'copied' | null>
   onOpenKeyboardShortcuts: () => void
   onOpenStartOver: () => void
   onOpenProjectInfo: () => void
@@ -56,7 +54,6 @@ export function HeaderMoreActionsDrawer({
         <div className="grid gap-2 px-4 pb-4">
           <ShareSceneButton
             disabled={shareDisabled}
-            onShareSceneUrl={onShareSceneUrl}
             size="toolbar"
             variant="secondary"
             className="justify-start"

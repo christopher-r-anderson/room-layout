@@ -31,7 +31,6 @@ import { headerFocusRegistry } from './header-focus-registry'
 const STARTED_OVER_MESSAGE = 'Started over. Your changes were cleared.'
 
 export function TopHeader({
-  onShareSceneUrl,
   topHeaderRef,
   desktopRoomSidebarRef,
   mobileRoomDrawerRef,
@@ -109,7 +108,6 @@ export function TopHeader({
     onFloorFinishChange: sceneDocumentActions.setFloorFinishId,
     onWallFinishChange: sceneDocumentActions.setWallFinishId,
     startOverDisabled,
-    onShareSceneUrl,
     topHeaderRef,
     wallFinishId,
     wallFinishes: environmentConfig?.wallFinishes ?? [],

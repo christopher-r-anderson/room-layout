@@ -26,7 +26,6 @@ export function TopHeaderDesktop({
   startOverDisabled,
   topHeaderRef,
   onFloorFinishChange,
-  onShareSceneUrl,
   onWallFinishChange,
   wallFinishId,
   wallFinishes,
@@ -139,7 +138,6 @@ export function TopHeaderDesktop({
             <ShareSceneButton
               className="min-w-26"
               disabled={!editorInteractionsEnabled}
-              onShareSceneUrl={onShareSceneUrl}
               size="toolbar"
             />
           </div>

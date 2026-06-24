@@ -24,13 +24,8 @@ import { DockedSelectedItemSite } from '@/features/selection/docked-selected-ite
 import { FloatingSelectedItemSite } from '@/features/selection/floating-selected-item-site'
 import { SelectedDetailsPlaceholder } from '@/features/selection/selected-details-view'
 import { TopHeader } from './top-header/top-header'
-import type { TopHeaderShellProps } from './top-header/top-header.types'
 import { useExclusionRegistry } from '@/shared/layout/overlay-exclusion-context'
 import { useHeaderLayoutMode } from '@/shared/layout/use-header-layout-mode'
-
-export interface EditorOverlayProps {
-  topHeader: TopHeaderShellProps
-}
 
 function EditorOverlayDialogs() {
   const isDeleteDialogOpen = useDialogOpen(DIALOG_IDS.delete)
@@ -62,7 +57,7 @@ function EditorOverlayDialogs() {
   )
 }
 
-export function EditorOverlay({ topHeader }: EditorOverlayProps) {
+export function EditorOverlay() {
   const registerExclusionElement = useExclusionRegistry()
   const hasSelection = useHasSelection()
   const startupOverlayActive = useStartupOverlayActive()
@@ -79,7 +74,6 @@ export function EditorOverlay({ topHeader }: EditorOverlayProps) {
       >
         <div className="mb-auto">
           <TopHeader
-            {...topHeader}
             topHeaderRef={registerExclusionElement('top-header')}
             desktopRoomSidebarRef={registerExclusionElement(
               'desktop-room-sidebar',

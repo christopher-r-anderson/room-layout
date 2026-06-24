@@ -255,15 +255,7 @@ describe('EditorOverlay integration', () => {
                 <SelectedItemPlacementProvider value={placementValue}>
                   <CommandDispatchProvider value={vi.fn()}>
                     <div className="relative min-h-192">
-                      <EditorOverlay
-                        topHeader={{
-                          onShareSceneUrl: vi.fn(() =>
-                            Promise.resolve<'shared' | 'copied' | null>(
-                              'copied',
-                            ),
-                          ),
-                        }}
-                      />
+                      <EditorOverlay />
                     </div>
                   </CommandDispatchProvider>
                 </SelectedItemPlacementProvider>

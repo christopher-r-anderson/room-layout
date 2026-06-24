@@ -12,13 +12,13 @@ import {
 } from '@/core/operations/view-actions'
 import { openDeleteDialog } from '@/features/selection/deletion-actions'
 import { startOverIntent } from '@/features/startup/start-over-actions'
+import { shareScene } from '@/core/operations/share-scene'
 import { useEditorFocusCommands } from './use-editor-focus-commands'
 
 interface UseEditorCommandHandlersOptions {
   dockedInspectorRef: RefObject<HTMLDivElement | null>
   canvasBrowse: (direction: 'next' | 'prev' | 'first' | 'last') => void
   canvasSelectPreviewed: () => void
-  shareSceneUrl: () => Promise<'shared' | 'copied' | null>
 }
 
 /**
@@ -31,7 +31,6 @@ export function useEditorCommandHandlers({
   dockedInspectorRef,
   canvasBrowse,
   canvasSelectPreviewed,
-  shareSceneUrl,
 }: UseEditorCommandHandlersOptions): EditorCommandHandlers {
   const focus = useEditorFocusCommands({ dockedInspectorRef })
 
@@ -65,7 +64,7 @@ export function useEditorCommandHandlers({
     },
     'canvas-select-previewed': canvasSelectPreviewed,
     share: () => {
-      void shareSceneUrl()
+      void shareScene()
     },
   }
 }

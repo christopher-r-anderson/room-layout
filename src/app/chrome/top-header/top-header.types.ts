@@ -16,7 +16,6 @@ interface TopHeaderProps {
   floorFinishes: FloorFinishOption[]
   onFloorFinishChange: (finishId: string) => void
   startOverDisabled: boolean
-  onShareSceneUrl: () => Promise<'shared' | 'copied' | null>
   topHeaderRef?: Ref<HTMLDivElement>
   desktopRoomSidebarRef?: Ref<HTMLElement>
   mobileRoomDrawerRef?: Ref<HTMLDivElement>
@@ -35,17 +34,12 @@ type TopHeaderToolbarProps = Pick<
   | 'history'
   | 'onFloorFinishChange'
   | 'startOverDisabled'
-  | 'onShareSceneUrl'
   | 'onWallFinishChange'
   | 'wallFinishId'
   | 'wallFinishes'
 >
 
-export interface TopHeaderShellProps {
-  onShareSceneUrl: () => Promise<'shared' | 'copied' | null>
-}
-
-export interface TopHeaderContainerProps extends TopHeaderShellProps {
+export interface TopHeaderContainerProps {
   topHeaderRef?: Ref<HTMLDivElement>
   desktopRoomSidebarRef?: Ref<HTMLElement>
   mobileRoomDrawerRef?: Ref<HTMLDivElement>

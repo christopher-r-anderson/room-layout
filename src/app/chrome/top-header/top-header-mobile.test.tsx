@@ -73,9 +73,6 @@ function createProps(
     onOpenKeyboardShortcutsFromHeaderMoreActions: vi.fn(),
     onOpenProjectInfoFromHeaderMoreActions: vi.fn(),
     onOpenStartOverFromHeaderMoreActions: vi.fn(),
-    onShareSceneUrl: vi.fn(() =>
-      Promise.resolve<'shared' | 'copied' | null>(null),
-    ),
     onWallFinishChange: vi.fn(),
     wallFinishId: 'light-gray',
     wallFinishes: createWallOptions(),

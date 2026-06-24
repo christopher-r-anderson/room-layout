@@ -75,11 +75,7 @@ vi.mock('@/features/selection/start-over-confirmation-dialog', () => ({
 function renderTopHeader() {
   return render(
     <CommandDispatchProvider value={vi.fn()}>
-      <TopHeader
-        onShareSceneUrl={vi.fn(() =>
-          Promise.resolve<'shared' | 'copied' | null>(null),
-        )}
-      />
+      <TopHeader />
     </CommandDispatchProvider>,
   )
 }

@@ -1,6 +1,5 @@
 // @vitest-environment jsdom
 
-import { act, renderHook } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createHistoryState } from '@/shared/lib/ui/editor-history'
 import {
@@ -8,19 +7,25 @@ import {
   sceneDocumentActions,
 } from '@/core/stores/scene-document-store'
 import { serializeSceneToUrl } from '@/core/persistence/scene-url'
-import { useShareController } from './use-share-controller'
+import { shareScene } from './share-scene'
 
 vi.mock('@/core/persistence/scene-url', () => ({
   serializeSceneToUrl: vi.fn(),
+}))
+
+vi.mock('@/core/operations/active-finish-ids', () => ({
+  getActiveFinishIds: vi.fn(() => ({
+    activeFloorFinishId: 'oak-floor',
+    activeWallFinishId: 'white-wall',
+    selectedFloorOption: null,
+    selectedWallOption: null,
+  })),
 }))
 
 vi.mock('@/core/stores/feedback-store', () => ({
   feedbackActions: {
     announcePolite: vi.fn(),
     announceAssertive: vi.fn(),
-    clearAssertiveAnnouncement: vi.fn(),
-    queueMovementAnnouncement: vi.fn(),
-    clearQueuedMovementAnnouncement: vi.fn(),
     setStatusMessage: vi.fn(),
     clearStatusMessage: vi.fn(),
   },
@@ -39,7 +44,7 @@ const CHAIR = {
   sourcePath: '/models/chair.glb',
 }
 
-describe('useShareController', () => {
+describe('shareScene', () => {
   const serializeSceneToUrlMock = vi.mocked(serializeSceneToUrl)
   const clipboardWriteText = vi.fn<(text: string) => Promise<void>>()
 
@@ -51,37 +56,34 @@ describe('useShareController', () => {
 
     Object.defineProperty(window.navigator, 'clipboard', {
       configurable: true,
-      value: {
-        writeText: clipboardWriteText,
-      },
+      value: { writeText: clipboardWriteText },
     })
   })
 
-  it('serializes the share URL with the active finish ids supplied by the app shell', async () => {
+  it('serializes the scene with the active finish ids and copies the URL', async () => {
     sceneDocumentActions.setHistory(createHistoryState([CHAIR]))
     serializeSceneToUrlMock.mockReturnValue('https://example.com/shared')
 
-    const { result } = renderHook(() =>
-      useShareController({
-        activeFloorFinishId: 'oak-floor',
-        activeWallFinishId: 'white-wall',
-      }),
-    )
-
-    await act(async () => {
-      await result.current.handleShareSceneUrl()
-    })
+    const result = await shareScene()
 
     expect(serializeSceneToUrlMock).toHaveBeenCalledWith(
       [CHAIR],
       window.location.href,
-      {
-        floorFinishId: 'oak-floor',
-        wallFinishId: 'white-wall',
-      },
+      { floorFinishId: 'oak-floor', wallFinishId: 'white-wall' },
     )
     expect(clipboardWriteText).toHaveBeenCalledWith(
       'https://example.com/shared',
     )
+    expect(result).toBe('copied')
+  })
+
+  it('returns null without copying when the scene is too large to serialize', async () => {
+    sceneDocumentActions.setHistory(createHistoryState([CHAIR]))
+    serializeSceneToUrlMock.mockReturnValue(null)
+
+    const result = await shareScene()
+
+    expect(clipboardWriteText).not.toHaveBeenCalled()
+    expect(result).toBeNull()
   })
 })

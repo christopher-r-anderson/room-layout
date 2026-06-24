@@ -91,9 +91,6 @@ function createProps(
     isProjectInfoOpen: false,
     startOverDisabled: false,
     onFloorFinishChange: vi.fn(),
-    onShareSceneUrl: vi.fn(() =>
-      Promise.resolve<'shared' | 'copied' | null>(null),
-    ),
     onWallFinishChange: vi.fn(),
     topHeaderRef: undefined,
     wallFinishId: 'light-gray',

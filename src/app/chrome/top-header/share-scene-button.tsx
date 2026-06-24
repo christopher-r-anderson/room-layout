@@ -2,10 +2,10 @@ import { useCallback, useEffect, useState } from 'react'
 import { Button } from '@/shared/ui/button'
 import { IconCheck, IconShare3 } from '@tabler/icons-react'
 import type { ComponentProps } from 'react'
+import { shareScene } from '@/core/operations/share-scene'
 
 interface ShareSceneButtonProps {
   disabled?: boolean
-  onShareSceneUrl: () => Promise<'shared' | 'copied' | null>
   className?: string
   size?: ComponentProps<typeof Button>['size']
   variant?: ComponentProps<typeof Button>['variant']
@@ -13,7 +13,6 @@ interface ShareSceneButtonProps {
 
 export function ShareSceneButton({
   disabled = false,
-  onShareSceneUrl,
   className,
   size = 'default',
   variant = 'default',
@@ -45,17 +44,17 @@ export function ShareSceneButton({
     setIsPending(true)
 
     try {
-      const result = await onShareSceneUrl()
+      const result = await shareScene()
 
       if (result !== null) {
         setShareResult(result)
       }
     } catch {
-      // The handler owns user-facing error reporting; always recover button state.
+      // shareScene owns user-facing error reporting; always recover button state.
     } finally {
       setIsPending(false)
     }
-  }, [isPending, onShareSceneUrl])
+  }, [isPending])
 
   const label =
     shareResult === 'shared'

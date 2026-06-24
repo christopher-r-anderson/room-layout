@@ -30,7 +30,6 @@ export function TopHeaderMobile({
   onOpenKeyboardShortcutsFromHeaderMoreActions,
   onOpenStartOverFromHeaderMoreActions,
   onOpenProjectInfoFromHeaderMoreActions,
-  onShareSceneUrl,
   topHeaderRef,
   onWallFinishChange,
   wallFinishId,
@@ -139,7 +138,6 @@ export function TopHeaderMobile({
         onCloseAutoFocus={() => {
           headerFocusRegistry.focus('top-header-more-actions')
         }}
-        onShareSceneUrl={onShareSceneUrl}
         onOpenKeyboardShortcuts={onOpenKeyboardShortcutsFromHeaderMoreActions}
         onOpenStartOver={onOpenStartOverFromHeaderMoreActions}
         onOpenProjectInfo={onOpenProjectInfoFromHeaderMoreActions}

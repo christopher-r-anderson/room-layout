@@ -35,7 +35,7 @@ import { useCommandDispatch } from '@/core/commands/command-dispatch-context'
 import { useEditorRefs } from '@/shared/providers/editor-refs-context'
 import { Announcer } from './feedback/announcer'
 import { Toaster } from '@/shared/ui/sonner'
-import { EditorOverlay, type EditorOverlayProps } from './editor-overlay'
+import { EditorOverlay } from './editor-overlay'
 
 class SceneAssetErrorBoundary extends Component<
   {
@@ -76,7 +76,6 @@ export interface EditorBodyProps {
   onFloorLoadingChange: NonNullable<SceneProps['onFloorLoadingChange']>
   onCanvasPointerSelection: NonNullable<SceneProps['onCanvasPointerSelection']>
   onClearCanvasSelection: () => void
-  editorOverlay: EditorOverlayProps
 }
 
 export function EditorBody({
@@ -90,7 +89,6 @@ export function EditorBody({
   onFloorLoadingChange,
   onCanvasPointerSelection,
   onClearCanvasSelection,
-  editorOverlay,
 }: EditorBodyProps) {
   const [roomViewHasFocus, setRoomViewHasFocus] = useState(false)
   const catalog = useCatalogEntries()
@@ -227,7 +225,7 @@ export function EditorBody({
         </Canvas>
       </section>
 
-      {testOverlaysHidden ? null : <EditorOverlay {...editorOverlay} />}
+      {testOverlaysHidden ? null : <EditorOverlay />}
       <Announcer />
       <Toaster />
     </main>

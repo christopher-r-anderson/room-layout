@@ -12,7 +12,6 @@ import {
   clearCanvasSelection,
   selectByCanvasPointer,
 } from '@/core/operations/selection-actions'
-import { useShareController } from '@/app/controllers/use-share-controller'
 import { useCanvasKeyboardController } from '@/app/controllers/use-canvas-keyboard-controller'
 import { useEditorCommandHandlers } from '@/app/commands/use-editor-command-handlers'
 import { EditorRefsProvider } from '@/shared/providers/editor-refs-provider'
@@ -103,10 +102,6 @@ function App() {
     selectionFocusActions.clearOutlinerFocusRequest()
   }, [isBlockingOverlayOpen, outlinerFocusRequest])
 
-  const shareController = useShareController({
-    activeFloorFinishId,
-    activeWallFinishId,
-  })
   const handleFloorLoadingChange = useCallback((loading: boolean) => {
     sceneDocumentActions.setFloorFinishLoading(loading)
   }, [])
@@ -132,7 +127,6 @@ function App() {
     dockedInspectorRef,
     canvasBrowse: handleCanvasBrowse,
     canvasSelectPreviewed: handleCanvasSelectPreviewed,
-    shareSceneUrl: shareController.handleShareSceneUrl,
   })
 
   const dispatchCommand = useCommandDispatchValue(commandHandlers)
@@ -153,11 +147,6 @@ function App() {
               onFloorLoadingChange={handleFloorLoadingChange}
               onCanvasPointerSelection={selectByCanvasPointer}
               onClearCanvasSelection={clearCanvasSelection}
-              editorOverlay={{
-                topHeader: {
-                  onShareSceneUrl: shareController.handleShareSceneUrl,
-                },
-              }}
             />
           </EditorShell>
         </CommandDispatchProvider>
