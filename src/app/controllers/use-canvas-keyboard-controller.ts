@@ -3,7 +3,11 @@ import { feedbackActions } from '@/core/stores/feedback-store'
 import { selectById } from '@/core/operations/selection-actions'
 import { previewFromCanvasKeyboard } from '@/core/operations/preview-actions'
 import { sceneCommands } from '@/scene/scene-commands'
-import { sortSpatially } from '@/shared/lib/spatial-sort'
+import {
+  resolveBrowseTarget,
+  sortSpatially,
+  type BrowseDirection,
+} from './canvas-keyboard-navigation'
 
 interface UseCanvasKeyboardControllerOptions {
   previewedId: string | null
@@ -33,35 +37,22 @@ export function useCanvasKeyboardController({
   }, [])
 
   const handleCanvasBrowse = useCallback(
-    (direction: 'next' | 'prev' | 'first' | 'last') => {
+    (direction: BrowseDirection) => {
       const snapshot = sceneCommands.getSnapshot()
       if (!snapshot || snapshot.items.length === 0) {
         return
       }
 
       const orderedIds = sortSpatially(snapshot.items)
-      if (orderedIds.length === 0) {
+      const nextId = resolveBrowseTarget(
+        orderedIds,
+        previewedIdRef.current,
+        direction,
+      )
+      if (!nextId) {
         return
       }
 
-      const currentIndex = orderedIds.indexOf(previewedIdRef.current ?? '')
-      let nextIndex: number
-
-      if (direction === 'first') {
-        nextIndex = 0
-      } else if (direction === 'last') {
-        nextIndex = orderedIds.length - 1
-      } else if (direction === 'next') {
-        nextIndex =
-          currentIndex === -1 ? 0 : (currentIndex + 1) % orderedIds.length
-      } else {
-        nextIndex =
-          currentIndex === -1
-            ? orderedIds.length - 1
-            : (currentIndex - 1 + orderedIds.length) % orderedIds.length
-      }
-
-      const nextId = orderedIds[nextIndex]
       handleCanvasKeyboardPreviewChange(nextId)
 
       const item = snapshot.items.find((sceneItem) => sceneItem.id === nextId)

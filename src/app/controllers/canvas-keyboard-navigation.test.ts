@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import { sortSpatially } from './spatial-sort'
+import {
+  resolveBrowseTarget,
+  sortSpatially,
+} from './canvas-keyboard-navigation'
 
 describe('sortSpatially', () => {
   it('returns empty array for empty input', () => {
@@ -85,5 +88,36 @@ describe('sortSpatially', () => {
       'top-right',
       'bottom-middle',
     ])
+  })
+})
+
+describe('resolveBrowseTarget', () => {
+  const ordered = ['a', 'b', 'c']
+
+  it('returns null for an empty list', () => {
+    expect(resolveBrowseTarget([], null, 'next')).toBeNull()
+  })
+
+  it('jumps to the edges for first/last', () => {
+    expect(resolveBrowseTarget(ordered, 'b', 'first')).toBe('a')
+    expect(resolveBrowseTarget(ordered, 'b', 'last')).toBe('c')
+  })
+
+  it('advances and wraps for next', () => {
+    expect(resolveBrowseTarget(ordered, 'a', 'next')).toBe('b')
+    expect(resolveBrowseTarget(ordered, 'c', 'next')).toBe('a')
+  })
+
+  it('retreats and wraps for prev', () => {
+    expect(resolveBrowseTarget(ordered, 'b', 'prev')).toBe('a')
+    expect(resolveBrowseTarget(ordered, 'a', 'prev')).toBe('c')
+  })
+
+  it('starts from the first item for next when there is no current id', () => {
+    expect(resolveBrowseTarget(ordered, null, 'next')).toBe('a')
+  })
+
+  it('starts from the last item for prev when there is no current id', () => {
+    expect(resolveBrowseTarget(ordered, null, 'prev')).toBe('c')
   })
 })
