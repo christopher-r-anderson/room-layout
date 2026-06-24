@@ -4,14 +4,9 @@ import {
   sceneDocumentActions,
   useFloorFinishId,
   usePreviewedId,
-  useSelectedFurniture,
   useWallFinishId,
 } from '@/core/stores/scene-document-store'
-import { feedbackActions } from '@/core/stores/feedback-store'
-import {
-  previewFromCanvasKeyboard,
-  previewFromScene,
-} from '@/core/operations/preview-actions'
+import { previewFromScene } from '@/core/operations/preview-actions'
 import { usePreviewReconciler } from '@/core/operations/use-preview-reconciler'
 import { getSceneIsAtDefaults } from '@/core/operations/use-scene-is-at-defaults'
 import { startSelectionEffectsReconciler } from '@/core/operations/selection-effects'
@@ -19,35 +14,22 @@ import {
   clearCanvasSelection,
   selectByCanvasPointer,
 } from '@/core/operations/selection-actions'
-import {
-  moveSelection,
-  rotateSelection,
-} from '@/core/operations/movement-actions'
-import { redo, undo } from '@/core/operations/history-actions'
-import {
-  focusSelectedInView,
-  setCameraPreset,
-} from '@/core/operations/view-actions'
-import { openDeleteDialog } from '@/features/selection/deletion-actions'
-import { startOverIntent } from '@/features/startup/start-over-actions'
 import { useShareController } from '@/app/controllers/use-share-controller'
 import { useCanvasKeyboardController } from '@/app/controllers/use-canvas-keyboard-controller'
+import { useEditorCommandHandlers } from '@/app/commands/use-editor-command-handlers'
 import { EditorRefsProvider } from '@/shared/providers/editor-refs-provider'
 import { CommandDispatchProvider } from '@/core/commands/command-dispatch-provider'
 import { useCommandDispatchValue } from '@/core/commands/command-dispatch-context'
-import type { EditorCommandHandlers } from '@/core/commands/editor-command'
 import { useEditorInteractionsEnabled } from '@/core/stores/editor-lifecycle-store'
 import { useEnvironmentConfig } from '@/core/stores/assets-store'
 import { TooltipProvider } from '@/shared/ui/tooltip'
 import { useStartupBootstrap } from '@/features/startup/use-startup-bootstrap'
 import { EditorBody } from './chrome/editor-body'
 import { EditorShell } from './chrome/editor-shell'
-import { findFirstActionableInspectorControl } from './chrome/focusable-controls'
 import {
   selectionFocusActions,
   useOutlinerFocusRequest,
 } from '@/core/stores/selection-focus-store'
-import { useRequestOutlinerFocus } from '@/app/controllers/use-request-outliner-focus'
 import { perfCounters } from '@/shared/debug/perf-counters'
 import { IS_E2E_BUILD } from '@/shared/env/e2e'
 import { useDraftPersistence } from '@/features/url-scene/use-draft-persistence'
@@ -65,12 +47,10 @@ function App() {
   const roomViewRef = useRef<HTMLElement | null>(null)
   const selectedItemControlsRef = useRef<HTMLDivElement | null>(null)
   const dockedInspectorRef = useRef<HTMLDivElement | null>(null)
-  const selectedFurniture = useSelectedFurniture()
   const floorFinishId = useFloorFinishId()
   const wallFinishId = useWallFinishId()
   const [testOverlaysHidden, setTestOverlaysHidden] = useState(false)
   const outlinerFocusRequest = useOutlinerFocusRequest()
-  const requestOutlinerFocus = useRequestOutlinerFocus()
   const isE2ELowRenderQuality =
     import.meta.env.VITE_E2E_RENDER_QUALITY === 'low'
   const canvasShadowMode = isE2ELowRenderQuality ? false : 'percentage'
@@ -149,51 +129,6 @@ function App() {
       previewedId,
     })
 
-  const handleFocusInspector = useCallback(() => {
-    if (!editorInteractionsEnabled) {
-      return
-    }
-
-    if (selectedFurniture === null) {
-      requestOutlinerFocus()
-      feedbackActions.announcePolite(
-        'No item selected. Focus moved to Furniture in room.',
-      )
-      return
-    }
-
-    const firstFocusableControl = findFirstActionableInspectorControl(
-      dockedInspectorRef.current,
-    )
-
-    firstFocusableControl?.focus()
-  }, [
-    dockedInspectorRef,
-    requestOutlinerFocus,
-    selectedFurniture,
-    editorInteractionsEnabled,
-  ])
-
-  const handleFocusRoomView = useCallback(() => {
-    if (!editorInteractionsEnabled) {
-      return
-    }
-
-    selectionFocusActions.requestRoomViewFocus()
-
-    if (selectedFurniture !== null) {
-      previewFromCanvasKeyboard(selectedFurniture.id)
-    }
-  }, [selectedFurniture, editorInteractionsEnabled])
-
-  const handleFocusOutliner = useCallback(() => {
-    if (!editorInteractionsEnabled) {
-      return
-    }
-
-    requestOutlinerFocus()
-  }, [requestOutlinerFocus, editorInteractionsEnabled])
-
   useTestStateBridge({
     activeFloorFinishId,
     activeWallFinishId,
@@ -201,39 +136,12 @@ function App() {
     setTestOverlaysHidden,
   })
 
-  const commandHandlers: EditorCommandHandlers = {
-    'focus-inspector': handleFocusInspector,
-    'focus-room-view': handleFocusRoomView,
-    'focus-outliner': handleFocusOutliner,
-    undo: () => {
-      undo()
-    },
-    redo: () => {
-      redo()
-    },
-    'start-over': startOverIntent,
-    'open-delete-dialog': (command) => {
-      openDeleteDialog(command.returnFocusTo)
-    },
-    'focus-selected': focusSelectedInView,
-    'move-selection': (command) => {
-      moveSelection(command.delta, { source: 'keyboard' })
-    },
-    'clear-selection': clearCanvasSelection,
-    'rotate-selection': (command) => {
-      rotateSelection(command.direction)
-    },
-    'set-camera-preset': (command) => {
-      setCameraPreset(command.preset)
-    },
-    'canvas-browse': (command) => {
-      handleCanvasBrowse(command.direction)
-    },
-    'canvas-select-previewed': handleCanvasSelectPreviewed,
-    share: () => {
-      void shareController.handleShareSceneUrl()
-    },
-  }
+  const commandHandlers = useEditorCommandHandlers({
+    dockedInspectorRef,
+    canvasBrowse: handleCanvasBrowse,
+    canvasSelectPreviewed: handleCanvasSelectPreviewed,
+    shareSceneUrl: shareController.handleShareSceneUrl,
+  })
 
   const dispatchCommand = useCommandDispatchValue(commandHandlers)
 
