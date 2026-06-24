@@ -24,7 +24,6 @@ import {
   type LayoutBounds,
 } from '@/domain/geometry/furniture-layout'
 import { commitHistoryPresent } from '@/shared/lib/ui/editor-history'
-import type { FurnitureInstance } from '@/domain/furniture'
 import type {
   FurnitureCatalogEntry,
   FurnitureCollection,
@@ -38,10 +37,7 @@ import {
   updateFurniturePositionInHistory,
 } from './internal/furniture-operations'
 import { validateCatalogAssetNodes } from './internal/validate-catalog-asset-nodes'
-import {
-  redoSceneHistory,
-  undoSceneHistory,
-} from './internal/scene-history-state'
+import { useHistoryOperations } from './internal/use-history-operations'
 import type {
   AddFurnitureResult,
   CameraKeyState,
@@ -51,10 +47,7 @@ import type {
   UpdateSelectionTransformResult,
 } from './scene.types'
 import { useSceneDrag } from './internal/use-scene-drag'
-import {
-  buildRestoredSceneHistory,
-  useSceneImperativeApi,
-} from './internal/use-scene-imperative-api'
+import { useSceneImperativeApi } from './internal/use-scene-imperative-api'
 import { useSceneSelection } from './internal/use-scene-selection'
 import { BlendFunction } from 'postprocessing'
 import {
@@ -291,21 +284,16 @@ export function Scene({
     areFurnitureCollectionsEqual,
   })
 
-  const handleRestoreInitialLayout = useCallback(
-    (instances: FurnitureInstance[]) => {
-      const restoredState = buildRestoredSceneHistory({
-        instances,
-        catalog,
-        collections,
-        sourceScenesByPath,
-      })
-
-      sceneDocumentActions.setInstanceIdCounter(restoredState.instanceIdSeed)
-      sceneDocumentActions.setHistory(restoredState.history)
-      sceneDocumentActions.setSelectedId(null)
-    },
-    [catalog, collections, sourceScenesByPath],
-  )
+  const {
+    undo: handleUndo,
+    redo: handleRedo,
+    restoreInitialLayout: handleRestoreInitialLayout,
+  } = useHistoryOperations({
+    isDragging: Boolean(dragState),
+    catalog,
+    collections,
+    sourceScenesByPath,
+  })
 
   const handleClearSelection = useCallback(() => {
     if (dragState) {
@@ -374,42 +362,6 @@ export function Scene({
     },
     [dragState, setSelectedIdAndResolveObject],
   )
-
-  const handleUndo = useCallback(() => {
-    const { history, selectedId } = sceneDocumentStore.getState()
-    const undoResult = undoSceneHistory({
-      history,
-      selectedId,
-      isDragging: Boolean(dragState),
-    })
-
-    if (!undoResult.didChange) {
-      return false
-    }
-
-    sceneDocumentActions.setHistory(undoResult.history)
-    sceneDocumentActions.setSelectedId(undoResult.selectedId)
-
-    return true
-  }, [dragState])
-
-  const handleRedo = useCallback(() => {
-    const { history, selectedId } = sceneDocumentStore.getState()
-    const redoResult = redoSceneHistory({
-      history,
-      selectedId,
-      isDragging: Boolean(dragState),
-    })
-
-    if (!redoResult.didChange) {
-      return false
-    }
-
-    sceneDocumentActions.setHistory(redoResult.history)
-    sceneDocumentActions.setSelectedId(redoResult.selectedId)
-
-    return true
-  }, [dragState])
 
   const handleMoveSelection = useCallback(
     (
