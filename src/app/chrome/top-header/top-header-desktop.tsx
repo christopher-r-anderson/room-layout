@@ -107,34 +107,36 @@ export function TopHeaderDesktop({
             className="flex items-center justify-end gap-2"
             inert={isCatalogDrawerOpen}
           >
-            <button
+            <Button
               type="button"
+              variant="outline"
+              size="toolbar-icon"
               aria-controls="keyboard-shortcuts-dialog"
               aria-haspopup="dialog"
               aria-expanded={isKeyboardShortcutsOpen}
               aria-label="Keyboard shortcuts"
-              className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-input bg-background shadow-xs transition-[color,box-shadow] outline-none hover:bg-accent hover:text-accent-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50"
               onClick={() => {
                 topHeaderDialogOpenChange.keyboardShortcuts(true)
               }}
             >
-              <IconKeyboard size={20} aria-hidden="true" />
+              <IconKeyboard aria-hidden="true" />
               <span className="sr-only">Keyboard shortcuts</span>
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="outline"
+              size="toolbar-icon"
               aria-controls="project-info-dialog"
               aria-haspopup="dialog"
               aria-expanded={isProjectInfoOpen}
               aria-label="Open project and asset info"
-              className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-input bg-background shadow-xs transition-[color,box-shadow] outline-none hover:bg-accent hover:text-accent-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50"
               onClick={() => {
                 topHeaderDialogOpenChange.projectInfo(true)
               }}
             >
-              <IconInfoCircle size={20} aria-hidden="true" />
+              <IconInfoCircle aria-hidden="true" />
               <span className="sr-only">Open project and asset info</span>
-            </button>
+            </Button>
             <ShareSceneButton
               className="min-w-26"
               disabled={!editorInteractionsEnabled}
