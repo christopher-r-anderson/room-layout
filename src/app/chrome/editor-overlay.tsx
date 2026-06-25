@@ -1,10 +1,5 @@
-import {
-  dialogActions,
-  useDialogOpen,
-  useDialogPayload,
-} from '@/core/stores/dialog-store'
+import { useDialogOpen } from '@/core/stores/dialog-store'
 import { DIALOG_IDS } from '@/app/dialogs/dialog-registry'
-import type { FurnitureItem } from '@/domain/furniture'
 import {
   useStartupOverlayActive,
   useAssetError,
@@ -12,8 +7,7 @@ import {
 } from '@/core/stores/editor-lifecycle-store'
 import { useHasSelection } from '@/core/stores/scene-document-store'
 import { CameraTools } from '@/features/camera/camera-tools'
-import { DeleteConfirmationDialog } from '@/features/selection/delete-confirmation-dialog'
-import { confirmDeleteSelection } from '@/features/selection/deletion-actions'
+import { DeleteConfirmationDialogHost } from '@/features/selection/delete-confirmation-dialog-host'
 import { requestAssetRetry } from '@/core/operations/startup-coordinator'
 import { StatusMessage } from './feedback/status-message'
 import { InitializationError } from '@/features/startup/initialization-error'
@@ -26,38 +20,10 @@ import { TopHeader } from './top-header/top-header'
 import { useExclusionRegistry } from '@/shared/layout/overlay-exclusion-context'
 import { useHeaderLayoutMode } from '@/shared/layout/use-header-layout-mode'
 
-function EditorOverlayDialogs() {
-  const isDeleteDialogOpen = useDialogOpen(DIALOG_IDS.delete)
-  const pendingDeleteFurniture = useDialogPayload(
-    DIALOG_IDS.delete,
-  ) as FurnitureItem | null
-  const assetError = useAssetError()
-
-  return (
-    <>
-      <DeleteConfirmationDialog
-        open={isDeleteDialogOpen}
-        pendingDeleteFurniture={pendingDeleteFurniture}
-        onClose={dialogActions.closeActiveDialog}
-        onConfirm={() => {
-          confirmDeleteSelection(pendingDeleteFurniture)
-        }}
-      />
-      <InitializationProgress />
-      {assetError ? (
-        <InitializationError
-          errorKind={assetError.kind}
-          errorMessage={assetError.message}
-          onRetry={requestAssetRetry}
-        />
-      ) : null}
-    </>
-  )
-}
-
 export function EditorOverlay() {
   const registerExclusionElement = useExclusionRegistry()
   const hasSelection = useHasSelection()
+  const assetError = useAssetError()
   const startupOverlayActive = useStartupOverlayActive()
   const interactionsEnabled = useEditorInteractionsEnabled()
   const isCatalogDrawerOpen = useDialogOpen(DIALOG_IDS.catalog)
@@ -127,7 +93,15 @@ export function EditorOverlay() {
           </div>
         </div>
       </div>
-      <EditorOverlayDialogs />
+      <DeleteConfirmationDialogHost />
+      <InitializationProgress />
+      {assetError ? (
+        <InitializationError
+          errorKind={assetError.kind}
+          errorMessage={assetError.message}
+          onRetry={requestAssetRetry}
+        />
+      ) : null}
     </>
   )
 }
