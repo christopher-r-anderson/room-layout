@@ -11,6 +11,7 @@ import { ShareSceneButton } from './share-scene-button'
 import { topHeaderDialogOpenChange } from './top-header-dialog-bindings'
 import { headerFocusRegistry } from './header-focus-registry'
 import type { TopHeaderDesktopProps } from './top-header.types'
+import { TopHeaderSurface } from './top-header-surface'
 
 export function TopHeaderDesktop({
   isCatalogDrawerOpen,
@@ -35,55 +36,47 @@ export function TopHeaderDesktop({
       <div
         ref={topHeaderRef}
         data-top-header-root
+        role="toolbar"
+        aria-label="Header actions"
         className="pointer-events-auto flex flex-wrap items-center justify-between gap-x-0 gap-y-2"
       >
-        <div
-          role="toolbar"
-          aria-label="Scene building actions"
-          className="flex flex-wrap items-center gap-2 rounded-xl border border-border/70 bg-background/75 p-2 backdrop-blur-[2px]"
-        >
+        <TopHeaderSurface>
           <CatalogDrawer triggerButton={<CatalogAddButton />} />
-          <div className="flex items-center">
-            <Tooltip>
-              <TooltipTrigger
-                render={
-                  <Button
-                    ref={headerFocusRegistry.register('top-header-room')}
-                    type="button"
-                    variant="secondary"
-                    size="toolbar"
-                    className="pointer-events-auto"
-                    aria-controls="room-surface"
-                    aria-expanded={isRoomSurfaceOpen}
-                    onClick={() => {
-                      topHeaderDialogOpenChange.roomSurface(!isRoomSurfaceOpen)
-                    }}
-                    onKeyDown={(event) => {
-                      if (event.key !== 'Escape' || !isRoomSurfaceOpen) {
-                        return
-                      }
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <Button
+                  ref={headerFocusRegistry.register('top-header-room')}
+                  type="button"
+                  variant="secondary"
+                  size="toolbar"
+                  className="pointer-events-auto"
+                  aria-controls="room-surface"
+                  aria-expanded={isRoomSurfaceOpen}
+                  onClick={() => {
+                    topHeaderDialogOpenChange.roomSurface(!isRoomSurfaceOpen)
+                  }}
+                  onKeyDown={(event) => {
+                    if (event.key !== 'Escape' || !isRoomSurfaceOpen) {
+                      return
+                    }
 
-                      event.preventDefault()
-                      topHeaderDialogOpenChange.roomSurface(false)
-                    }}
-                  >
-                    <IconHomeCog size={16} aria-hidden="true" />
-                    Room
-                  </Button>
-                }
-              />
-              <TooltipContent side="bottom">
-                {ROOM_TRIGGER_TOOLTIP}
-              </TooltipContent>
-            </Tooltip>
-          </div>
-        </div>
+                    event.preventDefault()
+                    topHeaderDialogOpenChange.roomSurface(false)
+                  }}
+                >
+                  <IconHomeCog size={16} aria-hidden="true" />
+                  Room
+                </Button>
+              }
+            />
+            <TooltipContent side="bottom">
+              {ROOM_TRIGGER_TOOLTIP}
+            </TooltipContent>
+          </Tooltip>
+        </TopHeaderSurface>
 
-        <div
-          role="toolbar"
-          aria-label="History and scene actions"
-          className="flex flex-wrap items-center gap-2 rounded-xl border border-border/70 bg-background/75 p-2 backdrop-blur-[2px]"
-        >
+        <TopHeaderSurface>
           <HistoryTools
             canRedo={history.canRedo}
             canUndo={history.canUndo}
@@ -100,50 +93,45 @@ export function TopHeaderDesktop({
             }
             size="toolbar"
           />
-        </div>
+        </TopHeaderSurface>
 
-        <div className="rounded-xl border border-border/70 bg-background/75 p-2 backdrop-blur-[2px]">
-          <div
-            className="flex items-center justify-end gap-2"
-            inert={isCatalogDrawerOpen}
+        <TopHeaderSurface inert={isCatalogDrawerOpen}>
+          <Button
+            type="button"
+            variant="outline"
+            size="toolbar-icon"
+            aria-controls="keyboard-shortcuts-dialog"
+            aria-haspopup="dialog"
+            aria-expanded={isKeyboardShortcutsOpen}
+            aria-label="Keyboard shortcuts"
+            onClick={() => {
+              topHeaderDialogOpenChange.keyboardShortcuts(true)
+            }}
           >
-            <Button
-              type="button"
-              variant="outline"
-              size="toolbar-icon"
-              aria-controls="keyboard-shortcuts-dialog"
-              aria-haspopup="dialog"
-              aria-expanded={isKeyboardShortcutsOpen}
-              aria-label="Keyboard shortcuts"
-              onClick={() => {
-                topHeaderDialogOpenChange.keyboardShortcuts(true)
-              }}
-            >
-              <IconKeyboard aria-hidden="true" />
-              <span className="sr-only">Keyboard shortcuts</span>
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="toolbar-icon"
-              aria-controls="project-info-dialog"
-              aria-haspopup="dialog"
-              aria-expanded={isProjectInfoOpen}
-              aria-label="Open project and asset info"
-              onClick={() => {
-                topHeaderDialogOpenChange.projectInfo(true)
-              }}
-            >
-              <IconInfoCircle aria-hidden="true" />
-              <span className="sr-only">Open project and asset info</span>
-            </Button>
-            <ShareSceneButton
-              className="min-w-26"
-              disabled={!editorInteractionsEnabled}
-              size="toolbar"
-            />
-          </div>
-        </div>
+            <IconKeyboard aria-hidden="true" />
+            <span className="sr-only">Keyboard shortcuts</span>
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="toolbar-icon"
+            aria-controls="project-info-dialog"
+            aria-haspopup="dialog"
+            aria-expanded={isProjectInfoOpen}
+            aria-label="Open project and asset info"
+            onClick={() => {
+              topHeaderDialogOpenChange.projectInfo(true)
+            }}
+          >
+            <IconInfoCircle aria-hidden="true" />
+            <span className="sr-only">Open project and asset info</span>
+          </Button>
+          <ShareSceneButton
+            className="min-w-26"
+            disabled={!editorInteractionsEnabled}
+            size="toolbar"
+          />
+        </TopHeaderSurface>
       </div>
 
       <RoomSidebar
