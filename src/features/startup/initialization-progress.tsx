@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { useFurnitureAssetLoadingProgress } from '@/scene/furniture-collection-cache'
+import { useStartupLoadingActive } from '@/core/stores/editor-lifecycle-store'
 import { Card, CardContent } from '@/shared/ui/card'
 import { Progress } from '@/shared/ui/progress'
 
@@ -14,7 +15,8 @@ function formatAssetLabel(item: string) {
   return filename ?? normalizedItem
 }
 
-export function InitializationProgress({ visible }: { visible: boolean }) {
+export function InitializationProgress() {
+  const visible = useStartupLoadingActive()
   const { active, currentItem, loaded, percent, total } =
     useFurnitureAssetLoadingProgress()
   const panelRef = useRef<HTMLDivElement | null>(null)

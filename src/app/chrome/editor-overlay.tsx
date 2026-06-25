@@ -6,7 +6,6 @@ import {
 import { DIALOG_IDS } from '@/app/dialogs/dialog-registry'
 import type { FurnitureItem } from '@/domain/furniture'
 import {
-  useStartupLoadingActive,
   useStartupOverlayActive,
   useAssetError,
   useEditorInteractionsEnabled,
@@ -32,7 +31,6 @@ function EditorOverlayDialogs() {
   const pendingDeleteFurniture = useDialogPayload(
     DIALOG_IDS.delete,
   ) as FurnitureItem | null
-  const startupLoadingActive = useStartupLoadingActive()
   const assetError = useAssetError()
 
   return (
@@ -45,7 +43,7 @@ function EditorOverlayDialogs() {
           confirmDeleteSelection(pendingDeleteFurniture)
         }}
       />
-      <InitializationProgress visible={startupLoadingActive} />
+      <InitializationProgress />
       {assetError ? (
         <InitializationError
           errorKind={assetError.kind}
