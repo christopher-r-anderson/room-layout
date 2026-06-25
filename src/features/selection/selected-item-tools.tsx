@@ -1,4 +1,6 @@
-import { ButtonGroup } from '@/shared/ui/button-group'
+import { Toolbar } from '@base-ui/react/toolbar'
+import { cn } from '@/shared/lib/utils'
+import { buttonGroupVariants } from '@/shared/ui/button-group-variants'
 import {
   DeleteButton,
   RotateClockwiseButton,
@@ -19,8 +21,12 @@ export function SelectedItemTools({
   onRotateSelection: (direction: -1 | 1) => void
 }) {
   return (
-    <ButtonGroup aria-label="Selected item actions">
+    <Toolbar.Root
+      aria-label="Selected item actions"
+      className={cn(buttonGroupVariants({ orientation: 'horizontal' }))}
+    >
       <RotateCounterclockwiseButton
+        asToolbarItem
         displayLabel={false}
         action={() => {
           onRotateSelection(1)
@@ -29,6 +35,7 @@ export function SelectedItemTools({
         disabledMessage={disabledMessage}
       />
       <RotateClockwiseButton
+        asToolbarItem
         displayLabel={false}
         action={() => {
           onRotateSelection(-1)
@@ -37,6 +44,7 @@ export function SelectedItemTools({
         disabledMessage={disabledMessage}
       />
       <DeleteButton
+        asToolbarItem
         displayLabel={false}
         action={onOpenDeleteDialog}
         disabled={controlsDisabled}
@@ -45,6 +53,6 @@ export function SelectedItemTools({
           onPrepareDelete?.()
         }}
       />
-    </ButtonGroup>
+    </Toolbar.Root>
   )
 }

@@ -42,6 +42,41 @@ describe('SelectedItemTools', () => {
     expect(onOpenDeleteDialog).toHaveBeenCalledTimes(1)
   })
 
+  it('is a single tab stop with arrow-key navigation between actions', async () => {
+    const user = userEvent.setup()
+
+    render(
+      <SelectedItemTools
+        controlsDisabled={false}
+        disabledMessage=""
+        onOpenDeleteDialog={vi.fn()}
+        onRotateSelection={vi.fn()}
+      />,
+    )
+
+    const rotateLeft = screen.getByRole('button', {
+      name: 'Rotate counterclockwise',
+    })
+    const rotateRight = screen.getByRole('button', { name: 'Rotate clockwise' })
+    const remove = screen.getByRole('button', { name: 'Remove item' })
+
+    await user.tab()
+    expect(rotateLeft).toHaveFocus()
+
+    await user.keyboard('{ArrowRight}')
+    expect(rotateRight).toHaveFocus()
+
+    await user.keyboard('{ArrowRight}')
+    expect(remove).toHaveFocus()
+
+    // Roving tabindex: the toolbar consumes one Tab stop, so tabbing past the
+    // focused item leaves the toolbar entirely rather than visiting each button.
+    await user.tab()
+    expect(rotateLeft).not.toHaveFocus()
+    expect(rotateRight).not.toHaveFocus()
+    expect(remove).not.toHaveFocus()
+  })
+
   it('keeps actions focusable but non-interactive when disabled', async () => {
     const user = userEvent.setup()
     const onRotateSelection = vi.fn()

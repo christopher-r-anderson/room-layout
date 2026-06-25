@@ -7,6 +7,7 @@ import {
   type ReactElement,
   type Ref,
 } from 'react'
+import { Toolbar } from '@base-ui/react/toolbar'
 import { cn } from '@/shared/lib/utils'
 import { Tooltip, TooltipContent, TooltipTrigger } from './tooltip'
 import { Button } from './button'
@@ -29,6 +30,7 @@ export function ToolButton({
   className,
   tooltipSide,
   onPointerDown,
+  asToolbarItem = false,
 }: {
   id?: string
   buttonRef?: Ref<HTMLButtonElement>
@@ -46,6 +48,10 @@ export function ToolButton({
   className?: string
   tooltipSide?: 'top' | 'right' | 'bottom' | 'left'
   onPointerDown?: PointerEventHandler<HTMLButtonElement>
+  // Render the control as a Base UI Toolbar item so a parent Toolbar.Root
+  // manages roving tabindex / arrow-key navigation. Opt-in: standalone uses
+  // and non-toolbar groupings leave this off.
+  asToolbarItem?: boolean
 }) {
   const shortcutHintId = useId()
   const ariaHiddenIcon = cloneElement(icon, {
@@ -53,35 +59,43 @@ export function ToolButton({
   })
   const labelClassName = displayLabel ? undefined : 'sr-only'
 
+  const buttonElement = (
+    <Button
+      id={id}
+      ref={buttonRef}
+      type="button"
+      variant={variant}
+      size={size}
+      aria-keyshortcuts={shortcuts}
+      aria-label={label}
+      aria-describedby={shortcutHint ? shortcutHintId : undefined}
+      aria-disabled={disabled}
+      className={cn(
+        'aria-disabled:active:translate-y-0 aria-disabled:cursor-not-allowed aria-disabled:opacity-50',
+        className,
+      )}
+      onPointerDown={disabled ? undefined : onPointerDown}
+      onClick={(event) => {
+        event.preventDefault()
+        if (!disabled) {
+          action?.()
+        }
+      }}
+    >
+      {ariaHiddenIcon}
+      <span className={labelClassName}>{visibleLabel ?? label}</span>
+    </Button>
+  )
+
   return (
     <Tooltip>
       <TooltipTrigger
         render={
-          <Button
-            id={id}
-            ref={buttonRef}
-            type="button"
-            variant={variant}
-            size={size}
-            aria-keyshortcuts={shortcuts}
-            aria-label={label}
-            aria-describedby={shortcutHint ? shortcutHintId : undefined}
-            aria-disabled={disabled}
-            className={cn(
-              'aria-disabled:active:translate-y-0 aria-disabled:cursor-not-allowed aria-disabled:opacity-50',
-              className,
-            )}
-            onPointerDown={disabled ? undefined : onPointerDown}
-            onClick={(event) => {
-              event.preventDefault()
-              if (!disabled) {
-                action?.()
-              }
-            }}
-          >
-            {ariaHiddenIcon}
-            <span className={labelClassName}>{visibleLabel ?? label}</span>
-          </Button>
+          asToolbarItem ? (
+            <Toolbar.Button render={buttonElement} />
+          ) : (
+            buttonElement
+          )
         }
       />
       {shortcutHint ? (
