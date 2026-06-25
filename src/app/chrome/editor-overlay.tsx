@@ -15,6 +15,7 @@ import { InitializationProgress } from '@/features/startup/initialization-progre
 import { Outliner } from '@/features/outliner/outliner'
 import { DockedSelectedItemSite } from '@/features/selection/docked-selected-item-site'
 import { FloatingSelectedItemSite } from '@/features/selection/floating-selected-item-site'
+import { SelectedItemToolbar } from '@/features/selection/selected-item-toolbar'
 import { SelectedDetailsPlaceholder } from '@/features/selection/selected-details-view'
 import { TopHeader } from './top-header/top-header'
 import { useExclusionRegistry } from '@/shared/layout/overlay-exclusion-context'
@@ -46,7 +47,9 @@ export function EditorOverlay() {
           />
         </div>
 
-        <FloatingSelectedItemSite isCatalogDrawerOpen={isCatalogDrawerOpen} />
+        {isDesktop && (
+          <FloatingSelectedItemSite isCatalogDrawerOpen={isCatalogDrawerOpen} />
+        )}
 
         <div
           className="absolute z-20 pointer-events-auto right-0 top-1/4 -translate-y-1/2"
@@ -76,7 +79,12 @@ export function EditorOverlay() {
             </div>
           )}
 
-          <div className="pointer-events-auto md:col-start-2 md:row-start-1 md:row-span-2 md:justify-self-end">
+          <div className="flex flex-col gap-2 pointer-events-auto md:col-start-2 md:row-start-1 md:row-span-2 md:justify-self-end">
+            {!isDesktop && hasSelection ? (
+              <div className="w-fit">
+                <SelectedItemToolbar isCatalogDrawerOpen={isCatalogDrawerOpen} />
+              </div>
+            ) : null}
             {hasSelection ? (
               <DockedSelectedItemSite
                 isCatalogDrawerOpen={isCatalogDrawerOpen}
