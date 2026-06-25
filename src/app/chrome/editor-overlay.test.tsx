@@ -164,10 +164,6 @@ vi.mock('../selection/delete-confirmation-dialog', () => ({
   DeleteConfirmationDialog: () => null,
 }))
 
-vi.mock('../selection/start-over-confirmation-dialog', () => ({
-  StartOverConfirmationDialog: () => null,
-}))
-
 vi.mock('../startup/initialization-progress', () => ({
   InitializationProgress: () => null,
 }))

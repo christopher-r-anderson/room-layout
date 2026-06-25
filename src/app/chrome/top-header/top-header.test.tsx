@@ -68,7 +68,7 @@ vi.mock('@/features/project-info/project-info-dialog', () => ({
   ProjectInfoDialog: () => null,
 }))
 
-vi.mock('@/features/selection/start-over-confirmation-dialog', () => ({
+vi.mock('@/features/startup/start-over-confirmation-dialog', () => ({
   StartOverConfirmationDialog: () => null,
 }))
 
