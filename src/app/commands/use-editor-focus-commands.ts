@@ -6,7 +6,13 @@ import { selectionFocusActions } from '@/core/stores/selection-focus-store'
 import { previewFromCanvasKeyboard } from '@/core/operations/preview-actions'
 import { requestOutlinerFocus } from '@/core/operations/focus-actions'
 import { useEditorRefs } from '@/shared/providers/editor-refs-context'
-import { findFirstActionableInspectorControl } from '@/app/chrome/focusable-controls'
+
+const FOCUSABLE_CONTROL_SELECTOR =
+  'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+
+function findFirstFocusableControl(root: ParentNode | null) {
+  return root?.querySelector<HTMLElement>(FOCUSABLE_CONTROL_SELECTOR) ?? null
+}
 
 export interface EditorFocusCommands {
   focusInspector: () => void
@@ -37,7 +43,7 @@ export function useEditorFocusCommands(): EditorFocusCommands {
       return
     }
 
-    const firstFocusableControl = findFirstActionableInspectorControl(
+    const firstFocusableControl = findFirstFocusableControl(
       dockedInspectorRef.current,
     )
 
