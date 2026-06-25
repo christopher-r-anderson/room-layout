@@ -335,9 +335,7 @@ test('selected item controls are suppressed from tab order while the catalog dra
   await openEditor(page)
   await addFurniture(page, 'Leather Couch')
 
-  const selectedItemActions = page.locator(
-    'section[aria-label="Selected item actions"]',
-  )
+  const selectedItemActions = page.locator('[data-slot="selected-item-toolbar"]')
 
   await page.getByRole('button', { name: 'Add Furniture' }).click()
   const drawerDialog = page.getByRole('dialog', { name: 'Add furniture' })
