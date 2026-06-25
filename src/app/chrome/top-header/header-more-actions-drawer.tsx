@@ -31,12 +31,7 @@ export function HeaderMoreActionsDrawer({
   open: boolean
 }) {
   return (
-    <Drawer
-      open={open}
-      onOpenChange={(nextOpen) => {
-        onOpenChange(nextOpen)
-      }}
-    >
+    <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerContent
         id={contentId}
         onCloseAutoFocus={(event) => {

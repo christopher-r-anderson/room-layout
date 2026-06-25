@@ -111,9 +111,7 @@ export function TopHeaderMobile({
       <RoomDrawer
         contentRef={mobileRoomDrawerRef}
         open={isRoomSurfaceOpen}
-        onOpenChange={(open) => {
-          topHeaderDialogOpenChange.roomSurface(open)
-        }}
+        onOpenChange={topHeaderDialogOpenChange.roomSurface}
         onCloseAutoFocus={() => {
           headerFocusRegistry.focus('top-header-room')
         }}
@@ -132,9 +130,7 @@ export function TopHeaderMobile({
         shareDisabled={!editorInteractionsEnabled}
         startOverDisabled={!editorInteractionsEnabled || startOverDisabled}
         open={isHeaderMoreActionsOpen}
-        onOpenChange={(open) => {
-          topHeaderDialogOpenChange.headerMoreActions(open)
-        }}
+        onOpenChange={topHeaderDialogOpenChange.headerMoreActions}
         onCloseAutoFocus={() => {
           headerFocusRegistry.focus('top-header-more-actions')
         }}
