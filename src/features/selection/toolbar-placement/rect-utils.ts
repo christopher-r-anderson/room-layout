@@ -73,19 +73,6 @@ export function avoidsExclusions(rect: Rect, exclusionRects: Rect[]) {
   )
 }
 
-export function createRect(
-  left: number,
-  top: number,
-  toolbarSize: { width: number; height: number },
-): Rect {
-  return {
-    left,
-    top,
-    width: toolbarSize.width,
-    height: toolbarSize.height,
-  }
-}
-
 export function getRectIntersectionArea(left: Rect, right: Rect) {
   const overlapWidth = Math.max(
     0,

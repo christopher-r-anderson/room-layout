@@ -77,9 +77,6 @@ describe('computeSelectedToolbarPlacement', () => {
 
     expect(placement.mode).toBe('docked')
     expect(placement.side).toBe('docked')
-    expect(placement.left).toBe(300)
-    expect(placement.top).toBe(442)
-    expect(placement.source).toBe('ui-bounds-node')
   })
 
   it('uses docked placement immediately when forced', () => {
@@ -101,8 +98,6 @@ describe('computeSelectedToolbarPlacement', () => {
     })
 
     expect(placement.mode).toBe('docked')
-    expect(placement.left).toBe(24)
-    expect(placement.top).toBe(440)
   })
 
   it('uses docked placement for object-origin geometry even when floating space exists', () => {
@@ -126,9 +121,6 @@ describe('computeSelectedToolbarPlacement', () => {
 
     expect(placement.mode).toBe('docked')
     expect(placement.side).toBe('docked')
-    expect(placement.source).toBe('object-origin')
-    expect(placement.left).toBe(24)
-    expect(placement.top).toBe(440)
   })
 
   it('keeps docked placement above an active mobile room drawer', () => {
@@ -156,8 +148,6 @@ describe('computeSelectedToolbarPlacement', () => {
     })
 
     expect(placement.mode).toBe('docked')
-    expect(placement.left).toBe(24)
-    expect(placement.top).toBe(240)
   })
 
   it('keeps docked placement out of an active desktop room sidebar', () => {
@@ -179,8 +169,6 @@ describe('computeSelectedToolbarPlacement', () => {
     })
 
     expect(placement.mode).toBe('docked')
-    expect(placement.left).toBe(448)
-    expect(placement.top).toBe(540)
   })
 
   it('respects non-zero container edges for floating placement', () => {

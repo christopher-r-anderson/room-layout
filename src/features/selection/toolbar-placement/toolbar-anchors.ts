@@ -41,7 +41,7 @@ export interface CandidateAnchorDefinition {
   axisRatio: number
 }
 
-export const TOOLBAR_GAP = 12 // Visual offset between the object contour and toolbar.
+const TOOLBAR_GAP = 12 // Visual offset between the object contour and toolbar.
 const SUPPORT_BAND_TOLERANCE = 16 // How much point spread still counts as one visible edge.
 
 const CANDIDATE_ANCHOR_DEFINITIONS: CandidateAnchorDefinition[] = [

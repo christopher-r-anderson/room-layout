@@ -1,18 +1,13 @@
 import {
   avoidsExclusions,
   clamp,
-  createRect,
   fitsContainer,
   getContainerRect,
-  getDomRectBottom,
-  getDomRectRight,
-  getRectBottom,
   getRectDistance,
   getRectIntersectionArea,
   inflateRect,
   toAbsoluteRect,
   type Rect,
-  VIEWPORT_PADDING,
 } from './rect-utils'
 import {
   getConvexHull,
@@ -26,7 +21,6 @@ import {
   createRectFromAnchor,
   getAttachmentDistance,
   getCandidateAnchors,
-  TOOLBAR_GAP,
   type FloatingCandidateAnchor,
   type ToolbarFloatingCandidateId,
   type ToolbarSide,
@@ -390,137 +384,13 @@ function createFloatingCandidates({
   return bestCandidate
 }
 
-function getFirstValidRect(
-  candidates: Rect[],
-  containerRect: DOMRectReadOnly,
-  exclusionRects: Rect[],
-) {
-  return candidates.find(
-    (candidate) =>
-      fitsContainer(candidate, containerRect) &&
-      avoidsExclusions(candidate, exclusionRects),
-  )
-}
-
-function getDockedPlacement({
-  containerRect,
-  exclusionRects,
-  toolbarSize,
-}: {
-  containerRect: DOMRectReadOnly
-  exclusionRects: Partial<Record<string, DOMRectReadOnly>>
-  toolbarSize: { width: number; height: number }
-}): ToolbarPlacement {
-  const detailsRect = exclusionRects['selected-details']
-  const headerRect = exclusionRects['top-header']
-  const localExclusionRects = Object.values(exclusionRects)
-    .filter((rect): rect is DOMRectReadOnly => Boolean(rect))
-    .map((rect) => toAbsoluteRect(rect))
-  const candidates: Rect[] = []
-  let preferredDockLeft: number | null = null
-  const containerRight = getDomRectRight(containerRect)
-  const containerBottom = getDomRectBottom(containerRect)
-
-  if (detailsRect) {
-    const detailsAbsoluteRect = toAbsoluteRect(detailsRect)
-    const headerAbsoluteRect = headerRect ? toAbsoluteRect(headerRect) : null
-    const topAboveDetails =
-      detailsAbsoluteRect.top - toolbarSize.height - TOOLBAR_GAP
-    const fallbackTop = getRectBottom(detailsAbsoluteRect) + TOOLBAR_GAP
-
-    const preferredTop =
-      headerAbsoluteRect &&
-      topAboveDetails < getRectBottom(headerAbsoluteRect) + VIEWPORT_PADDING
-        ? fallbackTop
-        : topAboveDetails
-    const alternateTop =
-      preferredTop === topAboveDetails ? fallbackTop : topAboveDetails
-    const detailsLeft = clamp(
-      detailsAbsoluteRect.left,
-      containerRect.left + VIEWPORT_PADDING,
-      containerRight - toolbarSize.width - VIEWPORT_PADDING,
-    )
-    preferredDockLeft = detailsLeft
-
-    candidates.push(
-      createRect(detailsLeft, preferredTop, toolbarSize),
-      createRect(detailsLeft, alternateTop, toolbarSize),
-    )
-  }
-
-  for (const exclusionRect of localExclusionRects) {
-    candidates.push(
-      createRect(
-        preferredDockLeft ??
-          clamp(
-            exclusionRect.left,
-            containerRect.left + VIEWPORT_PADDING,
-            containerRight - toolbarSize.width - VIEWPORT_PADDING,
-          ),
-        exclusionRect.top - toolbarSize.height - TOOLBAR_GAP,
-        toolbarSize,
-      ),
-      createRect(
-        exclusionRect.left - toolbarSize.width - TOOLBAR_GAP,
-        containerBottom - toolbarSize.height - VIEWPORT_PADDING,
-        toolbarSize,
-      ),
-    )
-  }
-
-  candidates.push(
-    createRect(
-      containerRight - toolbarSize.width - VIEWPORT_PADDING,
-      containerBottom - toolbarSize.height - VIEWPORT_PADDING,
-      toolbarSize,
-    ),
-    createRect(
-      containerRect.left + VIEWPORT_PADDING,
-      containerBottom - toolbarSize.height - VIEWPORT_PADDING,
-      toolbarSize,
-    ),
-    createRect(
-      containerRight - toolbarSize.width - VIEWPORT_PADDING,
-      containerRect.top + VIEWPORT_PADDING,
-      toolbarSize,
-    ),
-    createRect(
-      containerRect.left + VIEWPORT_PADDING,
-      containerRect.top + VIEWPORT_PADDING,
-      toolbarSize,
-    ),
-  )
-
-  const placementRect =
-    getFirstValidRect(candidates, containerRect, localExclusionRects) ??
-    candidates[0]
-  return {
-    mode: 'docked',
-    side: 'docked',
-    left: placementRect.left,
-    top: placementRect.top,
-  }
-}
-
-function getDockedResult({
-  containerRect,
-  exclusionRects,
-  source,
-  toolbarSize,
-}: {
-  containerRect: DOMRectReadOnly
-  exclusionRects: Partial<Record<string, DOMRectReadOnly>>
-  source?: ToolbarGeometrySource
-  toolbarSize: { width: number; height: number }
-}) {
-  return {
-    ...getDockedPlacement({
-      containerRect,
-      exclusionRects,
-      toolbarSize,
-    }),
-    source,
-  }
+// Non-floating outcome: the toolbar hides and the details panel covers these
+// functions. Kept as a distinct mode pending the placement rewrite.
+const DOCKED_PLACEMENT: ToolbarPlacement = {
+  mode: 'docked',
+  side: 'docked',
+  left: 0,
+  top: 0,
 }
 
 export function computeSelectedToolbarPlacement({
@@ -552,12 +422,7 @@ export function computeSelectedToolbarPlacement({
   const shouldDock = forceDocked || source === 'object-origin'
 
   if (shouldDock) {
-    return getDockedResult({
-      containerRect,
-      exclusionRects,
-      source,
-      toolbarSize: effectiveToolbarSize,
-    })
+    return DOCKED_PLACEMENT
   }
 
   if (points.length === 0) {
@@ -580,12 +445,7 @@ export function computeSelectedToolbarPlacement({
       sourcePointCount,
     })
   ) {
-    return getDockedResult({
-      containerRect,
-      exclusionRects,
-      source,
-      toolbarSize: effectiveToolbarSize,
-    })
+    return DOCKED_PLACEMENT
   }
 
   const absoluteExclusionRects = Object.values(exclusionRects)
@@ -607,12 +467,7 @@ export function computeSelectedToolbarPlacement({
   })
 
   if (!floatingCandidate || floatingCandidate.score > MAX_FLOATING_SCORE) {
-    return getDockedResult({
-      containerRect,
-      exclusionRects,
-      source,
-      toolbarSize: effectiveToolbarSize,
-    })
+    return DOCKED_PLACEMENT
   }
 
   return {
