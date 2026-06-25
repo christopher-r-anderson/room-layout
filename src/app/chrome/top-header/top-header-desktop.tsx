@@ -9,7 +9,7 @@ import { RoomSidebar } from '@/features/room-surface/room-sidebar'
 import { StartOverButton } from './start-over-button'
 import { ShareSceneButton } from './share-scene-button'
 import { topHeaderDialogOpenChange } from './top-header-dialog-bindings'
-import { headerFocusRegistry } from './header-focus-registry'
+import { topHeaderFocusRegistry } from './top-header-focus'
 import type { TopHeaderDesktopProps } from './top-header.types'
 import { TopHeaderSurface } from './top-header-surface'
 
@@ -46,7 +46,7 @@ export function TopHeaderDesktop({
             <TooltipTrigger
               render={
                 <Button
-                  ref={headerFocusRegistry.register('top-header-room')}
+                  ref={topHeaderFocusRegistry.register('top-header-room')}
                   type="button"
                   variant="secondary"
                   size="toolbar"
@@ -84,7 +84,7 @@ export function TopHeaderDesktop({
             editorInteractionsEnabled={editorInteractionsEnabled}
           />
           <StartOverButton
-            buttonRef={headerFocusRegistry.register('top-header-start-over')}
+            buttonRef={topHeaderFocusRegistry.register('top-header-start-over')}
             disabled={!editorInteractionsEnabled || startOverDisabled}
             disabledMessage={
               !editorInteractionsEnabled
@@ -139,7 +139,7 @@ export function TopHeaderDesktop({
         open={isRoomSurfaceOpen}
         onClose={() => {
           topHeaderDialogOpenChange.roomSurface(false)
-          headerFocusRegistry.focus('top-header-room')
+          topHeaderFocusRegistry.focus('top-header-room')
         }}
         floorFinishId={floorFinishId}
         floorFinishLoading={floorFinishLoading}

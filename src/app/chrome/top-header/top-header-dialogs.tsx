@@ -6,7 +6,7 @@ import { dialogActions, useDialogOpen } from '@/core/stores/dialog-store'
 import { DIALOG_IDS } from '@/app/dialogs/dialog-registry'
 import { useHeaderLayoutMode } from '@/shared/layout/use-header-layout-mode'
 import { topHeaderDialogOpenChange } from './top-header-dialog-bindings'
-import { headerFocusRegistry } from './header-focus-registry'
+import { topHeaderFocusRegistry } from './top-header-focus'
 
 /**
  * Hosts the header-triggered dialogs and the focus return that pairs with them.
@@ -22,7 +22,7 @@ export function TopHeaderDialogs() {
 
   const returnFocusToMoreActionsOnMobile = () => {
     if (layoutMode === 'mobile') {
-      headerFocusRegistry.focus('top-header-more-actions')
+      topHeaderFocusRegistry.focus('top-header-more-actions')
     }
   }
 
@@ -65,7 +65,7 @@ export function TopHeaderDialogs() {
           // desktop move focus to the next enabled header control. On mobile the
           // dialog was opened from More actions, so return focus there.
           if (layoutMode === 'desktop') {
-            headerFocusRegistry.focusNextEnabled('top-header-start-over')
+            topHeaderFocusRegistry.focusNextEnabled('top-header-start-over')
             return
           }
 

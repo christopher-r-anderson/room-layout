@@ -11,7 +11,7 @@ import {
   HEADER_MORE_ACTIONS_CONTENT_ID,
   topHeaderDialogOpenChange,
 } from './top-header-dialog-bindings'
-import { headerFocusRegistry } from './header-focus-registry'
+import { topHeaderFocusRegistry } from './top-header-focus'
 import type { TopHeaderMobileProps } from './top-header.types'
 import { TopHeaderSurface } from './top-header-surface'
 
@@ -52,7 +52,7 @@ export function TopHeaderMobile({
           <TooltipTrigger
             render={
               <Button
-                ref={headerFocusRegistry.register('top-header-room')}
+                ref={topHeaderFocusRegistry.register('top-header-room')}
                 type="button"
                 variant="secondary"
                 size="toolbar"
@@ -80,7 +80,7 @@ export function TopHeaderMobile({
           inert={isCatalogDrawerOpen}
         />
         <Button
-          ref={headerFocusRegistry.register('top-header-more-actions')}
+          ref={topHeaderFocusRegistry.register('top-header-more-actions')}
           inert={isCatalogDrawerOpen}
           type="button"
           variant="secondary"
@@ -102,7 +102,7 @@ export function TopHeaderMobile({
         open={isRoomSurfaceOpen}
         onOpenChange={topHeaderDialogOpenChange.roomSurface}
         onCloseAutoFocus={() => {
-          headerFocusRegistry.focus('top-header-room')
+          topHeaderFocusRegistry.focus('top-header-room')
         }}
         restoreFocusOnClose={!blockingOverlayOpen}
         floorFinishId={floorFinishId}
@@ -121,7 +121,7 @@ export function TopHeaderMobile({
         open={isHeaderMoreActionsOpen}
         onOpenChange={topHeaderDialogOpenChange.headerMoreActions}
         onCloseAutoFocus={() => {
-          headerFocusRegistry.focus('top-header-more-actions')
+          topHeaderFocusRegistry.focus('top-header-more-actions')
         }}
         onOpenKeyboardShortcuts={onOpenKeyboardShortcutsFromHeaderMoreActions}
         onOpenStartOver={onOpenStartOverFromHeaderMoreActions}
