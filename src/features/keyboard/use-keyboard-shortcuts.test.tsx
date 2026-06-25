@@ -367,19 +367,28 @@ describe('useKeyboardShortcuts', () => {
       key: 'O',
       shiftKey: true,
     })
+    const focusToolbarEvent = new KeyboardEvent('keydown', {
+      bubbles: true,
+      cancelable: true,
+      key: 'T',
+      shiftKey: true,
+    })
 
     fireEvent(window, focusInspectorEvent)
     fireEvent(window, focusRoomViewEvent)
     fireEvent(window, focusOutlinerEvent)
+    fireEvent(window, focusToolbarEvent)
 
     expect(dispatchedCommands(dispatch)).toEqual([
       { kind: 'focus-inspector' },
       { kind: 'focus-room-view' },
       { kind: 'focus-outliner' },
+      { kind: 'focus-toolbar' },
     ])
     expect(focusInspectorEvent.defaultPrevented).toBe(true)
     expect(focusRoomViewEvent.defaultPrevented).toBe(true)
     expect(focusOutlinerEvent.defaultPrevented).toBe(true)
+    expect(focusToolbarEvent.defaultPrevented).toBe(true)
   })
 
   it('blocks pane-navigation shortcuts when a blocking overlay is open', () => {

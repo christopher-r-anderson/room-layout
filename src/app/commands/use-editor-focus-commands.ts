@@ -18,6 +18,7 @@ export interface EditorFocusCommands {
   focusInspector: () => void
   focusRoomView: () => void
   focusOutliner: () => void
+  focusToolbar: () => void
 }
 
 /**
@@ -26,7 +27,7 @@ export interface EditorFocusCommands {
  * in app, isolated here so the command map only wires them in.
  */
 export function useEditorFocusCommands(): EditorFocusCommands {
-  const { dockedInspectorRef } = useEditorRefs()
+  const { dockedInspectorRef, selectedToolbarRef } = useEditorRefs()
   const editorInteractionsEnabled = useEditorInteractionsEnabled()
   const selectedFurniture = useSelectedFurniture()
 
@@ -70,5 +71,35 @@ export function useEditorFocusCommands(): EditorFocusCommands {
     requestOutlinerFocus()
   }, [editorInteractionsEnabled])
 
-  return { focusInspector, focusRoomView, focusOutliner }
+  const focusToolbar = useCallback(() => {
+    if (!editorInteractionsEnabled) {
+      return
+    }
+
+    if (selectedFurniture === null) {
+      requestOutlinerFocus()
+      feedbackActions.announcePolite(
+        'No item selected. Focus moved to Furniture in room.',
+      )
+      return
+    }
+
+    const toolbarControl = findFirstFocusableControl(selectedToolbarRef.current)
+
+    if (toolbarControl) {
+      toolbarControl.focus()
+      return
+    }
+
+    // The floating toolbar is not mounted (docked or hidden layout); the same
+    // actions are reachable in the details panel.
+    findFirstFocusableControl(dockedInspectorRef.current)?.focus()
+  }, [
+    dockedInspectorRef,
+    selectedToolbarRef,
+    selectedFurniture,
+    editorInteractionsEnabled,
+  ])
+
+  return { focusInspector, focusRoomView, focusOutliner, focusToolbar }
 }

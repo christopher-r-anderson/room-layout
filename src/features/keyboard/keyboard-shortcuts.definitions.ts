@@ -181,6 +181,23 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     ],
   },
   {
+    id: 'focus-toolbar',
+    match: { key: 'T', shift: true },
+    handler: 'use-keyboard-shortcuts',
+    command: { kind: 'focus-toolbar' },
+    helpEntries: [
+      {
+        sectionTitle: 'Navigation',
+        sectionOrder: 1,
+        groupLabel: 'Pane focus',
+        groupOrder: 1,
+        rowLabel: 'Focus selected item actions',
+        rowOrder: 4,
+        comboLabels: [['Shift', 'T']],
+      },
+    ],
+  },
+  {
     id: 'delete',
     match: [{ key: 'delete' }, { key: 'backspace' }],
     handler: 'use-keyboard-shortcuts',

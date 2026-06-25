@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { render, screen } from '@testing-library/react'
+import { createEvent, fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createRef } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -37,11 +37,14 @@ describe('DockedSelectedItemSite', () => {
   it('attaches the controls ref when hidden placement still shows details', () => {
     const roomViewRef = createRef<HTMLElement>()
     const dockedInspectorRef = createRef<HTMLDivElement>()
+    const selectedToolbarRef = createRef<HTMLDivElement>()
     const registerExclusionElement = vi.fn(() => vi.fn())
 
     render(
       <TooltipProvider>
-        <EditorRefsProvider value={{ roomViewRef, dockedInspectorRef }}>
+        <EditorRefsProvider
+          value={{ roomViewRef, dockedInspectorRef, selectedToolbarRef }}
+        >
           <OverlayExclusionProvider
             registerExclusionElement={registerExclusionElement}
             exclusionRects={{}}
@@ -83,11 +86,14 @@ describe('DockedSelectedItemSite', () => {
   it('keeps controls ref on docked inspector when floating supplemental actions also render', () => {
     const roomViewRef = createRef<HTMLElement>()
     const dockedInspectorRef = createRef<HTMLDivElement>()
+    const selectedToolbarRef = createRef<HTMLDivElement>()
     const registerExclusionElement = vi.fn(() => vi.fn())
 
     render(
       <TooltipProvider>
-        <EditorRefsProvider value={{ roomViewRef, dockedInspectorRef }}>
+        <EditorRefsProvider
+          value={{ roomViewRef, dockedInspectorRef, selectedToolbarRef }}
+        >
           <OverlayExclusionProvider
             registerExclusionElement={registerExclusionElement}
             exclusionRects={{}}
@@ -129,11 +135,14 @@ describe('DockedSelectedItemSite', () => {
   it('does not render floating supplemental actions in mobile docked layout', () => {
     const roomViewRef = createRef<HTMLElement>()
     const dockedInspectorRef = createRef<HTMLDivElement>()
+    const selectedToolbarRef = createRef<HTMLDivElement>()
     const registerExclusionElement = vi.fn(() => vi.fn())
 
     render(
       <TooltipProvider>
-        <EditorRefsProvider value={{ roomViewRef, dockedInspectorRef }}>
+        <EditorRefsProvider
+          value={{ roomViewRef, dockedInspectorRef, selectedToolbarRef }}
+        >
           <OverlayExclusionProvider
             registerExclusionElement={registerExclusionElement}
             exclusionRects={{}}
@@ -173,8 +182,60 @@ describe('DockedSelectedItemSite', () => {
     const user = userEvent.setup()
     const dispatch: CommandDispatch = vi.fn()
 
-    render(
-      <TooltipProvider>
+    renderFloatingActions(dispatch)
+
+    await user.click(
+      screen.getByRole('button', { name: 'Rotate counterclockwise' }),
+    )
+    await user.click(screen.getByRole('button', { name: 'Rotate clockwise' }))
+    await user.click(screen.getByRole('button', { name: 'Remove item' }))
+
+    expect(vi.mocked(dispatch).mock.calls.map(([command]) => command)).toEqual([
+      { kind: 'rotate-selection', direction: 1 },
+      { kind: 'rotate-selection', direction: -1 },
+      { kind: 'open-delete-dialog', returnFocusTo: 'outliner' },
+    ])
+  })
+
+  it('returns focus to the room view on an Escape that reaches the toolbar', () => {
+    const dispatch: CommandDispatch = vi.fn()
+    renderFloatingActions(dispatch)
+
+    fireEvent.keyDown(
+      screen.getByRole('button', { name: 'Rotate counterclockwise' }),
+      { key: 'Escape' },
+    )
+
+    expect(vi.mocked(dispatch).mock.calls.map(([command]) => command)).toEqual([
+      { kind: 'focus-room-view' },
+    ])
+  })
+
+  it('leaves an Escape already handled by a child (e.g. a tooltip) to that child', () => {
+    const dispatch: CommandDispatch = vi.fn()
+    renderFloatingActions(dispatch)
+
+    const button = screen.getByRole('button', {
+      name: 'Rotate counterclockwise',
+    })
+    const handledEscape = createEvent.keyDown(button, { key: 'Escape' })
+    handledEscape.preventDefault()
+    fireEvent(button, handledEscape)
+
+    expect(dispatch).not.toHaveBeenCalled()
+  })
+})
+
+function renderFloatingActions(dispatch: CommandDispatch) {
+  render(
+    <TooltipProvider>
+      <EditorRefsProvider
+        value={{
+          roomViewRef: createRef<HTMLElement>(),
+          dockedInspectorRef: createRef<HTMLDivElement>(),
+          selectedToolbarRef: createRef<HTMLDivElement>(),
+        }}
+      >
         <CommandDispatchProvider value={dispatch}>
           <SelectedItemInteractionProvider>
             <SelectedItemPlacementProvider
@@ -192,19 +253,7 @@ describe('DockedSelectedItemSite', () => {
             </SelectedItemPlacementProvider>
           </SelectedItemInteractionProvider>
         </CommandDispatchProvider>
-      </TooltipProvider>,
-    )
-
-    await user.click(
-      screen.getByRole('button', { name: 'Rotate counterclockwise' }),
-    )
-    await user.click(screen.getByRole('button', { name: 'Rotate clockwise' }))
-    await user.click(screen.getByRole('button', { name: 'Remove item' }))
-
-    expect(vi.mocked(dispatch).mock.calls.map(([command]) => command)).toEqual([
-      { kind: 'rotate-selection', direction: 1 },
-      { kind: 'rotate-selection', direction: -1 },
-      { kind: 'open-delete-dialog', returnFocusTo: 'outliner' },
-    ])
-  })
-})
+      </EditorRefsProvider>
+    </TooltipProvider>,
+  )
+}

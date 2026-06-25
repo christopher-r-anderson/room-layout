@@ -18,6 +18,7 @@ export type EditorCommand =
   | { kind: 'focus-inspector' }
   | { kind: 'focus-room-view' }
   | { kind: 'focus-outliner' }
+  | { kind: 'focus-toolbar' }
   | { kind: 'focus-selected' }
   | { kind: 'canvas-select-previewed' }
   | { kind: 'clear-selection' }

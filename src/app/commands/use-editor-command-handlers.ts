@@ -31,6 +31,7 @@ export function useEditorCommandHandlers(): EditorCommandHandlers {
     'focus-inspector': focus.focusInspector,
     'focus-room-view': focus.focusRoomView,
     'focus-outliner': focus.focusOutliner,
+    'focus-toolbar': focus.focusToolbar,
     undo: () => {
       undo()
     },

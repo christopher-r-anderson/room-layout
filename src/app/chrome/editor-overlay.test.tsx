@@ -224,6 +224,7 @@ describe('EditorOverlay integration', () => {
     function TestHarness() {
       const dockedInspectorRef = React.useRef<HTMLDivElement | null>(null)
       const roomViewRef = React.useRef<HTMLElement | null>(null)
+      const selectedToolbarRef = React.useRef<HTMLDivElement | null>(null)
       const placementValue = React.useMemo(
         () => ({
           placement: {
@@ -239,7 +240,9 @@ describe('EditorOverlay integration', () => {
 
       return (
         <TooltipProvider>
-          <EditorRefsProvider value={{ roomViewRef, dockedInspectorRef }}>
+          <EditorRefsProvider
+            value={{ roomViewRef, dockedInspectorRef, selectedToolbarRef }}
+          >
             <OverlayExclusionProvider
               registerExclusionElement={registerExclusionElement}
               exclusionRects={{}}
