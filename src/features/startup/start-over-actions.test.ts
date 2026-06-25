@@ -1,7 +1,19 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { dialogActions } from '@/core/stores/dialog-store'
 import { feedbackActions } from '@/core/stores/feedback-store'
-import { startOverIntent } from './start-over-actions'
+import { resetSceneToDefaults } from '@/core/persistence/scene-reset'
+import { toast } from 'sonner'
+import { confirmStartOver, startOverIntent } from './start-over-actions'
+
+vi.mock('@/core/persistence/scene-reset', () => ({
+  resetSceneToDefaults: vi.fn(),
+}))
+
+vi.mock('sonner', () => ({
+  toast: { success: vi.fn() },
+}))
+
+const STARTED_OVER_MESSAGE = 'Started over. Your changes were cleared.'
 
 describe('start-over-actions', () => {
   afterEach(() => {
@@ -25,5 +37,19 @@ describe('start-over-actions', () => {
     startOverIntent()
 
     expect(clearStatus).not.toHaveBeenCalled()
+  })
+
+  it('confirms a start-over: closes the dialog, resets, and announces', () => {
+    const close = vi.spyOn(dialogActions, 'closeActiveDialog')
+    const announce = vi
+      .spyOn(feedbackActions, 'announcePolite')
+      .mockReturnValue(undefined)
+
+    confirmStartOver()
+
+    expect(close).toHaveBeenCalledTimes(1)
+    expect(resetSceneToDefaults).toHaveBeenCalledTimes(1)
+    expect(announce).toHaveBeenCalledWith(STARTED_OVER_MESSAGE)
+    expect(toast.success).toHaveBeenCalledWith(STARTED_OVER_MESSAGE)
   })
 })
