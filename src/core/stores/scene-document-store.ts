@@ -291,8 +291,6 @@ export const useHistoryAvailability = () =>
     (state) => state.historyAvailability,
     areHistoryAvailabilityEqual,
   )
-export const useIsDragging = () =>
-  useSceneDocumentStore((state) => state.isDragging)
 export const useFloorFinishId = () =>
   useSceneDocumentStore((state) => state.floorFinishId)
 export const useWallFinishId = () =>

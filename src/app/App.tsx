@@ -1,10 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { sceneDocumentActions } from '@/core/stores/scene-document-store'
 import { previewFromScene } from '@/core/operations/preview-actions'
-import { usePreviewReconciler } from '@/core/operations/use-preview-reconciler'
 import { getSceneIsAtDefaults } from '@/core/operations/use-scene-is-at-defaults'
-import { startSelectionEffectsReconciler } from '@/core/operations/selection-effects'
-import { startOutlinerFocusReconciler } from '@/core/operations/focus-actions'
+import { startEditorReconcilers } from '@/core/operations/editor-reconcilers'
 import {
   clearCanvasSelection,
   selectByCanvasPointer,
@@ -49,9 +47,7 @@ function App() {
     bootstrapDialogRegistry(dialogRuntimeContext)
   }, [dialogRuntimeContext])
 
-  useEffect(() => startSelectionEffectsReconciler(), [])
-  useEffect(() => startOutlinerFocusReconciler(), [])
-  usePreviewReconciler()
+  useEffect(() => startEditorReconcilers(), [])
 
   const handleFloorLoadingChange = useCallback((loading: boolean) => {
     sceneDocumentActions.setFloorFinishLoading(loading)

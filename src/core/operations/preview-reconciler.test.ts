@@ -1,5 +1,4 @@
 // @vitest-environment jsdom
-import { act, renderHook } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { createHistoryState } from '@/shared/lib/ui/editor-history'
 import {
@@ -12,7 +11,7 @@ import {
   resetEditorLifecycleStore,
 } from '@/core/stores/editor-lifecycle-store'
 import { previewFromScene, resetPreviewState } from './preview-actions'
-import { usePreviewReconciler } from './use-preview-reconciler'
+import { startPreviewReconciler } from './preview-reconciler'
 
 const CHAIR = {
   id: 'item-1',
@@ -27,39 +26,41 @@ const CHAIR = {
   rotationY: 0,
 }
 
-beforeEach(() => {
-  resetSceneDocumentStore()
-  resetEditorLifecycleStore()
-  resetPreviewState()
-  sceneDocumentActions.setHistory(createHistoryState([CHAIR]))
-  editorLifecycleActions.markAssetsReady()
-})
+describe('startPreviewReconciler', () => {
+  let stop: () => void
 
-afterEach(() => {
-  resetPreviewState()
-  resetSceneDocumentStore()
-  resetEditorLifecycleStore()
-})
+  beforeEach(() => {
+    resetSceneDocumentStore()
+    resetEditorLifecycleStore()
+    resetPreviewState()
+    sceneDocumentActions.setHistory(createHistoryState([CHAIR]))
+    editorLifecycleActions.markAssetsReady()
+    stop = startPreviewReconciler()
+  })
 
-describe('usePreviewReconciler', () => {
+  afterEach(() => {
+    stop()
+    resetPreviewState()
+    resetSceneDocumentStore()
+    resetEditorLifecycleStore()
+  })
+
   it('does not restore scene preview automatically after drag gate lifts', () => {
-    renderHook(() => {
-      usePreviewReconciler()
-    })
-
-    act(() => {
-      previewFromScene('item-1')
-    })
+    previewFromScene('item-1')
     expect(sceneDocumentStore.getState().previewedIdRaw).toBe('item-1')
 
-    act(() => {
-      sceneDocumentActions.setDragging(true)
-    })
+    sceneDocumentActions.setDragging(true)
     expect(sceneDocumentStore.getState().previewedIdRaw).toBeNull()
 
-    act(() => {
-      sceneDocumentActions.setDragging(false)
-    })
+    sceneDocumentActions.setDragging(false)
+    expect(sceneDocumentStore.getState().previewedIdRaw).toBeNull()
+  })
+
+  it('clears the preview when interactions become disabled', () => {
+    previewFromScene('item-1')
+    expect(sceneDocumentStore.getState().previewedIdRaw).toBe('item-1')
+
+    editorLifecycleActions.beginAssetLoad()
     expect(sceneDocumentStore.getState().previewedIdRaw).toBeNull()
   })
 })
