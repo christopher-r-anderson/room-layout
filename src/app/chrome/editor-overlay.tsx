@@ -13,7 +13,7 @@ import { StatusMessage } from './feedback/status-message'
 import { InitializationError } from '@/features/startup/initialization-error'
 import { InitializationProgress } from '@/features/startup/initialization-progress'
 import { Outliner } from '@/features/outliner/outliner'
-import { DockedSelectedItemSite } from '@/features/selection/docked-selected-item-site'
+import { SelectedDetailsPanel } from '@/features/selection/selected-details-panel'
 import { FloatingSelectedItemSite } from '@/features/selection/floating-selected-item-site'
 import { SelectedItemToolbar } from '@/features/selection/selected-item-toolbar'
 import { SelectedDetailsPlaceholder } from '@/features/selection/selected-details-view'
@@ -82,13 +82,13 @@ export function EditorOverlay() {
           <div className="flex flex-col gap-2 pointer-events-auto md:col-start-2 md:row-start-1 md:row-span-2 md:justify-self-end">
             {!isDesktop && hasSelection ? (
               <div className="w-fit">
-                <SelectedItemToolbar isCatalogDrawerOpen={isCatalogDrawerOpen} />
+                <SelectedItemToolbar
+                  isCatalogDrawerOpen={isCatalogDrawerOpen}
+                />
               </div>
             ) : null}
             {hasSelection ? (
-              <DockedSelectedItemSite
-                isCatalogDrawerOpen={isCatalogDrawerOpen}
-              />
+              <SelectedDetailsPanel isCatalogDrawerOpen={isCatalogDrawerOpen} />
             ) : (
               <div
                 ref={registerExclusionElement('selected-details')}

@@ -11,15 +11,15 @@ import {
   updateSelectedItemDetails,
 } from './selected-item-detail-actions'
 
-export interface DockedSelectedItemSiteProps {
+export interface SelectedDetailsPanelProps {
   isCatalogDrawerOpen: boolean
 }
 
-export function DockedSelectedItemSite({
+export function SelectedDetailsPanel({
   isCatalogDrawerOpen,
-}: DockedSelectedItemSiteProps) {
+}: SelectedDetailsPanelProps) {
   const interaction = useSelectedItemInteraction()
-  const { dockedInspectorRef } = useEditorRefs()
+  const { detailsPanelRef } = useEditorRefs()
   const registerExclusionElement = useExclusionRegistry()
   const selectedFurniture = useSelectedFurniture()
   const editorInteractionsEnabled = useEditorInteractionsEnabled()
@@ -45,7 +45,7 @@ export function DockedSelectedItemSite({
   return (
     <div
       ref={(element) => {
-        dockedInspectorRef.current = element
+        detailsPanelRef.current = element
       }}
       inert={interactivity.suppressed}
       className="contents"

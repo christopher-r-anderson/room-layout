@@ -23,11 +23,11 @@ export interface EditorFocusCommands {
 
 /**
  * The focus-routing command implementations. They are view-bound (they read the
- * docked-inspector DOM ref from context and the current selection) so they live
+ * details-panel DOM ref from context and the current selection) so they live
  * in app, isolated here so the command map only wires them in.
  */
 export function useEditorFocusCommands(): EditorFocusCommands {
-  const { dockedInspectorRef, selectedToolbarRef } = useEditorRefs()
+  const { detailsPanelRef, selectedToolbarRef } = useEditorRefs()
   const editorInteractionsEnabled = useEditorInteractionsEnabled()
   const selectedFurniture = useSelectedFurniture()
 
@@ -45,11 +45,11 @@ export function useEditorFocusCommands(): EditorFocusCommands {
     }
 
     const firstFocusableControl = findFirstFocusableControl(
-      dockedInspectorRef.current,
+      detailsPanelRef.current,
     )
 
     firstFocusableControl?.focus()
-  }, [dockedInspectorRef, selectedFurniture, editorInteractionsEnabled])
+  }, [detailsPanelRef, selectedFurniture, editorInteractionsEnabled])
 
   const focusRoomView = useCallback(() => {
     if (!editorInteractionsEnabled) {
@@ -91,11 +91,11 @@ export function useEditorFocusCommands(): EditorFocusCommands {
       return
     }
 
-    // The floating toolbar is not mounted (docked or hidden layout); the same
+    // Fall back when the floating toolbar is not currently mounted; the same
     // actions are reachable in the details panel.
-    findFirstFocusableControl(dockedInspectorRef.current)?.focus()
+    findFirstFocusableControl(detailsPanelRef.current)?.focus()
   }, [
-    dockedInspectorRef,
+    detailsPanelRef,
     selectedToolbarRef,
     selectedFurniture,
     editorInteractionsEnabled,

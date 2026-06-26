@@ -18,7 +18,7 @@ import {
   sceneDocumentActions,
   resetSceneDocumentStore,
 } from '@/core/stores/scene-document-store'
-import { DockedSelectedItemSite } from './docked-selected-item-site'
+import { SelectedDetailsPanel } from './selected-details-panel'
 import { FloatingSelectedItemSite } from './floating-selected-item-site'
 import { SelectedItemInteractionProvider } from './selected-item-interaction-provider'
 import { SelectedItemPlacementProvider } from './selected-item-placement-provider'
@@ -33,17 +33,17 @@ beforeEach(() => {
   sceneDocumentActions.setSelectedId(FURNITURE_ITEM.id)
 })
 
-describe('DockedSelectedItemSite', () => {
+describe('SelectedDetailsPanel', () => {
   it('attaches the controls ref when hidden placement still shows details', () => {
     const roomViewRef = createRef<HTMLElement>()
-    const dockedInspectorRef = createRef<HTMLDivElement>()
+    const detailsPanelRef = createRef<HTMLDivElement>()
     const selectedToolbarRef = createRef<HTMLDivElement>()
     const registerExclusionElement = vi.fn(() => vi.fn())
 
     render(
       <TooltipProvider>
         <EditorRefsProvider
-          value={{ roomViewRef, dockedInspectorRef, selectedToolbarRef }}
+          value={{ roomViewRef, detailsPanelRef, selectedToolbarRef }}
         >
           <OverlayExclusionProvider
             registerExclusionElement={registerExclusionElement}
@@ -60,7 +60,7 @@ describe('DockedSelectedItemSite', () => {
                 }}
               >
                 <CommandDispatchProvider value={vi.fn()}>
-                  <DockedSelectedItemSite isCatalogDrawerOpen={false} />
+                  <SelectedDetailsPanel isCatalogDrawerOpen={false} />
                 </CommandDispatchProvider>
               </SelectedItemPlacementProvider>
             </SelectedItemInteractionProvider>
@@ -75,24 +75,24 @@ describe('DockedSelectedItemSite', () => {
     expect(
       screen.queryByRole('region', { name: 'Selected item actions' }),
     ).not.toBeInTheDocument()
-    expect(dockedInspectorRef.current).toContainElement(
+    expect(detailsPanelRef.current).toContainElement(
       screen.getByLabelText('Distance from left wall (m)'),
     )
-    expect(dockedInspectorRef.current).toContainElement(
+    expect(detailsPanelRef.current).toContainElement(
       screen.getByRole('button', { name: 'Rotate counterclockwise' }),
     )
   })
 
-  it('keeps controls ref on docked inspector when floating supplemental actions also render', () => {
+  it('keeps the details panel ref when floating actions also render', () => {
     const roomViewRef = createRef<HTMLElement>()
-    const dockedInspectorRef = createRef<HTMLDivElement>()
+    const detailsPanelRef = createRef<HTMLDivElement>()
     const selectedToolbarRef = createRef<HTMLDivElement>()
     const registerExclusionElement = vi.fn(() => vi.fn())
 
     render(
       <TooltipProvider>
         <EditorRefsProvider
-          value={{ roomViewRef, dockedInspectorRef, selectedToolbarRef }}
+          value={{ roomViewRef, detailsPanelRef, selectedToolbarRef }}
         >
           <OverlayExclusionProvider
             registerExclusionElement={registerExclusionElement}
@@ -112,7 +112,7 @@ describe('DockedSelectedItemSite', () => {
               >
                 <CommandDispatchProvider value={vi.fn()}>
                   <FloatingSelectedItemSite isCatalogDrawerOpen={false} />
-                  <DockedSelectedItemSite isCatalogDrawerOpen={false} />
+                  <SelectedDetailsPanel isCatalogDrawerOpen={false} />
                 </CommandDispatchProvider>
               </SelectedItemPlacementProvider>
             </SelectedItemInteractionProvider>
@@ -127,21 +127,21 @@ describe('DockedSelectedItemSite', () => {
     expect(
       screen.getAllByRole('region', { name: 'Selected item actions' }),
     ).toHaveLength(1)
-    expect(dockedInspectorRef.current).toContainElement(
+    expect(detailsPanelRef.current).toContainElement(
       screen.getByLabelText('Distance from left wall (m)'),
     )
   })
 
-  it('does not render floating supplemental actions in mobile docked layout', () => {
+  it('does not render the floating toolbar in mobile layout', () => {
     const roomViewRef = createRef<HTMLElement>()
-    const dockedInspectorRef = createRef<HTMLDivElement>()
+    const detailsPanelRef = createRef<HTMLDivElement>()
     const selectedToolbarRef = createRef<HTMLDivElement>()
     const registerExclusionElement = vi.fn(() => vi.fn())
 
     render(
       <TooltipProvider>
         <EditorRefsProvider
-          value={{ roomViewRef, dockedInspectorRef, selectedToolbarRef }}
+          value={{ roomViewRef, detailsPanelRef, selectedToolbarRef }}
         >
           <OverlayExclusionProvider
             registerExclusionElement={registerExclusionElement}
@@ -161,7 +161,7 @@ describe('DockedSelectedItemSite', () => {
               >
                 <CommandDispatchProvider value={vi.fn()}>
                   <FloatingSelectedItemSite isCatalogDrawerOpen={false} />
-                  <DockedSelectedItemSite isCatalogDrawerOpen={false} />
+                  <SelectedDetailsPanel isCatalogDrawerOpen={false} />
                 </CommandDispatchProvider>
               </SelectedItemPlacementProvider>
             </SelectedItemInteractionProvider>
@@ -173,7 +173,7 @@ describe('DockedSelectedItemSite', () => {
     expect(
       screen.queryAllByRole('region', { name: 'Selected item actions' }),
     ).toHaveLength(0)
-    expect(dockedInspectorRef.current).toContainElement(
+    expect(detailsPanelRef.current).toContainElement(
       screen.getByLabelText('Distance from left wall (m)'),
     )
   })
@@ -232,7 +232,7 @@ function renderFloatingActions(dispatch: CommandDispatch) {
       <EditorRefsProvider
         value={{
           roomViewRef: createRef<HTMLElement>(),
-          dockedInspectorRef: createRef<HTMLDivElement>(),
+          detailsPanelRef: createRef<HTMLDivElement>(),
           selectedToolbarRef: createRef<HTMLDivElement>(),
         }}
       >

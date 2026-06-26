@@ -13,10 +13,10 @@ import { ShellLayoutServicesProvider } from './shell-layout-services-provider'
  */
 export function EditorProviders({ children }: { children: ReactNode }) {
   const roomViewRef = useRef<HTMLElement | null>(null)
-  const dockedInspectorRef = useRef<HTMLDivElement | null>(null)
+  const detailsPanelRef = useRef<HTMLDivElement | null>(null)
   const selectedToolbarRef = useRef<HTMLDivElement | null>(null)
   const editorRefs = useMemo(
-    () => ({ roomViewRef, dockedInspectorRef, selectedToolbarRef }),
+    () => ({ roomViewRef, detailsPanelRef, selectedToolbarRef }),
     [],
   )
 

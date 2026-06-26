@@ -8,11 +8,11 @@ import { EditorRefsProvider } from './editor-refs-provider'
 describe('EditorRefsContext', () => {
   it('exposes the provided refs value', () => {
     const roomViewRef = createRef<HTMLElement>()
-    const dockedInspectorRef = createRef<HTMLDivElement>()
+    const detailsPanelRef = createRef<HTMLDivElement>()
     const selectedToolbarRef = createRef<HTMLDivElement>()
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <EditorRefsProvider
-        value={{ roomViewRef, dockedInspectorRef, selectedToolbarRef }}
+        value={{ roomViewRef, detailsPanelRef, selectedToolbarRef }}
       >
         {children}
       </EditorRefsProvider>
@@ -22,7 +22,7 @@ describe('EditorRefsContext', () => {
 
     expect(result.current).toEqual({
       roomViewRef,
-      dockedInspectorRef,
+      detailsPanelRef,
       selectedToolbarRef,
     })
   })
