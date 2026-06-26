@@ -113,4 +113,5 @@ These are temporary or intentionally narrow.
 - Core layer reference: `docs/architecture/core.md`
 - Scene⇄core data-model/engine seam: `docs/architecture/scene-and-core.md`
 - Dialog and overlay model: `docs/architecture/dialogs-and-overlays.md`
+- Interactivity (toolbars, disabled state, inert seam): `docs/architecture/interactivity.md`
 - Selected toolbar placement details: `docs/architecture/selected-toolbar-placement.md`

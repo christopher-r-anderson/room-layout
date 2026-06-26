@@ -93,6 +93,7 @@ Accessibility is an explicit goal for this project, especially for no-mouse edit
 - Room-view shortcuts are scoped to room-view focus.
 - Furniture-in-room panel acts as the primary text alternative to direct canvas interaction.
 - Accessibility checks run through Playwright + axe in Chromium, plus manual assistive-tech verification.
+- Toolbar, disabled-state, and inert conventions live in [Interactivity](docs/architecture/interactivity.md).
 
 The Playwright config starts a local Vite server automatically, so browser
 tests do not require a separate manual `pnpm dev` session.

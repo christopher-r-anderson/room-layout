@@ -14,6 +14,9 @@ Checklist:
 7. Clear or replace announcement state before re-announcing the same message.
 8. Do not hide overlays in tests that verify UI contracts.
 9. Prefer keyboard paths in tests when pointer semantics are not the feature.
+10. Follow the toolbar, disabled-state, and inert conventions in
+    `docs/architecture/interactivity.md` (grouped controls are roving toolbars;
+    disabled toolbar items stay focusable; the background has one inert seam).
 
 Validation:
 
