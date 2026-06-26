@@ -1,3 +1,4 @@
+import { Toolbar } from '@base-ui/react/toolbar'
 import { CatalogDrawer } from '@/features/catalog/catalog-drawer'
 import { CatalogAddButton } from '@/features/catalog/catalog-add-button'
 import { HistoryTools } from '@/features/history/history-tools'
@@ -33,41 +34,48 @@ export function TopHeaderDesktop({
 }: TopHeaderDesktopProps) {
   return (
     <>
-      <div
+      <Toolbar.Root
         ref={topHeaderRef}
         data-top-header-root
-        role="toolbar"
         aria-label="Header actions"
         className="pointer-events-auto flex flex-wrap items-center justify-between gap-x-0 gap-y-2"
       >
         <TopHeaderSurface>
-          <CatalogDrawer triggerButton={<CatalogAddButton />} />
+          <CatalogDrawer
+            triggerButton={<Toolbar.Button render={<CatalogAddButton />} />}
+          />
           <Tooltip>
             <TooltipTrigger
               render={
-                <Button
-                  ref={topHeaderFocusRegistry.register('top-header-room')}
-                  type="button"
-                  variant="secondary"
-                  size="toolbar"
-                  className="pointer-events-auto"
-                  aria-controls="room-surface"
-                  aria-expanded={isRoomSurfaceOpen}
-                  onClick={() => {
-                    topHeaderDialogOpenChange.roomSurface(!isRoomSurfaceOpen)
-                  }}
-                  onKeyDown={(event) => {
-                    if (event.key !== 'Escape' || !isRoomSurfaceOpen) {
-                      return
-                    }
+                <Toolbar.Button
+                  render={
+                    <Button
+                      ref={topHeaderFocusRegistry.register('top-header-room')}
+                      type="button"
+                      variant="secondary"
+                      size="toolbar"
+                      className="pointer-events-auto"
+                      aria-controls="room-surface"
+                      aria-expanded={isRoomSurfaceOpen}
+                      onClick={() => {
+                        topHeaderDialogOpenChange.roomSurface(
+                          !isRoomSurfaceOpen,
+                        )
+                      }}
+                      onKeyDown={(event) => {
+                        if (event.key !== 'Escape' || !isRoomSurfaceOpen) {
+                          return
+                        }
 
-                    event.preventDefault()
-                    topHeaderDialogOpenChange.roomSurface(false)
-                  }}
-                >
-                  <IconHomeCog size={16} aria-hidden="true" />
-                  Room
-                </Button>
+                        event.preventDefault()
+                        topHeaderDialogOpenChange.roomSurface(false)
+                      }}
+                    >
+                      <IconHomeCog size={16} aria-hidden="true" />
+                      Room
+                    </Button>
+                  }
+                />
               }
             />
             <TooltipContent side="bottom">
@@ -96,43 +104,56 @@ export function TopHeaderDesktop({
         </TopHeaderSurface>
 
         <TopHeaderSurface inert={isCatalogDrawerOpen}>
-          <Button
-            type="button"
-            variant="outline"
-            size="toolbar-icon"
-            aria-controls="keyboard-shortcuts-dialog"
-            aria-haspopup="dialog"
-            aria-expanded={isKeyboardShortcutsOpen}
-            aria-label="Keyboard shortcuts"
-            onClick={() => {
-              topHeaderDialogOpenChange.keyboardShortcuts(true)
-            }}
-          >
-            <IconKeyboard aria-hidden="true" />
-            <span className="sr-only">Keyboard shortcuts</span>
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="toolbar-icon"
-            aria-controls="project-info-dialog"
-            aria-haspopup="dialog"
-            aria-expanded={isProjectInfoOpen}
-            aria-label="Open project and asset info"
-            onClick={() => {
-              topHeaderDialogOpenChange.projectInfo(true)
-            }}
-          >
-            <IconInfoCircle aria-hidden="true" />
-            <span className="sr-only">Open project and asset info</span>
-          </Button>
-          <ShareSceneButton
-            className="min-w-26"
+          <Toolbar.Button
+            render={
+              <Button
+                type="button"
+                variant="outline"
+                size="toolbar-icon"
+                aria-controls="keyboard-shortcuts-dialog"
+                aria-haspopup="dialog"
+                aria-expanded={isKeyboardShortcutsOpen}
+                aria-label="Keyboard shortcuts"
+                onClick={() => {
+                  topHeaderDialogOpenChange.keyboardShortcuts(true)
+                }}
+              >
+                <IconKeyboard aria-hidden="true" />
+                <span className="sr-only">Keyboard shortcuts</span>
+              </Button>
+            }
+          />
+          <Toolbar.Button
+            render={
+              <Button
+                type="button"
+                variant="outline"
+                size="toolbar-icon"
+                aria-controls="project-info-dialog"
+                aria-haspopup="dialog"
+                aria-expanded={isProjectInfoOpen}
+                aria-label="Open project and asset info"
+                onClick={() => {
+                  topHeaderDialogOpenChange.projectInfo(true)
+                }}
+              >
+                <IconInfoCircle aria-hidden="true" />
+                <span className="sr-only">Open project and asset info</span>
+              </Button>
+            }
+          />
+          <Toolbar.Button
             disabled={!editorInteractionsEnabled}
-            size="toolbar"
+            render={
+              <ShareSceneButton
+                className="min-w-26"
+                disabled={!editorInteractionsEnabled}
+                size="toolbar"
+              />
+            }
           />
         </TopHeaderSurface>
-      </div>
+      </Toolbar.Root>
 
       <RoomSidebar
         containerRef={desktopRoomSidebarRef}

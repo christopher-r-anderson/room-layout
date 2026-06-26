@@ -1,3 +1,4 @@
+import { Toolbar } from '@base-ui/react/toolbar'
 import { Button } from '@/shared/ui/button'
 import { CatalogDrawer } from '@/features/catalog/catalog-drawer'
 import { CatalogAddButton } from '@/features/catalog/catalog-add-button'
@@ -42,31 +43,36 @@ export function TopHeaderMobile({
       data-top-header-root
       className="pointer-events-auto"
     >
-      <TopHeaderSurface
-        role="toolbar"
+      <Toolbar.Root
         aria-label="Header actions"
-        className="w-full"
+        render={<TopHeaderSurface className="w-full" />}
       >
-        <CatalogDrawer triggerButton={<CatalogAddButton />} />
+        <CatalogDrawer
+          triggerButton={<Toolbar.Button render={<CatalogAddButton />} />}
+        />
         <Tooltip>
           <TooltipTrigger
             render={
-              <Button
-                ref={topHeaderFocusRegistry.register('top-header-room')}
-                type="button"
-                variant="secondary"
-                size="toolbar"
-                className="mr-auto"
-                aria-controls="room-drawer"
-                aria-expanded={isRoomSurfaceOpen}
-                aria-haspopup="dialog"
-                onClick={() => {
-                  topHeaderDialogOpenChange.roomSurface(!isRoomSurfaceOpen)
-                }}
-              >
-                <IconHomeCog size={16} aria-hidden="true" />
-                Room
-              </Button>
+              <Toolbar.Button
+                render={
+                  <Button
+                    ref={topHeaderFocusRegistry.register('top-header-room')}
+                    type="button"
+                    variant="secondary"
+                    size="toolbar"
+                    className="mr-auto"
+                    aria-controls="room-drawer"
+                    aria-expanded={isRoomSurfaceOpen}
+                    aria-haspopup="dialog"
+                    onClick={() => {
+                      topHeaderDialogOpenChange.roomSurface(!isRoomSurfaceOpen)
+                    }}
+                  >
+                    <IconHomeCog size={16} aria-hidden="true" />
+                    Room
+                  </Button>
+                }
+              />
             }
           />
           <TooltipContent side="bottom">{ROOM_TRIGGER_TOOLTIP}</TooltipContent>
@@ -79,23 +85,27 @@ export function TopHeaderMobile({
           editorInteractionsEnabled={editorInteractionsEnabled}
           inert={isCatalogDrawerOpen}
         />
-        <Button
-          ref={topHeaderFocusRegistry.register('top-header-more-actions')}
+        <Toolbar.Button
           inert={isCatalogDrawerOpen}
-          type="button"
-          variant="secondary"
-          size="toolbar-icon"
-          aria-label="More actions"
-          aria-controls={HEADER_MORE_ACTIONS_CONTENT_ID}
-          aria-expanded={isHeaderMoreActionsOpen}
-          aria-haspopup="dialog"
-          onClick={() => {
-            topHeaderDialogOpenChange.headerMoreActions(true)
-          }}
-        >
-          <IconDotsVertical aria-hidden="true" />
-        </Button>
-      </TopHeaderSurface>
+          render={
+            <Button
+              ref={topHeaderFocusRegistry.register('top-header-more-actions')}
+              type="button"
+              variant="secondary"
+              size="toolbar-icon"
+              aria-label="More actions"
+              aria-controls={HEADER_MORE_ACTIONS_CONTENT_ID}
+              aria-expanded={isHeaderMoreActionsOpen}
+              aria-haspopup="dialog"
+              onClick={() => {
+                topHeaderDialogOpenChange.headerMoreActions(true)
+              }}
+            >
+              <IconDotsVertical aria-hidden="true" />
+            </Button>
+          }
+        />
+      </Toolbar.Root>
 
       <RoomDrawer
         contentRef={mobileRoomDrawerRef}

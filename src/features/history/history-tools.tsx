@@ -1,5 +1,7 @@
-import { ButtonGroup } from '@/shared/ui/button-group'
+import { Toolbar } from '@base-ui/react/toolbar'
 import { IconArrowBackUp, IconArrowForwardUp } from '@tabler/icons-react'
+import { cn } from '@/shared/lib/utils'
+import { buttonGroupVariants } from '@/shared/ui/button-group-variants'
 import { ToolButton } from '@/shared/ui/tool-button'
 import { useCommandDispatch } from '@/core/commands/command-dispatch-context'
 import type { ComponentProps } from 'react'
@@ -32,8 +34,13 @@ export function HistoryTools({
     : 'No next history'
 
   return (
-    <ButtonGroup aria-label="History Actions" inert={inert}>
+    <Toolbar.Group
+      aria-label="History Actions"
+      inert={inert}
+      className={cn(buttonGroupVariants({ orientation: 'horizontal' }))}
+    >
       <ToolButton
+        asToolbarItem
         action={() => {
           dispatch({ kind: 'undo' })
         }}
@@ -47,6 +54,7 @@ export function HistoryTools({
         className={buttonClassName}
       />
       <ToolButton
+        asToolbarItem
         action={() => {
           dispatch({ kind: 'redo' })
         }}
@@ -59,6 +67,6 @@ export function HistoryTools({
         size={buttonSize}
         className={buttonClassName}
       />
-    </ButtonGroup>
+    </Toolbar.Group>
   )
 }

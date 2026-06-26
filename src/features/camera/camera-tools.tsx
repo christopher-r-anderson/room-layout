@@ -1,4 +1,6 @@
-import { ButtonGroup, ButtonGroupText } from '@/shared/ui/button-group'
+import { Toolbar } from '@base-ui/react/toolbar'
+import { ButtonGroupText } from '@/shared/ui/button-group'
+import { buttonGroupVariants } from '@/shared/ui/button-group-variants'
 import {
   IconBoxAlignBottom,
   IconBoxAlignBottomRight,
@@ -7,6 +9,7 @@ import {
   IconCamera,
   IconFocus2,
 } from '@tabler/icons-react'
+import { cn } from '@/shared/lib/utils'
 import { ToolButton } from '@/shared/ui/tool-button'
 import { useCommandDispatch } from '@/core/commands/command-dispatch-context'
 
@@ -28,12 +31,17 @@ export function CameraTools({
   const buttonClass = 'flex-row-reverse sm:justify-between'
 
   return (
-    <ButtonGroup orientation="vertical" aria-label="Camera">
+    <Toolbar.Root
+      orientation="vertical"
+      aria-label="Camera"
+      className={cn(buttonGroupVariants({ orientation: 'vertical' }))}
+    >
       <ButtonGroupText className="justify-between p-1 px-2">
         <span className="hidden md:flex">Camera</span>
         <IconCamera aria-hidden="true" />
       </ButtonGroupText>
       <ToolButton
+        asToolbarItem
         action={() => {
           dispatch({ kind: 'set-camera-preset', preset: 'corner' })
         }}
@@ -48,6 +56,7 @@ export function CameraTools({
         tooltipSide="left"
       />
       <ToolButton
+        asToolbarItem
         action={() => {
           dispatch({ kind: 'set-camera-preset', preset: 'front' })
         }}
@@ -62,6 +71,7 @@ export function CameraTools({
         tooltipSide="left"
       />
       <ToolButton
+        asToolbarItem
         action={() => {
           dispatch({ kind: 'set-camera-preset', preset: 'side' })
         }}
@@ -76,6 +86,7 @@ export function CameraTools({
         tooltipSide="left"
       />
       <ToolButton
+        asToolbarItem
         action={() => {
           dispatch({ kind: 'set-camera-preset', preset: 'top' })
         }}
@@ -90,6 +101,7 @@ export function CameraTools({
         tooltipSide="left"
       />
       <ToolButton
+        asToolbarItem
         action={() => {
           dispatch({ kind: 'focus-selected' })
         }}
@@ -106,6 +118,6 @@ export function CameraTools({
         icon={<IconFocus2 />}
         tooltipSide="left"
       />
-    </ButtonGroup>
+    </Toolbar.Root>
   )
 }

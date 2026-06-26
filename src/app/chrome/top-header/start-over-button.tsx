@@ -23,6 +23,7 @@ export function StartOverButton({
 
   return (
     <ToolButton
+      asToolbarItem
       id={buttonId}
       buttonRef={buttonRef}
       action={() => {

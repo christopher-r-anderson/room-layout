@@ -365,28 +365,30 @@ test.describe('narrow viewport overlay order', () => {
     await page.keyboard.press('Tab')
     await expect(roomView).toBeFocused()
 
+    // The header is a single roving toolbar: Tab lands on its entry control
+    // (Add Furniture), then arrow keys move between the controls within it.
     await page.keyboard.press('Tab')
     await expect(addFurnitureButton).toBeFocused()
 
-    await page.keyboard.press('Tab')
+    await page.keyboard.press('ArrowRight')
     await expect(roomButton).toBeFocused()
 
-    await page.keyboard.press('Tab')
+    await page.keyboard.press('ArrowRight')
     await expect(undoButton).toBeFocused()
 
-    await page.keyboard.press('Tab')
+    await page.keyboard.press('ArrowRight')
     await expect(redoButton).toBeFocused()
 
-    await page.keyboard.press('Tab')
+    await page.keyboard.press('ArrowRight')
     await expect(moreButton).toBeFocused()
 
-    await page.keyboard.press('Shift+Tab')
+    await page.keyboard.press('ArrowLeft')
     await expect(redoButton).toBeFocused()
 
-    await page.keyboard.press('Shift+Tab')
+    await page.keyboard.press('ArrowLeft')
     await expect(undoButton).toBeFocused()
 
-    await page.keyboard.press('Shift+Tab')
+    await page.keyboard.press('ArrowLeft')
     await expect(roomButton).toBeFocused()
 
     await page.keyboard.press('Enter')

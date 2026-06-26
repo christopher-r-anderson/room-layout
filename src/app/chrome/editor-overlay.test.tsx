@@ -290,7 +290,7 @@ describe('EditorOverlay integration', () => {
     })
     expect(environmentDialog).toBeVisible()
 
-    expect(screen.getByRole('group', { name: 'Camera' })).toBeVisible()
+    expect(screen.getByRole('toolbar', { name: 'Camera' })).toBeVisible()
 
     await user.click(
       within(environmentDialog).getByRole('button', {
@@ -307,6 +307,6 @@ describe('EditorOverlay integration', () => {
     await waitFor(() => {
       expect(environmentTrigger).toHaveFocus()
     })
-    expect(screen.getByRole('group', { name: 'Camera' })).toBeVisible()
+    expect(screen.getByRole('toolbar', { name: 'Camera' })).toBeVisible()
   })
 })

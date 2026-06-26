@@ -4,13 +4,17 @@ import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import type { ReactElement } from 'react'
+import { Toolbar } from '@base-ui/react/toolbar'
 import { CommandDispatchProvider } from '@/core/commands/command-dispatch-provider'
 import type { CommandDispatch } from '@/core/commands/command-dispatch-context'
 import { HistoryTools } from './history-tools'
 
+// HistoryTools renders a Toolbar.Group, so it only mounts inside a Toolbar.Root.
 function renderWithDispatch(ui: ReactElement, dispatch: CommandDispatch) {
   return render(
-    <CommandDispatchProvider value={dispatch}>{ui}</CommandDispatchProvider>,
+    <CommandDispatchProvider value={dispatch}>
+      <Toolbar.Root>{ui}</Toolbar.Root>
+    </CommandDispatchProvider>,
   )
 }
 
