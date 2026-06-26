@@ -51,19 +51,121 @@ interface FetchCatalogManifestOptions {
   signal?: AbortSignal
 }
 
+function requireObject(
+  value: unknown,
+  message: string,
+): Record<string, unknown> {
+  if (typeof value !== 'object' || value === null) {
+    throw new ManifestValidationError(message)
+  }
+  return value as Record<string, unknown>
+}
+
+// Primitive field validators take a `context` describing where in the manifest the
+// value lives (e.g. `catalog[3] ("couch-1")`) so failures point to the offending entry.
+
+function requireNonEmptyString(
+  value: unknown,
+  context: string,
+  field: string,
+): string {
+  if (typeof value !== 'string' || value.trim() === '') {
+    throw new ManifestValidationError(
+      `${context}: "${field}" must be a non-empty string`,
+    )
+  }
+  return value.trim()
+}
+
+function requirePositiveFinite(
+  value: unknown,
+  context: string,
+  field: string,
+): number {
+  if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0) {
+    throw new ManifestValidationError(
+      `${context}: "${field}" must be a positive finite number`,
+    )
+  }
+  return value
+}
+
+function requireDimensions(
+  source: Record<string, unknown>,
+  context: string,
+  field: string,
+): { width: number; depth: number } {
+  const dimensions = requireObject(
+    source[field],
+    `${context}: "${field}" must be an object`,
+  )
+  return {
+    width: requirePositiveFinite(dimensions.width, context, `${field}.width`),
+    depth: requirePositiveFinite(dimensions.depth, context, `${field}.depth`),
+  }
+}
+
+function requireNonEmptyArray(
+  value: unknown,
+  missingMessage: string,
+  emptyMessage: string,
+): unknown[] {
+  if (!Array.isArray(value)) {
+    throw new ManifestValidationError(missingMessage)
+  }
+  if (value.length === 0) {
+    throw new ManifestValidationError(emptyMessage)
+  }
+  return value
+}
+
+function collectUniqueIds(
+  items: readonly { id: string }[],
+  label: string,
+): Set<string> {
+  const ids = new Set<string>()
+  for (const item of items) {
+    if (ids.has(item.id)) {
+      throw new ManifestValidationError(`${label}: duplicate id "${item.id}"`)
+    }
+    ids.add(item.id)
+  }
+  return ids
+}
+
+// An optional default id reference: absent falls back to the first entry, but a
+// present value must be a string referencing an existing id.
+function resolveDefaultId(
+  value: unknown,
+  validIds: Set<string>,
+  fallback: string,
+  errorMessage: string,
+): string {
+  if (value === undefined) {
+    return fallback
+  }
+  if (typeof value !== 'string' || !validIds.has(value)) {
+    throw new ManifestValidationError(errorMessage)
+  }
+  return value
+}
+
+// Reject schemes, absolute/protocol-relative paths, Windows separators, and
+// encoded separator/traversal tokens. Applied both before and after decoding.
+function hasUnsafePathForm(value: string): boolean {
+  if (/^[a-zA-Z][a-zA-Z\d+.-]*:/.test(value)) return true
+  if (value.startsWith('//') || value.startsWith('/')) return true
+  if (value.includes('\\')) return true
+  if (/%2e|%2f|%5c/i.test(value)) return true
+  return false
+}
+
 function normalizeRelativeAssetPath(value: unknown): string | null {
   if (typeof value !== 'string') return null
 
   const trimmed = value.trim()
   if (trimmed === '') return null
-
-  // Reject obvious non-relative forms before decoding.
-  if (/^[a-zA-Z][a-zA-Z\d+.-]*:/.test(trimmed)) return null
-  if (trimmed.startsWith('//') || trimmed.startsWith('/')) return null
-
-  // Reject Windows separators and dangerous encoded separator/traversal tokens.
-  if (trimmed.includes('\\')) return null
-  if (/%2e|%2f|%5c/i.test(trimmed)) return null
+  if (hasUnsafePathForm(trimmed)) return null
 
   let decoded: string
   try {
@@ -72,10 +174,7 @@ function normalizeRelativeAssetPath(value: unknown): string | null {
     return null
   }
 
-  if (decoded.includes('\\')) return null
-  if (/^[a-zA-Z][a-zA-Z\d+.-]*:/.test(decoded)) return null
-  if (decoded.startsWith('//') || decoded.startsWith('/')) return null
-  if (/%2e|%2f|%5c/i.test(decoded)) return null
+  if (hasUnsafePathForm(decoded)) return null
 
   const rawSegments = decoded.split('/')
 
@@ -95,29 +194,20 @@ function validateAndNormalizeCollection(
   raw: unknown,
   index: number,
 ): FurnitureCollection {
-  if (typeof raw !== 'object' || raw === null) {
-    throw new ManifestValidationError(
-      `collections[${String(index)}]: must be an object`,
-    )
-  }
+  const context = `collections[${String(index)}]`
+  const entry = requireObject(raw, `${context}: must be an object`)
 
-  const entry = raw as Record<string, unknown>
-
-  if (typeof entry.id !== 'string' || entry.id.trim() === '') {
-    throw new ManifestValidationError(
-      `collections[${String(index)}]: "id" must be a non-empty string`,
-    )
-  }
+  const id = requireNonEmptyString(entry.id, context, 'id')
 
   const normalizedModelPath = normalizeRelativeAssetPath(entry.modelPath)
   if (normalizedModelPath === null) {
     throw new ManifestValidationError(
-      `collections[${String(index)}] ("${entry.id}"): "modelPath" must be a relative path`,
+      `${context} ("${id}"): "modelPath" must be a relative path`,
     )
   }
 
   return {
-    id: entry.id,
+    id,
     sourcePath: resolvePublicAssetPath(normalizedModelPath),
   }
 }
@@ -127,51 +217,35 @@ function validateAndNormalizeCatalogEntry(
   index: number,
   collectionIds: Set<string>,
 ): FurnitureCatalogEntry {
-  if (typeof raw !== 'object' || raw === null) {
-    throw new ManifestValidationError(
-      `catalog[${String(index)}]: must be an object`,
-    )
-  }
+  const entry = requireObject(
+    raw,
+    `catalog[${String(index)}]: must be an object`,
+  )
 
-  const entry = raw as Record<string, unknown>
+  const id = requireNonEmptyString(entry.id, `catalog[${String(index)}]`, 'id')
+  const context = `catalog[${String(index)}] ("${id}")`
 
-  if (typeof entry.id !== 'string' || entry.id.trim() === '') {
-    throw new ManifestValidationError(
-      `catalog[${String(index)}]: "id" must be a non-empty string`,
-    )
-  }
-
-  const id = entry.id
-
-  if (typeof entry.name !== 'string' || entry.name.trim() === '') {
-    throw new ManifestValidationError(
-      `catalog[${String(index)}] ("${id}"): "name" must be a non-empty string`,
-    )
-  }
+  const name = requireNonEmptyString(entry.name, context, 'name')
 
   if (
     typeof entry.kind !== 'string' ||
     !KNOWN_FURNITURE_KINDS.includes(entry.kind as FurnitureKind)
   ) {
     throw new ManifestValidationError(
-      `catalog[${String(index)}] ("${id}"): "kind" must be one of: ${KNOWN_FURNITURE_KINDS.join(', ')}`,
+      `${context}: "kind" must be one of: ${KNOWN_FURNITURE_KINDS.join(', ')}`,
     )
   }
 
   if (
     typeof entry.collectionId !== 'string' ||
-    !collectionIds.has(entry.collectionId)
+    !collectionIds.has(entry.collectionId.trim())
   ) {
     throw new ManifestValidationError(
-      `catalog[${String(index)}] ("${id}"): "collectionId" must reference a defined collection`,
+      `${context}: "collectionId" must reference a defined collection`,
     )
   }
 
-  if (typeof entry.nodeName !== 'string' || entry.nodeName.trim() === '') {
-    throw new ManifestValidationError(
-      `catalog[${String(index)}] ("${id}"): "nodeName" must be a non-empty string`,
-    )
-  }
+  const nodeName = requireNonEmptyString(entry.nodeName, context, 'nodeName')
 
   if (
     entry.uiBoundsNodeName !== undefined &&
@@ -179,61 +253,29 @@ function validateAndNormalizeCatalogEntry(
       entry.uiBoundsNodeName.trim() === '')
   ) {
     throw new ManifestValidationError(
-      `catalog[${String(index)}] ("${id}"): "uiBoundsNodeName" must be a non-empty string when provided`,
+      `${context}: "uiBoundsNodeName" must be a non-empty string when provided`,
     )
   }
 
-  if (typeof entry.footprintSize !== 'object' || entry.footprintSize === null) {
-    throw new ManifestValidationError(
-      `catalog[${String(index)}] ("${id}"): "footprintSize" must be an object`,
-    )
-  }
-
-  const footprint = entry.footprintSize as Record<string, unknown>
-
-  const rawWidth = footprint.width
-  const rawDepth = footprint.depth
-
-  if (
-    typeof rawWidth !== 'number' ||
-    !Number.isFinite(rawWidth) ||
-    rawWidth <= 0
-  ) {
-    throw new ManifestValidationError(
-      `catalog[${String(index)}] ("${id}"): "footprintSize.width" must be a positive finite number`,
-    )
-  }
-
-  if (
-    typeof rawDepth !== 'number' ||
-    !Number.isFinite(rawDepth) ||
-    rawDepth <= 0
-  ) {
-    throw new ManifestValidationError(
-      `catalog[${String(index)}] ("${id}"): "footprintSize.depth" must be a positive finite number`,
-    )
-  }
+  const footprintSize = requireDimensions(entry, context, 'footprintSize')
 
   const normalizedPreviewPath = normalizeRelativeAssetPath(entry.previewPath)
   if (normalizedPreviewPath === null) {
     throw new ManifestValidationError(
-      `catalog[${String(index)}] ("${id}"): "previewPath" must be a relative path`,
+      `${context}: "previewPath" must be a relative path`,
     )
   }
 
   return {
     id,
-    name: entry.name,
+    name,
     kind: entry.kind as FurnitureKind,
-    collectionId: entry.collectionId,
-    nodeName: entry.nodeName,
+    collectionId: entry.collectionId.trim(),
+    nodeName,
     ...(entry.uiBoundsNodeName
       ? { uiBoundsNodeName: entry.uiBoundsNodeName.trim() }
       : {}),
-    footprintSize: {
-      width: rawWidth,
-      depth: rawDepth,
-    },
+    footprintSize,
     previewPath: resolvePublicAssetPath(normalizedPreviewPath),
   }
 }
@@ -270,86 +312,45 @@ function validateAndNormalizeFloorFinish(
   raw: unknown,
   index: number,
 ): FloorFinishOption {
-  if (typeof raw !== 'object' || raw === null) {
-    throw new ManifestValidationError(
-      `environment.floorFinishes[${String(index)}]: must be an object`,
-    )
-  }
+  const entry = requireObject(
+    raw,
+    `environment.floorFinishes[${String(index)}]: must be an object`,
+  )
 
-  const entry = raw as Record<string, unknown>
+  const id = requireNonEmptyString(
+    entry.id,
+    `environment.floorFinishes[${String(index)}]`,
+    'id',
+  )
+  const context = `environment.floorFinishes[${String(index)}] ("${id}")`
 
-  if (typeof entry.id !== 'string' || entry.id.trim() === '') {
-    throw new ManifestValidationError(
-      `environment.floorFinishes[${String(index)}]: "id" must be a non-empty string`,
-    )
-  }
-
-  if (typeof entry.label !== 'string' || entry.label.trim() === '') {
-    throw new ManifestValidationError(
-      `environment.floorFinishes[${String(index)}] ("${entry.id}"): "label" must be a non-empty string`,
-    )
-  }
+  const label = requireNonEmptyString(entry.label, context, 'label')
 
   const normalizedDiffusePath = normalizeRelativeAssetPath(entry.diffusePath)
   if (normalizedDiffusePath === null) {
     throw new ManifestValidationError(
-      `environment.floorFinishes[${String(index)}] ("${entry.id}"): "diffusePath" must be a relative path`,
+      `${context}: "diffusePath" must be a relative path`,
     )
   }
 
   const normalizedNormalPath = normalizeRelativeAssetPath(entry.normalPath)
   if (normalizedNormalPath === null) {
     throw new ManifestValidationError(
-      `environment.floorFinishes[${String(index)}] ("${entry.id}"): "normalPath" must be a relative path`,
+      `${context}: "normalPath" must be a relative path`,
     )
   }
 
-  if (
-    typeof entry.tileSizeMeters !== 'object' ||
-    entry.tileSizeMeters === null
-  ) {
-    throw new ManifestValidationError(
-      `environment.floorFinishes[${String(index)}] ("${entry.id}"): "tileSizeMeters" must be an object`,
-    )
-  }
+  const tileSizeMeters = requireDimensions(entry, context, 'tileSizeMeters')
 
-  const tileSizeMeters = entry.tileSizeMeters as Record<string, unknown>
-
-  if (
-    typeof tileSizeMeters.width !== 'number' ||
-    !Number.isFinite(tileSizeMeters.width) ||
-    tileSizeMeters.width <= 0
-  ) {
-    throw new ManifestValidationError(
-      `environment.floorFinishes[${String(index)}] ("${entry.id}"): "tileSizeMeters.width" must be a positive finite number`,
-    )
-  }
-
-  if (
-    typeof tileSizeMeters.depth !== 'number' ||
-    !Number.isFinite(tileSizeMeters.depth) ||
-    tileSizeMeters.depth <= 0
-  ) {
-    throw new ManifestValidationError(
-      `environment.floorFinishes[${String(index)}] ("${entry.id}"): "tileSizeMeters.depth" must be a positive finite number`,
-    )
-  }
-
-  const previewPath = normalizeOptionalPreviewPath(
-    entry.previewPath,
-    `environment.floorFinishes[${String(index)}] ("${entry.id}")`,
-  )
+  const previewPath = normalizeOptionalPreviewPath(entry.previewPath, context)
 
   return {
-    id: entry.id,
-    label: entry.label,
+    id,
+    label,
     diffusePath: resolvePublicAssetPath(normalizedDiffusePath),
     normalPath: resolvePublicAssetPath(normalizedNormalPath),
     ...(previewPath ? { previewPath } : {}),
-    tileSizeMeters: {
-      width: tileSizeMeters.width,
-      depth: tileSizeMeters.depth,
-    },
+    tileSizeMeters,
   }
 }
 
@@ -357,131 +358,77 @@ function validateAndNormalizeWallFinish(
   raw: unknown,
   index: number,
 ): WallFinishOption {
-  if (typeof raw !== 'object' || raw === null) {
-    throw new ManifestValidationError(
-      `environment.wallFinishes[${String(index)}]: must be an object`,
-    )
-  }
+  const entry = requireObject(
+    raw,
+    `environment.wallFinishes[${String(index)}]: must be an object`,
+  )
 
-  const entry = raw as Record<string, unknown>
+  const id = requireNonEmptyString(
+    entry.id,
+    `environment.wallFinishes[${String(index)}]`,
+    'id',
+  )
+  const context = `environment.wallFinishes[${String(index)}] ("${id}")`
 
-  if (typeof entry.id !== 'string' || entry.id.trim() === '') {
-    throw new ManifestValidationError(
-      `environment.wallFinishes[${String(index)}]: "id" must be a non-empty string`,
-    )
-  }
-
-  if (typeof entry.label !== 'string' || entry.label.trim() === '') {
-    throw new ManifestValidationError(
-      `environment.wallFinishes[${String(index)}] ("${entry.id}"): "label" must be a non-empty string`,
-    )
-  }
+  const label = requireNonEmptyString(entry.label, context, 'label')
 
   if (entry.previewPath !== undefined) {
     throw new ManifestValidationError(
-      `environment.wallFinishes[${String(index)}] ("${entry.id}"): "previewPath" is not supported; wall swatches are derived from "color"`,
+      `${context}: "previewPath" is not supported; wall swatches are derived from "color"`,
     )
   }
 
   return {
-    id: entry.id,
-    label: entry.label,
-    color: parseHexColor(
-      entry.color,
-      `environment.wallFinishes[${String(index)}] ("${entry.id}")`,
-    ),
+    id,
+    label,
+    color: parseHexColor(entry.color, context),
   }
 }
 
 function validateAndNormalizeEnvironment(
   raw: unknown,
 ): EnvironmentMaterialConfig {
-  if (typeof raw !== 'object' || raw === null) {
-    throw new ManifestValidationError(
-      'Catalog manifest must have an "environment" object',
-    )
-  }
+  const environment = requireObject(
+    raw,
+    'Catalog manifest must have an "environment" object',
+  )
 
-  const environment = raw as Record<string, unknown>
+  const rawFloorFinishes = requireNonEmptyArray(
+    environment.floorFinishes,
+    'Catalog manifest environment must have a "floorFinishes" array',
+    'Catalog manifest environment "floorFinishes" array must not be empty',
+  )
+  const rawWallFinishes = requireNonEmptyArray(
+    environment.wallFinishes,
+    'Catalog manifest environment must have a "wallFinishes" array',
+    'Catalog manifest environment "wallFinishes" array must not be empty',
+  )
 
-  if (!Array.isArray(environment.floorFinishes)) {
-    throw new ManifestValidationError(
-      'Catalog manifest environment must have a "floorFinishes" array',
-    )
-  }
-
-  if (environment.floorFinishes.length === 0) {
-    throw new ManifestValidationError(
-      'Catalog manifest environment "floorFinishes" array must not be empty',
-    )
-  }
-
-  if (!Array.isArray(environment.wallFinishes)) {
-    throw new ManifestValidationError(
-      'Catalog manifest environment must have a "wallFinishes" array',
-    )
-  }
-
-  if (environment.wallFinishes.length === 0) {
-    throw new ManifestValidationError(
-      'Catalog manifest environment "wallFinishes" array must not be empty',
-    )
-  }
-
-  const floorFinishes = environment.floorFinishes.map((rawFloor, i) =>
+  const floorFinishes = rawFloorFinishes.map((rawFloor, i) =>
     validateAndNormalizeFloorFinish(rawFloor, i),
   )
-  const wallFinishes = environment.wallFinishes.map((rawWall, i) =>
+  const wallFinishes = rawWallFinishes.map((rawWall, i) =>
     validateAndNormalizeWallFinish(rawWall, i),
   )
 
-  const floorIds = new Set<string>()
-  for (const option of floorFinishes) {
-    if (floorIds.has(option.id)) {
-      throw new ManifestValidationError(
-        `environment.floorFinishes: duplicate id "${option.id}"`,
-      )
-    }
-    floorIds.add(option.id)
-  }
-
-  const wallIds = new Set<string>()
-  for (const option of wallFinishes) {
-    if (wallIds.has(option.id)) {
-      throw new ManifestValidationError(
-        `environment.wallFinishes: duplicate id "${option.id}"`,
-      )
-    }
-    wallIds.add(option.id)
-  }
-
-  const defaultFloorFinishIdCandidate =
-    typeof environment.defaultFloorFinishId === 'string'
-      ? environment.defaultFloorFinishId
-      : floorFinishes[0].id
-
-  const defaultWallFinishIdCandidate =
-    typeof environment.defaultWallFinishId === 'string'
-      ? environment.defaultWallFinishId
-      : wallFinishes[0].id
-
-  if (!floorIds.has(defaultFloorFinishIdCandidate)) {
-    throw new ManifestValidationError(
-      'Catalog manifest environment "defaultFloorFinishId" must reference an existing floor finish id',
-    )
-  }
-
-  if (!wallIds.has(defaultWallFinishIdCandidate)) {
-    throw new ManifestValidationError(
-      'Catalog manifest environment "defaultWallFinishId" must reference an existing wall finish id',
-    )
-  }
+  const floorIds = collectUniqueIds(floorFinishes, 'environment.floorFinishes')
+  const wallIds = collectUniqueIds(wallFinishes, 'environment.wallFinishes')
 
   return {
     floorFinishes,
     wallFinishes,
-    defaultFloorFinishId: defaultFloorFinishIdCandidate,
-    defaultWallFinishId: defaultWallFinishIdCandidate,
+    defaultFloorFinishId: resolveDefaultId(
+      environment.defaultFloorFinishId,
+      floorIds,
+      floorFinishes[0].id,
+      'Catalog manifest environment "defaultFloorFinishId" must reference an existing floor finish id',
+    ),
+    defaultWallFinishId: resolveDefaultId(
+      environment.defaultWallFinishId,
+      wallIds,
+      wallFinishes[0].id,
+      'Catalog manifest environment "defaultWallFinishId" must reference an existing wall finish id',
+    ),
   }
 }
 
@@ -528,11 +475,10 @@ export async function fetchCatalogManifest(
     throw new ManifestValidationError('Catalog manifest is not valid JSON')
   }
 
-  if (typeof data !== 'object' || data === null) {
-    throw new ManifestValidationError('Catalog manifest root must be an object')
-  }
-
-  const manifest = data as Record<string, unknown>
+  const manifest = requireObject(
+    data,
+    'Catalog manifest root must be an object',
+  )
 
   if (
     typeof manifest.version !== 'number' ||
@@ -549,56 +495,28 @@ export async function fetchCatalogManifest(
     )
   }
 
-  if (!Array.isArray(manifest.collections)) {
-    throw new ManifestValidationError(
-      'Catalog manifest must have a "collections" array',
-    )
-  }
+  const rawCollections = requireNonEmptyArray(
+    manifest.collections,
+    'Catalog manifest must have a "collections" array',
+    'Catalog manifest "collections" array must not be empty',
+  )
+  const rawCatalog = requireNonEmptyArray(
+    manifest.catalog,
+    'Catalog manifest must have a "catalog" array',
+    'Catalog manifest "catalog" array must not be empty',
+  )
 
-  if (manifest.collections.length === 0) {
-    throw new ManifestValidationError(
-      'Catalog manifest "collections" array must not be empty',
-    )
-  }
-
-  if (!Array.isArray(manifest.catalog)) {
-    throw new ManifestValidationError(
-      'Catalog manifest must have a "catalog" array',
-    )
-  }
-
-  if (manifest.catalog.length === 0) {
-    throw new ManifestValidationError(
-      'Catalog manifest "catalog" array must not be empty',
-    )
-  }
-
-  const collections = manifest.collections.map((raw, i) =>
+  const collections = rawCollections.map((raw, i) =>
     validateAndNormalizeCollection(raw, i),
   )
+  const collectionIds = collectUniqueIds(collections, 'collections')
 
-  const collectionIds = new Set<string>()
-  for (const collection of collections) {
-    if (collectionIds.has(collection.id)) {
-      throw new ManifestValidationError(
-        `collections: duplicate id "${collection.id}"`,
-      )
-    }
-    collectionIds.add(collection.id)
-  }
-
-  const catalog = manifest.catalog.map((raw, i) =>
+  const catalog = rawCatalog.map((raw, i) =>
     validateAndNormalizeCatalogEntry(raw, i, collectionIds),
   )
-  const environment = validateAndNormalizeEnvironment(manifest.environment)
+  collectUniqueIds(catalog, 'catalog')
 
-  const catalogIds = new Set<string>()
-  for (const entry of catalog) {
-    if (catalogIds.has(entry.id)) {
-      throw new ManifestValidationError(`catalog: duplicate id "${entry.id}"`)
-    }
-    catalogIds.add(entry.id)
-  }
+  const environment = validateAndNormalizeEnvironment(manifest.environment)
 
   const fetchEndTime = performance.now()
   const duration = (fetchEndTime - fetchStartTime).toFixed(2)

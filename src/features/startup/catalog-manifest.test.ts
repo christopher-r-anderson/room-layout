@@ -145,6 +145,25 @@ describe('fetchCatalogManifest', () => {
       expect(item.footprintSize).toEqual({ width: 2.0, depth: 1.0 })
     })
 
+    it('trims surrounding whitespace from string fields', async () => {
+      mockFetchOk({
+        ...VALID_MANIFEST,
+        catalog: [
+          {
+            ...VALID_MANIFEST.catalog[0],
+            name: '  Padded Couch  ',
+            nodeName: '  couch-node  ',
+          },
+        ],
+      })
+
+      const result = await fetchCatalogManifest()
+      const item = result.catalog[0]
+
+      expect(item.name).toBe('Padded Couch')
+      expect(item.nodeName).toBe('couch-node')
+    })
+
     it('preserves a valid uiBoundsNodeName when provided', async () => {
       mockFetchOk({
         ...VALID_MANIFEST,
@@ -425,6 +444,34 @@ describe('fetchCatalogManifest', () => {
       await expect(fetchCatalogManifest()).rejects.toBeInstanceOf(
         ManifestValidationError,
       )
+    })
+
+    it('throws ManifestValidationError when defaultFloorFinishId is present but not a string', async () => {
+      const badManifest = {
+        ...VALID_MANIFEST,
+        environment: {
+          ...VALID_MANIFEST.environment,
+          defaultFloorFinishId: 42,
+        },
+      }
+
+      mockFetchOk(badManifest)
+
+      await expect(fetchCatalogManifest()).rejects.toBeInstanceOf(
+        ManifestValidationError,
+      )
+    })
+
+    it('falls back to the first finish when a default id is absent', async () => {
+      const environment = { ...VALID_MANIFEST.environment }
+      delete (environment as { defaultFloorFinishId?: string })
+        .defaultFloorFinishId
+
+      mockFetchOk({ ...VALID_MANIFEST, environment })
+
+      const result = await fetchCatalogManifest()
+
+      expect(result.environment.defaultFloorFinishId).toBe('wood-floor')
     })
 
     it('throws ManifestValidationError when catalog entry has unknown kind', async () => {
