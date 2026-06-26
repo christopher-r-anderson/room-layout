@@ -37,9 +37,9 @@ reason); plain header buttons are wrapped as `<Toolbar.Button render={…}>`.
   buttons. `ToolButton` carries no hand-rolled disabled handling.
 - **Form controls** (catalog radios and Add Item, selected-details inputs) use
   the native `disabled` attribute.
-- `focusableWhenDisabled={false}` on a `Toolbar.Button` is the escape hatch for a
-  disabled item whose absence is obvious from a neighbour; nothing needs it
-  today.
+- For a disabled item whose absence is obvious from a neighbour, the escape hatch
+  is Base UI's `focusableWhenDisabled={false}` on the underlying `Toolbar.Button`
+  (would need forwarding through `ToolButton`); nothing needs it today.
 
 Selection controls only carry one disabled condition — the editor loading
 lockout — resolved in `selection-controls-interactivity.ts`. A blocking overlay

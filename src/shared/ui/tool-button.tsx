@@ -21,46 +21,34 @@ import { KbdShortcutDisplay } from './keyboard-shortcut-display'
  * `aria-disabled`, and suppresses its activation.
  */
 export function ToolButton({
-  id,
   buttonRef,
   action,
   disabled,
-  focusableWhenDisabled,
   disabledMessage,
   shortcuts,
   label,
   visibleLabel,
   displayLabel = true,
-  shortcutHint,
   icon,
   size = 'default',
-  variant = 'secondary',
   className,
   tooltipSide,
   onPointerDown,
 }: {
-  id?: string
   buttonRef?: Ref<HTMLButtonElement>
   action?: () => void
   disabled?: boolean
-  // Disabled toolbar items stay focusable by default so screen-reader users can
-  // discover them and read why they are unavailable. Set false where a disabled
-  // item's absence is obvious from a neighbouring control.
-  focusableWhenDisabled?: boolean
   disabledMessage?: string
   shortcuts?: string
   label: string
   visibleLabel?: string
   displayLabel?: boolean
-  shortcutHint?: string
   icon: ReactElement<HTMLAttributes<HTMLElement>>
   size?: ComponentProps<typeof Button>['size']
-  variant?: ComponentProps<typeof Button>['variant']
   className?: string
   tooltipSide?: 'top' | 'right' | 'bottom' | 'left'
   onPointerDown?: PointerEventHandler<HTMLButtonElement>
 }) {
-  const shortcutHintId = useId()
   const disabledReasonId = useId()
   const ariaHiddenIcon = cloneElement(icon, {
     'aria-hidden': 'true',
@@ -72,13 +60,6 @@ export function ToolButton({
   // stable sr-only element the button points at — available on focus regardless
   // of tooltip state. The shortcut reaches AT via aria-keyshortcuts.
   const showDisabledReason = Boolean(disabled && disabledMessage)
-  const describedBy =
-    [
-      showDisabledReason ? disabledReasonId : null,
-      shortcutHint ? shortcutHintId : null,
-    ]
-      .filter(Boolean)
-      .join(' ') || undefined
 
   return (
     <Tooltip>
@@ -86,17 +67,17 @@ export function ToolButton({
         render={
           <Toolbar.Button
             disabled={disabled}
-            focusableWhenDisabled={focusableWhenDisabled}
             render={
               <Button
-                id={id}
                 ref={buttonRef}
                 type="button"
-                variant={variant}
+                variant="secondary"
                 size={size}
                 aria-keyshortcuts={shortcuts}
                 aria-label={label}
-                aria-describedby={describedBy}
+                aria-describedby={
+                  showDisabledReason ? disabledReasonId : undefined
+                }
                 className={cn(
                   'aria-disabled:active:translate-y-0 aria-disabled:cursor-not-allowed aria-disabled:opacity-50',
                   className,
@@ -116,19 +97,11 @@ export function ToolButton({
           {disabledMessage}
         </span>
       ) : null}
-      {shortcutHint ? (
-        <span id={shortcutHintId} className="sr-only">
-          {shortcutHint}
-        </span>
-      ) : null}
       <TooltipContent
         className="flex flex-col items-start gap-1"
         side={tooltipSide}
       >
         <span className="pb-2">{disabled ? disabledMessage : label}</span>
-        {shortcutHint ? (
-          <span className="text-xs text-muted-foreground">{shortcutHint}</span>
-        ) : null}
         <KbdShortcutDisplay shortcuts={shortcuts} />
       </TooltipContent>
     </Tooltip>

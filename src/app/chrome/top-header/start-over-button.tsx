@@ -4,26 +4,22 @@ import { useCommandDispatch } from '@/core/commands/command-dispatch-context'
 import type { ComponentProps, Ref } from 'react'
 
 export function StartOverButton({
-  buttonId,
   buttonRef,
   disabled,
   disabledMessage,
   className,
   size,
 }: {
-  buttonId?: string
   buttonRef?: Ref<HTMLButtonElement>
   disabled: boolean
   disabledMessage: string
   className?: string
-  labelVisibility?: ComponentProps<typeof ToolButton>['displayLabel']
   size?: ComponentProps<typeof ToolButton>['size']
 }) {
   const dispatch = useCommandDispatch()
 
   return (
     <ToolButton
-      id={buttonId}
       buttonRef={buttonRef}
       action={() => {
         dispatch({ kind: 'start-over' })
