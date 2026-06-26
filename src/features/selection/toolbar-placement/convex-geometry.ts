@@ -1,3 +1,7 @@
+// Generic 2D geometry: convex hull and contour (silhouette-edge) queries over
+// screen points. No toolbar or domain knowledge — just points, hulls, and
+// rectangles — so it reads and tests as a standalone computational-geometry
+// util that the placement engine happens to consume.
 import {
   getRectBottom,
   getRectCorners,

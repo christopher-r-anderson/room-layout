@@ -14,7 +14,7 @@ import {
   type ScreenPoint,
 } from './convex-geometry'
 
-export type ToolbarSide = 'top' | 'bottom' | 'left' | 'right' | 'docked'
+export type ToolbarSide = 'top' | 'bottom' | 'left' | 'right'
 export type ToolbarFloatingCandidateId =
   | 'top-center'
   | 'top-left'
@@ -31,13 +31,13 @@ export type ToolbarFloatingCandidateId =
 
 export interface FloatingCandidateAnchor {
   id: ToolbarFloatingCandidateId
-  side: Exclude<ToolbarSide, 'docked'>
+  side: ToolbarSide
   anchor: ScreenPoint
 }
 
 export interface CandidateAnchorDefinition {
   id: ToolbarFloatingCandidateId
-  side: Exclude<ToolbarSide, 'docked'>
+  side: ToolbarSide
   axisRatio: number
 }
 
@@ -59,10 +59,7 @@ const CANDIDATE_ANCHOR_DEFINITIONS: CandidateAnchorDefinition[] = [
   { id: 'left-lower', side: 'left', axisRatio: 0.75 },
 ]
 
-function getAnchor(
-  points: ScreenPoint[],
-  side: Exclude<ToolbarSide, 'docked'>,
-) {
+function getAnchor(points: ScreenPoint[], side: ToolbarSide) {
   if (points.length === 0) {
     return null
   }
@@ -113,7 +110,7 @@ function getAnchor(
 export function createRectFromAnchor(
   anchor: ScreenPoint,
   hull: ScreenPoint[],
-  side: Exclude<ToolbarSide, 'docked'>,
+  side: ToolbarSide,
   toolbarSize: { width: number; height: number },
 ): Rect {
   if (side === 'top') {
@@ -172,7 +169,7 @@ export function createRectFromAnchor(
 
 export function adjustRectToContainer(
   rect: Rect,
-  side: Exclude<ToolbarSide, 'docked'>,
+  side: ToolbarSide,
   containerRect: DOMRectReadOnly,
 ) {
   if (side === 'top' || side === 'bottom') {
@@ -217,7 +214,7 @@ function resolveCandidateAnchor(
   definition: CandidateAnchorDefinition,
   bounds: PointBounds,
   hull: ScreenPoint[],
-  anchors: Partial<Record<Exclude<ToolbarSide, 'docked'>, ScreenPoint>>,
+  anchors: Partial<Record<ToolbarSide, ScreenPoint>>,
 ) {
   const fallbackAnchor = anchors[definition.side]
 
@@ -247,13 +244,12 @@ export function getCandidateAnchors(
   bounds: PointBounds,
   hull: ScreenPoint[],
 ) {
-  const anchors: Partial<Record<Exclude<ToolbarSide, 'docked'>, ScreenPoint>> =
-    {
-      top: getAnchor(points, 'top') ?? undefined,
-      bottom: getAnchor(points, 'bottom') ?? undefined,
-      left: getAnchor(points, 'left') ?? undefined,
-      right: getAnchor(points, 'right') ?? undefined,
-    }
+  const anchors: Partial<Record<ToolbarSide, ScreenPoint>> = {
+    top: getAnchor(points, 'top') ?? undefined,
+    bottom: getAnchor(points, 'bottom') ?? undefined,
+    left: getAnchor(points, 'left') ?? undefined,
+    right: getAnchor(points, 'right') ?? undefined,
+  }
 
   const resolvedAnchors = CANDIDATE_ANCHOR_DEFINITIONS.map((definition) => {
     const anchor = resolveCandidateAnchor(definition, bounds, hull, anchors)

@@ -1,3 +1,13 @@
+// Selected-item toolbar placement. Given the selected object's projected screen
+// points, the room-view container, and the UI panel rects to keep clear, it
+// decides where to float the toolbar:
+//   1. project points -> convex hull + bounds (convex-geometry).
+//   2. anchor up to 12 candidates around the hull (toolbar-anchors).
+//   3. reject candidates that leave the screen, overlap a panel, or detach from
+//      the object; score the survivors on continuity, spacing, and a diagonal
+//      side bias; apply hysteresis so the choice is stable across frames.
+//   4. if nothing attaches cleanly, never hide — fall back to a clamped anchor
+//      that may overlap the object but stays on screen and clear of the panels.
 import {
   avoidsExclusions,
   clamp,
@@ -43,14 +53,14 @@ export interface ToolbarPlacement {
   mode: ToolbarPlacementMode
   left: number
   top: number
-  side: ToolbarSide
+  side?: ToolbarSide
   source?: ToolbarGeometrySource
   candidateId?: ToolbarFloatingCandidateId
 }
 
 interface FloatingCandidate {
   id: ToolbarFloatingCandidateId
-  side: Exclude<ToolbarSide, 'docked'>
+  side: ToolbarSide
   anchor: ScreenPoint
   idealRect: Rect
   adjustedRect: Rect
@@ -85,6 +95,14 @@ const DIAGONAL_SIDE_BIAS_SIDE_REWARD = 48 // Raise to make strong diagonals favo
 const EXCLUSION_CLEARANCE_SUPPORT_BAND = 48 // Exclusion proximity only matters within the first 48px.
 const OBJECT_CLEARANCE_SUPPORT_BAND = 24 // Object clearance penalty saturates after a small visual gap.
 
+// How much the projected footprint wants a left/right anchor over top/bottom,
+// in 0..1. A long, thin object rotated on a diagonal (e.g. a couch seen from
+// above) looks detached with a toolbar pinned above its bounding box, but reads
+// well beside its long edge. We detect that case with PCA on the projected
+// points: the covariance matrix's eigenvalues give the footprint's dominant
+// axis length vs width (elongation), and the axis angle gives how diagonal it
+// is. Strong preference needs BOTH — diagonal orientation and a long/narrow
+// shape — so axis-aligned or chunky objects keep their normal top preference.
 function getDiagonalSidePreference(points: ScreenPoint[]) {
   if (points.length < 2) {
     return 0
@@ -142,7 +160,7 @@ function getDiagonalSideBiasStrength(diagonalSidePreference: number) {
 }
 
 function getSidePreferencePenalty(
-  side: Exclude<ToolbarSide, 'docked'>,
+  side: ToolbarSide,
   diagonalSidePreference: number,
 ) {
   const diagonalSideBiasStrength = getDiagonalSideBiasStrength(
@@ -377,6 +395,10 @@ function createFloatingCandidates({
       )
     : undefined
 
+  // Hysteresis: the geometry re-projects every frame, so scores wobble as the
+  // camera drifts. Keep last frame's anchor unless another scores clearly
+  // better (by more than HYSTERESIS_SCORE_DELTA) so the toolbar doesn't flip
+  // sides on tiny score changes.
   if (
     previousCandidate &&
     previousCandidate.score <= bestCandidate.score + HYSTERESIS_SCORE_DELTA
@@ -440,7 +462,7 @@ function computeClampedFallback(
   exclusionRects: Rect[],
   toolbarSize: { width: number; height: number },
 ): ToolbarPlacement {
-  const sides: { side: Exclude<ToolbarSide, 'docked'>; rect: Rect }[] = [
+  const sides: { side: ToolbarSide; rect: Rect }[] = [
     {
       side: 'top',
       rect: {
@@ -480,7 +502,7 @@ function computeClampedFallback(
   ]
 
   let best: {
-    side: Exclude<ToolbarSide, 'docked'>
+    side: ToolbarSide
     rect: Rect
     overlap: number
   } | null = null
@@ -533,12 +555,12 @@ export function computeSelectedToolbarPlacement({
   // No projected geometry yet (e.g. before the first projection frame). Nothing
   // to anchor to, so stay hidden for this frame rather than guess.
   if (points.length === 0) {
-    return { mode: 'hidden', left: 0, top: 0, side: 'docked' }
+    return { mode: 'hidden', left: 0, top: 0 }
   }
 
   const bounds = getPointBounds(points)
   if (!bounds) {
-    return { mode: 'hidden', left: 0, top: 0, side: 'docked' }
+    return { mode: 'hidden', left: 0, top: 0 }
   }
 
   const absoluteExclusionRects = Object.values(exclusionRects)
