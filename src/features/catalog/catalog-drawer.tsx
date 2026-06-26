@@ -40,7 +40,7 @@ export function CatalogDrawer({
   const open = useDialogOpen(catalogDialogId)
 
   return (
-    <Drawer open={open} onOpenChange={setCatalogDrawerOpen}>
+    <Drawer open={open} onOpenChange={setCatalogDrawerOpen} autoFocus>
       <DrawerTrigger asChild>{triggerButton}</DrawerTrigger>
       <DrawerContent>
         <DrawerHeader>

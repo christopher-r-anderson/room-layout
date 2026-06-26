@@ -31,7 +31,7 @@ export function HeaderMoreActionsDrawer({
   open: boolean
 }) {
   return (
-    <Drawer open={open} onOpenChange={onOpenChange}>
+    <Drawer open={open} onOpenChange={onOpenChange} autoFocus>
       <DrawerContent
         id={contentId}
         onCloseAutoFocus={(event) => {

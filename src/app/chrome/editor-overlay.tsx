@@ -18,7 +18,6 @@ import { SelectedDetailsPlaceholder } from '@/features/selection/selected-detail
 import { TopHeader } from './top-header/top-header'
 import { useExclusionRegistry } from '@/shared/layout/overlay-exclusion-context'
 import { useHeaderLayoutMode } from '@/shared/layout/use-header-layout-mode'
-import { useIsBlockingOverlayOpen } from '@/core/stores/dialog-store'
 
 export function EditorOverlay() {
   const registerExclusionElement = useExclusionRegistry()
@@ -26,19 +25,17 @@ export function EditorOverlay() {
   const assetError = useAssetError()
   const startupOverlayActive = useStartupOverlayActive()
   const interactionsEnabled = useEditorInteractionsEnabled()
-  const isBlockingOverlayOpen = useIsBlockingOverlayOpen()
   const layoutMode = useHeaderLayoutMode()
   const isDesktop = layoutMode === 'desktop'
 
-  // Single inert seam for the whole chrome. A blocking overlay (e.g. the
-  // catalog drawer) and startup both make the background non-interactive;
-  // dialogs/drawers render in portals outside this wrapper, so they stay live.
-  // Non-blocking surfaces (Room) deliberately leave the chrome interactive.
+  // Startup is the only state the chrome inerts itself for. Blocking overlays
+  // neutralize the background through the modal itself (focus trap + hidden +
+  // pointer-blocked), so they need no seam here.
   return (
     <>
       <div
         className="pointer-events-none fixed inset-2 flex flex-col justify-end gap-2"
-        inert={startupOverlayActive || isBlockingOverlayOpen}
+        inert={startupOverlayActive}
       >
         <div className="mb-auto">
           <TopHeader

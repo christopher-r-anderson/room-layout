@@ -45,32 +45,29 @@ Selection controls only carry one disabled condition — the editor loading
 lockout — resolved in `selection-controls-interactivity.ts`. A blocking overlay
 no longer factors in here; the inert seam (below) handles that.
 
-## One inert seam for the background
+## Background neutralization
 
-There is a single hand-rolled `inert` in the app, on the editor-overlay chrome
-wrapper (`editor-overlay.tsx`):
+A modal overlay neutralizes the chrome behind it — the modal owns this, the
+chrome carries no `inert` of its own.
 
-```
-inert = startupOverlayActive || isBlockingOverlayOpen
-```
+- **Blocking dialogs/drawers** trap focus, hide the background from the
+  accessibility tree, and block its pointer events. Base UI dialogs do this out
+  of the box. Vaul drawers (catalog, More actions) must set **`autoFocus`** so
+  focus moves into the drawer on open and Radix's focus trap engages — Vaul
+  defaults `autoFocus` off, which would leave focus on the trigger and let Tab
+  walk the (merely `aria-hidden`) background, including a roving tabstop. With
+  `autoFocus` the standard modal mechanism covers everything; no manual `inert`.
+- **Non-blocking surfaces** (the Room panel) deliberately leave the chrome live.
 
-```
+The one hand-rolled `inert` in the app is the **startup** seam on the
+editor-overlay wrapper (`editor-overlay.tsx`), where there is no modal to own it:
+
+```text
 <main>
-  <section "Interactive 3D room editor">   ← canvas (sibling, not inerted here)
+  <section "Interactive 3D room editor">     ← canvas
   <EditorOverlay>
-    <div inert={startup || blockingOverlay}>   ← THE SEAM
+    <div inert={startupOverlayActive}>        ← the only seam
       TopHeader · FloatingSelectedItemSite · CameraTools · Outliner ·
       SelectedItemToolbar · SelectedDetailsPanel
-    dialogs / drawers render in portals OUTSIDE this wrapper → stay interactive
+    dialogs / drawers render in portals OUTSIDE this wrapper
 ```
-
-When a blocking overlay (e.g. the catalog drawer) or startup is active, the whole
-chrome becomes inert in one place; dialogs and drawers live in portals outside
-the wrapper, so they remain interactive. Non-blocking surfaces (the Room panel)
-leave the chrome live by design.
-
-The seam owns background **focus** removal because it has to: the catalog drawer
-(Vaul) hides the background from the accessibility tree and blocks pointer events,
-but does not trap Tab away from a background roving tabstop. The single inert seam
-covers that gap and keeps the rule uniform across every blocking overlay, so
-individual controls carry no inert of their own.
