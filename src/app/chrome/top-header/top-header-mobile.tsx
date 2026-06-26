@@ -17,7 +17,6 @@ import type { TopHeaderMobileProps } from './top-header.types'
 import { TopHeaderSurface } from './top-header-surface'
 
 export function TopHeaderMobile({
-  isCatalogDrawerOpen,
   editorInteractionsEnabled,
   floorFinishId,
   floorFinishLoading,
@@ -83,10 +82,8 @@ export function TopHeaderMobile({
           displayLabels={false}
           buttonSize="toolbar-icon"
           editorInteractionsEnabled={editorInteractionsEnabled}
-          inert={isCatalogDrawerOpen}
         />
         <Toolbar.Button
-          inert={isCatalogDrawerOpen}
           render={
             <Button
               ref={topHeaderFocusRegistry.register('top-header-more-actions')}

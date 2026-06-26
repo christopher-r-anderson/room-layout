@@ -1,5 +1,3 @@
-import { useDialogOpen } from '@/core/stores/dialog-store'
-import { DIALOG_IDS } from '@/app/dialogs/dialog-registry'
 import {
   useStartupOverlayActive,
   useAssetError,
@@ -20,6 +18,7 @@ import { SelectedDetailsPlaceholder } from '@/features/selection/selected-detail
 import { TopHeader } from './top-header/top-header'
 import { useExclusionRegistry } from '@/shared/layout/overlay-exclusion-context'
 import { useHeaderLayoutMode } from '@/shared/layout/use-header-layout-mode'
+import { useIsBlockingOverlayOpen } from '@/core/stores/dialog-store'
 
 export function EditorOverlay() {
   const registerExclusionElement = useExclusionRegistry()
@@ -27,15 +26,19 @@ export function EditorOverlay() {
   const assetError = useAssetError()
   const startupOverlayActive = useStartupOverlayActive()
   const interactionsEnabled = useEditorInteractionsEnabled()
-  const isCatalogDrawerOpen = useDialogOpen(DIALOG_IDS.catalog)
+  const isBlockingOverlayOpen = useIsBlockingOverlayOpen()
   const layoutMode = useHeaderLayoutMode()
   const isDesktop = layoutMode === 'desktop'
 
+  // Single inert seam for the whole chrome. A blocking overlay (e.g. the
+  // catalog drawer) and startup both make the background non-interactive;
+  // dialogs/drawers render in portals outside this wrapper, so they stay live.
+  // Non-blocking surfaces (Room) deliberately leave the chrome interactive.
   return (
     <>
       <div
         className="pointer-events-none fixed inset-2 flex flex-col justify-end gap-2"
-        inert={startupOverlayActive}
+        inert={startupOverlayActive || isBlockingOverlayOpen}
       >
         <div className="mb-auto">
           <TopHeader
@@ -47,9 +50,7 @@ export function EditorOverlay() {
           />
         </div>
 
-        {isDesktop && (
-          <FloatingSelectedItemSite isCatalogDrawerOpen={isCatalogDrawerOpen} />
-        )}
+        {isDesktop && <FloatingSelectedItemSite />}
 
         <div
           className="absolute z-20 pointer-events-auto right-0 top-1/4 -translate-y-1/2"
@@ -82,13 +83,11 @@ export function EditorOverlay() {
           <div className="flex flex-col gap-2 pointer-events-auto md:col-start-2 md:row-start-1 md:row-span-2 md:justify-self-end">
             {!isDesktop && hasSelection ? (
               <div className="w-fit">
-                <SelectedItemToolbar
-                  isCatalogDrawerOpen={isCatalogDrawerOpen}
-                />
+                <SelectedItemToolbar />
               </div>
             ) : null}
             {hasSelection ? (
-              <SelectedDetailsPanel isCatalogDrawerOpen={isCatalogDrawerOpen} />
+              <SelectedDetailsPanel />
             ) : (
               <div
                 ref={registerExclusionElement('selected-details')}

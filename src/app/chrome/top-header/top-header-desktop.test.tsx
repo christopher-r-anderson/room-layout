@@ -76,7 +76,6 @@ function createProps(
   overrides: Partial<TopHeaderDesktopProps> = {},
 ): TopHeaderDesktopProps {
   return {
-    isCatalogDrawerOpen: false,
     desktopRoomSidebarRef: undefined,
     editorInteractionsEnabled: true,
     floorFinishId: 'wood-floor',

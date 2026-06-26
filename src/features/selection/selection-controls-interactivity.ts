@@ -1,34 +1,24 @@
 export interface SelectionControlsInteractivity {
-  suppressed: boolean
   disabled: boolean
   disabledMessage: string
 }
 
+// A blocking dialog (e.g. the catalog drawer) already neutralizes the selection
+// controls by trapping focus and hiding the background, so the only state these
+// controls own is the editor's loading lockout.
 export function resolveSelectionControlsInteractivity({
   editorInteractionsEnabled,
-  isCatalogDrawerOpen,
 }: {
   editorInteractionsEnabled: boolean
-  isCatalogDrawerOpen: boolean
 }): SelectionControlsInteractivity {
   if (!editorInteractionsEnabled) {
     return {
-      suppressed: isCatalogDrawerOpen,
       disabled: true,
       disabledMessage: 'Editor interactions are unavailable while loading',
     }
   }
 
-  if (isCatalogDrawerOpen) {
-    return {
-      suppressed: true,
-      disabled: true,
-      disabledMessage: 'Close Add Furniture to edit selected item controls',
-    }
-  }
-
   return {
-    suppressed: false,
     disabled: false,
     disabledMessage: '',
   }

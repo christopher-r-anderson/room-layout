@@ -33,7 +33,6 @@ export function TopHeader({
   const editorInteractionsEnabled = useEditorInteractionsEnabled()
   const historyAvailability = useHistoryAvailability()
   const floorFinishLoading = useFloorFinishLoading()
-  const isCatalogDrawerOpen = useDialogOpen(DIALOG_IDS.catalog)
   const isRoomSurfaceOpen = useDialogOpen(DIALOG_IDS.roomSurface)
   const isInfoDialogOpen = useDialogOpen(DIALOG_IDS.projectInfo)
   const isKeyboardShortcutsDialogOpen = useDialogOpen(
@@ -83,7 +82,6 @@ export function TopHeader({
   }
 
   const sharedToolbarProps = {
-    isCatalogDrawerOpen,
     editorInteractionsEnabled,
     floorFinishId,
     floorFinishLoading,

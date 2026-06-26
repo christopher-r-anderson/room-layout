@@ -177,7 +177,7 @@ test('keyboard shortcuts help is reachable and dismissible by keyboard, and is e
   await expect(helpTrigger).toBeFocused()
 
   // While the catalog drawer is open the help trigger must not be reachable
-  // via Tab — its container is made inert so it cannot receive focus.
+  // via Tab — the blocking modal traps focus, so it cannot receive focus.
   await page.getByRole('button', { name: 'Add Furniture' }).click()
   const drawerDialog = page.getByRole('dialog', { name: 'Add furniture' })
   await expect(drawerDialog).toBeVisible()
@@ -334,12 +334,16 @@ test('selected item controls are suppressed from tab order while the catalog dra
   await page.getByRole('button', { name: 'Add Furniture' }).click()
   const drawerDialog = page.getByRole('dialog', { name: 'Add furniture' })
   await expect(drawerDialog).toBeVisible()
+
+  // The blocking catalog modal removes the background from the accessibility
+  // tree and traps focus, so the selected-item controls cannot be reached: the
+  // Remove action is gone from the a11y tree and Tab never lands inside.
   await expect(selectedItemActions).toBeVisible()
-  await expect(selectedItemActions).toHaveAttribute('inert', '')
+  await expect(page.getByRole('button', { name: 'Remove item' })).toHaveCount(0)
 
   for (let i = 0; i < 10; i += 1) {
     await page.keyboard.press('Tab')
-    await expect(selectedItemActions).toHaveAttribute('inert', '')
+    await expect(selectedItemActions.locator('button:focus')).toHaveCount(0)
   }
 })
 

@@ -5,18 +5,12 @@ import {
 } from './selected-item-placement-context'
 import { SelectedItemToolbar } from './selected-item-toolbar'
 
-export interface FloatingSelectedItemSiteProps {
-  isCatalogDrawerOpen: boolean
-}
-
 /**
  * Desktop mount for the selected-item toolbar: positions it near the selected
  * object using the computed placement. The toolbar content and behavior live in
  * SelectedItemToolbar; this wrapper only owns where it floats.
  */
-export function FloatingSelectedItemSite({
-  isCatalogDrawerOpen,
-}: FloatingSelectedItemSiteProps) {
+export function FloatingSelectedItemSite() {
   const placement = useSelectedItemPlacement()
   const actionsSizeRef = useSelectedItemActionsSizeRef()
   const selectedFurniture = useSelectedFurniture()
@@ -39,7 +33,7 @@ export function FloatingSelectedItemSite({
         transform: `translate3d(${String(placement.left)}px, ${String(placement.top)}px, 0)`,
       }}
     >
-      <SelectedItemToolbar isCatalogDrawerOpen={isCatalogDrawerOpen} />
+      <SelectedItemToolbar />
     </section>
   )
 }

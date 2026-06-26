@@ -15,7 +15,6 @@ import type { TopHeaderDesktopProps } from './top-header.types'
 import { TopHeaderSurface } from './top-header-surface'
 
 export function TopHeaderDesktop({
-  isCatalogDrawerOpen,
   desktopRoomSidebarRef,
   editorInteractionsEnabled,
   floorFinishId,
@@ -103,7 +102,7 @@ export function TopHeaderDesktop({
           />
         </TopHeaderSurface>
 
-        <TopHeaderSurface inert={isCatalogDrawerOpen}>
+        <TopHeaderSurface>
           <Toolbar.Button
             render={
               <Button

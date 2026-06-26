@@ -56,7 +56,6 @@ function createProps(
   overrides: Partial<TopHeaderMobileProps> = {},
 ): TopHeaderMobileProps {
   return {
-    isCatalogDrawerOpen: false,
     editorInteractionsEnabled: true,
     floorFinishId: 'wood-floor',
     floorFinishLoading: false,

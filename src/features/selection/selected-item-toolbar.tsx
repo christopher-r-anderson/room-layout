@@ -7,19 +7,13 @@ import { useSelectedItemInteraction } from './selected-item-interaction-context'
 import { resolveSelectionControlsInteractivity } from './selection-controls-interactivity'
 import { SelectedItemTools } from './selected-item-tools'
 
-export interface SelectedItemToolbarProps {
-  isCatalogDrawerOpen: boolean
-}
-
 /**
  * The connected selected-item action toolbar (rotate + delete). It owns the
- * command wiring, disabled/suppressed state, focus ref, and Escape-to-room-view
- * behavior. Callers decide where it sits: desktop floats it near the object,
- * mobile docks it above the details panel.
+ * command wiring, disabled state, focus ref, and Escape-to-room-view behavior.
+ * Callers decide where it sits: desktop floats it near the object, mobile docks
+ * it above the details panel.
  */
-export function SelectedItemToolbar({
-  isCatalogDrawerOpen,
-}: SelectedItemToolbarProps) {
+export function SelectedItemToolbar() {
   const interaction = useSelectedItemInteraction()
   const selectedFurniture = useSelectedFurniture()
   const editorInteractionsEnabled = useEditorInteractionsEnabled()
@@ -32,7 +26,6 @@ export function SelectedItemToolbar({
 
   const interactivity = resolveSelectionControlsInteractivity({
     editorInteractionsEnabled,
-    isCatalogDrawerOpen,
   })
 
   const handleOpenDeleteDialog = () => {
@@ -61,7 +54,6 @@ export function SelectedItemToolbar({
       ref={selectedToolbarRef}
       data-slot="selected-item-toolbar"
       className="pointer-events-auto rounded-xl border bg-background/90 p-1.5 shadow-sm backdrop-blur-sm"
-      inert={interactivity.suppressed}
       onKeyDown={handleEscapeToRoomView}
     >
       <SelectedItemTools

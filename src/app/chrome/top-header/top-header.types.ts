@@ -5,7 +5,6 @@ import type {
 import type { Ref } from 'react'
 
 interface TopHeaderProps {
-  isCatalogDrawerOpen: boolean
   editorInteractionsEnabled: boolean
   history: {
     canRedo: boolean
@@ -26,7 +25,6 @@ interface TopHeaderProps {
 
 type TopHeaderToolbarProps = Pick<
   TopHeaderProps,
-  | 'isCatalogDrawerOpen'
   | 'editorInteractionsEnabled'
   | 'floorFinishId'
   | 'floorFinishLoading'

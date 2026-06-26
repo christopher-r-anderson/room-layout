@@ -13,7 +13,6 @@ export function HistoryTools({
   buttonClassName,
   displayLabels,
   buttonSize,
-  inert,
 }: {
   canRedo: boolean
   canUndo: boolean
@@ -21,7 +20,6 @@ export function HistoryTools({
   buttonClassName?: string
   displayLabels?: boolean
   buttonSize?: ComponentProps<typeof ToolButton>['size']
-  inert?: boolean
 }) {
   const dispatch = useCommandDispatch()
   const undoDisabled = !canUndo || !editorInteractionsEnabled
@@ -36,7 +34,6 @@ export function HistoryTools({
   return (
     <Toolbar.Group
       aria-label="History Actions"
-      inert={inert}
       className={cn(buttonGroupVariants({ orientation: 'horizontal' }))}
     >
       <ToolButton

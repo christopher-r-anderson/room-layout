@@ -60,7 +60,7 @@ describe('SelectedDetailsPanel', () => {
                 }}
               >
                 <CommandDispatchProvider value={vi.fn()}>
-                  <SelectedDetailsPanel isCatalogDrawerOpen={false} />
+                  <SelectedDetailsPanel />
                 </CommandDispatchProvider>
               </SelectedItemPlacementProvider>
             </SelectedItemInteractionProvider>
@@ -108,8 +108,8 @@ describe('SelectedDetailsPanel', () => {
                 }}
               >
                 <CommandDispatchProvider value={vi.fn()}>
-                  <FloatingSelectedItemSite isCatalogDrawerOpen={false} />
-                  <SelectedDetailsPanel isCatalogDrawerOpen={false} />
+                  <FloatingSelectedItemSite />
+                  <SelectedDetailsPanel />
                 </CommandDispatchProvider>
               </SelectedItemPlacementProvider>
             </SelectedItemInteractionProvider>
@@ -155,8 +155,8 @@ describe('SelectedDetailsPanel', () => {
                 }}
               >
                 <CommandDispatchProvider value={vi.fn()}>
-                  <FloatingSelectedItemSite isCatalogDrawerOpen={false} />
-                  <SelectedDetailsPanel isCatalogDrawerOpen={false} />
+                  <FloatingSelectedItemSite />
+                  <SelectedDetailsPanel />
                 </CommandDispatchProvider>
               </SelectedItemPlacementProvider>
             </SelectedItemInteractionProvider>
@@ -244,7 +244,7 @@ function renderFloatingActions(dispatch: CommandDispatch) {
                 actionsSizeRef: vi.fn(),
               }}
             >
-              <FloatingSelectedItemSite isCatalogDrawerOpen={false} />
+              <FloatingSelectedItemSite />
             </SelectedItemPlacementProvider>
           </SelectedItemInteractionProvider>
         </CommandDispatchProvider>

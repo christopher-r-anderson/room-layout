@@ -10,13 +10,7 @@ import {
   updateSelectedItemDetails,
 } from './selected-item-detail-actions'
 
-export interface SelectedDetailsPanelProps {
-  isCatalogDrawerOpen: boolean
-}
-
-export function SelectedDetailsPanel({
-  isCatalogDrawerOpen,
-}: SelectedDetailsPanelProps) {
+export function SelectedDetailsPanel() {
   const interaction = useSelectedItemInteraction()
   const { detailsPanelRef } = useEditorRefs()
   const registerExclusionElement = useExclusionRegistry()
@@ -29,7 +23,6 @@ export function SelectedDetailsPanel({
 
   const interactivity = resolveSelectionControlsInteractivity({
     editorInteractionsEnabled,
-    isCatalogDrawerOpen,
   })
 
   return (
@@ -37,7 +30,6 @@ export function SelectedDetailsPanel({
       ref={(element) => {
         detailsPanelRef.current = element
       }}
-      inert={interactivity.suppressed}
       className="contents"
     >
       <SelectedDetailsView
