@@ -65,7 +65,11 @@ describe('HistoryTools', () => {
     const undoButton = screen.getByRole('button', { name: 'Undo' })
     const redoButton = screen.getByRole('button', { name: 'Redo' })
 
-    await user.hover(undoButton)
+    // Disabled toolbar items stay focusable and surface the reason they are
+    // unavailable. (jsdom does not drive the hover tooltip; the real browser
+    // does, covered by e2e.)
+    expect(undoButton).toHaveAttribute('aria-disabled', 'true')
+    undoButton.focus()
 
     expect(
       await screen.findByText(

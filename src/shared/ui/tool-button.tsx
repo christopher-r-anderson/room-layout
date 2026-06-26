@@ -13,11 +13,19 @@ import { Tooltip, TooltipContent, TooltipTrigger } from './tooltip'
 import { Button } from './button'
 import { KbdShortcutDisplay } from './keyboard-shortcut-display'
 
+/**
+ * A toolbar action: an icon button with a tooltip that carries its label,
+ * keyboard shortcut, and the reason it is unavailable while disabled. Always a
+ * `Toolbar.Button`, so it must live inside a `Toolbar.Root`, which owns roving
+ * focus and — when disabled — keeps the item focusable, marks it
+ * `aria-disabled`, and suppresses its activation.
+ */
 export function ToolButton({
   id,
   buttonRef,
   action,
   disabled,
+  focusableWhenDisabled,
   disabledMessage,
   shortcuts,
   label,
@@ -30,12 +38,15 @@ export function ToolButton({
   className,
   tooltipSide,
   onPointerDown,
-  asToolbarItem = false,
 }: {
   id?: string
   buttonRef?: Ref<HTMLButtonElement>
   action?: () => void
   disabled?: boolean
+  // Disabled toolbar items stay focusable by default so screen-reader users can
+  // discover them and read why they are unavailable. Set false where a disabled
+  // item's absence is obvious from a neighbouring control.
+  focusableWhenDisabled?: boolean
   disabledMessage?: string
   shortcuts?: string
   label: string
@@ -48,10 +59,6 @@ export function ToolButton({
   className?: string
   tooltipSide?: 'top' | 'right' | 'bottom' | 'left'
   onPointerDown?: PointerEventHandler<HTMLButtonElement>
-  // Render the control as a Base UI Toolbar item so a parent Toolbar.Root
-  // manages roving tabindex / arrow-key navigation. Opt-in: standalone uses
-  // and non-toolbar groupings leave this off.
-  asToolbarItem?: boolean
 }) {
   const shortcutHintId = useId()
   const ariaHiddenIcon = cloneElement(icon, {
@@ -59,43 +66,35 @@ export function ToolButton({
   })
   const labelClassName = displayLabel ? undefined : 'sr-only'
 
-  const buttonElement = (
-    <Button
-      id={id}
-      ref={buttonRef}
-      type="button"
-      variant={variant}
-      size={size}
-      aria-keyshortcuts={shortcuts}
-      aria-label={label}
-      aria-describedby={shortcutHint ? shortcutHintId : undefined}
-      aria-disabled={disabled}
-      className={cn(
-        'aria-disabled:active:translate-y-0 aria-disabled:cursor-not-allowed aria-disabled:opacity-50',
-        className,
-      )}
-      onPointerDown={disabled ? undefined : onPointerDown}
-      onClick={(event) => {
-        event.preventDefault()
-        if (!disabled) {
-          action?.()
-        }
-      }}
-    >
-      {ariaHiddenIcon}
-      <span className={labelClassName}>{visibleLabel ?? label}</span>
-    </Button>
-  )
-
   return (
     <Tooltip>
       <TooltipTrigger
         render={
-          asToolbarItem ? (
-            <Toolbar.Button render={buttonElement} />
-          ) : (
-            buttonElement
-          )
+          <Toolbar.Button
+            disabled={disabled}
+            focusableWhenDisabled={focusableWhenDisabled}
+            render={
+              <Button
+                id={id}
+                ref={buttonRef}
+                type="button"
+                variant={variant}
+                size={size}
+                aria-keyshortcuts={shortcuts}
+                aria-label={label}
+                aria-describedby={shortcutHint ? shortcutHintId : undefined}
+                className={cn(
+                  'aria-disabled:active:translate-y-0 aria-disabled:cursor-not-allowed aria-disabled:opacity-50',
+                  className,
+                )}
+                onPointerDown={onPointerDown}
+                onClick={action}
+              >
+                {ariaHiddenIcon}
+                <span className={labelClassName}>{visibleLabel ?? label}</span>
+              </Button>
+            }
+          />
         }
       />
       {shortcutHint ? (

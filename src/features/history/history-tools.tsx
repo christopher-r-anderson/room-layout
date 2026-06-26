@@ -40,7 +40,6 @@ export function HistoryTools({
       className={cn(buttonGroupVariants({ orientation: 'horizontal' }))}
     >
       <ToolButton
-        asToolbarItem
         action={() => {
           dispatch({ kind: 'undo' })
         }}
@@ -54,7 +53,6 @@ export function HistoryTools({
         className={buttonClassName}
       />
       <ToolButton
-        asToolbarItem
         action={() => {
           dispatch({ kind: 'redo' })
         }}

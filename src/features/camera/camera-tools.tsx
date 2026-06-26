@@ -41,7 +41,6 @@ export function CameraTools({
         <IconCamera aria-hidden="true" />
       </ButtonGroupText>
       <ToolButton
-        asToolbarItem
         action={() => {
           dispatch({ kind: 'set-camera-preset', preset: 'corner' })
         }}
@@ -56,7 +55,6 @@ export function CameraTools({
         tooltipSide="left"
       />
       <ToolButton
-        asToolbarItem
         action={() => {
           dispatch({ kind: 'set-camera-preset', preset: 'front' })
         }}
@@ -71,7 +69,6 @@ export function CameraTools({
         tooltipSide="left"
       />
       <ToolButton
-        asToolbarItem
         action={() => {
           dispatch({ kind: 'set-camera-preset', preset: 'side' })
         }}
@@ -86,7 +83,6 @@ export function CameraTools({
         tooltipSide="left"
       />
       <ToolButton
-        asToolbarItem
         action={() => {
           dispatch({ kind: 'set-camera-preset', preset: 'top' })
         }}
@@ -101,7 +97,6 @@ export function CameraTools({
         tooltipSide="left"
       />
       <ToolButton
-        asToolbarItem
         action={() => {
           dispatch({ kind: 'focus-selected' })
         }}

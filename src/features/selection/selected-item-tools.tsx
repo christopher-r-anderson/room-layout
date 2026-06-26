@@ -23,7 +23,6 @@ export function SelectedItemTools({
       className={cn(buttonGroupVariants({ orientation: 'horizontal' }))}
     >
       <ToolButton
-        asToolbarItem
         displayLabel={false}
         shortcuts=","
         label="Rotate counterclockwise"
@@ -35,7 +34,6 @@ export function SelectedItemTools({
         disabledMessage={disabledMessage}
       />
       <ToolButton
-        asToolbarItem
         displayLabel={false}
         shortcuts="."
         label="Rotate clockwise"
@@ -47,7 +45,6 @@ export function SelectedItemTools({
         disabledMessage={disabledMessage}
       />
       <ToolButton
-        asToolbarItem
         displayLabel={false}
         shortcuts="Delete Backspace"
         label="Remove item"
