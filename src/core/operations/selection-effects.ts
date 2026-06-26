@@ -65,7 +65,7 @@ function announceSelectionChange(options: {
   if (announceMode === 'canvas-keyboard') {
     if (selectedItem) {
       announcePolite(
-        `${selectedItem.name} selected. Press Tab to reach selected item actions and details.`,
+        `${selectedItem.name} selected. Press Shift+T to reach its actions.`,
       )
       return
     }

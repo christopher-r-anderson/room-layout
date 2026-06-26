@@ -134,7 +134,7 @@ describe('startSelectionEffectsReconciler', () => {
     await flushReconcile()
 
     expect(feedbackActions.announcePolite).toHaveBeenCalledWith(
-      'Chair selected. Press Tab to reach selected item actions and details.',
+      'Chair selected. Press Shift+T to reach its actions.',
     )
   })
 

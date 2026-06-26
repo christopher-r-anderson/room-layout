@@ -132,11 +132,8 @@ export function EditorBody({
     >
       <h1 className="sr-only">Room Layout</h1>
       <p id="scene-instructions" className="sr-only">
-        Interactive 3D room editor. Tab to focus the room-view region, then use
-        the arrow keys to preview items in the room and Enter or Space to select
-        the previewed item. You can also use the furniture in room panel and
-        selected item actions and details to rotate, remove, or type exact
-        placement changes without dragging.
+        Use the arrow keys to browse items in the room, then press Enter or
+        Space to select one.
       </p>
       <section
         aria-describedby="scene-instructions"

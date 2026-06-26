@@ -531,11 +531,11 @@ test('canvas browse: announces item name and then selection with the selected it
   const itemName = state.items[0].name
   await waitForPoliteAnnouncement(page, itemName)
 
-  // Enter should select and announce with Tab hint
+  // Enter should select and announce with the jump-to-actions hint
   await page.keyboard.press('Enter')
   await waitForPoliteAnnouncement(
     page,
-    `${itemName} selected. Press Tab to reach selected item actions and details.`,
+    `${itemName} selected. Press Shift+T to reach its actions.`,
   )
 
   const afterSelect = await readSceneState(page)
