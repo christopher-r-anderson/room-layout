@@ -8,12 +8,24 @@ const CONTAINER_RECT = {
   height: 600,
 } as DOMRectReadOnly
 
+const TOOLBAR_SIZE = { width: 140, height: 48 }
+
+function expectOnScreen(placement: { left: number; top: number }) {
+  expect(placement.left).toBeGreaterThanOrEqual(0)
+  expect(placement.top).toBeGreaterThanOrEqual(0)
+  expect(placement.left + TOOLBAR_SIZE.width).toBeLessThanOrEqual(
+    CONTAINER_RECT.width,
+  )
+  expect(placement.top + TOOLBAR_SIZE.height).toBeLessThanOrEqual(
+    CONTAINER_RECT.height,
+  )
+}
+
 describe('computeSelectedToolbarPlacement', () => {
   it('places the toolbar above the selected bounds when space is available', () => {
     const placement = computeSelectedToolbarPlacement({
       containerRect: CONTAINER_RECT,
       exclusionRects: {},
-      forceDocked: false,
       points: [
         { x: 360, y: 280 },
         { x: 440, y: 280 },
@@ -23,7 +35,7 @@ describe('computeSelectedToolbarPlacement', () => {
       sourcePointCount: 8,
       projectedPointCount: 4,
       source: 'render-bounds',
-      toolbarSize: { width: 140, height: 48 },
+      toolbarSize: TOOLBAR_SIZE,
     })
 
     expect(placement.mode).toBe('floating')
@@ -33,7 +45,18 @@ describe('computeSelectedToolbarPlacement', () => {
     expect(placement.top).toBeCloseTo(220)
   })
 
-  it('falls back to docked placement when exclusions block every side', () => {
+  it('hides only when there is no projected geometry to anchor to', () => {
+    const placement = computeSelectedToolbarPlacement({
+      containerRect: CONTAINER_RECT,
+      exclusionRects: {},
+      points: [],
+      toolbarSize: TOOLBAR_SIZE,
+    })
+
+    expect(placement.mode).toBe('hidden')
+  })
+
+  it('falls back to a clamped floating placement when exclusions block every side', () => {
     const placement = computeSelectedToolbarPlacement({
       containerRect: CONTAINER_RECT,
       exclusionRects: {
@@ -62,7 +85,6 @@ describe('computeSelectedToolbarPlacement', () => {
           height: 100,
         } as DOMRectReadOnly,
       },
-      forceDocked: false,
       points: [
         { x: 360, y: 280 },
         { x: 440, y: 280 },
@@ -72,14 +94,15 @@ describe('computeSelectedToolbarPlacement', () => {
       sourcePointCount: 24,
       projectedPointCount: 4,
       source: 'ui-bounds-node',
-      toolbarSize: { width: 140, height: 48 },
+      toolbarSize: TOOLBAR_SIZE,
     })
 
-    expect(placement.mode).toBe('docked')
-    expect(placement.side).toBe('docked')
+    // Never hides: it still floats, clamped on screen, even when nothing fits.
+    expect(placement.mode).toBe('floating')
+    expectOnScreen(placement)
   })
 
-  it('uses docked placement immediately when forced', () => {
+  it('places a clamped fallback for object-origin geometry', () => {
     const placement = computeSelectedToolbarPlacement({
       containerRect: CONTAINER_RECT,
       exclusionRects: {
@@ -90,85 +113,34 @@ describe('computeSelectedToolbarPlacement', () => {
           height: 80,
         } as DOMRectReadOnly,
       },
-      forceDocked: true,
-      points: [{ x: 400, y: 300 }],
-      sourcePointCount: 1,
-      projectedPointCount: 1,
-      toolbarSize: { width: 140, height: 48 },
-    })
-
-    expect(placement.mode).toBe('docked')
-  })
-
-  it('uses docked placement for object-origin geometry even when floating space exists', () => {
-    const placement = computeSelectedToolbarPlacement({
-      containerRect: CONTAINER_RECT,
-      exclusionRects: {
-        'selected-details': {
-          left: 24,
-          top: 500,
-          width: 240,
-          height: 80,
-        } as DOMRectReadOnly,
-      },
-      forceDocked: false,
       points: [{ x: 400, y: 300 }],
       sourcePointCount: 1,
       projectedPointCount: 1,
       source: 'object-origin',
-      toolbarSize: { width: 140, height: 48 },
+      toolbarSize: TOOLBAR_SIZE,
     })
 
-    expect(placement.mode).toBe('docked')
-    expect(placement.side).toBe('docked')
+    expect(placement.mode).toBe('floating')
+    expectOnScreen(placement)
   })
 
-  it('keeps docked placement above an active mobile room drawer', () => {
+  it('places a clamped fallback when render-bounds projection is too partial to trust', () => {
     const placement = computeSelectedToolbarPlacement({
       containerRect: CONTAINER_RECT,
-      exclusionRects: {
-        'selected-details': {
-          left: 24,
-          top: 500,
-          width: 240,
-          height: 80,
-        } as DOMRectReadOnly,
-        'mobile-room-drawer': {
-          left: 0,
-          top: 300,
-          width: 800,
-          height: 300,
-        } as DOMRectReadOnly,
-      },
-      forceDocked: true,
-      points: [{ x: 400, y: 300 }],
-      sourcePointCount: 1,
-      projectedPointCount: 1,
-      toolbarSize: { width: 140, height: 48 },
+      exclusionRects: {},
+      points: [
+        { x: 360, y: 280 },
+        { x: 440, y: 280 },
+        { x: 360, y: 340 },
+      ],
+      projectedPointCount: 3,
+      source: 'render-bounds',
+      sourcePointCount: 8,
+      toolbarSize: TOOLBAR_SIZE,
     })
 
-    expect(placement.mode).toBe('docked')
-  })
-
-  it('keeps docked placement out of an active desktop room sidebar', () => {
-    const placement = computeSelectedToolbarPlacement({
-      containerRect: CONTAINER_RECT,
-      exclusionRects: {
-        'desktop-room-sidebar': {
-          left: 600,
-          top: 0,
-          width: 200,
-          height: 600,
-        } as DOMRectReadOnly,
-      },
-      forceDocked: true,
-      points: [{ x: 400, y: 300 }],
-      sourcePointCount: 1,
-      projectedPointCount: 1,
-      toolbarSize: { width: 140, height: 48 },
-    })
-
-    expect(placement.mode).toBe('docked')
+    expect(placement.mode).toBe('floating')
+    expectOnScreen(placement)
   })
 
   it('respects non-zero container edges for floating placement', () => {
@@ -182,7 +154,6 @@ describe('computeSelectedToolbarPlacement', () => {
         bottom: 650,
       } as DOMRectReadOnly,
       exclusionRects: {},
-      forceDocked: false,
       points: [
         { x: 460, y: 330 },
         { x: 540, y: 330 },
@@ -192,7 +163,7 @@ describe('computeSelectedToolbarPlacement', () => {
       sourcePointCount: 8,
       projectedPointCount: 4,
       source: 'render-bounds',
-      toolbarSize: { width: 140, height: 48 },
+      toolbarSize: TOOLBAR_SIZE,
     })
 
     expect(placement.mode).toBe('floating')
@@ -206,7 +177,6 @@ describe('computeSelectedToolbarPlacement', () => {
     const placement = computeSelectedToolbarPlacement({
       containerRect: CONTAINER_RECT,
       exclusionRects: {},
-      forceDocked: false,
       points: [
         { x: 120, y: 280 },
         { x: 220, y: 280 },
@@ -217,34 +187,14 @@ describe('computeSelectedToolbarPlacement', () => {
       projectedPointCount: 4,
       source: 'render-bounds',
       sourcePointCount: 8,
-      toolbarSize: { width: 140, height: 48 },
+      toolbarSize: TOOLBAR_SIZE,
     })
 
     expect(placement.mode).toBe('floating')
     expect(placement.candidateId).toBe('top-right')
   })
 
-  it('docks when render-bounds projection is too partial to trust', () => {
-    const placement = computeSelectedToolbarPlacement({
-      containerRect: CONTAINER_RECT,
-      exclusionRects: {},
-      forceDocked: false,
-      points: [
-        { x: 360, y: 280 },
-        { x: 440, y: 280 },
-        { x: 360, y: 340 },
-      ],
-      projectedPointCount: 3,
-      source: 'render-bounds',
-      sourcePointCount: 8,
-      toolbarSize: { width: 140, height: 48 },
-    })
-
-    expect(placement.mode).toBe('docked')
-    expect(placement.side).toBe('docked')
-  })
-
-  it('chooses a valid nearby candidate instead of docking when top-center is blocked', () => {
+  it('chooses a valid nearby candidate instead of the fallback when top-center is blocked', () => {
     const placement = computeSelectedToolbarPlacement({
       containerRect: CONTAINER_RECT,
       exclusionRects: {
@@ -257,7 +207,6 @@ describe('computeSelectedToolbarPlacement', () => {
           bottom: 260,
         } as DOMRectReadOnly,
       },
-      forceDocked: false,
       points: [
         { x: 360, y: 280 },
         { x: 440, y: 280 },
@@ -267,7 +216,7 @@ describe('computeSelectedToolbarPlacement', () => {
       projectedPointCount: 4,
       source: 'render-bounds',
       sourcePointCount: 8,
-      toolbarSize: { width: 140, height: 48 },
+      toolbarSize: TOOLBAR_SIZE,
     })
 
     expect(placement.mode).toBe('floating')
@@ -295,7 +244,6 @@ describe('computeSelectedToolbarPlacement', () => {
           bottom: 540,
         } as DOMRectReadOnly,
       },
-      forceDocked: false,
       points: [
         { x: 300, y: 100 },
         { x: 700, y: 180 },
@@ -305,7 +253,7 @@ describe('computeSelectedToolbarPlacement', () => {
       projectedPointCount: 4,
       source: 'render-bounds',
       sourcePointCount: 4,
-      toolbarSize: { width: 140, height: 48 },
+      toolbarSize: TOOLBAR_SIZE,
     })
 
     expect(placement.mode).toBe('floating')
@@ -316,7 +264,6 @@ describe('computeSelectedToolbarPlacement', () => {
     const placement = computeSelectedToolbarPlacement({
       containerRect: CONTAINER_RECT,
       exclusionRects: {},
-      forceDocked: false,
       points: [
         { x: 529, y: 49 },
         { x: 579, y: 83 },
@@ -326,7 +273,7 @@ describe('computeSelectedToolbarPlacement', () => {
       projectedPointCount: 4,
       source: 'render-bounds',
       sourcePointCount: 4,
-      toolbarSize: { width: 140, height: 48 },
+      toolbarSize: TOOLBAR_SIZE,
     })
 
     expect(placement.mode).toBe('floating')
@@ -337,7 +284,6 @@ describe('computeSelectedToolbarPlacement', () => {
     const placement = computeSelectedToolbarPlacement({
       containerRect: CONTAINER_RECT,
       exclusionRects: {},
-      forceDocked: false,
       points: [
         { x: 300, y: 100 },
         { x: 700, y: 180 },
@@ -347,7 +293,7 @@ describe('computeSelectedToolbarPlacement', () => {
       projectedPointCount: 4,
       source: 'render-bounds',
       sourcePointCount: 4,
-      toolbarSize: { width: 140, height: 48 },
+      toolbarSize: TOOLBAR_SIZE,
     })
 
     expect(placement.mode).toBe('floating')

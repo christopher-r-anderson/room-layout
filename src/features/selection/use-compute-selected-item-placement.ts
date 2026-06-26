@@ -3,17 +3,13 @@ import { useElementRect } from '@/shared/hooks/use-element-rect'
 import { useElementSize } from '@/shared/hooks/use-element-size'
 import { useEditorRefs } from '@/shared/providers/editor-refs-context'
 import { useExclusionRects } from '@/shared/layout/overlay-exclusion-context'
-import { useHeaderLayoutMode } from '@/shared/layout/use-header-layout-mode'
 import { useSelectedFurniture } from '@/core/stores/scene-document-store'
 import { useToolbarGeometry } from '@/core/stores/toolbar-geometry-store'
 import {
   computeSelectedToolbarPlacement,
   type ToolbarFloatingCandidateId,
 } from './toolbar-placement/selected-toolbar-placement'
-import type {
-  SelectedItemDockedReason,
-  SelectedItemPlacement,
-} from './selected-item-placement.types'
+import type { SelectedItemPlacement } from './selected-item-placement.types'
 
 interface ComputeSelectedItemPlacementResult {
   placement: SelectedItemPlacement
@@ -53,7 +49,6 @@ export function useComputeSelectedItemPlacement(): ComputeSelectedItemPlacementR
   const selectedToolbarGeometry = useToolbarGeometry()
   const { roomViewRef } = useEditorRefs()
   const exclusionRects = useExclusionRects()
-  const headerLayoutMode = useHeaderLayoutMode()
   const { ref: actionsSizeRef, size: actionSize } = useElementSize()
   const roomViewRect = useElementRect(roomViewRef)
 
@@ -79,7 +74,6 @@ export function useComputeSelectedItemPlacement(): ComputeSelectedItemPlacementR
     selectedFurniture?.id,
     selectedToolbarGeometry.kind,
     activeToolbarSource,
-    headerLayoutMode,
     actionSize.width,
     actionSize.height,
     roomViewRect?.width,
@@ -129,27 +123,16 @@ export function useComputeSelectedItemPlacement(): ComputeSelectedItemPlacementR
     ? roomViewRect
     : viewportRect
 
-  const toolbarPlacement =
-    activeToolbarGeometry === null
-      ? computeSelectedToolbarPlacement({
-          containerRect: viewportRect,
-          exclusionRects,
-          forceDocked: true,
-          points: [],
-          toolbarSize: actionSize,
-        })
-      : computeSelectedToolbarPlacement({
-          containerRect: placementContainerRect,
-          exclusionRects,
-          forceDocked:
-            headerLayoutMode === 'mobile' || !hasMeasuredRoomViewRect,
-          points: convertedToolbarPoints,
-          previousFloatingCandidateId,
-          projectedPointCount: activeToolbarGeometry.projectedPointCount,
-          source: activeToolbarGeometry.source,
-          sourcePointCount: activeToolbarGeometry.sourcePointCount,
-          toolbarSize: actionSize,
-        })
+  const toolbarPlacement = computeSelectedToolbarPlacement({
+    containerRect: placementContainerRect,
+    exclusionRects,
+    points: convertedToolbarPoints,
+    previousFloatingCandidateId,
+    projectedPointCount: activeToolbarGeometry?.projectedPointCount,
+    source: activeToolbarGeometry?.source,
+    sourcePointCount: activeToolbarGeometry?.sourcePointCount,
+    toolbarSize: actionSize,
+  })
 
   useEffect(() => {
     if (
@@ -175,30 +158,9 @@ export function useComputeSelectedItemPlacement(): ComputeSelectedItemPlacementR
       return { site: 'hidden', reason: 'computed-hidden' }
     }
 
-    if (toolbarPlacement.mode === 'floating') {
-      return {
-        site: 'floating',
-        candidateId: toolbarPlacement.candidateId ?? 'top-center',
-        left: toolbarPlacement.left,
-        top: toolbarPlacement.top,
-      }
-    }
-
-    // mode === 'docked'
-    let reason: SelectedItemDockedReason
-    if (activeToolbarGeometry === null) {
-      reason = 'no-geometry'
-    } else if (headerLayoutMode === 'mobile') {
-      reason = 'mobile-layout'
-    } else if (!hasMeasuredRoomViewRect) {
-      reason = 'forced'
-    } else {
-      reason = 'low-confidence'
-    }
-
     return {
-      site: 'docked',
-      reason,
+      site: 'floating',
+      candidateId: toolbarPlacement.candidateId ?? 'top-center',
       left: toolbarPlacement.left,
       top: toolbarPlacement.top,
     }
@@ -208,9 +170,6 @@ export function useComputeSelectedItemPlacement(): ComputeSelectedItemPlacementR
     toolbarPlacement.candidateId,
     toolbarPlacement.left,
     toolbarPlacement.top,
-    activeToolbarGeometry,
-    headerLayoutMode,
-    hasMeasuredRoomViewRect,
   ])
 
   return { placement, actionsSizeRef }

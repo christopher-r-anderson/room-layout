@@ -228,10 +228,8 @@ describe('EditorOverlay integration', () => {
       const placementValue = React.useMemo(
         () => ({
           placement: {
-            site: 'docked' as const,
-            reason: 'mobile-layout' as const,
-            left: 0,
-            top: 0,
+            site: 'hidden' as const,
+            reason: 'computed-hidden' as const,
           },
           actionsSizeRef: () => undefined,
         }),

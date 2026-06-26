@@ -1,21 +1,8 @@
 import type { ToolbarFloatingCandidateId } from './toolbar-placement/selected-toolbar-placement'
 
-export type SelectedItemDockedReason =
-  | 'mobile-layout'
-  | 'no-geometry'
-  | 'low-confidence'
-  | 'forced'
-
 interface SelectedItemFloatingPlacement {
   site: 'floating'
   candidateId: ToolbarFloatingCandidateId
-  left: number
-  top: number
-}
-
-interface SelectedItemDockedPlacement {
-  site: 'docked'
-  reason: SelectedItemDockedReason
   left: number
   top: number
 }
@@ -27,5 +14,4 @@ interface SelectedItemHiddenPlacement {
 
 export type SelectedItemPlacement =
   | SelectedItemFloatingPlacement
-  | SelectedItemDockedPlacement
   | SelectedItemHiddenPlacement

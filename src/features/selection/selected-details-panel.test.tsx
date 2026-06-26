@@ -132,7 +132,7 @@ describe('SelectedDetailsPanel', () => {
     )
   })
 
-  it('does not render the floating toolbar in mobile layout', () => {
+  it('does not render the floating toolbar when placement is hidden', () => {
     const roomViewRef = createRef<HTMLElement>()
     const detailsPanelRef = createRef<HTMLDivElement>()
     const selectedToolbarRef = createRef<HTMLDivElement>()
@@ -151,10 +151,8 @@ describe('SelectedDetailsPanel', () => {
               <SelectedItemPlacementProvider
                 value={{
                   placement: {
-                    site: 'docked',
-                    reason: 'mobile-layout',
-                    left: 12,
-                    top: 24,
+                    site: 'hidden',
+                    reason: 'computed-hidden',
                   },
                   actionsSizeRef: vi.fn(),
                 }}

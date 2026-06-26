@@ -3,10 +3,13 @@ import {
   clamp,
   fitsContainer,
   getContainerRect,
+  getDomRectBottom,
+  getDomRectRight,
   getRectDistance,
   getRectIntersectionArea,
   inflateRect,
   toAbsoluteRect,
+  VIEWPORT_PADDING,
   type Rect,
 } from './rect-utils'
 import {
@@ -34,7 +37,7 @@ export type ToolbarGeometrySource =
   | 'render-bounds'
   | 'object-origin'
 
-type ToolbarPlacementMode = 'hidden' | 'floating' | 'docked'
+type ToolbarPlacementMode = 'hidden' | 'floating'
 
 export interface ToolbarPlacement {
   mode: ToolbarPlacementMode
@@ -63,18 +66,18 @@ const MIN_PROJECTED_POINT_COUNT = 3 // Fewer projected points reads as unreliabl
 const MIN_PROJECTED_BOUNDS_SIZE = 24 // Tiny projected bounds are treated as noise.
 const MIN_RENDER_PROJECTED_RATIO = 0.5 // Render bounds need at least half their points visible.
 const MIN_UI_BOUNDS_PROJECTED_RATIO = 0.15 // Authored UI bounds can survive with less visible coverage.
-const MIN_VISIBLE_BOUNDS_RATIO = 0.2 // Dock if too little of the projected bounds is on screen.
+const MIN_VISIBLE_BOUNDS_RATIO = 0.2 // Use the fallback if too little of the projected bounds is on screen.
 const MAX_BOUNDS_CONTAINER_SCALE = 1.5 // Reject implausibly oversized projected bounds.
 
 // Hard candidate gates keep the toolbar visually attached before we fall back
-// to the docked layout.
+// to a clamped placement.
 const MAX_CROSS_AXIS_CLAMP_SHIFT = 72 // Reject candidates that need too much sideways nudging.
 const MAX_ATTACHMENT_DISTANCE = 120 // Reject candidates that feel too detached from the object.
 
 // Scoring weights trade off continuity, readable spacing, and side preference
 // once a candidate has cleared the hard rejection gates.
 const HYSTERESIS_SCORE_DELTA = 24 // Keep the previous floating side unless another is clearly better.
-const MAX_FLOATING_SCORE = 140 // Dock when every floating option is a poor fit.
+const MAX_FLOATING_SCORE = 140 // Use the clamped fallback when every floating option is a poor fit.
 const DIAGONAL_SIDE_BIAS_START = 0.7 // Only strongly diagonal, elongated shapes get side bias.
 const DIAGONAL_SIDE_BIAS_TOP_PENALTY = 28 // Raise to make diagonal shapes leave top sooner.
 const DIAGONAL_SIDE_BIAS_BOTTOM_PENALTY = 18 // Bottom stays slightly less preferred than top.
@@ -384,19 +387,128 @@ function createFloatingCandidates({
   return bestCandidate
 }
 
-// Non-floating outcome: the toolbar hides and the details panel covers these
-// functions. Kept as a distinct mode pending the placement rewrite.
-const DOCKED_PLACEMENT: ToolbarPlacement = {
-  mode: 'docked',
-  side: 'docked',
-  left: 0,
-  top: 0,
+const FALLBACK_GAP = 12 // Visual offset from the object when no clean spot exists.
+
+function getBoundsRight(bounds: PointBounds) {
+  return bounds.left + bounds.width
+}
+
+function getBoundsBottom(bounds: PointBounds) {
+  return bounds.top + bounds.height
+}
+
+function clampRectToContainer(
+  rect: Rect,
+  containerRect: DOMRectReadOnly,
+): Rect {
+  return {
+    ...rect,
+    left: clamp(
+      rect.left,
+      containerRect.left + VIEWPORT_PADDING,
+      getDomRectRight(containerRect) - rect.width - VIEWPORT_PADDING,
+    ),
+    top: clamp(
+      rect.top,
+      containerRect.top + VIEWPORT_PADDING,
+      getDomRectBottom(containerRect) - rect.height - VIEWPORT_PADDING,
+    ),
+  }
+}
+
+function getTotalExclusionOverlap(rect: Rect, exclusionRects: Rect[]) {
+  return exclusionRects.reduce(
+    (sum, exclusionRect) => sum + getRectIntersectionArea(rect, exclusionRect),
+    0,
+  )
+}
+
+const FALLBACK_CANDIDATE_ID_BY_SIDE = {
+  top: 'top-center',
+  bottom: 'bottom-center',
+  left: 'left-center',
+  right: 'right-center',
+} as const
+
+// When no candidate attaches cleanly, the toolbar still shows rather than
+// hiding: anchor it near the object on a simple side, keep it on screen, and
+// prefer whichever side overlaps the UI panels least. Overlapping the object
+// itself is acceptable here — the user can orbit or deselect.
+function computeClampedFallback(
+  bounds: PointBounds,
+  containerRect: DOMRectReadOnly,
+  exclusionRects: Rect[],
+  toolbarSize: { width: number; height: number },
+): ToolbarPlacement {
+  const sides: { side: Exclude<ToolbarSide, 'docked'>; rect: Rect }[] = [
+    {
+      side: 'top',
+      rect: {
+        left: bounds.centerX - toolbarSize.width / 2,
+        top: bounds.top - FALLBACK_GAP - toolbarSize.height,
+        width: toolbarSize.width,
+        height: toolbarSize.height,
+      },
+    },
+    {
+      side: 'bottom',
+      rect: {
+        left: bounds.centerX - toolbarSize.width / 2,
+        top: getBoundsBottom(bounds) + FALLBACK_GAP,
+        width: toolbarSize.width,
+        height: toolbarSize.height,
+      },
+    },
+    {
+      side: 'left',
+      rect: {
+        left: bounds.left - FALLBACK_GAP - toolbarSize.width,
+        top: bounds.centerY - toolbarSize.height / 2,
+        width: toolbarSize.width,
+        height: toolbarSize.height,
+      },
+    },
+    {
+      side: 'right',
+      rect: {
+        left: getBoundsRight(bounds) + FALLBACK_GAP,
+        top: bounds.centerY - toolbarSize.height / 2,
+        width: toolbarSize.width,
+        height: toolbarSize.height,
+      },
+    },
+  ]
+
+  let best: {
+    side: Exclude<ToolbarSide, 'docked'>
+    rect: Rect
+    overlap: number
+  } | null = null
+  for (const { side, rect } of sides) {
+    const clamped = clampRectToContainer(rect, containerRect)
+    const overlap = getTotalExclusionOverlap(clamped, exclusionRects)
+    if (best === null || overlap < best.overlap) {
+      best = { side, rect: clamped, overlap }
+    }
+  }
+
+  const chosen = best ?? {
+    side: 'top' as const,
+    rect: clampRectToContainer(sides[0].rect, containerRect),
+  }
+
+  return {
+    mode: 'floating',
+    left: chosen.rect.left,
+    top: chosen.rect.top,
+    side: chosen.side,
+    candidateId: FALLBACK_CANDIDATE_ID_BY_SIDE[chosen.side],
+  }
 }
 
 export function computeSelectedToolbarPlacement({
   containerRect,
   exclusionRects,
-  forceDocked,
   points,
   previousFloatingCandidateId,
   projectedPointCount,
@@ -406,7 +518,6 @@ export function computeSelectedToolbarPlacement({
 }: {
   containerRect: DOMRectReadOnly
   exclusionRects: Partial<Record<string, DOMRectReadOnly>>
-  forceDocked: boolean
   points: ScreenPoint[]
   previousFloatingCandidateId?: ToolbarFloatingCandidateId
   projectedPointCount?: number
@@ -419,24 +530,24 @@ export function computeSelectedToolbarPlacement({
     height: toolbarSize.height || 48,
   }
 
-  const shouldDock = forceDocked || source === 'object-origin'
-
-  if (shouldDock) {
-    return DOCKED_PLACEMENT
-  }
-
+  // No projected geometry yet (e.g. before the first projection frame). Nothing
+  // to anchor to, so stay hidden for this frame rather than guess.
   if (points.length === 0) {
-    return {
-      mode: 'hidden',
-      left: 0,
-      top: 0,
-      side: 'docked',
-    }
+    return { mode: 'hidden', left: 0, top: 0, side: 'docked' }
   }
 
   const bounds = getPointBounds(points)
+  if (!bounds) {
+    return { mode: 'hidden', left: 0, top: 0, side: 'docked' }
+  }
+
+  const absoluteExclusionRects = Object.values(exclusionRects)
+    .filter((rect): rect is DOMRectReadOnly => Boolean(rect))
+    .map((rect) => toAbsoluteRect(rect))
+
+  // Untrustworthy projection: skip the contour search and place a stable
+  // best-effort toolbar instead of jittering on noisy bounds.
   if (
-    !bounds ||
     isLowConfidenceGeometry({
       bounds,
       containerRect,
@@ -445,12 +556,14 @@ export function computeSelectedToolbarPlacement({
       sourcePointCount,
     })
   ) {
-    return DOCKED_PLACEMENT
+    return computeClampedFallback(
+      bounds,
+      containerRect,
+      absoluteExclusionRects,
+      effectiveToolbarSize,
+    )
   }
 
-  const absoluteExclusionRects = Object.values(exclusionRects)
-    .filter((rect): rect is DOMRectReadOnly => Boolean(rect))
-    .map((rect) => toAbsoluteRect(rect))
   const diagonalSidePreference = getDiagonalSidePreference(points)
   const hull = getConvexHull(points)
   const objectAvoidanceRect = inflateRect(bounds, OBJECT_CLEARANCE_GAP)
@@ -466,8 +579,15 @@ export function computeSelectedToolbarPlacement({
     toolbarSize: effectiveToolbarSize,
   })
 
+  // No candidate attaches cleanly (object crowded against the panels/edges).
+  // Fall back to a clamped position rather than hiding.
   if (!floatingCandidate || floatingCandidate.score > MAX_FLOATING_SCORE) {
-    return DOCKED_PLACEMENT
+    return computeClampedFallback(
+      bounds,
+      containerRect,
+      absoluteExclusionRects,
+      effectiveToolbarSize,
+    )
   }
 
   return {
