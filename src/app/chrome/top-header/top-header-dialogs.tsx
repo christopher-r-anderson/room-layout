@@ -37,7 +37,6 @@ export function TopHeaderDialogs() {
             returnFocusToMoreActionsOnMobile()
           }
         }}
-        triggerButton={null}
       />
 
       <ProjectInfoDialog
@@ -49,7 +48,6 @@ export function TopHeaderDialogs() {
             returnFocusToMoreActionsOnMobile()
           }
         }}
-        triggerButton={null}
       />
 
       <StartOverConfirmationDialog

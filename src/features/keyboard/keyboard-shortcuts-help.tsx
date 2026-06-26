@@ -1,5 +1,3 @@
-import { IconKeyboard } from '@tabler/icons-react'
-import { Button } from '@/shared/ui/button'
 import {
   Dialog,
   DialogContent,
@@ -7,12 +5,10 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/shared/ui/dialog'
 import { Kbd, KbdGroup } from '@/shared/ui/kbd'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/shared/ui/tooltip'
 import { ScrollArea } from '@/shared/ui/scroll-area'
-import { Fragment, type ComponentProps, type ReactElement } from 'react'
+import { Fragment } from 'react'
 import {
   KEYBOARD_SHORTCUTS,
   type KeyboardShortcutDefinition,
@@ -183,52 +179,17 @@ function renderShortcutCombos(combos: ShortcutCombo[]) {
   )
 }
 
-function KeyboardShortcutsTriggerButton(props: ComponentProps<typeof Button>) {
-  return (
-    <Button
-      type="button"
-      variant="secondary"
-      size="icon"
-      aria-controls="keyboard-shortcuts-dialog"
-      aria-haspopup="dialog"
-      aria-label="Keyboard shortcuts"
-      className="rounded-md"
-      {...props}
-    >
-      <IconKeyboard size={20} aria-hidden="true" />
-    </Button>
-  )
-}
-
 interface KeyboardShortcutsDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  triggerButton?: ReactElement | null
 }
 
 export function KeyboardShortcutsDialog({
   open,
   onOpenChange,
-  triggerButton,
 }: KeyboardShortcutsDialogProps) {
-  const resolvedTriggerButton =
-    triggerButton === undefined ? (
-      <KeyboardShortcutsTriggerButton />
-    ) : (
-      triggerButton
-    )
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      {resolvedTriggerButton ? (
-        <Tooltip>
-          <TooltipTrigger
-            render={<DialogTrigger render={resolvedTriggerButton} />}
-          />
-          <TooltipContent side="bottom">Keyboard shortcuts</TooltipContent>
-        </Tooltip>
-      ) : null}
-
       <DialogContent
         id="keyboard-shortcuts-dialog"
         className="max-h-[calc(100dvh-2rem)] gap-3 sm:max-w-4xl"
@@ -305,13 +266,4 @@ export function KeyboardShortcutsDialog({
       </DialogContent>
     </Dialog>
   )
-}
-
-interface KeyboardShortcutsHelpProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-}
-
-export function KeyboardShortcutsHelp(props: KeyboardShortcutsHelpProps) {
-  return <KeyboardShortcutsDialog {...props} />
 }

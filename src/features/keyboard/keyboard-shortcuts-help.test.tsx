@@ -4,10 +4,7 @@ import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
 import { describe, expect, it, vi } from 'vitest'
-import {
-  KeyboardShortcutsDialog,
-  KeyboardShortcutsHelp,
-} from './keyboard-shortcuts-help'
+import { KeyboardShortcutsDialog } from './keyboard-shortcuts-help'
 
 function mockNavigatorPlatform(platform: string, userAgent: string) {
   const platformSpy = vi
@@ -23,18 +20,32 @@ function mockNavigatorPlatform(platform: string, userAgent: string) {
   }
 }
 
-describe('KeyboardShortcutsHelp', () => {
-  it('opens and dismisses keyboard shortcut guidance', async () => {
+describe('KeyboardShortcutsDialog', () => {
+  it('shows the full shortcut guidance and dismisses', async () => {
     const user = userEvent.setup()
 
+    // The dialog owns no trigger; an external control opens it (as the header
+    // does via the dialog store).
     function TestHarness() {
       const [open, setOpen] = useState(false)
-      return <KeyboardShortcutsHelp open={open} onOpenChange={setOpen} />
+      return (
+        <>
+          <button
+            type="button"
+            onClick={() => {
+              setOpen(true)
+            }}
+          >
+            Open shortcuts
+          </button>
+          <KeyboardShortcutsDialog open={open} onOpenChange={setOpen} />
+        </>
+      )
     }
 
     render(<TestHarness />)
 
-    await user.click(screen.getByRole('button', { name: 'Keyboard shortcuts' }))
+    await user.click(screen.getByRole('button', { name: 'Open shortcuts' }))
 
     const dialog = screen.getByRole('dialog', { name: 'Keyboard Shortcuts' })
 
@@ -74,44 +85,6 @@ describe('KeyboardShortcutsHelp', () => {
     ).not.toBeInTheDocument()
   })
 
-  it('can be launched without rendering its built-in trigger', async () => {
-    const user = userEvent.setup()
-
-    function TestHarness() {
-      const [open, setOpen] = useState(false)
-
-      return (
-        <>
-          <button
-            type="button"
-            onClick={() => {
-              setOpen(true)
-            }}
-          >
-            Open from more
-          </button>
-          <KeyboardShortcutsDialog
-            open={open}
-            onOpenChange={setOpen}
-            triggerButton={null}
-          />
-        </>
-      )
-    }
-
-    render(<TestHarness />)
-
-    expect(
-      screen.queryByRole('button', { name: 'Keyboard shortcuts' }),
-    ).not.toBeInTheDocument()
-
-    await user.click(screen.getByRole('button', { name: 'Open from more' }))
-
-    expect(
-      screen.getByRole('dialog', { name: 'Keyboard Shortcuts' }),
-    ).toBeVisible()
-  })
-
   it('renders compact alternatives and Apple-specific modifier labels', () => {
     const restoreNavigator = mockNavigatorPlatform(
       'MacIntel',
@@ -119,13 +92,7 @@ describe('KeyboardShortcutsHelp', () => {
     )
 
     try {
-      render(
-        <KeyboardShortcutsDialog
-          open
-          onOpenChange={() => undefined}
-          triggerButton={null}
-        />,
-      )
+      render(<KeyboardShortcutsDialog open onOpenChange={() => undefined} />)
 
       const panCameraRow = screen.getByText('Pan camera').closest('tr')
 

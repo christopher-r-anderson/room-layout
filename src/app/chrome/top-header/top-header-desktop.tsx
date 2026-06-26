@@ -103,44 +103,62 @@ export function TopHeaderDesktop({
         </TopHeaderSurface>
 
         <TopHeaderSurface>
-          <Toolbar.Button
-            render={
-              <Button
-                type="button"
-                variant="outline"
-                size="toolbar-icon"
-                aria-controls="keyboard-shortcuts-dialog"
-                aria-haspopup="dialog"
-                aria-expanded={isKeyboardShortcutsOpen}
-                aria-label="Keyboard shortcuts"
-                onClick={() => {
-                  topHeaderDialogOpenChange.keyboardShortcuts(true)
-                }}
-              >
-                <IconKeyboard aria-hidden="true" />
-                <span className="sr-only">Keyboard shortcuts</span>
-              </Button>
-            }
-          />
-          <Toolbar.Button
-            render={
-              <Button
-                type="button"
-                variant="outline"
-                size="toolbar-icon"
-                aria-controls="project-info-dialog"
-                aria-haspopup="dialog"
-                aria-expanded={isProjectInfoOpen}
-                aria-label="Open project and asset info"
-                onClick={() => {
-                  topHeaderDialogOpenChange.projectInfo(true)
-                }}
-              >
-                <IconInfoCircle aria-hidden="true" />
-                <span className="sr-only">Open project and asset info</span>
-              </Button>
-            }
-          />
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <Toolbar.Button
+                  render={
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="toolbar-icon"
+                      aria-controls="keyboard-shortcuts-dialog"
+                      aria-haspopup="dialog"
+                      aria-expanded={isKeyboardShortcutsOpen}
+                      aria-label="Keyboard shortcuts"
+                      onClick={() => {
+                        topHeaderDialogOpenChange.keyboardShortcuts(true)
+                      }}
+                    >
+                      <IconKeyboard aria-hidden="true" />
+                      <span className="sr-only">Keyboard shortcuts</span>
+                    </Button>
+                  }
+                />
+              }
+            />
+            <TooltipContent side="bottom">Keyboard shortcuts</TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <Toolbar.Button
+                  render={
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="toolbar-icon"
+                      aria-controls="project-info-dialog"
+                      aria-haspopup="dialog"
+                      aria-expanded={isProjectInfoOpen}
+                      aria-label="Open project and asset info"
+                      onClick={() => {
+                        topHeaderDialogOpenChange.projectInfo(true)
+                      }}
+                    >
+                      <IconInfoCircle aria-hidden="true" />
+                      <span className="sr-only">
+                        Open project and asset info
+                      </span>
+                    </Button>
+                  }
+                />
+              }
+            />
+            <TooltipContent side="bottom">
+              Project and asset info
+            </TooltipContent>
+          </Tooltip>
           <Toolbar.Button
             disabled={!editorInteractionsEnabled}
             render={

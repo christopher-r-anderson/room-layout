@@ -31,7 +31,7 @@ vi.mock('./share-scene-button', () => ({
 vi.mock('@/shared/ui/tooltip', () => ({
   Tooltip: ({ children }: { children?: React.ReactNode }) => <>{children}</>,
   TooltipContent: ({ children }: { children?: React.ReactNode }) => (
-    <>{children}</>
+    <span>{children}</span>
   ),
   TooltipTrigger: ({ render }: { render: React.ReactNode }) => <>{render}</>,
 }))

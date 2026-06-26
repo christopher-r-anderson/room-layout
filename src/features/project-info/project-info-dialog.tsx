@@ -11,29 +11,18 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/shared/ui/dialog'
 import { ScrollArea } from '@/shared/ui/scroll-area'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/shared/ui/tooltip'
-import type { ReactElement } from 'react'
 
 export function ProjectInfoDialog({
   onOpenChange,
   open,
-  triggerButton,
 }: {
   onOpenChange: (open: boolean) => void
   open: boolean
-  triggerButton?: ReactElement | null
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      {triggerButton ? (
-        <Tooltip>
-          <TooltipTrigger render={<DialogTrigger render={triggerButton} />} />
-          <TooltipContent side="bottom">Project and asset info</TooltipContent>
-        </Tooltip>
-      ) : null}
       <DialogContent id="project-info-dialog">
         <DialogHeader>
           <DialogTitle>Project &amp; Asset Info</DialogTitle>

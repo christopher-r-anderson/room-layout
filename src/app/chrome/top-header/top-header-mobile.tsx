@@ -83,25 +83,34 @@ export function TopHeaderMobile({
           buttonSize="toolbar-icon"
           editorInteractionsEnabled={editorInteractionsEnabled}
         />
-        <Toolbar.Button
-          render={
-            <Button
-              ref={topHeaderFocusRegistry.register('top-header-more-actions')}
-              type="button"
-              variant="secondary"
-              size="toolbar-icon"
-              aria-label="More actions"
-              aria-controls={HEADER_MORE_ACTIONS_CONTENT_ID}
-              aria-expanded={isHeaderMoreActionsOpen}
-              aria-haspopup="dialog"
-              onClick={() => {
-                topHeaderDialogOpenChange.headerMoreActions(true)
-              }}
-            >
-              <IconDotsVertical aria-hidden="true" />
-            </Button>
-          }
-        />
+        <Tooltip>
+          <TooltipTrigger
+            render={
+              <Toolbar.Button
+                render={
+                  <Button
+                    ref={topHeaderFocusRegistry.register(
+                      'top-header-more-actions',
+                    )}
+                    type="button"
+                    variant="secondary"
+                    size="toolbar-icon"
+                    aria-label="More actions"
+                    aria-controls={HEADER_MORE_ACTIONS_CONTENT_ID}
+                    aria-expanded={isHeaderMoreActionsOpen}
+                    aria-haspopup="dialog"
+                    onClick={() => {
+                      topHeaderDialogOpenChange.headerMoreActions(true)
+                    }}
+                  >
+                    <IconDotsVertical aria-hidden="true" />
+                  </Button>
+                }
+              />
+            }
+          />
+          <TooltipContent side="bottom">More actions</TooltipContent>
+        </Tooltip>
       </Toolbar.Root>
 
       <RoomDrawer
