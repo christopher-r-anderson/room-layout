@@ -66,16 +66,11 @@ describe('HistoryTools', () => {
     const redoButton = screen.getByRole('button', { name: 'Redo' })
 
     // Disabled toolbar items stay focusable and surface the reason they are
-    // unavailable. (jsdom does not drive the hover tooltip; the real browser
-    // does, covered by e2e.)
+    // unavailable to assistive tech (not only in the visual tooltip).
     expect(undoButton).toHaveAttribute('aria-disabled', 'true')
-    undoButton.focus()
-
-    expect(
-      await screen.findByText(
-        'Editor interactions are unavailable while loading',
-      ),
-    ).toBeVisible()
+    expect(undoButton).toHaveAccessibleDescription(
+      'Editor interactions are unavailable while loading',
+    )
 
     await user.click(undoButton)
     await user.click(redoButton)

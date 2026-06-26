@@ -52,4 +52,42 @@ describe('ToolButton', () => {
     expect(label.className).not.toContain('sr-only')
     expect(button.className).toContain('h-9')
   })
+
+  it('exposes the disabled reason to assistive tech and keeps the shortcut', () => {
+    renderInToolbar(
+      <ToolButton
+        action={vi.fn()}
+        disabled
+        disabledMessage="No previous history"
+        shortcuts="Control+Z"
+        label="Undo"
+        icon={<IconPlus />}
+      />,
+    )
+
+    const button = screen.getByRole('button', { name: 'Undo' })
+
+    expect(button).toHaveAttribute('aria-disabled', 'true')
+    // The reason is conveyed programmatically, not just in the visual tooltip.
+    expect(button).toHaveAccessibleDescription('No previous history')
+    // The shortcut stays advertised; aria-disabled already qualifies it.
+    expect(button).toHaveAttribute('aria-keyshortcuts', 'Control+Z')
+  })
+
+  it('does not describe an enabled button with a disabled reason', () => {
+    renderInToolbar(
+      <ToolButton
+        action={vi.fn()}
+        disabled={false}
+        disabledMessage="No previous history"
+        shortcuts="Control+Z"
+        label="Undo"
+        icon={<IconPlus />}
+      />,
+    )
+
+    expect(
+      screen.getByRole('button', { name: 'Undo' }),
+    ).not.toHaveAccessibleDescription()
+  })
 })

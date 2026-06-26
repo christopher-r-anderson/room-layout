@@ -21,7 +21,9 @@ export function EditorProviders({ children }: { children: ReactNode }) {
   )
 
   return (
-    <TooltipProvider>
+    // Hover tooltips wait briefly so cursor passes over the toolbars don't pop
+    // every tip; keyboard focus still opens them immediately.
+    <TooltipProvider delay={400}>
       <EditorRefsProvider value={editorRefs}>
         <EditorCommandsProvider>
           <ShellLayoutServicesProvider>

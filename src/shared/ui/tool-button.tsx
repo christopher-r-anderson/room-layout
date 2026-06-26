@@ -61,10 +61,24 @@ export function ToolButton({
   onPointerDown?: PointerEventHandler<HTMLButtonElement>
 }) {
   const shortcutHintId = useId()
+  const disabledReasonId = useId()
   const ariaHiddenIcon = cloneElement(icon, {
     'aria-hidden': 'true',
   })
   const labelClassName = displayLabel ? undefined : 'sr-only'
+
+  // The visual tooltip is not exposed to assistive tech (Base UI tooltips carry
+  // no aria-describedby by design), so the disabled reason is mirrored into a
+  // stable sr-only element the button points at — available on focus regardless
+  // of tooltip state. The shortcut reaches AT via aria-keyshortcuts.
+  const showDisabledReason = Boolean(disabled && disabledMessage)
+  const describedBy =
+    [
+      showDisabledReason ? disabledReasonId : null,
+      shortcutHint ? shortcutHintId : null,
+    ]
+      .filter(Boolean)
+      .join(' ') || undefined
 
   return (
     <Tooltip>
@@ -82,7 +96,7 @@ export function ToolButton({
                 size={size}
                 aria-keyshortcuts={shortcuts}
                 aria-label={label}
-                aria-describedby={shortcutHint ? shortcutHintId : undefined}
+                aria-describedby={describedBy}
                 className={cn(
                   'aria-disabled:active:translate-y-0 aria-disabled:cursor-not-allowed aria-disabled:opacity-50',
                   className,
@@ -97,6 +111,11 @@ export function ToolButton({
           />
         }
       />
+      {showDisabledReason ? (
+        <span id={disabledReasonId} className="sr-only">
+          {disabledMessage}
+        </span>
+      ) : null}
       {shortcutHint ? (
         <span id={shortcutHintId} className="sr-only">
           {shortcutHint}
