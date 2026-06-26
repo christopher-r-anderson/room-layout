@@ -16,6 +16,7 @@ dist-ssr
 .bench
 playwright-report
 test-results
+bundle-report.html
 *.local
 
 # Editor directories and files

@@ -45,6 +45,7 @@ Shortcut details are documented in
 pnpm dev          # start dev server
 pnpm build        # typecheck + production build
 pnpm preview      # preview production build
+pnpm analyze-bundle # build with the bundle analyzer; writes bundle-report.html
 
 pnpm typecheck    # run TypeScript checks
 
