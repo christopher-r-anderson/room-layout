@@ -243,11 +243,7 @@ test('Tab from the room view reaches header controls and Tab from the outliner r
   // In floating mode the actions toolbar is outside the overlay flow, while
   // the details card stays in the overlay traversal after the outliner.
   await page.keyboard.press('Tab')
-  await expect(
-    page
-      .getByRole('region', { name: /Placement$/i })
-      .getByRole('button', { name: 'Remove item' }),
-  ).toBeFocused()
+  await expect(page.getByLabel('Distance from left wall (m)')).toBeFocused()
 })
 
 test('outliner keyboard selection reaches inspector controls via natural tab order', async ({
@@ -263,11 +259,7 @@ test('outliner keyboard selection reaches inspector controls via natural tab ord
   await expect(couchButton).toBeFocused()
 
   await page.keyboard.press('Tab')
-  await expect(
-    page
-      .getByRole('region', { name: /Placement$/i })
-      .getByRole('button', { name: 'Remove item' }),
-  ).toBeFocused()
+  await expect(page.getByLabel('Distance from left wall (m)')).toBeFocused()
 })
 
 test('invalid selected item detail edits show inline feedback and do not move the item', async ({

@@ -78,9 +78,6 @@ describe('SelectedDetailsPanel', () => {
     expect(detailsPanelRef.current).toContainElement(
       screen.getByLabelText('Distance from left wall (m)'),
     )
-    expect(detailsPanelRef.current).toContainElement(
-      screen.getByRole('button', { name: 'Rotate counterclockwise' }),
-    )
   })
 
   it('keeps the details panel ref when floating actions also render', () => {

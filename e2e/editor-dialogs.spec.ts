@@ -101,7 +101,7 @@ test('room surface, sheet, and confirmation dialogs keep accessible contracts an
   await addFurniture(page, 'Leather Couch')
 
   const deleteButton = page
-    .getByRole('region', { name: /Placement$/i })
+    .getByRole('toolbar', { name: 'Selected item actions' })
     .getByRole('button', { name: 'Remove item' })
   await deleteButton.click()
 

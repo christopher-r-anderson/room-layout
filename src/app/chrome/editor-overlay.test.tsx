@@ -271,27 +271,11 @@ describe('EditorOverlay integration', () => {
 
     await user.tab()
 
-    expect(screen.getByRole('button', { name: 'Remove item' })).toHaveFocus()
-
-    await user.tab()
-
     expect(screen.getByLabelText('Distance from left wall (m)')).toHaveFocus()
 
     await user.tab()
 
     expect(screen.getByLabelText('Distance from back wall (m)')).toHaveFocus()
-
-    await user.tab()
-
-    expect(
-      screen.getByRole('button', { name: 'Rotate counterclockwise' }),
-    ).toHaveFocus()
-
-    await user.tab()
-
-    expect(
-      screen.getByRole('button', { name: 'Rotate clockwise' }),
-    ).toHaveFocus()
 
     await user.tab()
 

@@ -7,7 +7,7 @@ import { SelectedDetailsView } from './selected-details-view'
 import { FURNITURE_ITEM } from './test-fixtures'
 
 describe('SelectedDetailsView', () => {
-  it('tabs through inspector delete action, position fields, rotation buttons, then rotation input', async () => {
+  it('tabs through the position fields, then the rotation input', async () => {
     const user = userEvent.setup()
 
     render(
@@ -15,32 +15,16 @@ describe('SelectedDetailsView', () => {
         disabled={false}
         selectedFurniture={FURNITURE_ITEM}
         consumeBlurCommitSuppression={() => false}
-        onOpenDeleteDialog={vi.fn()}
-        onPrepareDelete={vi.fn()}
-        onRotateSelection={vi.fn()}
         onInvalidSelectedItemDetailValue={vi.fn()}
         onUpdateSelectedItemDetails={vi.fn()}
       />,
     )
 
     await user.tab()
-    expect(screen.getByRole('button', { name: 'Remove item' })).toHaveFocus()
-
-    await user.tab()
     expect(screen.getByLabelText('Distance from left wall (m)')).toHaveFocus()
 
     await user.tab()
     expect(screen.getByLabelText('Distance from back wall (m)')).toHaveFocus()
-
-    await user.tab()
-    expect(
-      screen.getByRole('button', { name: 'Rotate counterclockwise' }),
-    ).toHaveFocus()
-
-    await user.tab()
-    expect(
-      screen.getByRole('button', { name: 'Rotate clockwise' }),
-    ).toHaveFocus()
 
     await user.tab()
     expect(screen.getByLabelText('Rotation (deg)')).toHaveFocus()
@@ -58,9 +42,6 @@ describe('SelectedDetailsView', () => {
           position: [1.24, 0, 0],
         }}
         consumeBlurCommitSuppression={() => false}
-        onOpenDeleteDialog={vi.fn()}
-        onPrepareDelete={vi.fn()}
-        onRotateSelection={vi.fn()}
         onInvalidSelectedItemDetailValue={vi.fn()}
         onUpdateSelectedItemDetails={onUpdateSelectedItemDetails}
       />,
@@ -87,9 +68,6 @@ describe('SelectedDetailsView', () => {
           position: [1.24, 0, 0],
         }}
         consumeBlurCommitSuppression={() => false}
-        onOpenDeleteDialog={vi.fn()}
-        onPrepareDelete={vi.fn()}
-        onRotateSelection={vi.fn()}
         onInvalidSelectedItemDetailValue={vi.fn()}
         onUpdateSelectedItemDetails={onUpdateSelectedItemDetails}
       />,
@@ -113,9 +91,6 @@ describe('SelectedDetailsView', () => {
         disabled={false}
         selectedFurniture={FURNITURE_ITEM}
         consumeBlurCommitSuppression={() => false}
-        onOpenDeleteDialog={vi.fn()}
-        onPrepareDelete={vi.fn()}
-        onRotateSelection={vi.fn()}
         onInvalidSelectedItemDetailValue={vi.fn()}
         onUpdateSelectedItemDetails={onUpdateSelectedItemDetails}
       />,
@@ -143,9 +118,6 @@ describe('SelectedDetailsView', () => {
         disabled={false}
         selectedFurniture={FURNITURE_ITEM}
         consumeBlurCommitSuppression={() => false}
-        onOpenDeleteDialog={vi.fn()}
-        onPrepareDelete={vi.fn()}
-        onRotateSelection={vi.fn()}
         onInvalidSelectedItemDetailValue={onInvalidSelectedItemDetailValue}
         onUpdateSelectedItemDetails={onUpdateSelectedItemDetails}
       />,
@@ -175,9 +147,6 @@ describe('SelectedDetailsView', () => {
         disabled={false}
         selectedFurniture={FURNITURE_ITEM}
         consumeBlurCommitSuppression={() => false}
-        onOpenDeleteDialog={vi.fn()}
-        onPrepareDelete={vi.fn()}
-        onRotateSelection={vi.fn()}
         onInvalidSelectedItemDetailValue={vi.fn()}
         onUpdateSelectedItemDetails={vi.fn()}
       />,
@@ -204,9 +173,6 @@ describe('SelectedDetailsView', () => {
         disabled={false}
         selectedFurniture={FURNITURE_ITEM}
         consumeBlurCommitSuppression={() => false}
-        onOpenDeleteDialog={vi.fn()}
-        onPrepareDelete={vi.fn()}
-        onRotateSelection={vi.fn()}
         onInvalidSelectedItemDetailValue={onInvalidSelectedItemDetailValue}
         onUpdateSelectedItemDetails={vi.fn()}
       />,
@@ -241,9 +207,6 @@ describe('SelectedDetailsView', () => {
         disabled={false}
         selectedFurniture={FURNITURE_ITEM}
         consumeBlurCommitSuppression={() => false}
-        onOpenDeleteDialog={vi.fn()}
-        onPrepareDelete={vi.fn()}
-        onRotateSelection={vi.fn()}
         onInvalidSelectedItemDetailValue={onInvalidSelectedItemDetailValue}
         onUpdateSelectedItemDetails={onUpdateSelectedItemDetails}
       />,
@@ -278,9 +241,6 @@ describe('SelectedDetailsView', () => {
         disabled={false}
         selectedFurniture={FURNITURE_ITEM}
         consumeBlurCommitSuppression={() => false}
-        onOpenDeleteDialog={vi.fn()}
-        onPrepareDelete={vi.fn()}
-        onRotateSelection={vi.fn()}
         onInvalidSelectedItemDetailValue={vi.fn()}
         onUpdateSelectedItemDetails={onUpdateSelectedItemDetails}
       />,
@@ -307,9 +267,6 @@ describe('SelectedDetailsView', () => {
         disabled={false}
         selectedFurniture={FURNITURE_ITEM}
         consumeBlurCommitSuppression={() => false}
-        onOpenDeleteDialog={vi.fn()}
-        onPrepareDelete={vi.fn()}
-        onRotateSelection={vi.fn()}
         onInvalidSelectedItemDetailValue={vi.fn()}
         onUpdateSelectedItemDetails={onUpdateSelectedItemDetails}
       />,
@@ -324,9 +281,6 @@ describe('SelectedDetailsView', () => {
           rotationY: Math.PI / 2,
         }}
         consumeBlurCommitSuppression={() => false}
-        onOpenDeleteDialog={vi.fn()}
-        onPrepareDelete={vi.fn()}
-        onRotateSelection={vi.fn()}
         onInvalidSelectedItemDetailValue={vi.fn()}
         onUpdateSelectedItemDetails={onUpdateSelectedItemDetails}
       />,
@@ -350,9 +304,6 @@ describe('SelectedDetailsView', () => {
           position: [-1.9004, 0, -2.5254],
         }}
         consumeBlurCommitSuppression={() => false}
-        onOpenDeleteDialog={vi.fn()}
-        onPrepareDelete={vi.fn()}
-        onRotateSelection={vi.fn()}
         onInvalidSelectedItemDetailValue={vi.fn()}
         onUpdateSelectedItemDetails={vi.fn()}
       />,
@@ -375,9 +326,6 @@ describe('SelectedDetailsView', () => {
           rotationY: -Math.PI / 12,
         }}
         consumeBlurCommitSuppression={() => false}
-        onOpenDeleteDialog={vi.fn()}
-        onPrepareDelete={vi.fn()}
-        onRotateSelection={vi.fn()}
         onInvalidSelectedItemDetailValue={vi.fn()}
         onUpdateSelectedItemDetails={vi.fn()}
       />,
@@ -395,9 +343,6 @@ describe('SelectedDetailsView', () => {
           rotationY: 1.7e-15,
         }}
         consumeBlurCommitSuppression={() => false}
-        onOpenDeleteDialog={vi.fn()}
-        onPrepareDelete={vi.fn()}
-        onRotateSelection={vi.fn()}
         onInvalidSelectedItemDetailValue={vi.fn()}
         onUpdateSelectedItemDetails={vi.fn()}
       />,
@@ -414,9 +359,6 @@ describe('SelectedDetailsView', () => {
         disabled={false}
         selectedFurniture={FURNITURE_ITEM}
         consumeBlurCommitSuppression={() => false}
-        onOpenDeleteDialog={vi.fn()}
-        onPrepareDelete={vi.fn()}
-        onRotateSelection={vi.fn()}
         onInvalidSelectedItemDetailValue={vi.fn()}
         onUpdateSelectedItemDetails={onUpdateSelectedItemDetails}
       />,
@@ -435,9 +377,6 @@ describe('SelectedDetailsView', () => {
           position: [2.4, 0, 0],
         }}
         consumeBlurCommitSuppression={() => false}
-        onOpenDeleteDialog={vi.fn()}
-        onPrepareDelete={vi.fn()}
-        onRotateSelection={vi.fn()}
         onInvalidSelectedItemDetailValue={vi.fn()}
         onUpdateSelectedItemDetails={onUpdateSelectedItemDetails}
       />,
@@ -460,9 +399,6 @@ describe('SelectedDetailsView', () => {
         disabled={false}
         selectedFurniture={FURNITURE_ITEM}
         consumeBlurCommitSuppression={() => false}
-        onOpenDeleteDialog={vi.fn()}
-        onPrepareDelete={vi.fn()}
-        onRotateSelection={vi.fn()}
         onInvalidSelectedItemDetailValue={vi.fn()}
         onUpdateSelectedItemDetails={onUpdateSelectedItemDetails}
       />,
@@ -483,9 +419,6 @@ describe('SelectedDetailsView', () => {
           position: [-0.7, 0, 0],
         }}
         consumeBlurCommitSuppression={() => false}
-        onOpenDeleteDialog={vi.fn()}
-        onPrepareDelete={vi.fn()}
-        onRotateSelection={vi.fn()}
         onInvalidSelectedItemDetailValue={vi.fn()}
         onUpdateSelectedItemDetails={onUpdateSelectedItemDetails}
       />,
@@ -497,40 +430,10 @@ describe('SelectedDetailsView', () => {
         disabled={false}
         selectedFurniture={{ ...FURNITURE_ITEM }}
         consumeBlurCommitSuppression={() => false}
-        onOpenDeleteDialog={vi.fn()}
-        onPrepareDelete={vi.fn()}
-        onRotateSelection={vi.fn()}
         onInvalidSelectedItemDetailValue={vi.fn()}
         onUpdateSelectedItemDetails={onUpdateSelectedItemDetails}
       />,
     )
     expect(xInput).toHaveValue('1.9')
-  })
-
-  it('disables selected item action buttons when the inspector is disabled', () => {
-    render(
-      <SelectedDetailsView
-        disabled={true}
-        disabledMessage="Editor interactions are unavailable while loading"
-        selectedFurniture={FURNITURE_ITEM}
-        consumeBlurCommitSuppression={() => false}
-        onOpenDeleteDialog={vi.fn()}
-        onPrepareDelete={vi.fn()}
-        onRotateSelection={vi.fn()}
-        onInvalidSelectedItemDetailValue={vi.fn()}
-        onUpdateSelectedItemDetails={vi.fn()}
-      />,
-    )
-
-    expect(
-      screen.getByRole('button', { name: 'Rotate counterclockwise' }),
-    ).toHaveAttribute('aria-disabled', 'true')
-    expect(
-      screen.getByRole('button', { name: 'Rotate clockwise' }),
-    ).toHaveAttribute('aria-disabled', 'true')
-    expect(screen.getByRole('button', { name: 'Remove item' })).toHaveAttribute(
-      'aria-disabled',
-      'true',
-    )
   })
 })

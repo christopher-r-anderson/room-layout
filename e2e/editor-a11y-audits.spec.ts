@@ -42,16 +42,17 @@ test('axe audit passes for baseline and outliner/selected item editor states', a
   await selectOutlinerItemByKeyboard(page, /^Leather Couch/i)
   await expectNoA11yViolations(page, 'outliner visible with selected item')
 
-  const deleteButton = page
-    .getByRole('region', { name: /Placement$/i })
-    .getByRole('button', {
-      name: 'Remove item',
-    })
+  const selectedItemActions = page.getByRole('toolbar', {
+    name: 'Selected item actions',
+  })
+  const deleteButton = selectedItemActions.getByRole('button', {
+    name: 'Remove item',
+  })
   await expect(deleteButton).toBeEnabled()
   await expect(
-    page
-      .getByRole('region', { name: /Placement$/i })
-      .getByRole('button', { name: 'Rotate counterclockwise' }),
+    selectedItemActions.getByRole('button', {
+      name: 'Rotate counterclockwise',
+    }),
   ).toBeEnabled()
   await expectNoA11yViolations(
     page,

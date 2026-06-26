@@ -1,11 +1,8 @@
 import { Toolbar } from '@base-ui/react/toolbar'
+import { IconRotate3d, IconTrash } from '@tabler/icons-react'
 import { cn } from '@/shared/lib/utils'
 import { buttonGroupVariants } from '@/shared/ui/button-group-variants'
-import {
-  DeleteButton,
-  RotateClockwiseButton,
-  RotateCounterclockwiseButton,
-} from './selection-action-buttons'
+import { ToolButton } from '@/shared/ui/tool-button'
 
 export function SelectedItemTools({
   controlsDisabled,
@@ -25,27 +22,36 @@ export function SelectedItemTools({
       aria-label="Selected item actions"
       className={cn(buttonGroupVariants({ orientation: 'horizontal' }))}
     >
-      <RotateCounterclockwiseButton
+      <ToolButton
         asToolbarItem
         displayLabel={false}
+        shortcuts=","
+        label="Rotate counterclockwise"
+        icon={<IconRotate3d className="-scale-x-100" />}
         action={() => {
           onRotateSelection(1)
         }}
         disabled={controlsDisabled}
         disabledMessage={disabledMessage}
       />
-      <RotateClockwiseButton
+      <ToolButton
         asToolbarItem
         displayLabel={false}
+        shortcuts="."
+        label="Rotate clockwise"
+        icon={<IconRotate3d />}
         action={() => {
           onRotateSelection(-1)
         }}
         disabled={controlsDisabled}
         disabledMessage={disabledMessage}
       />
-      <DeleteButton
+      <ToolButton
         asToolbarItem
         displayLabel={false}
+        shortcuts="Delete Backspace"
+        label="Remove item"
+        icon={<IconTrash />}
         action={onOpenDeleteDialog}
         disabled={controlsDisabled}
         disabledMessage={disabledMessage}

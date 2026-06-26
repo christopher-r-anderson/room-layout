@@ -422,7 +422,7 @@ export async function selectFurnitureById(
 
 export async function rotateSelectionRight(page: Page) {
   await page
-    .getByRole('region', { name: /Placement$/i })
+    .getByRole('toolbar', { name: 'Selected item actions' })
     .getByRole('button', { name: 'Rotate clockwise' })
     .click()
 
@@ -431,7 +431,7 @@ export async function rotateSelectionRight(page: Page) {
 
 export async function deleteSelectedFurniture(page: Page) {
   await page
-    .getByRole('region', { name: /Placement$/i })
+    .getByRole('toolbar', { name: 'Selected item actions' })
     .getByRole('button', { name: 'Remove item' })
     .click()
   await page

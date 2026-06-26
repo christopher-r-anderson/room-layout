@@ -8,11 +8,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import type { FurnitureItem } from '@/domain/furniture'
 import { cn } from '@/shared/lib/utils'
 import { getWallClearances } from '@/domain/geometry/wall-clearance'
-import {
-  RotateCounterclockwiseButton,
-  RotateClockwiseButton,
-  DeleteButton,
-} from './selection-action-buttons'
 
 type FieldOverride =
   | {
@@ -123,25 +118,17 @@ export function SelectedDetailsPlaceholder({
 export function SelectedDetailsView({
   className,
   disabled,
-  disabledMessage,
   selectedFurniture,
   sectionRef,
   consumeBlurCommitSuppression,
-  onOpenDeleteDialog,
-  onPrepareDelete,
-  onRotateSelection,
   onInvalidSelectedItemDetailValue,
   onUpdateSelectedItemDetails,
 }: {
   className?: string
   disabled: boolean
-  disabledMessage?: string
   selectedFurniture: FurnitureItem
   sectionRef?: Ref<HTMLElement>
   consumeBlurCommitSuppression: () => boolean
-  onOpenDeleteDialog: () => void
-  onPrepareDelete: () => void
-  onRotateSelection: (direction: -1 | 1) => void
   onInvalidSelectedItemDetailValue: (fieldLabel: string) => string
   onUpdateSelectedItemDetails: (
     input: UpdateSelectedItemDetailsInput,
@@ -363,17 +350,7 @@ export function SelectedDetailsView({
           </CardTitle>
         </CardHeader>
         <CardContent data-selected-item-details-root>
-          <div className="grid gap-2 grid-flow-col grid-rows-[auto_auto] justify-items-start w-max m-auto">
-            <DeleteButton
-              displayLabel={true}
-              action={onOpenDeleteDialog}
-              disabled={disabled}
-              disabledMessage={disabledMessage}
-              onPointerDown={() => {
-                onPrepareDelete()
-              }}
-            />
-
+          <div className="flex gap-2 w-max m-auto">
             <div className="min-w-0 rounded-md border border-border/60 bg-muted/20 p-2">
               <p className="text-[11px]/4 font-medium text-muted-foreground">
                 Position (m)
@@ -382,25 +359,7 @@ export function SelectedDetailsView({
                 {POSITION_FIELDS.map(renderField)}
               </div>
             </div>
-            <div className="justify-self-end flex gap-2">
-              <RotateCounterclockwiseButton
-                displayLabel={false}
-                action={() => {
-                  onRotateSelection(1)
-                }}
-                disabled={disabled}
-                disabledMessage={disabledMessage}
-              />
-              <RotateClockwiseButton
-                displayLabel={false}
-                action={() => {
-                  onRotateSelection(-1)
-                }}
-                disabled={disabled}
-                disabledMessage={disabledMessage}
-              />
-            </div>
-            <div className="justify-self-end min-w-0 rounded-md border border-border/60 bg-muted/20 p-2">
+            <div className="min-w-0 rounded-md border border-border/60 bg-muted/20 p-2">
               <p className="text-[11px]/4 font-medium text-muted-foreground">
                 Rotation (deg)
               </p>
