@@ -17,10 +17,35 @@ function formatAssetLabel(item: string) {
 
 export function InitializationProgress() {
   const visible = useStartupLoadingActive()
-  const { active, currentItem, loadedCount, percent, total } =
+  const { currentItem, loadedCount, percent, total } =
     useFurnitureAssetPrefetchProgress()
   const panelRef = useRef<HTMLDivElement | null>(null)
   const roundedProgress = Math.round(percent)
+
+  // Before the manifest resolves there is nothing to count yet (preparing); once
+  // every file's bytes are in, the engine is seeding/parsing them (finalizing).
+  // Distinguishing these from the active download keeps the panel from reading
+  // "Starting asset requests" at 100%.
+  const stage =
+    total === 0
+      ? 'preparing'
+      : loadedCount < total
+        ? 'downloading'
+        : 'finalizing'
+
+  const statusText =
+    stage === 'downloading'
+      ? `Asset ${String(Math.min(loadedCount + 1, total))} of ${String(total)}`
+      : stage === 'finalizing'
+        ? 'Preparing the editor'
+        : 'Starting asset requests'
+
+  const detailText =
+    stage === 'downloading'
+      ? `Current item: ${formatAssetLabel(currentItem)}`
+      : stage === 'finalizing'
+        ? 'Finishing up the room view'
+        : 'Fetching the furniture catalog'
 
   useEffect(() => {
     if (!visible) {
@@ -74,17 +99,13 @@ export function InitializationProgress() {
           />
           <div className="flex items-baseline justify-between gap-3 text-sm text-foreground max-[720px]:flex-col max-[720px]:items-start">
             <strong>{String(roundedProgress)}%</strong>
-            <span>
-              {active && total > 0
-                ? `Asset ${String(Math.min(loadedCount + 1, total))} of ${String(total)}`
-                : 'Starting asset requests'}
-            </span>
+            <span>{statusText}</span>
           </div>
           <p
             id="startup-loading-progress-label"
             className="text-sm leading-relaxed text-foreground"
           >
-            Current item: {formatAssetLabel(currentItem)}
+            {detailText}
           </p>
         </CardContent>
       </Card>
