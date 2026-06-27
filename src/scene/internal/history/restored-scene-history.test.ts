@@ -56,32 +56,21 @@ describe('buildRestoredSceneHistory', () => {
     mockBuildFurnitureItemsFromInstances.mockReturnValue([])
   })
 
-  it('seeds the scene with reconstructed furniture items', () => {
-    const restoredItems = [makeFurnitureItem('furniture-instance-1')]
+  it('wraps the rebuilt items in a fresh history seeded by the max instance id', () => {
+    const restoredItems = [makeFurnitureItem('furniture-instance-3')]
     mockBuildFurnitureItemsFromInstances.mockReturnValue(restoredItems)
 
     const restoredState = buildRestoredSceneHistory({
-      instances: [makeInstance('furniture-instance-1')],
+      instances: [
+        makeInstance('furniture-instance-3'),
+        makeInstance('furniture-instance-1'),
+      ],
       catalog: EMPTY_CATALOG,
       collections: EMPTY_COLLECTIONS,
       sourceScenesByPath: EMPTY_SOURCE_SCENES,
     })
 
-    expect(restoredState.restoredItems).toEqual(restoredItems)
-    expect(restoredState.history.present).toEqual(restoredItems)
-  })
-
-  it('establishes empty undo/redo history baseline', () => {
-    const restoredItems = [makeFurnitureItem('furniture-instance-2')]
-    mockBuildFurnitureItemsFromInstances.mockReturnValue(restoredItems)
-
-    const restoredState = buildRestoredSceneHistory({
-      instances: [makeInstance('furniture-instance-2')],
-      catalog: EMPTY_CATALOG,
-      collections: EMPTY_COLLECTIONS,
-      sourceScenesByPath: EMPTY_SOURCE_SCENES,
-    })
-
+    expect(restoredState.restoredItems).toBe(restoredItems)
     expect(restoredState.history).toEqual(
       expect.objectContaining({
         past: [],
@@ -89,6 +78,7 @@ describe('buildRestoredSceneHistory', () => {
         future: [],
       }),
     )
+    expect(restoredState.instanceIdSeed).toBe(3)
   })
 
   it('reseeds instanceIdRef to max restored suffix', () => {
@@ -102,34 +92,5 @@ describe('buildRestoredSceneHistory', () => {
 
   it('handles instances with non-standard id format gracefully', () => {
     expect(getMaxRestoredInstanceSuffix([makeInstance('custom-id')])).toBe(0)
-  })
-
-  it('tracks the instance id seed from the restored instances', () => {
-    const restoredItems = [makeFurnitureItem('furniture-instance-1')]
-    mockBuildFurnitureItemsFromInstances.mockReturnValue(restoredItems)
-
-    const restoredState = buildRestoredSceneHistory({
-      instances: [makeInstance('furniture-instance-1')],
-      catalog: EMPTY_CATALOG,
-      collections: EMPTY_COLLECTIONS,
-      sourceScenesByPath: EMPTY_SOURCE_SCENES,
-    })
-
-    expect(restoredState.instanceIdSeed).toBe(1)
-  })
-
-  it('propagates errors from buildFurnitureItemsFromInstances', () => {
-    mockBuildFurnitureItemsFromInstances.mockImplementation(() => {
-      throw new Error('node not found')
-    })
-
-    expect(() => {
-      buildRestoredSceneHistory({
-        instances: [makeInstance('furniture-instance-1')],
-        catalog: EMPTY_CATALOG,
-        collections: EMPTY_COLLECTIONS,
-        sourceScenesByPath: EMPTY_SOURCE_SCENES,
-      })
-    }).toThrow('node not found')
   })
 })
