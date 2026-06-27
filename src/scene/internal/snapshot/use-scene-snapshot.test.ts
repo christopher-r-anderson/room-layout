@@ -62,41 +62,28 @@ describe('useSceneSnapshot', () => {
     )
   })
 
-  it('getSnapshot returns latest items', () => {
-    const initialItem = createFurnitureItem('item-1')
-    const options = defaultOptions({
-      furniture: [initialItem],
-    })
-
+  it('returns a stable getter across rerenders', () => {
     const { result, rerender } = renderHook(
-      ({ currentOptions }) => {
-        return useSceneSnapshot(currentOptions)
-      },
+      ({ currentOptions }) => useSceneSnapshot(currentOptions),
       {
         initialProps: {
-          currentOptions: options,
+          currentOptions: defaultOptions({
+            furniture: [createFurnitureItem('item-1')],
+          }),
         },
       },
     )
 
-    const updatedItem = createFurnitureItem('item-2')
-    const updatedOptions = defaultOptions({
-      furniture: [updatedItem],
+    const firstGetter = result.current
+
+    rerender({
+      currentOptions: defaultOptions({
+        furniture: [createFurnitureItem('item-2')],
+      }),
     })
 
-    rerender({ currentOptions: updatedOptions })
-
-    const snapshot = result.current()
-
-    expect(snapshot.items).toEqual([
-      expect.objectContaining({
-        id: updatedItem.id,
-        catalogId: updatedItem.catalogId,
-        name: updatedItem.name,
-        position: updatedItem.position,
-        rotationY: updatedItem.rotationY,
-      }),
-    ])
+    // Callers hold this getter, so its identity must survive prop changes.
+    expect(result.current).toBe(firstGetter)
   })
 
   it('updates getSnapshot before earlier passive effects observe a rerendered furniture change', () => {
