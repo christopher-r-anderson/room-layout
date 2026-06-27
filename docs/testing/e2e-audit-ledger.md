@@ -13,6 +13,23 @@ still caught at the cheaper layer, _then_ remove it from e2e.
 Verdicts: **genuine-e2e** (needs the browser), **partially-redundant** (some
 assertions belong at unit), **could-be-unit** (mostly redundant).
 
+## Status
+
+- **Runner investigation — resolved, no change.** We drive Playwright Test
+  directly (own config/runner), separate from Vitest. That is the correct,
+  idiomatic split for true e2e: this suite depends on Playwright-Test-only
+  features (`page.route` network interception, CDP tracing, `@axe-core/playwright`,
+  the production `vite preview` webServer, the trace viewer, `projects`/sharding).
+  "Integrating e2e into Vitest" generally means **Vitest Browser Mode**, which is
+  for _component_ tests in a real browser, not full e2e — the Vitest docs
+  themselves recommend Playwright/Cypress for e2e. Keep the current setup. (A
+  separate, optional future idea: Browser Mode for some _component/hook_ tests vs
+  jsdom — not the e2e suite.)
+- **Phase A — done.** Replaced the `holdKeyUntilCameraMoves` poll-until-condition
+  anti-pattern with a fixed bounded `holdKey` across the harness, `editor-hotkeys`,
+  and the camera-nudge perf spec; assertions now check the durable "camera moved"
+  invariant. Validated: the 6 camera hotkey tests pass.
+
 ## Per-spec
 
 | spec                                      | verdict               | notes                                                                                                                                                                                                                                                                                                                                                                            |
