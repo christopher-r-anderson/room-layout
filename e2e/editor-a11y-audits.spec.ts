@@ -2,7 +2,6 @@ import { expect, test } from '@playwright/test'
 import { expectNoA11yViolations } from './support/axe'
 import {
   openEditor,
-  readSceneState,
   selectOutlinerItemByKeyboard,
   waitForItemCount,
 } from './support/editor-harness'
@@ -73,7 +72,4 @@ test('axe audit passes for baseline and outliner/selected item editor states', a
   await waitForItemCount(page, 0)
   await expect(page.getByText('No furniture in the room.')).toBeVisible()
   await expectNoA11yViolations(page, 'outliner empty state after delete')
-
-  const state = await readSceneState(page)
-  expect(state.itemCount).toBe(0)
 })
