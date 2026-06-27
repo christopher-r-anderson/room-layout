@@ -12,7 +12,8 @@ against its source and given one verdict:
 - **expand** — the tests present are fine, but a notable untested behavior/branch is
   worth covering in a later phase. Recorded in the note, never as new tests now.
 
-A file marked **fix** may also carry an **expand** note. Counts: 63 keep, 31 fix.
+A file marked **fix** may also carry an **expand** note. Counts: 64 keep, 30 fix.
+(`preview-actions.test.ts` was reclassified `fix`→`keep` on closer review — see its row.)
 
 > Scope note: this phase is **tests-only**. "Fix" items that require a _source_
 > change to do properly (e.g. exposing a public selector) are marked
@@ -30,7 +31,7 @@ A file marked **fix** may also carry an **expand** note. Counts: 63 keep, 31 fix
 | core/operations/focus-actions.test.ts              | fix     | `requestOutlinerFocus` tests (`:51-54,62-65,73-76`) spy on the collaborator instead of asserting resulting `selectionFocusStore` state (as the reconciler tests do at `:108,112,123`).                                                                                                                                                   |
 | core/operations/history-actions.test.ts            | keep    | Asserts the real gating contract (not-ready/disabled no-op, announce + suppress on success).                                                                                                                                                                                                                                             |
 | core/operations/movement-actions.test.ts           | fix     | Mostly command passthrough/wiring (`:71-72,90-94`). Expand: announcement strings via `queueMovementAnnouncement`/`formatMoveBlockedMessage` (source `:51-65`) never asserted.                                                                                                                                                            |
-| core/operations/preview-actions.test.ts            | fix     | Reads private `previewedIdRaw` (`:30`) instead of the gated `getPreviewedId` (which exists). Expand: `forceClearPreview` (source `:114`) untested.                                                                                                                                                                                       |
+| core/operations/preview-actions.test.ts            | keep    | `previewedIdRaw` is the direct output of the unit under test (preview-actions owns the raw preview state machine); the gated `getPreviewedId` lives in `previewed-id.ts` and would gate to null here since these tests intentionally omit `markAssetsReady()`. Expand: `forceClearPreview` (source `:114`) untested.                     |
 | core/operations/previewed-id.test.ts               | keep    | Exhaustive pure-gating cases; hook/get tests confirm real cross-store gating.                                                                                                                                                                                                                                                            |
 | core/operations/preview-reconciler.test.ts         | keep    | Drives real stores; asserts observable hygiene. Expand: blocking-overlay branch (source `:24`).                                                                                                                                                                                                                                          |
 | core/operations/selection-actions.test.ts          | fix     | Several assertions are wiring on mocked `selectionEffects`/`clearPreviewOnCanvasMiss` (`:77,99-105,114-115,131-134`); prefer asserting resulting store state.                                                                                                                                                                            |
@@ -186,8 +187,7 @@ Marked here, **not acted on** in this tests-only phase:
 
 - **Needs a source change first (`fix→deferred`):** a public preview selector so
   `scene-document-store.test.ts` stops reading `previewedIdRaw`; a semantic preview
-  attribute for `outliner.test.tsx`. (`preview-actions.test.ts:30` can already swap
-  `previewedIdRaw` for the existing `getPreviewedId` — a clean follow-up.)
+  attribute for `outliner.test.tsx`.
 - **Over-mock rewrites (overlap coverage work):** the category-C deferrals above.
 - **Coverage gaps to weigh against the coverage map (Phase 2):**
   `share-scene` native-share path; `movement-actions` announcement strings;
