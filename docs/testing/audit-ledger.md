@@ -12,8 +12,17 @@ against its source and given one verdict:
 - **expand** — the tests present are fine, but a notable untested behavior/branch is
   worth covering in a later phase. Recorded in the note, never as new tests now.
 
-A file marked **fix** may also carry an **expand** note. Counts: 64 keep, 30 fix.
-(`preview-actions.test.ts` was reclassified `fix`→`keep` on closer review — see its row.)
+A file marked **fix** may also carry an **expand** note. Original audit counts:
+64 keep, 30 fix (`preview-actions.test.ts` was reclassified `fix`→`keep` on closer
+review — see its row).
+
+**Phase 3 update:** the coverage-expansion phase (see `coverage-triage.md`)
+resolved the `expand`/coverage gaps in `share-scene`, `movement-actions`,
+`get-visual-object-bounds`, `scene-services`, `scene-model`,
+`selection-focus-store`, `validate-catalog-asset-nodes`, `catalog-manifest`, and
+`use-camera-key-motion`, and added new suites for `selected-item-detail-messages`,
+`top-header-focus`, and `scene-reset`. Their rows below describe the original
+audit state.
 
 > Scope note: this phase is **tests-only**. "Fix" items that require a _source_
 > change to do properly (e.g. exposing a public selector) are marked

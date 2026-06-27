@@ -9,6 +9,17 @@ stay uncovered at the unit level.
 Each item: what's untested · why it matters · rough effort. Tiers are a
 recommendation; the actual cut is a decision for Phase 3.
 
+## Status
+
+- **Tier 1 — done (Phase 3).** New/extended suites: `selected-item-detail-messages`,
+  `top-header-focus`, `share-scene` (native path), `scene-reset`, `movement-actions`
+  (announcements), `get-visual-object-bounds`, `scene-services`, `scene-model`,
+  `selection-focus-store`, `validate-catalog-asset-nodes`, `catalog-manifest`,
+  `use-camera-key-motion`. Suite 595 → 639 tests; statements 77.3% → 79.0%.
+- **Tier 2 — pending a decision.** Only `use-furniture-operations` is recommended
+  (as a real-store integration test); the thin wrappers stay with e2e.
+- **Tier 3 — unchanged** (intentional unit skips).
+
 ## Tier 1 — pure logic, cheap, real branches (recommended)
 
 These are framework-free or near-pure, fast to test, and have genuine
