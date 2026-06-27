@@ -350,6 +350,23 @@ test('selected item controls are suppressed from tab order while the catalog dra
   }
 })
 
+test('Shift+T moves focus to the selected item actions toolbar', async ({
+  page,
+}) => {
+  await openEditor(page)
+  await addFurniture(page, 'Leather Couch')
+  await selectOutlinerItemByKeyboard(page, /^Leather Couch/i)
+
+  // Focus starts in the outliner; the pane-focus shortcut jumps it to the first
+  // control inside the floating selected-item toolbar.
+  await page.keyboard.press('Shift+T')
+
+  const selectedItemActions = page.getByRole('toolbar', {
+    name: 'Selected item actions',
+  })
+  await expect(selectedItemActions.locator('button:focus')).toHaveCount(1)
+})
+
 test.describe('narrow viewport overlay order', () => {
   test.use({ viewport: { width: 390, height: 844 } })
 

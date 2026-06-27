@@ -59,3 +59,28 @@ test('supports outliner selection and selected item details without the canvas',
     page.getByRole('button', { name: /^Leather Couch/i }),
   ).toHaveCount(0)
 })
+
+test('edits the rotation detail field without the canvas', async ({ page }) => {
+  await openEditor(page)
+  await addFurniture(page, 'Leather Couch')
+  await selectOutlinerItemByKeyboard(page, /^Leather Couch/i)
+
+  const before = await readSceneState(page)
+  const beforeItem = before.items.find((item) => item.id === before.selectedId)
+
+  if (!beforeItem) {
+    throw new Error('expected a selected furniture item before rotation edit')
+  }
+
+  await updateSelectedItemField(page, 'Rotation (deg)', '90')
+
+  // The rotation field commits through the panel->command->scene pipeline; the
+  // exact normalized angle is owned by the detail-action unit tests.
+  await expect
+    .poll(async () => {
+      const sceneState = await readSceneState(page)
+      return sceneState.items.find((item) => item.id === sceneState.selectedId)
+        ?.rotationY
+    })
+    .not.toBe(beforeItem.rotationY)
+})

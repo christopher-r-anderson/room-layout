@@ -6,6 +6,7 @@ import {
   openEditor,
   readSceneState,
   selectFurnitureById,
+  selectOutlinerItemByKeyboard,
   waitForFirstItemRotationY,
   waitForItemCount,
   waitForPoliteAnnouncement,
@@ -341,6 +342,27 @@ test('camera preset shortcuts 1/2/3/4 reposition the camera', async ({
   expect(afterPresetTop.cameraPosition).not.toEqual(
     afterPresetSide.cameraPosition,
   )
+})
+
+test('focus-selected (F) reframes the camera on the selected item', async ({
+  page,
+}) => {
+  await openEditor(page)
+  await addFurniture(page, 'Leather Couch')
+  await selectOutlinerItemByKeyboard(page, /^Leather Couch/i)
+
+  await focusRoomView(page)
+
+  // Move the camera off any framing pose, then focus the selection: the camera
+  // must reframe. The exact framing math is owned by the camera unit tests; here
+  // we verify the real key -> command -> camera reposition chain end to end.
+  await holdKey(page, 'KeyW')
+  const afterFocus = await pressKeyAndWaitForCameraMove(
+    page,
+    'f',
+    (await readSceneState(page)).cameraPosition,
+  )
+  expect(afterFocus.selectedName).toBe('Leather Couch')
 })
 
 test('arrow keys move selected object and do not move the camera', async ({
