@@ -1,60 +1,69 @@
+// @vitest-environment jsdom
+import { renderHook } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
-const { clearSpy, preloadSpy } = vi.hoisted(() => ({
-  preloadSpy: vi.fn(),
-  clearSpy: vi.fn(),
-}))
+const { useProgressMock } = vi.hoisted(() => ({ useProgressMock: vi.fn() }))
 
 vi.mock('@react-three/drei', () => ({
-  useGLTF: Object.assign(vi.fn(), {
-    preload: preloadSpy,
-    clear: clearSpy,
-  }),
+  useGLTF: Object.assign(vi.fn(), { preload: vi.fn(), clear: vi.fn() }),
+  useProgress: useProgressMock,
 }))
 
-import {
-  clearFurnitureCollectionCache,
-  preloadFurnitureCollections,
-} from './furniture-collection-cache'
-import { resolvePublicAssetPath } from '@/shared/lib/asset-path'
+import { useFurnitureAssetLoadingProgress } from './furniture-collection-cache'
 
-const TEST_PATHS = [
-  resolvePublicAssetPath('models/leather-collection.glb'),
-  resolvePublicAssetPath('models/end-table.glb'),
-]
+function setProgress(
+  overrides: Partial<ReturnType<typeof useProgressMock>> = {},
+) {
+  useProgressMock.mockReturnValue({
+    active: false,
+    item: '',
+    loaded: 0,
+    progress: 0,
+    total: 0,
+    ...overrides,
+  })
+}
 
-describe('resolvePublicAssetPath', () => {
-  it('joins the Vite base path with public model paths', () => {
-    expect(resolvePublicAssetPath('models/leather-collection.glb')).toBe(
-      `${import.meta.env.BASE_URL}models/leather-collection.glb`,
-    )
+describe('useFurnitureAssetLoadingProgress', () => {
+  it('maps the loading-manager progress to the public progress shape', () => {
+    setProgress({
+      active: true,
+      item: 'leather-collection.glb',
+      loaded: 1,
+      progress: 50,
+      total: 2,
+    })
+
+    const { result } = renderHook(() => useFurnitureAssetLoadingProgress())
+
+    expect(result.current).toEqual({
+      active: true,
+      loaded: 1,
+      total: 2,
+      percent: 50,
+      currentItem: 'leather-collection.glb',
+    })
   })
 
-  it('avoids double slashes for leading slash asset paths', () => {
-    expect(resolvePublicAssetPath('/models/leather-collection.glb')).toBe(
-      `${import.meta.env.BASE_URL}models/leather-collection.glb`,
-    )
+  it('reports 0 percent when the manager has no progress yet (NaN)', () => {
+    setProgress({ progress: NaN })
+
+    const { result } = renderHook(() => useFurnitureAssetLoadingProgress())
+
+    expect(result.current.percent).toBe(0)
   })
-})
 
-describe('preloadFurnitureCollections', () => {
-  it('calls useGLTF.preload with the given paths array', () => {
-    preloadSpy.mockClear()
+  it('clamps percent into the 0-100 range', () => {
+    setProgress({ progress: 150 })
+    expect(
+      renderHook(() => useFurnitureAssetLoadingProgress()).result.current
+        .percent,
+    ).toBe(100)
 
-    preloadFurnitureCollections(TEST_PATHS)
-
-    expect(preloadSpy).toHaveBeenCalledTimes(1)
-    expect(preloadSpy.mock.calls).toEqual([[TEST_PATHS]])
-  })
-})
-
-describe('clearFurnitureCollectionCache', () => {
-  it('calls useGLTF.clear once with the full paths array', () => {
-    clearSpy.mockClear()
-
-    clearFurnitureCollectionCache(TEST_PATHS)
-
-    expect(clearSpy).toHaveBeenCalledTimes(1)
-    expect(clearSpy.mock.calls[0]).toEqual([TEST_PATHS])
+    setProgress({ progress: -10 })
+    expect(
+      renderHook(() => useFurnitureAssetLoadingProgress()).result.current
+        .percent,
+    ).toBe(0)
   })
 })
