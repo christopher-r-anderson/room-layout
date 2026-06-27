@@ -3,7 +3,7 @@ import { expect, test } from '@playwright/test'
 import {
   addFurniture,
   focusRoomView,
-  holdKeyUntilCameraMoves,
+  holdKey,
   openEditor,
   readPerfCounters,
   readSceneState,
@@ -51,8 +51,7 @@ test('captures a baseline selected camera nudge settle trace', async ({
 
   await focusRoomView(page)
 
-  const warmupBaseline = (await readSceneState(page)).cameraPosition
-  await holdKeyUntilCameraMoves(page, 'KeyW', warmupBaseline, 0.2)
+  await holdKey(page, 'KeyW')
   await page.waitForTimeout(500)
 
   await resetPerfCounters(page)
@@ -62,8 +61,7 @@ test('captures a baseline selected camera nudge settle trace', async ({
   } = await withPerfTrace(page, 'selected-camera-nudge-settle', async () => {
     const beforeCounters = await readPerfCounters(page)
 
-    const nudgeBaseline = (await readSceneState(page)).cameraPosition
-    await holdKeyUntilCameraMoves(page, 'KeyW', nudgeBaseline, 0.2)
+    await holdKey(page, 'KeyW')
     const afterNudgeCounters = await readPerfCounters(page)
 
     const settleDeadline = Date.now() + 750

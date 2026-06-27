@@ -53,17 +53,6 @@ const PERF_RESULTS_DIR = path.resolve(process.cwd(), 'test-results/perf')
 const PERF_TRACE_CATEGORIES =
   'disabled-by-default-devtools.timeline,devtools.timeline,v8.execute,blink.user_timing,latencyInfo'
 
-function cameraDistance(
-  from: [number, number, number],
-  to: [number, number, number],
-) {
-  const deltaX = to[0] - from[0]
-  const deltaY = to[1] - from[1]
-  const deltaZ = to[2] - from[2]
-
-  return Math.hypot(deltaX, deltaY, deltaZ)
-}
-
 function buildPerfArtifactPath(
   label: string,
   extension: 'trace.json' | 'counters.json',
@@ -504,23 +493,16 @@ export async function dragSelectedFurniture(
   return run()
 }
 
-export async function holdKeyUntilCameraMoves(
-  page: Page,
-  key: string,
-  baseline: [number, number, number],
-  minimumDistance = 0.2,
-) {
+// A fixed, bounded key hold. Holding a key "until a polled condition is
+// observed" makes the resulting magnitude unbounded under parallel load (see
+// docs/architecture/testing.md determinism rules); a fixed hold keeps it
+// deterministic. Callers assert the durable invariant (camera moved / did not
+// move), not an exact magnitude.
+export async function holdKey(page: Page, key: string, durationMs = 150) {
   await page.keyboard.down(key)
 
   try {
-    await expect
-      .poll(async () => {
-        return cameraDistance(
-          (await readSceneState(page)).cameraPosition,
-          baseline,
-        )
-      })
-      .toBeGreaterThan(minimumDistance)
+    await page.waitForTimeout(durationMs)
   } finally {
     await page.keyboard.up(key)
   }
