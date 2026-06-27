@@ -213,8 +213,6 @@ describe('sceneDocumentStore', () => {
   })
 
   it('delegates restoreInitialLayout through registered scene services', () => {
-    const clearSelection = vi.fn()
-    const deleteSelection = vi.fn(() => true)
     const restoreInitialLayout = vi.fn()
     const instances: FurnitureInstance[] = [
       {
@@ -225,20 +223,7 @@ describe('sceneDocumentStore', () => {
       },
     ]
 
-    registerDefaultSceneServices({
-      addFurniture: () => ({ ok: true, id: 'item-1' }),
-      clearSelection,
-      deleteSelection,
-      focusSelected: () => undefined,
-      moveSelection: () => ({ ok: false, reason: 'no-selection' }),
-      redo: () => true,
-      restoreInitialLayout,
-      rotateSelection: () => undefined,
-      selectById: () => ({ ok: true, status: 'selected' }),
-      setCameraPreset: () => undefined,
-      setSelectionTransform: () => ({ ok: false, reason: 'no-selection' }),
-      undo: () => true,
-    })
+    registerDefaultSceneServices({ restoreInitialLayout })
 
     act(() => {
       sceneCommands.restoreInitialLayout(instances)
@@ -250,20 +235,7 @@ describe('sceneDocumentStore', () => {
   it('delegates clearSelection through registered scene services', () => {
     const clearSelection = vi.fn()
 
-    registerDefaultSceneServices({
-      addFurniture: () => ({ ok: true, id: 'item-1' }),
-      clearSelection,
-      deleteSelection: () => true,
-      focusSelected: () => undefined,
-      moveSelection: () => ({ ok: false, reason: 'no-selection' }),
-      redo: () => true,
-      restoreInitialLayout: () => undefined,
-      rotateSelection: () => undefined,
-      selectById: () => ({ ok: true, status: 'selected' }),
-      setCameraPreset: () => undefined,
-      setSelectionTransform: () => ({ ok: false, reason: 'no-selection' }),
-      undo: () => true,
-    })
+    registerDefaultSceneServices({ clearSelection })
 
     act(() => {
       sceneCommands.clearSelection()
@@ -275,20 +247,7 @@ describe('sceneDocumentStore', () => {
   it('delegates deleteSelection through registered scene services', () => {
     const deleteSelection = vi.fn(() => true)
 
-    registerDefaultSceneServices({
-      addFurniture: () => ({ ok: true, id: 'item-1' }),
-      clearSelection: () => undefined,
-      deleteSelection,
-      focusSelected: () => undefined,
-      moveSelection: () => ({ ok: false, reason: 'no-selection' }),
-      redo: () => true,
-      restoreInitialLayout: () => undefined,
-      rotateSelection: () => undefined,
-      selectById: () => ({ ok: true, status: 'selected' }),
-      setCameraPreset: () => undefined,
-      setSelectionTransform: () => ({ ok: false, reason: 'no-selection' }),
-      undo: () => true,
-    })
+    registerDefaultSceneServices({ deleteSelection })
 
     let deleted = false
 
@@ -304,20 +263,7 @@ describe('sceneDocumentStore', () => {
     const undo = vi.fn(() => true)
     const redo = vi.fn(() => false)
 
-    registerDefaultSceneServices({
-      addFurniture: () => ({ ok: true, id: 'item-1' }),
-      clearSelection: () => undefined,
-      deleteSelection: () => true,
-      focusSelected: () => undefined,
-      moveSelection: () => ({ ok: false, reason: 'no-selection' }),
-      redo,
-      restoreInitialLayout: () => undefined,
-      rotateSelection: () => undefined,
-      selectById: () => ({ ok: true, status: 'selected' }),
-      setCameraPreset: () => undefined,
-      setSelectionTransform: () => ({ ok: false, reason: 'no-selection' }),
-      undo,
-    })
+    registerDefaultSceneServices({ undo, redo })
 
     let didUndo = false
     let didRedo = true
@@ -339,20 +285,7 @@ describe('sceneDocumentStore', () => {
       status: 'selected' as const,
     }))
 
-    registerDefaultSceneServices({
-      addFurniture: () => ({ ok: true, id: 'item-1' }),
-      clearSelection: () => undefined,
-      deleteSelection: () => true,
-      focusSelected: () => undefined,
-      moveSelection: () => ({ ok: false, reason: 'no-selection' }),
-      redo: () => true,
-      restoreInitialLayout: () => undefined,
-      rotateSelection: () => undefined,
-      selectById,
-      setCameraPreset: () => undefined,
-      setSelectionTransform: () => ({ ok: false, reason: 'no-selection' }),
-      undo: () => true,
-    })
+    registerDefaultSceneServices({ selectById })
 
     let result: ReturnType<typeof sceneCommands.selectById> | null = null
 
@@ -367,20 +300,7 @@ describe('sceneDocumentStore', () => {
   it('delegates addFurniture through registered scene services', () => {
     const addFurniture = vi.fn(() => ({ ok: true as const, id: 'item-1' }))
 
-    registerDefaultSceneServices({
-      addFurniture,
-      clearSelection: () => undefined,
-      deleteSelection: () => true,
-      focusSelected: () => undefined,
-      moveSelection: () => ({ ok: false, reason: 'no-selection' }),
-      redo: () => true,
-      restoreInitialLayout: () => undefined,
-      rotateSelection: () => undefined,
-      selectById: () => ({ ok: true, status: 'selected' }),
-      setCameraPreset: () => undefined,
-      setSelectionTransform: () => ({ ok: false, reason: 'no-selection' }),
-      undo: () => true,
-    })
+    registerDefaultSceneServices({ addFurniture })
 
     let result: ReturnType<typeof sceneCommands.addFurniture> | null = null
 
@@ -405,20 +325,7 @@ describe('sceneDocumentStore', () => {
       },
     }))
 
-    registerDefaultSceneServices({
-      addFurniture: () => ({ ok: true, id: 'item-1' }),
-      clearSelection: () => undefined,
-      deleteSelection: () => true,
-      focusSelected: () => undefined,
-      moveSelection,
-      redo: () => true,
-      restoreInitialLayout: () => undefined,
-      rotateSelection: () => undefined,
-      selectById: () => ({ ok: true, status: 'selected' }),
-      setCameraPreset: () => undefined,
-      setSelectionTransform,
-      undo: () => true,
-    })
+    registerDefaultSceneServices({ moveSelection, setSelectionTransform })
 
     let moveResult: ReturnType<typeof sceneCommands.moveSelection> | null = null
     let transformResult: ReturnType<
@@ -455,20 +362,7 @@ describe('sceneDocumentStore', () => {
   it('delegates rotateSelection through registered scene services', () => {
     const rotateSelection = vi.fn()
 
-    registerDefaultSceneServices({
-      addFurniture: () => ({ ok: true, id: 'item-1' }),
-      clearSelection: () => undefined,
-      deleteSelection: () => true,
-      focusSelected: () => undefined,
-      moveSelection: () => ({ ok: false, reason: 'no-selection' }),
-      redo: () => true,
-      restoreInitialLayout: () => undefined,
-      rotateSelection,
-      selectById: () => ({ ok: true, status: 'selected' }),
-      setCameraPreset: () => undefined,
-      setSelectionTransform: () => ({ ok: false, reason: 'no-selection' }),
-      undo: () => true,
-    })
+    registerDefaultSceneServices({ rotateSelection })
 
     act(() => {
       sceneCommands.rotateSelection(Math.PI / 4)
@@ -527,20 +421,7 @@ describe('sceneDocumentStore', () => {
     const focusSelected = vi.fn()
     const setCameraPreset = vi.fn()
 
-    registerDefaultSceneServices({
-      addFurniture: () => ({ ok: true, id: 'item-1' }),
-      clearSelection: () => undefined,
-      deleteSelection: () => true,
-      focusSelected,
-      moveSelection: () => ({ ok: false, reason: 'no-selection' }),
-      redo: () => true,
-      restoreInitialLayout: () => undefined,
-      rotateSelection: () => undefined,
-      selectById: () => ({ ok: true, status: 'selected' }),
-      setCameraPreset,
-      setSelectionTransform: () => ({ ok: false, reason: 'no-selection' }),
-      undo: () => true,
-    })
+    registerDefaultSceneServices({ focusSelected, setCameraPreset })
 
     act(() => {
       sceneCommands.focusSelected()
