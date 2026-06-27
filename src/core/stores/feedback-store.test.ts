@@ -152,13 +152,17 @@ describe('feedback store', () => {
   it('cancels pending timers on reset', () => {
     vi.useFakeTimers()
 
-    const clearTimeoutSpy = vi.spyOn(window, 'clearTimeout')
-
     feedbackActions.queueMovementAnnouncement('Queued movement')
     feedbackActions.announceAssertive('Assertive message')
 
     resetFeedbackStore()
+    expect(polite()).toBe('')
+    expect(assertive()).toBe('')
 
-    expect(clearTimeoutSpy).toHaveBeenCalled()
+    vi.runAllTimers()
+
+    // Timers scheduled before the reset must not repopulate the live regions.
+    expect(polite()).toBe('')
+    expect(assertive()).toBe('')
   })
 })

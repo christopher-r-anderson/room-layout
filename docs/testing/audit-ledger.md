@@ -137,56 +137,58 @@ A file marked **fix** may also carry an **expand** note. Counts: 63 keep, 31 fix
 | shared/ui/dialog.test.tsx                         | fix     | `:20-22` same class-substring pattern; move the twMerge intent into a `cn`/utils test.                                                                                                                                                                                                |
 | shared/ui/tool-button.test.tsx                    | fix     | `:31` `label.className` `.toBe('')` + `:53` `.toContain('h-9')` couple to styling; `:52` `not.toContain('sr-only')` + the ARIA tests are the correct model. Our own component — keep behavior tests.                                                                                  |
 
-## Phase 1 cleanup backlog (tests-only)
+## Phase 1 cleanup backlog (tests-only) — status
 
-Grouped by type; this is the actionable input to the cleanup step.
+Grouped by type. ✅ = applied in Phase 1, ↪ = deferred (with reason).
 
 ### A. Brittle className / styling-coupled assertions → assert behavior
 
-- `shared/ui/tool-button.test.tsx:31,53`
-- `app/chrome/top-header/share-scene-button.test.tsx:88-89`
-- `features/catalog/catalog-add-button.test.tsx:14-17`
-- `features/history/history-tools.test.tsx:96-97`
-- `features/outliner/outliner.test.tsx:165-166,178` (→ semantic signal)
-- `shared/ui/alert-dialog.test.tsx:24-26`, `shared/ui/dialog.test.tsx:20-22` (→ `data-size`/structure; relocate twMerge intent to a `cn` util test)
+- ✅ `shared/ui/tool-button.test.tsx` — assert the displayLabel/sr-only contract; the sizing test now covers the `displayLabel=false` path.
+- ✅ `app/chrome/top-header/share-scene-button.test.tsx` — removed the tautological `hidden`/`h-9` test (no such feature).
+- ✅ `features/catalog/catalog-add-button.test.tsx` — assert the label renders visibly instead of Tailwind tokens.
+- ✅ `features/history/history-tools.test.tsx` — dropped the `h-9` assertion, kept the sr-only label check.
+- ✅ `shared/ui/alert-dialog.test.tsx` — assert `data-size` plus the mobile gutter.
+- ✅ `shared/ui/dialog.test.tsx` — kept (the twMerge gutter-survival classes _are_ the unit under test; documented as such).
+- ↪ `features/outliner/outliner.test.tsx:165-166,178` — preview state has no semantic signal in the source (selected uses `aria-current`; preview is `bg-accent` only). Replacing the class assertion needs a source change (e.g. a `data-previewed` attribute); deferred.
 
-### B. Broken / brittle correctness
+### B. Broken / brittle correctness — all applied
 
-- `app/chrome/top-header/top-header.test.tsx:41` — dead `vi.mock` path; **highest value** (broken-but-green).
-- `app/dialogs/bootstrap-dialog-registry.test.ts:55,71` — drop magic `.toBe(7)`.
-- `core/persistence/scene-draft.test.ts:65` — stop hard-coding the prefixed storage key.
+- ✅ `app/chrome/top-header/top-header.test.tsx` — fixed the dead `vi.mock` path; assert the desktop layout actually renders.
+- ✅ `app/dialogs/bootstrap-dialog-registry.test.ts` — assert the registry matches `DIALOG_IDS` instead of `.toBe(7)`.
+- ✅ `core/persistence/scene-draft.test.ts` — write the invalid payload via `saveJson` instead of the lib-prefixed key.
 
-### C. Over-mocking / tautological assertions → assert outcomes (trim, don't expand)
+### C. Over-mocking / tautological assertions
 
-- `core/stores/scene-document-store.test.ts` — collapse tautological single-method delegation tests.
-- `core/operations/focus-actions.test.ts:51-76`, `selection-actions.test.ts:99-134`, `movement-actions.test.ts:71-94`.
-- `scene/internal/snapshot/use-scene-snapshot.test.ts:91,137`, `restored-scene-history.test.ts:67-92`, `furniture-collection-cache.test.ts:46-66`, `scene-services.test.ts`, `get-visual-object-bounds.test.ts:12`.
-- `core/stores/feedback-store.test.ts:155-162` — `clearTimeout` spy → behavioral.
-- `features/keyboard/keyboard-shortcuts-help.test.tsx:56-67` — trim duplicated string list.
+- ✅ `core/stores/scene-document-store.test.ts` — collapsed the re-pasted service stubs (see D).
+- ✅ `core/stores/feedback-store.test.ts` — `clearTimeout` spy → behavioral (assert no announcement repopulates after reset).
+- ✅ `features/keyboard/keyboard-shortcuts-help.test.tsx` — trimmed the duplicated label-string list to structure + representatives.
+- ↪ `core/operations/focus-actions.test.ts`, `selection-actions.test.ts`, `movement-actions.test.ts`, `scene/internal/snapshot/use-scene-snapshot.test.ts`, `restored-scene-history.test.ts`, `furniture-collection-cache.test.ts`, `scene-services.test.ts`, `get-visual-object-bounds.test.ts` — these tests' tautological assertions are often their _only_ assertions; replacing them well means asserting real outcomes the current code doesn't expose as observable, i.e. a rewrite that overlaps the coverage-expansion phase. Deferred to avoid gutting tests into assertion-less stubs now.
 
-### D. Duplicated setup → shared helpers (handled in the helpers step)
+### D. Duplicated setup → shared helpers — all applied
 
-- `scene-document-store.test.ts:238-553` — use the existing `overrides` param (largest single cleanup, ~100 lines).
-- `selected-details-panel.test.tsx:43-166` — extract `renderPanel({ placement })`.
-- Shared `FURNITURE_ITEM`/`CHAIR` fixture — `deletion-actions.test.ts:46-57`, `selected-item-detail-actions.test.ts:37-48` (use `features/selection/test-fixtures.ts`).
-- Room option factories — `room-controls.test.tsx:10-42`, `room-drawer.test.tsx:13-37`.
-- `renderWithDispatch` — `camera-tools.test.tsx`, `history-tools.test.tsx`.
-- DOM-measurement mock setup — `use-element-rect`/`use-element-size`/`use-overlay-exclusion-rects` (optional).
+- ✅ `scene-document-store.test.ts` — each delegation test passes only its spied method to the existing `overrides` param (~110 lines removed).
+- ✅ `selected-details-panel.test.tsx` — extracted `renderPanel({ placement, children })`.
+- ✅ Shared `makeFurnitureItem`/`CHAIR`/`FURNITURE_ITEM` in `@/test/support/furniture.ts`, replacing duplicated fixtures in selection, movement-actions, scene-document-store, and bootstrap-dialog-registry tests.
+- ✅ Room option factories → `features/room-surface/test-fixtures.ts`.
+- ↪ `renderWithDispatch` (`camera-tools`/`history-tools`) — the two variants differ (history needs a `Toolbar.Root` wrapper); sharing adds cross-file coupling for ~3 lines. Left local.
+- ↪ DOM-measurement mock setup (`use-element-rect`/`use-element-size`/`use-overlay-exclusion-rects`) — optional; not pursued.
 
 ### E. Trivial tests / structure
 
-- `scene/internal/three/is-mesh.test.ts`, `shared/lib/utils.test.ts:6,11` — trim language/library-level assertions.
-- Add top-level `describe`: `furniture-drag.test.ts`, `is-mesh.test.ts`.
-- Rename `'should …'` titles: `furniture-serialization.test.ts`.
+- ✅ `shared/lib/utils.test.ts` — merged the two near-trivial `anchorNameFromId` cases (prefix + allowed chars) into one.
+- ✅ `core/persistence/furniture-serialization.test.ts` — renamed `'should …'` titles to the imperative convention.
+- ↪ Add top-level `describe` to `furniture-drag.test.ts` / `is-mesh.test.ts` — purely cosmetic; a whole-file re-indent for the wrapper, so skipped to avoid churn.
+- ↪ `is-mesh.test.ts` — kept; it exercises our `isMesh` type predicate (low value but cheap, not deleted).
 
 ## Deferred to later phases (expand / source-coupled)
 
 Marked here, **not acted on** in this tests-only phase:
 
-- **Needs a source change first (`fix→deferred`):** expose a public preview selector
-  so `scene-document-store.test.ts`/`preview-actions.test.ts` stop reading
-  `previewedIdRaw`. (`preview-actions.test.ts` can already use the existing
-  `getPreviewedId`; the store's own preview state has no public getter.)
+- **Needs a source change first (`fix→deferred`):** a public preview selector so
+  `scene-document-store.test.ts` stops reading `previewedIdRaw`; a semantic preview
+  attribute for `outliner.test.tsx`. (`preview-actions.test.ts:30` can already swap
+  `previewedIdRaw` for the existing `getPreviewedId` — a clean follow-up.)
+- **Over-mock rewrites (overlap coverage work):** the category-C deferrals above.
 - **Coverage gaps to weigh against the coverage map (Phase 2):**
   `share-scene` native-share path; `movement-actions` announcement strings;
   `get-visual-object-bounds` returned bounds; the untested `use*Operations` hook

@@ -55,16 +55,13 @@ describe('KeyboardShortcutsDialog', () => {
     ).toBeVisible()
     const tables = screen.getAllByRole('table')
     expect(tables.length).toBeGreaterThan(1)
+    // Assert the section structure and one representative row per section rather
+    // than every label (those mirror the shortcut definitions and would churn on
+    // any copy change).
     expect(screen.getByText('Navigation')).toBeVisible()
     expect(screen.getByText('Focus inspector')).toBeVisible()
-    expect(screen.getByText('Focus room view')).toBeVisible()
-    expect(screen.getByText('Focus Furniture in room')).toBeVisible()
     expect(screen.getByText('Scene/Global')).toBeVisible()
-    expect(screen.getByText('Preview next item')).toBeVisible()
-    expect(screen.getByText('Select previewed item')).toBeVisible()
-    expect(screen.getByText('Nudge selected item (0.5 m)')).toBeVisible()
     expect(screen.getByText('Clear selection')).toBeVisible()
-    expect(screen.getByText('Start Over')).toBeVisible()
     expect(
       screen.getByText(
         /Most shortcuts below work only while the 3D room view is focused/i,

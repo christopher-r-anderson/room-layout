@@ -2,11 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { anchorNameFromId, parseAriaShortcuts } from './utils'
 
 describe('anchorNameFromId', () => {
-  it('prefixes values with a CSS custom property marker', () => {
-    expect(anchorNameFromId('abc123')).toBe('--abc123')
-  })
-
-  it('preserves allowed identifier characters', () => {
+  it('prefixes the custom-property marker and preserves allowed identifier characters', () => {
     expect(anchorNameFromId('A_z-09')).toBe('--A_z-09')
   })
 
