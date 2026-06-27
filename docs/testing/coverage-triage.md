@@ -16,8 +16,13 @@ recommendation; the actual cut is a decision for Phase 3.
   (announcements), `get-visual-object-bounds`, `scene-services`, `scene-model`,
   `selection-focus-store`, `validate-catalog-asset-nodes`, `catalog-manifest`,
   `use-camera-key-motion`. Suite 595 → 639 tests; statements 77.3% → 79.0%.
-- **Tier 2 — pending a decision.** Only `use-furniture-operations` is recommended
-  (as a real-store integration test); the thin wrappers stay with e2e.
+- **Tier 2 — done (Phase 3), via extraction not integration.** On inspection
+  `use-furniture-operations` had no r3f binding and its `move`/`setSelectionTransform`
+  decision logic was cleanly pure, just inlined. Extracted to
+  `resolveMoveSelectionInHistory`/`resolveSetSelectionTransformInHistory` in
+  `furniture-operations.ts` (matching the existing `*InHistory` seam) and
+  unit-tested there; the hook is now thin glue covered by e2e. The remaining thin
+  wrappers (`rotate`/`delete`/`add` — already pure-extracted) stay as-is.
 - **Tier 3 — unchanged** (intentional unit skips).
 
 ## Tier 1 — pure logic, cheap, real branches (recommended)
