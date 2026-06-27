@@ -7,9 +7,48 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { analyzer, unstableRolldownAdapter } from 'vite-bundle-analyzer'
 import { fileURLToPath, URL } from 'node:url'
+import type { Plugin } from 'vite'
 
 const defaultPagesBasePath = '/room-layout/'
 const productionBasePath = process.env.VITE_BASE_PATH ?? defaultPagesBasePath
+
+// Inject a modulepreload hint for the lazily-imported engine chunk so it
+// downloads in parallel with the shell rather than waiting for React to mount and
+// trigger the dynamic import. Module-map dedup means the later import() reuses the
+// preloaded module — no double download. The chunk name is hashed, so the hint is
+// resolved from the emitted bundle at build time.
+function preloadEngineChunk(): Plugin {
+  let base = '/'
+  return {
+    name: 'preload-engine-chunk',
+    apply: 'build',
+    configResolved(config) {
+      base = config.base
+    },
+    transformIndexHtml: {
+      order: 'post',
+      handler(_html, ctx) {
+        const engineFile = Object.keys(ctx.bundle ?? {}).find((fileName) =>
+          /scene-canvas-[\w-]+\.js$/.test(fileName),
+        )
+        if (!engineFile) {
+          return []
+        }
+        return [
+          {
+            tag: 'link',
+            attrs: {
+              rel: 'modulepreload',
+              crossorigin: '',
+              href: base + engineFile,
+            },
+            injectTo: 'head',
+          },
+        ]
+      },
+    },
+  }
+}
 
 // Opt-in bundle analysis: `pnpm analyze-bundle` sets ANALYZE and emits a
 // self-contained interactive report at bundle-report.html (gitignored). Vite 8
@@ -23,6 +62,7 @@ export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
+    preloadEngineChunk(),
     ...(analyzeBundle
       ? [
           unstableRolldownAdapter(
