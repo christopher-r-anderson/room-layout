@@ -1,68 +1,41 @@
 import { expect, test } from '@playwright/test'
 import {
   addFurniture,
-  deleteSelectedFurniture,
   openEditor,
   rotateSelectionRight,
   waitForFirstItemRotationY,
   waitForItemCount,
 } from './support/editor-harness'
 
-test('undo and redo restore editor history across add, rotate, and delete', async ({
+// Integration smoke: real operations commit to the shared history, and undo/redo
+// route through both the toolbar button and Ctrl+Z. The stack ordering and each
+// operation's history transition are unit-tested (editor-history, scene-history-
+// state, furniture-operations); delete's undo is covered in editor-hotkeys.
+test('undo and redo route through the toolbar and keyboard to the shared history', async ({
   page,
 }) => {
   await openEditor(page)
 
   const addedState = await addFurniture(page, 'Leather Couch')
   expect(addedState.itemCount).toBe(1)
-  expect(addedState.selectedName).toBe('Leather Couch')
+  const initialRotationY = addedState.items[0].rotationY
 
-  const initialItem = addedState.items[0]
   const rotatedState = await rotateSelectionRight(page)
-  const rotatedItem = rotatedState.items[0]
-  expect(rotatedState.itemCount).toBe(1)
-  expect(rotatedItem.id).toBe(initialItem.id)
-  expect(rotatedItem.rotationY).not.toBe(initialItem.rotationY)
+  expect(rotatedState.items[0].rotationY).not.toBe(initialRotationY)
+  const rotatedRotationY = rotatedState.items[0].rotationY
 
-  const deletedState = await deleteSelectedFurniture(page)
-  expect(deletedState.itemCount).toBe(0)
-  expect(deletedState.selectedName).toBeNull()
-
+  // Undo the rotation via keyboard, then the add via the toolbar button.
   await page.keyboard.press('Control+Z')
-  const afterUndoDelete = await waitForItemCount(page, 1)
-  expect(afterUndoDelete.itemCount).toBe(1)
-  expect(afterUndoDelete.items[0].rotationY).toBeCloseTo(rotatedItem.rotationY)
+  await waitForFirstItemRotationY(page, initialRotationY, 6)
 
   await page.getByRole('button', { name: 'Undo' }).click()
-  const afterUndoRotate = await waitForFirstItemRotationY(
-    page,
-    initialItem.rotationY,
-    6,
-  )
-  expect(afterUndoRotate.itemCount).toBe(1)
-  expect(afterUndoRotate.items[0].rotationY).toBeCloseTo(initialItem.rotationY)
+  await waitForItemCount(page, 0)
 
-  await page.getByRole('button', { name: 'Undo' }).click()
-  const afterUndoAdd = await waitForItemCount(page, 0)
-  expect(afterUndoAdd.itemCount).toBe(0)
-  expect(afterUndoAdd.selectedName).toBeNull()
-
+  // Redo re-applies both operations via the toolbar.
   await page.getByRole('button', { name: 'Redo' }).click()
   const afterRedoAdd = await waitForItemCount(page, 1)
-  expect(afterRedoAdd.itemCount).toBe(1)
-  expect(afterRedoAdd.items[0].rotationY).toBe(initialItem.rotationY)
+  expect(afterRedoAdd.items[0].rotationY).toBe(initialRotationY)
 
   await page.getByRole('button', { name: 'Redo' }).click()
-  const afterRedoRotate = await waitForFirstItemRotationY(
-    page,
-    rotatedItem.rotationY,
-    6,
-  )
-  expect(afterRedoRotate.itemCount).toBe(1)
-  expect(afterRedoRotate.items[0].rotationY).toBeCloseTo(rotatedItem.rotationY)
-
-  await page.getByRole('button', { name: 'Redo' }).click()
-  const afterRedoDelete = await waitForItemCount(page, 0)
-  expect(afterRedoDelete.itemCount).toBe(0)
-  expect(afterRedoDelete.selectedName).toBeNull()
+  await waitForFirstItemRotationY(page, rotatedRotationY, 6)
 })
