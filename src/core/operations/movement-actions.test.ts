@@ -10,6 +10,7 @@ import {
   resetEditorLifecycleStore,
 } from '@/core/stores/editor-lifecycle-store'
 import { sceneCommands } from '@/scene/scene-commands'
+import { feedbackActions } from '@/core/stores/feedback-store'
 import { CHAIR } from '@/test/support/furniture'
 import { moveSelection, rotateSelection } from './movement-actions'
 
@@ -79,5 +80,58 @@ describe('movement-actions', () => {
       { source: 'keyboard' },
     )
     expect(rotateSelectionSpy).toHaveBeenCalledWith(Math.PI / 12)
+  })
+
+  it('announces the moved item and its new position on success', () => {
+    vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
+    vi.spyOn(sceneCommands, 'moveSelection').mockReturnValue({
+      ok: true,
+      position: [1.2, 0, -3.4],
+    })
+
+    moveSelection({ x: 1, z: 0 })
+
+    expect(feedbackActions.queueMovementAnnouncement).toHaveBeenCalledWith(
+      'Chair moved to X 1.2 meters and Z -3.4 meters.',
+    )
+  })
+
+  it('announces the reason when a move is blocked', () => {
+    vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
+    vi.spyOn(sceneCommands, 'moveSelection').mockReturnValue({
+      ok: false,
+      reason: 'blocked-bounds',
+    })
+
+    moveSelection({ x: 1, z: 0 })
+
+    expect(feedbackActions.queueMovementAnnouncement).toHaveBeenCalledWith(
+      'Movement blocked by room bounds.',
+    )
+  })
+
+  it('stays silent on a no-op move', () => {
+    vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
+    vi.spyOn(sceneCommands, 'moveSelection').mockReturnValue({
+      ok: false,
+      reason: 'no-op',
+    })
+
+    moveSelection({ x: 1, z: 0 })
+
+    expect(feedbackActions.queueMovementAnnouncement).not.toHaveBeenCalled()
+  })
+
+  it('announces a successful rotation', () => {
+    vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
+    vi.spyOn(sceneCommands, 'rotateSelection').mockImplementation(
+      () => undefined,
+    )
+
+    rotateSelection(1)
+
+    expect(feedbackActions.announcePolite).toHaveBeenCalledWith(
+      'Chair rotated.',
+    )
   })
 })
