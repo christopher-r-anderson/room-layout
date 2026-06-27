@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { createHistoryState } from '@/shared/lib/ui/editor-history'
 import type { FurnitureItem } from '@/domain/furniture'
 import {
@@ -35,42 +35,36 @@ function item(id: string): FurnitureItem {
 describe('requestOutlinerFocus', () => {
   beforeEach(() => {
     resetSceneDocumentStore()
+    resetSelectionFocusStore()
   })
 
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
-
-  it('targets the selected item when one is selected', () => {
-    const spy = vi.spyOn(selectionFocusActions, 'requestOutlinerFocus')
+  it('queues a focus request targeting the selected item', () => {
     sceneDocumentActions.setHistory(createHistoryState([item('a'), item('b')]))
     sceneDocumentActions.setSelectedId('b')
 
     requestOutlinerFocus()
 
-    expect(spy).toHaveBeenCalledWith(
+    expect(selectionFocusStore.getState().outlinerFocusRequest).toEqual(
       expect.objectContaining({ targetSelectedId: 'b' }),
     )
   })
 
-  it('targets the first item when nothing is selected but items exist', () => {
-    const spy = vi.spyOn(selectionFocusActions, 'requestOutlinerFocus')
+  it('queues a focus request for the first item when nothing is selected', () => {
     sceneDocumentActions.setHistory(createHistoryState([item('a')]))
 
     requestOutlinerFocus()
 
-    expect(spy).toHaveBeenCalledWith(
+    expect(selectionFocusStore.getState().outlinerFocusRequest).toEqual(
       expect.objectContaining({ preferredIndex: 0 }),
     )
   })
 
-  it('targets the outliner container when there are no items', () => {
-    const spy = vi.spyOn(selectionFocusActions, 'requestOutlinerFocus')
+  it('queues a focus request for the outliner container when there are no items', () => {
     sceneDocumentActions.setHistory(createHistoryState([]))
 
     requestOutlinerFocus()
 
-    expect(spy).toHaveBeenCalledWith(
+    expect(selectionFocusStore.getState().outlinerFocusRequest).toEqual(
       expect.objectContaining({ focusContainer: true }),
     )
   })
