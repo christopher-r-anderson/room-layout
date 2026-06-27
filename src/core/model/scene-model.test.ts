@@ -90,4 +90,50 @@ describe('scene-model', () => {
       ),
     ).toBe(false)
   })
+
+  it('returns false when only the wall finish differs', () => {
+    const defaults = {
+      items: [],
+      floorFinishId: 'wood-floor',
+      wallFinishId: 'light-gray',
+    }
+
+    expect(
+      isSceneStateAtDefaults(
+        { items: [], floorFinishId: 'wood-floor', wallFinishId: 'sage-green' },
+        defaults,
+      ),
+    ).toBe(false)
+  })
+
+  it('returns false when an item transform differs at the same item count', () => {
+    const defaults = {
+      items: [
+        {
+          catalogId: 'chair-1',
+          position: [1, 0, 2] as [number, number, number],
+          rotationY: 0,
+        },
+      ],
+      floorFinishId: 'wood-floor',
+      wallFinishId: 'light-gray',
+    }
+
+    expect(
+      isSceneStateAtDefaults(
+        {
+          items: [
+            {
+              catalogId: 'chair-1',
+              position: [1, 0, 9] as [number, number, number],
+              rotationY: 0,
+            },
+          ],
+          floorFinishId: 'wood-floor',
+          wallFinishId: 'light-gray',
+        },
+        defaults,
+      ),
+    ).toBe(false)
+  })
 })

@@ -36,6 +36,15 @@ describe('validateCatalogAssetNodes', () => {
     }).not.toThrow()
   })
 
+  it('throws when the collection source scene is not loaded', () => {
+    expect(() => {
+      validateCatalogAssetNodes({
+        catalog: [createCatalogEntry()],
+        sourceScenesByCollectionId: new Map(),
+      })
+    }).toThrow('source scene not loaded for collection: collection-1')
+  })
+
   it('throws when the root node is missing', () => {
     expect(() => {
       validateCatalogAssetNodes({

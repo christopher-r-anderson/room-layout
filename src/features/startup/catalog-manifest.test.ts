@@ -362,6 +362,48 @@ describe('fetchCatalogManifest', () => {
       )
     })
 
+    it('throws ManifestValidationError when floor diffusePath is not relative', async () => {
+      const badManifest = {
+        ...VALID_MANIFEST,
+        environment: {
+          ...VALID_MANIFEST.environment,
+          floorFinishes: [
+            {
+              ...VALID_MANIFEST.environment.floorFinishes[0],
+              diffusePath: '/absolute/wood_diff.ktx2',
+            },
+          ],
+        },
+      }
+
+      mockFetchOk(badManifest)
+
+      await expect(fetchCatalogManifest()).rejects.toThrow(
+        '"diffusePath" must be a relative path',
+      )
+    })
+
+    it('throws ManifestValidationError when floor normalPath is not relative', async () => {
+      const badManifest = {
+        ...VALID_MANIFEST,
+        environment: {
+          ...VALID_MANIFEST.environment,
+          floorFinishes: [
+            {
+              ...VALID_MANIFEST.environment.floorFinishes[0],
+              normalPath: 'https://cdn.example.com/wood_nor.ktx2',
+            },
+          ],
+        },
+      }
+
+      mockFetchOk(badManifest)
+
+      await expect(fetchCatalogManifest()).rejects.toThrow(
+        '"normalPath" must be a relative path',
+      )
+    })
+
     it('throws ManifestValidationError when floor tileSizeMeters is missing', async () => {
       const badManifest = {
         ...VALID_MANIFEST,

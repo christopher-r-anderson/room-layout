@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import {
   clearSceneServices,
   getSceneServices,
+  getSceneServicesIfReady,
   registerSceneServices,
 } from './scene-services'
 import type { SceneServices } from './scene-services'
@@ -50,5 +51,23 @@ describe('scene-services', () => {
     registerSceneServices(services)
 
     expect(getSceneServices()).toBe(services)
+  })
+
+  it('reports readiness through getSceneServicesIfReady without throwing', () => {
+    expect(getSceneServicesIfReady()).toBeNull()
+
+    const services = createFakeServices()
+    registerSceneServices(services)
+
+    expect(getSceneServicesIfReady()).toBe(services)
+  })
+
+  it('clears registered services', () => {
+    registerSceneServices(createFakeServices())
+
+    clearSceneServices()
+
+    expect(getSceneServicesIfReady()).toBeNull()
+    expect(() => getSceneServices()).toThrow('scene services not registered')
   })
 })
