@@ -41,6 +41,13 @@ recommendation; the actual cut is a decision for Phase 3.
     `asset-path.test.ts`.
   - None needed flagging as integration-shaped, so no new inputs to the e2e audit
     from this pass.
+- **Incidental-coverage gap pass — done.** Coverage % hides logic that is exercised
+  only through another file's test (e.g. `asset-path` was). A per-source-file sweep
+  for logic modules lacking a co-located test surfaced the real cases: added tests
+  for the pure `toolbar-placement/{rect-utils, convex-geometry, toolbar-anchors}.ts`
+  (reached only via a hook, so barely covered) and `selection-controls-interactivity`.
+  Deferred (store-shaped, not pure-geometry): `assets-store`, `catalog-selection-store`.
+  Skipped (trivial + heavily exercised indirectly): `ui-bounds`.
 
 ## Tier 1 — pure logic, cheap, real branches (recommended)
 
