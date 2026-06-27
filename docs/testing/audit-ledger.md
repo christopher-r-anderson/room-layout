@@ -159,7 +159,7 @@ Grouped by type. ✅ = applied in Phase 1, ↪ = deferred (with reason).
 - ✅ `features/history/history-tools.test.tsx` — dropped the `h-9` assertion, kept the sr-only label check.
 - ✅ `shared/ui/alert-dialog.test.tsx` — assert `data-size` plus the mobile gutter.
 - ✅ `shared/ui/dialog.test.tsx` — kept (the twMerge gutter-survival classes _are_ the unit under test; documented as such).
-- ↪ `features/outliner/outliner.test.tsx:165-166,178` — preview state has no semantic signal in the source (selected uses `aria-current`; preview is `bg-accent` only). Replacing the class assertion needs a source change (e.g. a `data-previewed` attribute); deferred.
+- ✅ `features/outliner/outliner.test.tsx` — source now exposes a `data-previewed` state attribute (CSS driven from it), and the test asserts that instead of the `bg-accent` token. Note: this is a styling/state hook, **not** aria — preview is correctly AT-silent (focus is self-announcing; keyboard browse announces at the source; hover is pointer-only), so only `aria-current` for selection carries AT semantics.
 
 ### B. Broken / brittle correctness — all applied
 
@@ -195,8 +195,10 @@ Grouped by type. ✅ = applied in Phase 1, ↪ = deferred (with reason).
 Marked here, **not acted on** in this tests-only phase:
 
 - **Needs a source change first (`fix→deferred`):** a public preview selector so
-  `scene-document-store.test.ts` stops reading `previewedIdRaw`; a semantic preview
-  attribute for `outliner.test.tsx`.
+  `scene-document-store.test.ts` stops reading `previewedIdRaw` — though on review
+  this is likely a false positive (the store owns that field and the gated
+  `getPreviewedId` would mask it in those tests), pending a decision.
+  (`outliner.test.tsx` is resolved — see Phase 1 backlog A.)
 - **Over-mock rewrites (overlap coverage work):** the category-C deferrals above.
 - **Coverage gaps to weigh against the coverage map (Phase 2):**
   `share-scene` native-share path; `movement-actions` announcement strings;

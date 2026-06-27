@@ -155,18 +155,18 @@ describe('SceneOutliner', () => {
     )
   })
 
-  it('applies preview styling to the previewed non-selected item', async () => {
+  it('marks the previewed non-selected item with a preview state attribute', async () => {
     sceneDocumentActions.setPreviewedId('item-2')
 
     renderOutliner()
 
     await waitFor(() => {
       const previewedButton = screen.getByRole('button', { name: /end table/i })
-      expect(previewedButton.className).toMatch(/bg-accent/)
+      expect(previewedButton).toHaveAttribute('data-previewed')
     })
   })
 
-  it('does not apply preview styling to the selected item even if it matches previewedId', async () => {
+  it('does not mark the selected item as previewed even if it matches previewedId', async () => {
     sceneDocumentActions.setPreviewedId('item-1')
 
     renderOutliner()
@@ -175,7 +175,7 @@ describe('SceneOutliner', () => {
       const selectedButton = screen.getByRole('button', {
         name: /leather couch/i,
       })
-      expect(selectedButton.className).not.toMatch(/bg-accent/)
+      expect(selectedButton).not.toHaveAttribute('data-previewed')
     })
   })
 

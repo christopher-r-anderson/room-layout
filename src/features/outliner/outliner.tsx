@@ -168,6 +168,7 @@ export function Outliner() {
                           }}
                           type="button"
                           aria-current={isSelected ? 'true' : undefined}
+                          data-previewed={isPreviewed ? true : undefined}
                           disabled={disabled}
                           className={cn(
                             buttonVariants({
@@ -175,7 +176,7 @@ export function Outliner() {
                               size: 'sm',
                             }),
                             'w-full justify-between text-left',
-                            isPreviewed && 'bg-accent text-accent-foreground',
+                            'data-[previewed]:bg-accent data-[previewed]:text-accent-foreground',
                           )}
                           onClick={(e) => {
                             const source: PanelInteractionSource =
