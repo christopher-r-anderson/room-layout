@@ -1,15 +1,6 @@
-import { Canvas } from '@react-three/fiber'
-import {
-  Suspense,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  type ComponentProps,
-} from 'react'
+import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
-import { NeutralToneMapping, SRGBColorSpace } from 'three'
-import { Scene } from '@/scene/scene'
+import type { SceneCanvasProps } from './scene-canvas'
 import { useIsBlockingOverlayOpen } from '@/core/stores/dialog-store'
 import { useSelectedFurniture } from '@/core/stores/scene-document-store'
 import {
@@ -25,10 +16,6 @@ import {
   useStartupLoadingActive,
 } from '@/core/stores/editor-lifecycle-store'
 import { useCatalogEntries, useCollections } from '@/core/stores/assets-store'
-import {
-  completeAssetLoad,
-  notifyAssetError,
-} from '@/core/operations/startup-coordinator'
 import { useKeyboardShortcuts } from '@/features/keyboard/use-keyboard-shortcuts'
 import { useCameraKeyState } from '@/features/keyboard/use-camera-key-state'
 import { useCommandDispatch } from '@/core/commands/command-dispatch-context'
@@ -36,17 +23,18 @@ import { useEditorRefs } from '@/shared/providers/editor-refs-context'
 import { Announcer } from './feedback/announcer'
 import { Toaster } from '@/shared/ui/sonner'
 import { EditorOverlay } from './editor-overlay'
-import { SceneAssetErrorBoundary } from './scene-asset-error-boundary'
 
-type SceneProps = ComponentProps<typeof Scene>
+// The 3D engine (three/r3f/drei) lives in this lazily-imported chunk so it
+// downloads in parallel with — and never blocks — the initial shell paint.
+const SceneCanvas = lazy(() => import('./scene-canvas'))
 
 export interface EditorBodyProps {
   testOverlaysHidden: boolean
-  canvasShadowMode: false | 'percentage'
+  canvasShadowMode: SceneCanvasProps['canvasShadowMode']
   isE2ELowRenderQuality: boolean
-  onScenePreviewChange: NonNullable<SceneProps['onPreviewChange']>
-  onFloorLoadingChange: NonNullable<SceneProps['onFloorLoadingChange']>
-  onCanvasPointerSelection: NonNullable<SceneProps['onCanvasPointerSelection']>
+  onScenePreviewChange: SceneCanvasProps['onScenePreviewChange']
+  onFloorLoadingChange: SceneCanvasProps['onFloorLoadingChange']
+  onCanvasPointerSelection: SceneCanvasProps['onCanvasPointerSelection']
   onClearCanvasSelection: () => void
 }
 
@@ -124,6 +112,15 @@ export function EditorBody({
     roomViewHasFocus,
   })
 
+  const handleCanvasPointerMissed = useCallback(() => {
+    if (!editorInteractionsEnabled) {
+      return
+    }
+
+    focusRoomView()
+    onClearCanvasSelection()
+  }, [editorInteractionsEnabled, focusRoomView, onClearCanvasSelection])
+
   return (
     <main
       className="relative size-full"
@@ -153,44 +150,22 @@ export function EditorBody({
         }}
         onPointerDownCapture={focusRoomView}
       >
-        <Canvas
-          camera={{
-            position: [3, 2.5, 3],
-            fov: 50,
-          }}
-          frameloop="demand"
-          onCreated={({ gl }) => {
-            gl.outputColorSpace = SRGBColorSpace
-            gl.toneMapping = NeutralToneMapping
-            gl.toneMappingExposure = isE2ELowRenderQuality ? 1 : 1.05
-          }}
-          onPointerMissed={() => {
-            if (!editorInteractionsEnabled) {
-              return
-            }
-
-            focusRoomView()
-            onClearCanvasSelection()
-          }}
-          shadows={canvasShadowMode}
-        >
-          <SceneAssetErrorBoundary key={sceneEpoch} onError={notifyAssetError}>
-            <Suspense fallback={null}>
-              <Scene
-                renderQuality={isE2ELowRenderQuality ? 'e2e-low' : 'default'}
-                catalog={catalog}
-                collections={collections}
-                onCanvasPointerSelection={onCanvasPointerSelection}
-                onAssetsReady={completeAssetLoad}
-                previewedId={previewedId}
-                onPreviewChange={onScenePreviewChange}
-                floorOption={selectedFloorOption}
-                wallOption={selectedWallOption}
-                onFloorLoadingChange={onFloorLoadingChange}
-              />
-            </Suspense>
-          </SceneAssetErrorBoundary>
-        </Canvas>
+        <Suspense fallback={null}>
+          <SceneCanvas
+            isE2ELowRenderQuality={isE2ELowRenderQuality}
+            canvasShadowMode={canvasShadowMode}
+            sceneEpoch={sceneEpoch}
+            onPointerMissed={handleCanvasPointerMissed}
+            catalog={catalog}
+            collections={collections}
+            previewedId={previewedId}
+            selectedFloorOption={selectedFloorOption}
+            selectedWallOption={selectedWallOption}
+            onCanvasPointerSelection={onCanvasPointerSelection}
+            onScenePreviewChange={onScenePreviewChange}
+            onFloorLoadingChange={onFloorLoadingChange}
+          />
+        </Suspense>
       </section>
 
       {testOverlaysHidden ? null : <EditorOverlay />}
