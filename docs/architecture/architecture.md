@@ -94,7 +94,7 @@ For local context inside each area, see:
 
 These are temporary or intentionally narrow.
 
-- Scene runtime imports in app/features are allowlisted to a small contract surface (`scene-commands`, `scene.types`, and the `furniture-collection-cache` GLTF runtime). `shared` no longer imports scene at all.
+- Scene runtime imports in app/features are allowlisted to a small contract surface (`scene-commands`, `scene.types`); `app` may additionally import `scene` itself (lazily, behind the code-split engine chunk). `shared` no longer imports scene at all.
 
 ## Future Improvements
 

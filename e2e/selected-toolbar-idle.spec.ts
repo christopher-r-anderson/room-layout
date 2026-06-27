@@ -18,7 +18,9 @@ import {
 // context/dependency, or an effect that setStates every frame) pushes one of
 // these counters above zero. Frame-rate-independent: idle work is structurally
 // zero however many frames render.
-test('the editor stays quiescent while the camera is idle', async ({ page }) => {
+test('the editor stays quiescent while the camera is idle', async ({
+  page,
+}) => {
   await openEditor(page)
   await addFurniture(page, 'Leather Couch')
 
