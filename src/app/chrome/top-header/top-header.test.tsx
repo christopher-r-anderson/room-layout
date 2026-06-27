@@ -38,13 +38,13 @@ const ENVIRONMENT: EnvironmentMaterialConfig = {
   ],
 }
 
-vi.mock('@/features/shell/use-header-layout-mode', () => ({
+vi.mock('@/shared/layout/use-header-layout-mode', () => ({
   useHeaderLayoutMode: () => 'desktop' as const,
 }))
 
 vi.mock('./top-header-desktop', () => ({
   TopHeaderDesktop: (props: TopHeaderDesktopProps) => (
-    <div>
+    <div data-testid="desktop-header">
       <span data-testid="floor-finish-id">{props.floorFinishId}</span>
       <span data-testid="wall-finish-id">{props.wallFinishId}</span>
     </div>
@@ -53,7 +53,7 @@ vi.mock('./top-header-desktop', () => ({
 
 vi.mock('./top-header-mobile', () => ({
   TopHeaderMobile: (props: TopHeaderMobileProps) => (
-    <div>
+    <div data-testid="mobile-header">
       <span data-testid="floor-finish-id">{props.floorFinishId}</span>
       <span data-testid="wall-finish-id">{props.wallFinishId}</span>
     </div>
@@ -100,6 +100,8 @@ describe('TopHeader', () => {
 
     renderTopHeader()
 
+    expect(screen.getByTestId('desktop-header')).toBeInTheDocument()
+    expect(screen.queryByTestId('mobile-header')).not.toBeInTheDocument()
     expect(screen.getByTestId('floor-finish-id')).toHaveTextContent(
       'wood-floor',
     )

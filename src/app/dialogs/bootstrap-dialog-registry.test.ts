@@ -16,24 +16,12 @@ import {
 } from '@/core/stores/scene-document-store'
 import { createHistoryState } from '@/shared/lib/ui/editor-history'
 import { DIALOG_IDS } from '@/app/dialogs/dialog-registry'
+import { CHAIR } from '@/test/support/furniture'
 import {
   bootstrapDialogRegistry,
   buildDialogRuntimeContext,
   resetDialogRegistryForTests,
 } from './bootstrap-dialog-registry'
-
-const CHAIR = {
-  id: 'chair-1',
-  catalogId: 'chair',
-  collectionId: 'chairs',
-  footprintSize: { width: 1, depth: 1 },
-  kind: 'armchair' as const,
-  name: 'Chair',
-  nodeName: 'ChairNode',
-  position: [0, 0, 0] as [number, number, number],
-  rotationY: 0,
-  sourcePath: '/models/chair.glb',
-}
 
 function createContext() {
   return {
@@ -52,7 +40,9 @@ describe('bootstrapDialogRegistry', () => {
   it('registers dialog definitions and configures runtime context', () => {
     bootstrapDialogRegistry(createContext())
 
-    expect(Object.keys(dialogStoreForTests.getState().registry).length).toBe(7)
+    expect(Object.keys(dialogStoreForTests.getState().registry).sort()).toEqual(
+      [...Object.values(DIALOG_IDS)].sort(),
+    )
     expect(dialogActions.openDialog(DIALOG_IDS.catalog)).toBe(true)
   })
 
@@ -68,7 +58,7 @@ describe('bootstrapDialogRegistry', () => {
     )
 
     expect(secondRegistryKeys).toEqual(firstRegistryKeys)
-    expect(secondRegistryKeys.length).toBe(7)
+    expect(secondRegistryKeys).toHaveLength(Object.values(DIALOG_IDS).length)
   })
 })
 

@@ -2,6 +2,7 @@
 
 import { beforeEach, describe, expect, it } from 'vitest'
 import type { FurnitureItem } from '@/domain/furniture'
+import { saveJson } from '@/shared/lib/ui/storage'
 import { clearSceneDraft, loadSceneDraft, saveSceneDraft } from './scene-draft'
 
 function makeFurnitureItem(overrides?: Partial<FurnitureItem>): FurnitureItem {
@@ -61,10 +62,9 @@ describe('scene draft storage', () => {
   })
 
   it('returns null for invalid or incompatible payload', () => {
-    window.localStorage.setItem(
-      'room-layout:scene-draft',
-      JSON.stringify({ version: 2, items: [] }),
-    )
+    // Write a future-version payload through the same storage API the module
+    // uses, rather than coupling to the storage lib's key-prefixing.
+    saveJson('scene-draft', { version: 2, items: [] })
 
     expect(loadSceneDraft()).toBeNull()
   })
