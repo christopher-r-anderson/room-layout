@@ -1,6 +1,5 @@
 import { useCallback } from 'react'
 import type { Object3D } from 'three'
-import { commitHistoryPresent } from '@/shared/lib/ui/editor-history'
 import {
   sceneDocumentActions,
   sceneDocumentStore,
@@ -9,16 +8,13 @@ import type {
   FurnitureCatalogEntry,
   FurnitureCollection,
 } from '@/domain/catalog'
-import {
-  resolveAbsoluteFurnitureTransform,
-  resolveMovedFurniturePosition,
-  type LayoutBounds,
-} from '@/domain/geometry/furniture-layout'
+import { type LayoutBounds } from '@/domain/geometry/furniture-layout'
 import {
   addFurnitureToHistory,
-  areFurnitureCollectionsEqual,
   createFurnitureInstanceId,
   deleteSelectionFromHistory,
+  resolveMoveSelectionInHistory,
+  resolveSetSelectionTransformInHistory,
   rotateSelectedFurnitureInHistory,
 } from './furniture-operations'
 import type {
@@ -82,87 +78,20 @@ export function useFurnitureOperations({
     ): MoveSelectionResult => {
       void _options
       const { history, selectedId } = sceneDocumentStore.getState()
-      const furnitureItems = history.present
-
-      if (dragState) {
-        return {
-          ok: false,
-          reason: 'dragging',
-        }
-      }
-
-      if (!selectedId) {
-        return {
-          ok: false,
-          reason: 'no-selection',
-        }
-      }
-
-      const activeItem = furnitureItems.find((item) => item.id === selectedId)
-
-      if (!activeItem) {
-        return {
-          ok: false,
-          reason: 'no-selection',
-        }
-      }
-
-      const proposedPosition: [number, number, number] = [
-        activeItem.position[0] + delta.x,
-        activeItem.position[1],
-        activeItem.position[2] + delta.z,
-      ]
-
-      const resolvedPosition = resolveMovedFurniturePosition({
-        movingId: selectedId,
-        proposedPosition,
-        items: furnitureItems,
-        edgeSnapThreshold,
+      const { history: nextHistory, result } = resolveMoveSelectionInHistory({
+        history,
+        selectedId,
+        isDragging: dragState !== null,
+        delta,
         bounds,
+        edgeSnapThreshold,
       })
 
-      if (!resolvedPosition) {
-        return {
-          ok: false,
-          reason: 'blocked-collision',
-        }
+      if (result.ok) {
+        sceneDocumentActions.setHistory(nextHistory)
       }
 
-      const positionUnchanged =
-        resolvedPosition[0] === activeItem.position[0] &&
-        resolvedPosition[1] === activeItem.position[1] &&
-        resolvedPosition[2] === activeItem.position[2]
-
-      if (positionUnchanged) {
-        const attemptedMovement =
-          proposedPosition[0] !== activeItem.position[0] ||
-          proposedPosition[2] !== activeItem.position[2]
-
-        return {
-          ok: false,
-          reason: attemptedMovement ? 'blocked-bounds' : 'no-op',
-        }
-      }
-
-      const nextFurniture = furnitureItems.map((item) => {
-        if (item.id !== selectedId) {
-          return item
-        }
-
-        return {
-          ...item,
-          position: resolvedPosition,
-        }
-      })
-
-      sceneDocumentActions.updateHistory((currentHistory) =>
-        commitHistoryPresent(currentHistory, nextFurniture),
-      )
-
-      return {
-        ok: true,
-        position: resolvedPosition,
-      }
+      return result
     },
     [dragState, bounds, edgeSnapThreshold],
   )
@@ -173,99 +102,20 @@ export function useFurnitureOperations({
       rotationY?: number
     }): UpdateSelectionTransformResult => {
       const { history, selectedId } = sceneDocumentStore.getState()
-      const furnitureItems = history.present
+      const { history: nextHistory, result } =
+        resolveSetSelectionTransformInHistory({
+          history,
+          selectedId,
+          isDragging: dragState !== null,
+          input,
+          bounds,
+        })
 
-      if (dragState) {
-        return {
-          ok: false,
-          reason: 'dragging',
-        }
+      if (result.ok) {
+        sceneDocumentActions.setHistory(nextHistory)
       }
 
-      if (!selectedId) {
-        return {
-          ok: false,
-          reason: 'no-selection',
-        }
-      }
-
-      const activeItem = furnitureItems.find((item) => item.id === selectedId)
-
-      if (!activeItem) {
-        return {
-          ok: false,
-          reason: 'no-selection',
-        }
-      }
-
-      const nextPosition = input.position ?? activeItem.position
-      const nextRotationY = input.rotationY ?? activeItem.rotationY
-
-      if (
-        nextPosition[0] === activeItem.position[0] &&
-        nextPosition[1] === activeItem.position[1] &&
-        nextPosition[2] === activeItem.position[2] &&
-        nextRotationY === activeItem.rotationY
-      ) {
-        return {
-          ok: false,
-          reason: 'no-op',
-        }
-      }
-
-      const resolvedTransform = resolveAbsoluteFurnitureTransform({
-        movingId: selectedId,
-        proposedPosition: nextPosition,
-        proposedRotationY: nextRotationY,
-        items: furnitureItems,
-        bounds,
-      })
-
-      if (!resolvedTransform) {
-        return {
-          ok: false,
-          reason: 'no-selection',
-        }
-      }
-
-      if (!resolvedTransform.ok) {
-        return resolvedTransform
-      }
-
-      const nextFurniture = furnitureItems.map((item) => {
-        if (item.id !== selectedId) {
-          return item
-        }
-
-        return {
-          ...item,
-          position: resolvedTransform.position,
-          rotationY: resolvedTransform.rotationY,
-        }
-      })
-
-      const nextHistory = commitHistoryPresent(
-        history,
-        nextFurniture,
-        areFurnitureCollectionsEqual,
-      )
-      const updatedItem = nextHistory.present.find(
-        (item) => item.id === selectedId,
-      )
-
-      if (!updatedItem) {
-        return {
-          ok: false,
-          reason: 'no-selection',
-        }
-      }
-
-      sceneDocumentActions.setHistory(nextHistory)
-
-      return {
-        ok: true,
-        item: updatedItem,
-      }
+      return result
     },
     [dragState, bounds],
   )

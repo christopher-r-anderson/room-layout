@@ -1,5 +1,7 @@
 import { findFurnitureSpawnPosition } from '@/domain/geometry/furniture-spawn'
 import {
+  resolveAbsoluteFurnitureTransform,
+  resolveMovedFurniturePosition,
   resolveRotatedFurnitureTransform,
   type LayoutBounds,
 } from '@/domain/geometry/furniture-layout'
@@ -15,6 +17,10 @@ import type {
 } from '@/domain/catalog'
 import { getCollection } from '@/domain/catalog'
 import type { FurnitureInstance, FurnitureItem } from '@/domain/furniture'
+import type {
+  MoveSelectionResult,
+  UpdateSelectionTransformResult,
+} from '../../scene.types'
 
 export type AddFurnitureResult =
   | { ok: true; id: string }
@@ -307,6 +313,186 @@ export function addFurnitureToHistory({
     },
     incrementInstanceId: true,
   }
+}
+
+export function resolveMoveSelectionInHistory({
+  history,
+  selectedId,
+  isDragging,
+  delta,
+  bounds,
+  edgeSnapThreshold,
+}: {
+  history: HistoryState<FurnitureItem[]>
+  selectedId: string | null
+  isDragging: boolean
+  delta: { x: number; z: number }
+  bounds: LayoutBounds
+  edgeSnapThreshold: number
+}): {
+  history: HistoryState<FurnitureItem[]>
+  result: MoveSelectionResult
+} {
+  const furnitureItems = history.present
+
+  if (isDragging) {
+    return { history, result: { ok: false, reason: 'dragging' } }
+  }
+
+  if (!selectedId) {
+    return { history, result: { ok: false, reason: 'no-selection' } }
+  }
+
+  const activeItem = furnitureItems.find((item) => item.id === selectedId)
+
+  if (!activeItem) {
+    return { history, result: { ok: false, reason: 'no-selection' } }
+  }
+
+  const proposedPosition: [number, number, number] = [
+    activeItem.position[0] + delta.x,
+    activeItem.position[1],
+    activeItem.position[2] + delta.z,
+  ]
+
+  const resolvedPosition = resolveMovedFurniturePosition({
+    movingId: selectedId,
+    proposedPosition,
+    items: furnitureItems,
+    edgeSnapThreshold,
+    bounds,
+  })
+
+  if (!resolvedPosition) {
+    return { history, result: { ok: false, reason: 'blocked-collision' } }
+  }
+
+  const positionUnchanged =
+    resolvedPosition[0] === activeItem.position[0] &&
+    resolvedPosition[1] === activeItem.position[1] &&
+    resolvedPosition[2] === activeItem.position[2]
+
+  if (positionUnchanged) {
+    // The clamp swallowed the move entirely: distinguish "hit a wall" (the user
+    // pushed but bounds held) from "nothing to do" (no displacement requested).
+    const attemptedMovement =
+      proposedPosition[0] !== activeItem.position[0] ||
+      proposedPosition[2] !== activeItem.position[2]
+
+    return {
+      history,
+      result: {
+        ok: false,
+        reason: attemptedMovement ? 'blocked-bounds' : 'no-op',
+      },
+    }
+  }
+
+  const nextFurniture = furnitureItems.map((item) => {
+    if (item.id !== selectedId) {
+      return item
+    }
+
+    return {
+      ...item,
+      position: resolvedPosition,
+    }
+  })
+
+  return {
+    history: commitHistoryPresent(
+      history,
+      nextFurniture,
+      areFurnitureCollectionsEqual,
+    ),
+    result: { ok: true, position: resolvedPosition },
+  }
+}
+
+export function resolveSetSelectionTransformInHistory({
+  history,
+  selectedId,
+  isDragging,
+  input,
+  bounds,
+}: {
+  history: HistoryState<FurnitureItem[]>
+  selectedId: string | null
+  isDragging: boolean
+  input: { position?: [number, number, number]; rotationY?: number }
+  bounds: LayoutBounds
+}): {
+  history: HistoryState<FurnitureItem[]>
+  result: UpdateSelectionTransformResult
+} {
+  const furnitureItems = history.present
+
+  if (isDragging) {
+    return { history, result: { ok: false, reason: 'dragging' } }
+  }
+
+  if (!selectedId) {
+    return { history, result: { ok: false, reason: 'no-selection' } }
+  }
+
+  const activeItem = furnitureItems.find((item) => item.id === selectedId)
+
+  if (!activeItem) {
+    return { history, result: { ok: false, reason: 'no-selection' } }
+  }
+
+  const nextPosition = input.position ?? activeItem.position
+  const nextRotationY = input.rotationY ?? activeItem.rotationY
+
+  if (
+    nextPosition[0] === activeItem.position[0] &&
+    nextPosition[1] === activeItem.position[1] &&
+    nextPosition[2] === activeItem.position[2] &&
+    nextRotationY === activeItem.rotationY
+  ) {
+    return { history, result: { ok: false, reason: 'no-op' } }
+  }
+
+  const resolvedTransform = resolveAbsoluteFurnitureTransform({
+    movingId: selectedId,
+    proposedPosition: nextPosition,
+    proposedRotationY: nextRotationY,
+    items: furnitureItems,
+    bounds,
+  })
+
+  if (!resolvedTransform) {
+    return { history, result: { ok: false, reason: 'no-selection' } }
+  }
+
+  if (!resolvedTransform.ok) {
+    return { history, result: resolvedTransform }
+  }
+
+  const nextFurniture = furnitureItems.map((item) => {
+    if (item.id !== selectedId) {
+      return item
+    }
+
+    return {
+      ...item,
+      position: resolvedTransform.position,
+      rotationY: resolvedTransform.rotationY,
+    }
+  })
+
+  const nextHistory = commitHistoryPresent(
+    history,
+    nextFurniture,
+    areFurnitureCollectionsEqual,
+  )
+  const updatedItem = nextHistory.present.find((item) => item.id === selectedId)
+
+  if (!updatedItem) {
+    return { history, result: { ok: false, reason: 'no-selection' } }
+  }
+
+  return { history: nextHistory, result: { ok: true, item: updatedItem } }
 }
 
 export function deleteSelectionFromHistory(

@@ -9,6 +9,8 @@ import {
   areFurnitureCollectionsEqual,
   createFurnitureInstanceId,
   deleteSelectionFromHistory,
+  resolveMoveSelectionInHistory,
+  resolveSetSelectionTransformInHistory,
   rotateSelectedFurnitureInHistory,
   updateFurniturePositionInHistory,
 } from './furniture-operations'
@@ -323,5 +325,206 @@ describe('furniture-operations', () => {
     expect(outcome.deletedId).toBe('item-2')
     expect(outcome.history.present).toHaveLength(1)
     expect(outcome.history.present[0]?.id).toBe('item-1')
+  })
+})
+
+describe('resolveMoveSelectionInHistory', () => {
+  // 2x1 footprint (from createFurnitureItem) spans ±1 in X, ±0.5 in Z.
+  const baseArgs = {
+    isDragging: false,
+    delta: { x: 1, z: 0 },
+    bounds: ROTATE_BOUNDS,
+    edgeSnapThreshold: 0,
+  }
+
+  it('refuses to move while a drag is in progress', () => {
+    const history = createHistoryState([createFurnitureItem('item-1')])
+
+    const outcome = resolveMoveSelectionInHistory({
+      ...baseArgs,
+      history,
+      selectedId: 'item-1',
+      isDragging: true,
+    })
+
+    expect(outcome.result).toEqual({ ok: false, reason: 'dragging' })
+    expect(outcome.history).toBe(history)
+  })
+
+  it('reports no-selection without a selected id or a missing item', () => {
+    const history = createHistoryState([createFurnitureItem('item-1')])
+
+    expect(
+      resolveMoveSelectionInHistory({ ...baseArgs, history, selectedId: null })
+        .result,
+    ).toEqual({ ok: false, reason: 'no-selection' })
+    expect(
+      resolveMoveSelectionInHistory({
+        ...baseArgs,
+        history,
+        selectedId: 'ghost',
+      }).result,
+    ).toEqual({ ok: false, reason: 'no-selection' })
+  })
+
+  it('commits a successful move and returns the resolved position', () => {
+    const history = createHistoryState([createFurnitureItem('item-1')])
+
+    const outcome = resolveMoveSelectionInHistory({
+      ...baseArgs,
+      history,
+      selectedId: 'item-1',
+      delta: { x: 1, z: 0 },
+    })
+
+    expect(outcome.result).toEqual({ ok: true, position: [1, 0, 0] })
+    expect(outcome.history.present[0]?.position).toEqual([1, 0, 0])
+    expect(outcome.history.past).toHaveLength(1)
+  })
+
+  it('reports blocked-collision when the move would overlap another item', () => {
+    const history = createHistoryState([
+      createFurnitureItem('item-1'),
+      createFurnitureItem('item-2', { position: [3, 0, 0] }),
+    ])
+
+    const outcome = resolveMoveSelectionInHistory({
+      ...baseArgs,
+      history,
+      selectedId: 'item-1',
+      delta: { x: 3, z: 0 },
+    })
+
+    expect(outcome.result).toEqual({ ok: false, reason: 'blocked-collision' })
+    expect(outcome.history).toBe(history)
+  })
+
+  it('distinguishes a wall-blocked move from a no-op', () => {
+    const atWall = createHistoryState([
+      createFurnitureItem('item-1', { position: [4, 0, 0] }),
+    ])
+
+    // Pushing past the +X wall clamps back to the same spot → blocked-bounds.
+    expect(
+      resolveMoveSelectionInHistory({
+        ...baseArgs,
+        history: atWall,
+        selectedId: 'item-1',
+        delta: { x: 1, z: 0 },
+      }).result,
+    ).toEqual({ ok: false, reason: 'blocked-bounds' })
+
+    // A zero delta never moved anything → no-op.
+    expect(
+      resolveMoveSelectionInHistory({
+        ...baseArgs,
+        history: atWall,
+        selectedId: 'item-1',
+        delta: { x: 0, z: 0 },
+      }).result,
+    ).toEqual({ ok: false, reason: 'no-op' })
+  })
+})
+
+describe('resolveSetSelectionTransformInHistory', () => {
+  const baseArgs = {
+    isDragging: false,
+    bounds: ROTATE_BOUNDS,
+  }
+
+  it('refuses to transform while a drag is in progress', () => {
+    const history = createHistoryState([createFurnitureItem('item-1')])
+
+    const outcome = resolveSetSelectionTransformInHistory({
+      ...baseArgs,
+      history,
+      selectedId: 'item-1',
+      isDragging: true,
+      input: { position: [1, 0, 2] },
+    })
+
+    expect(outcome.result).toEqual({ ok: false, reason: 'dragging' })
+    expect(outcome.history).toBe(history)
+  })
+
+  it('reports no-selection without a selected id or a missing item', () => {
+    const history = createHistoryState([createFurnitureItem('item-1')])
+
+    expect(
+      resolveSetSelectionTransformInHistory({
+        ...baseArgs,
+        history,
+        selectedId: null,
+        input: { position: [1, 0, 2] },
+      }).result,
+    ).toEqual({ ok: false, reason: 'no-selection' })
+    expect(
+      resolveSetSelectionTransformInHistory({
+        ...baseArgs,
+        history,
+        selectedId: 'ghost',
+        input: { position: [1, 0, 2] },
+      }).result,
+    ).toEqual({ ok: false, reason: 'no-selection' })
+  })
+
+  it('reports no-op when neither position nor rotation changes', () => {
+    const history = createHistoryState([createFurnitureItem('item-1')])
+
+    const outcome = resolveSetSelectionTransformInHistory({
+      ...baseArgs,
+      history,
+      selectedId: 'item-1',
+      input: {},
+    })
+
+    expect(outcome.result).toEqual({ ok: false, reason: 'no-op' })
+    expect(outcome.history).toBe(history)
+  })
+
+  it('commits a valid transform and returns the updated item', () => {
+    const history = createHistoryState([createFurnitureItem('item-1')])
+
+    const outcome = resolveSetSelectionTransformInHistory({
+      ...baseArgs,
+      history,
+      selectedId: 'item-1',
+      input: { position: [1, 0, 2] },
+    })
+
+    expect(outcome.result.ok).toBe(true)
+    expect(outcome.history.present[0]?.position).toEqual([1, 0, 2])
+    expect(outcome.history.past).toHaveLength(1)
+  })
+
+  it('passes through a blocked-bounds rejection from the domain resolver', () => {
+    const history = createHistoryState([createFurnitureItem('item-1')])
+
+    const outcome = resolveSetSelectionTransformInHistory({
+      ...baseArgs,
+      history,
+      selectedId: 'item-1',
+      input: { position: [10, 0, 0] },
+    })
+
+    expect(outcome.result).toEqual({ ok: false, reason: 'blocked-bounds' })
+    expect(outcome.history).toBe(history)
+  })
+
+  it('passes through a blocked-collision rejection from the domain resolver', () => {
+    const history = createHistoryState([
+      createFurnitureItem('item-1'),
+      createFurnitureItem('item-2', { position: [3, 0, 0] }),
+    ])
+
+    const outcome = resolveSetSelectionTransformInHistory({
+      ...baseArgs,
+      history,
+      selectedId: 'item-1',
+      input: { position: [3, 0, 0] },
+    })
+
+    expect(outcome.result).toEqual({ ok: false, reason: 'blocked-collision' })
+    expect(outcome.history).toBe(history)
   })
 })
