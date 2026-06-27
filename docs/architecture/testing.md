@@ -39,6 +39,11 @@ representative of a real GPU.
   on the running app (real GPU) when investigating, and rely on production RUM
   (web-vitals INP, custom marks) for fleet-wide regressions. _(RUM is a future
   workstream.)_
+- **Bundle size** → per-chunk gzip budgets enforced in CI (`pnpm bundle-budget`,
+  run in preflight after the build) via `scripts/check-bundle-budget.mjs`: a tight
+  budget on the first-paint shell chunk and a looser one on the lazy engine chunk
+  (three/r3f/drei). These are regression gates set at current size plus headroom,
+  not targets — lower them when the bundle shrinks.
 
 ## Coverage
 
