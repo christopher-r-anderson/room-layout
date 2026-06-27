@@ -42,6 +42,14 @@ assertions belong at unit), **could-be-unit** (mostly redundant).
     `scene-url.test`/`restore-flow.test`/`scene-draft.test`), kept one
     malformed→error-UI test + all full-app flows; replaced a clear-toasts
     `waitForTimeout(500)` with a status-empty wait.
+- **Phase C — done.** `editor-history` slimmed from a 3-op × undo3 × redo3 matrix
+  to an integration smoke (real add+rotate commit to history; undo via Ctrl+Z and
+  toolbar button; redo re-applies) — the stack ordering is unit-owned, delete-undo
+  stays in `editor-hotkeys`. The a11y-flow "consolidation" was **declined**: the
+  three a11y specs share an add→select→delete _pattern_ but have distinct purposes
+  (axe audits vs focus-to-sibling vs focus reconciliation) and different setups, so
+  merging would couple unrelated concerns; the real overlaps were already trimmed
+  in Phase B. Fixed one redundant trailing `itemCount` assertion in `a11y-audits`.
 
 ## Per-spec
 
