@@ -10,7 +10,7 @@ import {
   resetEditorLifecycleStore,
 } from '@/core/stores/editor-lifecycle-store'
 import { sceneCommands } from '@/scene/scene-commands'
-import type { FurnitureItem } from '@/domain/furniture'
+import { CHAIR } from '@/test/support/furniture'
 import { moveSelection, rotateSelection } from './movement-actions'
 
 vi.mock('@/core/stores/feedback-store', () => ({
@@ -24,19 +24,6 @@ vi.mock('@/core/stores/feedback-store', () => ({
     clearStatusMessage: vi.fn(),
   },
 }))
-
-const CHAIR: FurnitureItem = {
-  id: 'chair-1',
-  catalogId: 'chair',
-  collectionId: 'collection-1',
-  footprintSize: { width: 1, depth: 1 },
-  kind: 'armchair',
-  name: 'Chair',
-  nodeName: 'ChairNode',
-  position: [0, 0, 0],
-  rotationY: 0,
-  sourcePath: '/models/chair.glb',
-}
 
 describe('movement-actions', () => {
   beforeEach(() => {

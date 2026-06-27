@@ -7,6 +7,7 @@ import {
   createHistoryState,
 } from '@/shared/lib/ui/editor-history'
 import type { FurnitureInstance, FurnitureItem } from '@/domain/furniture'
+import { makeFurnitureItem } from '@/test/support/furniture'
 import {
   clearSceneServices,
   registerSceneServices,
@@ -27,18 +28,7 @@ import {
   useWallFinishId,
 } from './scene-document-store'
 
-const FURNITURE_ITEM: FurnitureItem = {
-  id: 'item-1',
-  catalogId: 'chair-1',
-  collectionId: 'collection-1',
-  footprintSize: { width: 1, depth: 1 },
-  kind: 'armchair',
-  name: 'Chair',
-  nodeName: 'ChairNode',
-  position: [0, 0, 0],
-  rotationY: 0,
-  sourcePath: '/models/chair.glb',
-}
+const FURNITURE_ITEM = makeFurnitureItem({ id: 'item-1', catalogId: 'chair-1' })
 
 beforeEach(() => {
   resetSceneDocumentStore()

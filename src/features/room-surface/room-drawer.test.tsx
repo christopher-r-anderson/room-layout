@@ -4,37 +4,8 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import React from 'react'
 import { describe, expect, it, vi } from 'vitest'
-import type {
-  FloorFinishOption,
-  WallFinishOption,
-} from '@/domain/environment-materials'
 import { RoomDrawer } from '@/features/room-surface/room-drawer'
-
-function createFloorOptions(): FloorFinishOption[] {
-  return [
-    {
-      id: 'wood-floor',
-      label: 'Wood',
-      diffusePath: '/textures/wood.jpg',
-      normalPath: '/textures/wood-normal.png',
-      tileSizeMeters: { width: 0.5, depth: 0.5 },
-    },
-    {
-      id: 'concrete-floor',
-      label: 'Concrete',
-      diffusePath: '/textures/concrete.jpg',
-      normalPath: '/textures/concrete-normal.png',
-      tileSizeMeters: { width: 0.5, depth: 0.5 },
-    },
-  ]
-}
-
-function createWallOptions(): WallFinishOption[] {
-  return [
-    { id: 'light-gray', label: 'Light Gray', color: 0xf5f5f5 },
-    { id: 'warm-white', label: 'Warm White', color: 0xf7f3ea },
-  ]
-}
+import { createFloorOptions, createWallOptions } from './test-fixtures'
 
 describe('RoomDrawer', () => {
   it('restores focus through the provided close callback', async () => {

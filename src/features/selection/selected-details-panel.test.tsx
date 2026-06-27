@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { createEvent, fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { createRef } from 'react'
+import { createRef, type ReactNode } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { TooltipProvider } from '@/shared/ui/tooltip'
 import { EditorRefsProvider } from '@/shared/providers/editor-refs-provider'
@@ -22,7 +22,8 @@ import { SelectedDetailsPanel } from './selected-details-panel'
 import { FloatingSelectedItemSite } from './floating-selected-item-site'
 import { SelectedItemInteractionProvider } from './selected-item-interaction-provider'
 import { SelectedItemPlacementProvider } from './selected-item-placement-provider'
-import { FURNITURE_ITEM } from './test-fixtures'
+import type { SelectedItemPlacement } from './selected-item-placement.types'
+import { FURNITURE_ITEM } from '@/test/support/furniture'
 
 beforeEach(() => {
   resetDialogStore()
@@ -35,39 +36,10 @@ beforeEach(() => {
 
 describe('SelectedDetailsPanel', () => {
   it('attaches the controls ref when hidden placement still shows details', () => {
-    const roomViewRef = createRef<HTMLElement>()
-    const detailsPanelRef = createRef<HTMLDivElement>()
-    const selectedToolbarRef = createRef<HTMLDivElement>()
-    const registerExclusionElement = vi.fn(() => vi.fn())
-
-    render(
-      <TooltipProvider>
-        <EditorRefsProvider
-          value={{ roomViewRef, detailsPanelRef, selectedToolbarRef }}
-        >
-          <OverlayExclusionProvider
-            registerExclusionElement={registerExclusionElement}
-            exclusionRects={{}}
-          >
-            <SelectedItemInteractionProvider>
-              <SelectedItemPlacementProvider
-                value={{
-                  placement: {
-                    site: 'hidden',
-                    reason: 'computed-hidden',
-                  },
-                  actionsSizeRef: vi.fn(),
-                }}
-              >
-                <CommandDispatchProvider value={vi.fn()}>
-                  <SelectedDetailsPanel />
-                </CommandDispatchProvider>
-              </SelectedItemPlacementProvider>
-            </SelectedItemInteractionProvider>
-          </OverlayExclusionProvider>
-        </EditorRefsProvider>
-      </TooltipProvider>,
-    )
+    const { detailsPanelRef } = renderPanel({
+      placement: { site: 'hidden', reason: 'computed-hidden' },
+      children: <SelectedDetailsPanel />,
+    })
 
     expect(
       screen.getByRole('region', { name: /Placement$/i }),
@@ -81,42 +53,20 @@ describe('SelectedDetailsPanel', () => {
   })
 
   it('keeps the details panel ref when floating actions also render', () => {
-    const roomViewRef = createRef<HTMLElement>()
-    const detailsPanelRef = createRef<HTMLDivElement>()
-    const selectedToolbarRef = createRef<HTMLDivElement>()
-    const registerExclusionElement = vi.fn(() => vi.fn())
-
-    render(
-      <TooltipProvider>
-        <EditorRefsProvider
-          value={{ roomViewRef, detailsPanelRef, selectedToolbarRef }}
-        >
-          <OverlayExclusionProvider
-            registerExclusionElement={registerExclusionElement}
-            exclusionRects={{}}
-          >
-            <SelectedItemInteractionProvider>
-              <SelectedItemPlacementProvider
-                value={{
-                  placement: {
-                    site: 'floating',
-                    candidateId: 'bottom-center',
-                    left: 12,
-                    top: 24,
-                  },
-                  actionsSizeRef: vi.fn(),
-                }}
-              >
-                <CommandDispatchProvider value={vi.fn()}>
-                  <FloatingSelectedItemSite />
-                  <SelectedDetailsPanel />
-                </CommandDispatchProvider>
-              </SelectedItemPlacementProvider>
-            </SelectedItemInteractionProvider>
-          </OverlayExclusionProvider>
-        </EditorRefsProvider>
-      </TooltipProvider>,
-    )
+    const { detailsPanelRef } = renderPanel({
+      placement: {
+        site: 'floating',
+        candidateId: 'bottom-center',
+        left: 12,
+        top: 24,
+      },
+      children: (
+        <>
+          <FloatingSelectedItemSite />
+          <SelectedDetailsPanel />
+        </>
+      ),
+    })
 
     expect(
       screen.getByRole('region', { name: /Placement$/i }),
@@ -130,40 +80,15 @@ describe('SelectedDetailsPanel', () => {
   })
 
   it('does not render the floating toolbar when placement is hidden', () => {
-    const roomViewRef = createRef<HTMLElement>()
-    const detailsPanelRef = createRef<HTMLDivElement>()
-    const selectedToolbarRef = createRef<HTMLDivElement>()
-    const registerExclusionElement = vi.fn(() => vi.fn())
-
-    render(
-      <TooltipProvider>
-        <EditorRefsProvider
-          value={{ roomViewRef, detailsPanelRef, selectedToolbarRef }}
-        >
-          <OverlayExclusionProvider
-            registerExclusionElement={registerExclusionElement}
-            exclusionRects={{}}
-          >
-            <SelectedItemInteractionProvider>
-              <SelectedItemPlacementProvider
-                value={{
-                  placement: {
-                    site: 'hidden',
-                    reason: 'computed-hidden',
-                  },
-                  actionsSizeRef: vi.fn(),
-                }}
-              >
-                <CommandDispatchProvider value={vi.fn()}>
-                  <FloatingSelectedItemSite />
-                  <SelectedDetailsPanel />
-                </CommandDispatchProvider>
-              </SelectedItemPlacementProvider>
-            </SelectedItemInteractionProvider>
-          </OverlayExclusionProvider>
-        </EditorRefsProvider>
-      </TooltipProvider>,
-    )
+    const { detailsPanelRef } = renderPanel({
+      placement: { site: 'hidden', reason: 'computed-hidden' },
+      children: (
+        <>
+          <FloatingSelectedItemSite />
+          <SelectedDetailsPanel />
+        </>
+      ),
+    })
 
     expect(
       screen.queryAllByRole('region', { name: 'Selected item actions' }),
@@ -220,6 +145,44 @@ describe('SelectedDetailsPanel', () => {
     expect(dispatch).not.toHaveBeenCalled()
   })
 })
+
+function renderPanel({
+  placement,
+  children,
+}: {
+  placement: SelectedItemPlacement
+  children: ReactNode
+}) {
+  const roomViewRef = createRef<HTMLElement>()
+  const detailsPanelRef = createRef<HTMLDivElement>()
+  const selectedToolbarRef = createRef<HTMLDivElement>()
+  const registerExclusionElement = vi.fn(() => vi.fn())
+
+  render(
+    <TooltipProvider>
+      <EditorRefsProvider
+        value={{ roomViewRef, detailsPanelRef, selectedToolbarRef }}
+      >
+        <OverlayExclusionProvider
+          registerExclusionElement={registerExclusionElement}
+          exclusionRects={{}}
+        >
+          <SelectedItemInteractionProvider>
+            <SelectedItemPlacementProvider
+              value={{ placement, actionsSizeRef: vi.fn() }}
+            >
+              <CommandDispatchProvider value={vi.fn()}>
+                {children}
+              </CommandDispatchProvider>
+            </SelectedItemPlacementProvider>
+          </SelectedItemInteractionProvider>
+        </OverlayExclusionProvider>
+      </EditorRefsProvider>
+    </TooltipProvider>,
+  )
+
+  return { detailsPanelRef }
+}
 
 function renderFloatingActions(dispatch: CommandDispatch) {
   render(

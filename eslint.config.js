@@ -42,6 +42,7 @@ export default defineConfig([
   // Keep overlapping blocks self-contained.
   globalIgnores([
     'dist',
+    'coverage',
     'node_modules',
     'assets-source',
     'public/models',
@@ -88,6 +89,7 @@ export default defineConfig([
   // may import it; it imports nothing internal.
   {
     files: ['src/domain/**/*.{ts,tsx}'],
+    ignores: RUNTIME_NON_TEST_IGNORES,
     rules: {
       'no-restricted-imports': [
         'error',
@@ -189,6 +191,7 @@ export default defineConfig([
   // Editor-state boundaries.
   {
     files: ['src/core/**/*.{ts,tsx}'],
+    ignores: RUNTIME_NON_TEST_IGNORES,
     rules: {
       'no-restricted-imports': [
         'error',

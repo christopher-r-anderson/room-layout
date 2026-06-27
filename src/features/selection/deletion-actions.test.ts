@@ -20,6 +20,7 @@ import { DELETE_SELECTION_MISSING_MESSAGE } from '@/shared/messages/command-mess
 import { feedbackActions } from '@/core/stores/feedback-store'
 import { selectionEffects } from '@/core/operations/selection-effects'
 import { confirmDeleteSelection, openDeleteDialog } from './deletion-actions'
+import { CHAIR } from '@/test/support/furniture'
 
 vi.mock('@/core/stores/feedback-store', () => ({
   feedbackActions: {
@@ -42,19 +43,6 @@ vi.mock('@/core/operations/selection-effects', () => ({
     consumePostDeleteFocusTarget: vi.fn().mockReturnValue(null),
   },
 }))
-
-const CHAIR = {
-  id: 'chair-1',
-  catalogId: 'chair',
-  collectionId: 'collection-1',
-  footprintSize: { width: 1, depth: 1 },
-  kind: 'armchair' as const,
-  name: 'Chair',
-  nodeName: 'ChairNode',
-  position: [0, 0, 0] as [number, number, number],
-  rotationY: 0,
-  sourcePath: '/models/chair.glb',
-}
 
 beforeEach(() => {
   resetSceneDocumentStore()

@@ -4,7 +4,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { SelectedDetailsView } from './selected-details-view'
-import { FURNITURE_ITEM } from './test-fixtures'
+import { FURNITURE_ITEM } from '@/test/support/furniture'
 
 describe('SelectedDetailsView', () => {
   it('tabs through the position fields, then the rotation input', async () => {

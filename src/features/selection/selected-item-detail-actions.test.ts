@@ -16,11 +16,11 @@ import {
 } from '@/core/stores/selection-focus-store'
 import { sceneCommands } from '@/scene/scene-commands'
 import { feedbackActions } from '@/core/stores/feedback-store'
-import type { FurnitureItem } from '@/domain/furniture'
 import {
   invalidSelectedItemDetailValueMessage,
   updateSelectedItemDetails,
 } from './selected-item-detail-actions'
+import { CHAIR } from '@/test/support/furniture'
 
 vi.mock('@/core/stores/feedback-store', () => ({
   feedbackActions: {
@@ -33,19 +33,6 @@ vi.mock('@/core/stores/feedback-store', () => ({
     clearStatusMessage: vi.fn(),
   },
 }))
-
-const CHAIR: FurnitureItem = {
-  id: 'chair-1',
-  catalogId: 'chair',
-  collectionId: 'collection-1',
-  footprintSize: { width: 1, depth: 1 },
-  kind: 'armchair',
-  name: 'Chair',
-  nodeName: 'ChairNode',
-  position: [0, 0, 0],
-  rotationY: 0,
-  sourcePath: '/models/chair.glb',
-}
 
 describe('selected-item-detail-actions', () => {
   beforeEach(() => {
