@@ -194,11 +194,14 @@ Grouped by type. ✅ = applied in Phase 1, ↪ = deferred (with reason).
 
 Marked here, **not acted on** in this tests-only phase:
 
-- **Needs a source change first (`fix→deferred`):** a public preview selector so
-  `scene-document-store.test.ts` stops reading `previewedIdRaw` — though on review
-  this is likely a false positive (the store owns that field and the gated
-  `getPreviewedId` would mask it in those tests), pending a decision.
-  (`outliner.test.tsx` is resolved — see Phase 1 backlog A.)
+- **Source-coupled items — both resolved:**
+  - `scene-document-store.test.ts` reading `previewedIdRaw` is a **false positive**
+    (`keep`): the store owns that field, these tests verify its own raw preview
+    state machine, and the gated `getPreviewedId` would mask the value (it returns
+    null without `markAssetsReady()`). No source change. Same trap as
+    `preview-actions.test.ts`.
+  - `outliner.test.tsx` resolved via a `data-previewed` state attribute — see
+    Phase 1 backlog A.
 - **Over-mock rewrites (overlap coverage work):** the category-C deferrals above.
 - **Coverage gaps to weigh against the coverage map (Phase 2):**
   `share-scene` native-share path; `movement-actions` announcement strings;
