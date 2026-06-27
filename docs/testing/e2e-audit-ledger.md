@@ -50,6 +50,14 @@ assertions belong at unit), **could-be-unit** (mostly redundant).
   (axe audits vs focus-to-sibling vs focus reconciliation) and different setups, so
   merging would couple unrelated concerns; the real overlaps were already trimmed
   in Phase B. Fixed one redundant trailing `itemCount` assertion in `a11y-audits`.
+- **Phase E — done.** Scoped axe to the WCAG 2.1 A/AA conformance target (subset of
+  the default, so no new failures). Replaced the synthetic-event context-menu check
+  with a real right-click reading `defaultPrevented`. Documented + asserted the
+  `add-furniture` setup drag. **Left** (conscious "not worth it"): `drag-collision`
+  brittleness (works, asserts the right relative invariants; simplifying a working
+  collision test is risky for marginal gain) and `editor-dialogs` project-info exact
+  strings (low-churn attribution; verifying the links render in the real dialog has
+  value).
 
 ## Per-spec
 
