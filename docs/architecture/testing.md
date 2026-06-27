@@ -39,6 +39,16 @@ representative of a real GPU.
   (web-vitals INP, custom marks) for fleet-wide regressions. _(RUM is a future
   workstream.)_
 
+## Coverage
+
+Coverage percentage is a prompt, not a goal. Some code is intentionally not
+unit-tested: thin hook glue covered by e2e, presentational/config modules, and a
+short list of accepted gaps. These are recorded — with their verified e2e
+cross-references — in
+[../testing/intentional-unit-exclusions.md](../testing/intentional-unit-exclusions.md)
+so a `0%` reading is not mistaken for a hole. Update it when a module joins or
+leaves that set.
+
 ## Browser Test Guidance
 
 Use [editor-workflow.md](editor-workflow.md)
@@ -99,4 +109,5 @@ See also:
 - [../../README.md](../../README.md)
 - [editor-workflow.md](editor-workflow.md)
 - [dialogs-and-overlays.md](dialogs-and-overlays.md)
+- [../testing/intentional-unit-exclusions.md](../testing/intentional-unit-exclusions.md)
 - [.agents/policies/testing.md](../../.agents/policies/testing.md)

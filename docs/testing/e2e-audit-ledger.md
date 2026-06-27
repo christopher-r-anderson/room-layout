@@ -71,6 +71,15 @@ assertions belong at unit), **could-be-unit** (mostly redundant).
   collision test is risky for marginal gain) and `editor-dialogs` project-info exact
   strings (low-churn attribution; verifying the links render in the real dialog has
   value).
+- **Coverage gap analysis — done.** Beyond the quality audit above, a flow-vs-spec
+  gap pass (UI/code-derived flow inventory cross-checked against every spec, since
+  `editor-workflow.md` is a curated checklist, not exhaustive). It **verified** the
+  unit-work assumption that the `use*Operations` hook wrappers are e2e-covered (they
+  are) and found two real holes, now filled: **focus-selected (`F`)** camera framing
+  and **focus-toolbar (`Shift+T`)** — plus a cheap parity gap, the **rotation (deg)**
+  detail field. Accepted gaps (covered cheaper or low value) are recorded in
+  `intentional-unit-exclusions.md`. Targeted `editor-workflow.md` additions for the
+  two notable omissions (focus-selected, pane-focus shortcuts).
 
 ## Per-spec
 

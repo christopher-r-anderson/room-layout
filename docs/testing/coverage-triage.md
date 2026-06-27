@@ -23,11 +23,14 @@ recommendation; the actual cut is a decision for Phase 3.
   `furniture-operations.ts` (matching the existing `*InHistory` seam) and
   unit-tested there; the hook is now thin glue covered by e2e. The remaining thin
   wrappers (`rotate`/`delete`/`add` — already pure-extracted) stay as-is.
-- **Tier 3 — lock-in intentionally deferred until after the e2e audit.** The point
-  of recording "deliberately not unit-tested" is the accurate cross-reference
-  ("covered by e2e at `...`"); the e2e audit produces that map, so writing the
-  testing-strategy doc + any coverage `exclude` globs is parked until then to avoid
-  vague placeholders. The skip list below is the interim record.
+- **Tier 3 — lock-in done (post-e2e).** With the e2e audit + gap analysis
+  producing a **verified** coverage map, the durable record now lives in
+  `intentional-unit-exclusions.md` (covered-by-e2e wrappers with spec
+  cross-references, presentational/config skips, and explicitly accepted gaps),
+  linked from `docs/architecture/testing.md`. The gap analysis also closed the two
+  real holes it found — `focus-selected` (`F`) and `focus-toolbar` (`Shift+T`) now
+  have e2e — so every Tier 2 wrapper is genuinely e2e-covered. The skip list below
+  is superseded by that doc.
 - **Over-mock rewrites — done.** Per-file outcome:
   - `focus-actions`: assert the queued `selectionFocusStore` request over spy calls.
   - `selection-actions`: assert the real preview clear in `clearCanvasSelection`;
