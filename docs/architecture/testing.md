@@ -31,9 +31,10 @@ representative of a real GPU.
 - **Hot-path algorithms** → `pnpm bench` microbenchmarks (footprint/drag/geometry).
 - **Work-churn regressions** (a lost memo, unstable dependency, or render loop that
   re-runs while idle) → deterministic behavioral gates in the e2e lane. Example:
-  `e2e/selected-toolbar-idle.spec.ts` asserts the floating-toolbar store does not
-  write while the camera is at rest — a count that is structurally zero regardless
-  of frame rate, so it is reliable in CI.
+  `e2e/selected-toolbar-idle.spec.ts` asserts that with a selection on screen and
+  the camera at rest, no work happens — zero toolbar-store writes and zero App/Scene
+  re-renders. These counts are structurally zero regardless of frame rate, so the
+  gate is reliable in CI and catches a render loop anywhere in the tree.
 - **Real frame-time / interaction latency** → not a CI gate. Profile interactively
   on the running app (real GPU) when investigating, and rely on production RUM
   (web-vitals INP, custom marks) for fleet-wide regressions. _(RUM is a future
