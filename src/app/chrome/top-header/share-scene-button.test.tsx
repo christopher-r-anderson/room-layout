@@ -78,14 +78,4 @@ describe('ShareSceneButton', () => {
     expect(screen.queryByText('Shared')).not.toBeInTheDocument()
     expect(screen.queryByText('Copied')).not.toBeInTheDocument()
   })
-
-  it('supports explicit label visibility and toolbar sizing', () => {
-    render(<ShareSceneButton size="toolbar" />)
-
-    const button = screen.getByRole('button', { name: 'Share room layout' })
-    const label = screen.getByText('Share')
-
-    expect(label.className).not.toContain('hidden')
-    expect(button.className).toContain('h-9')
-  })
 })

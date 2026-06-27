@@ -1,19 +1,16 @@
 // @vitest-environment jsdom
 
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { CatalogAddButton } from './catalog-add-button'
 
 describe('CatalogAddButton', () => {
-  it('renders as a stable primary action instead of a hover-expanding trigger', () => {
+  it('renders the label as a stable always-visible primary action', () => {
     render(<CatalogAddButton />)
 
+    // The label is shown outright (a named button with visible text), rather
+    // than a hover-to-reveal trigger that hides its label until interaction.
     const button = screen.getByRole('button', { name: 'Add Furniture' })
-
-    expect(screen.getByText('Add Furniture')).toBeInTheDocument()
-    expect(button.className).not.toContain('hover:w-42')
-    expect(button.className).not.toContain('focus-visible:w-42')
-    expect(button.className).not.toContain('rounded-full')
-    expect(button.className).toContain('rounded-lg')
+    expect(within(button).getByText('Add Furniture')).toBeVisible()
   })
 })

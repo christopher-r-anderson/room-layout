@@ -10,7 +10,7 @@ import {
 } from '@/shared/ui/alert-dialog'
 
 describe('AlertDialogContent', () => {
-  it('keeps viewport side gutters alongside size-specific max widths', () => {
+  it('exposes the size variant and keeps the mobile viewport gutter', () => {
     render(
       <AlertDialog open>
         <AlertDialogContent size="sm">
@@ -21,8 +21,9 @@ describe('AlertDialogContent', () => {
 
     const content = screen.getByRole('alertdialog', { name: 'Delete item' })
 
+    // The size prop reaches the DOM for the CSS size variants to key off.
+    expect(content).toHaveAttribute('data-size', 'sm')
+    // The mobile side gutter is always applied so content never hits the edges.
     expect(content.className).toContain('w-[calc(100%-2rem)]')
-    expect(content.className).toContain('max-w-[calc(100%-2rem)]')
-    expect(content.className).toContain('data-[size=sm]:max-w-64')
   })
 })

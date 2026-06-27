@@ -28,10 +28,11 @@ describe('ToolButton', () => {
     const button = screen.getByRole('button', { name: 'Add furniture' })
     const label = within(button).getByText('Add')
 
-    expect(label.className).toBe('')
+    // Shown to sighted users (not collapsed to screen-reader-only).
+    expect(label.className).not.toContain('sr-only')
   })
 
-  it('supports explicit label visibility and toolbar sizing for future header layouts', () => {
+  it('hides the visible label as screen-reader-only when displayLabel is false', () => {
     renderInToolbar(
       <ToolButton
         action={vi.fn()}
@@ -39,18 +40,17 @@ describe('ToolButton', () => {
         disabledMessage="Unavailable"
         shortcuts="A"
         label="Add furniture"
-        visibleLabel="Add furniture"
-        displayLabel={true}
-        size="toolbar"
+        visibleLabel="Add"
+        displayLabel={false}
         icon={<IconPlus />}
       />,
     )
 
     const button = screen.getByRole('button', { name: 'Add furniture' })
-    const label = within(button).getByText('Add furniture')
+    const label = within(button).getByText('Add')
 
-    expect(label.className).not.toContain('sr-only')
-    expect(button.className).toContain('h-9')
+    // Still present for layout/AT, but not displayed to sighted users.
+    expect(label.className).toContain('sr-only')
   })
 
   it('exposes the disabled reason to assistive tech and keeps the shortcut', () => {

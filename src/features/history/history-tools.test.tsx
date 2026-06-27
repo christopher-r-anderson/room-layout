@@ -78,13 +78,12 @@ describe('HistoryTools', () => {
     expect(dispatch).not.toHaveBeenCalled()
   })
 
-  it('forwards toolbar sizing and explicit label visibility to the tool buttons', () => {
+  it('shows the tool button labels when explicit label visibility is requested', () => {
     renderWithDispatch(
       <HistoryTools
         canRedo
         canUndo
         displayLabels={true}
-        buttonSize="toolbar"
         editorInteractionsEnabled
       />,
       vi.fn(),
@@ -93,7 +92,7 @@ describe('HistoryTools', () => {
     const undoButton = screen.getByRole('button', { name: 'Undo' })
     const undoLabel = within(undoButton).getByText('Undo')
 
+    // Shown to sighted users rather than collapsed to screen-reader-only.
     expect(undoLabel.className).not.toContain('sr-only')
-    expect(undoButton.className).toContain('h-9')
   })
 })

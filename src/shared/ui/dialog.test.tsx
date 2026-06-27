@@ -17,6 +17,9 @@ describe('DialogContent', () => {
 
     const content = screen.getByRole('dialog', { name: 'Keyboard Shortcuts' })
 
+    // Guards the cn()/twMerge composition: a caller-supplied desktop max-width
+    // must not strip DialogContent's base mobile side gutters. The classes are
+    // the unit under test here, so asserting them directly is intentional.
     expect(content.className).toContain('w-[calc(100%-2rem)]')
     expect(content.className).toContain('max-w-[calc(100%-2rem)]')
     expect(content.className).toContain('sm:max-w-4xl')
