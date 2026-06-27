@@ -1,8 +1,5 @@
-import { mkdir, stat, writeFile } from 'node:fs/promises'
-import path from 'node:path'
 import { expect, type Page } from '@playwright/test'
 import type { PerfCounterSnapshot } from '../../src/shared/debug/perf-counters'
-import { getPerfBaselineSha } from './perf-meta'
 
 const FURNITURE_ASSET_ROUTE = /\/models\/.+\.glb(?:\?.*)?$/
 export const EDITOR_READY_TIMEOUT_MS = 30_000
@@ -47,20 +44,6 @@ interface RoomLayoutTestApi {
 
 type RoomLayoutTestWindow = typeof globalThis & {
   __ROOM_LAYOUT_TEST__?: RoomLayoutTestApi
-}
-
-const PERF_RESULTS_DIR = path.resolve(process.cwd(), 'test-results/perf')
-const PERF_TRACE_CATEGORIES =
-  'disabled-by-default-devtools.timeline,devtools.timeline,v8.execute,blink.user_timing,latencyInfo'
-
-function buildPerfArtifactPath(
-  label: string,
-  extension: 'trace.json' | 'counters.json',
-) {
-  return path.join(
-    PERF_RESULTS_DIR,
-    `${label}-${getPerfBaselineSha()}-${new Date().toISOString()}.${extension}`,
-  )
 }
 
 async function waitForRoomLayoutTestApi(page: Page) {
@@ -255,18 +238,6 @@ export async function waitForFirstItemPosition(
   return readSceneState(page)
 }
 
-export async function waitForFirstItemX(
-  page: Page,
-  expectedX: number,
-  precision: number,
-) {
-  await expect
-    .poll(async () => (await readSceneState(page)).items[0]?.position[0])
-    .toBeCloseTo(expectedX, precision)
-
-  return readSceneState(page)
-}
-
 export async function expectSceneFlags(
   page: Page,
   expected: {
@@ -418,19 +389,6 @@ export async function rotateSelectionRight(page: Page) {
   return readSceneState(page)
 }
 
-export async function deleteSelectedFurniture(page: Page) {
-  await page
-    .getByRole('toolbar', { name: 'Selected item actions' })
-    .getByRole('button', { name: 'Remove item' })
-    .click()
-  await page
-    .getByRole('alertdialog', { name: /remove item from room/i })
-    .getByRole('button', { name: 'Remove item' })
-    .click()
-
-  return readSceneState(page)
-}
-
 export async function updateSelectedItemField(
   page: Page,
   label:
@@ -505,89 +463,6 @@ export async function holdKey(page: Page, key: string, durationMs = 150) {
     await page.waitForTimeout(durationMs)
   } finally {
     await page.keyboard.up(key)
-  }
-}
-
-async function startCdpPerfTrace(page: Page, label: string) {
-  const cdp = await page.context().newCDPSession(page)
-
-  await cdp.send('Tracing.start', {
-    categories: PERF_TRACE_CATEGORIES,
-    transferMode: 'ReturnAsStream',
-  })
-
-  return {
-    async stop() {
-      const tracePath = buildPerfArtifactPath(label, 'trace.json')
-      const tracingComplete = new Promise<{ stream: string }>((resolve) => {
-        cdp.once('Tracing.tracingComplete', (event) => {
-          resolve(event as { stream: string })
-        })
-      })
-
-      await cdp.send('Tracing.end')
-      const { stream } = await tracingComplete
-
-      let traceContent = ''
-      let streamEnded = false
-      while (!streamEnded) {
-        const { data, eof, base64Encoded } = await cdp.send('IO.read', {
-          handle: stream,
-        })
-
-        traceContent += base64Encoded
-          ? Buffer.from(data, 'base64').toString('utf8')
-          : data
-        streamEnded = eof
-      }
-
-      await cdp.send('IO.close', { handle: stream })
-      await mkdir(PERF_RESULTS_DIR, { recursive: true })
-      await writeFile(tracePath, traceContent, 'utf8')
-
-      const traceStats = await stat(tracePath)
-      if (traceStats.size === 0) {
-        throw new Error(`CDP trace was empty for ${label}`)
-      }
-
-      return tracePath
-    },
-  }
-}
-
-export async function withPerfTrace<T>(
-  page: Page,
-  label: string,
-  callback: () => Promise<T>,
-) {
-  const trace = await startCdpPerfTrace(page, label)
-  let completed = false
-  let result!: T
-  let error: Error | null = null
-
-  try {
-    result = await callback()
-    completed = true
-  } catch (caughtError) {
-    error =
-      caughtError instanceof Error
-        ? caughtError
-        : new Error(String(caughtError))
-  }
-
-  const tracePath = await trace.stop()
-
-  if (error) {
-    throw error
-  }
-
-  if (!completed) {
-    throw new Error(`perf trace callback did not complete for ${label}`)
-  }
-
-  return {
-    result,
-    tracePath,
   }
 }
 

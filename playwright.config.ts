@@ -45,22 +45,8 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
-      testIgnore: ['e2e/perf/**/*.spec.ts'],
       use: {
         ...devices['Desktop Chrome'],
-      },
-    },
-    {
-      name: 'perf-chromium',
-      testMatch: ['e2e/perf/**/*.spec.ts'],
-      retries: 0,
-      fullyParallel: false,
-      workers: 1,
-      outputDir: 'test-results/perf',
-      use: {
-        ...devices['Desktop Chrome'],
-        trace: 'off',
-        video: 'off',
       },
     },
   ],

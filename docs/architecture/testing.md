@@ -6,7 +6,6 @@ This guide covers contributor-facing test workflow decisions.
 
 - `pnpm test:run`: unit and integration checks (default lane for most code changes)
 - `pnpm test:e2e`: browser-accurate editor workflow coverage (Chromium)
-- `pnpm test:browser:perf`: browser performance scenarios and artifacts
 - `pnpm bench`: utility microbenchmarks
 
 ## Choosing a Lane
@@ -20,14 +19,25 @@ Add `pnpm test:e2e` when changing browser-facing behavior, including:
 - keyboard workflows and focus navigation
 - dialogs, overlays, semantic focus return, and user-visible editor controls
 
-Use `pnpm test:browser:perf` for frame-time-sensitive changes:
-
-- drag and collision interactions
-- camera transitions
-- other smoothness-sensitive interaction paths
-
 Use `pnpm bench` for pure helper hot paths where browser rendering is not part
 of the measurement goal.
+
+## Performance
+
+Performance is checked by lane, not by measuring frame time in CI — headless
+Chromium renders WebGL via SwiftShader (software), so its frame times are not
+representative of a real GPU.
+
+- **Hot-path algorithms** → `pnpm bench` microbenchmarks (footprint/drag/geometry).
+- **Work-churn regressions** (a lost memo, unstable dependency, or render loop that
+  re-runs while idle) → deterministic behavioral gates in the e2e lane. Example:
+  `e2e/selected-toolbar-idle.spec.ts` asserts the floating-toolbar store does not
+  write while the camera is at rest — a count that is structurally zero regardless
+  of frame rate, so it is reliable in CI.
+- **Real frame-time / interaction latency** → not a CI gate. Profile interactively
+  on the running app (real GPU) when investigating, and rely on production RUM
+  (web-vitals INP, custom marks) for fleet-wide regressions. _(RUM is a future
+  workstream.)_
 
 ## Browser Test Guidance
 
