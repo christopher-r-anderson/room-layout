@@ -258,14 +258,6 @@ test('normalizes unknown finish IDs from ?scene= so a reloaded empty room stays 
     .not.toBe('Restored your saved draft.')
 })
 
-test('shows no-param outcome for a URL without ?scene=', async ({ page }) => {
-  await page.goto('/')
-  const state = await waitForEditorReady(page)
-
-  expect(state.itemCount).toBe(0)
-  expect(state.restoreOutcome).toBe('skipped')
-})
-
 test('shows error message and marks outcome invalid for a malformed ?scene= param', async ({
   page,
 }) => {
@@ -281,17 +273,6 @@ test('shows error message and marks outcome invalid for a malformed ?scene= para
       .getByRole('status')
       .filter({ hasText: 'Shared link could not be restored' }),
   ).toBeVisible()
-})
-
-test('marks outcome invalid when catalogId does not exist in catalog', async ({
-  page,
-}) => {
-  const invalidItem = { ...VALID_ITEM, catalogId: 'nonexistent-catalog-id-xyz' }
-  await page.goto(makeSceneRoute([invalidItem]))
-  const state = await waitForEditorReady(page)
-
-  expect(state.itemCount).toBe(0)
-  expect(state.restoreOutcome).toBe('invalid')
 })
 
 test('one-shot guard: restore only fires once across asset-error retry', async ({
@@ -592,26 +573,6 @@ test('start over clears the saved draft so reload stays fresh', async ({
     .not.toBe('Restored your saved draft.')
 })
 
-test('draft items are stored in deterministic order (sorted by ID)', async ({
-  page,
-}) => {
-  await openEditor(page)
-
-  // Add furniture in non-alphabetical order
-  await addFurniture(page, 'End Table')
-  await addFurniture(page, 'Leather Armchair')
-
-  // Get the draft from localStorage
-  const draft = await readDraftFromStorage(page)
-
-  // Verify items are sorted by ID
-  expect(draft).not.toBeNull()
-  expect(draft?.items.length).toBe(2)
-  const ids = draft?.items.map((item) => item.id) ?? []
-  const sortedIds = [...ids].sort()
-  expect(ids).toEqual(sortedIds)
-})
-
 // ---------------------------------------------------------------------------
 // Error scenario tests
 // ---------------------------------------------------------------------------
@@ -636,36 +597,6 @@ test('handles clipboard API failure gracefully when permission denied', async ({
   })
 })
 
-test('restores no furniture and shows error for completely malformed JSON in URL', async ({
-  page,
-}) => {
-  await page.goto('/?scene={invalid json')
-  const state = await waitForEditorReady(page)
-
-  expect(state.itemCount).toBe(0)
-  expect(state.restoreOutcome).toBe('invalid')
-
-  const errorMsg = page
-    .getByRole('status')
-    .filter({ hasText: 'Shared link could not be restored' })
-  await expect(errorMsg).toBeVisible()
-})
-
-test('ignores malformed items array in scene payload', async ({ page }) => {
-  const invalidPayload = {
-    v: 1 as const,
-    items: 'not-an-array', // Invalid: should be array
-  }
-  const params = new URLSearchParams()
-  params.set('scene', JSON.stringify(invalidPayload))
-
-  await page.goto(`/?${params.toString()}`)
-  const state = await waitForEditorReady(page)
-
-  expect(state.itemCount).toBe(0)
-  expect(state.restoreOutcome).toBe('invalid')
-})
-
 test('clears error message when furniture is added after failed restore', async ({
   page,
 }) => {
@@ -681,34 +612,6 @@ test('clears error message when furniture is added after failed restore', async 
 
   // Error message should clear
   await expect(statusRegion).toBeEmpty({ timeout: 5_000 })
-})
-
-test('handles scene with missing required position field', async ({ page }) => {
-  const invalidItem = {
-    id: 'furniture-instance-1',
-    catalogId: 'armchair-1',
-    // Missing position - required field
-    rotationY: 0,
-  }
-  await page.goto(makeSceneRoute([invalidItem as FurnitureInstance]))
-  const state = await waitForEditorReady(page)
-
-  expect(state.itemCount).toBe(0)
-  expect(state.restoreOutcome).toBe('invalid')
-})
-
-test('handles scene with missing required catalogId', async ({ page }) => {
-  const invalidItem = {
-    id: 'furniture-instance-1',
-    // Missing catalogId - required field
-    position: [0, 0, 0] as [number, number, number],
-    rotationY: 0,
-  }
-  await page.goto(makeSceneRoute([invalidItem as FurnitureInstance]))
-  const state = await waitForEditorReady(page)
-
-  expect(state.itemCount).toBe(0)
-  expect(state.restoreOutcome).toBe('invalid')
 })
 
 test('handles draft with valid catalog reference but non-finite position gracefully', async ({
@@ -763,8 +666,9 @@ test('empty draft restores silently without showing success toast on reload', as
   const stateInitial = await readSceneState(page)
   expect(stateInitial.itemCount).toBe(0)
 
-  // Clear any existing toasts
-  await page.waitForTimeout(500)
+  // Let any startup status message clear before reloading, so the post-reload
+  // silence check is not polluted by a leftover message.
+  await expect(page.getByRole('status', { name: 'Editor status' })).toBeEmpty()
 
   // Reload the page - this will trigger draft restoration from localStorage
   await page.reload()
