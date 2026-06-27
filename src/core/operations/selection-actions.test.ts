@@ -4,6 +4,7 @@ import { createHistoryState } from '@/shared/lib/ui/editor-history'
 import {
   resetSceneDocumentStore,
   sceneDocumentActions,
+  sceneDocumentStore,
 } from '@/core/stores/scene-document-store'
 import { feedbackActions, feedbackStore } from '@/core/stores/feedback-store'
 import {
@@ -16,17 +17,13 @@ import {
 } from '@/core/stores/editor-lifecycle-store'
 import { sceneCommands } from '@/scene/scene-commands'
 import { selectionEffects } from '@/core/operations/selection-effects'
-import { clearPreviewOnCanvasMiss } from '@/core/operations/preview-actions'
+import { CHAIR } from '@/test/support/furniture'
 import {
   clearCanvasSelection,
   clearSelection,
   selectByCanvasPointer,
   selectById,
 } from './selection-actions'
-
-vi.mock('@/core/operations/preview-actions', () => ({
-  clearPreviewOnCanvasMiss: vi.fn(),
-}))
 
 vi.mock('@/core/operations/selection-effects', () => ({
   selectionEffects: {
@@ -37,19 +34,6 @@ vi.mock('@/core/operations/selection-effects', () => ({
     consumePostDeleteFocusTarget: vi.fn(),
   },
 }))
-
-const CHAIR = {
-  id: 'chair-1',
-  catalogId: 'chair',
-  collectionId: 'collection-1',
-  footprintSize: { width: 1, depth: 1 },
-  kind: 'armchair' as const,
-  name: 'Chair',
-  nodeName: 'ChairNode',
-  position: [0, 0, 0] as [number, number, number],
-  rotationY: 0,
-  sourcePath: '/models/chair.glb',
-}
 
 describe('selection-actions', () => {
   beforeEach(() => {
@@ -70,11 +54,14 @@ describe('selection-actions', () => {
       .spyOn(sceneCommands, 'clearSelection')
       .mockReturnValue(undefined)
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
+    sceneDocumentActions.setPreviewedId('chair-1')
 
     clearCanvasSelection()
 
+    // The scene selection-clear is a boundary delegation; the canvas-miss
+    // preview clear is observable in the document store.
     expect(clearSelectionSpy).toHaveBeenCalled()
-    expect(clearPreviewOnCanvasMiss).toHaveBeenCalledTimes(1)
+    expect(sceneDocumentStore.getState().previewedIdRaw).toBeNull()
   })
 
   it('skips scene commands when interactions are disabled', () => {
