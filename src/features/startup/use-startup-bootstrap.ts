@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { preloadFurnitureCollections } from '@/scene/furniture-collection-cache'
+import { prefetchFurnitureCollections } from '@/core/operations/furniture-asset-prefetch'
 import {
   editorLifecycleActions,
   useRetryToken,
@@ -93,7 +93,9 @@ export function useStartupBootstrap() {
         })
         editorLifecycleActions.beginAssetLoad()
 
-        preloadFurnitureCollections(result.collections.map((c) => c.sourcePath))
+        prefetchFurnitureCollections(
+          result.collections.map((c) => c.sourcePath),
+        )
       } catch (error) {
         if (cancelled) return
 

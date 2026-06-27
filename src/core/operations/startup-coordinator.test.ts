@@ -5,12 +5,12 @@ import {
   editorLifecycleStore,
   resetEditorLifecycleStore,
 } from '../stores/editor-lifecycle-store'
-import { resetAssetsStore, assetsActions } from '../stores/assets-store'
+import { resetAssetsStore } from '../stores/assets-store'
 import { dialogActions } from '../stores/dialog-store'
 import { feedbackActions } from '../stores/feedback-store'
 import { selectionEffects } from './selection-effects'
 import { runStartupRestoreFlow } from '../persistence/restore-flow'
-import { clearFurnitureCollectionCache } from '@/scene/furniture-collection-cache'
+import { clearFurnitureAssetPrefetch } from './furniture-asset-prefetch'
 import { clearSceneServices } from '@/scene/scene-commands'
 import {
   completeAssetLoad,
@@ -41,8 +41,8 @@ vi.mock('../stores/feedback-store', () => ({
   },
 }))
 
-vi.mock('@/scene/furniture-collection-cache', () => ({
-  clearFurnitureCollectionCache: vi.fn(),
+vi.mock('./furniture-asset-prefetch', () => ({
+  clearFurnitureAssetPrefetch: vi.fn(),
 }))
 
 vi.mock('@/scene/scene-commands', () => ({
@@ -106,22 +106,10 @@ describe('startup-coordinator', () => {
     )
   })
 
-  it('clears the GLTF cache for loaded collections and bumps the retry token', () => {
-    assetsActions.setAssets({
-      catalog: [],
-      collections: [
-        { id: 'a', sourcePath: '/models/a.glb' },
-        { id: 'b', sourcePath: '/models/b.glb' },
-      ],
-      environmentConfig: null,
-    })
-
+  it('clears the prefetched assets and bumps the retry token', () => {
     requestAssetRetry()
 
-    expect(clearFurnitureCollectionCache).toHaveBeenCalledWith([
-      '/models/a.glb',
-      '/models/b.glb',
-    ])
+    expect(clearFurnitureAssetPrefetch).toHaveBeenCalledTimes(1)
     expect(editorLifecycleStore.getState().retryToken).toBe(1)
     expect(editorLifecycleStore.getState().sceneEpoch).toBe(1)
     expect(feedbackActions.clearAssertiveAnnouncement).toHaveBeenCalledTimes(1)

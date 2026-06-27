@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { useFurnitureAssetLoadingProgress } from '@/scene/furniture-collection-cache'
+import { useFurnitureAssetPrefetchProgress } from '@/core/operations/furniture-asset-prefetch'
 import { useStartupLoadingActive } from '@/core/stores/editor-lifecycle-store'
 import { Card, CardContent } from '@/shared/ui/card'
 import { Progress } from '@/shared/ui/progress'
@@ -17,8 +17,8 @@ function formatAssetLabel(item: string) {
 
 export function InitializationProgress() {
   const visible = useStartupLoadingActive()
-  const { active, currentItem, loaded, percent, total } =
-    useFurnitureAssetLoadingProgress()
+  const { active, currentItem, loadedCount, percent, total } =
+    useFurnitureAssetPrefetchProgress()
   const panelRef = useRef<HTMLDivElement | null>(null)
   const roundedProgress = Math.round(percent)
 
@@ -76,7 +76,7 @@ export function InitializationProgress() {
             <strong>{String(roundedProgress)}%</strong>
             <span>
               {active && total > 0
-                ? `Asset ${String(Math.min(loaded + 1, total))} of ${String(total)}`
+                ? `Asset ${String(Math.min(loadedCount + 1, total))} of ${String(total)}`
                 : 'Starting asset requests'}
             </span>
           </div>

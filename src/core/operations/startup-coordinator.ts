@@ -2,7 +2,7 @@ import { toast } from 'sonner'
 import { createDefaultSceneState } from '@/core/model/scene-defaults'
 import { isSceneStateAtDefaults } from '@/core/model/scene-model'
 import { sceneCommands, clearSceneServices } from '@/scene/scene-commands'
-import { clearFurnitureCollectionCache } from '@/scene/furniture-collection-cache'
+import { clearFurnitureAssetPrefetch } from './furniture-asset-prefetch'
 import { feedbackActions } from '../stores/feedback-store'
 import { dialogActions } from '../stores/dialog-store'
 import {
@@ -187,16 +187,13 @@ export function notifyAssetError(error: Error) {
 }
 
 // The user asked to retry startup. Clear any open dialog and the surface, drop
-// the cached GLTFs for the loaded collections, then bump the lifecycle retry
-// token so the bootstrap fetch effect re-runs and the Scene remounts.
+// the prefetched asset bytes so the retry re-downloads them, then bump the
+// lifecycle retry token so the bootstrap fetch effect re-runs and the Scene
+// remounts (re-seeding THREE.Cache from the fresh prefetch).
 export function requestAssetRetry() {
   dialogActions.closeActiveDialog()
   resetStartupShell()
-
-  const paths = assetsStore
-    .getState()
-    .collections.map((collection) => collection.sourcePath)
-  clearFurnitureCollectionCache(paths)
+  clearFurnitureAssetPrefetch()
 
   editorLifecycleActions.requestRetry()
   feedbackActions.clearAssertiveAnnouncement()

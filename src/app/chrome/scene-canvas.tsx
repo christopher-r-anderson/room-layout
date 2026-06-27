@@ -1,5 +1,11 @@
 import { Canvas } from '@react-three/fiber'
-import { Suspense, type ComponentProps } from 'react'
+import {
+  Suspense,
+  use,
+  useMemo,
+  type ComponentProps,
+  type ReactNode,
+} from 'react'
 import { NeutralToneMapping, SRGBColorSpace } from 'three'
 import { Scene } from '@/scene/scene'
 import {
@@ -7,6 +13,23 @@ import {
   notifyAssetError,
 } from '@/core/operations/startup-coordinator'
 import { SceneAssetErrorBoundary } from './scene-asset-error-boundary'
+import { getSeedPromise } from './seed-gltf-cache'
+
+// Suspends until the engine-free prefetch's buffers are seeded into THREE.Cache,
+// so the wrapped Scene's useGLTF parses from memory instead of refetching. Keyed
+// by the scene epoch so a retry re-seeds the freshly prefetched buffers.
+function SeedGltfCacheGate({
+  epoch,
+  paths,
+  children,
+}: {
+  epoch: number
+  paths: string[]
+  children: ReactNode
+}) {
+  use(getSeedPromise(epoch, paths))
+  return children
+}
 
 type SceneProps = ComponentProps<typeof Scene>
 
@@ -42,6 +65,11 @@ export default function SceneCanvas({
   onScenePreviewChange,
   onFloorLoadingChange,
 }: SceneCanvasProps) {
+  const collectionPaths = useMemo(
+    () => collections.map((collection) => collection.sourcePath),
+    [collections],
+  )
+
   return (
     <Canvas
       camera={{
@@ -59,18 +87,20 @@ export default function SceneCanvas({
     >
       <SceneAssetErrorBoundary key={sceneEpoch} onError={notifyAssetError}>
         <Suspense fallback={null}>
-          <Scene
-            renderQuality={isE2ELowRenderQuality ? 'e2e-low' : 'default'}
-            catalog={catalog}
-            collections={collections}
-            onCanvasPointerSelection={onCanvasPointerSelection}
-            onAssetsReady={completeAssetLoad}
-            previewedId={previewedId}
-            onPreviewChange={onScenePreviewChange}
-            floorOption={selectedFloorOption}
-            wallOption={selectedWallOption}
-            onFloorLoadingChange={onFloorLoadingChange}
-          />
+          <SeedGltfCacheGate epoch={sceneEpoch} paths={collectionPaths}>
+            <Scene
+              renderQuality={isE2ELowRenderQuality ? 'e2e-low' : 'default'}
+              catalog={catalog}
+              collections={collections}
+              onCanvasPointerSelection={onCanvasPointerSelection}
+              onAssetsReady={completeAssetLoad}
+              previewedId={previewedId}
+              onPreviewChange={onScenePreviewChange}
+              floorOption={selectedFloorOption}
+              wallOption={selectedWallOption}
+              onFloorLoadingChange={onFloorLoadingChange}
+            />
+          </SeedGltfCacheGate>
         </Suspense>
       </SceneAssetErrorBoundary>
     </Canvas>
