@@ -3,6 +3,7 @@ import globals from 'globals'
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
+import vitest from '@vitest/eslint-plugin'
 import { defineConfig, globalIgnores } from 'eslint/config'
 import eslintConfigPrettier from 'eslint-config-prettier/flat'
 
@@ -64,6 +65,22 @@ export default defineConfig([
         projectService: true,
         tsconfigRootDir: import.meta.dirname,
       },
+    },
+  },
+
+  // Vitest test-quality guardrails. Scoped to unit/component tests (Playwright
+  // specs under e2e/ are not vitest). Catches stray .only, assertion-less tests,
+  // duplicate titles, and malformed expect() — patterns lint can't otherwise see.
+  {
+    files: ['src/**/*.test.{ts,tsx}'],
+    plugins: { vitest },
+    rules: {
+      'vitest/no-focused-tests': 'error',
+      'vitest/no-disabled-tests': 'warn',
+      'vitest/expect-expect': 'error',
+      'vitest/no-identical-title': 'error',
+      'vitest/valid-expect': 'error',
+      'vitest/no-conditional-tests': 'error',
     },
   },
 

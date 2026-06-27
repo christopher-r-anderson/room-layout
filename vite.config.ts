@@ -1,4 +1,8 @@
-import { configDefaults, defineConfig } from 'vitest/config'
+import {
+  configDefaults,
+  coverageConfigDefaults,
+  defineConfig,
+} from 'vitest/config'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { analyzer, unstableRolldownAdapter } from 'vite-bundle-analyzer'
@@ -35,6 +39,21 @@ export default defineConfig({
   test: {
     exclude: [...configDefaults.exclude, 'e2e/**'],
     setupFiles: ['./src/test/vitest.setup.ts'],
+    // Coverage is a read-only map for planning, not a gate: `pnpm coverage`
+    // prints it, but there are no thresholds and it stays out of preflight.
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'html'],
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: [
+        ...coverageConfigDefaults.exclude,
+        'src/test/**',
+        'src/**/*.bench.ts',
+        'src/**/scene-test-support.ts',
+        // Vendored shadcn/base-ui primitives — testing them tests the library.
+        'src/shared/ui/**',
+      ],
+    },
   },
   resolve: {
     dedupe: ['react', 'react-dom', 'three'],
