@@ -36,9 +36,12 @@ guidance.
 ### Keyboard-First Operation
 
 - exercise camera movement and preset views
+- verify focus-selected (`F`) reframes the camera on the selected item
 - verify selection movement and rotation shortcuts
 - verify undo, redo, and start-over flows
 - confirm room-view shortcuts remain scoped to room-view focus
+- exercise the pane-focus shortcuts (`Shift+I` inspector, `Shift+R` room view,
+  `Shift+O` furniture-in-room, `Shift+T` selected-item actions)
 
 ### Startup and Recovery
 
