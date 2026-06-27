@@ -28,10 +28,19 @@ recommendation; the actual cut is a decision for Phase 3.
   ("covered by e2e at `...`"); the e2e audit produces that map, so writing the
   testing-strategy doc + any coverage `exclude` globs is parked until then to avoid
   vague placeholders. The skip list below is the interim record.
-- **Deferred over-mock rewrites (next up):** `focus-actions`, `selection-actions`,
-  `use-scene-snapshot`, `restored-scene-history`, `furniture-collection-cache`.
-  Per-file decision tree: extract-to-pure > assert-real-outcomes > flag as
-  integration-shaped (→ becomes an explicit input to the e2e audit).
+- **Over-mock rewrites — done.** Per-file outcome:
+  - `focus-actions`: assert the queued `selectionFocusStore` request over spy calls.
+  - `selection-actions`: assert the real preview clear in `clearCanvasSelection`;
+    the `selectionEffects` payload assertions kept (legitimate boundary tests).
+  - `use-scene-snapshot`: swap the mock-mapped content recheck for a stable-getter
+    contract test.
+  - `restored-scene-history`: consolidate three overlapping wrapping tests into one;
+    drop the language-level error-propagation test.
+  - `furniture-collection-cache`: test the real `useFurnitureAssetLoadingProgress`
+    logic, delete the drei passthrough tests, move `resolvePublicAssetPath` to a new
+    `asset-path.test.ts`.
+  - None needed flagging as integration-shaped, so no new inputs to the e2e audit
+    from this pass.
 
 ## Tier 1 — pure logic, cheap, real branches (recommended)
 
