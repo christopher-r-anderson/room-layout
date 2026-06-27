@@ -29,6 +29,19 @@ assertions belong at unit), **could-be-unit** (mostly redundant).
   anti-pattern with a fixed bounded `holdKey` across the harness, `editor-hotkeys`,
   and the camera-nudge perf spec; assertions now check the durable "camera moved"
   invariant. Validated: the 6 camera hotkey tests pass.
+- **Phase B — done (migrate-not-delete).** Trimmed exact-value/logic checks that
+  belong at unit, after verifying each unit equivalent:
+  - `drag-bounds`: assert the clamp invariant (moved toward wall, stayed in room),
+    not the exact `2.425` (`clampToBounds`/`wall-clearance` unit-owned).
+  - `editor-accessibility(-flows)`: assert each Arrow/Shift/Alt variant routes and
+    moves; drop the exact `+0.5/+1.5/+1.6` and `-0.5` (step deltas pinned in
+    `use-keyboard-shortcuts.test`). Kept the genuine undo/redo interleave parity.
+  - `editor-hotkeys` rotate test: drive undo/redo parity off a captured runtime
+    angle, not the magic normalized radians (step pinned in `movement-actions.test`).
+  - `url-restore`: removed 7 pure parse/validate tests (unit-covered by
+    `scene-url.test`/`restore-flow.test`/`scene-draft.test`), kept one
+    malformed→error-UI test + all full-app flows; replaced a clear-toasts
+    `waitForTimeout(500)` with a status-empty wait.
 
 ## Per-spec
 
