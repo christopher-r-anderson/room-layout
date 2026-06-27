@@ -11,9 +11,6 @@ import {
   waitForPoliteAnnouncement,
 } from './support/editor-harness'
 
-const ROTATION_STEP_RADIANS = Math.PI / 12
-const NORMALIZED_RIGHT_ROTATION_RADIANS = Math.PI * 2 - ROTATION_STEP_RADIANS
-
 function cameraDistance(
   from: [number, number, number],
   to: [number, number, number],
@@ -150,11 +147,13 @@ test('applies keyboard shortcuts for rotate, history, and delete confirmation', 
 
   await focusRoomView(page)
   await page.keyboard.press('.')
-  const afterRotate = await waitForFirstItemRotationY(
-    page,
-    NORMALIZED_RIGHT_ROTATION_RADIANS,
-    6,
-  )
+  // Rotate one step. The exact normalized angle is owned by the rotation unit
+  // tests; capture the resulting value to drive the undo/redo parity below.
+  await expect
+    .poll(async () => (await readSceneState(page)).items[0].rotationY)
+    .not.toBeCloseTo(initialItem.rotationY, 6)
+  const afterRotate = await readSceneState(page)
+  const rotatedRotationY = afterRotate.items[0].rotationY
   expect(afterRotate.selectedName).toBe('Leather Couch')
 
   await page.keyboard.press('Control+z')
@@ -165,7 +164,7 @@ test('applies keyboard shortcuts for rotate, history, and delete confirmation', 
   expect(afterUndo.selectedName).toBe('Leather Couch')
 
   await page.keyboard.press('Control+y')
-  await waitForFirstItemRotationY(page, NORMALIZED_RIGHT_ROTATION_RADIANS, 6)
+  await waitForFirstItemRotationY(page, rotatedRotationY, 6)
 
   await page.keyboard.press('Delete')
   const deleteDialog = page.getByRole('alertdialog', {
@@ -174,7 +173,7 @@ test('applies keyboard shortcuts for rotate, history, and delete confirmation', 
   await expect(deleteDialog).toBeVisible()
 
   await page.keyboard.press('Control+z')
-  await waitForFirstItemRotationY(page, NORMALIZED_RIGHT_ROTATION_RADIANS, 6)
+  await waitForFirstItemRotationY(page, rotatedRotationY, 6)
   await expect(deleteDialog).toBeVisible()
 
   await deleteDialog.getByRole('button', { name: 'Remove item' }).click()
@@ -184,10 +183,7 @@ test('applies keyboard shortcuts for rotate, history, and delete confirmation', 
   await waitForItemCount(page, 1)
 
   const afterRestore = await readSceneState(page)
-  expect(afterRestore.items[0].rotationY).toBeCloseTo(
-    NORMALIZED_RIGHT_ROTATION_RADIANS,
-    6,
-  )
+  expect(afterRestore.items[0].rotationY).toBeCloseTo(rotatedRotationY, 6)
 
   await page.keyboard.press('Control+Alt+n')
   const startOverDialog = page.getByRole('alertdialog', {
