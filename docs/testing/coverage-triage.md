@@ -23,7 +23,15 @@ recommendation; the actual cut is a decision for Phase 3.
   `furniture-operations.ts` (matching the existing `*InHistory` seam) and
   unit-tested there; the hook is now thin glue covered by e2e. The remaining thin
   wrappers (`rotate`/`delete`/`add` — already pure-extracted) stay as-is.
-- **Tier 3 — unchanged** (intentional unit skips).
+- **Tier 3 — lock-in intentionally deferred until after the e2e audit.** The point
+  of recording "deliberately not unit-tested" is the accurate cross-reference
+  ("covered by e2e at `...`"); the e2e audit produces that map, so writing the
+  testing-strategy doc + any coverage `exclude` globs is parked until then to avoid
+  vague placeholders. The skip list below is the interim record.
+- **Deferred over-mock rewrites (next up):** `focus-actions`, `selection-actions`,
+  `use-scene-snapshot`, `restored-scene-history`, `furniture-collection-cache`.
+  Per-file decision tree: extract-to-pure > assert-real-outcomes > flag as
+  integration-shaped (→ becomes an explicit input to the e2e audit).
 
 ## Tier 1 — pure logic, cheap, real branches (recommended)
 
