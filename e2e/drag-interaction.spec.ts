@@ -218,21 +218,35 @@ test('prevents the browser context menu on canvas right-click', async ({
 }) => {
   await openEditor(page)
 
-  const contextMenuPrevented = await page.evaluate(() => {
-    const canvas = document.querySelector('canvas')
+  const canvas = page.locator('canvas').first()
+  const box = await canvas.boundingBox()
 
-    if (!canvas) {
-      throw new Error('canvas element was not available for interaction')
-    }
+  if (!box) {
+    throw new Error('canvas bounding box was not available for interaction')
+  }
 
-    const event = new MouseEvent('contextmenu', {
-      bubbles: true,
-      cancelable: true,
-      button: 2,
-    })
-
-    return !canvas.dispatchEvent(event)
+  // Record the real contextmenu event. The window bubble-phase listener fires
+  // last, so defaultPrevented reflects whether the app's handler suppressed the
+  // native menu.
+  await page.evaluate(() => {
+    const w = window as typeof window & { __ctxPrevented?: boolean }
+    w.__ctxPrevented = undefined
+    window.addEventListener(
+      'contextmenu',
+      (event) => {
+        w.__ctxPrevented = event.defaultPrevented
+      },
+      { once: true },
+    )
   })
 
-  expect(contextMenuPrevented).toBe(true)
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2, {
+    button: 'right',
+  })
+
+  const prevented = await page.evaluate(
+    () =>
+      (window as typeof window & { __ctxPrevented?: boolean }).__ctxPrevented,
+  )
+  expect(prevented).toBe(true)
 })
