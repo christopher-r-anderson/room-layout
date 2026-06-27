@@ -46,8 +46,10 @@ recommendation; the actual cut is a decision for Phase 3.
   for logic modules lacking a co-located test surfaced the real cases: added tests
   for the pure `toolbar-placement/{rect-utils, convex-geometry, toolbar-anchors}.ts`
   (reached only via a hook, so barely covered) and `selection-controls-interactivity`.
-  Deferred (store-shaped, not pure-geometry): `assets-store`, `catalog-selection-store`.
-  Skipped (trivial + heavily exercised indirectly): `ui-bounds`.
+  Then the two untested stores: tested `catalog-selection-store` (`getActiveCatalogId`
+  fallback logic — stored selection vs first-entry vs empty); skipped `assets-store`
+  (trivial spread-merge/reset plumbing, incidentally covered) and `ui-bounds` (trivial
+  - heavily exercised indirectly).
 
 ## Tier 1 — pure logic, cheap, real branches (recommended)
 
