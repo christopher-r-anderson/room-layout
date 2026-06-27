@@ -75,6 +75,35 @@ async function pressKeyAndWaitForCameraMove(
   return readSceneState(page)
 }
 
+// Bounded hold, polled outcome. The fixed hold keeps the movement magnitude
+// bounded (no hold-until-condition), while polling the assertion tolerates a
+// demand-frameloop frame that ticks late under parallel load — so a one-shot
+// read can't see "no movement yet" and flake.
+async function holdKeyAndExpectCameraMove(
+  page: Page,
+  key: string,
+  baseline: [number, number, number],
+  { shift = false }: { shift?: boolean } = {},
+) {
+  if (shift) {
+    await page.keyboard.down('Shift')
+  }
+
+  try {
+    await holdKey(page, key)
+  } finally {
+    if (shift) {
+      await page.keyboard.up('Shift')
+    }
+  }
+
+  await expect
+    .poll(async () => (await readSceneState(page)).cameraPosition)
+    .not.toEqual(baseline)
+
+  return readSceneState(page)
+}
+
 async function tabTo(page: Page, target: Locator, maxTabs = 30) {
   for (let index = 0; index < maxTabs; index += 1) {
     try {
@@ -258,12 +287,12 @@ test('camera motion with WASD orbits when no selection', async ({ page }) => {
   const initialCameraPosition = initialState.cameraPosition
 
   await focusRoomView(page)
-  // Hold W for camera orbit
-  await holdKey(page, 'KeyW')
-
-  const afterMotion = await readSceneState(page)
+  const afterMotion = await holdKeyAndExpectCameraMove(
+    page,
+    'KeyW',
+    initialCameraPosition,
+  )
   expect(afterMotion.itemCount).toBe(initialState.itemCount)
-  expect(afterMotion.cameraPosition).not.toEqual(initialCameraPosition)
 })
 
 test('camera motion with Shift+WASD pans camera', async ({ page }) => {
@@ -273,14 +302,13 @@ test('camera motion with Shift+WASD pans camera', async ({ page }) => {
   const initialCameraPosition = initialState.cameraPosition
 
   await focusRoomView(page)
-  // Hold Shift+W key for pan motion
-  await page.keyboard.down('Shift')
-  await holdKey(page, 'KeyW')
-  await page.keyboard.up('Shift')
-
-  const afterWMotion = await readSceneState(page)
+  const afterWMotion = await holdKeyAndExpectCameraMove(
+    page,
+    'KeyW',
+    initialCameraPosition,
+    { shift: true },
+  )
   expect(afterWMotion.itemCount).toBe(1)
-  expect(afterWMotion.cameraPosition).not.toEqual(initialCameraPosition)
 })
 
 test('camera motion with = and - keys zooms camera', async ({ page }) => {
@@ -290,20 +318,17 @@ test('camera motion with = and - keys zooms camera', async ({ page }) => {
   const initialCameraPosition = initialState.cameraPosition
 
   await focusRoomView(page)
-  // Hold = key for zoom in
-  await holdKey(page, 'Equal')
-
-  const afterZoomIn = await readSceneState(page)
+  const afterZoomIn = await holdKeyAndExpectCameraMove(
+    page,
+    'Equal',
+    initialCameraPosition,
+  )
   expect(afterZoomIn.itemCount).toBe(1)
-  expect(afterZoomIn.cameraPosition).not.toEqual(initialCameraPosition)
 
   const zoomedCameraPosition = afterZoomIn.cameraPosition
 
   // Zoom back out; the camera must move again.
-  await holdKey(page, 'Minus')
-  expect((await readSceneState(page)).cameraPosition).not.toEqual(
-    zoomedCameraPosition,
-  )
+  await holdKeyAndExpectCameraMove(page, 'Minus', zoomedCameraPosition)
 })
 
 test('camera preset shortcuts 1/2/3/4 reposition the camera', async ({
@@ -423,14 +448,13 @@ test('WASD is suppressed in modal dialogs but enabled in the editor', async ({
   const cameraPositionAfterDialog = afterAdd.cameraPosition
 
   await focusRoomView(page)
-  // Hold Shift+W for pan
-  await page.keyboard.down('Shift')
-  await holdKey(page, 'KeyW')
-  await page.keyboard.up('Shift')
-
-  const afterWMotion = await readSceneState(page)
+  const afterWMotion = await holdKeyAndExpectCameraMove(
+    page,
+    'KeyW',
+    cameraPositionAfterDialog,
+    { shift: true },
+  )
   expect(afterWMotion.itemCount).toBe(1)
-  expect(afterWMotion.cameraPosition).not.toEqual(cameraPositionAfterDialog)
 })
 
 test('WASD camera controls stay enabled while the desktop Room sidebar is open', async ({
@@ -447,19 +471,11 @@ test('WASD camera controls stay enabled while the desktop Room sidebar is open',
   const initialCameraPosition = (await readSceneState(page)).cameraPosition
 
   await focusRoomView(page)
-  await page.keyboard.down('Shift')
-
-  try {
-    await holdKey(page, 'KeyW')
-  } finally {
-    await page.keyboard.up('Shift')
-  }
-
-  // WASD stays live under the non-blocking sidebar: the camera moved and the
+  // WASD stays live under the non-blocking sidebar: the camera moves and the
   // sidebar is still open.
-  expect((await readSceneState(page)).cameraPosition).not.toEqual(
-    initialCameraPosition,
-  )
+  await holdKeyAndExpectCameraMove(page, 'KeyW', initialCameraPosition, {
+    shift: true,
+  })
   await expect(roomSurface).toBeVisible()
 })
 
