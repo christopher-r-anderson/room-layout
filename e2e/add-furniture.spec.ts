@@ -25,10 +25,15 @@ test('keeps successful adds free of false no-space errors and duplicate ids', as
   const firstAddState = await addFurniture(page, 'Leather Couch')
   expect(firstAddState.itemCount).toBe(1)
 
-  await dragSelectedFurniture(page, {
+  // Move the first couch aside so the second identical couch has an open spawn
+  // slot (otherwise placement-search would report no space).
+  const draggedState = await dragSelectedFurniture(page, {
     x: 1200,
     y: 0,
   })
+  expect(draggedState.items[0].position).not.toEqual(
+    firstAddState.items[0].position,
+  )
 
   const secondAddState = await addFurniture(page, 'Leather Couch')
   expect(secondAddState.itemCount).toBe(2)
