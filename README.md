@@ -68,7 +68,6 @@ pnpm test:e2e:install # install the Chromium browser for Playwright
 pnpm test:e2e         # run browser integration tests
 pnpm test:e2e:headed  # run browser integration tests in headed mode
 pnpm test:e2e:ui      # open the Playwright UI runner
-pnpm test:browser:perf # run browser perf scenarios and collect artifacts
 ```
 
 For current UI component policy and the temporary knip export exception, see
@@ -80,7 +79,6 @@ Use lane-specific tests based on the change scope:
 
 - `pnpm test:run`: unit and integration checks
 - `pnpm test:e2e`: browser workflow coverage
-- `pnpm test:browser:perf`: scripted performance scenarios
 
 Detailed testing workflow guidance lives in `docs/architecture/testing.md`.
 It also includes first-time Playwright setup and test artifact locations.

@@ -18,7 +18,8 @@ Test selection matrix:
 3. Accessibility semantics, focus order, announcements, dialog behavior
    - Run accessibility/browser coverage including `e2e/editor-a11y-audits.spec.ts`.
 4. Frame-time-sensitive interactions (drag/rotate/collision/camera transitions)
-   - Run perf scenarios (`pnpm test:browser:perf`).
+   - Rely on the e2e idle-churn gate (`e2e/selected-toolbar-idle.spec.ts`); profile
+     interactively on a real GPU for actual frame-time.
 5. Move/rename-only refactors with no behavior change
    - At minimum run `pnpm lint` and `pnpm typecheck`.
    - Run broader tests when import rewiring touches high-risk paths.

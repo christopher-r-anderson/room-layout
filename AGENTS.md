@@ -24,7 +24,7 @@ task-specific policy files.
 
 - Keep base checks to `pnpm lint`, `pnpm typecheck`, and `pnpm test:run`.
 - Use `pnpm test:e2e` for browser-facing behavior changes.
-- Use `pnpm test:browser:perf` for frame-time-sensitive flow changes.
+- For frame-time-sensitive flow changes, rely on the e2e idle-churn gate (`e2e/selected-toolbar-idle.spec.ts`) and profile interactively on a real GPU.
 - Run `pnpm fix` before finalizing edits.
 - Run `pnpm preflight` for the complete gate (lint, format, typecheck, test:run, knip, build, test:e2e) before finalizing a substantial change.
 

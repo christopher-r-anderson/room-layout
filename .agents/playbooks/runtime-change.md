@@ -16,7 +16,7 @@ Validation:
 
 - Required: `pnpm lint`, `pnpm typecheck`, `pnpm test:run`.
 - Add `pnpm test:e2e` for browser-facing behavior.
-- Add `pnpm test:browser:perf` if frame-sensitive flow changed.
+- If frame-sensitive flow changed, check the e2e idle-churn gate (`e2e/selected-toolbar-idle.spec.ts`) and profile interactively for real frame-time.
 
 Review focus:
 
