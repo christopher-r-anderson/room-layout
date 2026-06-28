@@ -3,5 +3,13 @@
   "tags": ["-lintignore"],
   "ignoreIssues": {
     "src/shared/ui/*.tsx": ["exports"]
-  }
+  },
+  "ignoreBinaries": [
+    "gltf-transform",
+    "toktx",
+    "magick",
+    "convert",
+    "blender",
+    "flatpak"
+  ]
 }
