@@ -5,7 +5,7 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "basis:sync": "node ./scripts/copy-basis-transcoder.js",
+    "basis:sync": "node ./scripts/copy-basis-transcoder.mjs",
     "postinstall": "pnpm run basis:sync",
     "prebuild": "pnpm run basis:sync",
     "dev": "vite",
@@ -29,7 +29,7 @@
     "bench": "vitest bench --run",
     "bench:json": "vitest bench --run --outputJson .bench/results.json",
     "bench:compare": "vitest bench --run --compare .bench/baseline.json",
-    "textures:export": "./scripts/export-textures.sh",
+    "textures:export": "node ./scripts/export-textures.mjs",
     "models:export": "node ./scripts/export-models.mjs",
     "preview": "vite preview",
     "knip": "knip",
