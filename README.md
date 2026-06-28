@@ -134,7 +134,7 @@ In addition to this README, project-specific guides are available:
 ### Contributor Workflows
 
 - [Testing Guide](docs/architecture/testing.md): Contributor test lane selection and browser test workflow guidance.
-- [Catalog and Assets](docs/architecture/catalog-and-assets.md): Manifest editing, validation, texture pipeline, and asset contract notes.
+- [Catalog and Assets](docs/architecture/catalog-and-assets.md): Manifest editing, validation, texture and model pipelines, and asset contract notes.
 - [Catalog Manifest Schema](docs/reference/catalog-manifest-schema.md): Full catalog manifest field reference and validation constraints.
 - [UI Components Policy](docs/architecture/ui-components.md): shadcn ownership model and knip export exception.
 

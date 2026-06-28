@@ -1,4 +1,6 @@
+import type { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 import { getMeshes } from '@/scene/internal/three/get-meshes'
+import { configureGltfKtx2 } from '@/scene/internal/three/gltf-ktx2'
 import { Room } from './internal/environment/room'
 import { Lighting } from './internal/environment/lighting'
 import type {
@@ -95,13 +97,18 @@ export function Scene({
     [canvasWidth, canvasHeight],
   )
   const invalidate = useThree((state) => state.invalidate)
+  const gl = useThree((state) => state.gl)
   const collectionPaths = useMemo(
     () => collections.map((c) => c.sourcePath),
     [collections],
   )
-  const gltfResult = useGLTF(collectionPaths) as
-    | { scene: Object3D }
-    | { scene: Object3D }[]
+  // Meshopt geometry is auto-decoded by drei; KTX2 textures need the Basis
+  // transcoder wired onto the loader (Draco is unused — we compress with Meshopt).
+  // drei's loader is built from three-stdlib; cast to the three/addons GLTFLoader
+  // our KTX2 helper uses (identical at runtime, nominally distinct in TS).
+  const gltfResult = useGLTF(collectionPaths, false, true, (loader) => {
+    configureGltfKtx2(loader as unknown as GLTFLoader, gl)
+  }) as { scene: Object3D } | { scene: Object3D }[]
 
   const sourceScenesByPath = useMemo(() => {
     const gltfScenes = Array.isArray(gltfResult) ? gltfResult : [gltfResult]
