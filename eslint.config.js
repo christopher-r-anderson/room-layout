@@ -47,6 +47,7 @@ export default defineConfig([
     'public/models',
     'public/basis',
     '.agents',
+    '.claude',
   ]),
   {
     files: ['**/*.{ts,tsx}'],

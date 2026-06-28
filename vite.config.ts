@@ -77,7 +77,11 @@ export default defineConfig({
       : []),
   ],
   test: {
-    exclude: [...configDefaults.exclude, 'e2e/**'],
+    // .claude holds agent worktrees (full repo copies) and session state — never
+    // glob test/bench files out of it. `benchmark` has its own exclude, separate
+    // from `test.exclude`.
+    exclude: [...configDefaults.exclude, 'e2e/**', '.claude/**'],
+    benchmark: { exclude: [...configDefaults.exclude, '.claude/**'] },
     setupFiles: ['./src/test/vitest.setup.ts'],
     // Coverage is a read-only map for planning, not a gate: `pnpm coverage`
     // prints it, but there are no thresholds and it stays out of preflight.
