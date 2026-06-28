@@ -30,7 +30,7 @@
     "bench:json": "vitest bench --run --outputJson .bench/results.json",
     "bench:compare": "vitest bench --run --compare .bench/baseline.json",
     "textures:export": "./scripts/export-textures.sh",
-    "models:export": "./scripts/export-models.sh",
+    "models:export": "node ./scripts/export-models.mjs",
     "preview": "vite preview",
     "knip": "knip",
     "knip:fix": "knip --fix --allow-remove-files"
