@@ -64,8 +64,8 @@ mkdirSync(PREVIEW_DIR, { recursive: true })
 console.log('🚀 Starting Texture Export...')
 console.log('------------------------------------------------')
 
-const folders = readdirSync(SOURCE_DIR, { withFileTypes: true }).filter((entry) =>
-  entry.isDirectory(),
+const folders = readdirSync(SOURCE_DIR, { withFileTypes: true }).filter(
+  (entry) => entry.isDirectory(),
 )
 
 for (const folder of folders) {
@@ -91,33 +91,77 @@ for (const folder of folders) {
   const previewWebp = path.join(PREVIEW_DIR, `${outputName}.webp`)
   const diffTmp = path.join(OUTPUT_DIR, `.${outputName}_diff_8bit.tmp.png`)
   const normTmp = path.join(OUTPUT_DIR, `.${outputName}_norm_8bit_1k.tmp.png`)
-  const previewTileTmp = path.join(PREVIEW_DIR, `.${outputName}_preview_tile.tmp.png`)
+  const previewTileTmp = path.join(
+    PREVIEW_DIR,
+    `.${outputName}_preview_tile.tmp.png`,
+  )
 
   console.log(`📦 Processing: ${outputName}`)
 
   // 1. Diffuse: force 8-bit, then ETC1S (web download size).
   run(magick, [diffuse, '-depth', '8', diffTmp])
   run('toktx', [
-    '--t2', '--encode', 'etc1s', '--clevel', '5', '--qlevel', '128',
-    '--genmipmap', '--assign_oetf', 'srgb', '--assign_primaries', 'srgb',
-    diffuseKtx2, diffTmp,
+    '--t2',
+    '--encode',
+    'etc1s',
+    '--clevel',
+    '5',
+    '--qlevel',
+    '128',
+    '--genmipmap',
+    '--assign_oetf',
+    'srgb',
+    '--assign_primaries',
+    'srgb',
+    diffuseKtx2,
+    diffTmp,
   ])
 
   // 2. Normal: downscale to 1K + 8-bit, then UASTC + Zstd (normal-map fidelity).
   run(magick, [normal, '-resize', '1024x1024', '-depth', '8', normTmp])
   run('toktx', [
-    '--t2', '--encode', 'uastc', '--uastc_quality', '2', '--uastc_rdo_l', '1.0',
-    '--zcmp', '18', '--genmipmap', '--normal_mode', '--assign_oetf', 'linear',
-    '--assign_primaries', 'none', normalKtx2, normTmp,
+    '--t2',
+    '--encode',
+    'uastc',
+    '--uastc_quality',
+    '2',
+    '--uastc_rdo_l',
+    '1.0',
+    '--zcmp',
+    '18',
+    '--genmipmap',
+    '--normal_mode',
+    '--assign_oetf',
+    'linear',
+    '--assign_primaries',
+    'none',
+    normalKtx2,
+    normTmp,
   ])
 
   // 3. Preview: tile a downscaled diffuse into an oversampled 4:3 frame, scaled
   // down so it reads as a material swatch rather than a single crop.
-  run(magick, [diffuse, '-resize', PREVIEW_TILE_SCALE, '-depth', '8', previewTileTmp])
   run(magick, [
-    '-size', `${String(CANVAS_W)}x${String(CANVAS_H)}`, `tile:${previewTileTmp}`,
-    '-filter', 'Lanczos', '-resize', `${String(PREVIEW_WIDTH)}x${String(PREVIEW_HEIGHT)}!`,
-    '-strip', '-quality', String(PREVIEW_QUALITY), '-define', 'webp:method=6',
+    diffuse,
+    '-resize',
+    PREVIEW_TILE_SCALE,
+    '-depth',
+    '8',
+    previewTileTmp,
+  ])
+  run(magick, [
+    '-size',
+    `${String(CANVAS_W)}x${String(CANVAS_H)}`,
+    `tile:${previewTileTmp}`,
+    '-filter',
+    'Lanczos',
+    '-resize',
+    `${String(PREVIEW_WIDTH)}x${String(PREVIEW_HEIGHT)}!`,
+    '-strip',
+    '-quality',
+    String(PREVIEW_QUALITY),
+    '-define',
+    'webp:method=6',
     previewWebp,
   ])
 

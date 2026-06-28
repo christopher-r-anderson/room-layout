@@ -53,7 +53,9 @@ if (!blender) {
   )
 }
 if (!works('gltf-transform', ['--version'])) {
-  fail('gltf-transform not found. Install with: pnpm add -g @gltf-transform/cli')
+  fail(
+    'gltf-transform not found. Install with: pnpm add -g @gltf-transform/cli',
+  )
 }
 if (!works('toktx', ['--version'])) {
   fail('toktx not found (KTX2 texture encoding). Install KTX-Software (v4.0+).')
@@ -68,8 +70,8 @@ mkdirSync(OUT_DIR, { recursive: true })
 console.log('🚀 Compressing furniture models...')
 console.log('------------------------------------------------')
 
-const folders = readdirSync(MODELS_SRC, { withFileTypes: true }).filter((entry) =>
-  entry.isDirectory(),
+const folders = readdirSync(MODELS_SRC, { withFileTypes: true }).filter(
+  (entry) => entry.isDirectory(),
 )
 
 for (const folder of folders) {
@@ -82,7 +84,13 @@ for (const folder of folders) {
   try {
     execFileSync(
       blender[0],
-      [...blender.slice(1), '--background', path.join(dir, blend), '--python', EXPORT_PY],
+      [
+        ...blender.slice(1),
+        '--background',
+        path.join(dir, blend),
+        '--python',
+        EXPORT_PY,
+      ],
       { stdio: 'ignore' },
     )
   } catch {
@@ -92,7 +100,9 @@ for (const folder of folders) {
 
   const exports = readdirSync(dir).filter((file) => file.endsWith('.tmp.glb'))
   if (exports.length === 0) {
-    console.error(`  ❌ ${folder.name}: no .tmp.glb produced (check the blend's collection exporter).`)
+    console.error(
+      `  ❌ ${folder.name}: no .tmp.glb produced (check the blend's collection exporter).`,
+    )
     continue
   }
 

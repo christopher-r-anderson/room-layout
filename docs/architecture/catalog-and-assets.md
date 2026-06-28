@@ -15,10 +15,21 @@ To add or update furniture/environment options:
 
 ## Asset Locations
 
+Runtime (served from `public/`):
+
 - models: `public/models/`
 - catalog previews: `public/catalog-previews/`
 - environment previews: `public/environment/previews/`
 - environment textures: `public/environment/textures/`
+
+Sources (in `assets-source/`, built into the runtime files by the scripts below):
+
+- model sources: `assets-source/models/<author>-<name>/`
+- texture sources: `assets-source/environment/textures/<author>-<name>/`
+
+All asset scripts are Node ESM (`scripts/*.mjs`) for cross-OS portability; the
+external tools they invoke (Blender, `gltf-transform`, `toktx`, ImageMagick) still
+install per-OS.
 
 ## Floor Texture Pipeline
 
@@ -39,31 +50,43 @@ Current compression profile:
 
 ## Furniture Model Pipeline
 
-Furniture models are authored per folder under `assets-source/<folder>/` (the
-third-party `.blend` and license plus the hand-exported `.glb`). The exported
-`.glb` is the input; only the compressed result ships in `public/models/`, so the
-uncompressed export stays out of `public/` (and out of `dist/`).
+Each model source lives under `assets-source/models/<author>-<name>/`:
 
-Compress exported models with:
+- `<name>.blend` — the editable source. Its Collection Exporter (Blender 4.2+)
+  bakes glTF output to `//<name>.tmp.glb` (carrying copyright metadata).
+- `<name>.src.glb` — the original third-party download, archived for reference.
+- `<name>.md` — provenance and modification notes.
+- shared `assets-source/models/LICENSE-CC-BY-4.0.txt`, linked from each `.md`.
+
+Build the runtime models with:
 
 - `pnpm models:export`
 
+It runs each blend's collection exporter headlessly (reusing the in-file export
+settings), compresses the textures to KTX2, and writes `public/models/<name>.glb`.
+The intermediate `<name>.tmp.glb` (gitignored) is removed, so nothing uncompressed
+ships in `public/`.
+
 Requirements:
 
+- Blender 4.2+ — found via `$BLENDER`, then `blender` on PATH, then the
+  `org.blender.Blender` flatpak.
 - `gltf-transform` (`@gltf-transform/cli`)
 - KTX-Software `toktx` (for KTX2 texture encoding)
 
-Compression profile (structure-preserving — no flatten/join transforms, so the
-`nodeName`s the catalog references survive):
+Compression recipe (structure-preserving — no flatten/join, so the catalog's
+`nodeName`s survive):
 
-- geometry: Meshopt (drei's `useGLTF` auto-decodes it at runtime)
-- normal / metal-rough / occlusion maps: UASTC + Zstd (KTX2)
-- base color / emissive maps: ETC1S (KTX2)
+- textures: ETC1S (KTX2), all slots, full resolution — typically ~7× smaller, and
+  a large GPU-memory win. Tunable (per-slot UASTC, a resize pass, ETC1S quality)
+  at the top of `scripts/export-models.mjs`.
+- geometry: left uncompressed — these meshes are tiny, so Meshopt's lossy
+  quantization would risk minor degradation for ~no gain.
 
-The source-folder → output-name mapping lives in `scripts/export-models.sh`. The
-runtime wires the Basis transcoder onto the furniture loader
+The runtime wires the Basis transcoder onto the furniture loader
 (`scene/internal/three/gltf-ktx2.ts`), reusing the same `public/basis/` decoder as
-the floor textures.
+the floor textures. The Blender helpers (export / introspect / relink) live in
+`scripts/blender/`.
 
 ## Basis Decoder Sync
 
