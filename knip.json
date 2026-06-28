@@ -4,5 +4,5 @@
   "ignoreIssues": {
     "src/shared/ui/*.tsx": ["exports"]
   },
-  "ignoreBinaries": ["gltf-transform", "toktx", "magick"]
+  "ignoreBinaries": ["gltf-transform"]
 }
