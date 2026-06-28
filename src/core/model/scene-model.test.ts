@@ -106,6 +106,27 @@ describe('scene-model', () => {
     ).toBe(false)
   })
 
+  it('returns false when only the lighting mood differs', () => {
+    const defaults = {
+      items: [],
+      floorFinishId: 'wood-floor',
+      wallFinishId: 'light-gray',
+      lightingMoodId: 'daylight',
+    }
+
+    expect(
+      isSceneStateAtDefaults(
+        {
+          items: [],
+          floorFinishId: 'wood-floor',
+          wallFinishId: 'light-gray',
+          lightingMoodId: 'warm-white',
+        },
+        defaults,
+      ),
+    ).toBe(false)
+  })
+
   it('returns false when an item transform differs at the same item count', () => {
     const defaults = {
       items: [

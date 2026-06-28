@@ -1,5 +1,6 @@
 import type {
   FloorFinishOption,
+  LightingMoodOption,
   WallFinishOption,
 } from '@/domain/environment-materials'
 import type { Ref } from 'react'
@@ -21,6 +22,9 @@ interface TopHeaderProps {
   wallFinishId: string
   wallFinishes: WallFinishOption[]
   onWallFinishChange: (finishId: string) => void
+  lightingMoodId: string
+  lightingMoods: LightingMoodOption[]
+  onLightingMoodChange: (moodId: string) => void
 }
 
 type TopHeaderToolbarProps = Pick<
@@ -35,6 +39,9 @@ type TopHeaderToolbarProps = Pick<
   | 'onWallFinishChange'
   | 'wallFinishId'
   | 'wallFinishes'
+  | 'lightingMoodId'
+  | 'lightingMoods'
+  | 'onLightingMoodChange'
 >
 
 export interface TopHeaderContainerProps {

@@ -15,6 +15,7 @@ interface SceneUrlPayloadV1 {
   items: FurnitureInstance[]
   floorFinishId?: string
   wallFinishId?: string
+  lightingMoodId?: string
 }
 
 // ---------------------------------------------------------------------------
@@ -34,6 +35,7 @@ export type ParseSceneUrlResult =
       items: FurnitureInstance[]
       floorFinishId?: string
       wallFinishId?: string
+      lightingMoodId?: string
     }
   | { ok: false; reason: ParseSceneUrlOutcome }
 
@@ -64,6 +66,12 @@ function isValidScenePayloadV1(value: unknown): value is SceneUrlPayloadV1 {
     }
   }
 
+  if ('lightingMoodId' in v) {
+    if (typeof v.lightingMoodId !== 'string' || v.lightingMoodId.length === 0) {
+      return false
+    }
+  }
+
   return true
 }
 
@@ -83,6 +91,7 @@ export function serializeSceneToUrl(
   options?: {
     floorFinishId?: string
     wallFinishId?: string
+    lightingMoodId?: string
   },
 ): string | null {
   const sortedItems: FurnitureInstance[] = [...items]
@@ -109,6 +118,10 @@ export function serializeSceneToUrl(
 
   if (options?.wallFinishId) {
     payload.wallFinishId = options.wallFinishId
+  }
+
+  if (options?.lightingMoodId) {
+    payload.lightingMoodId = options.lightingMoodId
   }
 
   const jsonString = JSON.stringify(payload)
@@ -186,6 +199,7 @@ export function parseSceneUrl(href: string): ParseSceneUrlResult {
     items: payload.items,
     floorFinishId: payload.floorFinishId,
     wallFinishId: payload.wallFinishId,
+    lightingMoodId: payload.lightingMoodId,
   }
 }
 

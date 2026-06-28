@@ -57,8 +57,27 @@ const VALID_MANIFEST = {
         color: '#f5f5f5',
       },
     ],
+    lightingMoods: [
+      {
+        id: 'daylight',
+        label: 'Daylight',
+        exposure: 1.05,
+        ambientIntensity: 0.35,
+        hemisphereSkyColor: '#f1f6ff',
+        hemisphereGroundColor: '#aeb9c9',
+        hemisphereIntensity: 0.55,
+        keyLightColor: '#fff4e6',
+        keyLightIntensity: 1,
+        fillLightColor: '#d5e4ff',
+        fillLightIntensity: 0.28,
+        environmentColor: '#dce6f3',
+        environmentIntensity: 0.72,
+        backgroundIntensity: 0.95,
+      },
+    ],
     defaultFloorFinishId: 'wood-floor',
     defaultWallFinishId: 'light-gray',
+    defaultLightingMoodId: 'daylight',
   },
 }
 
@@ -203,6 +222,25 @@ describe('fetchCatalogManifest', () => {
           id: 'light-gray',
           label: 'Light Gray',
           color: 0xf5f5f5,
+        },
+      ])
+      expect(result.environment.defaultLightingMoodId).toBe('daylight')
+      expect(result.environment.lightingMoods).toEqual([
+        {
+          id: 'daylight',
+          label: 'Daylight',
+          exposure: 1.05,
+          ambientIntensity: 0.35,
+          hemisphereSkyColor: 0xf1f6ff,
+          hemisphereGroundColor: 0xaeb9c9,
+          hemisphereIntensity: 0.55,
+          keyLightColor: 0xfff4e6,
+          keyLightIntensity: 1,
+          fillLightColor: 0xd5e4ff,
+          fillLightIntensity: 0.28,
+          environmentColor: 0xdce6f3,
+          environmentIntensity: 0.72,
+          backgroundIntensity: 0.95,
         },
       ])
     })
@@ -352,6 +390,80 @@ describe('fetchCatalogManifest', () => {
               color: 'rgb(1,2,3)',
             },
           ],
+        },
+      }
+
+      mockFetchOk(badManifest)
+
+      await expect(fetchCatalogManifest()).rejects.toBeInstanceOf(
+        ManifestValidationError,
+      )
+    })
+
+    it('throws ManifestValidationError when "lightingMoods" is missing', async () => {
+      const badManifest = {
+        ...VALID_MANIFEST,
+        environment: {
+          ...VALID_MANIFEST.environment,
+          lightingMoods: undefined,
+        },
+      }
+
+      mockFetchOk(badManifest)
+
+      await expect(fetchCatalogManifest()).rejects.toBeInstanceOf(
+        ManifestValidationError,
+      )
+    })
+
+    it('throws ManifestValidationError when a lighting mood color is not #RRGGBB', async () => {
+      const badManifest = {
+        ...VALID_MANIFEST,
+        environment: {
+          ...VALID_MANIFEST.environment,
+          lightingMoods: [
+            {
+              ...VALID_MANIFEST.environment.lightingMoods[0],
+              keyLightColor: 'rgb(1,2,3)',
+            },
+          ],
+        },
+      }
+
+      mockFetchOk(badManifest)
+
+      await expect(fetchCatalogManifest()).rejects.toBeInstanceOf(
+        ManifestValidationError,
+      )
+    })
+
+    it('throws ManifestValidationError when a lighting mood intensity is negative', async () => {
+      const badManifest = {
+        ...VALID_MANIFEST,
+        environment: {
+          ...VALID_MANIFEST.environment,
+          lightingMoods: [
+            {
+              ...VALID_MANIFEST.environment.lightingMoods[0],
+              ambientIntensity: -0.1,
+            },
+          ],
+        },
+      }
+
+      mockFetchOk(badManifest)
+
+      await expect(fetchCatalogManifest()).rejects.toBeInstanceOf(
+        ManifestValidationError,
+      )
+    })
+
+    it('throws ManifestValidationError when "defaultLightingMoodId" is unknown', async () => {
+      const badManifest = {
+        ...VALID_MANIFEST,
+        environment: {
+          ...VALID_MANIFEST.environment,
+          defaultLightingMoodId: 'does-not-exist',
         },
       }
 

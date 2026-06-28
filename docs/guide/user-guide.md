@@ -28,9 +28,11 @@ If an item cannot be placed in a location because it would go out of bounds or o
 
 ## Adjust the Room
 
-Open `Room` to change the wall and floor finishes.
+Open `Room` to change the wall finish, the floor finish, or the lighting mood.
 
-This lets you try different surface combinations without leaving the editor, which is useful when you want to see how furniture reads in a different setting.
+The `Lighting` tab offers presets named after common home lighting — `Daylight`, `Cool White`, `Warm White`, and `Soft Lamplight` — so you can preview your furniture under lighting that resembles your own room.
+
+This lets you try different surface and lighting combinations without leaving the editor, which is useful when you want to see how furniture reads in a different setting.
 
 ## Fine-Tune with the Panel
 

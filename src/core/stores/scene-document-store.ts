@@ -20,6 +20,7 @@ interface SceneDocumentStoreState {
   isDragging: boolean
   floorFinishId: string
   wallFinishId: string
+  lightingMoodId: string
   floorFinishLoading: boolean
   setHistory: (history: HistoryState<FurnitureItem[]>) => void
   updateHistory: (
@@ -33,6 +34,7 @@ interface SceneDocumentStoreState {
   setDragging: (dragging: boolean) => void
   setFloorFinishId: (id: string) => void
   setWallFinishId: (id: string) => void
+  setLightingMoodId: (id: string) => void
   setFloorFinishLoading: (loading: boolean) => void
   resetSceneDocument: () => void
 }
@@ -69,6 +71,7 @@ function getInitialSceneDocument() {
     isDragging: false,
     floorFinishId: '',
     wallFinishId: '',
+    lightingMoodId: '',
     floorFinishLoading: false,
   }
 }
@@ -197,6 +200,18 @@ export const sceneDocumentStore = createStore<SceneDocumentStoreState>()(
         }
       })
     },
+    setLightingMoodId: (id) => {
+      set((state) => {
+        if (state.lightingMoodId === id) {
+          return state
+        }
+
+        return {
+          ...state,
+          lightingMoodId: id,
+        }
+      })
+    },
     setFloorFinishLoading: (loading) => {
       set((state) => {
         if (state.floorFinishLoading === loading) {
@@ -268,6 +283,9 @@ export const sceneDocumentActions = {
   setWallFinishId: (id: string) => {
     sceneDocumentStore.getState().setWallFinishId(id)
   },
+  setLightingMoodId: (id: string) => {
+    sceneDocumentStore.getState().setLightingMoodId(id)
+  },
   setFloorFinishLoading: (loading: boolean) => {
     sceneDocumentStore.getState().setFloorFinishLoading(loading)
   },
@@ -295,6 +313,8 @@ export const useFloorFinishId = () =>
   useSceneDocumentStore((state) => state.floorFinishId)
 export const useWallFinishId = () =>
   useSceneDocumentStore((state) => state.wallFinishId)
+export const useLightingMoodId = () =>
+  useSceneDocumentStore((state) => state.lightingMoodId)
 export const useFloorFinishLoading = () =>
   useSceneDocumentStore((state) => state.floorFinishLoading)
 export const useItemIds = () =>

@@ -17,6 +17,11 @@ that layout on startup. This doc is the overview; the exact encoder/decoder is
 - `items[].position`: `[x, y, z]` rounded to 3 decimals
 - `items[].rotationY`: radians rounded to 3 decimals
 - `floorFinishId` and `wallFinishId`: optional environment finish IDs
+- `lightingMoodId`: optional lighting mood ID
+
+Optional environment fields are additive: a payload that omits them, or an older
+client that does not recognize one, still loads (unknown fields are ignored and
+missing ones fall back to manifest defaults). New optional fields keep `v: 1`.
 
 ## Constraints
 

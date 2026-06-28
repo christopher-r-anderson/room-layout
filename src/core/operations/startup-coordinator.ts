@@ -43,16 +43,24 @@ function resolveFinishContext() {
     catalog,
     defaultFloorFinishId: environmentConfig?.defaultFloorFinishId ?? '',
     defaultWallFinishId: environmentConfig?.defaultWallFinishId ?? '',
+    defaultLightingMoodId: environmentConfig?.defaultLightingMoodId ?? '',
     floorFinishIds:
       environmentConfig?.floorFinishes.map((option) => option.id) ?? [],
     wallFinishIds:
       environmentConfig?.wallFinishes.map((option) => option.id) ?? [],
+    lightingMoodIds:
+      environmentConfig?.lightingMoods.map((option) => option.id) ?? [],
   }
 }
 
 function runRestoreOnce() {
   const finish = resolveFinishContext()
-  const { catalog, defaultFloorFinishId, defaultWallFinishId } = finish
+  const {
+    catalog,
+    defaultFloorFinishId,
+    defaultWallFinishId,
+    defaultLightingMoodId,
+  } = finish
 
   const draftState = loadSceneDraft()
   const parseResult = parseSceneUrl(window.location.href)
@@ -75,6 +83,7 @@ function runRestoreOnce() {
   const applyFinishIds = (
     floorFinishId: string | undefined,
     wallFinishId: string | undefined,
+    lightingMoodId: string | undefined,
   ) => {
     if (floorFinishId && finish.floorFinishIds.includes(floorFinishId)) {
       sceneDocumentActions.setFloorFinishId(floorFinishId)
@@ -82,6 +91,10 @@ function runRestoreOnce() {
 
     if (wallFinishId && finish.wallFinishIds.includes(wallFinishId)) {
       sceneDocumentActions.setWallFinishId(wallFinishId)
+    }
+
+    if (lightingMoodId && finish.lightingMoodIds.includes(lightingMoodId)) {
+      sceneDocumentActions.setLightingMoodId(lightingMoodId)
     }
   }
 
@@ -96,11 +109,17 @@ function runRestoreOnce() {
     )
       ? state.wallFinishId
       : defaultWallFinishId
+    const normalizedLightingMoodId = finish.lightingMoodIds.includes(
+      state.lightingMoodId ?? '',
+    )
+      ? state.lightingMoodId
+      : defaultLightingMoodId
 
     return {
       ...state,
       floorFinishId: normalizedFloorFinishId,
       wallFinishId: normalizedWallFinishId,
+      lightingMoodId: normalizedLightingMoodId,
     }
   }
 
@@ -108,10 +127,15 @@ function runRestoreOnce() {
     const normalizedState = normalizeRestoredState(state)
 
     sceneCommands.restoreInitialLayout(normalizedState.items)
-    applyFinishIds(normalizedState.floorFinishId, normalizedState.wallFinishId)
+    applyFinishIds(
+      normalizedState.floorFinishId,
+      normalizedState.wallFinishId,
+      normalizedState.lightingMoodId,
+    )
     saveSceneDraft(normalizedState.items, {
       floorFinishId: normalizedState.floorFinishId,
       wallFinishId: normalizedState.wallFinishId,
+      lightingMoodId: normalizedState.lightingMoodId,
     })
   }
 
@@ -123,6 +147,7 @@ function runRestoreOnce() {
   const defaultSceneState = createDefaultSceneState({
     defaultFloorFinishId,
     defaultWallFinishId,
+    defaultLightingMoodId,
   })
 
   runStartupRestoreFlow({
@@ -138,6 +163,7 @@ function runRestoreOnce() {
           items: normalizedState.items,
           floorFinishId: normalizedState.floorFinishId,
           wallFinishId: normalizedState.wallFinishId,
+          lightingMoodId: normalizedState.lightingMoodId,
         },
         defaultSceneState,
       )

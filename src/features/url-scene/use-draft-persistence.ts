@@ -14,6 +14,7 @@ interface DraftSceneState {
   isDragging: boolean
   floorFinishId: string
   wallFinishId: string
+  lightingMoodId: string
 }
 
 function areDraftSceneStatesEqual(
@@ -24,7 +25,8 @@ function areDraftSceneStatesEqual(
     left.items === right.items &&
     left.isDragging === right.isDragging &&
     left.floorFinishId === right.floorFinishId &&
-    left.wallFinishId === right.wallFinishId
+    left.wallFinishId === right.wallFinishId &&
+    left.lightingMoodId === right.lightingMoodId
   )
 }
 
@@ -36,6 +38,7 @@ function getDraftSceneState(): DraftSceneState {
     isDragging: sceneState.isDragging,
     floorFinishId: sceneState.floorFinishId,
     wallFinishId: sceneState.wallFinishId,
+    lightingMoodId: sceneState.lightingMoodId,
   }
 }
 
@@ -55,9 +58,16 @@ function getActiveFinishIds(
     ? sceneState.wallFinishId
     : environmentConfig.defaultWallFinishId
 
+  const activeLightingMoodId = environmentConfig.lightingMoods.some(
+    (option) => option.id === sceneState.lightingMoodId,
+  )
+    ? sceneState.lightingMoodId
+    : environmentConfig.defaultLightingMoodId
+
   return {
     activeFloorFinishId,
     activeWallFinishId,
+    activeLightingMoodId,
   }
 }
 
@@ -69,10 +79,8 @@ function persistDraft(environmentConfig: EnvironmentMaterialConfig) {
     return
   }
 
-  const { activeFloorFinishId, activeWallFinishId } = getActiveFinishIds(
-    sceneState,
-    environmentConfig,
-  )
+  const { activeFloorFinishId, activeWallFinishId, activeLightingMoodId } =
+    getActiveFinishIds(sceneState, environmentConfig)
 
   if (
     isFreshSceneState(
@@ -80,6 +88,7 @@ function persistDraft(environmentConfig: EnvironmentMaterialConfig) {
         items: sceneState.items,
         floorFinishId: activeFloorFinishId,
         wallFinishId: activeWallFinishId,
+        lightingMoodId: activeLightingMoodId,
       },
       environmentConfig,
     )
@@ -91,6 +100,7 @@ function persistDraft(environmentConfig: EnvironmentMaterialConfig) {
   saveSceneDraft(sceneState.items, {
     floorFinishId: activeFloorFinishId,
     wallFinishId: activeWallFinishId,
+    lightingMoodId: activeLightingMoodId,
   })
 }
 
@@ -112,6 +122,7 @@ export function useDraftPersistence({
         isDragging: state.isDragging,
         floorFinishId: state.floorFinishId,
         wallFinishId: state.wallFinishId,
+        lightingMoodId: state.lightingMoodId,
       }),
       persist,
       { equalityFn: areDraftSceneStatesEqual },

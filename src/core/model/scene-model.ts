@@ -8,6 +8,7 @@ export interface SceneComparableState {
   items: readonly SceneComparableItem[]
   floorFinishId?: string
   wallFinishId?: string
+  lightingMoodId?: string
 }
 
 function compareSceneItems(a: SceneComparableItem, b: SceneComparableItem) {
@@ -45,6 +46,10 @@ export function isSceneStateAtDefaults(
   }
 
   if (state.wallFinishId !== defaults.wallFinishId) {
+    return false
+  }
+
+  if (state.lightingMoodId !== defaults.lightingMoodId) {
     return false
   }
 

@@ -1,5 +1,6 @@
 import {
   resolveActiveFinishIds,
+  resolveActiveLightingMoodId,
   type EnvironmentMaterialConfig,
 } from '@/domain/environment-materials'
 import { isFreshSceneState } from '@/core/model/scene-defaults'
@@ -9,6 +10,7 @@ import {
   sceneDocumentStore,
   useFloorFinishId,
   useItems,
+  useLightingMoodId,
   useWallFinishId,
 } from '@/core/stores/scene-document-store'
 
@@ -17,6 +19,7 @@ function computeSceneIsAtDefaults(
   items: FurnitureItem[],
   floorFinishId: string,
   wallFinishId: string,
+  lightingMoodId: string,
 ): boolean {
   if (!environmentConfig) {
     return false
@@ -27,12 +30,17 @@ function computeSceneIsAtDefaults(
     floorFinishId,
     wallFinishId,
   )
+  const activeLightingMoodId = resolveActiveLightingMoodId(
+    environmentConfig,
+    lightingMoodId,
+  )
 
   return isFreshSceneState(
     {
       items,
       floorFinishId: activeFloorFinishId,
       wallFinishId: activeWallFinishId,
+      lightingMoodId: activeLightingMoodId,
     },
     environmentConfig,
   )
@@ -49,12 +57,14 @@ export function useSceneIsAtDefaults(): boolean {
   const items = useItems()
   const floorFinishId = useFloorFinishId()
   const wallFinishId = useWallFinishId()
+  const lightingMoodId = useLightingMoodId()
 
   return computeSceneIsAtDefaults(
     environmentConfig,
     items,
     floorFinishId,
     wallFinishId,
+    lightingMoodId,
   )
 }
 
@@ -62,12 +72,14 @@ export function useSceneIsAtDefaults(): boolean {
 // `canOpen` gate) that need the current value outside React.
 export function getSceneIsAtDefaults(): boolean {
   const { environmentConfig } = assetsStore.getState()
-  const { history, floorFinishId, wallFinishId } = sceneDocumentStore.getState()
+  const { history, floorFinishId, wallFinishId, lightingMoodId } =
+    sceneDocumentStore.getState()
 
   return computeSceneIsAtDefaults(
     environmentConfig,
     history.present,
     floorFinishId,
     wallFinishId,
+    lightingMoodId,
   )
 }

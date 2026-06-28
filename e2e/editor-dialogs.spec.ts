@@ -86,7 +86,9 @@ test('room surface, sheet, and confirmation dialogs keep accessible contracts an
   const roomSurface = page.getByRole('complementary', { name: 'Room' })
   await expect(roomSurface).toBeVisible()
   await expect(
-    roomSurface.getByText(/wall and floor finishes to match your room/i),
+    roomSurface.getByText(
+      /wall finishes, flooring, and lighting to match your room/i,
+    ),
   ).toBeVisible()
   await roomSurface.getByRole('button', { name: 'Close room panel' }).focus()
   await closeWithEscapeAndRestoreFocus(page, roomSurface, roomButton)

@@ -112,7 +112,74 @@
       { "id": "sage-green", "label": "Sage Green", "color": "#8a9e85" },
       { "id": "dusty-mauve", "label": "Dusty Mauve", "color": "#a8909a" }
     ],
+    "lightingMoods": [
+      {
+        "id": "daylight",
+        "label": "Daylight",
+        "exposure": 1.05,
+        "ambientIntensity": 0.35,
+        "hemisphereSkyColor": "#f1f6ff",
+        "hemisphereGroundColor": "#aeb9c9",
+        "hemisphereIntensity": 0.55,
+        "keyLightColor": "#fff4e6",
+        "keyLightIntensity": 1.0,
+        "fillLightColor": "#d5e4ff",
+        "fillLightIntensity": 0.28,
+        "environmentColor": "#dce6f3",
+        "environmentIntensity": 0.72,
+        "backgroundIntensity": 0.95
+      },
+      {
+        "id": "cool-white",
+        "label": "Cool White",
+        "exposure": 1.1,
+        "ambientIntensity": 0.4,
+        "hemisphereSkyColor": "#eef4ff",
+        "hemisphereGroundColor": "#b6c2d2",
+        "hemisphereIntensity": 0.6,
+        "keyLightColor": "#eaf1ff",
+        "keyLightIntensity": 1.1,
+        "fillLightColor": "#dbe7ff",
+        "fillLightIntensity": 0.32,
+        "environmentColor": "#dde8f7",
+        "environmentIntensity": 0.78,
+        "backgroundIntensity": 1.0
+      },
+      {
+        "id": "warm-white",
+        "label": "Warm White",
+        "exposure": 0.95,
+        "ambientIntensity": 0.32,
+        "hemisphereSkyColor": "#fff3e2",
+        "hemisphereGroundColor": "#c7b29a",
+        "hemisphereIntensity": 0.5,
+        "keyLightColor": "#ffe9c7",
+        "keyLightIntensity": 1.0,
+        "fillLightColor": "#ffd9b0",
+        "fillLightIntensity": 0.26,
+        "environmentColor": "#f0e3d2",
+        "environmentIntensity": 0.7,
+        "backgroundIntensity": 0.92
+      },
+      {
+        "id": "soft-lamplight",
+        "label": "Soft Lamplight",
+        "exposure": 0.85,
+        "ambientIntensity": 0.22,
+        "hemisphereSkyColor": "#ffe6c4",
+        "hemisphereGroundColor": "#b59a78",
+        "hemisphereIntensity": 0.38,
+        "keyLightColor": "#ffdca0",
+        "keyLightIntensity": 0.8,
+        "fillLightColor": "#ffcf95",
+        "fillLightIntensity": 0.2,
+        "environmentColor": "#e9d3b8",
+        "environmentIntensity": 0.55,
+        "backgroundIntensity": 0.78
+      }
+    ],
     "defaultFloorFinishId": "wood-floor",
-    "defaultWallFinishId": "light-gray"
+    "defaultWallFinishId": "light-gray",
+    "defaultLightingMoodId": "daylight"
   }
 }

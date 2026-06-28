@@ -48,7 +48,11 @@ export function EditorBody({
   onClearCanvasSelection,
 }: EditorBodyProps) {
   const previewedId = usePreviewedId()
-  const { selectedFloorOption, selectedWallOption } = useActiveFinishIds()
+  const {
+    selectedFloorOption,
+    selectedWallOption,
+    selectedLightingMoodOption,
+  } = useActiveFinishIds()
   const [roomViewHasFocus, setRoomViewHasFocus] = useState(false)
   const catalog = useCatalogEntries()
   const collections = useCollections()
@@ -161,6 +165,7 @@ export function EditorBody({
             previewedId={previewedId}
             selectedFloorOption={selectedFloorOption}
             selectedWallOption={selectedWallOption}
+            selectedLightingMoodOption={selectedLightingMoodOption}
             onCanvasPointerSelection={onCanvasPointerSelection}
             onScenePreviewChange={onScenePreviewChange}
             onFloorLoadingChange={onFloorLoadingChange}

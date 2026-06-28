@@ -44,6 +44,7 @@ export function TopHeader({
   const {
     activeFloorFinishId: floorFinishId,
     activeWallFinishId: wallFinishId,
+    activeLightingMoodId: lightingMoodId,
   } = useActiveFinishIds()
 
   // More actions is mobile-only and blocking. It has no desktop equivalent, so
@@ -96,6 +97,9 @@ export function TopHeader({
     topHeaderRef,
     wallFinishId,
     wallFinishes: environmentConfig?.wallFinishes ?? [],
+    lightingMoodId,
+    lightingMoods: environmentConfig?.lightingMoods ?? [],
+    onLightingMoodChange: sceneDocumentActions.setLightingMoodId,
   } as const
 
   return (

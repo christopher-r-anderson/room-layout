@@ -1,16 +1,32 @@
 import { Environment, Lightformer } from '@react-three/drei'
 import { BackSide } from 'three'
+import type { LightingMoodOption } from '@/domain/environment-materials'
+import { resolveLightingMood } from './lighting-mood'
 
-export function Lighting({ lowQuality = false }: { lowQuality?: boolean }) {
+export function Lighting({
+  lowQuality = false,
+  mood = null,
+}: {
+  lowQuality?: boolean
+  mood?: LightingMoodOption | null
+}) {
+  const m = resolveLightingMood(mood)
+
   if (lowQuality) {
     return (
       <>
-        <ambientLight intensity={0.45} />
-        <hemisphereLight args={['#edf2f8', '#bcc5d1', 0.4]} />
+        <ambientLight intensity={m.ambientIntensity} />
+        <hemisphereLight
+          args={[
+            m.hemisphereSkyColor,
+            m.hemisphereGroundColor,
+            m.hemisphereIntensity,
+          ]}
+        />
         <directionalLight
           position={[4.2, 6.2, -2.6]}
-          intensity={0.7}
-          color="#fff4e6"
+          intensity={m.keyLightIntensity}
+          color={m.keyLightColor}
         />
       </>
     )
@@ -18,12 +34,18 @@ export function Lighting({ lowQuality = false }: { lowQuality?: boolean }) {
 
   return (
     <>
-      <ambientLight intensity={0.35} />
-      <hemisphereLight args={['#f1f6ff', '#aeb9c9', 0.55]} />
+      <ambientLight intensity={m.ambientIntensity} />
+      <hemisphereLight
+        args={[
+          m.hemisphereSkyColor,
+          m.hemisphereGroundColor,
+          m.hemisphereIntensity,
+        ]}
+      />
       <directionalLight
         position={[4.2, 6.2, -2.6]}
-        intensity={1.0}
-        color="#fff4e6"
+        intensity={m.keyLightIntensity}
+        color={m.keyLightColor}
         castShadow
         shadow-mapSize={[1024, 1024]}
         shadow-camera-left={-5.5}
@@ -37,19 +59,19 @@ export function Lighting({ lowQuality = false }: { lowQuality?: boolean }) {
       />
       <directionalLight
         position={[-3.5, 4.5, -4]}
-        intensity={0.28}
-        color="#d5e4ff"
+        intensity={m.fillLightIntensity}
+        color={m.fillLightColor}
       />
       <Environment
         background
         resolution={256}
         backgroundBlurriness={0.18}
-        backgroundIntensity={0.95}
-        environmentIntensity={0.72}
+        backgroundIntensity={m.backgroundIntensity}
+        environmentIntensity={m.environmentIntensity}
       >
         <mesh scale={90}>
           <sphereGeometry args={[1, 64, 64]} />
-          <meshBasicMaterial color="#dce6f3" side={BackSide} />
+          <meshBasicMaterial color={m.environmentColor} side={BackSide} />
         </mesh>
         <Lightformer
           form="rect"
