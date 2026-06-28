@@ -19,7 +19,6 @@ Test selection matrix:
    - Run accessibility/browser coverage including `e2e/editor-a11y-audits.spec.ts`.
 4. Frame-time-sensitive interactions (drag/rotate/collision/camera transitions)
    - Run perf scenarios (`pnpm test:browser:perf`).
-   - Use utility benchmarks (`pnpm bench`) for hot-path pure helpers.
 5. Move/rename-only refactors with no behavior change
    - At minimum run `pnpm lint` and `pnpm typecheck`.
    - Run broader tests when import rewiring touches high-risk paths.

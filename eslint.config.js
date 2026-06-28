@@ -21,7 +21,6 @@ const RUNTIME_APP_FEATURE_EDITOR_SCENE_IMPORT_GROUP = [
 const RUNTIME_NON_TEST_IGNORES = [
   'src/**/*.test.{ts,tsx}',
   'src/**/*.spec.{ts,tsx}',
-  'src/**/*.bench.ts',
 ]
 
 const PARENT_RELATIVE_IMPORT_REGEX = '^\\.\\.'

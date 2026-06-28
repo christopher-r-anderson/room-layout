@@ -59,10 +59,9 @@ assertions belong at unit), **could-be-unit** (mostly redundant).
   - Deleted both perf specs (trace collectors that never gated and measured
     non-representative frame time) and stripped the dead CDP-trace/artifact infra,
     `perf-meta.ts`, the `perf-chromium` project, and the `test:browser:perf` script.
-  - Documented the perf strategy in `docs/architecture/testing.md`: `bench` for hot
-    paths, deterministic e2e gates for churn, interactive profiling + future RUM for
-    real frame-time. Deferred: bundle-size budget (after the lazy-load-the-3D split),
-    RUM.
+  - Documented the perf strategy in `docs/architecture/testing.md`: deterministic
+    e2e gates for churn, interactive profiling + future RUM for real frame-time.
+    Deferred: bundle-size budget (after the lazy-load-the-3D split), RUM.
 - **Phase E — done.** Scoped axe to the WCAG 2.1 A/AA conformance target (subset of
   the default, so no new failures). Replaced the synthetic-event context-menu check
   with a real right-click reading `defaultPrevented`. Documented + asserted the

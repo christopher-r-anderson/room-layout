@@ -78,10 +78,8 @@ export default defineConfig({
   ],
   test: {
     // .claude holds agent worktrees (full repo copies) and session state — never
-    // glob test/bench files out of it. `benchmark` has its own exclude, separate
-    // from `test.exclude`.
+    // glob test files out of it.
     exclude: [...configDefaults.exclude, 'e2e/**', '.claude/**'],
-    benchmark: { exclude: [...configDefaults.exclude, '.claude/**'] },
     setupFiles: ['./src/test/vitest.setup.ts'],
     // Coverage is a read-only map for planning, not a gate: `pnpm coverage`
     // prints it, but there are no thresholds and it stays out of preflight.
@@ -92,7 +90,6 @@ export default defineConfig({
       exclude: [
         ...coverageConfigDefaults.exclude,
         'src/test/**',
-        'src/**/*.bench.ts',
         'src/**/scene-test-support.ts',
         // Vendored shadcn/base-ui primitives — testing them tests the library.
         'src/shared/ui/**',

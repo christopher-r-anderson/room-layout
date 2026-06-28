@@ -6,7 +6,6 @@ This guide covers contributor-facing test workflow decisions.
 
 - `pnpm test:run`: unit and integration checks (default lane for most code changes)
 - `pnpm test:e2e`: browser-accurate editor workflow coverage (Chromium)
-- `pnpm bench`: utility microbenchmarks
 
 ## Choosing a Lane
 
@@ -19,16 +18,12 @@ Add `pnpm test:e2e` when changing browser-facing behavior, including:
 - keyboard workflows and focus navigation
 - dialogs, overlays, semantic focus return, and user-visible editor controls
 
-Use `pnpm bench` for pure helper hot paths where browser rendering is not part
-of the measurement goal.
-
 ## Performance
 
 Performance is checked by lane, not by measuring frame time in CI — headless
 Chromium renders WebGL via SwiftShader (software), so its frame times are not
 representative of a real GPU.
 
-- **Hot-path algorithms** → `pnpm bench` microbenchmarks (footprint/drag/geometry).
 - **Work-churn regressions** (a lost memo, unstable dependency, or render loop that
   re-runs while idle) → deterministic behavioral gates in the e2e lane. Example:
   `e2e/selected-toolbar-idle.spec.ts` asserts that with a selection on screen and

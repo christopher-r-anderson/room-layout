@@ -81,7 +81,6 @@ Use lane-specific tests based on the change scope:
 - `pnpm test:run`: unit and integration checks
 - `pnpm test:e2e`: browser workflow coverage
 - `pnpm test:browser:perf`: scripted performance scenarios
-- `pnpm bench`: utility microbenchmarks
 
 Detailed testing workflow guidance lives in `docs/architecture/testing.md`.
 It also includes first-time Playwright setup and test artifact locations.
