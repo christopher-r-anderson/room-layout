@@ -12,7 +12,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import type { CameraControlsImpl } from '@react-three/drei'
 import { useThree } from '@react-three/fiber'
 import { type Object3D } from 'three'
-import { EffectComposer, Outline } from '@react-three/postprocessing'
+import { SelectionOutlineEffect } from './internal/selection/selection-outline-effect'
 import { type LayoutBounds } from '@/domain/geometry/furniture-layout'
 import type {
   FurnitureCatalogEntry,
@@ -32,7 +32,6 @@ import { useCameraKeyMotion } from './internal/camera/use-camera-key-motion'
 import { useSelectionOperations } from './internal/selection/use-selection-operations'
 import { useFurnitureOperations } from './internal/furniture/use-furniture-operations'
 import { useSceneSelection } from './internal/selection/use-scene-selection'
-import { BlendFunction } from 'postprocessing'
 import {
   ROOM_HALF_DEPTH_METERS,
   ROOM_HALF_WIDTH_METERS,
@@ -49,9 +48,6 @@ import {
 const FLOOR_PLANE_Y = 0
 const SNAP_SIZE = 0.5
 const EDGE_SNAP_THRESHOLD = 0.12
-// These are Three.js render layers used by OutlineEffect selection, not z-order.
-const SELECTED_OUTLINE_LAYER = 10
-const PREVIEW_OUTLINE_LAYER = 11
 const ROOM_BOUNDS: LayoutBounds = {
   minX: -ROOM_HALF_WIDTH_METERS,
   maxX: ROOM_HALF_WIDTH_METERS,
@@ -367,27 +363,11 @@ export function Scene({
 
   return (
     <>
-      <EffectComposer autoClear={false} multisampling={isE2ELowQuality ? 0 : 4}>
-        {/* Note: do not use `Selection` is is broken in react 19: https://github.com/pmndrs/react-postprocessing/issues/330 */}
-        <Outline
-          selection={selection}
-          selectionLayer={SELECTED_OUTLINE_LAYER}
-          blendFunction={BlendFunction.ALPHA}
-          visibleEdgeColor={0xf59e0b}
-          hiddenEdgeColor={0xb45309}
-          edgeStrength={3.2}
-          blur={false}
-        />
-        <Outline
-          selection={showPreviewOutline ? previewMeshes : []}
-          selectionLayer={PREVIEW_OUTLINE_LAYER}
-          blendFunction={BlendFunction.ALPHA}
-          visibleEdgeColor={0x60a5fa}
-          hiddenEdgeColor={0x2563eb}
-          edgeStrength={2.1}
-          blur={false}
-        />
-      </EffectComposer>
+      <SelectionOutlineEffect
+        selection={selection}
+        preview={showPreviewOutline ? previewMeshes : []}
+        lowQuality={isE2ELowQuality}
+      />
       <CameraControls enabled={!dragState} controlsRef={cameraControlsRef} />
       <Lighting lowQuality={isE2ELowQuality} />
       <Room

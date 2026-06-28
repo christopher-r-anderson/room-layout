@@ -9,7 +9,7 @@ import path from 'node:path'
 // parallel, so it carries a looser budget.
 const BUDGETS = [
   { label: 'shell (entry)', pattern: /^index-.*\.js$/, maxGzipKB: 215 },
-  { label: 'engine (lazy)', pattern: /^scene-canvas-.*\.js$/, maxGzipKB: 430 },
+  { label: 'engine (lazy)', pattern: /^scene-canvas-.*\.js$/, maxGzipKB: 350 },
 ]
 
 const ASSETS_DIR = path.resolve('dist/assets')
