@@ -1,11 +1,16 @@
-import { IconLoader, IconSparkles } from '@tabler/icons-react'
+import { IconLoader } from '@tabler/icons-react'
 import type {
   FloorFinishOption,
+  LightingMoodOption,
   WallFinishOption,
 } from '@/domain/environment-materials'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { cn } from '@/shared/lib/utils'
-import { FLOOR_FINISH_DESCRIPTION, WALL_FINISH_DESCRIPTION } from './room-copy'
+import {
+  FLOOR_FINISH_DESCRIPTION,
+  LIGHTING_MOOD_DESCRIPTION,
+  WALL_FINISH_DESCRIPTION,
+} from './room-copy'
 
 export interface RoomControlsProps {
   floorFinishId: string
@@ -15,9 +20,12 @@ export interface RoomControlsProps {
   wallFinishId: string
   wallFinishes: WallFinishOption[]
   onWallFinishChange: (finishId: string) => void
+  lightingMoodId: string
+  lightingMoods: LightingMoodOption[]
+  onLightingMoodChange: (moodId: string) => void
 }
 
-function formatWallFinishColor(color: number) {
+function formatHexColor(color: number) {
   return `#${color.toString(16).padStart(6, '0')}`
 }
 
@@ -29,6 +37,9 @@ export function RoomControls({
   wallFinishId,
   wallFinishes,
   onWallFinishChange,
+  lightingMoodId,
+  lightingMoods,
+  onLightingMoodChange,
 }: RoomControlsProps) {
   return (
     <Tabs defaultValue="walls" className="gap-3">
@@ -75,7 +86,7 @@ export function RoomControls({
                   <span
                     className="size-10 shrink-0 rounded-full border border-black/10 shadow-sm"
                     style={{
-                      backgroundColor: formatWallFinishColor(item.color),
+                      backgroundColor: formatHexColor(item.color),
                     }}
                   />
                   <span className="min-w-0">
@@ -182,20 +193,60 @@ export function RoomControls({
       </TabsContent>
 
       <TabsContent value="lighting" className="space-y-3">
-        <div className="rounded-lg border border-dashed border-border/80 bg-muted/30 p-4">
-          <div className="flex items-start gap-3">
-            <span className="rounded-full bg-background p-2 text-muted-foreground">
-              <IconSparkles size={16} aria-hidden="true" />
-            </span>
-            <div className="space-y-1">
-              <p className="text-xs font-medium text-foreground">Lighting</p>
-              <p className="text-xs text-muted-foreground">
-                Lighting presets are reserved for a later phase. This tab stays
-                in place so the Room surface can grow without moving controls.
-              </p>
-            </div>
-          </div>
+        <div className="space-y-1">
+          <p className="text-xs font-medium text-foreground">Lighting mood</p>
+          <p className="text-xs text-muted-foreground">
+            {LIGHTING_MOOD_DESCRIPTION}
+          </p>
         </div>
+        <fieldset className="grid gap-2 border-0 p-0 min-[22rem]:grid-cols-2">
+          <legend className="sr-only">Lighting mood</legend>
+          {lightingMoods.map((item) => {
+            const isSelected = lightingMoodId === item.id
+
+            return (
+              <label key={item.id} className="block min-w-0 cursor-pointer">
+                <input
+                  className="peer sr-only"
+                  aria-label={item.label}
+                  type="radio"
+                  name="lighting-mood"
+                  value={item.id}
+                  checked={isSelected}
+                  onChange={(event) => {
+                    onLightingMoodChange(event.target.value)
+                  }}
+                />
+                <span
+                  className={cn(
+                    'flex h-full items-center gap-3 rounded-lg border bg-card p-3 transition-all duration-150 peer-focus-visible:ring-2 peer-focus-visible:ring-ring/50',
+                    isSelected
+                      ? 'border-primary/60 bg-primary/5'
+                      : 'hover:border-foreground/20 hover:shadow-sm',
+                  )}
+                  aria-hidden="true"
+                >
+                  <span
+                    className="size-10 shrink-0 rounded-full border border-black/10 shadow-sm"
+                    style={{
+                      backgroundImage: `linear-gradient(135deg, ${formatHexColor(
+                        item.keyLightColor,
+                      )}, ${formatHexColor(item.environmentColor)})`,
+                    }}
+                  />
+                  <span className="min-w-0">
+                    <span className="block truncate text-xs/relaxed font-medium text-foreground">
+                      {item.label}
+                    </span>
+                    <span className="block truncate text-xs text-muted-foreground">
+                      Lighting mood
+                    </span>
+                  </span>
+                </span>
+              </label>
+            )
+          })}
+        </fieldset>
       </TabsContent>
     </Tabs>
   )

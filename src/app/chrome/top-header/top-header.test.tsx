@@ -36,6 +36,25 @@ const ENVIRONMENT: EnvironmentMaterialConfig = {
       color: 0xf5f5f5,
     },
   ],
+  lightingMoods: [
+    {
+      id: 'daylight',
+      label: 'Daylight',
+      exposure: 1.05,
+      ambientIntensity: 0.35,
+      hemisphereSkyColor: 0xf1f6ff,
+      hemisphereGroundColor: 0xaeb9c9,
+      hemisphereIntensity: 0.55,
+      keyLightColor: 0xfff4e6,
+      keyLightIntensity: 1,
+      fillLightColor: 0xd5e4ff,
+      fillLightIntensity: 0.28,
+      environmentColor: 0xdce6f3,
+      environmentIntensity: 0.72,
+      backgroundIntensity: 0.95,
+    },
+  ],
+  defaultLightingMoodId: 'daylight',
 }
 
 vi.mock('@/shared/layout/use-header-layout-mode', () => ({

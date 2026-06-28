@@ -30,13 +30,52 @@ const ENVIRONMENT: EnvironmentMaterialConfig = {
     { id: 'plaster', label: 'Plaster', color: 0xeeeeee },
     { id: 'sage', label: 'Sage', color: 0x8a9a82 },
   ],
+  lightingMoods: [
+    {
+      id: 'daylight',
+      label: 'Daylight',
+      exposure: 1.05,
+      ambientIntensity: 0.35,
+      hemisphereSkyColor: 0xf1f6ff,
+      hemisphereGroundColor: 0xaeb9c9,
+      hemisphereIntensity: 0.55,
+      keyLightColor: 0xfff4e6,
+      keyLightIntensity: 1,
+      fillLightColor: 0xd5e4ff,
+      fillLightIntensity: 0.28,
+      environmentColor: 0xdce6f3,
+      environmentIntensity: 0.72,
+      backgroundIntensity: 0.95,
+    },
+    {
+      id: 'warm-white',
+      label: 'Warm White',
+      exposure: 0.95,
+      ambientIntensity: 0.32,
+      hemisphereSkyColor: 0xfff3e2,
+      hemisphereGroundColor: 0xc7b29a,
+      hemisphereIntensity: 0.5,
+      keyLightColor: 0xffe9c7,
+      keyLightIntensity: 1,
+      fillLightColor: 0xffd9b0,
+      fillLightIntensity: 0.26,
+      environmentColor: 0xf0e3d2,
+      environmentIntensity: 0.7,
+      backgroundIntensity: 0.92,
+    },
+  ],
   defaultFloorFinishId: 'oak',
   defaultWallFinishId: 'plaster',
+  defaultLightingMoodId: 'daylight',
 }
 
-function seed(floorFinishId: string, wallFinishId: string) {
+function seed(
+  floorFinishId: string,
+  wallFinishId: string,
+  lightingMoodId = 'daylight',
+) {
   assetsStore.setState({ environmentConfig: ENVIRONMENT })
-  sceneDocumentStore.setState({ floorFinishId, wallFinishId })
+  sceneDocumentStore.setState({ floorFinishId, wallFinishId, lightingMoodId })
 }
 
 describe('active-finish-ids', () => {
@@ -46,24 +85,30 @@ describe('active-finish-ids', () => {
   })
 
   it('getActiveFinishIds returns the stored ids and options when valid', () => {
-    seed('walnut', 'sage')
+    seed('walnut', 'sage', 'warm-white')
 
     expect(getActiveFinishIds()).toEqual({
       activeFloorFinishId: 'walnut',
       activeWallFinishId: 'sage',
+      activeLightingMoodId: 'warm-white',
       selectedFloorOption: ENVIRONMENT.floorFinishes[1],
       selectedWallOption: ENVIRONMENT.wallFinishes[1],
+      selectedLightingMoodOption: ENVIRONMENT.lightingMoods[1],
     })
   })
 
   it('falls back to the config default when a stored id is not in the config', () => {
-    seed('unknown', 'sage')
+    seed('unknown', 'sage', 'unknown-mood')
 
     const result = getActiveFinishIds()
 
     expect(result.activeFloorFinishId).toBe('oak')
     expect(result.selectedFloorOption).toEqual(ENVIRONMENT.floorFinishes[0])
     expect(result.activeWallFinishId).toBe('sage')
+    expect(result.activeLightingMoodId).toBe('daylight')
+    expect(result.selectedLightingMoodOption).toEqual(
+      ENVIRONMENT.lightingMoods[0],
+    )
   })
 
   it('useActiveFinishIds derives the same result from the stores', () => {

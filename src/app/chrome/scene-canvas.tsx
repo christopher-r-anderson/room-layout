@@ -43,6 +43,7 @@ export interface SceneCanvasProps {
   previewedId: SceneProps['previewedId']
   selectedFloorOption: SceneProps['floorOption']
   selectedWallOption: SceneProps['wallOption']
+  selectedLightingMoodOption: SceneProps['lightingMoodOption']
   onCanvasPointerSelection: NonNullable<SceneProps['onCanvasPointerSelection']>
   onScenePreviewChange: NonNullable<SceneProps['onPreviewChange']>
   onFloorLoadingChange: NonNullable<SceneProps['onFloorLoadingChange']>
@@ -61,6 +62,7 @@ export default function SceneCanvas({
   previewedId,
   selectedFloorOption,
   selectedWallOption,
+  selectedLightingMoodOption,
   onCanvasPointerSelection,
   onScenePreviewChange,
   onFloorLoadingChange,
@@ -98,6 +100,7 @@ export default function SceneCanvas({
               onPreviewChange={onScenePreviewChange}
               floorOption={selectedFloorOption}
               wallOption={selectedWallOption}
+              lightingMoodOption={selectedLightingMoodOption}
               onFloorLoadingChange={onFloorLoadingChange}
             />
           </SeedGltfCacheGate>

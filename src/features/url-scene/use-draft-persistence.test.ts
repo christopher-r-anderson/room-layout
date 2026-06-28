@@ -19,6 +19,7 @@ type SaveSceneDraftArgs = [
   options?: {
     floorFinishId?: string
     wallFinishId?: string
+    lightingMoodId?: string
   },
 ]
 
@@ -37,6 +38,7 @@ vi.mock('@/core/persistence/scene-draft', () => ({
 const environmentConfig: EnvironmentMaterialConfig = {
   defaultFloorFinishId: 'floor-default',
   defaultWallFinishId: 'wall-default',
+  defaultLightingMoodId: 'lighting-default',
   floorFinishes: [
     {
       id: 'floor-default',
@@ -63,6 +65,24 @@ const environmentConfig: EnvironmentMaterialConfig = {
       id: 'wall-alt',
       label: 'Alt wall',
       color: 0xcccccc,
+    },
+  ],
+  lightingMoods: [
+    {
+      id: 'lighting-default',
+      label: 'Default mood',
+      exposure: 1.05,
+      ambientIntensity: 0.35,
+      hemisphereSkyColor: 0xf1f6ff,
+      hemisphereGroundColor: 0xaeb9c9,
+      hemisphereIntensity: 0.55,
+      keyLightColor: 0xfff4e6,
+      keyLightIntensity: 1,
+      fillLightColor: 0xd5e4ff,
+      fillLightIntensity: 0.28,
+      environmentColor: 0xdce6f3,
+      environmentIntensity: 0.72,
+      backgroundIntensity: 0.95,
     },
   ],
 }
@@ -161,6 +181,7 @@ describe('useDraftPersistence', () => {
       {
         floorFinishId: 'floor-default',
         wallFinishId: 'wall-default',
+        lightingMoodId: 'lighting-default',
       },
     )
     expect(clearSceneDraft).not.toHaveBeenCalled()
@@ -199,6 +220,7 @@ describe('useDraftPersistence', () => {
       {
         floorFinishId: 'floor-default',
         wallFinishId: 'wall-default',
+        lightingMoodId: 'lighting-default',
       },
     )
   })
@@ -221,6 +243,7 @@ describe('useDraftPersistence', () => {
     expect(saveSceneDraft).toHaveBeenLastCalledWith([], {
       floorFinishId: 'floor-alt',
       wallFinishId: 'wall-default',
+      lightingMoodId: 'lighting-default',
     })
 
     act(() => {

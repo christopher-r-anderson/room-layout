@@ -39,6 +39,7 @@ describe('scene draft storage', () => {
     saveSceneDraft(items, {
       floorFinishId: 'granite-tile',
       wallFinishId: 'sage-green',
+      lightingMoodId: 'warm-white',
     })
 
     expect(loadSceneDraft()).toEqual({
@@ -58,6 +59,7 @@ describe('scene draft storage', () => {
       ],
       floorFinishId: 'granite-tile',
       wallFinishId: 'sage-green',
+      lightingMoodId: 'warm-white',
     })
   })
 

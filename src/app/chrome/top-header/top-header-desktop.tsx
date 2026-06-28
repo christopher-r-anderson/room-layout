@@ -30,6 +30,9 @@ export function TopHeaderDesktop({
   onWallFinishChange,
   wallFinishId,
   wallFinishes,
+  lightingMoodId,
+  lightingMoods,
+  onLightingMoodChange,
 }: TopHeaderDesktopProps) {
   return (
     <>
@@ -186,6 +189,9 @@ export function TopHeaderDesktop({
         wallFinishId={wallFinishId}
         wallFinishes={wallFinishes}
         onWallFinishChange={onWallFinishChange}
+        lightingMoodId={lightingMoodId}
+        lightingMoods={lightingMoods}
+        onLightingMoodChange={onLightingMoodChange}
       />
     </>
   )

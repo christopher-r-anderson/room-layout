@@ -14,12 +14,14 @@ interface SceneDraftPayloadV1 {
   items: FurnitureInstance[]
   floorFinishId?: string
   wallFinishId?: string
+  lightingMoodId?: string
 }
 
 export interface SceneDraftState {
   items: FurnitureInstance[]
   floorFinishId?: string
   wallFinishId?: string
+  lightingMoodId?: string
 }
 
 function isValidSceneDraftPayload(
@@ -48,12 +50,22 @@ function isValidSceneDraftPayload(
     }
   }
 
+  if ('lightingMoodId' in v) {
+    if (typeof v.lightingMoodId !== 'string' || v.lightingMoodId.length === 0) {
+      return false
+    }
+  }
+
   return true
 }
 
 export function saveSceneDraft(
   items: FurnitureInstance[],
-  options?: { floorFinishId?: string; wallFinishId?: string },
+  options?: {
+    floorFinishId?: string
+    wallFinishId?: string
+    lightingMoodId?: string
+  },
 ): void {
   const normalizedItems: FurnitureInstance[] = [...items]
     .sort((a, b) => a.id.localeCompare(b.id))
@@ -81,6 +93,10 @@ export function saveSceneDraft(
     payload.wallFinishId = options.wallFinishId
   }
 
+  if (options?.lightingMoodId) {
+    payload.lightingMoodId = options.lightingMoodId
+  }
+
   saveJson(SCENE_DRAFT_STORAGE_KEY, payload)
 }
 
@@ -99,6 +115,7 @@ export function loadSceneDraft(): SceneDraftState | null {
     items: parsed.items,
     floorFinishId: parsed.floorFinishId,
     wallFinishId: parsed.wallFinishId,
+    lightingMoodId: parsed.lightingMoodId,
   }
 }
 

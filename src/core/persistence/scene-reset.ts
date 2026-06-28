@@ -27,6 +27,9 @@ export function resetSceneToDefaults() {
   sceneDocumentActions.setWallFinishId(
     environmentConfig?.defaultWallFinishId ?? '',
   )
+  sceneDocumentActions.setLightingMoodId(
+    environmentConfig?.defaultLightingMoodId ?? '',
+  )
 
   // Cosmetic: recentering the camera is best-effort, so it is fine to skip if
   // the scene is somehow not ready.

@@ -29,8 +29,9 @@ the only modules that should mutate it.
 
 - **`scene-document-store`** — the app-facing scene **data model**: furniture
   history (the undo/redo timeline), selection id, preview id, drag state,
-  finishes, and the floor-finish loading flag. Written by scene (publishing
-  committed results up through `scene-contracts`) and by core operations.
+  finishes, the lighting mood id, and the floor-finish loading flag. Written by
+  scene (publishing committed results up through `scene-contracts`) and by core
+  operations.
   Ownership vs. the scene itself is the subject of
   [scene-and-core.md](scene-and-core.md).
 - **`editor-lifecycle-store`** — the single owner of the startup phase machine

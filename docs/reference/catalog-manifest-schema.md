@@ -52,8 +52,27 @@ The manifest is a JSON file with the following structure:
         "color": "#RRGGBB"
       }
     ],
+    "lightingMoods": [
+      {
+        "id": "string",
+        "label": "string",
+        "exposure": number,
+        "ambientIntensity": number,
+        "hemisphereSkyColor": "#RRGGBB",
+        "hemisphereGroundColor": "#RRGGBB",
+        "hemisphereIntensity": number,
+        "keyLightColor": "#RRGGBB",
+        "keyLightIntensity": number,
+        "fillLightColor": "#RRGGBB",
+        "fillLightIntensity": number,
+        "environmentColor": "#RRGGBB",
+        "environmentIntensity": number,
+        "backgroundIntensity": number
+      }
+    ],
     "defaultFloorFinishId": "string",
-    "defaultWallFinishId": "string"
+    "defaultWallFinishId": "string",
+    "defaultLightingMoodId": "string"
   }
 }
 ```
@@ -95,12 +114,14 @@ The manifest is a JSON file with the following structure:
 
 ### Environment Object
 
-| Field                  | Type   | Description                                                                                      |
-| ---------------------- | ------ | ------------------------------------------------------------------------------------------------ |
-| `floorFinishes`        | array  | Available floor texture options                                                                  |
-| `wallFinishes`         | array  | Available wall color options; swatches are derived from `color`                                  |
-| `defaultFloorFinishId` | string | Default floor finish id; must reference `floorFinishes[].id` (optional, defaults to first entry) |
-| `defaultWallFinishId`  | string | Default wall finish id; must reference `wallFinishes[].id` (optional, defaults to first entry)   |
+| Field                   | Type   | Description                                                                                       |
+| ----------------------- | ------ | ------------------------------------------------------------------------------------------------- |
+| `floorFinishes`         | array  | Available floor texture options                                                                   |
+| `wallFinishes`          | array  | Available wall color options; swatches are derived from `color`                                   |
+| `lightingMoods`         | array  | Available lighting mood presets; each retunes the room light rig                                  |
+| `defaultFloorFinishId`  | string | Default floor finish id; must reference `floorFinishes[].id` (optional, defaults to first entry)  |
+| `defaultWallFinishId`   | string | Default wall finish id; must reference `wallFinishes[].id` (optional, defaults to first entry)    |
+| `defaultLightingMoodId` | string | Default lighting mood id; must reference `lightingMoods[].id` (optional, defaults to first entry) |
 
 ### Floor Finish Object
 
@@ -137,6 +158,36 @@ remains selectable.
 | `label` | string | Display label in the editor                                               |
 | `color` | string | Hex color string in `#RRGGBB` format; also used for the Room panel swatch |
 
+### Lighting Mood Object
+
+A lighting mood retunes the existing room light rig — it adds no new lights. The
+mood values map directly onto the lights in
+`src/scene/internal/environment/lighting.tsx`. Color fields are `#RRGGBB` hex
+strings; intensity fields are non-negative numbers; `exposure` drives the
+renderer tone-mapping exposure and must be `> 0`.
+
+| Field                   | Type   | Description                                          |
+| ----------------------- | ------ | ---------------------------------------------------- |
+| `id`                    | string | Unique lighting mood id                              |
+| `label`                 | string | Display label in the editor                          |
+| `exposure`              | number | Renderer tone-mapping exposure (`> 0`)               |
+| `ambientIntensity`      | number | Ambient light intensity (`>= 0`)                     |
+| `hemisphereSkyColor`    | string | Hemisphere sky color (`#RRGGBB`)                     |
+| `hemisphereGroundColor` | string | Hemisphere ground color (`#RRGGBB`)                  |
+| `hemisphereIntensity`   | number | Hemisphere light intensity (`>= 0`)                  |
+| `keyLightColor`         | string | Key (shadow-casting) directional light color         |
+| `keyLightIntensity`     | number | Key directional light intensity (`>= 0`)             |
+| `fillLightColor`        | string | Fill directional light color (`#RRGGBB`)             |
+| `fillLightIntensity`    | number | Fill directional light intensity (`>= 0`)            |
+| `environmentColor`      | string | Background/environment tint color (`#RRGGBB`)        |
+| `environmentIntensity`  | number | Environment lighting contribution intensity (`>= 0`) |
+| `backgroundIntensity`   | number | Background brightness intensity (`>= 0`)             |
+
+The Room panel swatch for each mood is derived from `keyLightColor` and
+`environmentColor`. The Room panel and the 3D scene read the active mood from one
+shared resolver, so a stored mood id that no longer exists falls back to the
+default mood (parallel to floor/wall finishes).
+
 ## Validation Rules
 
 These are enforced at load by the validator in
@@ -151,13 +202,16 @@ below is the human-readable summary.
   resolve to a descendant node inside the catalog entry's `nodeName` subtree at
   runtime.
 - All footprint dimensions must be positive numbers.
-- Wall colors must use `#RRGGBB` hex format.
+- Wall colors and lighting mood colors must use `#RRGGBB` hex format.
 - Wall finishes must not define `previewPath`; wall swatches are derived from
   `color`.
-- Default environment finish ids must reference existing floor/wall finish ids.
+- Lighting mood `exposure` must be a positive finite number; all other lighting
+  mood intensities must be non-negative finite numbers.
+- Default environment ids must reference existing floor/wall finish or lighting
+  mood ids.
 - Both `collections` and `catalog` arrays must not be empty.
-- Both `environment.floorFinishes` and `environment.wallFinishes` arrays must
-  not be empty.
+- The `environment.floorFinishes`, `environment.wallFinishes`, and
+  `environment.lightingMoods` arrays must not be empty.
 
 ## Runtime Behavior
 
@@ -231,8 +285,27 @@ below is the human-readable summary.
         "color": "#f5f5f5"
       }
     ],
+    "lightingMoods": [
+      {
+        "id": "daylight",
+        "label": "Daylight",
+        "exposure": 1.05,
+        "ambientIntensity": 0.35,
+        "hemisphereSkyColor": "#f1f6ff",
+        "hemisphereGroundColor": "#aeb9c9",
+        "hemisphereIntensity": 0.55,
+        "keyLightColor": "#fff4e6",
+        "keyLightIntensity": 1.0,
+        "fillLightColor": "#d5e4ff",
+        "fillLightIntensity": 0.28,
+        "environmentColor": "#dce6f3",
+        "environmentIntensity": 0.72,
+        "backgroundIntensity": 0.95
+      }
+    ],
     "defaultFloorFinishId": "wood-floor",
-    "defaultWallFinishId": "light-gray"
+    "defaultWallFinishId": "light-gray",
+    "defaultLightingMoodId": "daylight"
   }
 }
 ```

@@ -14,11 +14,13 @@ import { getActiveFinishIds } from '@/core/operations/active-finish-ids'
  */
 export async function shareScene(): Promise<'shared' | 'copied' | null> {
   const items = sceneDocumentStore.getState().history.present
-  const { activeFloorFinishId, activeWallFinishId } = getActiveFinishIds()
+  const { activeFloorFinishId, activeWallFinishId, activeLightingMoodId } =
+    getActiveFinishIds()
 
   const url = serializeSceneToUrl(items, window.location.href, {
     floorFinishId: activeFloorFinishId || undefined,
     wallFinishId: activeWallFinishId || undefined,
+    lightingMoodId: activeLightingMoodId || undefined,
   })
 
   if (!url) {

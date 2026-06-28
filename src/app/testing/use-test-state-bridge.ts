@@ -20,6 +20,7 @@ interface BrowserSceneState {
   cameraPosition: [number, number, number]
   floorFinishId: string
   wallFinishId: string
+  lightingMoodId: string
   selectedId: string | null
   previewedId: string | null
   selectedName: string | null
@@ -70,7 +71,11 @@ export function useTestStateBridge({
           snapshotItems.map((item) => [item.id, item.pointerTarget] as const),
         )
         const cameraPosition = sceneCommands.getCameraPosition()
-        const { activeFloorFinishId, activeWallFinishId } = getActiveFinishIds()
+        const {
+          activeFloorFinishId,
+          activeWallFinishId,
+          activeLightingMoodId,
+        } = getActiveFinishIds()
         const selectedItem = storeState.selectedId
           ? (storeState.history.present.find(
               (item) => item.id === storeState.selectedId,
@@ -83,6 +88,7 @@ export function useTestStateBridge({
           cameraPosition,
           floorFinishId: activeFloorFinishId,
           wallFinishId: activeWallFinishId,
+          lightingMoodId: activeLightingMoodId,
           selectedId: storeState.selectedId,
           previewedId: getPreviewedId(),
           selectedName: selectedItem?.name ?? null,

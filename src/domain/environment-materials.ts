@@ -16,11 +16,33 @@ export interface WallFinishOption {
   color: number
 }
 
+// A lighting mood retunes the existing room light rig (it adds no new lights).
+// Colors are stored as numbers (parsed from #RRGGBB), matching WallFinishOption.color.
+// Intensities are non-negative; exposure drives the renderer toneMappingExposure.
+export interface LightingMoodOption {
+  id: string
+  label: string
+  exposure: number
+  ambientIntensity: number
+  hemisphereSkyColor: number
+  hemisphereGroundColor: number
+  hemisphereIntensity: number
+  keyLightColor: number
+  keyLightIntensity: number
+  fillLightColor: number
+  fillLightIntensity: number
+  environmentColor: number
+  environmentIntensity: number
+  backgroundIntensity: number
+}
+
 export interface EnvironmentMaterialConfig {
   floorFinishes: FloorFinishOption[]
   wallFinishes: WallFinishOption[]
+  lightingMoods: LightingMoodOption[]
   defaultFloorFinishId: string
   defaultWallFinishId: string
+  defaultLightingMoodId: string
 }
 
 export function resolveActiveFinishIds(
@@ -43,6 +65,15 @@ export function resolveActiveFinishIds(
   return { activeFloorFinishId, activeWallFinishId }
 }
 
+export function resolveActiveLightingMoodId(
+  config: EnvironmentMaterialConfig | null,
+  lightingMoodId: string,
+): string {
+  return config?.lightingMoods.some((option) => option.id === lightingMoodId)
+    ? lightingMoodId
+    : (config?.defaultLightingMoodId ?? '')
+}
+
 export function findFloorFinishOption(
   config: EnvironmentMaterialConfig,
   id: string,
@@ -55,4 +86,11 @@ export function findWallFinishOption(
   id: string,
 ): WallFinishOption | null {
   return config.wallFinishes.find((option) => option.id === id) ?? null
+}
+
+export function findLightingMoodOption(
+  config: EnvironmentMaterialConfig,
+  id: string,
+): LightingMoodOption | null {
+  return config.lightingMoods.find((option) => option.id === id) ?? null
 }

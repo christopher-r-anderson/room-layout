@@ -23,6 +23,7 @@ import {
   useHistoryAvailability,
   useItems,
   useItemIds,
+  useLightingMoodId,
   useSelectedId,
   useSelectedFurniture,
   useWallFinishId,
@@ -122,17 +123,26 @@ describe('sceneDocumentStore', () => {
     })
   })
 
-  it('tracks finish ids', () => {
+  it('tracks finish ids and the lighting mood', () => {
     const { result: floorFinishId } = renderHook(() => useFloorFinishId())
     const { result: wallFinishId } = renderHook(() => useWallFinishId())
+    const { result: lightingMoodId } = renderHook(() => useLightingMoodId())
 
     act(() => {
       sceneDocumentActions.setFloorFinishId('oak-floor')
       sceneDocumentActions.setWallFinishId('white-wall')
+      sceneDocumentActions.setLightingMoodId('warm-white')
     })
 
     expect(floorFinishId.current).toBe('oak-floor')
     expect(wallFinishId.current).toBe('white-wall')
+    expect(lightingMoodId.current).toBe('warm-white')
+
+    act(() => {
+      resetSceneDocumentStore()
+    })
+
+    expect(lightingMoodId.current).toBe('')
   })
 
   it('tracks the floor finish loading flag', () => {

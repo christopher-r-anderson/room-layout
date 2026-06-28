@@ -17,8 +17,10 @@ import { resetSceneToDefaults } from './scene-reset'
 const ENVIRONMENT: EnvironmentMaterialConfig = {
   defaultFloorFinishId: 'oak-floor',
   defaultWallFinishId: 'white-wall',
+  defaultLightingMoodId: 'daylight',
   floorFinishes: [],
   wallFinishes: [],
+  lightingMoods: [],
 }
 
 function loadEnvironment() {
@@ -53,21 +55,25 @@ describe('resetSceneToDefaults', () => {
     loadEnvironment()
     sceneDocumentActions.setFloorFinishId('granite-tile')
     sceneDocumentActions.setWallFinishId('sage-green')
+    sceneDocumentActions.setLightingMoodId('soft-lamplight')
 
     resetSceneToDefaults()
 
     expect(sceneDocumentStore.getState().floorFinishId).toBe('oak-floor')
     expect(sceneDocumentStore.getState().wallFinishId).toBe('white-wall')
+    expect(sceneDocumentStore.getState().lightingMoodId).toBe('daylight')
   })
 
   it('falls back to empty finish ids when no environment is loaded', () => {
     sceneDocumentActions.setFloorFinishId('granite-tile')
     sceneDocumentActions.setWallFinishId('sage-green')
+    sceneDocumentActions.setLightingMoodId('soft-lamplight')
 
     resetSceneToDefaults()
 
     expect(sceneDocumentStore.getState().floorFinishId).toBe('')
     expect(sceneDocumentStore.getState().wallFinishId).toBe('')
+    expect(sceneDocumentStore.getState().lightingMoodId).toBe('')
   })
 
   it('clears the layout and the persisted draft', () => {

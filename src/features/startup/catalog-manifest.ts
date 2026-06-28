@@ -2,6 +2,7 @@ import { resolvePublicAssetPath } from '@/shared/lib/asset-path'
 import {
   type EnvironmentMaterialConfig,
   type FloorFinishOption,
+  type LightingMoodOption,
   type WallFinishOption,
 } from '@/domain/environment-materials'
 import type {
@@ -85,6 +86,19 @@ function requirePositiveFinite(
   if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0) {
     throw new ManifestValidationError(
       `${context}: "${field}" must be a positive finite number`,
+    )
+  }
+  return value
+}
+
+function requireNonNegativeFinite(
+  value: unknown,
+  context: string,
+  field: string,
+): number {
+  if (typeof value !== 'number' || !Number.isFinite(value) || value < 0) {
+    throw new ManifestValidationError(
+      `${context}: "${field}" must be a non-negative finite number`,
     )
   }
   return value
@@ -280,10 +294,14 @@ function validateAndNormalizeCatalogEntry(
   }
 }
 
-function parseHexColor(value: unknown, path: string): number {
+function parseHexColor(
+  value: unknown,
+  context: string,
+  field = 'color',
+): number {
   if (typeof value !== 'string' || !/^#[0-9a-fA-F]{6}$/.test(value)) {
     throw new ManifestValidationError(
-      `${path}: "color" must be a #RRGGBB string`,
+      `${context}: "${field}" must be a #RRGGBB string`,
     )
   }
 
@@ -385,6 +403,82 @@ function validateAndNormalizeWallFinish(
   }
 }
 
+function validateAndNormalizeLightingMood(
+  raw: unknown,
+  index: number,
+): LightingMoodOption {
+  const entry = requireObject(
+    raw,
+    `environment.lightingMoods[${String(index)}]: must be an object`,
+  )
+
+  const id = requireNonEmptyString(
+    entry.id,
+    `environment.lightingMoods[${String(index)}]`,
+    'id',
+  )
+  const context = `environment.lightingMoods[${String(index)}] ("${id}")`
+
+  const label = requireNonEmptyString(entry.label, context, 'label')
+
+  return {
+    id,
+    label,
+    exposure: requirePositiveFinite(entry.exposure, context, 'exposure'),
+    ambientIntensity: requireNonNegativeFinite(
+      entry.ambientIntensity,
+      context,
+      'ambientIntensity',
+    ),
+    hemisphereSkyColor: parseHexColor(
+      entry.hemisphereSkyColor,
+      context,
+      'hemisphereSkyColor',
+    ),
+    hemisphereGroundColor: parseHexColor(
+      entry.hemisphereGroundColor,
+      context,
+      'hemisphereGroundColor',
+    ),
+    hemisphereIntensity: requireNonNegativeFinite(
+      entry.hemisphereIntensity,
+      context,
+      'hemisphereIntensity',
+    ),
+    keyLightColor: parseHexColor(entry.keyLightColor, context, 'keyLightColor'),
+    keyLightIntensity: requireNonNegativeFinite(
+      entry.keyLightIntensity,
+      context,
+      'keyLightIntensity',
+    ),
+    fillLightColor: parseHexColor(
+      entry.fillLightColor,
+      context,
+      'fillLightColor',
+    ),
+    fillLightIntensity: requireNonNegativeFinite(
+      entry.fillLightIntensity,
+      context,
+      'fillLightIntensity',
+    ),
+    environmentColor: parseHexColor(
+      entry.environmentColor,
+      context,
+      'environmentColor',
+    ),
+    environmentIntensity: requireNonNegativeFinite(
+      entry.environmentIntensity,
+      context,
+      'environmentIntensity',
+    ),
+    backgroundIntensity: requireNonNegativeFinite(
+      entry.backgroundIntensity,
+      context,
+      'backgroundIntensity',
+    ),
+  }
+}
+
 function validateAndNormalizeEnvironment(
   raw: unknown,
 ): EnvironmentMaterialConfig {
@@ -403,6 +497,11 @@ function validateAndNormalizeEnvironment(
     'Catalog manifest environment must have a "wallFinishes" array',
     'Catalog manifest environment "wallFinishes" array must not be empty',
   )
+  const rawLightingMoods = requireNonEmptyArray(
+    environment.lightingMoods,
+    'Catalog manifest environment must have a "lightingMoods" array',
+    'Catalog manifest environment "lightingMoods" array must not be empty',
+  )
 
   const floorFinishes = rawFloorFinishes.map((rawFloor, i) =>
     validateAndNormalizeFloorFinish(rawFloor, i),
@@ -410,13 +509,21 @@ function validateAndNormalizeEnvironment(
   const wallFinishes = rawWallFinishes.map((rawWall, i) =>
     validateAndNormalizeWallFinish(rawWall, i),
   )
+  const lightingMoods = rawLightingMoods.map((rawMood, i) =>
+    validateAndNormalizeLightingMood(rawMood, i),
+  )
 
   const floorIds = collectUniqueIds(floorFinishes, 'environment.floorFinishes')
   const wallIds = collectUniqueIds(wallFinishes, 'environment.wallFinishes')
+  const lightingMoodIds = collectUniqueIds(
+    lightingMoods,
+    'environment.lightingMoods',
+  )
 
   return {
     floorFinishes,
     wallFinishes,
+    lightingMoods,
     defaultFloorFinishId: resolveDefaultId(
       environment.defaultFloorFinishId,
       floorIds,
@@ -428,6 +535,12 @@ function validateAndNormalizeEnvironment(
       wallIds,
       wallFinishes[0].id,
       'Catalog manifest environment "defaultWallFinishId" must reference an existing wall finish id',
+    ),
+    defaultLightingMoodId: resolveDefaultId(
+      environment.defaultLightingMoodId,
+      lightingMoodIds,
+      lightingMoods[0].id,
+      'Catalog manifest environment "defaultLightingMoodId" must reference an existing lighting mood id',
     ),
   }
 }
@@ -525,6 +638,7 @@ export async function fetchCatalogManifest(
     catalog: catalog.length,
     floorFinishes: environment.floorFinishes.length,
     wallFinishes: environment.wallFinishes.length,
+    lightingMoods: environment.lightingMoods.length,
     durationMs: `${duration}ms`,
   })
 

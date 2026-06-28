@@ -2,7 +2,11 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { RoomControls } from '@/features/room-surface/room-controls'
-import { createFloorOptions, createWallOptions } from './test-fixtures'
+import {
+  createFloorOptions,
+  createLightingMoodOptions,
+  createWallOptions,
+} from './test-fixtures'
 
 describe('RoomControls', () => {
   it('marks floor finish control as busy while floor textures are loading', () => {
@@ -15,6 +19,9 @@ describe('RoomControls', () => {
         wallFinishId="light-gray"
         wallFinishes={createWallOptions()}
         onWallFinishChange={vi.fn()}
+        lightingMoodId="daylight"
+        lightingMoods={createLightingMoodOptions()}
+        onLightingMoodChange={vi.fn()}
       />,
     )
 
@@ -39,6 +46,9 @@ describe('RoomControls', () => {
         wallFinishId="light-gray"
         wallFinishes={createWallOptions()}
         onWallFinishChange={onWallFinishChange}
+        lightingMoodId="daylight"
+        lightingMoods={createLightingMoodOptions()}
+        onLightingMoodChange={vi.fn()}
       />,
     )
 
@@ -48,5 +58,29 @@ describe('RoomControls', () => {
 
     expect(onFloorFinishChange).toHaveBeenCalledWith('concrete-floor')
     expect(onWallFinishChange).toHaveBeenCalledWith('warm-white')
+  })
+
+  it('forwards lighting mood selection to the handler', () => {
+    const onLightingMoodChange = vi.fn()
+
+    render(
+      <RoomControls
+        floorFinishId="wood-floor"
+        floorFinishLoading={false}
+        floorFinishes={createFloorOptions()}
+        onFloorFinishChange={vi.fn()}
+        wallFinishId="light-gray"
+        wallFinishes={createWallOptions()}
+        onWallFinishChange={vi.fn()}
+        lightingMoodId="daylight"
+        lightingMoods={createLightingMoodOptions()}
+        onLightingMoodChange={onLightingMoodChange}
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('tab', { name: 'Lighting' }))
+    fireEvent.click(screen.getByRole('radio', { name: 'Soft Lamplight' }))
+
+    expect(onLightingMoodChange).toHaveBeenCalledWith('soft-lamplight')
   })
 })

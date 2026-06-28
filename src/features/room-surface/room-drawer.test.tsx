@@ -5,7 +5,11 @@ import userEvent from '@testing-library/user-event'
 import React from 'react'
 import { describe, expect, it, vi } from 'vitest'
 import { RoomDrawer } from '@/features/room-surface/room-drawer'
-import { createFloorOptions, createWallOptions } from './test-fixtures'
+import {
+  createFloorOptions,
+  createLightingMoodOptions,
+  createWallOptions,
+} from './test-fixtures'
 
 describe('RoomDrawer', () => {
   it('restores focus through the provided close callback', async () => {
@@ -39,6 +43,9 @@ describe('RoomDrawer', () => {
             wallFinishId="light-gray"
             wallFinishes={createWallOptions()}
             onWallFinishChange={vi.fn()}
+            lightingMoodId="daylight"
+            lightingMoods={createLightingMoodOptions()}
+            onLightingMoodChange={vi.fn()}
           />
         </>
       )
@@ -92,6 +99,9 @@ describe('RoomDrawer', () => {
             wallFinishId="light-gray"
             wallFinishes={createWallOptions()}
             onWallFinishChange={vi.fn()}
+            lightingMoodId="daylight"
+            lightingMoods={createLightingMoodOptions()}
+            onLightingMoodChange={vi.fn()}
           />
         </>
       )
@@ -127,6 +137,9 @@ describe('RoomDrawer', () => {
         wallFinishId="light-gray"
         wallFinishes={createWallOptions()}
         onWallFinishChange={onWallFinishChange}
+        lightingMoodId="daylight"
+        lightingMoods={createLightingMoodOptions()}
+        onLightingMoodChange={vi.fn()}
       />,
     )
 

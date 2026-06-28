@@ -35,6 +35,9 @@ export function TopHeaderMobile({
   onWallFinishChange,
   wallFinishId,
   wallFinishes,
+  lightingMoodId,
+  lightingMoods,
+  onLightingMoodChange,
 }: TopHeaderMobileProps) {
   return (
     <div
@@ -128,6 +131,9 @@ export function TopHeaderMobile({
         wallFinishId={wallFinishId}
         wallFinishes={wallFinishes}
         onWallFinishChange={onWallFinishChange}
+        lightingMoodId={lightingMoodId}
+        lightingMoods={lightingMoods}
+        onLightingMoodChange={onLightingMoodChange}
       />
 
       <HeaderMoreActionsDrawer

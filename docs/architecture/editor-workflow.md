@@ -24,7 +24,7 @@ guidance.
 
 ### Room Surface Editing
 
-- open `Room` and change wall or floor finishes
+- open `Room` and change wall finishes, floor finishes, or the lighting mood
 - confirm the editor remains interactive while the room surface is open
 
 ### Panel-Driven Editing
@@ -59,7 +59,7 @@ guidance.
 ### Sharing and URL Restore
 
 - verify `Share` (or mobile `More`) creates a restorable room URL
-- verify valid `?scene=` payloads restore items and room finishes
+- verify valid `?scene=` payloads restore items, room finishes, and lighting mood
 - verify invalid or oversized payloads fail safely with clear state behavior
 - verify restore is one-shot and does not reapply unexpectedly after retry/reload
 

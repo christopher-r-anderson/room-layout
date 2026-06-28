@@ -5,6 +5,7 @@ export interface RestorableState {
   items: FurnitureInstance[]
   floorFinishId?: string
   wallFinishId?: string
+  lightingMoodId?: string
 }
 
 export type DraftRestoreAttempt = 'restored' | 'failed' | 'missing'

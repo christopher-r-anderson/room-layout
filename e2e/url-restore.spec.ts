@@ -39,6 +39,7 @@ interface SceneDraftPayload {
   }[]
   floorFinishId?: string
   wallFinishId?: string
+  lightingMoodId?: string
 }
 
 // ---------------------------------------------------------------------------
@@ -51,6 +52,7 @@ function makeSceneRoute(
   options?: {
     floorFinishId?: string
     wallFinishId?: string
+    lightingMoodId?: string
   },
 ): string {
   const payload = {
@@ -58,6 +60,9 @@ function makeSceneRoute(
     items,
     ...(options?.floorFinishId ? { floorFinishId: options.floorFinishId } : {}),
     ...(options?.wallFinishId ? { wallFinishId: options.wallFinishId } : {}),
+    ...(options?.lightingMoodId
+      ? { lightingMoodId: options.lightingMoodId }
+      : {}),
   }
   const params = new URLSearchParams()
   params.set('scene', JSON.stringify(payload))
@@ -198,29 +203,32 @@ test('populates outliner with restored items from ?scene=', async ({
   await expect(page.getByRole('button', { name: /end table/i })).toBeVisible()
 })
 
-test('restores floor and wall finish IDs from a valid ?scene= param', async ({
+test('restores floor, wall, and lighting mood IDs from a valid ?scene= param', async ({
   page,
 }) => {
   await page.goto(
     makeSceneRoute([VALID_ITEM], {
       floorFinishId: 'granite-tile',
       wallFinishId: 'sage-green',
+      lightingMoodId: 'warm-white',
     }),
   )
   const state = await waitForEditorReady(page)
 
   expect(state.floorFinishId).toBe('granite-tile')
   expect(state.wallFinishId).toBe('sage-green')
+  expect(state.lightingMoodId).toBe('warm-white')
   expect(state.restoreOutcome).toBe('restored')
 })
 
-test('ignores unknown floor and wall finish IDs from ?scene= while still restoring furniture', async ({
+test('ignores unknown finish and lighting mood IDs from ?scene= while still restoring furniture', async ({
   page,
 }) => {
   await page.goto(
     makeSceneRoute([VALID_ITEM], {
       floorFinishId: 'unknown-floor',
       wallFinishId: 'unknown-wall',
+      lightingMoodId: 'unknown-mood',
     }),
   )
   const state = await waitForEditorReady(page)
@@ -228,6 +236,7 @@ test('ignores unknown floor and wall finish IDs from ?scene= while still restori
   expect(state.itemCount).toBe(1)
   expect(state.floorFinishId).toBe('wood-floor')
   expect(state.wallFinishId).toBe('light-gray')
+  expect(state.lightingMoodId).toBe('daylight')
   expect(state.restoreOutcome).toBe('restored')
 })
 
@@ -450,6 +459,20 @@ test('copy-URL-then-load round-trip: app serializer output is accepted by restor
   await roomSurface.getByRole('tab', { name: 'Floor' }).click()
   await roomSurface.locator('label').filter({ hasText: 'Granite' }).click()
 
+  // The Lighting tab is the rightmost tab, where the camera-tools overlay can
+  // intercept a pointer click; activate it via keyboard (programmatic focus
+  // bypasses the overlap) before selecting a mood.
+  const lightingTab = roomSurface.getByRole('tab', { name: 'Lighting' })
+  await lightingTab.focus()
+  await lightingTab.press('Enter')
+  await expect(
+    roomSurface.getByRole('tabpanel', { name: 'Lighting' }),
+  ).toBeVisible()
+  await roomSurface
+    .locator('label')
+    .filter({ hasText: 'Soft Lamplight' })
+    .click()
+
   await page.locator('button[aria-controls="room-surface"]').click()
   await expect(roomSurface).toBeHidden()
 
@@ -472,9 +495,11 @@ test('copy-URL-then-load round-trip: app serializer output is accepted by restor
   ) as {
     floorFinishId?: string
     wallFinishId?: string
+    lightingMoodId?: string
   }
   expect(copiedScenePayload.floorFinishId).toBe('granite-tile')
   expect(copiedScenePayload.wallFinishId).toBe('sage-green')
+  expect(copiedScenePayload.lightingMoodId).toBe('soft-lamplight')
 
   // Navigate to the copied URL in the same page - the restore path must accept
   // what the serializer produced, confirming the round-trip contract
@@ -486,6 +511,7 @@ test('copy-URL-then-load round-trip: app serializer output is accepted by restor
   expect(restored.items[0].catalogId).toBe('armchair-1')
   expect(restored.floorFinishId).toBe('granite-tile')
   expect(restored.wallFinishId).toBe('sage-green')
+  expect(restored.lightingMoodId).toBe('soft-lamplight')
 })
 
 // ---------------------------------------------------------------------------
@@ -560,6 +586,7 @@ test('start over clears the saved draft so reload stays fresh', async ({
   expect(resetState.itemCount).toBe(0)
   expect(resetState.floorFinishId).toBe('wood-floor')
   expect(resetState.wallFinishId).toBe('light-gray')
+  expect(resetState.lightingMoodId).toBe('daylight')
 
   await expect.poll(async () => readDraftFromStorage(page)).toBeNull()
 

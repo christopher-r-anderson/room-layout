@@ -18,6 +18,7 @@ interface ScenePayload {
   v: number
   floorFinishId?: string
   wallFinishId?: string
+  lightingMoodId?: string
   items: {
     id: string
     catalogId: string
@@ -130,23 +131,26 @@ describe('serializeSceneToUrl', () => {
     expect(payload.v).toBe(1)
   })
 
-  it('includes floor and wall finish IDs when provided', () => {
+  it('includes floor, wall, and lighting mood IDs when provided', () => {
     const url = serializeSceneToUrl([], 'https://example.com/', {
       floorFinishId: 'granite-tile',
       wallFinishId: 'sage-green',
+      lightingMoodId: 'warm-white',
     })
     if (url === null) throw new Error('expected non-null URL')
     const payload = parsePayload(url)
 
     expect(payload.floorFinishId).toBe('granite-tile')
     expect(payload.wallFinishId).toBe('sage-green')
+    expect(payload.lightingMoodId).toBe('warm-white')
   })
 
-  it('omits finish IDs when not provided', () => {
+  it('omits finish and mood IDs when not provided', () => {
     const payload = parsePayload(requireSceneUrl([], 'https://example.com/'))
 
     expect(payload.floorFinishId).toBeUndefined()
     expect(payload.wallFinishId).toBeUndefined()
+    expect(payload.lightingMoodId).toBeUndefined()
   })
 
   it('produces byte-identical output for equivalent inputs', () => {
@@ -360,12 +364,13 @@ describe('parseSceneUrl', () => {
     expect(result).toEqual({ ok: true, items: [expected] })
   })
 
-  it('returns ok with optional finish IDs for a valid payload', () => {
+  it('returns ok with optional finish and lighting mood IDs for a valid payload', () => {
     const payload = JSON.stringify({
       v: 1,
       items: [],
       floorFinishId: 'laminate-floor',
       wallFinishId: 'soft-beige',
+      lightingMoodId: 'warm-white',
     })
     const result = parseSceneUrl(
       `https://example.com/?${SCENE_URL_PARAM}=${encodeURIComponent(payload)}`,
@@ -375,7 +380,16 @@ describe('parseSceneUrl', () => {
       items: [],
       floorFinishId: 'laminate-floor',
       wallFinishId: 'soft-beige',
+      lightingMoodId: 'warm-white',
     })
+  })
+
+  it('rejects a payload with an empty lighting mood ID', () => {
+    const payload = JSON.stringify({ v: 1, items: [], lightingMoodId: '' })
+    const result = parseSceneUrl(
+      `https://example.com/?${SCENE_URL_PARAM}=${encodeURIComponent(payload)}`,
+    )
+    expect(result).toEqual({ ok: false, reason: 'invalid-schema' })
   })
 
   it('is a round-trip with serializeSceneToUrl', () => {

@@ -56,10 +56,13 @@ Surfaced by the e2e gap analysis and deliberately left unfilled — each is cove
 more cheaply elsewhere or is too low-value for the e2e cost. Recorded so the
 choice is explicit, not an oversight.
 
-- **Room finish applied in isolation** — only asserted via the `url-restore`
-  serialization round-trip, not a standalone "change finish → scene reflects it"
-  e2e. The finish reducers are unit-tested; the floor-loading `aria-busy` state is
-  in `room-controls` unit tests. Low marginal value.
+- **Room finish and lighting mood applied in isolation** — only asserted via the
+  `url-restore` serialization round-trip, not a standalone "change finish/mood →
+  scene reflects it" e2e. The finish reducers are unit-tested; lighting-mood
+  resolution lives in the pure, unit-tested
+  `scene/internal/environment/lighting-mood.ts` (keeping `lighting.tsx`
+  presentational); the floor-loading `aria-busy` state is in `room-controls` unit
+  tests. Low marginal value.
 - **Genuine no-space error presence** — `add-furniture` asserts the error never
   fires on valid adds; it does not drive the room to true saturation to assert the
   error appears. Placement-search is unit-tested. Low value, brittle to set up.

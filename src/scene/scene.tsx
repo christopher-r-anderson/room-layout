@@ -3,8 +3,10 @@ import { getMeshes } from '@/scene/internal/three/get-meshes'
 import { configureGltfKtx2 } from '@/scene/internal/three/gltf-ktx2'
 import { Room } from './internal/environment/room'
 import { Lighting } from './internal/environment/lighting'
+import { resolveMoodExposure } from './internal/environment/lighting-mood'
 import type {
   FloorFinishOption,
+  LightingMoodOption,
   WallFinishOption,
 } from '@/domain/environment-materials'
 import { CameraControls } from './internal/camera/camera-controls'
@@ -67,6 +69,7 @@ export function Scene({
   onPreviewChange,
   floorOption = null,
   wallOption = null,
+  lightingMoodOption = null,
   onFloorLoadingChange,
 }: {
   renderQuality?: 'default' | 'e2e-low'
@@ -78,6 +81,7 @@ export function Scene({
   onPreviewChange?: (id: string | null) => void
   floorOption?: FloorFinishOption | null
   wallOption?: WallFinishOption | null
+  lightingMoodOption?: LightingMoodOption | null
   onFloorLoadingChange?: (isLoading: boolean) => void
 }) {
   const isE2ELowQuality = renderQuality === 'e2e-low'
@@ -98,6 +102,9 @@ export function Scene({
   )
   const invalidate = useThree((state) => state.invalidate)
   const gl = useThree((state) => state.gl)
+  // Accessor for fresh r3f state when we need to imperatively touch the renderer
+  // (e.g. tone-mapping exposure) without subscribing to or mutating a hook value.
+  const getThreeState = useThree((state) => state.get)
   const collectionPaths = useMemo(
     () => collections.map((c) => c.sourcePath),
     [collections],
@@ -296,6 +303,15 @@ export function Scene({
     sceneDocumentActions.setDragging(isDragging)
   }, [isDragging])
 
+  // The active mood drives renderer exposure. Set here (not in the Canvas's
+  // one-shot onCreated) so switching moods re-tunes exposure reactively. The
+  // e2e low-quality lane keeps exposure pinned to 1 for deterministic captures.
+  const moodExposure = resolveMoodExposure(lightingMoodOption, isE2ELowQuality)
+  useEffect(() => {
+    getThreeState().gl.toneMappingExposure = moodExposure
+    invalidate()
+  }, [getThreeState, invalidate, moodExposure])
+
   useEffect(() => {
     // Do not report ready if no collections have been passed yet
     // this happens during the loading-manifest phase when App renders Scene with [] initially.
@@ -376,7 +392,7 @@ export function Scene({
         lowQuality={isE2ELowQuality}
       />
       <CameraControls enabled={!dragState} controlsRef={cameraControlsRef} />
-      <Lighting lowQuality={isE2ELowQuality} />
+      <Lighting lowQuality={isE2ELowQuality} mood={lightingMoodOption} />
       <Room
         receiveShadows={!isE2ELowQuality}
         floorOption={floorOption}

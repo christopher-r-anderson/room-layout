@@ -8,16 +8,19 @@ export interface DefaultSceneState extends SceneComparableState {
   items: []
   floorFinishId: string
   wallFinishId: string
+  lightingMoodId: string
 }
 
 export function createDefaultSceneState(options: {
   defaultFloorFinishId: string
   defaultWallFinishId: string
+  defaultLightingMoodId: string
 }): DefaultSceneState {
   return {
     items: [],
     floorFinishId: options.defaultFloorFinishId,
     wallFinishId: options.defaultWallFinishId,
+    lightingMoodId: options.defaultLightingMoodId,
   }
 }
 
@@ -27,6 +30,7 @@ function getDefaultSceneState(
   return createDefaultSceneState({
     defaultFloorFinishId: environmentConfig.defaultFloorFinishId,
     defaultWallFinishId: environmentConfig.defaultWallFinishId,
+    defaultLightingMoodId: environmentConfig.defaultLightingMoodId,
   })
 }
 
