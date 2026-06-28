@@ -32,6 +32,7 @@ bundle-report.html
 *.sw?
 
 *.blend[0-9]
-# Intermediate Blender GLB exports — compressed into public/models/ then removed.
+# Intermediate Blender GLB exports (next to each .blend); the compressed result
+# is written to public/models/ and the .tmp.glb is then deleted.
 *.tmp.glb
 public/basis
