@@ -3,13 +3,25 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import React from 'react'
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { RoomDrawer } from '@/features/room-surface/room-drawer'
+import { assetsActions, resetAssetsStore } from '@/core/stores/assets-store'
 import {
-  createFloorOptions,
-  createLightingMoodOptions,
-  createWallOptions,
-} from './test-fixtures'
+  resetSceneDocumentStore,
+  sceneDocumentActions,
+  sceneDocumentStore,
+} from '@/core/stores/scene-document-store'
+import { createEnvironmentConfig } from './test-fixtures'
+
+beforeEach(() => {
+  resetAssetsStore()
+  resetSceneDocumentStore()
+})
+
+afterEach(() => {
+  resetAssetsStore()
+  resetSceneDocumentStore()
+})
 
 describe('RoomDrawer', () => {
   it('restores focus through the provided close callback', async () => {
@@ -36,16 +48,6 @@ describe('RoomDrawer', () => {
             onCloseAutoFocus={() => {
               triggerRef.current?.focus()
             }}
-            floorFinishId="wood-floor"
-            floorFinishLoading={false}
-            floorFinishes={createFloorOptions()}
-            onFloorFinishChange={vi.fn()}
-            wallFinishId="light-gray"
-            wallFinishes={createWallOptions()}
-            onWallFinishChange={vi.fn()}
-            lightingMoodId="daylight"
-            lightingMoods={createLightingMoodOptions()}
-            onLightingMoodChange={vi.fn()}
           />
         </>
       )
@@ -92,16 +94,6 @@ describe('RoomDrawer', () => {
             onOpenChange={setOpen}
             onCloseAutoFocus={onCloseAutoFocus}
             restoreFocusOnClose={false}
-            floorFinishId="wood-floor"
-            floorFinishLoading={false}
-            floorFinishes={createFloorOptions()}
-            onFloorFinishChange={vi.fn()}
-            wallFinishId="light-gray"
-            wallFinishes={createWallOptions()}
-            onWallFinishChange={vi.fn()}
-            lightingMoodId="daylight"
-            lightingMoods={createLightingMoodOptions()}
-            onLightingMoodChange={vi.fn()}
           />
         </>
       )
@@ -122,26 +114,17 @@ describe('RoomDrawer', () => {
     expect(onCloseAutoFocus).not.toHaveBeenCalled()
   })
 
-  it('forwards room control changes through the shared controls surface', () => {
-    const onFloorFinishChange = vi.fn()
-    const onWallFinishChange = vi.fn()
+  it('mounts the connected room controls in the drawer surface', () => {
+    assetsActions.setAssets({
+      catalog: [],
+      collections: [],
+      environmentConfig: createEnvironmentConfig(),
+    })
+    sceneDocumentActions.setFloorFinishId('wood-floor')
+    sceneDocumentActions.setWallFinishId('light-gray')
+    sceneDocumentActions.setFloorFinishLoading(true)
 
-    render(
-      <RoomDrawer
-        open={true}
-        onOpenChange={vi.fn()}
-        floorFinishId="wood-floor"
-        floorFinishLoading={true}
-        floorFinishes={createFloorOptions()}
-        onFloorFinishChange={onFloorFinishChange}
-        wallFinishId="light-gray"
-        wallFinishes={createWallOptions()}
-        onWallFinishChange={onWallFinishChange}
-        lightingMoodId="daylight"
-        lightingMoods={createLightingMoodOptions()}
-        onLightingMoodChange={vi.fn()}
-      />,
-    )
+    render(<RoomDrawer open={true} onOpenChange={vi.fn()} />)
 
     fireEvent.click(screen.getByRole('tab', { name: 'Floor' }))
 
@@ -154,7 +137,7 @@ describe('RoomDrawer', () => {
     fireEvent.click(screen.getByRole('tab', { name: 'Walls' }))
     fireEvent.click(screen.getByRole('radio', { name: 'Warm White' }))
 
-    expect(onFloorFinishChange).toHaveBeenCalledWith('concrete-floor')
-    expect(onWallFinishChange).toHaveBeenCalledWith('warm-white')
+    expect(sceneDocumentStore.getState().floorFinishId).toBe('concrete-floor')
+    expect(sceneDocumentStore.getState().wallFinishId).toBe('warm-white')
   })
 })

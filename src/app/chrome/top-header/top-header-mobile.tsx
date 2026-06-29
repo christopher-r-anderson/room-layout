@@ -18,26 +18,16 @@ import { TopHeaderSurface } from './top-header-surface'
 
 export function TopHeaderMobile({
   editorInteractionsEnabled,
-  floorFinishId,
-  floorFinishLoading,
-  floorFinishes,
   history,
   mobileRoomDrawerRef,
   isRoomSurfaceOpen,
   isHeaderMoreActionsOpen,
   blockingOverlayOpen,
   startOverDisabled,
-  onFloorFinishChange,
   onOpenKeyboardShortcutsFromHeaderMoreActions,
   onOpenStartOverFromHeaderMoreActions,
   onOpenProjectInfoFromHeaderMoreActions,
   topHeaderRef,
-  onWallFinishChange,
-  wallFinishId,
-  wallFinishes,
-  lightingMoodId,
-  lightingMoods,
-  onLightingMoodChange,
 }: TopHeaderMobileProps) {
   return (
     <div
@@ -124,16 +114,6 @@ export function TopHeaderMobile({
           topHeaderFocusRegistry.focus('top-header-room')
         }}
         restoreFocusOnClose={!blockingOverlayOpen}
-        floorFinishId={floorFinishId}
-        floorFinishLoading={floorFinishLoading}
-        floorFinishes={floorFinishes}
-        onFloorFinishChange={onFloorFinishChange}
-        wallFinishId={wallFinishId}
-        wallFinishes={wallFinishes}
-        onWallFinishChange={onWallFinishChange}
-        lightingMoodId={lightingMoodId}
-        lightingMoods={lightingMoods}
-        onLightingMoodChange={onLightingMoodChange}
       />
 
       <HeaderMoreActionsDrawer

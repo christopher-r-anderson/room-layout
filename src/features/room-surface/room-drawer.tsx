@@ -7,8 +7,8 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from '@/shared/ui/drawer'
-import type { RoomControlsProps } from './room-controls'
-import { RoomSurfaceContent } from './room-surface-content'
+import { RoomControls } from './room-controls'
+import { ROOM_SURFACE_DESCRIPTION } from './room-copy'
 
 export function RoomDrawer({
   contentRef,
@@ -16,8 +16,7 @@ export function RoomDrawer({
   onOpenChange,
   onCloseAutoFocus,
   restoreFocusOnClose = true,
-  ...controls
-}: RoomControlsProps & {
+}: {
   contentRef?: Ref<HTMLDivElement>
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -45,19 +44,13 @@ export function RoomDrawer({
           }
         }}
       >
-        <RoomSurfaceContent {...controls}>
-          {({ controls: roomControls, description }) => (
-            <>
-              <DrawerHeader>
-                <DrawerTitle>Room</DrawerTitle>
-                <DrawerDescription>{description}</DrawerDescription>
-              </DrawerHeader>
-              <ScrollArea className="min-h-0 flex-1 px-4 pb-4">
-                {roomControls}
-              </ScrollArea>
-            </>
-          )}
-        </RoomSurfaceContent>
+        <DrawerHeader>
+          <DrawerTitle>Room</DrawerTitle>
+          <DrawerDescription>{ROOM_SURFACE_DESCRIPTION}</DrawerDescription>
+        </DrawerHeader>
+        <ScrollArea className="min-h-0 flex-1 px-4 pb-4">
+          <RoomControls />
+        </ScrollArea>
       </DrawerContent>
     </Drawer>
   )

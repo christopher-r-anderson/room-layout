@@ -1,29 +1,38 @@
 // @vitest-environment jsdom
 import { fireEvent, render, screen } from '@testing-library/react'
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { RoomControls } from '@/features/room-surface/room-controls'
+import { assetsActions, resetAssetsStore } from '@/core/stores/assets-store'
 import {
-  createFloorOptions,
-  createLightingMoodOptions,
-  createWallOptions,
-} from './test-fixtures'
+  resetSceneDocumentStore,
+  sceneDocumentActions,
+  sceneDocumentStore,
+} from '@/core/stores/scene-document-store'
+import { createEnvironmentConfig } from './test-fixtures'
+
+beforeEach(() => {
+  resetAssetsStore()
+  resetSceneDocumentStore()
+  assetsActions.setAssets({
+    catalog: [],
+    collections: [],
+    environmentConfig: createEnvironmentConfig(),
+  })
+  sceneDocumentActions.setFloorFinishId('wood-floor')
+  sceneDocumentActions.setWallFinishId('light-gray')
+  sceneDocumentActions.setLightingMoodId('daylight')
+})
+
+afterEach(() => {
+  resetAssetsStore()
+  resetSceneDocumentStore()
+})
 
 describe('RoomControls', () => {
-  it('marks floor finish control as busy while floor textures are loading', () => {
-    render(
-      <RoomControls
-        floorFinishId="wood-floor"
-        floorFinishLoading={true}
-        floorFinishes={createFloorOptions()}
-        onFloorFinishChange={vi.fn()}
-        wallFinishId="light-gray"
-        wallFinishes={createWallOptions()}
-        onWallFinishChange={vi.fn()}
-        lightingMoodId="daylight"
-        lightingMoods={createLightingMoodOptions()}
-        onLightingMoodChange={vi.fn()}
-      />,
-    )
+  it('marks the floor finish control as busy while floor textures are loading', () => {
+    sceneDocumentActions.setFloorFinishLoading(true)
+
+    render(<RoomControls />)
 
     fireEvent.click(screen.getByRole('tab', { name: 'Floor' }))
 
@@ -33,54 +42,23 @@ describe('RoomControls', () => {
     )
   })
 
-  it('forwards select changes to floor and wall handlers', () => {
-    const onFloorFinishChange = vi.fn()
-    const onWallFinishChange = vi.fn()
-
-    render(
-      <RoomControls
-        floorFinishId="wood-floor"
-        floorFinishLoading={false}
-        floorFinishes={createFloorOptions()}
-        onFloorFinishChange={onFloorFinishChange}
-        wallFinishId="light-gray"
-        wallFinishes={createWallOptions()}
-        onWallFinishChange={onWallFinishChange}
-        lightingMoodId="daylight"
-        lightingMoods={createLightingMoodOptions()}
-        onLightingMoodChange={vi.fn()}
-      />,
-    )
+  it('commits floor and wall selections to the scene document', () => {
+    render(<RoomControls />)
 
     fireEvent.click(screen.getByRole('radio', { name: 'Warm White' }))
     fireEvent.click(screen.getByRole('tab', { name: 'Floor' }))
     fireEvent.click(screen.getByRole('radio', { name: 'Concrete' }))
 
-    expect(onFloorFinishChange).toHaveBeenCalledWith('concrete-floor')
-    expect(onWallFinishChange).toHaveBeenCalledWith('warm-white')
+    expect(sceneDocumentStore.getState().wallFinishId).toBe('warm-white')
+    expect(sceneDocumentStore.getState().floorFinishId).toBe('concrete-floor')
   })
 
-  it('forwards lighting mood selection to the handler', () => {
-    const onLightingMoodChange = vi.fn()
-
-    render(
-      <RoomControls
-        floorFinishId="wood-floor"
-        floorFinishLoading={false}
-        floorFinishes={createFloorOptions()}
-        onFloorFinishChange={vi.fn()}
-        wallFinishId="light-gray"
-        wallFinishes={createWallOptions()}
-        onWallFinishChange={vi.fn()}
-        lightingMoodId="daylight"
-        lightingMoods={createLightingMoodOptions()}
-        onLightingMoodChange={onLightingMoodChange}
-      />,
-    )
+  it('commits lighting mood selection to the scene document', () => {
+    render(<RoomControls />)
 
     fireEvent.click(screen.getByRole('tab', { name: 'Lighting' }))
     fireEvent.click(screen.getByRole('radio', { name: 'Soft Lamplight' }))
 
-    expect(onLightingMoodChange).toHaveBeenCalledWith('soft-lamplight')
+    expect(sceneDocumentStore.getState().lightingMoodId).toBe('soft-lamplight')
   })
 })

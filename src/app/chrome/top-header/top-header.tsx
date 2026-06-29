@@ -11,15 +11,9 @@ import {
 } from '@/core/stores/dialog-store'
 import { DIALOG_IDS } from '@/app/dialogs/dialog-registry'
 import { useEditorInteractionsEnabled } from '@/core/stores/editor-lifecycle-store'
-import { useEnvironmentConfig } from '@/core/stores/assets-store'
 import { useSceneIsAtDefaults } from '@/core/operations/use-scene-is-at-defaults'
 import { useCommandDispatch } from '@/core/commands/command-dispatch-context'
-import { useActiveFinishIds } from '@/core/operations/active-finish-ids'
-import {
-  sceneDocumentActions,
-  useFloorFinishLoading,
-  useHistoryAvailability,
-} from '@/core/stores/scene-document-store'
+import { useHistoryAvailability } from '@/core/stores/scene-document-store'
 import { topHeaderDialogOpenChange } from './top-header-dialog-bindings'
 
 export function TopHeader({
@@ -28,11 +22,9 @@ export function TopHeader({
   mobileRoomDrawerRef,
 }: TopHeaderContainerProps) {
   const dispatch = useCommandDispatch()
-  const environmentConfig = useEnvironmentConfig()
   const startOverDisabled = useSceneIsAtDefaults()
   const editorInteractionsEnabled = useEditorInteractionsEnabled()
   const historyAvailability = useHistoryAvailability()
-  const floorFinishLoading = useFloorFinishLoading()
   const isRoomSurfaceOpen = useDialogOpen(DIALOG_IDS.roomSurface)
   const isInfoDialogOpen = useDialogOpen(DIALOG_IDS.projectInfo)
   const isKeyboardShortcutsDialogOpen = useDialogOpen(
@@ -41,11 +33,6 @@ export function TopHeader({
   const isHeaderMoreActionsOpen = useDialogOpen(DIALOG_IDS.headerMoreActions)
   const isBlockingOverlayOpen = useIsBlockingOverlayOpen()
   const layoutMode = useHeaderLayoutMode()
-  const {
-    activeFloorFinishId: floorFinishId,
-    activeWallFinishId: wallFinishId,
-    activeLightingMoodId: lightingMoodId,
-  } = useActiveFinishIds()
 
   // More actions is mobile-only and blocking. It has no desktop equivalent, so
   // if the viewport widens while it is open we close it to avoid leaving the
@@ -84,22 +71,12 @@ export function TopHeader({
 
   const sharedToolbarProps = {
     editorInteractionsEnabled,
-    floorFinishId,
-    floorFinishLoading,
-    floorFinishes: environmentConfig?.floorFinishes ?? [],
     history: {
       canRedo: historyAvailability.canRedo,
       canUndo: historyAvailability.canUndo,
     },
-    onFloorFinishChange: sceneDocumentActions.setFloorFinishId,
-    onWallFinishChange: sceneDocumentActions.setWallFinishId,
     startOverDisabled,
     topHeaderRef,
-    wallFinishId,
-    wallFinishes: environmentConfig?.wallFinishes ?? [],
-    lightingMoodId,
-    lightingMoods: environmentConfig?.lightingMoods ?? [],
-    onLightingMoodChange: sceneDocumentActions.setLightingMoodId,
   } as const
 
   return (

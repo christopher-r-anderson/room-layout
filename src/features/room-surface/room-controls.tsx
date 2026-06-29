@@ -1,46 +1,37 @@
 import { IconLoader } from '@tabler/icons-react'
-import type {
-  FloorFinishOption,
-  LightingMoodOption,
-  WallFinishOption,
-} from '@/domain/environment-materials'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { cn } from '@/shared/lib/utils'
+import { useActiveFinishIds } from '@/core/operations/active-finish-ids'
+import { useEnvironmentConfig } from '@/core/stores/assets-store'
+import {
+  sceneDocumentActions,
+  useFloorFinishLoading,
+} from '@/core/stores/scene-document-store'
 import {
   FLOOR_FINISH_DESCRIPTION,
   LIGHTING_MOOD_DESCRIPTION,
   WALL_FINISH_DESCRIPTION,
 } from './room-copy'
 
-export interface RoomControlsProps {
-  floorFinishId: string
-  floorFinishLoading: boolean
-  floorFinishes: FloorFinishOption[]
-  onFloorFinishChange: (finishId: string) => void
-  wallFinishId: string
-  wallFinishes: WallFinishOption[]
-  onWallFinishChange: (finishId: string) => void
-  lightingMoodId: string
-  lightingMoods: LightingMoodOption[]
-  onLightingMoodChange: (moodId: string) => void
-}
-
 function formatHexColor(color: number) {
   return `#${color.toString(16).padStart(6, '0')}`
 }
 
-export function RoomControls({
-  floorFinishId,
-  floorFinishLoading,
-  floorFinishes,
-  onFloorFinishChange,
-  wallFinishId,
-  wallFinishes,
-  onWallFinishChange,
-  lightingMoodId,
-  lightingMoods,
-  onLightingMoodChange,
-}: RoomControlsProps) {
+export function RoomControls() {
+  const environmentConfig = useEnvironmentConfig()
+  const floorFinishLoading = useFloorFinishLoading()
+  const {
+    activeFloorFinishId: floorFinishId,
+    activeWallFinishId: wallFinishId,
+    activeLightingMoodId: lightingMoodId,
+  } = useActiveFinishIds()
+  const floorFinishes = environmentConfig?.floorFinishes ?? []
+  const wallFinishes = environmentConfig?.wallFinishes ?? []
+  const lightingMoods = environmentConfig?.lightingMoods ?? []
+  const onFloorFinishChange = sceneDocumentActions.setFloorFinishId
+  const onWallFinishChange = sceneDocumentActions.setWallFinishId
+  const onLightingMoodChange = sceneDocumentActions.setLightingMoodId
+
   return (
     <Tabs defaultValue="walls" className="gap-3">
       <TabsList className="grid w-full grid-cols-3">

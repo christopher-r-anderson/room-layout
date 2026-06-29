@@ -17,22 +17,12 @@ import { TopHeaderSurface } from './top-header-surface'
 export function TopHeaderDesktop({
   desktopRoomSidebarRef,
   editorInteractionsEnabled,
-  floorFinishId,
-  floorFinishLoading,
-  floorFinishes,
   history,
   isRoomSurfaceOpen,
   isKeyboardShortcutsOpen,
   isProjectInfoOpen,
   startOverDisabled,
   topHeaderRef,
-  onFloorFinishChange,
-  onWallFinishChange,
-  wallFinishId,
-  wallFinishes,
-  lightingMoodId,
-  lightingMoods,
-  onLightingMoodChange,
 }: TopHeaderDesktopProps) {
   return (
     <>
@@ -182,16 +172,6 @@ export function TopHeaderDesktop({
           topHeaderDialogOpenChange.roomSurface(false)
           topHeaderFocusRegistry.focus('top-header-room')
         }}
-        floorFinishId={floorFinishId}
-        floorFinishLoading={floorFinishLoading}
-        floorFinishes={floorFinishes}
-        onFloorFinishChange={onFloorFinishChange}
-        wallFinishId={wallFinishId}
-        wallFinishes={wallFinishes}
-        onWallFinishChange={onWallFinishChange}
-        lightingMoodId={lightingMoodId}
-        lightingMoods={lightingMoods}
-        onLightingMoodChange={onLightingMoodChange}
       />
     </>
   )
