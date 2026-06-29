@@ -72,12 +72,10 @@ export function InitializationError({
   return (
     <section
       className="absolute inset-0 grid place-items-center bg-background/75 p-6 max-[720px]:p-4"
-      aria-live="assertive"
+      role="alert"
     >
       <Card
         className="w-[min(26.25rem,calc(100vw-2rem))] gap-3 border-destructive/25 shadow-xl"
-        role="alertdialog"
-        aria-modal="true"
         aria-labelledby="startup-error-title"
         aria-describedby="startup-error-description startup-error-note"
       >

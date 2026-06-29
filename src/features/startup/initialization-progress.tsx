@@ -67,8 +67,6 @@ export function InitializationProgress() {
       <Card
         ref={panelRef}
         className="w-[min(26.25rem,calc(100vw-2rem))] gap-3 shadow-xl"
-        role="dialog"
-        aria-modal="true"
         aria-labelledby="startup-loading-title"
         aria-describedby="startup-loading-description startup-loading-progress-label"
         tabIndex={-1}

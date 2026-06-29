@@ -31,9 +31,6 @@ export function EditorOverlay() {
   const layoutMode = useHeaderLayoutMode()
   const isDesktop = layoutMode === 'desktop'
 
-  // Startup is the only state the chrome inerts itself for. Blocking overlays
-  // neutralize the background through the modal itself (focus trap + hidden +
-  // pointer-blocked), so they need no seam here.
   return (
     <>
       <div

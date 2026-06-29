@@ -14,6 +14,8 @@ test('keeps editor interactions blocked until required assets finish loading', a
 
   const loadingHeading = page.getByText('Preparing the room editor')
   await expect(loadingHeading).toBeVisible()
+  // The loading gate is a status overlay, not a dialog.
+  await expect(page.getByRole('dialog')).toHaveCount(0)
   await expect(
     page.getByRole('button', { name: 'Undo', includeHidden: true }),
   ).toBeDisabled()
