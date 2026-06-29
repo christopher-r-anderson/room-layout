@@ -19,9 +19,6 @@ function App() {
     perfCounters.incrAppRender()
   }
   const [testOverlaysHidden, setTestOverlaysHidden] = useState(false)
-  const isE2ELowRenderQuality =
-    import.meta.env.VITE_E2E_RENDER_QUALITY === 'low'
-  const canvasShadowMode = isE2ELowRenderQuality ? false : 'percentage'
 
   useStartupBootstrap()
   const environmentConfig = useEnvironmentConfig()
@@ -49,11 +46,7 @@ function App() {
 
   return (
     <EditorProviders>
-      <EditorBody
-        testOverlaysHidden={testOverlaysHidden}
-        canvasShadowMode={canvasShadowMode}
-        isE2ELowRenderQuality={isE2ELowRenderQuality}
-      />
+      <EditorBody testOverlaysHidden={testOverlaysHidden} />
     </EditorProviders>
   )
 }

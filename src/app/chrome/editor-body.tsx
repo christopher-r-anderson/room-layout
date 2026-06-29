@@ -1,6 +1,5 @@
 import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
-import type { SceneCanvasProps } from './scene-canvas'
 import { useIsBlockingOverlayOpen } from '@/core/stores/dialog-store'
 import { useSelectedFurniture } from '@/core/stores/scene-document-store'
 import {
@@ -31,15 +30,9 @@ const SceneCanvas = lazy(() => import('./scene-canvas'))
 
 export interface EditorBodyProps {
   testOverlaysHidden: boolean
-  canvasShadowMode: SceneCanvasProps['canvasShadowMode']
-  isE2ELowRenderQuality: boolean
 }
 
-export function EditorBody({
-  testOverlaysHidden,
-  canvasShadowMode,
-  isE2ELowRenderQuality,
-}: EditorBodyProps) {
+export function EditorBody({ testOverlaysHidden }: EditorBodyProps) {
   const previewedId = usePreviewedId()
   const {
     selectedFloorOption,
@@ -149,8 +142,6 @@ export function EditorBody({
       >
         <Suspense fallback={null}>
           <SceneCanvas
-            isE2ELowRenderQuality={isE2ELowRenderQuality}
-            canvasShadowMode={canvasShadowMode}
             sceneEpoch={sceneEpoch}
             onPointerMissed={handleCanvasPointerMissed}
             catalog={catalog}
