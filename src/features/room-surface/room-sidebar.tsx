@@ -30,8 +30,7 @@ export function RoomSidebar({
       ref={containerRef}
       id="room-surface"
       aria-labelledby="room-surface-title"
-      className="pointer-events-auto fixed inset-y-2 right-2 z-20 hidden md:block"
-      style={{ width: '22rem' }}
+      className="pointer-events-auto fixed w-room-panel inset-y-2 right-2 z-20 hidden md:block"
       onKeyDown={(event) => {
         if (event.key !== 'Escape') {
           return

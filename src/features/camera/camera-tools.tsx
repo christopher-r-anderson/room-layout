@@ -37,7 +37,7 @@ export function CameraTools({
       className={cn(buttonGroupVariants({ orientation: 'vertical' }))}
     >
       <ButtonGroupText className="justify-between p-1 px-2">
-        <span className="hidden md:flex">Camera</span>
+        <span className={displayLabels ? 'inline' : 'hidden'}>Camera</span>
         <IconCamera aria-hidden="true" />
       </ButtonGroupText>
       <ToolButton
