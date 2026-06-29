@@ -19,6 +19,7 @@ import { useCatalogEntries, useCollections } from '@/core/stores/assets-store'
 import { useKeyboardShortcuts } from '@/features/keyboard/use-keyboard-shortcuts'
 import { useCameraKeyState } from '@/features/keyboard/use-camera-key-state'
 import { useCommandDispatch } from '@/core/commands/command-dispatch-context'
+import { clearCanvasSelection } from '@/core/operations/selection-actions'
 import { useEditorRefs } from '@/shared/providers/editor-refs-context'
 import { Announcer } from './feedback/announcer'
 import { Toaster } from '@/shared/ui/sonner'
@@ -32,20 +33,12 @@ export interface EditorBodyProps {
   testOverlaysHidden: boolean
   canvasShadowMode: SceneCanvasProps['canvasShadowMode']
   isE2ELowRenderQuality: boolean
-  onScenePreviewChange: SceneCanvasProps['onScenePreviewChange']
-  onFloorLoadingChange: SceneCanvasProps['onFloorLoadingChange']
-  onCanvasPointerSelection: SceneCanvasProps['onCanvasPointerSelection']
-  onClearCanvasSelection: () => void
 }
 
 export function EditorBody({
   testOverlaysHidden,
   canvasShadowMode,
   isE2ELowRenderQuality,
-  onScenePreviewChange,
-  onFloorLoadingChange,
-  onCanvasPointerSelection,
-  onClearCanvasSelection,
 }: EditorBodyProps) {
   const previewedId = usePreviewedId()
   const {
@@ -122,8 +115,8 @@ export function EditorBody({
     }
 
     focusRoomView()
-    onClearCanvasSelection()
-  }, [editorInteractionsEnabled, focusRoomView, onClearCanvasSelection])
+    clearCanvasSelection()
+  }, [editorInteractionsEnabled, focusRoomView])
 
   return (
     <main
@@ -166,9 +159,6 @@ export function EditorBody({
             selectedFloorOption={selectedFloorOption}
             selectedWallOption={selectedWallOption}
             selectedLightingMoodOption={selectedLightingMoodOption}
-            onCanvasPointerSelection={onCanvasPointerSelection}
-            onScenePreviewChange={onScenePreviewChange}
-            onFloorLoadingChange={onFloorLoadingChange}
           />
         </Suspense>
       </section>

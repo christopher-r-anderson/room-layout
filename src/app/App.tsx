@@ -1,12 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { sceneDocumentActions } from '@/core/stores/scene-document-store'
-import { previewFromScene } from '@/core/operations/preview-actions'
+import { useEffect, useMemo, useState } from 'react'
 import { getSceneIsAtDefaults } from '@/core/operations/use-scene-is-at-defaults'
 import { startEditorReconcilers } from '@/core/operations/editor-reconcilers'
-import {
-  clearCanvasSelection,
-  selectByCanvasPointer,
-} from '@/core/operations/selection-actions'
 import { useEnvironmentConfig } from '@/core/stores/assets-store'
 import { useStartupBootstrap } from '@/features/startup/use-startup-bootstrap'
 import { EditorBody } from './chrome/editor-body'
@@ -49,10 +43,6 @@ function App() {
 
   useEffect(() => startEditorReconcilers(), [])
 
-  const handleFloorLoadingChange = useCallback((loading: boolean) => {
-    sceneDocumentActions.setFloorFinishLoading(loading)
-  }, [])
-
   useTestStateBridge({
     setTestOverlaysHidden,
   })
@@ -63,10 +53,6 @@ function App() {
         testOverlaysHidden={testOverlaysHidden}
         canvasShadowMode={canvasShadowMode}
         isE2ELowRenderQuality={isE2ELowRenderQuality}
-        onScenePreviewChange={previewFromScene}
-        onFloorLoadingChange={handleFloorLoadingChange}
-        onCanvasPointerSelection={selectByCanvasPointer}
-        onClearCanvasSelection={clearCanvasSelection}
       />
     </EditorProviders>
   )

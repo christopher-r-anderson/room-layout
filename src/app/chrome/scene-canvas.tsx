@@ -12,6 +12,9 @@ import {
   completeAssetLoad,
   notifyAssetError,
 } from '@/core/operations/startup-coordinator'
+import { selectByCanvasPointer } from '@/core/operations/selection-actions'
+import { previewFromScene } from '@/core/operations/preview-actions'
+import { sceneDocumentActions } from '@/core/stores/scene-document-store'
 import { SceneAssetErrorBoundary } from './scene-asset-error-boundary'
 import { getSeedPromise } from './seed-gltf-cache'
 
@@ -44,9 +47,6 @@ export interface SceneCanvasProps {
   selectedFloorOption: SceneProps['floorOption']
   selectedWallOption: SceneProps['wallOption']
   selectedLightingMoodOption: SceneProps['lightingMoodOption']
-  onCanvasPointerSelection: NonNullable<SceneProps['onCanvasPointerSelection']>
-  onScenePreviewChange: NonNullable<SceneProps['onPreviewChange']>
-  onFloorLoadingChange: NonNullable<SceneProps['onFloorLoadingChange']>
 }
 
 // The 3D engine (three + r3f + drei + postprocessing) is isolated behind this
@@ -63,9 +63,6 @@ export default function SceneCanvas({
   selectedFloorOption,
   selectedWallOption,
   selectedLightingMoodOption,
-  onCanvasPointerSelection,
-  onScenePreviewChange,
-  onFloorLoadingChange,
 }: SceneCanvasProps) {
   const collectionPaths = useMemo(
     () => collections.map((collection) => collection.sourcePath),
@@ -94,14 +91,14 @@ export default function SceneCanvas({
               renderQuality={isE2ELowRenderQuality ? 'e2e-low' : 'default'}
               catalog={catalog}
               collections={collections}
-              onCanvasPointerSelection={onCanvasPointerSelection}
+              onCanvasPointerSelection={selectByCanvasPointer}
               onAssetsReady={completeAssetLoad}
               previewedId={previewedId}
-              onPreviewChange={onScenePreviewChange}
+              onPreviewChange={previewFromScene}
               floorOption={selectedFloorOption}
               wallOption={selectedWallOption}
               lightingMoodOption={selectedLightingMoodOption}
-              onFloorLoadingChange={onFloorLoadingChange}
+              onFloorLoadingChange={sceneDocumentActions.setFloorFinishLoading}
             />
           </SeedGltfCacheGate>
         </Suspense>
