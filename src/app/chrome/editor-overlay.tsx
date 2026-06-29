@@ -6,7 +6,6 @@ import {
 import { useHasSelection } from '@/core/stores/scene-document-store'
 import { CameraTools } from '@/features/camera/camera-tools'
 import { DeleteConfirmationDialogHost } from '@/features/selection/delete-confirmation-dialog-host'
-import { requestAssetRetry } from '@/core/operations/startup-coordinator'
 import { StatusMessage } from './feedback/status-message'
 import { InitializationError } from '@/features/startup/initialization-error'
 import { InitializationProgress } from '@/features/startup/initialization-progress'
@@ -108,7 +107,6 @@ export function EditorOverlay() {
         <InitializationError
           errorKind={assetError.kind}
           errorMessage={assetError.message}
-          onRetry={requestAssetRetry}
         />
       ) : null}
     </>

@@ -12,8 +12,12 @@ import {
   completeAssetLoad,
   notifyAssetError,
 } from '@/core/operations/startup-coordinator'
+import { selectByCanvasPointer } from '@/core/operations/selection-actions'
+import { previewFromScene } from '@/core/operations/preview-actions'
+import { sceneDocumentActions } from '@/core/stores/scene-document-store'
 import { SceneAssetErrorBoundary } from './scene-asset-error-boundary'
 import { getSeedPromise } from './seed-gltf-cache'
+import { resolveRenderQuality } from './render-quality'
 
 // Suspends until the engine-free prefetch's buffers are seeded into THREE.Cache,
 // so the wrapped Scene's useGLTF parses from memory instead of refetching. Keyed
@@ -34,8 +38,6 @@ function SeedGltfCacheGate({
 type SceneProps = ComponentProps<typeof Scene>
 
 export interface SceneCanvasProps {
-  isE2ELowRenderQuality: boolean
-  canvasShadowMode: false | 'percentage'
   sceneEpoch: number
   onPointerMissed: () => void
   catalog: SceneProps['catalog']
@@ -44,17 +46,12 @@ export interface SceneCanvasProps {
   selectedFloorOption: SceneProps['floorOption']
   selectedWallOption: SceneProps['wallOption']
   selectedLightingMoodOption: SceneProps['lightingMoodOption']
-  onCanvasPointerSelection: NonNullable<SceneProps['onCanvasPointerSelection']>
-  onScenePreviewChange: NonNullable<SceneProps['onPreviewChange']>
-  onFloorLoadingChange: NonNullable<SceneProps['onFloorLoadingChange']>
 }
 
 // The 3D engine (three + r3f + drei + postprocessing) is isolated behind this
 // module so it can be code-split out of the initial shell bundle via React.lazy
 // in editor-body. Nothing here is imported statically from the shell.
 export default function SceneCanvas({
-  isE2ELowRenderQuality,
-  canvasShadowMode,
   sceneEpoch,
   onPointerMissed,
   catalog,
@@ -63,10 +60,8 @@ export default function SceneCanvas({
   selectedFloorOption,
   selectedWallOption,
   selectedLightingMoodOption,
-  onCanvasPointerSelection,
-  onScenePreviewChange,
-  onFloorLoadingChange,
 }: SceneCanvasProps) {
+  const { renderQuality, shadowMode, exposure } = resolveRenderQuality()
   const collectionPaths = useMemo(
     () => collections.map((collection) => collection.sourcePath),
     [collections],
@@ -82,26 +77,26 @@ export default function SceneCanvas({
       onCreated={({ gl }) => {
         gl.outputColorSpace = SRGBColorSpace
         gl.toneMapping = NeutralToneMapping
-        gl.toneMappingExposure = isE2ELowRenderQuality ? 1 : 1.05
+        gl.toneMappingExposure = exposure
       }}
       onPointerMissed={onPointerMissed}
-      shadows={canvasShadowMode}
+      shadows={shadowMode}
     >
       <SceneAssetErrorBoundary key={sceneEpoch} onError={notifyAssetError}>
         <Suspense fallback={null}>
           <SeedGltfCacheGate epoch={sceneEpoch} paths={collectionPaths}>
             <Scene
-              renderQuality={isE2ELowRenderQuality ? 'e2e-low' : 'default'}
+              renderQuality={renderQuality}
               catalog={catalog}
               collections={collections}
-              onCanvasPointerSelection={onCanvasPointerSelection}
+              onCanvasPointerSelection={selectByCanvasPointer}
               onAssetsReady={completeAssetLoad}
               previewedId={previewedId}
-              onPreviewChange={onScenePreviewChange}
+              onPreviewChange={previewFromScene}
               floorOption={selectedFloorOption}
               wallOption={selectedWallOption}
               lightingMoodOption={selectedLightingMoodOption}
-              onFloorLoadingChange={onFloorLoadingChange}
+              onFloorLoadingChange={sceneDocumentActions.setFloorFinishLoading}
             />
           </SeedGltfCacheGate>
         </Suspense>

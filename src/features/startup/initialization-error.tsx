@@ -1,12 +1,12 @@
 import { useEffect, useRef } from 'react'
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent } from '@/shared/ui/card'
+import { requestAssetRetry } from '@/core/operations/startup-coordinator'
 import type { StartupErrorKind } from './startup.types'
 
 interface InitializationErrorProps {
   errorKind: StartupErrorKind | null
   errorMessage: string | null
-  onRetry: () => void
 }
 
 function getErrorCopy(
@@ -61,7 +61,6 @@ function getErrorCopy(
 export function InitializationError({
   errorKind,
   errorMessage,
-  onRetry,
 }: InitializationErrorProps) {
   const retryButtonRef = useRef<HTMLButtonElement | null>(null)
   const copy = getErrorCopy(errorKind, errorMessage)
@@ -109,7 +108,7 @@ export function InitializationError({
               ref={retryButtonRef}
               type="button"
               variant="outline"
-              onClick={onRetry}
+              onClick={requestAssetRetry}
             >
               Retry Loading
             </Button>
