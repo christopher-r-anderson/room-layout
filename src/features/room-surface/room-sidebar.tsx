@@ -58,7 +58,7 @@ export function RoomSidebar({
           </Button>
         </CardHeader>
         <CardContent className="flex min-h-0 flex-1 flex-col pt-0">
-          <ScrollArea className="min-h-0 flex-1 pr-3">
+          <ScrollArea className="min-h-0 flex-1">
             <RoomControls />
           </ScrollArea>
         </CardContent>

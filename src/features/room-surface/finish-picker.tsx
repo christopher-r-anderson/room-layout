@@ -33,7 +33,7 @@ export function FinishPicker<T extends { id: string; label: string }>({
         </div>
         {headerAccessory}
       </div>
-      <fieldset className="grid gap-2 border-0 p-0 min-[22rem]:grid-cols-2">
+      <fieldset className="grid grid-cols-[repeat(auto-fit,minmax(9rem,1fr))] gap-2 border-0 p-0">
         <legend className="sr-only">{label}</legend>
         {options.map((item) => {
           const isSelected = selectedId === item.id
