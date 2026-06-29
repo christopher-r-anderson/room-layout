@@ -18,6 +18,9 @@ import { SelectedDetailsPlaceholder } from '@/features/selection/selected-detail
 import { TopHeader } from './top-header/top-header'
 import { useExclusionRegistry } from '@/shared/layout/overlay-exclusion-context'
 import { useHeaderLayoutMode } from '@/shared/layout/use-header-layout-mode'
+import { useDialogOpen } from '@/core/stores/dialog-store'
+import { DIALOG_IDS } from '@/app/dialogs/dialog-registry'
+import { cn } from '@/shared/lib/utils'
 
 export function EditorOverlay() {
   const registerExclusionElement = useExclusionRegistry()
@@ -25,6 +28,7 @@ export function EditorOverlay() {
   const assetError = useAssetError()
   const startupOverlayActive = useStartupOverlayActive()
   const interactionsEnabled = useEditorInteractionsEnabled()
+  const isRoomSurfaceOpen = useDialogOpen(DIALOG_IDS.roomSurface)
   const layoutMode = useHeaderLayoutMode()
   const isDesktop = layoutMode === 'desktop'
 
@@ -34,29 +38,30 @@ export function EditorOverlay() {
   return (
     <>
       <div
-        className="pointer-events-none fixed inset-2 flex flex-col justify-end gap-2"
+        className="pointer-events-none fixed inset-2 flex flex-col justify-between gap-2"
         inert={startupOverlayActive}
       >
-        <div className="mb-auto">
-          <TopHeader
-            topHeaderRef={registerExclusionElement('top-header')}
-            desktopRoomSidebarRef={registerExclusionElement(
-              'desktop-room-sidebar',
-            )}
-            mobileRoomDrawerRef={registerExclusionElement('mobile-room-drawer')}
-          />
-        </div>
+        <TopHeader
+          topHeaderRef={registerExclusionElement('top-header')}
+          desktopRoomSidebarRef={registerExclusionElement(
+            'desktop-room-sidebar',
+          )}
+          mobileRoomDrawerRef={registerExclusionElement('mobile-room-drawer')}
+        />
 
         {isDesktop && <FloatingSelectedItemSite />}
 
         <div
-          className="absolute z-20 pointer-events-auto right-0 top-1/4 -translate-y-1/2"
+          className={cn(
+            'z-20 pointer-events-auto self-end mt-28 mb-auto',
+            isDesktop && isRoomSurfaceOpen && 'mr-room-panel',
+          )}
           ref={registerExclusionElement('camera-tools')}
         >
           <CameraTools
             editorInteractionsEnabled={interactionsEnabled}
             hasSelection={hasSelection}
-            displayLabels={isDesktop}
+            displayLabels={isDesktop && !isRoomSurfaceOpen}
           />
         </div>
 

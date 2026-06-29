@@ -1,10 +1,11 @@
 import type {
+  EnvironmentMaterialConfig,
   FloorFinishOption,
   LightingMoodOption,
   WallFinishOption,
 } from '@/domain/environment-materials'
 
-export function createFloorOptions(): FloorFinishOption[] {
+function createFloorOptions(): FloorFinishOption[] {
   return [
     {
       id: 'wood-floor',
@@ -23,14 +24,25 @@ export function createFloorOptions(): FloorFinishOption[] {
   ]
 }
 
-export function createWallOptions(): WallFinishOption[] {
+function createWallOptions(): WallFinishOption[] {
   return [
     { id: 'light-gray', label: 'Light Gray', color: 0xf5f5f5 },
     { id: 'warm-white', label: 'Warm White', color: 0xf7f3ea },
   ]
 }
 
-export function createLightingMoodOptions(): LightingMoodOption[] {
+export function createEnvironmentConfig(): EnvironmentMaterialConfig {
+  return {
+    floorFinishes: createFloorOptions(),
+    wallFinishes: createWallOptions(),
+    lightingMoods: createLightingMoodOptions(),
+    defaultFloorFinishId: 'wood-floor',
+    defaultWallFinishId: 'light-gray',
+    defaultLightingMoodId: 'daylight',
+  }
+}
+
+function createLightingMoodOptions(): LightingMoodOption[] {
   return [
     {
       id: 'daylight',

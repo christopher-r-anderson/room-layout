@@ -9,74 +9,18 @@ import {
 } from '@/core/stores/editor-lifecycle-store'
 import { sceneDocumentActions } from '@/core/stores/scene-document-store'
 import { CommandDispatchProvider } from '@/core/commands/command-dispatch-provider'
-import { resetAssetsStore, assetsActions } from '@/core/stores/assets-store'
-import type { EnvironmentMaterialConfig } from '@/domain/environment-materials'
 import { TopHeader } from './top-header'
-import type {
-  TopHeaderDesktopProps,
-  TopHeaderMobileProps,
-} from './top-header.types'
-
-const ENVIRONMENT: EnvironmentMaterialConfig = {
-  defaultFloorFinishId: 'wood-floor',
-  defaultWallFinishId: 'light-gray',
-  floorFinishes: [
-    {
-      id: 'wood-floor',
-      label: 'Wood',
-      diffusePath: '/textures/wood.jpg',
-      normalPath: '/textures/wood-normal.png',
-      tileSizeMeters: { width: 0.5, depth: 0.5 },
-    },
-  ],
-  wallFinishes: [
-    {
-      id: 'light-gray',
-      label: 'Light Gray',
-      color: 0xf5f5f5,
-    },
-  ],
-  lightingMoods: [
-    {
-      id: 'daylight',
-      label: 'Daylight',
-      exposure: 1.05,
-      ambientIntensity: 0.35,
-      hemisphereSkyColor: 0xf1f6ff,
-      hemisphereGroundColor: 0xaeb9c9,
-      hemisphereIntensity: 0.55,
-      keyLightColor: 0xfff4e6,
-      keyLightIntensity: 1,
-      fillLightColor: 0xd5e4ff,
-      fillLightIntensity: 0.28,
-      environmentColor: 0xdce6f3,
-      environmentIntensity: 0.72,
-      backgroundIntensity: 0.95,
-    },
-  ],
-  defaultLightingMoodId: 'daylight',
-}
 
 vi.mock('@/shared/layout/use-header-layout-mode', () => ({
   useHeaderLayoutMode: () => 'desktop' as const,
 }))
 
 vi.mock('./top-header-desktop', () => ({
-  TopHeaderDesktop: (props: TopHeaderDesktopProps) => (
-    <div data-testid="desktop-header">
-      <span data-testid="floor-finish-id">{props.floorFinishId}</span>
-      <span data-testid="wall-finish-id">{props.wallFinishId}</span>
-    </div>
-  ),
+  TopHeaderDesktop: () => <div data-testid="desktop-header" />,
 }))
 
 vi.mock('./top-header-mobile', () => ({
-  TopHeaderMobile: (props: TopHeaderMobileProps) => (
-    <div data-testid="mobile-header">
-      <span data-testid="floor-finish-id">{props.floorFinishId}</span>
-      <span data-testid="wall-finish-id">{props.wallFinishId}</span>
-    </div>
-  ),
+  TopHeaderMobile: () => <div data-testid="mobile-header" />,
 }))
 
 vi.mock('@/features/keyboard/keyboard-shortcuts-help', () => ({
@@ -104,26 +48,13 @@ describe('TopHeader', () => {
     resetDialogStore()
     resetEditorLifecycleStore()
     sceneDocumentActions.resetSceneDocument()
-    resetAssetsStore()
-    assetsActions.setAssets({
-      catalog: [],
-      collections: [],
-      environmentConfig: ENVIRONMENT,
-    })
     editorLifecycleActions.markAssetsReady()
   })
 
-  it('passes active default finish ids to header layouts when stored ids are invalid', () => {
-    sceneDocumentActions.setFloorFinishId('missing-floor')
-    sceneDocumentActions.setWallFinishId('missing-wall')
-
+  it('renders the layout for the active header layout mode', () => {
     renderTopHeader()
 
     expect(screen.getByTestId('desktop-header')).toBeInTheDocument()
     expect(screen.queryByTestId('mobile-header')).not.toBeInTheDocument()
-    expect(screen.getByTestId('floor-finish-id')).toHaveTextContent(
-      'wood-floor',
-    )
-    expect(screen.getByTestId('wall-finish-id')).toHaveTextContent('light-gray')
   })
 })

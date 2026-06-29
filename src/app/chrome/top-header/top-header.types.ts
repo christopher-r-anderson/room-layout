@@ -1,8 +1,3 @@
-import type {
-  FloorFinishOption,
-  LightingMoodOption,
-  WallFinishOption,
-} from '@/domain/environment-materials'
 import type { Ref } from 'react'
 
 interface TopHeaderProps {
@@ -11,37 +6,15 @@ interface TopHeaderProps {
     canRedo: boolean
     canUndo: boolean
   }
-  floorFinishId: string
-  floorFinishLoading: boolean
-  floorFinishes: FloorFinishOption[]
-  onFloorFinishChange: (finishId: string) => void
   startOverDisabled: boolean
   topHeaderRef?: Ref<HTMLDivElement>
   desktopRoomSidebarRef?: Ref<HTMLElement>
   mobileRoomDrawerRef?: Ref<HTMLDivElement>
-  wallFinishId: string
-  wallFinishes: WallFinishOption[]
-  onWallFinishChange: (finishId: string) => void
-  lightingMoodId: string
-  lightingMoods: LightingMoodOption[]
-  onLightingMoodChange: (moodId: string) => void
 }
 
 type TopHeaderToolbarProps = Pick<
   TopHeaderProps,
-  | 'editorInteractionsEnabled'
-  | 'floorFinishId'
-  | 'floorFinishLoading'
-  | 'floorFinishes'
-  | 'history'
-  | 'onFloorFinishChange'
-  | 'startOverDisabled'
-  | 'onWallFinishChange'
-  | 'wallFinishId'
-  | 'wallFinishes'
-  | 'lightingMoodId'
-  | 'lightingMoods'
-  | 'onLightingMoodChange'
+  'editorInteractionsEnabled' | 'history' | 'startOverDisabled'
 >
 
 export interface TopHeaderContainerProps {
