@@ -4,6 +4,7 @@ import { useCommandDispatch } from '@/core/commands/command-dispatch-context'
 import { useEditorRefs } from '@/shared/providers/editor-refs-context'
 import { useSelectedItemInteraction } from './selected-item-interaction-context'
 import { SelectedItemTools } from './selected-item-tools'
+import { Surface } from '@/shared/ui/surface'
 
 /**
  * The connected selected-item action toolbar (rotate + delete). It owns the
@@ -43,10 +44,11 @@ export function SelectedItemToolbar() {
   }
 
   return (
-    <div
+    <Surface
       ref={selectedToolbarRef}
+      padding="snug"
       data-slot="selected-item-toolbar"
-      className="pointer-events-auto rounded-xl border bg-background/90 p-1.5 shadow-sm backdrop-blur-sm"
+      className="pointer-events-auto"
       onKeyDown={handleEscapeToRoomView}
     >
       <SelectedItemTools
@@ -56,6 +58,6 @@ export function SelectedItemToolbar() {
           dispatch({ kind: 'rotate-selection', direction })
         }}
       />
-    </div>
+    </Surface>
   )
 }
