@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { useSelectedFurniture } from '@/core/stores/scene-document-store'
 import { toolbarInteractionActions } from '@/core/stores/toolbar-interaction-store'
 import {
@@ -18,6 +19,23 @@ export function FloatingSelectedItemSite() {
   const placement = useSelectedItemPlacement()
   const actionsSizeRef = useSelectedItemActionsSizeRef()
   const selectedFurniture = useSelectedFurniture()
+
+  const isFloating = selectedFurniture !== null && placement.site === 'floating'
+
+  // The section can be removed (deletion, deselection, layout switch) before its
+  // paired pointer-leave/blur fires, which would strand engagement flags as true
+  // and pin the next selection's toolbar from its first frame. Clear them when
+  // the floating toolbar stops showing or unmounts.
+  useEffect(() => {
+    if (!isFloating) {
+      return
+    }
+
+    return () => {
+      toolbarInteractionActions.setPointerOver(false)
+      toolbarInteractionActions.setFocusWithin(false)
+    }
+  }, [isFloating])
 
   if (selectedFurniture === null) {
     return null
@@ -47,8 +65,13 @@ export function FloatingSelectedItemSite() {
       onFocus={() => {
         toolbarInteractionActions.setFocusWithin(true)
       }}
-      onBlur={() => {
-        toolbarInteractionActions.setFocusWithin(false)
+      onBlur={(event) => {
+        // Focus moving between the toolbar's own controls (roving tab order)
+        // bubbles a blur here; only clear when focus actually leaves the section,
+        // so keyboard users operating it stay pinned.
+        if (!event.currentTarget.contains(event.relatedTarget)) {
+          toolbarInteractionActions.setFocusWithin(false)
+        }
       }}
     >
       <SelectedItemToolbar />

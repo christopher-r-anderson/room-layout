@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 
+import { StrictMode } from 'react'
 import { renderHook } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import {
@@ -112,6 +113,27 @@ describe('usePinnedPlacement', () => {
 
     // New selection: the stale pinned position must not bleed onto it.
     rerender({ placement: floatingAt(40, 60), resetKey: 'item-2' })
+    expect(result.current).toEqual(floatingAt(40, 60))
+  })
+
+  // The hook adjusts state during render; under StrictMode the render runs twice.
+  // A non-converging update would loop and blow the stack here, so reaching the
+  // assertion at all proves the guarded update settles.
+  it('freezes correctly under StrictMode double rendering', () => {
+    const { result, rerender } = renderHook(
+      ({ placement, pinned }) =>
+        usePinnedPlacement(placement, pinned, 'item-1'),
+      {
+        wrapper: StrictMode,
+        initialProps: { placement: floatingAt(10, 10), pinned: false },
+      },
+    )
+
+    rerender({ placement: floatingAt(10, 10), pinned: true })
+    rerender({ placement: floatingAt(40, 60), pinned: true })
+    expect(result.current).toEqual(floatingAt(10, 10))
+
+    rerender({ placement: floatingAt(40, 60), pinned: false })
     expect(result.current).toEqual(floatingAt(40, 60))
   })
 })
