@@ -15,6 +15,9 @@ test('shows a retry path when essential furniture assets fail to load', async ({
 
   const errorHeading = page.getByText('The room editor could not start')
   await expect(errorHeading).toBeVisible({ timeout: EDITOR_READY_TIMEOUT_MS })
+  await expect(
+    page.getByRole('alert', { name: /the room editor could not start/i }),
+  ).toBeVisible()
 
   await expectSceneFlags(page, {
     assetsReady: false,

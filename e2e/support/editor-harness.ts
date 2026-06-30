@@ -185,7 +185,7 @@ export async function waitForEditorReady(page: Page) {
     { timeout: EDITOR_READY_TIMEOUT_MS },
   )
   await expect(
-    page.getByRole('dialog', { name: /preparing the room editor/i }),
+    page.getByRole('heading', { name: /preparing the room editor/i }),
   ).toBeHidden()
 
   const sceneState = await readSceneState(page)

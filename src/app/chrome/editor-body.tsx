@@ -13,6 +13,7 @@ import {
   useEditorInteractionsEnabled,
   useSceneEpoch,
   useStartupLoadingActive,
+  useStartupOverlayActive,
 } from '@/core/stores/editor-lifecycle-store'
 import { useCatalogEntries, useCollections } from '@/core/stores/assets-store'
 import { useKeyboardShortcuts } from '@/features/keyboard/use-keyboard-shortcuts'
@@ -47,6 +48,7 @@ export function EditorBody({ testOverlaysHidden }: EditorBodyProps) {
   const editorInteractionsEnabled = useEditorInteractionsEnabled()
   const isBlockingOverlayOpen = useIsBlockingOverlayOpen()
   const startupLoadingActive = useStartupLoadingActive()
+  const startupOverlayActive = useStartupOverlayActive()
   const selectedFurniture = useSelectedFurniture()
   const { roomViewRef } = useEditorRefs()
   const dispatch = useCommandDispatch()
@@ -118,15 +120,12 @@ export function EditorBody({ testOverlaysHidden }: EditorBodyProps) {
       data-test-overlays-hidden={testOverlaysHidden ? 'true' : 'false'}
     >
       <h1 className="sr-only">Room Layout</h1>
-      <p id="scene-instructions" className="sr-only">
-        Use the arrow keys to browse items in the room, then press Enter or
-        Space to select one.
-      </p>
       <section
         aria-describedby="scene-instructions"
         aria-label="Interactive 3D room editor"
         ref={roomViewRef}
         tabIndex={editorInteractionsEnabled ? 0 : -1}
+        inert={startupOverlayActive}
         className="absolute inset-0 z-0 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
         onFocus={() => {
           flushSync(() => {
@@ -140,6 +139,10 @@ export function EditorBody({ testOverlaysHidden }: EditorBodyProps) {
         }}
         onPointerDownCapture={focusRoomView}
       >
+        <p id="scene-instructions" className="sr-only">
+          Use the arrow keys to browse items in the room, then press Enter or
+          Space to select one.
+        </p>
         <Suspense fallback={null}>
           <SceneCanvas
             sceneEpoch={sceneEpoch}
