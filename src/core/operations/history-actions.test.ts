@@ -56,21 +56,6 @@ describe('history-actions', () => {
     expect(feedbackActions.announcePolite).not.toHaveBeenCalled()
   })
 
-  it('skips scene undo/redo when editor interactions are disabled', () => {
-    resetEditorLifecycleStore()
-    vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
-    const undoSpy = vi.spyOn(sceneCommands, 'undo')
-    const redoSpy = vi.spyOn(sceneCommands, 'redo')
-
-    undo()
-    redo()
-
-    expect(undoSpy).not.toHaveBeenCalled()
-    expect(redoSpy).not.toHaveBeenCalled()
-    expect(selectionEffects.notePendingSelection).toHaveBeenCalledWith(null)
-    expect(feedbackActions.announcePolite).not.toHaveBeenCalled()
-  })
-
   it('announces and queues outliner focus on a successful undo', () => {
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
     vi.spyOn(sceneCommands, 'undo').mockReturnValue(true)

@@ -62,9 +62,8 @@ afterEach(() => {
 })
 
 describe('addFurniture', () => {
-  it('clears stale add state without invoking the scene while disabled', () => {
-    resetEditorLifecycleStore()
-    vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
+  it('clears stale add state without invoking the scene while not ready', () => {
+    vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(false)
     const addFurnitureCommand = vi.spyOn(sceneCommands, 'addFurniture')
 
     expect(addFurniture()).toBe(false)

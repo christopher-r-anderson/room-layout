@@ -10,7 +10,6 @@ import {
   useIsBlockingOverlayOpen,
 } from '@/core/stores/dialog-store'
 import { DIALOG_IDS } from '@/app/dialogs/dialog-registry'
-import { useEditorInteractionsEnabled } from '@/core/stores/editor-lifecycle-store'
 import { useSceneIsAtDefaults } from '@/core/operations/use-scene-is-at-defaults'
 import { useCommandDispatch } from '@/core/commands/command-dispatch-context'
 import { useHistoryAvailability } from '@/core/stores/scene-document-store'
@@ -23,7 +22,6 @@ export function TopHeader({
 }: TopHeaderContainerProps) {
   const dispatch = useCommandDispatch()
   const startOverDisabled = useSceneIsAtDefaults()
-  const editorInteractionsEnabled = useEditorInteractionsEnabled()
   const historyAvailability = useHistoryAvailability()
   const isRoomSurfaceOpen = useDialogOpen(DIALOG_IDS.roomSurface)
   const isInfoDialogOpen = useDialogOpen(DIALOG_IDS.projectInfo)
@@ -70,7 +68,6 @@ export function TopHeader({
   }
 
   const sharedToolbarProps = {
-    editorInteractionsEnabled,
     history: {
       canRedo: historyAvailability.canRedo,
       canUndo: historyAvailability.canUndo,

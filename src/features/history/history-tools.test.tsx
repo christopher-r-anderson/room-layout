@@ -20,10 +20,7 @@ function renderWithDispatch(ui: ReactElement, dispatch: CommandDispatch) {
 
 describe('HistoryTools', () => {
   it('exposes keyboard shortcuts for undo and redo', () => {
-    renderWithDispatch(
-      <HistoryTools canRedo canUndo editorInteractionsEnabled />,
-      vi.fn(),
-    )
+    renderWithDispatch(<HistoryTools canRedo canUndo />, vi.fn())
 
     expect(screen.getByRole('button', { name: 'Undo' })).toHaveAttribute(
       'aria-keyshortcuts',
@@ -39,10 +36,7 @@ describe('HistoryTools', () => {
     const user = userEvent.setup()
     const dispatch: CommandDispatch = vi.fn()
 
-    renderWithDispatch(
-      <HistoryTools canRedo canUndo editorInteractionsEnabled />,
-      dispatch,
-    )
+    renderWithDispatch(<HistoryTools canRedo canUndo />, dispatch)
 
     await user.click(screen.getByRole('button', { name: 'Undo' }))
     await user.click(screen.getByRole('button', { name: 'Redo' }))
@@ -53,12 +47,12 @@ describe('HistoryTools', () => {
     ])
   })
 
-  it('is non-interactive when disabled', async () => {
+  it('is non-interactive when there is no history to traverse', async () => {
     const user = userEvent.setup()
     const dispatch = vi.fn()
 
     renderWithDispatch(
-      <HistoryTools canRedo canUndo editorInteractionsEnabled={false} />,
+      <HistoryTools canRedo={false} canUndo={false} />,
       dispatch,
     )
 
@@ -68,9 +62,7 @@ describe('HistoryTools', () => {
     // Disabled toolbar items stay focusable and surface the reason they are
     // unavailable to assistive tech (not only in the visual tooltip).
     expect(undoButton).toHaveAttribute('aria-disabled', 'true')
-    expect(undoButton).toHaveAccessibleDescription(
-      'Editor interactions are unavailable while loading',
-    )
+    expect(undoButton).toHaveAccessibleDescription('No previous history')
 
     await user.click(undoButton)
     await user.click(redoButton)
@@ -80,12 +72,7 @@ describe('HistoryTools', () => {
 
   it('shows the tool button labels when explicit label visibility is requested', () => {
     renderWithDispatch(
-      <HistoryTools
-        canRedo
-        canUndo
-        displayLabels={true}
-        editorInteractionsEnabled
-      />,
+      <HistoryTools canRedo canUndo displayLabels={true} />,
       vi.fn(),
     )
 

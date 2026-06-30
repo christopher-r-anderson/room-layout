@@ -9,27 +9,21 @@ import type { ComponentProps } from 'react'
 export function HistoryTools({
   canRedo,
   canUndo,
-  editorInteractionsEnabled,
   buttonClassName,
   displayLabels,
   buttonSize,
 }: {
   canRedo: boolean
   canUndo: boolean
-  editorInteractionsEnabled: boolean
   buttonClassName?: string
   displayLabels?: boolean
   buttonSize?: ComponentProps<typeof ToolButton>['size']
 }) {
   const dispatch = useCommandDispatch()
-  const undoDisabled = !canUndo || !editorInteractionsEnabled
-  const redoDisabled = !canRedo || !editorInteractionsEnabled
-  const undoDisabledMessage = !editorInteractionsEnabled
-    ? 'Editor interactions are unavailable while loading'
-    : 'No previous history'
-  const redoDisabledMessage = !editorInteractionsEnabled
-    ? 'Editor interactions are unavailable while loading'
-    : 'No next history'
+  const undoDisabled = !canUndo
+  const redoDisabled = !canRedo
+  const undoDisabledMessage = 'No previous history'
+  const redoDisabledMessage = 'No next history'
 
   return (
     <Toolbar.Group

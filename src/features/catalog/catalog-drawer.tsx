@@ -12,7 +12,6 @@ import {
 } from '@/shared/ui/drawer'
 import { cn } from '@/shared/lib/utils'
 import { useDialogOpen } from '@/core/stores/dialog-store'
-import { useEditorInteractionsEnabled } from '@/core/stores/editor-lifecycle-store'
 import { useCatalogEntries } from '@/core/stores/assets-store'
 import { addFurniture, setCatalogDrawerOpen } from './catalog-actions'
 import { catalogDialogId } from './catalog-dialog-definition'
@@ -36,7 +35,6 @@ export function CatalogDrawer({
 }) {
   const catalog = useCatalogEntries()
   const catalogIdToAdd = useActiveCatalogId()
-  const editorInteractionsEnabled = useEditorInteractionsEnabled()
   const open = useDialogOpen(catalogDialogId)
 
   return (
@@ -65,7 +63,6 @@ export function CatalogDrawer({
                     name="furniture-catalog"
                     value={entry.id}
                     checked={isSelected}
-                    disabled={!editorInteractionsEnabled}
                     onChange={(event) => {
                       catalogSelectionActions.setSelectedCatalogId(
                         event.target.value,
@@ -108,7 +105,7 @@ export function CatalogDrawer({
 
         <DrawerFooter>
           <Button
-            disabled={!editorInteractionsEnabled || !catalogIdToAdd}
+            disabled={!catalogIdToAdd}
             onClick={() => {
               const added = addFurniture()
 

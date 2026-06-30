@@ -124,7 +124,7 @@ export function EditorBody({ testOverlaysHidden }: EditorBodyProps) {
         aria-describedby="scene-instructions"
         aria-label="Interactive 3D room editor"
         ref={roomViewRef}
-        tabIndex={editorInteractionsEnabled ? 0 : -1}
+        tabIndex={0}
         inert={startupOverlayActive}
         className="absolute inset-0 z-0 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
         onFocus={() => {

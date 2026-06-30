@@ -57,8 +57,8 @@ describe('selected-item-detail-actions', () => {
   })
 
   describe('updateSelectedItemDetails', () => {
-    it('returns a no-selection result when editor interactions are not ready', () => {
-      vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
+    it('returns a no-selection result when the scene is not ready', () => {
+      vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(false)
       const setSelectionTransform = vi.spyOn(
         sceneCommands,
         'setSelectionTransform',

@@ -1,7 +1,6 @@
 import type { FurnitureItem } from '@/domain/furniture'
 import { feedbackActions } from '@/core/stores/feedback-store'
 import { dialogActions } from '@/core/stores/dialog-store'
-import { isEditorInteractive } from '@/core/stores/editor-lifecycle-store'
 import { sceneDocumentStore } from '@/core/stores/scene-document-store'
 import {
   selectionFocusActions,
@@ -17,7 +16,6 @@ export function confirmDeleteSelection(
 ) {
   const items = sceneDocumentStore.getState().history.present
   const selectedSource = selectionFocusStore.getState().selectedSource
-  const editorInteractionsEnabled = isEditorInteractive()
 
   const pendingId = pendingDeleteFurniture?.id ?? null
   const deletedIndex = pendingId
@@ -26,11 +24,6 @@ export function confirmDeleteSelection(
   const deletedName = pendingDeleteFurniture?.name ?? null
 
   dialogActions.closeActiveDialog()
-
-  if (!editorInteractionsEnabled) {
-    selectionEffects.notePendingSelection(null)
-    return
-  }
 
   if (!sceneCommands.isSceneReady()) {
     feedbackActions.setStatusMessage(DELETE_SELECTION_MISSING_MESSAGE)

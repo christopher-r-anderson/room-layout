@@ -40,9 +40,8 @@ describe('movement-actions', () => {
     vi.clearAllMocks()
   })
 
-  it('does not invoke scene movement commands while interactions are disabled', () => {
-    resetEditorLifecycleStore()
-    vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
+  it('does not invoke scene movement commands while the scene is not ready', () => {
+    vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(false)
     const moveSelectionSpy = vi
       .spyOn(sceneCommands, 'moveSelection')
       .mockReturnValue({ ok: true, position: [1, 0, 0] })

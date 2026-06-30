@@ -1,10 +1,8 @@
 import type { KeyboardEvent } from 'react'
-import { useEditorInteractionsEnabled } from '@/core/stores/editor-lifecycle-store'
 import { useSelectedFurniture } from '@/core/stores/scene-document-store'
 import { useCommandDispatch } from '@/core/commands/command-dispatch-context'
 import { useEditorRefs } from '@/shared/providers/editor-refs-context'
 import { useSelectedItemInteraction } from './selected-item-interaction-context'
-import { resolveSelectionControlsInteractivity } from './selection-controls-interactivity'
 import { SelectedItemTools } from './selected-item-tools'
 
 /**
@@ -16,17 +14,12 @@ import { SelectedItemTools } from './selected-item-tools'
 export function SelectedItemToolbar() {
   const interaction = useSelectedItemInteraction()
   const selectedFurniture = useSelectedFurniture()
-  const editorInteractionsEnabled = useEditorInteractionsEnabled()
   const dispatch = useCommandDispatch()
   const { selectedToolbarRef } = useEditorRefs()
 
   if (selectedFurniture === null) {
     return null
   }
-
-  const interactivity = resolveSelectionControlsInteractivity({
-    editorInteractionsEnabled,
-  })
 
   const handleOpenDeleteDialog = () => {
     try {
@@ -57,8 +50,6 @@ export function SelectedItemToolbar() {
       onKeyDown={handleEscapeToRoomView}
     >
       <SelectedItemTools
-        controlsDisabled={interactivity.disabled}
-        disabledMessage={interactivity.disabledMessage}
         onOpenDeleteDialog={handleOpenDeleteDialog}
         onPrepareDelete={interaction.prepareDeleteBlurSuppression}
         onRotateSelection={(direction) => {

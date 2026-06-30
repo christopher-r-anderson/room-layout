@@ -36,7 +36,6 @@ function createProps(
   overrides: Partial<TopHeaderMobileProps> = {},
 ): TopHeaderMobileProps {
   return {
-    editorInteractionsEnabled: true,
     history: {
       canRedo: false,
       canUndo: false,

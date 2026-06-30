@@ -16,10 +16,7 @@ function renderWithDispatch(ui: ReactElement, dispatch: CommandDispatch) {
 
 describe('CameraTools', () => {
   it('uses explicit props without relying on store state', () => {
-    renderWithDispatch(
-      <CameraTools editorInteractionsEnabled={true} hasSelection={true} />,
-      vi.fn(),
-    )
+    renderWithDispatch(<CameraTools hasSelection={true} />, vi.fn())
 
     expect(
       screen.getByRole('button', { name: 'Switch to Corner view' }),
@@ -31,10 +28,7 @@ describe('CameraTools', () => {
     const user = userEvent.setup()
     const dispatch: CommandDispatch = vi.fn()
 
-    renderWithDispatch(
-      <CameraTools editorInteractionsEnabled={true} hasSelection={true} />,
-      dispatch,
-    )
+    renderWithDispatch(<CameraTools hasSelection={true} />, dispatch)
 
     await user.click(
       screen.getByRole('button', { name: 'Switch to Corner view' }),
@@ -57,30 +51,28 @@ describe('CameraTools', () => {
     ])
   })
 
-  it('respects disabled state from explicit props', () => {
+  it('disables only Focus Selected when there is no selection', () => {
     const dispatch: CommandDispatch = vi.fn()
 
     const { rerender } = renderWithDispatch(
-      <CameraTools editorInteractionsEnabled={false} hasSelection={false} />,
+      <CameraTools hasSelection={false} />,
       dispatch,
     )
 
+    // Camera presets never depend on a selection.
     expect(
       screen.getByRole('button', { name: 'Switch to Corner view' }),
-    ).toHaveAttribute('aria-disabled', 'true')
+    ).not.toHaveAttribute('aria-disabled', 'true')
     expect(
       screen.getByRole('button', { name: 'Focus Selected' }),
     ).toHaveAttribute('aria-disabled', 'true')
 
     rerender(
       <CommandDispatchProvider value={dispatch}>
-        <CameraTools editorInteractionsEnabled={true} hasSelection={true} />
+        <CameraTools hasSelection={true} />
       </CommandDispatchProvider>,
     )
 
-    expect(
-      screen.getByRole('button', { name: 'Switch to Corner view' }),
-    ).not.toHaveAttribute('aria-disabled', 'true')
     expect(
       screen.getByRole('button', { name: 'Focus Selected' }),
     ).not.toHaveAttribute('aria-disabled', 'true')

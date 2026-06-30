@@ -117,7 +117,6 @@ export function SelectedDetailsPlaceholder({
 
 export function SelectedDetailsView({
   className,
-  disabled,
   selectedFurniture,
   sectionRef,
   consumeBlurCommitSuppression,
@@ -125,7 +124,6 @@ export function SelectedDetailsView({
   onUpdateSelectedItemDetails,
 }: {
   className?: string
-  disabled: boolean
   selectedFurniture: FurnitureItem
   sectionRef?: Ref<HTMLElement>
   consumeBlurCommitSuppression: () => boolean
@@ -280,9 +278,8 @@ export function SelectedDetailsView({
           id={inputId}
           type="text"
           inputMode="decimal"
-          className="flex h-8 w-20 min-w-0 rounded-md border border-input bg-background px-1.5 py-1 text-center text-sm font-medium tabular-nums text-foreground outline-none transition-colors focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-2 aria-invalid:ring-destructive/20 dark:bg-input/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40"
+          className="flex h-8 w-20 min-w-0 rounded-md border border-input bg-background px-1.5 py-1 text-center text-sm font-medium tabular-nums text-foreground outline-none transition-colors focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30 aria-invalid:border-destructive aria-invalid:ring-2 aria-invalid:ring-destructive/20 dark:bg-input/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40"
           value={getFieldValue(key)}
-          disabled={disabled}
           aria-label={label}
           aria-invalid={Boolean(errorMessage)}
           aria-describedby={errorMessage ? `${helpId} ${errorId}` : helpId}

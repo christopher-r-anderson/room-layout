@@ -11,7 +11,6 @@ import { ShareSceneButton } from './share-scene-button'
 
 export function HeaderMoreActionsDrawer({
   contentId,
-  shareDisabled,
   startOverDisabled,
   onOpenChange,
   onOpenKeyboardShortcuts,
@@ -21,7 +20,6 @@ export function HeaderMoreActionsDrawer({
   open,
 }: {
   contentId: string
-  shareDisabled: boolean
   startOverDisabled: boolean
   onOpenChange: (open: boolean) => void
   onOpenKeyboardShortcuts: () => void
@@ -48,7 +46,6 @@ export function HeaderMoreActionsDrawer({
 
         <div className="grid gap-2 px-4 pb-4">
           <ShareSceneButton
-            disabled={shareDisabled}
             size="toolbar"
             variant="secondary"
             className="justify-start"

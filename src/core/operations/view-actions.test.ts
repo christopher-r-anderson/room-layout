@@ -12,16 +12,16 @@ describe('view-actions', () => {
     resetEditorLifecycleStore()
   })
 
-  it('setCameraPreset waits until the editor is interactive and the scene is ready', () => {
+  it('setCameraPreset waits until the scene is ready', () => {
     const preset = vi
       .spyOn(sceneCommands, 'setCameraPreset')
       .mockReturnValue(undefined)
-    vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
+    const ready = vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(false)
 
     setCameraPreset('front')
     expect(preset).not.toHaveBeenCalled()
 
-    editorLifecycleActions.markAssetsReady()
+    ready.mockReturnValue(true)
     setCameraPreset('front')
     expect(preset).toHaveBeenCalledWith('front')
   })

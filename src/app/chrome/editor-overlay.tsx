@@ -1,7 +1,6 @@
 import {
   useStartupOverlayActive,
   useAssetError,
-  useEditorInteractionsEnabled,
 } from '@/core/stores/editor-lifecycle-store'
 import { useHasSelection } from '@/core/stores/scene-document-store'
 import { CameraTools } from '@/features/camera/camera-tools'
@@ -26,7 +25,6 @@ export function EditorOverlay() {
   const hasSelection = useHasSelection()
   const assetError = useAssetError()
   const startupOverlayActive = useStartupOverlayActive()
-  const interactionsEnabled = useEditorInteractionsEnabled()
   const isRoomSurfaceOpen = useDialogOpen(DIALOG_IDS.roomSurface)
   const layoutMode = useHeaderLayoutMode()
   const isDesktop = layoutMode === 'desktop'
@@ -55,7 +53,6 @@ export function EditorOverlay() {
           ref={registerExclusionElement('camera-tools')}
         >
           <CameraTools
-            editorInteractionsEnabled={interactionsEnabled}
             hasSelection={hasSelection}
             displayLabels={isDesktop && !isRoomSurfaceOpen}
           />

@@ -1,5 +1,4 @@
 import { feedbackActions } from '@/core/stores/feedback-store'
-import { isEditorInteractive } from '@/core/stores/editor-lifecycle-store'
 import {
   sceneDocumentStore,
   selectSelectedFurniture,
@@ -34,17 +33,15 @@ export function moveSelection(
   delta: { x: number; z: number },
   options?: { source?: MoveSource },
 ): MoveSelectionResult {
-  const editorInteractionsEnabled = isEditorInteractive()
   const movedItemName =
     selectSelectedFurniture(sceneDocumentStore.getState())?.name ?? null
   feedbackActions.clearStatusMessage()
 
-  const result =
-    editorInteractionsEnabled && sceneCommands.isSceneReady()
-      ? sceneCommands.moveSelection(delta, {
-          source: options?.source ?? 'keyboard',
-        })
-      : ({ ok: false, reason: 'no-selection' } as const)
+  const result = sceneCommands.isSceneReady()
+    ? sceneCommands.moveSelection(delta, {
+        source: options?.source ?? 'keyboard',
+      })
+    : ({ ok: false, reason: 'no-selection' } as const)
 
   if (result.ok) {
     if (movedItemName) {
@@ -66,12 +63,11 @@ export function moveSelection(
 }
 
 export function rotateSelection(direction: -1 | 1) {
-  const editorInteractionsEnabled = isEditorInteractive()
   const rotatingName =
     selectSelectedFurniture(sceneDocumentStore.getState())?.name ?? null
   feedbackActions.clearStatusMessage()
 
-  if (!editorInteractionsEnabled || !sceneCommands.isSceneReady()) {
+  if (!sceneCommands.isSceneReady()) {
     return
   }
 

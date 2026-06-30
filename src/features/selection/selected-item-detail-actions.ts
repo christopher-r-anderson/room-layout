@@ -4,7 +4,6 @@ import {
   sceneDocumentStore,
   selectSelectedFurniture,
 } from '@/core/stores/scene-document-store'
-import { isEditorInteractive } from '@/core/stores/editor-lifecycle-store'
 import { selectionFocusActions } from '@/core/stores/selection-focus-store'
 import { sceneCommands } from '@/scene/scene-commands'
 import type {
@@ -34,13 +33,8 @@ export function updateSelectedItemDetails(
   const selectedFurniture = selectSelectedFurniture(
     sceneDocumentStore.getState(),
   )
-  const editorInteractionsEnabled = isEditorInteractive()
 
-  if (
-    !selectedFurniture ||
-    !editorInteractionsEnabled ||
-    !sceneCommands.isSceneReady()
-  ) {
+  if (!selectedFurniture || !sceneCommands.isSceneReady()) {
     return {
       ok: false,
       reason: 'no-selection',
