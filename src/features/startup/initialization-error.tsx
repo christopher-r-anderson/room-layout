@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { Button } from '@/shared/ui/button'
+import { Caption } from '@/shared/ui/caption'
 import { Card, CardContent } from '@/shared/ui/card'
 import { requestAssetRetry } from '@/core/operations/startup-coordinator'
 import type { StartupErrorKind } from './startup.types'
@@ -72,15 +73,13 @@ export function InitializationError({
   return (
     <section className="absolute inset-0 grid place-items-center bg-background/75 p-6 max-[720px]:p-4">
       <Card
-        className="w-[min(26.25rem,calc(100vw-2rem))] gap-3 border-destructive/25 shadow-xl"
+        className="w-[min(26.25rem,calc(100vw-2rem))] gap-3 border-destructive/25"
         role="alert"
         aria-labelledby="startup-error-title"
         aria-describedby="startup-error-description startup-error-note"
       >
         <CardContent className="grid gap-3 p-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.04em] text-muted-foreground">
-            {copy.label}
-          </p>
+          <Caption>{copy.label}</Caption>
           <h2
             id="startup-error-title"
             className="text-2xl font-semibold leading-tight"
