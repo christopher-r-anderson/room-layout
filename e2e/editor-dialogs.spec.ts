@@ -182,7 +182,7 @@ test('desktop Room sidebar keeps camera preset shortcuts usable while it remains
   await expect(roomSurface).toBeVisible()
 })
 
-test('desktop camera presets do not overlap the open Room sidebar', async ({
+test('desktop camera presets clear the open Room sidebar with a gap', async ({
   page,
 }) => {
   await openEditor(page)
@@ -202,15 +202,10 @@ test('desktop camera presets do not overlap the open Room sidebar', async ({
     throw new Error('expected room sidebar and camera tools bounding boxes')
   }
 
-  // No intersection in either direction means neither obscures the other,
-  // and proves the leftward shift clears the panel's full width.
-  const overlaps =
-    cameraBox.x < roomBox.x + roomBox.width &&
-    cameraBox.x + cameraBox.width > roomBox.x &&
-    cameraBox.y < roomBox.y + roomBox.height &&
-    cameraBox.y + cameraBox.height > roomBox.y
-
-  expect(overlaps).toBe(false)
+  // The tools sit fully left of the panel with breathing room — the leftward
+  // shift clears the panel's full width plus a gap, not butted against it.
+  const gap = roomBox.x - (cameraBox.x + cameraBox.width)
+  expect(gap).toBeGreaterThan(4)
 })
 
 test('desktop Room sidebar stays open after canvas background clicks', async ({
