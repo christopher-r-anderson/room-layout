@@ -13,6 +13,7 @@ import { assetsStore } from '../stores/assets-store'
 import { sceneDocumentActions } from '../stores/scene-document-store'
 import { resetSelectionFocusStore } from '../stores/selection-focus-store'
 import { resetToolbarGeometryStore } from '../stores/toolbar-geometry-store'
+import { resetToolbarInteractionStore } from '../stores/toolbar-interaction-store'
 import { selectionEffects } from './selection-effects'
 import { loadSceneDraft, saveSceneDraft } from '../persistence/scene-draft'
 import {
@@ -33,6 +34,7 @@ function resetStartupShell() {
   sceneDocumentActions.resetSceneDocument()
   resetSelectionFocusStore()
   resetToolbarGeometryStore()
+  resetToolbarInteractionStore()
   clearSceneServices()
 }
 

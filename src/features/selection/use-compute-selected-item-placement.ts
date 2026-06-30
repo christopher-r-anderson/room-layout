@@ -5,11 +5,13 @@ import { useEditorRefs } from '@/shared/providers/editor-refs-context'
 import { useExclusionRects } from '@/shared/layout/overlay-exclusion-context'
 import { useSelectedFurniture } from '@/core/stores/scene-document-store'
 import { useToolbarGeometry } from '@/core/stores/toolbar-geometry-store'
+import { useToolbarEngaged } from '@/core/stores/toolbar-interaction-store'
 import {
   computeSelectedToolbarPlacement,
   type ToolbarFloatingCandidateId,
 } from './toolbar-placement/selected-toolbar-placement'
 import type { SelectedItemPlacement } from './selected-item-placement.types'
+import { usePinnedPlacement } from './use-pinned-placement'
 
 interface ComputeSelectedItemPlacementResult {
   placement: SelectedItemPlacement
@@ -47,6 +49,7 @@ function createCandidateStore(
 export function useComputeSelectedItemPlacement(): ComputeSelectedItemPlacementResult {
   const selectedFurniture = useSelectedFurniture()
   const selectedToolbarGeometry = useToolbarGeometry()
+  const toolbarEngaged = useToolbarEngaged()
   const { roomViewRef } = useEditorRefs()
   const exclusionRects = useExclusionRects()
   const { ref: actionsSizeRef, size: actionSize } = useElementSize()
@@ -172,5 +175,16 @@ export function useComputeSelectedItemPlacement(): ComputeSelectedItemPlacementR
     toolbarPlacement.top,
   ])
 
-  return { placement, actionsSizeRef }
+  // While the user is engaging the toolbar, pin its position so repeated rotate
+  // clicks don't walk it out from under the cursor. The reset key force-releases
+  // the hold when the placement context changes (new selection or geometry
+  // source), so a pinned position never bleeds onto a different object.
+  const pinned = toolbarEngaged && placement.site === 'floating'
+  const displayPlacement = usePinnedPlacement(
+    placement,
+    pinned,
+    `${selectedFurniture?.id ?? ''}:${activeToolbarSource ?? ''}`,
+  )
+
+  return { placement: displayPlacement, actionsSizeRef }
 }

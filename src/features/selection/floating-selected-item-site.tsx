@@ -1,4 +1,5 @@
 import { useSelectedFurniture } from '@/core/stores/scene-document-store'
+import { toolbarInteractionActions } from '@/core/stores/toolbar-interaction-store'
 import {
   useSelectedItemActionsSizeRef,
   useSelectedItemPlacement,
@@ -8,7 +9,10 @@ import { SelectedItemToolbar } from './selected-item-toolbar'
 /**
  * Desktop mount for the selected-item toolbar: positions it near the selected
  * object using the computed placement. The toolbar content and behavior live in
- * SelectedItemToolbar; this wrapper only owns where it floats.
+ * SelectedItemToolbar; this wrapper only owns where it floats. Pointer/focus
+ * here report toolbar engagement so the placement engine pins the position while
+ * the user is using it (see use-pinned-placement), keeping rotate buttons under
+ * the cursor across repeated clicks.
  */
 export function FloatingSelectedItemSite() {
   const placement = useSelectedItemPlacement()
@@ -33,6 +37,18 @@ export function FloatingSelectedItemSite() {
       data-selected-toolbar-mode="floating"
       style={{
         transform: `translate3d(${String(placement.left)}px, ${String(placement.top)}px, 0)`,
+      }}
+      onPointerEnter={() => {
+        toolbarInteractionActions.setPointerOver(true)
+      }}
+      onPointerLeave={() => {
+        toolbarInteractionActions.setPointerOver(false)
+      }}
+      onFocus={() => {
+        toolbarInteractionActions.setFocusWithin(true)
+      }}
+      onBlur={() => {
+        toolbarInteractionActions.setFocusWithin(false)
       }}
     >
       <SelectedItemToolbar />
