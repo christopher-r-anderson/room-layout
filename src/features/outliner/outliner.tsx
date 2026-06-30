@@ -170,7 +170,7 @@ export function Outliner() {
                               variant: isSelected ? 'secondary' : 'outline',
                               size: 'sm',
                             }),
-                            'w-full justify-between text-left',
+                            'w-full justify-between text-start',
                             'data-[previewed]:bg-accent data-[previewed]:text-accent-foreground',
                           )}
                           onClick={(e) => {

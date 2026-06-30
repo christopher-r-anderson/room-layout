@@ -23,6 +23,9 @@ export function CameraTools({
   displayLabels = true,
 }: CameraToolsProps) {
   const dispatch = useCommandDispatch()
+  // Buttons reverse so their icons hug the physical right edge this cluster pins to
+  // (for right-thumb reach), keeping icons in place as labels collapse. Physical by
+  // intent: the cluster does not mirror for RTL.
   const buttonClass = 'flex-row-reverse sm:justify-between'
 
   return (

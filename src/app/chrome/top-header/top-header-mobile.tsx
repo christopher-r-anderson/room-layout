@@ -51,7 +51,7 @@ export function TopHeaderMobile({
                     type="button"
                     variant="secondary"
                     size="toolbar"
-                    className="mr-auto"
+                    className="me-auto"
                     aria-controls="room-drawer"
                     aria-expanded={isRoomSurfaceOpen}
                     aria-haspopup="dialog"
