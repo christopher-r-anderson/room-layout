@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { useFurnitureAssetPrefetchProgress } from '@/core/operations/furniture-asset-prefetch'
 import { useStartupLoadingActive } from '@/core/stores/editor-lifecycle-store'
+import { Caption } from '@/shared/ui/caption'
 import { Card, CardContent } from '@/shared/ui/card'
 import { Progress } from '@/shared/ui/progress'
 
@@ -66,16 +67,14 @@ export function InitializationProgress() {
     >
       <Card
         ref={panelRef}
-        className="w-[min(26.25rem,calc(100vw-2rem))] gap-3 shadow-xl"
+        className="w-[min(26.25rem,calc(100vw-2rem))] gap-3"
         role="region"
         aria-labelledby="startup-loading-title"
         aria-describedby="startup-loading-description startup-loading-progress-label"
         tabIndex={-1}
       >
         <CardContent className="grid gap-3 p-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.04em] text-muted-foreground">
-            Loading scene assets
-          </p>
+          <Caption>Loading scene assets</Caption>
           <h2
             id="startup-loading-title"
             className="text-2xl font-semibold leading-tight max-[720px]:text-[1.375rem]"

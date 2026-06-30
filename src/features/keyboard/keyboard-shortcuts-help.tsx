@@ -6,6 +6,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/shared/ui/dialog'
+import { Card } from '@/shared/ui/card'
 import { Kbd, KbdGroup } from '@/shared/ui/kbd'
 import { ScrollArea } from '@/shared/ui/scroll-area'
 import { Fragment } from 'react'
@@ -207,10 +208,7 @@ export function KeyboardShortcutsDialog({
         <ScrollArea className="max-h-[min(75vh,calc(100dvh-10rem))]">
           <div className="grid gap-4 pb-2 pr-3">
             {SHORTCUT_SECTIONS.map((section) => (
-              <div
-                key={section.sectionTitle}
-                className="overflow-hidden rounded-2xl border border-border/70 bg-card/90 shadow-sm"
-              >
+              <Card key={section.sectionTitle} className="py-0">
                 <div className="overflow-x-auto">
                   <table className="w-full caption-top text-xs">
                     <caption className="border-b border-border/70 bg-muted/35 px-4 py-3 text-left text-sm font-semibold tracking-[0.01em] text-foreground">
@@ -257,7 +255,7 @@ export function KeyboardShortcutsDialog({
                     </tbody>
                   </table>
                 </div>
-              </div>
+              </Card>
             ))}
           </div>
         </ScrollArea>
