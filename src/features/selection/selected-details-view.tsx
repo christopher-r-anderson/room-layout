@@ -340,7 +340,7 @@ export function SelectedDetailsView({
 
   return (
     <section ref={sectionRef} className={className} aria-labelledby={titleId}>
-      <Card className="w-full bg-background shadow-sm" size="sm">
+      <Card variant="overlay" className="w-full" size="sm">
         <CardHeader className="gap-0.5 flex justify-between">
           <CardTitle id={titleId} className="truncate">
             {selectedFurniture.name} Placement

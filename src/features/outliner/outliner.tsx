@@ -113,10 +113,7 @@ export function Outliner() {
 
   return (
     <section ref={containerRef} aria-labelledby={headingId} tabIndex={-1}>
-      <Card
-        size="sm"
-        className="w-full bg-background/90 shadow-sm backdrop-blur-sm"
-      >
+      <Card size="sm" variant="overlay" className="w-full">
         <Collapsible
           open={isExpanded}
           onOpenChange={setIsExpanded}
