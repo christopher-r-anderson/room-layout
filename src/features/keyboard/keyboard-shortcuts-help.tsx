@@ -206,12 +206,12 @@ export function KeyboardShortcutsDialog({
         </DialogHeader>
 
         <ScrollArea className="max-h-[min(75vh,calc(100dvh-10rem))]">
-          <div className="grid gap-4 pb-2 pr-3">
+          <div className="grid gap-4 pb-2 pe-3">
             {SHORTCUT_SECTIONS.map((section) => (
               <Card key={section.sectionTitle} className="py-0">
                 <div className="overflow-x-auto">
                   <table className="w-full caption-top text-xs">
-                    <caption className="border-b border-border/70 bg-muted/35 px-4 py-3 text-left text-sm font-semibold tracking-[0.01em] text-foreground">
+                    <caption className="border-b border-border/70 bg-muted/35 px-4 py-3 text-start text-sm font-semibold tracking-[0.01em] text-foreground">
                       {section.sectionTitle}
                     </caption>
                     <tbody>
@@ -235,18 +235,18 @@ export function KeyboardShortcutsDialog({
                               <th
                                 scope="rowgroup"
                                 rowSpan={shortcutGroup.rows.length}
-                                className="w-24 min-w-24 px-4 py-3 text-left align-top font-semibold text-foreground"
+                                className="w-24 min-w-24 px-4 py-3 text-start align-top font-semibold text-foreground"
                               >
                                 {shortcutGroup.groupLabel}
                               </th>
                             ) : null}
                             <th
                               scope="row"
-                              className="w-56 min-w-56 px-4 py-3 text-left align-top font-normal whitespace-nowrap text-foreground"
+                              className="w-56 min-w-56 px-4 py-3 text-start align-top font-normal whitespace-nowrap text-foreground"
                             >
                               {shortcutRow.label}
                             </th>
-                            <td className="px-4 py-3 text-right">
+                            <td className="px-4 py-3 text-end">
                               {renderShortcutCombos(shortcutRow.combos)}
                             </td>
                           </tr>

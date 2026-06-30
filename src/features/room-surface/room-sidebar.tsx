@@ -30,6 +30,8 @@ export function RoomSidebar({
       ref={containerRef}
       id="room-surface"
       aria-labelledby="room-surface-title"
+      // Pinned to the physical right edge: the camera tools clear this panel on the
+      // same side for right-thumb reach, so it uses physical `right`, not a logical inset.
       className="pointer-events-auto fixed w-room-panel inset-y-2 right-2 z-20 hidden md:block"
       onKeyDown={(event) => {
         if (event.key !== 'Escape') {

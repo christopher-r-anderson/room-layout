@@ -46,12 +46,14 @@ export function EditorOverlay() {
         {isDesktop && <FloatingSelectedItemSite />}
 
         {/* When the room panel is open, clear its full width plus the standard
-            inset gap so the toolbar isn't butted against the panel edge. */}
+            inset gap so the toolbar isn't butted against the panel edge. The panel
+            is pinned to the physical right edge, so this clearance is physical too. */}
         <div
           className={cn(
             'z-20 pointer-events-auto self-end mt-28 mb-auto',
             isDesktop &&
               isRoomSurfaceOpen &&
+              // logical-css-allow: clears the right-pinned room panel
               'mr-[calc(var(--spacing-room-panel)+var(--spacing)*2)]',
           )}
           ref={registerExclusionElement('camera-tools')}
