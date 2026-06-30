@@ -57,7 +57,6 @@ function createProps(
 ): TopHeaderDesktopProps {
   return {
     desktopRoomSidebarRef: undefined,
-    editorInteractionsEnabled: true,
     history: {
       canRedo: false,
       canUndo: false,

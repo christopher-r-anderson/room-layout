@@ -38,8 +38,9 @@ the only modules that should mutate it.
   (`loading | ready | errored`), asset errors, restore outcome/attempt tracking,
   and the startup-cycle counters `sceneEpoch` (Scene remount key) and
   `retryToken` (re-triggers the manifest fetch). `isEditorInteractive()` is the
-  shared non-React readiness predicate operations gate on. Written by the startup
-  bootstrap and `startup-coordinator`.
+  non-React readiness predicate the selection/preview reconcilers and the
+  dialog-enablement gate read; scene-mutating operations gate on the scene's own
+  `isSceneReady()`. Written by the startup bootstrap and `startup-coordinator`.
 - **`assets-store`** — the startup-loaded catalog manifest (catalog,
   collections, environment config). Lets features read catalog/finishes through
   narrow hooks instead of threaded props. Written by the startup bootstrap.

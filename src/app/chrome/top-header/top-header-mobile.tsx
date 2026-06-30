@@ -17,7 +17,6 @@ import type { TopHeaderMobileProps } from './top-header.types'
 import { TopHeaderSurface } from './top-header-surface'
 
 export function TopHeaderMobile({
-  editorInteractionsEnabled,
   history,
   mobileRoomDrawerRef,
   isRoomSurfaceOpen,
@@ -74,7 +73,6 @@ export function TopHeaderMobile({
           canUndo={history.canUndo}
           displayLabels={false}
           buttonSize="toolbar-icon"
-          editorInteractionsEnabled={editorInteractionsEnabled}
         />
         <Tooltip>
           <TooltipTrigger
@@ -118,8 +116,7 @@ export function TopHeaderMobile({
 
       <HeaderMoreActionsDrawer
         contentId={HEADER_MORE_ACTIONS_CONTENT_ID}
-        shareDisabled={!editorInteractionsEnabled}
-        startOverDisabled={!editorInteractionsEnabled || startOverDisabled}
+        startOverDisabled={startOverDisabled}
         open={isHeaderMoreActionsOpen}
         onOpenChange={topHeaderDialogOpenChange.headerMoreActions}
         onCloseAutoFocus={() => {

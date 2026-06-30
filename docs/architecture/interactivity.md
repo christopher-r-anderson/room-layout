@@ -35,15 +35,18 @@ reason); plain header buttons are wrapped as `<Toolbar.Button render={…}>`.
   disabled action and its tooltip explains why it is off. This focusable-disabled
   behavior is the reason these controls are toolbar items rather than bare
   buttons. `ToolButton` carries no hand-rolled disabled handling.
-- **Form controls** (catalog radios and Add Item, selected-details inputs) use
-  the native `disabled` attribute.
+- **Form controls** — the catalog **Add Item** button uses the native `disabled`
+  attribute (nothing selected to add). The catalog radios and selected-details
+  inputs carry no disabled handling.
 - For a disabled item whose absence is obvious from a neighbour, the escape hatch
   is Base UI's `focusableWhenDisabled={false}` on the underlying `Toolbar.Button`
   (would need forwarding through `ToolButton`); nothing needs it today.
 
-Selection controls only carry one disabled condition — the editor loading
-lockout — resolved in `selection-controls-interactivity.ts`. A blocking overlay
-no longer factors in here; the inert seam (below) handles that.
+Disabled state only ever encodes an intrinsic capability gap — no history to undo,
+no selection to act on, a scene already at defaults, nothing picked to add. It
+never encodes "the editor isn't ready yet": startup readiness is a background
+concern handled by the inert seam (next section), so no control carries a
+loading-disabled state.
 
 ## Background neutralization
 
@@ -71,3 +74,8 @@ editor-overlay wrapper (`editor-overlay.tsx`), where there is no modal to own it
       SelectedItemToolbar · SelectedDetailsPanel
     dialogs / drawers render in portals OUTSIDE this wrapper
 ```
+
+`inert` covers pointer events, focus, and the accessibility tree — but not
+window-level keyboard listeners. Those are gated separately: `useKeyboardShortcuts`
+and `useCameraKeyState` take a readiness-tied `enabled` flag, the one interaction
+guard the inert seam cannot replace.

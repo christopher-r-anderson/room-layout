@@ -1,5 +1,4 @@
 import { sceneDocumentStore } from '@/core/stores/scene-document-store'
-import { isEditorInteractive } from '@/core/stores/editor-lifecycle-store'
 import { feedbackActions } from '@/core/stores/feedback-store'
 import { selectionFocusActions } from '@/core/stores/selection-focus-store'
 import { selectionEffects } from '@/core/operations/selection-effects'
@@ -9,12 +8,6 @@ import type { SelectByIdResult } from '@/scene/scene.types'
 import type { InteractionSource } from '@/core/types/interaction.types'
 
 export function selectByCanvasPointer(id: string) {
-  const editorInteractionsEnabled = isEditorInteractive()
-
-  if (!editorInteractionsEnabled) {
-    return
-  }
-
   const selectedId = sceneDocumentStore.getState().selectedId
 
   selectionEffects.notePendingSelection(
@@ -35,9 +28,7 @@ export function selectById(
   id: string | null,
   source?: InteractionSource,
 ): SelectByIdResult {
-  const editorInteractionsEnabled = isEditorInteractive()
-
-  if (!editorInteractionsEnabled || !sceneCommands.isSceneReady()) {
+  if (!sceneCommands.isSceneReady()) {
     return {
       ok: false,
       status: 'not-found',
@@ -79,9 +70,7 @@ export function selectById(
 }
 
 export function clearSelection() {
-  const editorInteractionsEnabled = isEditorInteractive()
-
-  if (!editorInteractionsEnabled || !sceneCommands.isSceneReady()) {
+  if (!sceneCommands.isSceneReady()) {
     return
   }
 

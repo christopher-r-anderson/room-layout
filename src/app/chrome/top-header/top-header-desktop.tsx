@@ -16,7 +16,6 @@ import { TopHeaderSurface } from './top-header-surface'
 
 export function TopHeaderDesktop({
   desktopRoomSidebarRef,
-  editorInteractionsEnabled,
   history,
   isRoomSurfaceOpen,
   isKeyboardShortcutsOpen,
@@ -81,16 +80,11 @@ export function TopHeaderDesktop({
             canRedo={history.canRedo}
             canUndo={history.canUndo}
             buttonSize="toolbar"
-            editorInteractionsEnabled={editorInteractionsEnabled}
           />
           <StartOverButton
             buttonRef={topHeaderFocusRegistry.register('top-header-start-over')}
-            disabled={!editorInteractionsEnabled || startOverDisabled}
-            disabledMessage={
-              !editorInteractionsEnabled
-                ? 'Editor interactions are unavailable while loading'
-                : 'Scene already matches defaults'
-            }
+            disabled={startOverDisabled}
+            disabledMessage="Scene already matches defaults"
             size="toolbar"
           />
         </TopHeaderSurface>
@@ -153,14 +147,7 @@ export function TopHeaderDesktop({
             </TooltipContent>
           </Tooltip>
           <Toolbar.Button
-            disabled={!editorInteractionsEnabled}
-            render={
-              <ShareSceneButton
-                className="min-w-26"
-                disabled={!editorInteractionsEnabled}
-                size="toolbar"
-              />
-            }
+            render={<ShareSceneButton className="min-w-26" size="toolbar" />}
           />
         </TopHeaderSurface>
       </Toolbar.Root>

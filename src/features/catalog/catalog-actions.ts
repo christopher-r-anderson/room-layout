@@ -1,5 +1,4 @@
 import { dialogActions } from '@/core/stores/dialog-store'
-import { isEditorInteractive } from '@/core/stores/editor-lifecycle-store'
 import { feedbackActions } from '@/core/stores/feedback-store'
 import { selectionFocusActions } from '@/core/stores/selection-focus-store'
 import { selectionEffects } from '@/core/operations/selection-effects'
@@ -15,13 +14,8 @@ export function addFurniture(): boolean {
   feedbackActions.clearStatusMessage()
 
   const catalogIdToAdd = getActiveCatalogId()
-  const editorInteractionsEnabled = isEditorInteractive()
 
-  if (
-    !catalogIdToAdd ||
-    !editorInteractionsEnabled ||
-    !sceneCommands.isSceneReady()
-  ) {
+  if (!catalogIdToAdd || !sceneCommands.isSceneReady()) {
     selectionEffects.notePendingSource(null)
     selectionEffects.notePendingSelection(null)
     return false

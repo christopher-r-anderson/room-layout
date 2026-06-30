@@ -73,20 +73,6 @@ describe('deletion-actions', () => {
     expect(selectionEffects.notePendingSelection).toHaveBeenCalledWith(null)
   })
 
-  it('skips delete without writing an editor message when interactions are disabled', () => {
-    resetEditorLifecycleStore()
-    vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
-    const deleteSelection = vi.spyOn(sceneCommands, 'deleteSelection')
-    const closeActiveDialog = vi.spyOn(dialogActions, 'closeActiveDialog')
-
-    confirmDeleteSelection(CHAIR)
-
-    expect(closeActiveDialog).toHaveBeenCalled()
-    expect(deleteSelection).not.toHaveBeenCalled()
-    expect(feedbackActions.setStatusMessage).not.toHaveBeenCalled()
-    expect(selectionEffects.notePendingSelection).toHaveBeenCalledWith(null)
-  })
-
   it('requests room-view focus after delete when canvas was the source', () => {
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
     vi.spyOn(sceneCommands, 'deleteSelection').mockReturnValue(true)

@@ -13,8 +13,6 @@ describe('SelectedItemTools', () => {
 
     render(
       <SelectedItemTools
-        controlsDisabled={false}
-        disabledMessage=""
         onOpenDeleteDialog={onOpenDeleteDialog}
         onRotateSelection={onRotateSelection}
       />,
@@ -47,8 +45,6 @@ describe('SelectedItemTools', () => {
 
     render(
       <SelectedItemTools
-        controlsDisabled={false}
-        disabledMessage=""
         onOpenDeleteDialog={vi.fn()}
         onRotateSelection={vi.fn()}
       />,
@@ -75,33 +71,5 @@ describe('SelectedItemTools', () => {
     expect(rotateLeft).not.toHaveFocus()
     expect(rotateRight).not.toHaveFocus()
     expect(remove).not.toHaveFocus()
-  })
-
-  it('keeps actions focusable but non-interactive when disabled', async () => {
-    const user = userEvent.setup()
-    const onRotateSelection = vi.fn()
-    const onOpenDeleteDialog = vi.fn()
-
-    render(
-      <SelectedItemTools
-        controlsDisabled={true}
-        disabledMessage="Editor interactions are unavailable while loading"
-        onOpenDeleteDialog={onOpenDeleteDialog}
-        onRotateSelection={onRotateSelection}
-      />,
-    )
-
-    const rotateRight = screen.getByRole('button', {
-      name: 'Rotate clockwise',
-    })
-    expect(rotateRight).toHaveAttribute('aria-disabled', 'true')
-
-    await user.click(
-      screen.getByRole('button', { name: 'Rotate counterclockwise' }),
-    )
-    await user.click(screen.getByRole('button', { name: 'Remove item' }))
-
-    expect(onRotateSelection).not.toHaveBeenCalled()
-    expect(onOpenDeleteDialog).not.toHaveBeenCalled()
   })
 })

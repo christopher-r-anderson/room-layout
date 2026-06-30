@@ -48,7 +48,7 @@ recommendation; the actual cut is a decision for Phase 3.
   only through another file's test (e.g. `asset-path` was). A per-source-file sweep
   for logic modules lacking a co-located test surfaced the real cases: added tests
   for the pure `toolbar-placement/{rect-utils, convex-geometry, toolbar-anchors}.ts`
-  (reached only via a hook, so barely covered) and `selection-controls-interactivity`.
+  (reached only via a hook, so barely covered).
   Then the two untested stores: tested `catalog-selection-store` (`getActiveCatalogId`
   fallback logic — stored selection vs first-entry vs empty); skipped `assets-store`
   (trivial spread-merge/reset plumbing, incidentally covered) and `ui-bounds` (trivial

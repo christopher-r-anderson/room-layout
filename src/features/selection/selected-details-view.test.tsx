@@ -12,7 +12,6 @@ describe('SelectedDetailsView', () => {
 
     render(
       <SelectedDetailsView
-        disabled={false}
         selectedFurniture={FURNITURE_ITEM}
         consumeBlurCommitSuppression={() => false}
         onInvalidSelectedItemDetailValue={vi.fn()}
@@ -36,7 +35,6 @@ describe('SelectedDetailsView', () => {
 
     render(
       <SelectedDetailsView
-        disabled={false}
         selectedFurniture={{
           ...FURNITURE_ITEM,
           position: [1.24, 0, 0],
@@ -62,7 +60,6 @@ describe('SelectedDetailsView', () => {
 
     render(
       <SelectedDetailsView
-        disabled={false}
         selectedFurniture={{
           ...FURNITURE_ITEM,
           position: [1.24, 0, 0],
@@ -88,7 +85,6 @@ describe('SelectedDetailsView', () => {
 
     render(
       <SelectedDetailsView
-        disabled={false}
         selectedFurniture={FURNITURE_ITEM}
         consumeBlurCommitSuppression={() => false}
         onInvalidSelectedItemDetailValue={vi.fn()}
@@ -115,7 +111,6 @@ describe('SelectedDetailsView', () => {
 
     render(
       <SelectedDetailsView
-        disabled={false}
         selectedFurniture={FURNITURE_ITEM}
         consumeBlurCommitSuppression={() => false}
         onInvalidSelectedItemDetailValue={onInvalidSelectedItemDetailValue}
@@ -144,7 +139,6 @@ describe('SelectedDetailsView', () => {
 
     render(
       <SelectedDetailsView
-        disabled={false}
         selectedFurniture={FURNITURE_ITEM}
         consumeBlurCommitSuppression={() => false}
         onInvalidSelectedItemDetailValue={vi.fn()}
@@ -170,7 +164,6 @@ describe('SelectedDetailsView', () => {
 
     render(
       <SelectedDetailsView
-        disabled={false}
         selectedFurniture={FURNITURE_ITEM}
         consumeBlurCommitSuppression={() => false}
         onInvalidSelectedItemDetailValue={onInvalidSelectedItemDetailValue}
@@ -204,7 +197,6 @@ describe('SelectedDetailsView', () => {
 
     render(
       <SelectedDetailsView
-        disabled={false}
         selectedFurniture={FURNITURE_ITEM}
         consumeBlurCommitSuppression={() => false}
         onInvalidSelectedItemDetailValue={onInvalidSelectedItemDetailValue}
@@ -238,7 +230,6 @@ describe('SelectedDetailsView', () => {
 
     render(
       <SelectedDetailsView
-        disabled={false}
         selectedFurniture={FURNITURE_ITEM}
         consumeBlurCommitSuppression={() => false}
         onInvalidSelectedItemDetailValue={vi.fn()}
@@ -264,7 +255,6 @@ describe('SelectedDetailsView', () => {
     const onUpdateSelectedItemDetails = vi.fn()
     const { rerender } = render(
       <SelectedDetailsView
-        disabled={false}
         selectedFurniture={FURNITURE_ITEM}
         consumeBlurCommitSuppression={() => false}
         onInvalidSelectedItemDetailValue={vi.fn()}
@@ -274,7 +264,6 @@ describe('SelectedDetailsView', () => {
 
     rerender(
       <SelectedDetailsView
-        disabled={false}
         selectedFurniture={{
           ...FURNITURE_ITEM,
           position: [1.5, 0, -0.5],
@@ -298,7 +287,6 @@ describe('SelectedDetailsView', () => {
   it('shows 0.0 instead of -0.0 for near-wall floating-point clearances', () => {
     render(
       <SelectedDetailsView
-        disabled={false}
         selectedFurniture={{
           ...FURNITURE_ITEM,
           position: [-1.9004, 0, -2.5254],
@@ -320,7 +308,6 @@ describe('SelectedDetailsView', () => {
   it('shows clockwise-positive display values for negative scene rotation', () => {
     render(
       <SelectedDetailsView
-        disabled={false}
         selectedFurniture={{
           ...FURNITURE_ITEM,
           rotationY: -Math.PI / 12,
@@ -337,7 +324,6 @@ describe('SelectedDetailsView', () => {
   it('normalizes epsilon clockwise rotations back to 0 instead of 360', () => {
     render(
       <SelectedDetailsView
-        disabled={false}
         selectedFurniture={{
           ...FURNITURE_ITEM,
           rotationY: 1.7e-15,
@@ -356,7 +342,6 @@ describe('SelectedDetailsView', () => {
     const onUpdateSelectedItemDetails = vi.fn()
     const { rerender } = render(
       <SelectedDetailsView
-        disabled={false}
         selectedFurniture={FURNITURE_ITEM}
         consumeBlurCommitSuppression={() => false}
         onInvalidSelectedItemDetailValue={vi.fn()}
@@ -371,7 +356,6 @@ describe('SelectedDetailsView', () => {
 
     rerender(
       <SelectedDetailsView
-        disabled={false}
         selectedFurniture={{
           ...FURNITURE_ITEM,
           position: [2.4, 0, 0],
@@ -396,7 +380,6 @@ describe('SelectedDetailsView', () => {
     }))
     const { rerender } = render(
       <SelectedDetailsView
-        disabled={false}
         selectedFurniture={FURNITURE_ITEM}
         consumeBlurCommitSuppression={() => false}
         onInvalidSelectedItemDetailValue={vi.fn()}
@@ -413,7 +396,6 @@ describe('SelectedDetailsView', () => {
 
     rerender(
       <SelectedDetailsView
-        disabled={false}
         selectedFurniture={{
           ...FURNITURE_ITEM,
           position: [-0.7, 0, 0],
@@ -427,7 +409,6 @@ describe('SelectedDetailsView', () => {
 
     rerender(
       <SelectedDetailsView
-        disabled={false}
         selectedFurniture={{ ...FURNITURE_ITEM }}
         consumeBlurCommitSuppression={() => false}
         onInvalidSelectedItemDetailValue={vi.fn()}

@@ -1,7 +1,6 @@
 import type { Ref } from 'react'
 
 interface TopHeaderProps {
-  editorInteractionsEnabled: boolean
   history: {
     canRedo: boolean
     canUndo: boolean
@@ -14,7 +13,7 @@ interface TopHeaderProps {
 
 type TopHeaderToolbarProps = Pick<
   TopHeaderProps,
-  'editorInteractionsEnabled' | 'history' | 'startOverDisabled'
+  'history' | 'startOverDisabled'
 >
 
 export interface TopHeaderContainerProps {

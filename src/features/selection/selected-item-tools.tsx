@@ -5,14 +5,10 @@ import { buttonGroupVariants } from '@/shared/ui/button-group-variants'
 import { ToolButton } from '@/shared/ui/tool-button'
 
 export function SelectedItemTools({
-  controlsDisabled,
-  disabledMessage,
   onOpenDeleteDialog,
   onPrepareDelete,
   onRotateSelection,
 }: {
-  controlsDisabled: boolean
-  disabledMessage: string
   onOpenDeleteDialog: () => void
   onPrepareDelete?: () => void
   onRotateSelection: (direction: -1 | 1) => void
@@ -30,8 +26,6 @@ export function SelectedItemTools({
         action={() => {
           onRotateSelection(1)
         }}
-        disabled={controlsDisabled}
-        disabledMessage={disabledMessage}
       />
       <ToolButton
         displayLabel={false}
@@ -41,8 +35,6 @@ export function SelectedItemTools({
         action={() => {
           onRotateSelection(-1)
         }}
-        disabled={controlsDisabled}
-        disabledMessage={disabledMessage}
       />
       <ToolButton
         displayLabel={false}
@@ -50,8 +42,6 @@ export function SelectedItemTools({
         label="Remove item"
         icon={<IconTrash />}
         action={onOpenDeleteDialog}
-        disabled={controlsDisabled}
-        disabledMessage={disabledMessage}
         onPointerDown={() => {
           onPrepareDelete?.()
         }}

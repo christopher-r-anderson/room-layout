@@ -14,20 +14,15 @@ import { ToolButton } from '@/shared/ui/tool-button'
 import { useCommandDispatch } from '@/core/commands/command-dispatch-context'
 
 export interface CameraToolsProps {
-  editorInteractionsEnabled: boolean
   hasSelection: boolean
   displayLabels?: boolean
 }
 
 export function CameraTools({
-  editorInteractionsEnabled,
   hasSelection,
   displayLabels = true,
 }: CameraToolsProps) {
   const dispatch = useCommandDispatch()
-  const presetsDisabled = !editorInteractionsEnabled
-  const presetsDisabledMessage =
-    'Editor interactions are unavailable while loading'
   const buttonClass = 'flex-row-reverse sm:justify-between'
 
   return (
@@ -44,8 +39,6 @@ export function CameraTools({
         action={() => {
           dispatch({ kind: 'set-camera-preset', preset: 'corner' })
         }}
-        disabled={presetsDisabled}
-        disabledMessage={presetsDisabledMessage}
         shortcuts="1"
         label="Switch to Corner view"
         visibleLabel="Corner"
@@ -58,8 +51,6 @@ export function CameraTools({
         action={() => {
           dispatch({ kind: 'set-camera-preset', preset: 'front' })
         }}
-        disabled={presetsDisabled}
-        disabledMessage={presetsDisabledMessage}
         shortcuts="2"
         label="Switch to Front view"
         visibleLabel="Front"
@@ -72,8 +63,6 @@ export function CameraTools({
         action={() => {
           dispatch({ kind: 'set-camera-preset', preset: 'side' })
         }}
-        disabled={presetsDisabled}
-        disabledMessage={presetsDisabledMessage}
         shortcuts="3"
         label="Switch to Side view"
         visibleLabel="Side"
@@ -86,8 +75,6 @@ export function CameraTools({
         action={() => {
           dispatch({ kind: 'set-camera-preset', preset: 'top' })
         }}
-        disabled={presetsDisabled}
-        disabledMessage={presetsDisabledMessage}
         shortcuts="4"
         label="Switch to Top view"
         visibleLabel="Top"
@@ -100,12 +87,8 @@ export function CameraTools({
         action={() => {
           dispatch({ kind: 'focus-selected' })
         }}
-        disabled={!hasSelection || !editorInteractionsEnabled}
-        disabledMessage={
-          !editorInteractionsEnabled
-            ? presetsDisabledMessage
-            : 'No item selected'
-        }
+        disabled={!hasSelection}
+        disabledMessage="No item selected"
         shortcuts="F"
         label="Focus Selected"
         displayLabel={displayLabels}

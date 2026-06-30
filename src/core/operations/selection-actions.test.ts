@@ -64,9 +64,8 @@ describe('selection-actions', () => {
     expect(sceneDocumentStore.getState().previewedIdRaw).toBeNull()
   })
 
-  it('skips scene commands when interactions are disabled', () => {
-    resetEditorLifecycleStore()
-    vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
+  it('skips scene commands when the scene is not ready', () => {
+    vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(false)
     const selectByIdSpy = vi.spyOn(sceneCommands, 'selectById')
     const clearSelectionSpy = vi.spyOn(sceneCommands, 'clearSelection')
 
