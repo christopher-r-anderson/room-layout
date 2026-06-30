@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
 import { feedbackActions } from '@/core/stores/feedback-store'
 import { useSelectedFurniture } from '@/core/stores/scene-document-store'
-import { useEditorInteractionsEnabled } from '@/core/stores/editor-lifecycle-store'
 import { selectionFocusActions } from '@/core/stores/selection-focus-store'
 import { previewFromCanvasKeyboard } from '@/core/operations/preview-actions'
 import { requestOutlinerFocus } from '@/core/operations/focus-actions'
@@ -28,14 +27,9 @@ export interface EditorFocusCommands {
  */
 export function useEditorFocusCommands(): EditorFocusCommands {
   const { detailsPanelRef, selectedToolbarRef } = useEditorRefs()
-  const editorInteractionsEnabled = useEditorInteractionsEnabled()
   const selectedFurniture = useSelectedFurniture()
 
   const focusInspector = useCallback(() => {
-    if (!editorInteractionsEnabled) {
-      return
-    }
-
     if (selectedFurniture === null) {
       requestOutlinerFocus()
       feedbackActions.announcePolite(
@@ -49,33 +43,21 @@ export function useEditorFocusCommands(): EditorFocusCommands {
     )
 
     firstFocusableControl?.focus()
-  }, [detailsPanelRef, selectedFurniture, editorInteractionsEnabled])
+  }, [detailsPanelRef, selectedFurniture])
 
   const focusRoomView = useCallback(() => {
-    if (!editorInteractionsEnabled) {
-      return
-    }
-
     selectionFocusActions.requestRoomViewFocus()
 
     if (selectedFurniture !== null) {
       previewFromCanvasKeyboard(selectedFurniture.id)
     }
-  }, [selectedFurniture, editorInteractionsEnabled])
+  }, [selectedFurniture])
 
   const focusOutliner = useCallback(() => {
-    if (!editorInteractionsEnabled) {
-      return
-    }
-
     requestOutlinerFocus()
-  }, [editorInteractionsEnabled])
+  }, [])
 
   const focusToolbar = useCallback(() => {
-    if (!editorInteractionsEnabled) {
-      return
-    }
-
     if (selectedFurniture === null) {
       requestOutlinerFocus()
       feedbackActions.announcePolite(
@@ -94,12 +76,7 @@ export function useEditorFocusCommands(): EditorFocusCommands {
     // Fall back when the floating toolbar is not currently mounted; the same
     // actions are reachable in the details panel.
     findFirstFocusableControl(detailsPanelRef.current)?.focus()
-  }, [
-    detailsPanelRef,
-    selectedToolbarRef,
-    selectedFurniture,
-    editorInteractionsEnabled,
-  ])
+  }, [detailsPanelRef, selectedToolbarRef, selectedFurniture])
 
   return { focusInspector, focusRoomView, focusOutliner, focusToolbar }
 }

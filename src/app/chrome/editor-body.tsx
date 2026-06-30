@@ -56,10 +56,6 @@ export function EditorBody({ testOverlaysHidden }: EditorBodyProps) {
   const roomViewFocusFrameRef = useRef<number | null>(null)
 
   const focusRoomView = useCallback(() => {
-    if (!editorInteractionsEnabled) {
-      return
-    }
-
     if (roomViewFocusFrameRef.current !== null) {
       cancelAnimationFrame(roomViewFocusFrameRef.current)
     }
@@ -68,7 +64,7 @@ export function EditorBody({ testOverlaysHidden }: EditorBodyProps) {
       roomViewFocusFrameRef.current = null
       roomViewRef.current?.focus()
     })
-  }, [editorInteractionsEnabled, roomViewRef])
+  }, [roomViewRef])
 
   useEffect(() => {
     return () => {
@@ -105,13 +101,9 @@ export function EditorBody({ testOverlaysHidden }: EditorBodyProps) {
   })
 
   const handleCanvasPointerMissed = useCallback(() => {
-    if (!editorInteractionsEnabled) {
-      return
-    }
-
     focusRoomView()
     clearCanvasSelection()
-  }, [editorInteractionsEnabled, focusRoomView])
+  }, [focusRoomView])
 
   return (
     <main
