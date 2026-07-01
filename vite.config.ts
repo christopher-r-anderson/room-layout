@@ -90,7 +90,8 @@ export default defineConfig({
         // bundle-budget gate can match them with one pattern instead of a
         // per-locale entry.
         chunkFileNames(chunk) {
-          const id = chunk.facadeModuleId ?? ''
+          // Normalize separators: module IDs use backslashes on Windows.
+          const id = (chunk.facadeModuleId ?? '').replaceAll('\\', '/')
           return /\/locales\/[^/]+\.po$/.test(id)
             ? 'assets/locale-[name]-[hash].js'
             : 'assets/[name]-[hash].js'
