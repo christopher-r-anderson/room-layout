@@ -236,6 +236,7 @@ export default defineConfig([
   // Shared UI primitives are fully decoupled from runtime layers.
   {
     files: ['src/shared/ui/**/*.{ts,tsx}'],
+    ignores: RUNTIME_NON_TEST_IGNORES,
     rules: {
       'no-restricted-imports': [
         'error',
