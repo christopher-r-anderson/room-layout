@@ -78,7 +78,7 @@ export const toolbarInteractionActions = {
 }
 
 export function resetToolbarInteractionStore() {
-  toolbarInteractionStore.getState().reset()
+  toolbarInteractionActions.reset()
 }
 
 export function selectToolbarEngaged(state: ToolbarInteractionStoreState) {
