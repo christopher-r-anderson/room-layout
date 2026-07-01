@@ -69,9 +69,7 @@ export const toolbarInteractionActions = {
   reportRotation: () => {
     toolbarInteractionStore.getState().reportRotation()
   },
-  // Clears every engagement flag and cancels the pending grace timer in one call,
-  // so UI cleanup paths don't partially clear state (which would leave the
-  // rotation grace pinning a later toolbar).
+  // Clears every engagement flag and cancels the pending grace timer in one call.
   reset: () => {
     toolbarInteractionStore.getState().reset()
   },

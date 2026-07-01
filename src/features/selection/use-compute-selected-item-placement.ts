@@ -176,9 +176,7 @@ export function useComputeSelectedItemPlacement(): ComputeSelectedItemPlacementR
   ])
 
   // While the user is engaging the toolbar, pin its position so repeated rotate
-  // clicks don't walk it out from under the cursor. The reset key force-releases
-  // the hold when the placement context changes (new selection or geometry
-  // source), so a pinned position never bleeds onto a different object.
+  // clicks don't walk it out from under the cursor.
   const pinned = toolbarEngaged && placement.site === 'floating'
   const displayPlacement = usePinnedPlacement(
     placement,

@@ -31,17 +31,14 @@ interface PinnedPlacementHold {
   placement: SelectedItemPlacement
 }
 
-// React wrapper around resolveHeldPlacement. It uses React's documented "adjust
-// state during render" pattern (https://react.dev/reference/react/useState#storing-information-from-previous-renders):
-// the setHold call below updates this component's own state during its own
-// render, which React handles by re-rendering immediately without warning, and
-// the guard makes it converge in one extra pass — so it reads no refs during
-// render and does not loop under StrictMode. The held placement is (re)captured
-// from the live one only at the moment the pin engages, so the frozen-while-
-// pinned path never calls setState — camera motion under a pinned toolbar costs
-// no extra render. `resetKey` force-releases the hold when the placement context
-// changes (a new selection or geometry source) so a stale pinned position can
-// never bleed onto a different object.
+// React wrapper around resolveHeldPlacement, using the adjust-state-during-render
+// pattern to store the previous value:
+// https://react.dev/reference/react/useState#storing-information-from-previous-renders
+// The held placement is captured from the live one only as the pin engages, so
+// the frozen-while-pinned path never calls setState — camera motion under a
+// pinned toolbar costs no extra render. `resetKey` force-releases the hold when
+// the placement context changes (a new selection or geometry source) so a pinned
+// position can't bleed onto a different object.
 export function usePinnedPlacement(
   livePlacement: SelectedItemPlacement,
   pinned: boolean,
