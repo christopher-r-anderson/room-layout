@@ -1,4 +1,6 @@
+import { msg } from '@lingui/core/macro'
 import type { FurnitureItem } from '@/domain/furniture'
+import { i18n } from '@/shared/i18n/i18n'
 import { feedbackActions } from '../stores/feedback-store'
 import { isEditorInteractive } from '../stores/editor-lifecycle-store'
 import {
@@ -48,41 +50,45 @@ function announceSelectionChange(options: {
     ? (items.find((item) => item.id === newId) ?? null)
     : null
 
+  const selectedName = selectedItem?.name
+
   if (announceMode === 'added') {
-    if (selectedItem) {
-      announcePolite(`${selectedItem.name} added to room.`)
+    if (selectedName) {
+      announcePolite(i18n._(msg`${selectedName} added to room.`))
     }
     return
   }
 
   if (announceMode === 'panel-keyboard') {
-    if (selectedItem) {
-      announcePolite(`${selectedItem.name} selected.`)
+    if (selectedName) {
+      announcePolite(i18n._(msg`${selectedName} selected.`))
     }
     return
   }
 
   if (announceMode === 'canvas-keyboard') {
-    if (selectedItem) {
+    if (selectedName) {
       announcePolite(
-        `${selectedItem.name} selected. Press Shift+T to reach its actions.`,
+        i18n._(
+          msg`${selectedName} selected. Press Shift+T to reach its actions.`,
+        ),
       )
       return
     }
 
     if (previousSelectedId) {
-      announcePolite('Selection cleared.')
+      announcePolite(i18n._(msg`Selection cleared.`))
     }
     return
   }
 
-  if (selectedItem) {
-    announcePolite(`${selectedItem.name} selected.`)
+  if (selectedName) {
+    announcePolite(i18n._(msg`${selectedName} selected.`))
     return
   }
 
   if (previousSelectedId) {
-    announcePolite('Selection cleared.')
+    announcePolite(i18n._(msg`Selection cleared.`))
   }
 }
 

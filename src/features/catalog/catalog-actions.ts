@@ -3,6 +3,7 @@ import { feedbackActions } from '@/core/stores/feedback-store'
 import { selectionFocusActions } from '@/core/stores/selection-focus-store'
 import { selectionEffects } from '@/core/operations/selection-effects'
 import { sceneCommands } from '@/scene/scene-commands'
+import { i18n } from '@/shared/i18n/i18n'
 import {
   ADD_FURNITURE_NO_SPACE_MESSAGE,
   ADD_FURNITURE_UNKNOWN_CATALOG_MESSAGE,
@@ -25,9 +26,11 @@ export function addFurniture(): boolean {
 
   if (!result.ok) {
     feedbackActions.setStatusMessage(
-      result.reason === 'no-space'
-        ? ADD_FURNITURE_NO_SPACE_MESSAGE
-        : ADD_FURNITURE_UNKNOWN_CATALOG_MESSAGE,
+      i18n._(
+        result.reason === 'no-space'
+          ? ADD_FURNITURE_NO_SPACE_MESSAGE
+          : ADD_FURNITURE_UNKNOWN_CATALOG_MESSAGE,
+      ),
     )
     selectionEffects.notePendingSource(null)
     selectionEffects.notePendingSelection(null)

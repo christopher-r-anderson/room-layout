@@ -5,6 +5,8 @@ import {
 } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
+import babel from '@rolldown/plugin-babel'
+import { lingui, linguiTransformerBabelPreset } from '@lingui/vite-plugin'
 import { analyzer, unstableRolldownAdapter } from 'vite-bundle-analyzer'
 import { fileURLToPath, URL } from 'node:url'
 import type { Plugin } from 'vite'
@@ -62,6 +64,11 @@ export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
+    // @vitejs/plugin-react v6 (Vite 8) transforms JSX with Oxc, not Babel, so
+    // Lingui's compile-time macros need their own Babel pass. `lingui()` also
+    // turns `.po` catalog imports into compiled messages (no runtime ICU parser).
+    lingui(),
+    babel({ presets: [linguiTransformerBabelPreset()] }),
     preloadEngineChunk(),
     ...(analyzeBundle
       ? [
@@ -76,6 +83,21 @@ export default defineConfig({
         ]
       : []),
   ],
+  build: {
+    rolldownOptions: {
+      output: {
+        // Give lazily-imported locale catalogs a stable `locale-*` name so the
+        // bundle-budget gate can match them with one pattern instead of a
+        // per-locale entry.
+        chunkFileNames(chunk) {
+          const id = chunk.facadeModuleId ?? ''
+          return /\/locales\/[^/]+\.po$/.test(id)
+            ? 'assets/locale-[name]-[hash].js'
+            : 'assets/[name]-[hash].js'
+        },
+      },
+    },
+  },
   test: {
     // .claude holds agent worktrees (full repo copies) and session state — never
     // glob test files out of it.

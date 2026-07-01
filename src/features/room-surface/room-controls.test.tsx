@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@/test/render'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { RoomControls } from '@/features/room-surface/room-controls'
 import { assetsActions, resetAssetsStore } from '@/core/stores/assets-store'

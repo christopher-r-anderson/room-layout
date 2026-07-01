@@ -1,4 +1,6 @@
+import { msg } from '@lingui/core/macro'
 import type { FurnitureItem } from '@/domain/furniture'
+import { i18n } from '@/shared/i18n/i18n'
 import { feedbackActions } from '@/core/stores/feedback-store'
 import { dialogActions } from '@/core/stores/dialog-store'
 import { sceneDocumentStore } from '@/core/stores/scene-document-store'
@@ -26,7 +28,7 @@ export function confirmDeleteSelection(
   dialogActions.closeActiveDialog()
 
   if (!sceneCommands.isSceneReady()) {
-    feedbackActions.setStatusMessage(DELETE_SELECTION_MISSING_MESSAGE)
+    feedbackActions.setStatusMessage(i18n._(DELETE_SELECTION_MISSING_MESSAGE))
     selectionEffects.notePendingSelection(null)
     return
   }
@@ -34,7 +36,7 @@ export function confirmDeleteSelection(
   const deleted = sceneCommands.deleteSelection()
 
   if (!deleted) {
-    feedbackActions.setStatusMessage(DELETE_SELECTION_MISSING_MESSAGE)
+    feedbackActions.setStatusMessage(i18n._(DELETE_SELECTION_MISSING_MESSAGE))
     selectionEffects.notePendingSelection(null)
     return
   }
@@ -62,7 +64,9 @@ export function confirmDeleteSelection(
   }
 
   if (deletedName) {
-    feedbackActions.announcePolite(`${deletedName} removed from room.`)
+    feedbackActions.announcePolite(
+      i18n._(msg`${deletedName} removed from room.`),
+    )
   }
 }
 

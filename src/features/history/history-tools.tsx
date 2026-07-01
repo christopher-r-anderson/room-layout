@@ -1,4 +1,5 @@
 import { Toolbar } from '@base-ui/react/toolbar'
+import { useLingui } from '@lingui/react/macro'
 import { IconArrowBackUp, IconArrowForwardUp } from '@tabler/icons-react'
 import { cn } from '@/shared/lib/utils'
 import { buttonGroupVariants } from '@/shared/ui/button-group-variants'
@@ -19,15 +20,16 @@ export function HistoryTools({
   displayLabels?: boolean
   buttonSize?: ComponentProps<typeof ToolButton>['size']
 }) {
+  const { t } = useLingui()
   const dispatch = useCommandDispatch()
   const undoDisabled = !canUndo
   const redoDisabled = !canRedo
-  const undoDisabledMessage = 'No previous history'
-  const redoDisabledMessage = 'No next history'
+  const undoDisabledMessage = t`No previous history`
+  const redoDisabledMessage = t`No next history`
 
   return (
     <Toolbar.Group
-      aria-label="History Actions"
+      aria-label={t`History Actions`}
       className={cn(buttonGroupVariants({ orientation: 'horizontal' }))}
     >
       <ToolButton
@@ -37,7 +39,7 @@ export function HistoryTools({
         disabled={undoDisabled}
         disabledMessage={undoDisabledMessage}
         shortcuts="Control+Z"
-        label="Undo"
+        label={t`Undo`}
         displayLabel={displayLabels}
         icon={<IconArrowBackUp />}
         size={buttonSize}
@@ -50,7 +52,7 @@ export function HistoryTools({
         disabled={redoDisabled}
         disabledMessage={redoDisabledMessage}
         shortcuts="Control+Shift+Z Control+Y"
-        label="Redo"
+        label={t`Redo`}
         displayLabel={displayLabels}
         icon={<IconArrowForwardUp />}
         size={buttonSize}

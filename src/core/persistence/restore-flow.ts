@@ -1,9 +1,11 @@
+import { msg } from '@lingui/core/macro'
 import type { FurnitureCatalogEntry } from '@/domain/catalog'
 import {
   type ParseSceneUrlResult,
   validateCatalogReferences,
 } from '@/core/persistence/scene-url'
 import type { SceneDraftState } from '@/core/persistence/scene-draft'
+import { i18n } from '@/shared/i18n/i18n'
 import type {
   DraftRestoreAttempt,
   InvalidRestoreCase,
@@ -41,8 +43,9 @@ function reportRecoveredDraftAfterInvalidLink(
   notifications: RestoreFlowNotifications,
   toastMessage: string,
 ) {
-  const recoveredMessage =
-    'Shared link could not be restored. Recovered your local draft.'
+  const recoveredMessage = i18n._(
+    msg`Shared link could not be restored. Recovered your local draft.`,
+  )
   notifications.setRestoreOutcome('invalid')
   notifications.setStatusMessage(recoveredMessage)
   notifications.announceAssertive(recoveredMessage)
@@ -99,29 +102,39 @@ export function runStartupRestoreFlow(options: {
       try {
         applyState(parseResult)
         notifications.setRestoreOutcome('restored')
-        notifications.announcePolite('Room layout restored from shared link.')
-        notifications.toastSuccess('Room layout restored from shared link.')
+        const restoredFromLink = i18n._(
+          msg`Room layout restored from shared link.`,
+        )
+        notifications.announcePolite(restoredFromLink)
+        notifications.toastSuccess(restoredFromLink)
       } catch {
         restoreFromInvalidLinkWithDraftFallback(
           notifications,
           applyState,
           validDraftState,
           {
-            recoveredToastMessage:
-              'Shared link was invalid. Recovered your local draft.',
+            recoveredToastMessage: i18n._(
+              msg`Shared link was invalid. Recovered your local draft.`,
+            ),
             whenDraftMissing: {
-              statusMessage:
-                'Shared link could not be restored. Starting with an empty room.',
-              assertiveMessage:
-                'Shared link could not be restored. Starting with an empty room.',
-              toastMessage: 'Shared link could not be restored.',
+              statusMessage: i18n._(
+                msg`Shared link could not be restored. Starting with an empty room.`,
+              ),
+              assertiveMessage: i18n._(
+                msg`Shared link could not be restored. Starting with an empty room.`,
+              ),
+              toastMessage: i18n._(msg`Shared link could not be restored.`),
             },
             whenDraftFailed: {
-              statusMessage:
-                'Shared link could not be restored. Draft also failed to restore. Starting with an empty room.',
-              assertiveMessage:
-                'Shared link and draft could not be restored. Starting with an empty room.',
-              toastMessage: 'Shared link and draft could not be restored.',
+              statusMessage: i18n._(
+                msg`Shared link could not be restored. Draft also failed to restore. Starting with an empty room.`,
+              ),
+              assertiveMessage: i18n._(
+                msg`Shared link and draft could not be restored. Starting with an empty room.`,
+              ),
+              toastMessage: i18n._(
+                msg`Shared link and draft could not be restored.`,
+              ),
             },
           },
         )
@@ -134,21 +147,30 @@ export function runStartupRestoreFlow(options: {
       applyState,
       validDraftState,
       {
-        recoveredToastMessage:
-          'Shared link contained unknown furniture. Draft restored.',
+        recoveredToastMessage: i18n._(
+          msg`Shared link contained unknown furniture. Draft restored.`,
+        ),
         whenDraftMissing: {
-          statusMessage:
-            'Shared link contained unrecognized furniture. Starting with an empty room.',
-          assertiveMessage:
-            'Shared link could not be restored. Starting with an empty room.',
-          toastMessage: 'Shared link contained unrecognized furniture.',
+          statusMessage: i18n._(
+            msg`Shared link contained unrecognized furniture. Starting with an empty room.`,
+          ),
+          assertiveMessage: i18n._(
+            msg`Shared link could not be restored. Starting with an empty room.`,
+          ),
+          toastMessage: i18n._(
+            msg`Shared link contained unrecognized furniture.`,
+          ),
         },
         whenDraftFailed: {
-          statusMessage:
-            'Shared link had unknown furniture. Draft also failed to restore. Starting with an empty room.',
-          assertiveMessage:
-            'Shared link and draft could not be restored. Starting with an empty room.',
-          toastMessage: 'Shared link and draft could not be restored.',
+          statusMessage: i18n._(
+            msg`Shared link had unknown furniture. Draft also failed to restore. Starting with an empty room.`,
+          ),
+          assertiveMessage: i18n._(
+            msg`Shared link and draft could not be restored. Starting with an empty room.`,
+          ),
+          toastMessage: i18n._(
+            msg`Shared link and draft could not be restored.`,
+          ),
         },
       },
     )
@@ -161,21 +183,28 @@ export function runStartupRestoreFlow(options: {
       applyState,
       validDraftState,
       {
-        recoveredToastMessage:
-          'Shared link was invalid. Recovered your local draft.',
+        recoveredToastMessage: i18n._(
+          msg`Shared link was invalid. Recovered your local draft.`,
+        ),
         whenDraftMissing: {
-          statusMessage:
-            'Shared link could not be restored. Starting with an empty room.',
-          assertiveMessage:
-            'Shared link could not be restored. Starting with an empty room.',
-          toastMessage: 'Shared link could not be restored.',
+          statusMessage: i18n._(
+            msg`Shared link could not be restored. Starting with an empty room.`,
+          ),
+          assertiveMessage: i18n._(
+            msg`Shared link could not be restored. Starting with an empty room.`,
+          ),
+          toastMessage: i18n._(msg`Shared link could not be restored.`),
         },
         whenDraftFailed: {
-          statusMessage:
-            'Shared link was invalid. Draft also failed to restore. Starting with an empty room.',
-          assertiveMessage:
-            'Shared link and draft could not be restored. Starting with an empty room.',
-          toastMessage: 'Shared link and draft could not be restored.',
+          statusMessage: i18n._(
+            msg`Shared link was invalid. Draft also failed to restore. Starting with an empty room.`,
+          ),
+          assertiveMessage: i18n._(
+            msg`Shared link and draft could not be restored. Starting with an empty room.`,
+          ),
+          toastMessage: i18n._(
+            msg`Shared link and draft could not be restored.`,
+          ),
         },
       },
     )
@@ -186,15 +215,19 @@ export function runStartupRestoreFlow(options: {
     try {
       applyState(validDraftState)
       if (!isFreshState(validDraftState)) {
-        notifications.announcePolite('Restored your saved draft.')
-        notifications.toastSuccess('Restored your saved draft.')
+        const restoredDraft = i18n._(msg`Restored your saved draft.`)
+        notifications.announcePolite(restoredDraft)
+        notifications.toastSuccess(restoredDraft)
       }
     } catch {
       reportInvalidRestore(notifications, {
-        statusMessage: 'Draft failed to restore. Starting with an empty room.',
-        assertiveMessage:
-          'Draft could not be restored. Starting with an empty room.',
-        toastMessage: 'Draft could not be restored.',
+        statusMessage: i18n._(
+          msg`Draft failed to restore. Starting with an empty room.`,
+        ),
+        assertiveMessage: i18n._(
+          msg`Draft could not be restored. Starting with an empty room.`,
+        ),
+        toastMessage: i18n._(msg`Draft could not be restored.`),
       })
       return
     }

@@ -1,6 +1,7 @@
 import { Button } from '@/shared/ui/button'
 import { IconPlus } from '@tabler/icons-react'
 import type { ComponentProps } from 'react'
+import { Trans } from '@lingui/react/macro'
 
 export function CatalogAddButton({
   className,
@@ -17,7 +18,9 @@ export function CatalogAddButton({
       {...props}
     >
       <IconPlus aria-hidden="true" size={16} />
-      <span>Add Furniture</span>
+      <span>
+        <Trans>Add Furniture</Trans>
+      </span>
     </Button>
   )
 }

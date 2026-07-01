@@ -10,6 +10,9 @@ import path from 'node:path'
 const BUDGETS = [
   { label: 'shell (entry)', pattern: /^index-.*\.js$/, maxGzipKB: 215 },
   { label: 'engine (lazy)', pattern: /^scene-canvas-.*\.js$/, maxGzipKB: 350 },
+  // Lazily-imported per-locale message catalogs. Each is fetched only when its
+  // locale is activated; the active locale is never in the shell chunk.
+  { label: 'locale (lazy)', pattern: /^locale-.*\.js$/, maxGzipKB: 20 },
 ]
 
 const ASSETS_DIR = path.resolve('dist/assets')

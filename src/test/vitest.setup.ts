@@ -1,4 +1,8 @@
 import '@testing-library/jest-dom/vitest'
+// Loads and activates the English catalog for all tests (module side effect), so
+// <Trans>/t and non-React `i18n._(...)` resolve to source English rather than
+// throwing on an inactive i18n instance.
+import '@/shared/i18n/setup'
 import { cleanup } from '@testing-library/react'
 import { afterEach } from 'vitest'
 

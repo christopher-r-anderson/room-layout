@@ -1,4 +1,5 @@
 import { useRef } from 'react'
+import { Trans } from '@lingui/react/macro'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -44,11 +45,17 @@ export function DeleteConfirmationDialog({
         }}
       >
         <AlertDialogHeader>
-          <AlertDialogTitle>Remove item from room?</AlertDialogTitle>
+          <AlertDialogTitle>
+            <Trans>Remove item from room?</Trans>
+          </AlertDialogTitle>
           <AlertDialogDescription>
-            {pendingDeleteFurniture
-              ? `Remove ${pendingDeleteFurniture.name} from your room layout?`
-              : 'Remove the selected item from your room layout?'}
+            {pendingDeleteFurniture ? (
+              <Trans>
+                Remove {pendingDeleteFurniture.name} from your room layout?
+              </Trans>
+            ) : (
+              <Trans>Remove the selected item from your room layout?</Trans>
+            )}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
@@ -58,7 +65,7 @@ export function DeleteConfirmationDialog({
               onClose()
             }}
           >
-            Cancel
+            <Trans>Cancel</Trans>
           </AlertDialogCancel>
           <AlertDialogAction
             variant="destructive"
@@ -67,7 +74,7 @@ export function DeleteConfirmationDialog({
               onConfirm()
             }}
           >
-            Remove item
+            <Trans>Remove item</Trans>
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

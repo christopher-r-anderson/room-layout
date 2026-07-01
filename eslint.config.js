@@ -4,6 +4,7 @@ import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
 import vitest from '@vitest/eslint-plugin'
+import i18next from 'eslint-plugin-i18next'
 import { defineConfig, globalIgnores } from 'eslint/config'
 import eslintConfigPrettier from 'eslint-config-prettier/flat'
 
@@ -65,6 +66,19 @@ export default defineConfig([
         projectService: true,
         tsconfigRootDir: import.meta.dirname,
       },
+    },
+  },
+
+  // i18n guard: fail on hardcoded JSX text so new user-facing strings go through
+  // Lingui macros. Scoped to JSX text only (attributes like aria-label are not
+  // flagged) to avoid noise; vendored shadcn/base-ui primitives and tests are
+  // exempt. `msg`/`t`/<Trans> usages are not literals and pass.
+  {
+    files: ['src/**/*.tsx'],
+    ignores: ['src/**/*.test.tsx', 'src/shared/ui/**'],
+    plugins: { i18next },
+    rules: {
+      'i18next/no-literal-string': ['error', { mode: 'jsx-text-only' }],
     },
   },
 

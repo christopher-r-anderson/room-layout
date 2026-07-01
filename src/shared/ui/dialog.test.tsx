@@ -1,18 +1,22 @@
 // @vitest-environment jsdom
 
 import { render, screen } from '@testing-library/react'
+import { I18nProvider } from '@lingui/react'
 import { describe, expect, it } from 'vitest'
 
+import { i18n } from '@/shared/i18n/i18n'
 import { Dialog, DialogContent, DialogTitle } from '@/shared/ui/dialog'
 
 describe('DialogContent', () => {
   it('preserves viewport side gutters when a larger desktop max width is applied', () => {
     render(
-      <Dialog open>
-        <DialogContent className="sm:max-w-4xl">
-          <DialogTitle>Keyboard Shortcuts</DialogTitle>
-        </DialogContent>
-      </Dialog>,
+      <I18nProvider i18n={i18n}>
+        <Dialog open>
+          <DialogContent className="sm:max-w-4xl">
+            <DialogTitle>Keyboard Shortcuts</DialogTitle>
+          </DialogContent>
+        </Dialog>
+      </I18nProvider>,
     )
 
     const content = screen.getByRole('dialog', { name: 'Keyboard Shortcuts' })

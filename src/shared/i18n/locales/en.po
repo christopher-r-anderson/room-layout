@@ -1,0 +1,852 @@
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2026-07-01 11:04-0400\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: @lingui/cli\n"
+"Language: en\n"
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Plural-Forms: \n"
+
+#. placeholder {0}: selectedFurniture.name
+#: src/features/selection/selected-details-view.tsx
+msgid "{0} Placement"
+msgstr "{0} Placement"
+
+#: src/features/selection/deletion-actions.ts
+msgid "{deletedName} removed from room."
+msgstr "{deletedName} removed from room."
+
+#: src/features/selection/selected-item-detail-messages.ts
+msgid "{fieldLabel} must be a valid number."
+msgstr "{fieldLabel} must be a valid number."
+
+#: src/features/selection/selected-item-detail-messages.ts
+msgid "{fieldLabel} must stay inside the room."
+msgstr "{fieldLabel} must stay inside the room."
+
+#: src/features/selection/selected-item-detail-messages.ts
+msgid "{fieldLabel} overlaps another item."
+msgstr "{fieldLabel} overlaps another item."
+
+#: src/features/selection/selected-item-detail-actions.ts
+msgid "{itemName} details updated."
+msgstr "{itemName} details updated."
+
+#: src/core/operations/movement-actions.ts
+msgid "{movedItemName} moved to X {x} and Z {z}."
+msgstr "{movedItemName} moved to X {x} and Z {z}."
+
+#: src/core/operations/movement-actions.ts
+msgid "{rotatingName} rotated."
+msgstr "{rotatingName} rotated."
+
+#: src/core/operations/selection-effects.ts
+msgid "{selectedName} added to room."
+msgstr "{selectedName} added to room."
+
+#: src/core/operations/selection-effects.ts
+msgid "{selectedName} selected."
+msgstr "{selectedName} selected."
+
+#: src/core/operations/selection-effects.ts
+msgid "{selectedName} selected. Press Shift+T to reach its actions."
+msgstr "{selectedName} selected. Press Shift+T to reach its actions."
+
+#: src/features/catalog/catalog-drawer.tsx
+msgid "{widthLabel}m x {depthLabel}m footprint"
+msgstr "{widthLabel}m x {depthLabel}m footprint"
+
+#: src/features/keyboard/keyboard-shortcuts.definitions.ts
+msgid "3D Room View (No Selection)"
+msgstr "3D Room View (No Selection)"
+
+#: src/features/startup/initialization-error.tsx
+msgid "A required furniture model did not load correctly, so editor interactions are temporarily unavailable."
+msgstr "A required furniture model did not load correctly, so editor interactions are temporarily unavailable."
+
+#: src/features/keyboard/keyboard-shortcuts.definitions.ts
+msgid "Actions"
+msgstr "Actions"
+
+#: src/features/catalog/catalog-drawer.tsx
+msgid "Add furniture"
+msgstr "Add furniture"
+
+#: src/features/catalog/catalog-add-button.tsx
+msgid "Add Furniture"
+msgstr "Add Furniture"
+
+#: src/features/catalog/catalog-drawer.tsx
+msgid "Add Item"
+msgstr "Add Item"
+
+#: src/features/room-surface/room-drawer.tsx
+#: src/features/room-surface/room-sidebar.tsx
+msgid "Adjust wall finishes, flooring, and lighting to match your room."
+msgstr "Adjust wall finishes, flooring, and lighting to match your room."
+
+#: src/app/chrome/top-header/top-header-desktop.tsx
+#: src/app/chrome/top-header/top-header-mobile.tsx
+msgid "Adjust wall, floor, and lighting"
+msgstr "Adjust wall, floor, and lighting"
+
+#: src/features/keyboard/keyboard-shortcuts.definitions.ts
+msgid "Apply typed detail value"
+msgstr "Apply typed detail value"
+
+#: src/features/startup/initialization-progress.tsx
+msgid "Asset {assetNumber} of {total}"
+msgstr "Asset {assetNumber} of {total}"
+
+#: src/features/startup/initialization-error.tsx
+msgid "Asset loading failed"
+msgstr "Asset loading failed"
+
+#: src/features/project-info/project-info-dialog.tsx
+msgid "Author"
+msgstr "Author"
+
+#: src/features/selection/selected-details-view.tsx
+msgid "Back wall"
+msgstr "Back wall"
+
+#: src/features/keyboard/keyboard-shortcuts.definitions.ts
+msgid "Browse"
+msgstr "Browse"
+
+#: src/features/camera/camera-tools.tsx
+msgid "Camera"
+msgstr "Camera"
+
+#: src/features/keyboard/keyboard-shortcuts.definitions.ts
+msgid "Camera Controls"
+msgstr "Camera Controls"
+
+#: src/features/selection/delete-confirmation-dialog.tsx
+#: src/features/startup/start-over-confirmation-dialog.tsx
+msgid "Cancel"
+msgstr "Cancel"
+
+#: src/features/keyboard/keyboard-shortcuts.definitions.ts
+msgid "Cancel typed detail draft"
+msgstr "Cancel typed detail draft"
+
+#: src/features/startup/initialization-error.tsx
+msgid "Catalog data is invalid"
+msgstr "Catalog data is invalid"
+
+#: src/features/startup/initialization-error.tsx
+msgid "Catalog request failed"
+msgstr "Catalog request failed"
+
+#: src/features/startup/initialization-error.tsx
+msgid "Catalog request timed out"
+msgstr "Catalog request timed out"
+
+#: src/features/startup/initialization-error.tsx
+msgid "Check your connection and retry loading the catalog."
+msgstr "Check your connection and retry loading the catalog."
+
+#: src/features/catalog/catalog-drawer.tsx
+msgid "Choose a piece, then place it into the room."
+msgstr "Choose a piece, then place it into the room."
+
+#: src/features/keyboard/keyboard-shortcuts.definitions.ts
+msgid "Clear preview/selection"
+msgstr "Clear preview/selection"
+
+#: src/features/keyboard/keyboard-shortcuts.definitions.ts
+msgid "Clear selection"
+msgstr "Clear selection"
+
+#: src/features/catalog/catalog-drawer.tsx
+#: src/shared/ui/dialog.tsx
+msgid "Close"
+msgstr "Close"
+
+#: src/features/room-surface/room-sidebar.tsx
+msgid "Close room panel"
+msgstr "Close room panel"
+
+#: src/features/startup/initialization-error.tsx
+msgid "Confirm the manifest schema and asset paths, then retry."
+msgstr "Confirm the manifest schema and asset paths, then retry."
+
+#: src/app/chrome/top-header/share-scene-button.tsx
+msgid "Copied"
+msgstr "Copied"
+
+#: src/features/camera/camera-tools.tsx
+#: src/features/keyboard/keyboard-shortcuts.definitions.ts
+msgid "Corner"
+msgstr "Corner"
+
+#: src/core/operations/share-scene.ts
+msgid "Could not copy URL to clipboard."
+msgstr "Could not copy URL to clipboard."
+
+#: src/core/operations/share-scene.ts
+msgid "Could not open share options."
+msgstr "Could not open share options."
+
+#: src/features/startup/initialization-progress.tsx
+msgid "Current item: {currentAsset}"
+msgstr "Current item: {currentAsset}"
+
+#: src/features/keyboard/keyboard-shortcuts.definitions.ts
+msgid "Details"
+msgstr "Details"
+
+#: src/features/selection/selected-details-view.tsx
+msgid "Distance from back wall (m)"
+msgstr "Distance from back wall (m)"
+
+#: src/features/selection/selected-details-view.tsx
+msgid "Distance from left wall (m)"
+msgstr "Distance from left wall (m)"
+
+#: src/core/persistence/restore-flow.ts
+msgid "Draft could not be restored."
+msgstr "Draft could not be restored."
+
+#: src/core/persistence/restore-flow.ts
+msgid "Draft could not be restored. Starting with an empty room."
+msgstr "Draft could not be restored. Starting with an empty room."
+
+#: src/core/persistence/restore-flow.ts
+msgid "Draft failed to restore. Starting with an empty room."
+msgstr "Draft failed to restore. Starting with an empty room."
+
+#: src/features/selection/selected-details-view.tsx
+msgid "Edit the selected item."
+msgstr "Edit the selected item."
+
+#: src/app/chrome/feedback/status-message.tsx
+msgid "Editor status"
+msgstr "Editor status"
+
+#: src/features/startup/initialization-progress.tsx
+msgid "Fetching the furniture catalog"
+msgstr "Fetching the furniture catalog"
+
+#: src/features/selection/selected-item-detail-messages.ts
+msgid "Finish dragging before editing item details."
+msgstr "Finish dragging before editing item details."
+
+#: src/core/operations/movement-actions.ts
+msgid "Finish dragging before using movement controls."
+msgstr "Finish dragging before using movement controls."
+
+#: src/features/startup/initialization-progress.tsx
+msgid "Finishing up the room view"
+msgstr "Finishing up the room view"
+
+#: src/features/room-surface/room-controls.tsx
+msgid "Floor"
+msgstr "Floor"
+
+#: src/features/room-surface/room-controls.tsx
+msgid "Floor finish"
+msgstr "Floor finish"
+
+#: src/features/keyboard/keyboard-shortcuts.definitions.ts
+msgid "Focus"
+msgstr "Focus"
+
+#: src/features/keyboard/keyboard-shortcuts.definitions.ts
+msgid "Focus Furniture in room"
+msgstr "Focus Furniture in room"
+
+#: src/features/keyboard/keyboard-shortcuts.definitions.ts
+msgid "Focus inspector"
+msgstr "Focus inspector"
+
+#: src/features/keyboard/keyboard-shortcuts.definitions.ts
+msgid "Focus room view"
+msgstr "Focus room view"
+
+#: src/features/camera/camera-tools.tsx
+msgid "Focus Selected"
+msgstr "Focus Selected"
+
+#: src/features/keyboard/keyboard-shortcuts.definitions.ts
+msgid "Focus selected item"
+msgstr "Focus selected item"
+
+#: src/features/keyboard/keyboard-shortcuts.definitions.ts
+msgid "Focus selected item actions"
+msgstr "Focus selected item actions"
+
+#: src/features/camera/camera-tools.tsx
+#: src/features/keyboard/keyboard-shortcuts.definitions.ts
+msgid "Front"
+msgstr "Front"
+
+#: src/features/startup/initialization-progress.tsx
+msgid "Furniture asset loading progress"
+msgstr "Furniture asset loading progress"
+
+#: src/features/outliner/outliner.tsx
+msgid "Furniture in room"
+msgstr "Furniture in room"
+
+#: src/features/outliner/outliner.tsx
+msgid "Furniture items"
+msgstr "Furniture items"
+
+#: src/features/catalog/catalog-drawer.tsx
+msgid "Furniture type to add"
+msgstr "Furniture type to add"
+
+#: src/app/chrome/top-header/top-header-desktop.tsx
+#: src/app/chrome/top-header/top-header-mobile.tsx
+msgid "Header actions"
+msgstr "Header actions"
+
+#: src/features/keyboard/keyboard-shortcuts.definitions.ts
+msgid "History"
+msgstr "History"
+
+#: src/features/history/history-tools.tsx
+msgid "History Actions"
+msgstr "History Actions"
+
+#: src/app/chrome/editor-body.tsx
+msgid "Interactive 3D room editor"
+msgstr "Interactive 3D room editor"
+
+#: src/app/chrome/top-header/header-more-actions-drawer.tsx
+#: src/app/chrome/top-header/top-header-desktop.tsx
+msgid "Keyboard shortcuts"
+msgstr "Keyboard shortcuts"
+
+#: src/features/keyboard/keyboard-shortcuts-help.tsx
+msgid "Keyboard Shortcuts"
+msgstr "Keyboard Shortcuts"
+
+#: src/features/selection/selected-details-view.tsx
+msgid "Left wall"
+msgstr "Left wall"
+
+#: src/features/project-info/asset-attribution.tsx
+#: src/features/project-info/project-info-dialog.tsx
+msgid "License"
+msgstr "License"
+
+#: src/features/room-surface/room-controls.tsx
+msgid "Lighting"
+msgstr "Lighting"
+
+#: src/features/room-surface/room-controls.tsx
+msgid "Lighting mood"
+msgstr "Lighting mood"
+
+#: src/features/startup/initialization-progress.tsx
+msgid "Loading scene assets"
+msgstr "Loading scene assets"
+
+#: src/features/room-surface/room-controls.tsx
+msgid "Match your home lighting to preview furniture in the right tone."
+msgstr "Match your home lighting to preview furniture in the right tone."
+
+#: src/features/room-surface/room-controls.tsx
+msgid "Material preview"
+msgstr "Material preview"
+
+#: src/app/chrome/top-header/header-more-actions-drawer.tsx
+#: src/app/chrome/top-header/top-header-mobile.tsx
+msgid "More actions"
+msgstr "More actions"
+
+#: src/features/keyboard/keyboard-shortcuts.definitions.ts
+msgid "Motion (Hold)"
+msgstr "Motion (Hold)"
+
+#: src/features/keyboard/keyboard-shortcuts.definitions.ts
+msgid "Move"
+msgstr "Move"
+
+#: src/features/keyboard/keyboard-shortcuts.definitions.ts
+msgid "Move farther (1.0 m)"
+msgstr "Move farther (1.0 m)"
+
+#: src/features/keyboard/keyboard-shortcuts.definitions.ts
+msgid "Move finely (0.1 m)"
+msgstr "Move finely (0.1 m)"
+
+#: src/core/operations/movement-actions.ts
+msgid "Movement blocked by another furniture item."
+msgstr "Movement blocked by another furniture item."
+
+#: src/core/operations/movement-actions.ts
+msgid "Movement blocked by room bounds."
+msgstr "Movement blocked by room bounds."
+
+#: src/features/keyboard/keyboard-shortcuts.definitions.ts
+msgid "Navigation"
+msgstr "Navigation"
+
+#: src/features/outliner/outliner.tsx
+msgid "No furniture in the room."
+msgstr "No furniture in the room."
+
+#: src/features/camera/camera-tools.tsx
+msgid "No item selected"
+msgstr "No item selected"
+
+#: src/features/history/history-tools.tsx
+msgid "No next history"
+msgstr "No next history"
+
+#: src/features/history/history-tools.tsx
+msgid "No previous history"
+msgstr "No previous history"
+
+#: src/shared/messages/command-messages.ts
+msgid "No safe placement slot is available for that furniture item."
+msgstr "No safe placement slot is available for that furniture item."
+
+#: src/shared/messages/command-messages.ts
+msgid "No selected furniture item was available to delete."
+msgstr "No selected furniture item was available to delete."
+
+#: src/features/project-info/asset-attribution.tsx
+msgid "Notes/Modifications"
+msgstr "Notes/Modifications"
+
+#: src/features/keyboard/keyboard-shortcuts.definitions.ts
+msgid "Nudge selected item (0.5 m)"
+msgstr "Nudge selected item (0.5 m)"
+
+#: src/app/chrome/top-header/top-header-desktop.tsx
+msgid "Open project and asset info"
+msgstr "Open project and asset info"
+
+#: src/features/keyboard/keyboard-shortcuts.definitions.ts
+msgid "Orbit camera"
+msgstr "Orbit camera"
+
+#: src/features/room-surface/room-controls.tsx
+msgid "Paint finish"
+msgstr "Paint finish"
+
+#: src/features/keyboard/keyboard-shortcuts.definitions.ts
+msgid "Pan camera"
+msgstr "Pan camera"
+
+#: src/features/keyboard/keyboard-shortcuts.definitions.ts
+msgid "Pane focus"
+msgstr "Pane focus"
+
+#: src/features/room-surface/room-controls.tsx
+msgid "Pick a flooring finish for your room."
+msgstr "Pick a flooring finish for your room."
+
+#: src/features/room-surface/room-controls.tsx
+msgid "Pick a wall color for your room."
+msgstr "Pick a wall color for your room."
+
+#: src/features/selection/selected-details-view.tsx
+msgid "Position (m)"
+msgstr "Position (m)"
+
+#: src/features/startup/initialization-progress.tsx
+msgid "Preparing furniture assets..."
+msgstr "Preparing furniture assets..."
+
+#: src/features/startup/initialization-progress.tsx
+msgid "Preparing the editor"
+msgstr "Preparing the editor"
+
+#: src/features/startup/initialization-progress.tsx
+msgid "Preparing the room editor"
+msgstr "Preparing the room editor"
+
+#: src/features/keyboard/keyboard-shortcuts.definitions.ts
+msgid "Preview first/last"
+msgstr "Preview first/last"
+
+#: src/features/keyboard/keyboard-shortcuts.definitions.ts
+msgid "Preview next item"
+msgstr "Preview next item"
+
+#: src/features/keyboard/keyboard-shortcuts.definitions.ts
+msgid "Preview previous item"
+msgstr "Preview previous item"
+
+#: src/features/project-info/project-info-dialog.tsx
+msgid "Project & Asset Info"
+msgstr "Project & Asset Info"
+
+#: src/app/chrome/top-header/top-header-desktop.tsx
+msgid "Project and asset info"
+msgstr "Project and asset info"
+
+#: src/app/chrome/top-header/header-more-actions-drawer.tsx
+msgid "Project info"
+msgstr "Project info"
+
+#: src/features/keyboard/keyboard-shortcuts-help.tsx
+msgid "Quick reference for room-view, camera, selected item, and scene shortcuts. Most shortcuts below work only while the 3D room view is focused. Use the header controls for Add Furniture and Room, then open More on mobile for sharing and the other scene actions."
+msgstr "Quick reference for room-view, camera, selected item, and scene shortcuts. Most shortcuts below work only while the 3D room view is focused. Use the header controls for Add Furniture and Room, then open More on mobile for sharing and the other scene actions."
+
+#: src/features/history/history-tools.tsx
+#: src/features/keyboard/keyboard-shortcuts.definitions.ts
+msgid "Redo"
+msgstr "Redo"
+
+#: src/core/operations/history-actions.ts
+msgid "Redo complete."
+msgstr "Redo complete."
+
+#. placeholder {0}: pendingDeleteFurniture.name
+#: src/features/selection/delete-confirmation-dialog.tsx
+msgid "Remove {0} from your room layout?"
+msgstr "Remove {0} from your room layout?"
+
+#: src/features/keyboard/keyboard-shortcuts.definitions.ts
+#: src/features/selection/delete-confirmation-dialog.tsx
+#: src/features/selection/selected-item-tools.tsx
+msgid "Remove item"
+msgstr "Remove item"
+
+#: src/features/selection/delete-confirmation-dialog.tsx
+msgid "Remove item from room?"
+msgstr "Remove item from room?"
+
+#: src/features/selection/delete-confirmation-dialog.tsx
+msgid "Remove the selected item from your room layout?"
+msgstr "Remove the selected item from your room layout?"
+
+#: src/features/project-info/project-info-dialog.tsx
+msgid "Repository"
+msgstr "Repository"
+
+#: src/core/persistence/restore-flow.ts
+msgid "Restored your saved draft."
+msgstr "Restored your saved draft."
+
+#: src/features/startup/initialization-error.tsx
+msgid "Retry Loading"
+msgstr "Retry Loading"
+
+#: src/features/startup/initialization-error.tsx
+msgid "Retry to attempt startup again."
+msgstr "Retry to attempt startup again."
+
+#: src/features/startup/initialization-error.tsx
+msgid "Retry to request the essential assets again."
+msgstr "Retry to request the essential assets again."
+
+#: src/app/chrome/top-header/top-header-desktop.tsx
+#: src/app/chrome/top-header/top-header-mobile.tsx
+#: src/features/room-surface/room-drawer.tsx
+#: src/features/room-surface/room-sidebar.tsx
+msgid "Room"
+msgstr "Room"
+
+#: src/app/chrome/editor-body.tsx
+#: src/core/operations/share-scene.ts
+msgid "Room Layout"
+msgstr "Room Layout"
+
+#: src/core/persistence/restore-flow.ts
+msgid "Room layout restored from shared link."
+msgstr "Room layout restored from shared link."
+
+#: src/core/operations/share-scene.ts
+msgid "Room layout shared."
+msgstr "Room layout shared."
+
+#: src/features/project-info/project-info-dialog.tsx
+msgid "Room Layout: an open source 3D furniture layout tool. All 3D assets are CC-licensed and attributed below."
+msgstr "Room Layout: an open source 3D furniture layout tool. All 3D assets are CC-licensed and attributed below."
+
+#: src/features/keyboard/keyboard-shortcuts.definitions.ts
+#: src/features/selection/selected-details-view.tsx
+msgid "Rotate"
+msgstr "Rotate"
+
+#: src/features/keyboard/keyboard-shortcuts.definitions.ts
+#: src/features/selection/selected-item-tools.tsx
+msgid "Rotate clockwise"
+msgstr "Rotate clockwise"
+
+#: src/features/keyboard/keyboard-shortcuts.definitions.ts
+#: src/features/selection/selected-item-tools.tsx
+msgid "Rotate counterclockwise"
+msgstr "Rotate counterclockwise"
+
+#: src/features/selection/selected-details-view.tsx
+msgid "Rotation (deg)"
+msgstr "Rotation (deg)"
+
+#: src/features/keyboard/keyboard-shortcuts.definitions.ts
+msgid "Scene"
+msgstr "Scene"
+
+#: src/app/chrome/top-header/top-header-desktop.tsx
+msgid "Scene already matches defaults"
+msgstr "Scene already matches defaults"
+
+#: src/core/operations/share-scene.ts
+msgid "Scene is too large to share as a URL."
+msgstr "Scene is too large to share as a URL."
+
+#: src/core/operations/share-scene.ts
+msgid "Scene URL copied to clipboard."
+msgstr "Scene URL copied to clipboard."
+
+#: src/features/keyboard/keyboard-shortcuts.definitions.ts
+msgid "Scene/Global"
+msgstr "Scene/Global"
+
+#: src/features/outliner/outliner.tsx
+msgid "Select"
+msgstr "Select"
+
+#: src/core/operations/movement-actions.ts
+#: src/features/selection/selected-item-detail-messages.ts
+msgid "Select a furniture item first."
+msgstr "Select a furniture item first."
+
+#: src/features/selection/selected-details-view.tsx
+msgid "Select an item to fine-tune placement."
+msgstr "Select an item to fine-tune placement."
+
+#: src/features/keyboard/keyboard-shortcuts.definitions.ts
+msgid "Select previewed item"
+msgstr "Select previewed item"
+
+#: src/features/outliner/outliner.tsx
+msgid "Selected"
+msgstr "Selected"
+
+#: src/features/keyboard/keyboard-shortcuts.definitions.ts
+msgid "Selected Item"
+msgstr "Selected Item"
+
+#: src/features/selection/floating-selected-item-site.tsx
+#: src/features/selection/selected-item-tools.tsx
+msgid "Selected item actions"
+msgstr "Selected item actions"
+
+#: src/features/keyboard/keyboard-shortcuts.definitions.ts
+msgid "Selection"
+msgstr "Selection"
+
+#: src/core/operations/selection-effects.ts
+msgid "Selection cleared."
+msgstr "Selection cleared."
+
+#: src/app/chrome/top-header/share-scene-button.tsx
+msgid "Share"
+msgstr "Share"
+
+#: src/app/chrome/top-header/share-scene-button.tsx
+msgid "Share room layout"
+msgstr "Share room layout"
+
+#: src/app/chrome/top-header/header-more-actions-drawer.tsx
+msgid "Share, start over, or reference help."
+msgstr "Share, start over, or reference help."
+
+#: src/app/chrome/top-header/share-scene-button.tsx
+msgid "Shared"
+msgstr "Shared"
+
+#: src/core/persistence/restore-flow.ts
+msgid "Shared link and draft could not be restored."
+msgstr "Shared link and draft could not be restored."
+
+#: src/core/persistence/restore-flow.ts
+msgid "Shared link and draft could not be restored. Starting with an empty room."
+msgstr "Shared link and draft could not be restored. Starting with an empty room."
+
+#: src/core/persistence/restore-flow.ts
+msgid "Shared link contained unknown furniture. Draft restored."
+msgstr "Shared link contained unknown furniture. Draft restored."
+
+#: src/core/persistence/restore-flow.ts
+msgid "Shared link contained unrecognized furniture."
+msgstr "Shared link contained unrecognized furniture."
+
+#: src/core/persistence/restore-flow.ts
+msgid "Shared link contained unrecognized furniture. Starting with an empty room."
+msgstr "Shared link contained unrecognized furniture. Starting with an empty room."
+
+#: src/core/persistence/restore-flow.ts
+msgid "Shared link could not be restored."
+msgstr "Shared link could not be restored."
+
+#: src/core/persistence/restore-flow.ts
+msgid "Shared link could not be restored. Draft also failed to restore. Starting with an empty room."
+msgstr "Shared link could not be restored. Draft also failed to restore. Starting with an empty room."
+
+#: src/core/persistence/restore-flow.ts
+msgid "Shared link could not be restored. Recovered your local draft."
+msgstr "Shared link could not be restored. Recovered your local draft."
+
+#: src/core/persistence/restore-flow.ts
+msgid "Shared link could not be restored. Starting with an empty room."
+msgstr "Shared link could not be restored. Starting with an empty room."
+
+#: src/core/persistence/restore-flow.ts
+msgid "Shared link had unknown furniture. Draft also failed to restore. Starting with an empty room."
+msgstr "Shared link had unknown furniture. Draft also failed to restore. Starting with an empty room."
+
+#: src/core/persistence/restore-flow.ts
+msgid "Shared link was invalid. Draft also failed to restore. Starting with an empty room."
+msgstr "Shared link was invalid. Draft also failed to restore. Starting with an empty room."
+
+#: src/core/persistence/restore-flow.ts
+msgid "Shared link was invalid. Recovered your local draft."
+msgstr "Shared link was invalid. Recovered your local draft."
+
+#: src/features/camera/camera-tools.tsx
+#: src/features/keyboard/keyboard-shortcuts.definitions.ts
+msgid "Side"
+msgstr "Side"
+
+#: src/features/project-info/asset-attribution.tsx
+msgid "Source"
+msgstr "Source"
+
+#: src/features/project-info/project-info-dialog.tsx
+msgid "Source code"
+msgstr "Source code"
+
+#: src/app/chrome/top-header/start-over-button.tsx
+msgid "Start over"
+msgstr "Start over"
+
+#: src/app/chrome/top-header/header-more-actions-drawer.tsx
+#: src/app/chrome/top-header/start-over-button.tsx
+#: src/features/keyboard/keyboard-shortcuts.definitions.ts
+#: src/features/startup/start-over-confirmation-dialog.tsx
+msgid "Start Over"
+msgstr "Start Over"
+
+#: src/features/startup/start-over-confirmation-dialog.tsx
+msgid "Start over?"
+msgstr "Start over?"
+
+#: src/features/startup/start-over-actions.ts
+msgid "Started over. Your changes were cleared."
+msgstr "Started over. Your changes were cleared."
+
+#: src/features/startup/initialization-progress.tsx
+msgid "Starting asset requests"
+msgstr "Starting asset requests"
+
+#: src/features/startup/initialization-error.tsx
+msgid "Startup failed"
+msgstr "Startup failed"
+
+#: src/features/camera/camera-tools.tsx
+msgid "Switch to Corner view"
+msgstr "Switch to Corner view"
+
+#: src/features/camera/camera-tools.tsx
+msgid "Switch to Front view"
+msgstr "Switch to Front view"
+
+#: src/features/camera/camera-tools.tsx
+msgid "Switch to Side view"
+msgstr "Switch to Side view"
+
+#: src/features/camera/camera-tools.tsx
+msgid "Switch to Top view"
+msgstr "Switch to Top view"
+
+#: src/features/selection/selected-details-view.tsx
+msgid "Tab / Enter applies offset. Esc cancels."
+msgstr "Tab / Enter applies offset. Esc cancels."
+
+#: src/features/selection/selected-details-view.tsx
+msgid "Tab / Enter applies rotation. Esc cancels."
+msgstr "Tab / Enter applies rotation. Esc cancels."
+
+#: src/features/startup/initialization-error.tsx
+msgid "The editor could not download the furniture catalog required to start."
+msgstr "The editor could not download the furniture catalog required to start."
+
+#: src/features/startup/initialization-progress.tsx
+msgid "The editor will unlock after the required furniture models finish loading."
+msgstr "The editor will unlock after the required furniture models finish loading."
+
+#: src/features/startup/initialization-error.tsx
+msgid "The furniture catalog request timed out before startup completed."
+msgstr "The furniture catalog request timed out before startup completed."
+
+#: src/features/startup/initialization-error.tsx
+msgid "The furniture catalog was fetched but failed validation checks."
+msgstr "The furniture catalog was fetched but failed validation checks."
+
+#: src/features/startup/initialization-error.tsx
+msgid "The room editor could not start"
+msgstr "The room editor could not start"
+
+#: src/features/startup/initialization-error.tsx
+msgid "The room editor could not start due to an unexpected startup error."
+msgstr "The room editor could not start due to an unexpected startup error."
+
+#: src/shared/messages/command-messages.ts
+msgid "The selected furniture entry is no longer available."
+msgstr "The selected furniture entry is no longer available."
+
+#: src/features/startup/start-over-confirmation-dialog.tsx
+msgid "This clears your current changes and restores the default room."
+msgstr "This clears your current changes and restores the default room."
+
+#: src/features/outliner/outliner.tsx
+msgid "Toggle furniture list visibility"
+msgstr "Toggle furniture list visibility"
+
+#: src/features/camera/camera-tools.tsx
+#: src/features/keyboard/keyboard-shortcuts.definitions.ts
+msgid "Top"
+msgstr "Top"
+
+#: src/core/operations/startup-coordinator.ts
+msgid "Unable to load room editor assets. Retry available."
+msgstr "Unable to load room editor assets. Retry available."
+
+#: src/features/history/history-tools.tsx
+#: src/features/keyboard/keyboard-shortcuts.definitions.ts
+msgid "Undo"
+msgstr "Undo"
+
+#: src/core/operations/history-actions.ts
+msgid "Undo complete."
+msgstr "Undo complete."
+
+#: src/features/room-surface/room-controls.tsx
+msgid "Updating"
+msgstr "Updating"
+
+#: src/app/chrome/editor-body.tsx
+msgid "Use the arrow keys to browse items in the room, then press Enter or Space to select one."
+msgstr "Use the arrow keys to browse items in the room, then press Enter or Space to select one."
+
+#: src/features/keyboard/keyboard-shortcuts.definitions.ts
+msgid "View Presets"
+msgstr "View Presets"
+
+#: src/features/room-surface/room-controls.tsx
+msgid "Wall finish"
+msgstr "Wall finish"
+
+#: src/features/room-surface/room-controls.tsx
+msgid "Walls"
+msgstr "Walls"
+
+#: src/features/keyboard/keyboard-shortcuts.definitions.ts
+msgid "Zoom in/out"
+msgstr "Zoom in/out"

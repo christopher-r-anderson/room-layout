@@ -1,4 +1,7 @@
 import { useEffect, useRef } from 'react'
+import type { I18n } from '@lingui/core'
+import { msg } from '@lingui/core/macro'
+import { Trans, useLingui } from '@lingui/react/macro'
 import { Button } from '@/shared/ui/button'
 import { Caption } from '@/shared/ui/caption'
 import { Card, CardContent } from '@/shared/ui/card'
@@ -11,51 +14,60 @@ interface InitializationErrorProps {
 }
 
 function getErrorCopy(
+  i18n: I18n,
   errorKind: StartupErrorKind | null,
   errorMessage: string | null,
 ) {
   if (errorKind === 'manifest-timeout') {
     return {
-      label: 'Catalog request timed out',
-      description:
-        'The furniture catalog request timed out before startup completed.',
-      note: 'Check your connection and retry loading the catalog.',
+      label: i18n._(msg`Catalog request timed out`),
+      description: i18n._(
+        msg`The furniture catalog request timed out before startup completed.`,
+      ),
+      note: i18n._(msg`Check your connection and retry loading the catalog.`),
     }
   }
 
   if (errorKind === 'manifest-network') {
     return {
-      label: 'Catalog request failed',
-      description:
-        'The editor could not download the furniture catalog required to start.',
-      note: 'Check your connection and retry loading the catalog.',
+      label: i18n._(msg`Catalog request failed`),
+      description: i18n._(
+        msg`The editor could not download the furniture catalog required to start.`,
+      ),
+      note: i18n._(msg`Check your connection and retry loading the catalog.`),
     }
   }
 
   if (errorKind === 'manifest-validation') {
     return {
-      label: 'Catalog data is invalid',
-      description:
-        'The furniture catalog was fetched but failed validation checks.',
-      note: 'Confirm the manifest schema and asset paths, then retry.',
+      label: i18n._(msg`Catalog data is invalid`),
+      description: i18n._(
+        msg`The furniture catalog was fetched but failed validation checks.`,
+      ),
+      note: i18n._(
+        msg`Confirm the manifest schema and asset paths, then retry.`,
+      ),
     }
   }
 
   if (errorKind === 'asset-load') {
     return {
-      label: 'Asset loading failed',
-      description:
-        'A required furniture model did not load correctly, so editor interactions are temporarily unavailable.',
-      note: 'Retry to request the essential assets again.',
+      label: i18n._(msg`Asset loading failed`),
+      description: i18n._(
+        msg`A required furniture model did not load correctly, so editor interactions are temporarily unavailable.`,
+      ),
+      note: i18n._(msg`Retry to request the essential assets again.`),
     }
   }
 
   return {
-    label: 'Startup failed',
+    label: i18n._(msg`Startup failed`),
     description:
       errorMessage ??
-      'The room editor could not start due to an unexpected startup error.',
-    note: 'Retry to attempt startup again.',
+      i18n._(
+        msg`The room editor could not start due to an unexpected startup error.`,
+      ),
+    note: i18n._(msg`Retry to attempt startup again.`),
   }
 }
 
@@ -63,8 +75,11 @@ export function InitializationError({
   errorKind,
   errorMessage,
 }: InitializationErrorProps) {
+  // Subscribe to locale changes so the error copy re-resolves when a non-default
+  // locale activates after this overlay has mounted.
+  const { i18n } = useLingui()
   const retryButtonRef = useRef<HTMLButtonElement | null>(null)
-  const copy = getErrorCopy(errorKind, errorMessage)
+  const copy = getErrorCopy(i18n, errorKind, errorMessage)
 
   useEffect(() => {
     retryButtonRef.current?.focus()
@@ -84,7 +99,7 @@ export function InitializationError({
             id="startup-error-title"
             className="text-2xl font-semibold leading-tight"
           >
-            The room editor could not start
+            <Trans>The room editor could not start</Trans>
           </h2>
           <p
             id="startup-error-description"
@@ -105,7 +120,7 @@ export function InitializationError({
               variant="outline"
               onClick={requestAssetRetry}
             >
-              Retry Loading
+              <Trans>Retry Loading</Trans>
             </Button>
           </div>
         </CardContent>

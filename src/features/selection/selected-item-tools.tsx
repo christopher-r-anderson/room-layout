@@ -1,4 +1,5 @@
 import { Toolbar } from '@base-ui/react/toolbar'
+import { useLingui } from '@lingui/react/macro'
 import { IconRotate3d, IconTrash } from '@tabler/icons-react'
 import { cn } from '@/shared/lib/utils'
 import { buttonGroupVariants } from '@/shared/ui/button-group-variants'
@@ -13,15 +14,17 @@ export function SelectedItemTools({
   onPrepareDelete?: () => void
   onRotateSelection: (direction: -1 | 1) => void
 }) {
+  const { t } = useLingui()
+
   return (
     <Toolbar.Root
-      aria-label="Selected item actions"
+      aria-label={t`Selected item actions`}
       className={cn(buttonGroupVariants({ orientation: 'horizontal' }))}
     >
       <ToolButton
         displayLabel={false}
         shortcuts=","
-        label="Rotate counterclockwise"
+        label={t`Rotate counterclockwise`}
         icon={<IconRotate3d className="-scale-x-100" />}
         action={() => {
           onRotateSelection(1)
@@ -30,7 +33,7 @@ export function SelectedItemTools({
       <ToolButton
         displayLabel={false}
         shortcuts="."
-        label="Rotate clockwise"
+        label={t`Rotate clockwise`}
         icon={<IconRotate3d />}
         action={() => {
           onRotateSelection(-1)
@@ -39,7 +42,7 @@ export function SelectedItemTools({
       <ToolButton
         displayLabel={false}
         shortcuts="Delete Backspace"
-        label="Remove item"
+        label={t`Remove item`}
         icon={<IconTrash />}
         action={onOpenDeleteDialog}
         onPointerDown={() => {

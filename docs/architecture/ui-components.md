@@ -1,7 +1,7 @@
 # UI Components Policy
 
-This guide defines how the project uses shadcn-derived components and related
-maintenance exceptions.
+This guide defines how the project uses shadcn-derived components and the logical
+CSS property convention.
 
 ## Ownership Model
 
@@ -27,26 +27,12 @@ dialog centering, the tooltip arrow geometry, and third-party direction APIs
 inline-axis utilities that have a logical equivalent. Mark a deliberate physical
 case with a `logical-css-allow` comment on or above the line.
 
-## Current Knip Exception
-
-`knip.json` currently ignores unused exports for `src/shared/ui/*.tsx`.
-
-Rationale:
-
-- preserve reusable component exports that are intentionally available but not
-  currently imported in app code
-- avoid churn from deleting and re-adding utility component exports during UI
-  iteration
-
-## Exit Criteria
-
-Revisit and remove this exception when either condition is true:
-
-1. UI surface stabilizes and unused exports can be pruned with confidence.
-2. A stricter component-level export policy is adopted for `src/shared/ui/`.
+When an RTL locale is added, these deliberate physical cases are the ones to
+re-verify - they do not follow `dir` and may need `:dir()` handling. See
+[Internationalization](i18n.md#adding-a-locale).
 
 ## Related Docs
 
 - `README.md`
-- `knip.json`
 - `.agents/skills/shadcn/SKILL.md`
+- `docs/architecture/i18n.md`

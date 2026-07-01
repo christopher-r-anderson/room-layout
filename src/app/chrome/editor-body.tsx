@@ -1,5 +1,6 @@
 import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
+import { Trans, useLingui } from '@lingui/react/macro'
 import { useIsBlockingOverlayOpen } from '@/core/stores/dialog-store'
 import { useSelectedFurniture } from '@/core/stores/scene-document-store'
 import {
@@ -34,6 +35,7 @@ export interface EditorBodyProps {
 }
 
 export function EditorBody({ testOverlaysHidden }: EditorBodyProps) {
+  const { t } = useLingui()
   const previewedId = usePreviewedId()
   const {
     selectedFloorOption,
@@ -111,10 +113,12 @@ export function EditorBody({ testOverlaysHidden }: EditorBodyProps) {
       aria-busy={startupLoadingActive}
       data-test-overlays-hidden={testOverlaysHidden ? 'true' : 'false'}
     >
-      <h1 className="sr-only">Room Layout</h1>
+      <h1 className="sr-only">
+        <Trans>Room Layout</Trans>
+      </h1>
       <section
         aria-describedby="scene-instructions"
-        aria-label="Interactive 3D room editor"
+        aria-label={t`Interactive 3D room editor`}
         ref={roomViewRef}
         tabIndex={0}
         inert={startupOverlayActive}
@@ -132,8 +136,10 @@ export function EditorBody({ testOverlaysHidden }: EditorBodyProps) {
         onPointerDownCapture={focusRoomView}
       >
         <p id="scene-instructions" className="sr-only">
-          Use the arrow keys to browse items in the room, then press Enter or
-          Space to select one.
+          <Trans>
+            Use the arrow keys to browse items in the room, then press Enter or
+            Space to select one.
+          </Trans>
         </p>
         <Suspense fallback={null}>
           <SceneCanvas

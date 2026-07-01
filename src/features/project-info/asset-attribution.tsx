@@ -3,6 +3,7 @@ import {
   DescriptionList,
   DescriptionTerm,
 } from '@/shared/ui/description-list'
+import { Trans } from '@lingui/react/macro'
 import { Fragment, useId } from 'react'
 import attributions from './asset-attributions.json'
 
@@ -73,15 +74,21 @@ function AssetAttribution({
             </DescriptionDetail>
           </Fragment>
         ))}
-        <DescriptionTerm>Source</DescriptionTerm>
+        <DescriptionTerm>
+          <Trans>Source</Trans>
+        </DescriptionTerm>
         <DescriptionDetail>
           <ExternalLink href={sourceHref}>{sourceName}</ExternalLink>
         </DescriptionDetail>
-        <DescriptionTerm>License</DescriptionTerm>
+        <DescriptionTerm>
+          <Trans>License</Trans>
+        </DescriptionTerm>
         <DescriptionDetail>
           <ExternalLink href={licenseHref}>{licenseName}</ExternalLink>
         </DescriptionDetail>
-        <DescriptionTerm>Notes/Modifications</DescriptionTerm>
+        <DescriptionTerm>
+          <Trans>Notes/Modifications</Trans>
+        </DescriptionTerm>
         <DescriptionDetail>
           <ExternalLink
             href={`https://github.com/christopher-r-anderson/room-layout/blob/main/${localSourcePath}`}

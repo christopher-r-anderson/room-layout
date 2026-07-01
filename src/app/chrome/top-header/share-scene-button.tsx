@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Button } from '@/shared/ui/button'
+import { useLingui } from '@lingui/react/macro'
 import { IconCheck, IconShare3 } from '@tabler/icons-react'
 import type { ComponentProps } from 'react'
 import { shareScene } from '@/core/operations/share-scene'
@@ -17,6 +18,7 @@ export function ShareSceneButton({
   size = 'default',
   variant = 'default',
 }: ShareSceneButtonProps) {
+  const { t } = useLingui()
   const [shareResult, setShareResult] = useState<'shared' | 'copied' | null>(
     null,
   )
@@ -58,10 +60,10 @@ export function ShareSceneButton({
 
   const label =
     shareResult === 'shared'
-      ? 'Shared'
+      ? t`Shared`
       : shareResult === 'copied'
-        ? 'Copied'
-        : 'Share'
+        ? t`Copied`
+        : t`Share`
 
   return (
     <Button
@@ -71,7 +73,7 @@ export function ShareSceneButton({
       onClick={() => {
         void handleClick()
       }}
-      aria-label="Share room layout"
+      aria-label={t`Share room layout`}
       className={className}
     >
       {shareResult === null ? (

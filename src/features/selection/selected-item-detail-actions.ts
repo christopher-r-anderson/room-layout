@@ -1,4 +1,6 @@
+import { msg } from '@lingui/core/macro'
 import { resolvePositionFromWallClearances } from '@/domain/geometry/wall-clearance'
+import { i18n } from '@/shared/i18n/i18n'
 import { feedbackActions } from '@/core/stores/feedback-store'
 import {
   sceneDocumentStore,
@@ -67,7 +69,8 @@ export function updateSelectedItemDetails(
 
   if (result.ok) {
     selectionFocusActions.setSelectedSource('panel-keyboard')
-    feedbackActions.announcePolite(`${result.item.name} details updated.`)
+    const itemName = result.item.name
+    feedbackActions.announcePolite(i18n._(msg`${itemName} details updated.`))
     return { ok: true, item: result.item }
   }
 

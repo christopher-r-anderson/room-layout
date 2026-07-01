@@ -1,8 +1,11 @@
-export const ADD_FURNITURE_NO_SPACE_MESSAGE =
-  'No safe placement slot is available for that furniture item.'
+import { msg } from '@lingui/core/macro'
+import type { MessageDescriptor } from '@lingui/core'
 
-export const ADD_FURNITURE_UNKNOWN_CATALOG_MESSAGE =
-  'The selected furniture entry is no longer available.'
+// Command failure messages as Lingui descriptors. Callers resolve them with
+// `i18n._(...)` at the point of use so they reflect the active locale rather than
+// freezing to whatever was active at module load.
+export const ADD_FURNITURE_NO_SPACE_MESSAGE: MessageDescriptor = msg`No safe placement slot is available for that furniture item.`
 
-export const DELETE_SELECTION_MISSING_MESSAGE =
-  'No selected furniture item was available to delete.'
+export const ADD_FURNITURE_UNKNOWN_CATALOG_MESSAGE: MessageDescriptor = msg`The selected furniture entry is no longer available.`
+
+export const DELETE_SELECTION_MISSING_MESSAGE: MessageDescriptor = msg`No selected furniture item was available to delete.`

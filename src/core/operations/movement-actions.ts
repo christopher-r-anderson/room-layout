@@ -1,3 +1,4 @@
+import { msg } from '@lingui/core/macro'
 import { feedbackActions } from '@/core/stores/feedback-store'
 import {
   sceneDocumentStore,
@@ -6,25 +7,23 @@ import {
 import { toolbarInteractionActions } from '@/core/stores/toolbar-interaction-store'
 import { sceneCommands } from '@/scene/scene-commands'
 import type { MoveSelectionResult, MoveSource } from '@/scene/scene.types'
+import { i18n } from '@/shared/i18n/i18n'
+import { formatDistanceMeters } from '@/shared/i18n/formatters'
 
 const ROTATION_STEP_RADIANS = Math.PI / 12
-
-function formatCoordinate(value: number) {
-  return `${value.toFixed(1)} meters`
-}
 
 function formatMoveBlockedMessage(
   reason: Exclude<MoveSelectionResult, { ok: true }>['reason'],
 ) {
   switch (reason) {
     case 'blocked-bounds':
-      return 'Movement blocked by room bounds.'
+      return i18n._(msg`Movement blocked by room bounds.`)
     case 'blocked-collision':
-      return 'Movement blocked by another furniture item.'
+      return i18n._(msg`Movement blocked by another furniture item.`)
     case 'dragging':
-      return 'Finish dragging before using movement controls.'
+      return i18n._(msg`Finish dragging before using movement controls.`)
     case 'no-selection':
-      return 'Select a furniture item first.'
+      return i18n._(msg`Select a furniture item first.`)
     case 'no-op':
       return ''
   }
@@ -46,8 +45,10 @@ export function moveSelection(
 
   if (result.ok) {
     if (movedItemName) {
+      const x = formatDistanceMeters(result.position[0])
+      const z = formatDistanceMeters(result.position[2])
       feedbackActions.queueMovementAnnouncement(
-        `${movedItemName} moved to X ${formatCoordinate(result.position[0])} and Z ${formatCoordinate(result.position[2])}.`,
+        i18n._(msg`${movedItemName} moved to X ${x} and Z ${z}.`),
       )
     }
 
@@ -85,6 +86,6 @@ export function rotateSelection(direction: -1 | 1) {
   sceneCommands.rotateSelection(direction * ROTATION_STEP_RADIANS)
 
   if (rotatingName) {
-    feedbackActions.announcePolite(`${rotatingName} rotated.`)
+    feedbackActions.announcePolite(i18n._(msg`${rotatingName} rotated.`))
   }
 }

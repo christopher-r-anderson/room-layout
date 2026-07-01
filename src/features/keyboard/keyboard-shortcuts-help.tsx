@@ -10,6 +10,8 @@ import { Card } from '@/shared/ui/card'
 import { Kbd, KbdGroup } from '@/shared/ui/kbd'
 import { ScrollArea } from '@/shared/ui/scroll-area'
 import { Fragment } from 'react'
+import { Trans, useLingui } from '@lingui/react/macro'
+import type { MessageDescriptor } from '@lingui/core'
 import {
   KEYBOARD_SHORTCUTS,
   type KeyboardShortcutDefinition,
@@ -20,17 +22,17 @@ import {
 type ShortcutCombo = ShortcutComboLabel
 
 interface ShortcutRow {
-  label: string
+  label: MessageDescriptor
   combos: ShortcutCombo[]
 }
 
 interface ShortcutGroup {
-  groupLabel: string
+  groupLabel: MessageDescriptor
   rows: ShortcutRow[]
 }
 
 interface ShortcutSection {
-  sectionTitle: string
+  sectionTitle: MessageDescriptor
   groups: ShortcutGroup[]
 }
 
@@ -40,17 +42,17 @@ function buildShortcutSections(
   const sections = new Map<
     string,
     {
-      sectionTitle: string
+      sectionTitle: MessageDescriptor
       sectionOrder: number
       groups: Map<
         string,
         {
-          groupLabel: string
+          groupLabel: MessageDescriptor
           groupOrder: number
           rows: Map<
             string,
             {
-              label: string
+              label: MessageDescriptor
               rowOrder: number
               combos: ShortcutCombo[]
             }
@@ -62,11 +64,12 @@ function buildShortcutSections(
 
   for (const shortcut of shortcuts) {
     for (const helpEntry of shortcut.helpEntries) {
-      const sectionKey = [helpEntry.sectionOrder, helpEntry.sectionTitle].join(
-        ':',
-      )
-      const groupKey = [helpEntry.groupOrder, helpEntry.groupLabel].join(':')
-      const rowKey = [helpEntry.rowOrder, helpEntry.rowLabel].join(':')
+      const sectionKey = [
+        helpEntry.sectionOrder,
+        helpEntry.sectionTitle.id,
+      ].join(':')
+      const groupKey = [helpEntry.groupOrder, helpEntry.groupLabel.id].join(':')
+      const rowKey = [helpEntry.rowOrder, helpEntry.rowLabel.id].join(':')
 
       let section = sections.get(sectionKey)
       if (!section) {
@@ -189,6 +192,8 @@ export function KeyboardShortcutsDialog({
   open,
   onOpenChange,
 }: KeyboardShortcutsDialogProps) {
+  const { i18n } = useLingui()
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
@@ -196,67 +201,83 @@ export function KeyboardShortcutsDialog({
         className="max-h-[calc(100dvh-2rem)] gap-3 sm:max-w-4xl"
       >
         <DialogHeader>
-          <DialogTitle>Keyboard Shortcuts</DialogTitle>
+          <DialogTitle>
+            <Trans>Keyboard Shortcuts</Trans>
+          </DialogTitle>
           <DialogDescription>
-            Quick reference for room-view, camera, selected item, and scene
-            shortcuts. Most shortcuts below work only while the 3D room view is
-            focused. Use the header controls for Add Furniture and Room, then
-            open More on mobile for sharing and the other scene actions.
+            <Trans>
+              Quick reference for room-view, camera, selected item, and scene
+              shortcuts. Most shortcuts below work only while the 3D room view
+              is focused. Use the header controls for Add Furniture and Room,
+              then open More on mobile for sharing and the other scene actions.
+            </Trans>
           </DialogDescription>
         </DialogHeader>
 
         <ScrollArea className="max-h-[min(75vh,calc(100dvh-10rem))]">
           <div className="grid gap-4 pb-2 pe-3">
-            {SHORTCUT_SECTIONS.map((section) => (
-              <Card key={section.sectionTitle} className="py-0">
-                <div className="overflow-x-auto">
-                  <table className="w-full caption-top text-xs">
-                    <caption className="border-b border-border/70 bg-muted/35 px-4 py-3 text-start text-sm font-semibold tracking-[0.01em] text-foreground">
-                      {section.sectionTitle}
-                    </caption>
-                    <tbody>
-                      {section.groups.flatMap((shortcutGroup, groupIndex) =>
-                        shortcutGroup.rows.map((shortcutRow, rowIndex) => (
-                          <tr
-                            key={`${shortcutGroup.groupLabel}-${shortcutRow.label}`}
-                            className={[
-                              groupIndex > 0 && rowIndex === 0
-                                ? 'border-t border-border/70'
-                                : '',
-                              rowIndex % 2 === 0
-                                ? 'bg-background/65'
-                                : 'bg-muted/20',
-                              'transition-colors hover:bg-accent/35',
-                            ]
-                              .filter(Boolean)
-                              .join(' ')}
-                          >
-                            {rowIndex === 0 ? (
-                              <th
-                                scope="rowgroup"
-                                rowSpan={shortcutGroup.rows.length}
-                                className="w-24 min-w-24 px-4 py-3 text-start align-top font-semibold text-foreground"
-                              >
-                                {shortcutGroup.groupLabel}
-                              </th>
-                            ) : null}
-                            <th
-                              scope="row"
-                              className="w-56 min-w-56 px-4 py-3 text-start align-top font-normal whitespace-nowrap text-foreground"
-                            >
-                              {shortcutRow.label}
-                            </th>
-                            <td className="px-4 py-3 text-end">
-                              {renderShortcutCombos(shortcutRow.combos)}
-                            </td>
-                          </tr>
-                        )),
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </Card>
-            ))}
+            {SHORTCUT_SECTIONS.map((section) => {
+              const sectionTitle = i18n._(section.sectionTitle)
+
+              return (
+                <Card key={section.sectionTitle.id} className="py-0">
+                  <div className="overflow-x-auto">
+                    <table className="w-full caption-top text-xs">
+                      <caption className="border-b border-border/70 bg-muted/35 px-4 py-3 text-start text-sm font-semibold tracking-[0.01em] text-foreground">
+                        {sectionTitle}
+                      </caption>
+                      <tbody>
+                        {section.groups.flatMap((shortcutGroup, groupIndex) => {
+                          const groupLabel = i18n._(shortcutGroup.groupLabel)
+
+                          return shortcutGroup.rows.map(
+                            (shortcutRow, rowIndex) => {
+                              const rowLabel = i18n._(shortcutRow.label)
+
+                              return (
+                                <tr
+                                  key={`${shortcutGroup.groupLabel.id}-${shortcutRow.label.id}`}
+                                  className={[
+                                    groupIndex > 0 && rowIndex === 0
+                                      ? 'border-t border-border/70'
+                                      : '',
+                                    rowIndex % 2 === 0
+                                      ? 'bg-background/65'
+                                      : 'bg-muted/20',
+                                    'transition-colors hover:bg-accent/35',
+                                  ]
+                                    .filter(Boolean)
+                                    .join(' ')}
+                                >
+                                  {rowIndex === 0 ? (
+                                    <th
+                                      scope="rowgroup"
+                                      rowSpan={shortcutGroup.rows.length}
+                                      className="w-24 min-w-24 px-4 py-3 text-start align-top font-semibold text-foreground"
+                                    >
+                                      {groupLabel}
+                                    </th>
+                                  ) : null}
+                                  <th
+                                    scope="row"
+                                    className="w-56 min-w-56 px-4 py-3 text-start align-top font-normal whitespace-nowrap text-foreground"
+                                  >
+                                    {rowLabel}
+                                  </th>
+                                  <td className="px-4 py-3 text-end">
+                                    {renderShortcutCombos(shortcutRow.combos)}
+                                  </td>
+                                </tr>
+                              )
+                            },
+                          )
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </Card>
+              )
+            })}
           </div>
         </ScrollArea>
 

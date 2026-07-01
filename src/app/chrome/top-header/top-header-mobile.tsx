@@ -7,7 +7,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/shared/ui/tooltip'
 import { IconDotsVertical, IconHomeCog } from '@tabler/icons-react'
 import { RoomDrawer } from '@/features/room-surface/room-drawer'
 import { HeaderMoreActionsDrawer } from './header-more-actions-drawer'
-import { ROOM_TRIGGER_TOOLTIP } from '@/features/room-surface/room-copy'
+import { Trans, useLingui } from '@lingui/react/macro'
 import {
   HEADER_MORE_ACTIONS_CONTENT_ID,
   topHeaderDialogOpenChange,
@@ -28,6 +28,8 @@ export function TopHeaderMobile({
   onOpenProjectInfoFromHeaderMoreActions,
   topHeaderRef,
 }: TopHeaderMobileProps) {
+  const { t } = useLingui()
+
   return (
     <div
       ref={topHeaderRef}
@@ -35,7 +37,7 @@ export function TopHeaderMobile({
       className="pointer-events-auto"
     >
       <Toolbar.Root
-        aria-label="Header actions"
+        aria-label={t`Header actions`}
         render={<TopHeaderSurface className="w-full" />}
       >
         <CatalogDrawer
@@ -60,13 +62,15 @@ export function TopHeaderMobile({
                     }}
                   >
                     <IconHomeCog size={16} aria-hidden="true" />
-                    Room
+                    <Trans>Room</Trans>
                   </Button>
                 }
               />
             }
           />
-          <TooltipContent side="bottom">{ROOM_TRIGGER_TOOLTIP}</TooltipContent>
+          <TooltipContent side="bottom">
+            <Trans>Adjust wall, floor, and lighting</Trans>
+          </TooltipContent>
         </Tooltip>
         <HistoryTools
           canRedo={history.canRedo}
@@ -86,7 +90,7 @@ export function TopHeaderMobile({
                     type="button"
                     variant="secondary"
                     size="toolbar-icon"
-                    aria-label="More actions"
+                    aria-label={t`More actions`}
                     aria-controls={HEADER_MORE_ACTIONS_CONTENT_ID}
                     aria-expanded={isHeaderMoreActionsOpen}
                     aria-haspopup="dialog"
@@ -100,7 +104,9 @@ export function TopHeaderMobile({
               />
             }
           />
-          <TooltipContent side="bottom">More actions</TooltipContent>
+          <TooltipContent side="bottom">
+            <Trans>More actions</Trans>
+          </TooltipContent>
         </Tooltip>
       </Toolbar.Root>
 

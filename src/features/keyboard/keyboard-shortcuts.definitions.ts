@@ -1,3 +1,5 @@
+import { msg } from '@lingui/core/macro'
+import type { MessageDescriptor } from '@lingui/core'
 import type { EditorCommand } from '@/core/commands/editor-command'
 import type { KeyCombo } from './keyboard-shortcut-matcher'
 
@@ -27,11 +29,11 @@ export type ShortcutKeyLabel =
 export type ShortcutComboLabel = ShortcutKeyLabel[]
 
 interface ShortcutHelpEntry {
-  sectionTitle: string
+  sectionTitle: MessageDescriptor
   sectionOrder: number
-  groupLabel: string
+  groupLabel: MessageDescriptor
   groupOrder: number
-  rowLabel: string
+  rowLabel: MessageDescriptor
   rowOrder: number
   comboLabels: ShortcutComboLabel[]
 }
@@ -77,11 +79,11 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     suppressionMode: 'always-on-match',
     helpEntries: [
       {
-        sectionTitle: 'Scene/Global',
+        sectionTitle: msg`Scene/Global`,
         sectionOrder: 4,
-        groupLabel: 'History',
+        groupLabel: msg`History`,
         groupOrder: 1,
-        rowLabel: 'Undo',
+        rowLabel: msg`Undo`,
         rowOrder: 1,
         comboLabels: [[PRIMARY_MODIFIER_LABEL, 'Z']],
       },
@@ -98,11 +100,11 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     suppressionMode: 'always-on-match',
     helpEntries: [
       {
-        sectionTitle: 'Scene/Global',
+        sectionTitle: msg`Scene/Global`,
         sectionOrder: 4,
-        groupLabel: 'History',
+        groupLabel: msg`History`,
         groupOrder: 1,
-        rowLabel: 'Redo',
+        rowLabel: msg`Redo`,
         rowOrder: 2,
         comboLabels: [
           [PRIMARY_MODIFIER_LABEL, 'Shift', 'Z'],
@@ -119,11 +121,11 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     requiresStartOverCapability: true,
     helpEntries: [
       {
-        sectionTitle: 'Scene/Global',
+        sectionTitle: msg`Scene/Global`,
         sectionOrder: 4,
-        groupLabel: 'Scene',
+        groupLabel: msg`Scene`,
         groupOrder: 2,
-        rowLabel: 'Start Over',
+        rowLabel: msg`Start Over`,
         rowOrder: 1,
         comboLabels: [[PRIMARY_MODIFIER_LABEL, ALT_MODIFIER_LABEL, 'N']],
       },
@@ -136,11 +138,11 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     command: { kind: 'focus-inspector' },
     helpEntries: [
       {
-        sectionTitle: 'Navigation',
+        sectionTitle: msg`Navigation`,
         sectionOrder: 1,
-        groupLabel: 'Pane focus',
+        groupLabel: msg`Pane focus`,
         groupOrder: 1,
-        rowLabel: 'Focus inspector',
+        rowLabel: msg`Focus inspector`,
         rowOrder: 1,
         comboLabels: [['Shift', 'I']],
       },
@@ -153,11 +155,11 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     command: { kind: 'focus-room-view' },
     helpEntries: [
       {
-        sectionTitle: 'Navigation',
+        sectionTitle: msg`Navigation`,
         sectionOrder: 1,
-        groupLabel: 'Pane focus',
+        groupLabel: msg`Pane focus`,
         groupOrder: 1,
-        rowLabel: 'Focus room view',
+        rowLabel: msg`Focus room view`,
         rowOrder: 2,
         comboLabels: [['Shift', 'R']],
       },
@@ -170,11 +172,11 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     command: { kind: 'focus-outliner' },
     helpEntries: [
       {
-        sectionTitle: 'Navigation',
+        sectionTitle: msg`Navigation`,
         sectionOrder: 1,
-        groupLabel: 'Pane focus',
+        groupLabel: msg`Pane focus`,
         groupOrder: 1,
-        rowLabel: 'Focus Furniture in room',
+        rowLabel: msg`Focus Furniture in room`,
         rowOrder: 3,
         comboLabels: [['Shift', 'O']],
       },
@@ -187,11 +189,11 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     command: { kind: 'focus-toolbar' },
     helpEntries: [
       {
-        sectionTitle: 'Navigation',
+        sectionTitle: msg`Navigation`,
         sectionOrder: 1,
-        groupLabel: 'Pane focus',
+        groupLabel: msg`Pane focus`,
         groupOrder: 1,
-        rowLabel: 'Focus selected item actions',
+        rowLabel: msg`Focus selected item actions`,
         rowOrder: 4,
         comboLabels: [['Shift', 'T']],
       },
@@ -207,11 +209,11 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     suppressionMode: 'on-execute',
     helpEntries: [
       {
-        sectionTitle: 'Selected Item',
+        sectionTitle: msg`Selected Item`,
         sectionOrder: 3,
-        groupLabel: 'Actions',
+        groupLabel: msg`Actions`,
         groupOrder: 3,
-        rowLabel: 'Remove item',
+        rowLabel: msg`Remove item`,
         rowOrder: 1,
         comboLabels: [['Delete'], ['Backspace']],
       },
@@ -227,11 +229,11 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     suppressionMode: 'on-execute',
     helpEntries: [
       {
-        sectionTitle: 'Camera Controls',
+        sectionTitle: msg`Camera Controls`,
         sectionOrder: 2,
-        groupLabel: 'Focus',
+        groupLabel: msg`Focus`,
         groupOrder: 2,
-        rowLabel: 'Focus selected item',
+        rowLabel: msg`Focus selected item`,
         rowOrder: 1,
         comboLabels: [['F']],
       },
@@ -246,11 +248,11 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     suppressionMode: 'on-execute',
     helpEntries: [
       {
-        sectionTitle: 'Camera Controls',
+        sectionTitle: msg`Camera Controls`,
         sectionOrder: 2,
-        groupLabel: 'View Presets',
+        groupLabel: msg`View Presets`,
         groupOrder: 1,
-        rowLabel: 'Corner',
+        rowLabel: msg`Corner`,
         rowOrder: 1,
         comboLabels: [['1']],
       },
@@ -265,11 +267,11 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     suppressionMode: 'on-execute',
     helpEntries: [
       {
-        sectionTitle: 'Camera Controls',
+        sectionTitle: msg`Camera Controls`,
         sectionOrder: 2,
-        groupLabel: 'View Presets',
+        groupLabel: msg`View Presets`,
         groupOrder: 1,
-        rowLabel: 'Front',
+        rowLabel: msg`Front`,
         rowOrder: 2,
         comboLabels: [['2']],
       },
@@ -284,11 +286,11 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     suppressionMode: 'on-execute',
     helpEntries: [
       {
-        sectionTitle: 'Camera Controls',
+        sectionTitle: msg`Camera Controls`,
         sectionOrder: 2,
-        groupLabel: 'View Presets',
+        groupLabel: msg`View Presets`,
         groupOrder: 1,
-        rowLabel: 'Side',
+        rowLabel: msg`Side`,
         rowOrder: 3,
         comboLabels: [['3']],
       },
@@ -303,11 +305,11 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     suppressionMode: 'on-execute',
     helpEntries: [
       {
-        sectionTitle: 'Camera Controls',
+        sectionTitle: msg`Camera Controls`,
         sectionOrder: 2,
-        groupLabel: 'View Presets',
+        groupLabel: msg`View Presets`,
         groupOrder: 1,
-        rowLabel: 'Top',
+        rowLabel: msg`Top`,
         rowOrder: 4,
         comboLabels: [['4']],
       },
@@ -323,11 +325,11 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     suppressionMode: 'on-execute',
     helpEntries: [
       {
-        sectionTitle: 'Selected Item',
+        sectionTitle: msg`Selected Item`,
         sectionOrder: 3,
-        groupLabel: 'Move',
+        groupLabel: msg`Move`,
         groupOrder: 1,
-        rowLabel: 'Nudge selected item (0.5 m)',
+        rowLabel: msg`Nudge selected item (0.5 m)`,
         rowOrder: 1,
         comboLabels: [['Arrow']],
       },
@@ -343,11 +345,11 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     suppressionMode: 'on-execute',
     helpEntries: [
       {
-        sectionTitle: 'Selected Item',
+        sectionTitle: msg`Selected Item`,
         sectionOrder: 3,
-        groupLabel: 'Move',
+        groupLabel: msg`Move`,
         groupOrder: 1,
-        rowLabel: 'Move farther (1.0 m)',
+        rowLabel: msg`Move farther (1.0 m)`,
         rowOrder: 2,
         comboLabels: [['Shift', 'Arrow']],
       },
@@ -363,11 +365,11 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     suppressionMode: 'on-execute',
     helpEntries: [
       {
-        sectionTitle: 'Selected Item',
+        sectionTitle: msg`Selected Item`,
         sectionOrder: 3,
-        groupLabel: 'Move',
+        groupLabel: msg`Move`,
         groupOrder: 1,
-        rowLabel: 'Move finely (0.1 m)',
+        rowLabel: msg`Move finely (0.1 m)`,
         rowOrder: 3,
         comboLabels: [[ALT_MODIFIER_LABEL, 'Arrow']],
       },
@@ -383,11 +385,11 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     suppressionMode: 'on-execute',
     helpEntries: [
       {
-        sectionTitle: 'Selected Item',
+        sectionTitle: msg`Selected Item`,
         sectionOrder: 3,
-        groupLabel: 'Move',
+        groupLabel: msg`Move`,
         groupOrder: 1,
-        rowLabel: 'Nudge selected item (0.5 m)',
+        rowLabel: msg`Nudge selected item (0.5 m)`,
         rowOrder: 1,
         comboLabels: [['Arrow']],
       },
@@ -403,11 +405,11 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     suppressionMode: 'on-execute',
     helpEntries: [
       {
-        sectionTitle: 'Selected Item',
+        sectionTitle: msg`Selected Item`,
         sectionOrder: 3,
-        groupLabel: 'Move',
+        groupLabel: msg`Move`,
         groupOrder: 1,
-        rowLabel: 'Move farther (1.0 m)',
+        rowLabel: msg`Move farther (1.0 m)`,
         rowOrder: 2,
         comboLabels: [['Shift', 'Arrow']],
       },
@@ -423,11 +425,11 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     suppressionMode: 'on-execute',
     helpEntries: [
       {
-        sectionTitle: 'Selected Item',
+        sectionTitle: msg`Selected Item`,
         sectionOrder: 3,
-        groupLabel: 'Move',
+        groupLabel: msg`Move`,
         groupOrder: 1,
-        rowLabel: 'Move finely (0.1 m)',
+        rowLabel: msg`Move finely (0.1 m)`,
         rowOrder: 3,
         comboLabels: [[ALT_MODIFIER_LABEL, 'Arrow']],
       },
@@ -443,11 +445,11 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     suppressionMode: 'on-execute',
     helpEntries: [
       {
-        sectionTitle: 'Selected Item',
+        sectionTitle: msg`Selected Item`,
         sectionOrder: 3,
-        groupLabel: 'Move',
+        groupLabel: msg`Move`,
         groupOrder: 1,
-        rowLabel: 'Nudge selected item (0.5 m)',
+        rowLabel: msg`Nudge selected item (0.5 m)`,
         rowOrder: 1,
         comboLabels: [['Arrow']],
       },
@@ -463,11 +465,11 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     suppressionMode: 'on-execute',
     helpEntries: [
       {
-        sectionTitle: 'Selected Item',
+        sectionTitle: msg`Selected Item`,
         sectionOrder: 3,
-        groupLabel: 'Move',
+        groupLabel: msg`Move`,
         groupOrder: 1,
-        rowLabel: 'Move farther (1.0 m)',
+        rowLabel: msg`Move farther (1.0 m)`,
         rowOrder: 2,
         comboLabels: [['Shift', 'Arrow']],
       },
@@ -483,11 +485,11 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     suppressionMode: 'on-execute',
     helpEntries: [
       {
-        sectionTitle: 'Selected Item',
+        sectionTitle: msg`Selected Item`,
         sectionOrder: 3,
-        groupLabel: 'Move',
+        groupLabel: msg`Move`,
         groupOrder: 1,
-        rowLabel: 'Move finely (0.1 m)',
+        rowLabel: msg`Move finely (0.1 m)`,
         rowOrder: 3,
         comboLabels: [[ALT_MODIFIER_LABEL, 'Arrow']],
       },
@@ -503,11 +505,11 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     suppressionMode: 'on-execute',
     helpEntries: [
       {
-        sectionTitle: 'Selected Item',
+        sectionTitle: msg`Selected Item`,
         sectionOrder: 3,
-        groupLabel: 'Move',
+        groupLabel: msg`Move`,
         groupOrder: 1,
-        rowLabel: 'Nudge selected item (0.5 m)',
+        rowLabel: msg`Nudge selected item (0.5 m)`,
         rowOrder: 1,
         comboLabels: [['Arrow']],
       },
@@ -523,11 +525,11 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     suppressionMode: 'on-execute',
     helpEntries: [
       {
-        sectionTitle: 'Selected Item',
+        sectionTitle: msg`Selected Item`,
         sectionOrder: 3,
-        groupLabel: 'Move',
+        groupLabel: msg`Move`,
         groupOrder: 1,
-        rowLabel: 'Move farther (1.0 m)',
+        rowLabel: msg`Move farther (1.0 m)`,
         rowOrder: 2,
         comboLabels: [['Shift', 'Arrow']],
       },
@@ -543,11 +545,11 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     suppressionMode: 'on-execute',
     helpEntries: [
       {
-        sectionTitle: 'Selected Item',
+        sectionTitle: msg`Selected Item`,
         sectionOrder: 3,
-        groupLabel: 'Move',
+        groupLabel: msg`Move`,
         groupOrder: 1,
-        rowLabel: 'Move finely (0.1 m)',
+        rowLabel: msg`Move finely (0.1 m)`,
         rowOrder: 3,
         comboLabels: [[ALT_MODIFIER_LABEL, 'Arrow']],
       },
@@ -563,11 +565,11 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     suppressionMode: 'on-execute',
     helpEntries: [
       {
-        sectionTitle: 'Selected Item',
+        sectionTitle: msg`Selected Item`,
         sectionOrder: 3,
-        groupLabel: 'Rotate',
+        groupLabel: msg`Rotate`,
         groupOrder: 2,
-        rowLabel: 'Rotate counterclockwise',
+        rowLabel: msg`Rotate counterclockwise`,
         rowOrder: 1,
         comboLabels: [[',']],
       },
@@ -583,11 +585,11 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     suppressionMode: 'on-execute',
     helpEntries: [
       {
-        sectionTitle: 'Selected Item',
+        sectionTitle: msg`Selected Item`,
         sectionOrder: 3,
-        groupLabel: 'Rotate',
+        groupLabel: msg`Rotate`,
         groupOrder: 2,
-        rowLabel: 'Rotate clockwise',
+        rowLabel: msg`Rotate clockwise`,
         rowOrder: 2,
         comboLabels: [['.']],
       },
@@ -603,11 +605,11 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     suppressionMode: 'on-execute',
     helpEntries: [
       {
-        sectionTitle: '3D Room View (No Selection)',
+        sectionTitle: msg`3D Room View (No Selection)`,
         sectionOrder: 1,
-        groupLabel: 'Browse',
+        groupLabel: msg`Browse`,
         groupOrder: 1,
-        rowLabel: 'Preview next item',
+        rowLabel: msg`Preview next item`,
         rowOrder: 1,
         comboLabels: [['ArrowRight'], ['ArrowDown']],
       },
@@ -623,11 +625,11 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     suppressionMode: 'on-execute',
     helpEntries: [
       {
-        sectionTitle: '3D Room View (No Selection)',
+        sectionTitle: msg`3D Room View (No Selection)`,
         sectionOrder: 1,
-        groupLabel: 'Browse',
+        groupLabel: msg`Browse`,
         groupOrder: 1,
-        rowLabel: 'Preview previous item',
+        rowLabel: msg`Preview previous item`,
         rowOrder: 2,
         comboLabels: [['ArrowLeft'], ['ArrowUp']],
       },
@@ -643,11 +645,11 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     suppressionMode: 'on-execute',
     helpEntries: [
       {
-        sectionTitle: '3D Room View (No Selection)',
+        sectionTitle: msg`3D Room View (No Selection)`,
         sectionOrder: 1,
-        groupLabel: 'Browse',
+        groupLabel: msg`Browse`,
         groupOrder: 1,
-        rowLabel: 'Preview first/last',
+        rowLabel: msg`Preview first/last`,
         rowOrder: 3,
         comboLabels: [['Home'], ['End']],
       },
@@ -663,11 +665,11 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     suppressionMode: 'on-execute',
     helpEntries: [
       {
-        sectionTitle: '3D Room View (No Selection)',
+        sectionTitle: msg`3D Room View (No Selection)`,
         sectionOrder: 1,
-        groupLabel: 'Browse',
+        groupLabel: msg`Browse`,
         groupOrder: 1,
-        rowLabel: 'Preview first/last',
+        rowLabel: msg`Preview first/last`,
         rowOrder: 3,
         comboLabels: [['Home'], ['End']],
       },
@@ -683,11 +685,11 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     suppressionMode: 'on-execute',
     helpEntries: [
       {
-        sectionTitle: '3D Room View (No Selection)',
+        sectionTitle: msg`3D Room View (No Selection)`,
         sectionOrder: 1,
-        groupLabel: 'Browse',
+        groupLabel: msg`Browse`,
         groupOrder: 1,
-        rowLabel: 'Select previewed item',
+        rowLabel: msg`Select previewed item`,
         rowOrder: 4,
         comboLabels: [['Enter'], ['Space']],
       },
@@ -702,20 +704,20 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     suppressionMode: 'on-execute',
     helpEntries: [
       {
-        sectionTitle: '3D Room View (No Selection)',
+        sectionTitle: msg`3D Room View (No Selection)`,
         sectionOrder: 1,
-        groupLabel: 'Selection',
+        groupLabel: msg`Selection`,
         groupOrder: 2,
-        rowLabel: 'Clear preview/selection',
+        rowLabel: msg`Clear preview/selection`,
         rowOrder: 1,
         comboLabels: [['Escape']],
       },
       {
-        sectionTitle: 'Selected Item',
+        sectionTitle: msg`Selected Item`,
         sectionOrder: 3,
-        groupLabel: 'Actions',
+        groupLabel: msg`Actions`,
         groupOrder: 3,
-        rowLabel: 'Clear selection',
+        rowLabel: msg`Clear selection`,
         rowOrder: 2,
         comboLabels: [['Escape']],
       },
@@ -727,11 +729,11 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     handler: 'use-camera-key-state',
     helpEntries: [
       {
-        sectionTitle: 'Camera Controls',
+        sectionTitle: msg`Camera Controls`,
         sectionOrder: 2,
-        groupLabel: 'Motion (Hold)',
+        groupLabel: msg`Motion (Hold)`,
         groupOrder: 3,
-        rowLabel: 'Orbit camera',
+        rowLabel: msg`Orbit camera`,
         rowOrder: 1,
         comboLabels: [[WASD_ALTERNATIVES_LABEL]],
       },
@@ -748,11 +750,11 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     handler: 'use-camera-key-state',
     helpEntries: [
       {
-        sectionTitle: 'Camera Controls',
+        sectionTitle: msg`Camera Controls`,
         sectionOrder: 2,
-        groupLabel: 'Motion (Hold)',
+        groupLabel: msg`Motion (Hold)`,
         groupOrder: 3,
-        rowLabel: 'Pan camera',
+        rowLabel: msg`Pan camera`,
         rowOrder: 2,
         comboLabels: [['Shift', WASD_ALTERNATIVES_LABEL]],
       },
@@ -764,11 +766,11 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     handler: 'use-camera-key-state',
     helpEntries: [
       {
-        sectionTitle: 'Camera Controls',
+        sectionTitle: msg`Camera Controls`,
         sectionOrder: 2,
-        groupLabel: 'Motion (Hold)',
+        groupLabel: msg`Motion (Hold)`,
         groupOrder: 3,
-        rowLabel: 'Zoom in/out',
+        rowLabel: msg`Zoom in/out`,
         rowOrder: 3,
         comboLabels: [['='], ['-']],
       },
@@ -780,11 +782,11 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     handler: 'native-input',
     helpEntries: [
       {
-        sectionTitle: 'Selected Item',
+        sectionTitle: msg`Selected Item`,
         sectionOrder: 3,
-        groupLabel: 'Details',
+        groupLabel: msg`Details`,
         groupOrder: 4,
-        rowLabel: 'Apply typed detail value',
+        rowLabel: msg`Apply typed detail value`,
         rowOrder: 1,
         comboLabels: [['Enter']],
       },
@@ -796,11 +798,11 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     handler: 'native-input',
     helpEntries: [
       {
-        sectionTitle: 'Selected Item',
+        sectionTitle: msg`Selected Item`,
         sectionOrder: 3,
-        groupLabel: 'Details',
+        groupLabel: msg`Details`,
         groupOrder: 4,
-        rowLabel: 'Cancel typed detail draft',
+        rowLabel: msg`Cancel typed detail draft`,
         rowOrder: 2,
         comboLabels: [['Escape']],
       },

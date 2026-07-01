@@ -14,6 +14,7 @@ import { resetAssetsStore, assetsActions } from '@/core/stores/assets-store'
 import { selectionEffects } from '@/core/operations/selection-effects'
 import { sceneCommands } from '@/scene/scene-commands'
 import type { FurnitureCatalogEntry } from '@/domain/catalog'
+import { i18n } from '@/shared/i18n/i18n'
 import {
   ADD_FURNITURE_NO_SPACE_MESSAGE,
   ADD_FURNITURE_UNKNOWN_CATALOG_MESSAGE,
@@ -79,7 +80,7 @@ describe('addFurniture', () => {
     addFurnitureCommand.mockReturnValueOnce({ ok: false, reason: 'no-space' })
     expect(addFurniture()).toBe(false)
     expect(feedbackStore.getState().statusMessage).toBe(
-      ADD_FURNITURE_NO_SPACE_MESSAGE,
+      i18n._(ADD_FURNITURE_NO_SPACE_MESSAGE),
     )
 
     addFurnitureCommand.mockReturnValueOnce({
@@ -88,7 +89,7 @@ describe('addFurniture', () => {
     })
     expect(addFurniture()).toBe(false)
     expect(feedbackStore.getState().statusMessage).toBe(
-      ADD_FURNITURE_UNKNOWN_CATALOG_MESSAGE,
+      i18n._(ADD_FURNITURE_UNKNOWN_CATALOG_MESSAGE),
     )
   })
 

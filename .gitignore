@@ -37,3 +37,8 @@ bundle-report.html
 # is written to public/models/ and the .tmp.glb is then deleted.
 *.tmp.glb
 public/basis
+
+# Compiled Lingui catalogs. The `.po` files are the committed source; the Vite
+# plugin compiles them at build, and `lingui compile` output (used only as a CI
+# completeness gate) is a disposable artifact.
+src/shared/i18n/locales/*.ts

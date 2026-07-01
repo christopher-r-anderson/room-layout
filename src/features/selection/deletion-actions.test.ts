@@ -16,6 +16,7 @@ import {
 } from '@/core/stores/editor-lifecycle-store'
 import { dialogActions } from '@/core/stores/dialog-store'
 import { sceneCommands } from '@/scene/scene-commands'
+import { i18n } from '@/shared/i18n/i18n'
 import { DELETE_SELECTION_MISSING_MESSAGE } from '@/shared/messages/command-messages'
 import { feedbackActions } from '@/core/stores/feedback-store'
 import { selectionEffects } from '@/core/operations/selection-effects'
@@ -68,7 +69,7 @@ describe('deletion-actions', () => {
     expect(closeActiveDialog).toHaveBeenCalled()
     expect(deleteSelection).not.toHaveBeenCalled()
     expect(feedbackActions.setStatusMessage).toHaveBeenCalledWith(
-      DELETE_SELECTION_MISSING_MESSAGE,
+      i18n._(DELETE_SELECTION_MISSING_MESSAGE),
     )
     expect(selectionEffects.notePendingSelection).toHaveBeenCalledWith(null)
   })
