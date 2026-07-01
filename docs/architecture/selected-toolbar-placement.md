@@ -5,8 +5,11 @@ This document is an overview of how the selected-item action toolbar chooses its
 - `src/scene/internal/selection/selected-toolbar-geometry.ts`
 - `src/scene/scene.types.ts`
 - `src/features/selection/use-compute-selected-item-placement.ts`
+- `src/features/selection/use-pinned-placement.ts`
+- `src/features/selection/use-report-toolbar-engagement.ts`
+- `src/core/stores/toolbar-interaction-store.ts`
 - `src/features/selection/floating-selected-item-site.tsx`
-- `src/features/selection/docked-selected-item-site.tsx`
+- `src/app/chrome/editor-overlay.tsx` (mobile docks the same toolbar above the details panel)
 - `src/features/selection/selected-item-tools.tsx`
 - `src/features/selection/selected-details-view.tsx`
 - `src/shared/hooks/use-element-rect.ts`
@@ -72,6 +75,16 @@ The helper:
 Docked placement is best-effort. Floating placement has hard overlap rejection; docked placement still returns the least-bad deterministic slot if the viewport is heavily constrained.
 
 Mobile stays docked by default through the shared header layout mode breakpoint.
+
+## Engagement Pin
+
+While the user is engaging the floating toolbar, its screen position is pinned. The placement engine still recomputes every frame, but the consumer holds the last floating position and renders that instead, so the toolbar does not slide as the selected object re-projects. This keeps the rotate buttons under the cursor when they are pressed repeatedly with pauses — without it, each rotation shifts the object silhouette enough to walk the toolbar out from under a stationary pointer.
+
+- The toolbar is "engaged" while the pointer is over it, focus is within it, or a rotation happened within a short grace window. The grace window is what covers repeated tap-with-pause on the rotate buttons. This is tracked in `toolbar-interaction-store`: `use-report-toolbar-engagement` reports pointer/focus (and resets engagement when the toolbar hides or the selection changes, so it never bleeds onto the next toolbar), and `rotateSelection` reports each rotation (so any input — button, keyboard shortcut — pins).
+- The hold lives in `use-pinned-placement` (`resolveHeldPlacement` is a pure freeze rule; `usePinnedPlacement` wraps it) and is applied in `use-compute-selected-item-placement`. On release the live placement flows through again and the float site's CSS transition glides the toolbar to its current spot.
+- Only floating placements pin. A new selection or geometry source releases the hold so a stale pinned position can never bleed onto a different object, and a hidden placement (deselection) always wins.
+
+The pin is distinct from hysteresis. Hysteresis is an engine concern that keeps the chosen _side_ stable across frames as scores wobble during camera drift; the pin is a consumer concern that freezes the _position_ while the user is operating the toolbar. Neither changes which candidate the engine selects.
 
 ```mermaid
 flowchart TD

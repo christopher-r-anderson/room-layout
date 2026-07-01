@@ -4,16 +4,25 @@ import {
   useSelectedItemPlacement,
 } from './selected-item-placement-context'
 import { SelectedItemToolbar } from './selected-item-toolbar'
+import { useReportToolbarEngagement } from './use-report-toolbar-engagement'
 
 /**
  * Desktop mount for the selected-item toolbar: positions it near the selected
  * object using the computed placement. The toolbar content and behavior live in
- * SelectedItemToolbar; this wrapper only owns where it floats.
+ * SelectedItemToolbar, and useReportToolbarEngagement owns the engagement policy
+ * that pins the position while the user is using it; this wrapper only owns where
+ * it floats.
  */
 export function FloatingSelectedItemSite() {
   const placement = useSelectedItemPlacement()
   const actionsSizeRef = useSelectedItemActionsSizeRef()
   const selectedFurniture = useSelectedFurniture()
+
+  const isFloating = selectedFurniture !== null && placement.site === 'floating'
+  const engagementHandlers = useReportToolbarEngagement(
+    isFloating,
+    selectedFurniture?.id ?? null,
+  )
 
   if (selectedFurniture === null) {
     return null
@@ -34,6 +43,7 @@ export function FloatingSelectedItemSite() {
       style={{
         transform: `translate3d(${String(placement.left)}px, ${String(placement.top)}px, 0)`,
       }}
+      {...engagementHandlers}
     >
       <SelectedItemToolbar />
     </section>

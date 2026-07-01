@@ -3,6 +3,7 @@ import {
   sceneDocumentStore,
   selectSelectedFurniture,
 } from '@/core/stores/scene-document-store'
+import { toolbarInteractionActions } from '@/core/stores/toolbar-interaction-store'
 import { sceneCommands } from '@/scene/scene-commands'
 import type { MoveSelectionResult, MoveSource } from '@/scene/scene.types'
 
@@ -63,12 +64,22 @@ export function moveSelection(
 }
 
 export function rotateSelection(direction: -1 | 1) {
-  const rotatingName =
-    selectSelectedFurniture(sceneDocumentStore.getState())?.name ?? null
+  const rotatingFurniture = selectSelectedFurniture(
+    sceneDocumentStore.getState(),
+  )
+  const rotatingName = rotatingFurniture?.name ?? null
   feedbackActions.clearStatusMessage()
 
   if (!sceneCommands.isSceneReady()) {
     return
+  }
+
+  // Pin the toolbar's position briefly after every rotation (whichever input
+  // triggered it) so repeated rotate presses don't walk it out from under the
+  // cursor as the object re-projects — but only when something is selected, so a
+  // no-op rotate can't arm the grace and pin the next toolbar that appears.
+  if (rotatingFurniture !== null) {
+    toolbarInteractionActions.reportRotation()
   }
 
   sceneCommands.rotateSelection(direction * ROTATION_STEP_RADIANS)
