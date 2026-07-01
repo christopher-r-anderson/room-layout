@@ -12,12 +12,18 @@ import { useReportToolbarEngagement } from './use-report-toolbar-engagement'
 
 const engaged = () => selectToolbarEngaged(toolbarInteractionStore.getState())
 
-// Builds a blur event whose relatedTarget is reported as inside or outside the
-// wrapper, matching the only thing the handler inspects.
+// Builds a blur event out of real DOM nodes so the handler's relatedTarget
+// narrowing and containment check run for real: focus either lands on a control
+// inside the wrapper or leaves it entirely.
 function blurEvent(focusStaysInside: boolean): FocusEvent<HTMLElement> {
+  const wrapper = document.createElement('section')
+  const insideControl = document.createElement('button')
+  wrapper.appendChild(insideControl)
+  const outsideControl = document.createElement('button')
+
   return {
-    currentTarget: { contains: () => focusStaysInside },
-    relatedTarget: focusStaysInside ? {} : null,
+    currentTarget: wrapper,
+    relatedTarget: focusStaysInside ? insideControl : outsideControl,
   } as unknown as FocusEvent<HTMLElement>
 }
 

@@ -37,8 +37,15 @@ export function useReportToolbarEngagement(
     onBlur: (event: FocusEvent<HTMLElement>) => {
       // Focus moving between the toolbar's own controls (roving tab order)
       // bubbles a blur here; only clear when focus actually leaves the wrapper,
-      // so keyboard users operating it stay pinned.
-      if (!event.currentTarget.contains(event.relatedTarget)) {
+      // so keyboard users operating it stay pinned. Narrow relatedTarget before
+      // the containment check, matching the focus tracking in
+      // selected-details-view.
+      const nextFocused = event.relatedTarget
+
+      if (
+        !(nextFocused instanceof HTMLElement) ||
+        !event.currentTarget.contains(nextFocused)
+      ) {
         toolbarInteractionActions.setFocusWithin(false)
       }
     },
