@@ -1,4 +1,6 @@
+import { msg } from '@lingui/core/macro'
 import { resolvePositionFromWallClearances } from '@/domain/geometry/wall-clearance'
+import { i18n } from '@/shared/i18n/i18n'
 import { feedbackActions } from '@/core/stores/feedback-store'
 import {
   sceneDocumentStore,
@@ -10,19 +12,12 @@ import type {
   UpdateSelectedItemDetailsInput,
   UpdateSelectedItemDetailsResult,
 } from '@/core/types/selected-item.types'
-import {
-  formatSelectedItemDetailsBlockedMessage,
-  formatSelectedItemDetailsInvalidValueMessage,
-} from './selected-item-detail-messages'
+import { formatSelectedItemDetailsBlockedMessage } from './selected-item-detail-messages'
 
 function normalizeDegreesRadians(valueDegrees: number) {
   const normalizedDegrees = ((valueDegrees % 360) + 360) % 360
   const counterclockwiseDegrees = (360 - normalizedDegrees) % 360
   return (counterclockwiseDegrees * Math.PI) / 180
-}
-
-export function invalidSelectedItemDetailValueMessage(fieldLabel: string) {
-  return formatSelectedItemDetailsInvalidValueMessage(fieldLabel)
 }
 
 export function updateSelectedItemDetails(
@@ -67,7 +62,8 @@ export function updateSelectedItemDetails(
 
   if (result.ok) {
     selectionFocusActions.setSelectedSource('panel-keyboard')
-    feedbackActions.announcePolite(`${result.item.name} details updated.`)
+    const itemName = result.item.name
+    feedbackActions.announcePolite(i18n._(msg`${itemName} details updated.`))
     return { ok: true, item: result.item }
   }
 

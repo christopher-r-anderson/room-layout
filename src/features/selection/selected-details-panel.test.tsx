@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { createEvent, fireEvent, render, screen } from '@testing-library/react'
+import { createEvent, fireEvent, render, screen } from '@/test/render'
 import userEvent from '@testing-library/user-event'
 import { createRef, type ReactNode } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'

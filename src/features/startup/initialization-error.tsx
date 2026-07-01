@@ -1,4 +1,7 @@
 import { useEffect, useRef } from 'react'
+import type { MessageDescriptor } from '@lingui/core'
+import { msg } from '@lingui/core/macro'
+import { Trans, useLingui } from '@lingui/react/macro'
 import { Button } from '@/shared/ui/button'
 import { Caption } from '@/shared/ui/caption'
 import { Card, CardContent } from '@/shared/ui/card'
@@ -10,61 +13,56 @@ interface InitializationErrorProps {
   errorMessage: string | null
 }
 
-function getErrorCopy(
-  errorKind: StartupErrorKind | null,
-  errorMessage: string | null,
-) {
-  if (errorKind === 'manifest-timeout') {
-    return {
-      label: 'Catalog request timed out',
-      description:
-        'The furniture catalog request timed out before startup completed.',
-      note: 'Check your connection and retry loading the catalog.',
-    }
-  }
+interface ErrorCopy {
+  label: MessageDescriptor
+  description: MessageDescriptor
+  note: MessageDescriptor
+}
 
-  if (errorKind === 'manifest-network') {
-    return {
-      label: 'Catalog request failed',
-      description:
-        'The editor could not download the furniture catalog required to start.',
-      note: 'Check your connection and retry loading the catalog.',
-    }
-  }
+const ERROR_COPY: Record<StartupErrorKind, ErrorCopy> = {
+  'manifest-timeout': {
+    label: msg`Catalog request timed out`,
+    description: msg`The furniture catalog request timed out before startup completed.`,
+    note: msg`Check your connection and retry loading the catalog.`,
+  },
+  'manifest-network': {
+    label: msg`Catalog request failed`,
+    description: msg`The editor could not download the furniture catalog required to start.`,
+    note: msg`Check your connection and retry loading the catalog.`,
+  },
+  'manifest-validation': {
+    label: msg`Catalog data is invalid`,
+    description: msg`The furniture catalog was fetched but failed validation checks.`,
+    note: msg`Confirm the manifest schema and asset paths, then retry.`,
+  },
+  'asset-load': {
+    label: msg`Asset loading failed`,
+    description: msg`A required furniture model did not load correctly, so editor interactions are temporarily unavailable.`,
+    note: msg`Retry to request the essential assets again.`,
+  },
+}
 
-  if (errorKind === 'manifest-validation') {
-    return {
-      label: 'Catalog data is invalid',
-      description:
-        'The furniture catalog was fetched but failed validation checks.',
-      note: 'Confirm the manifest schema and asset paths, then retry.',
-    }
-  }
-
-  if (errorKind === 'asset-load') {
-    return {
-      label: 'Asset loading failed',
-      description:
-        'A required furniture model did not load correctly, so editor interactions are temporarily unavailable.',
-      note: 'Retry to request the essential assets again.',
-    }
-  }
-
-  return {
-    label: 'Startup failed',
-    description:
-      errorMessage ??
-      'The room editor could not start due to an unexpected startup error.',
-    note: 'Retry to attempt startup again.',
-  }
+// Fallback for an error with no classified kind; a caller-provided message
+// (already human-readable) takes precedence over the generic description.
+const UNKNOWN_ERROR_COPY: ErrorCopy = {
+  label: msg`Startup failed`,
+  description: msg`The room editor could not start due to an unexpected startup error.`,
+  note: msg`Retry to attempt startup again.`,
 }
 
 export function InitializationError({
   errorKind,
   errorMessage,
 }: InitializationErrorProps) {
+  const { i18n } = useLingui()
   const retryButtonRef = useRef<HTMLButtonElement | null>(null)
-  const copy = getErrorCopy(errorKind, errorMessage)
+  const errorCopy = errorKind ? ERROR_COPY[errorKind] : UNKNOWN_ERROR_COPY
+  const copy = {
+    label: i18n._(errorCopy.label),
+    description:
+      (errorKind ? null : errorMessage) ?? i18n._(errorCopy.description),
+    note: i18n._(errorCopy.note),
+  }
 
   useEffect(() => {
     retryButtonRef.current?.focus()
@@ -84,7 +82,7 @@ export function InitializationError({
             id="startup-error-title"
             className="text-2xl font-semibold leading-tight"
           >
-            The room editor could not start
+            <Trans>The room editor could not start</Trans>
           </h2>
           <p
             id="startup-error-description"
@@ -105,7 +103,7 @@ export function InitializationError({
               variant="outline"
               onClick={requestAssetRetry}
             >
-              Retry Loading
+              <Trans>Retry Loading</Trans>
             </Button>
           </div>
         </CardContent>

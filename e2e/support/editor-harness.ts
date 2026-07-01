@@ -196,6 +196,23 @@ export async function waitForEditorReady(page: Page) {
   return sceneState
 }
 
+// Readiness for specs that load a non-English locale: waitForEditorReady keys
+// off the English "Add Furniture" button name, so poll the test API's
+// readiness flag instead of any rendered text.
+export async function waitForEditorReadyAnyLocale(page: Page) {
+  await expect
+    .poll(async () => (await readSceneState(page)).assetsReady, {
+      timeout: EDITOR_READY_TIMEOUT_MS,
+    })
+    .toBe(true)
+
+  const sceneState = await readSceneState(page)
+
+  expect(sceneState.assetError).toBe(false)
+
+  return sceneState
+}
+
 export async function openEditor(page: Page) {
   await page.goto('/')
 

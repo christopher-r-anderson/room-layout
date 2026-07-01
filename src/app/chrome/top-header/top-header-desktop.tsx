@@ -5,7 +5,7 @@ import { HistoryTools } from '@/features/history/history-tools'
 import { Button } from '@/shared/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/shared/ui/tooltip'
 import { IconHomeCog, IconInfoCircle, IconKeyboard } from '@tabler/icons-react'
-import { ROOM_TRIGGER_TOOLTIP } from '@/features/room-surface/room-copy'
+import { Trans, useLingui } from '@lingui/react/macro'
 import { RoomSidebar } from '@/features/room-surface/room-sidebar'
 import { StartOverButton } from './start-over-button'
 import { ShareSceneButton } from './share-scene-button'
@@ -23,12 +23,14 @@ export function TopHeaderDesktop({
   startOverDisabled,
   topHeaderRef,
 }: TopHeaderDesktopProps) {
+  const { t } = useLingui()
+
   return (
     <>
       <Toolbar.Root
         ref={topHeaderRef}
         data-top-header-root
-        aria-label="Header actions"
+        aria-label={t`Header actions`}
         className="pointer-events-auto flex flex-wrap items-center justify-between gap-x-0 gap-y-2"
       >
         <TopHeaderSurface>
@@ -63,14 +65,14 @@ export function TopHeaderDesktop({
                       }}
                     >
                       <IconHomeCog size={16} aria-hidden="true" />
-                      Room
+                      <Trans>Room</Trans>
                     </Button>
                   }
                 />
               }
             />
             <TooltipContent side="bottom">
-              {ROOM_TRIGGER_TOOLTIP}
+              <Trans>Adjust wall, floor, and lighting</Trans>
             </TooltipContent>
           </Tooltip>
         </TopHeaderSurface>
@@ -84,7 +86,7 @@ export function TopHeaderDesktop({
           <StartOverButton
             buttonRef={topHeaderFocusRegistry.register('top-header-start-over')}
             disabled={startOverDisabled}
-            disabledMessage="Scene already matches defaults"
+            disabledMessage={t`Scene already matches defaults`}
             size="toolbar"
           />
         </TopHeaderSurface>
@@ -102,19 +104,23 @@ export function TopHeaderDesktop({
                       aria-controls="keyboard-shortcuts-dialog"
                       aria-haspopup="dialog"
                       aria-expanded={isKeyboardShortcutsOpen}
-                      aria-label="Keyboard shortcuts"
+                      aria-label={t`Keyboard shortcuts`}
                       onClick={() => {
                         topHeaderDialogOpenChange.keyboardShortcuts(true)
                       }}
                     >
                       <IconKeyboard aria-hidden="true" />
-                      <span className="sr-only">Keyboard shortcuts</span>
+                      <span className="sr-only">
+                        <Trans>Keyboard shortcuts</Trans>
+                      </span>
                     </Button>
                   }
                 />
               }
             />
-            <TooltipContent side="bottom">Keyboard shortcuts</TooltipContent>
+            <TooltipContent side="bottom">
+              <Trans>Keyboard shortcuts</Trans>
+            </TooltipContent>
           </Tooltip>
           <Tooltip>
             <TooltipTrigger
@@ -128,14 +134,14 @@ export function TopHeaderDesktop({
                       aria-controls="project-info-dialog"
                       aria-haspopup="dialog"
                       aria-expanded={isProjectInfoOpen}
-                      aria-label="Open project and asset info"
+                      aria-label={t`Open project and asset info`}
                       onClick={() => {
                         topHeaderDialogOpenChange.projectInfo(true)
                       }}
                     >
                       <IconInfoCircle aria-hidden="true" />
                       <span className="sr-only">
-                        Open project and asset info
+                        <Trans>Open project and asset info</Trans>
                       </span>
                     </Button>
                   }
@@ -143,7 +149,7 @@ export function TopHeaderDesktop({
               }
             />
             <TooltipContent side="bottom">
-              Project and asset info
+              <Trans>Project and asset info</Trans>
             </TooltipContent>
           </Tooltip>
           <Toolbar.Button

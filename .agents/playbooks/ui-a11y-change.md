@@ -9,6 +9,9 @@ Checklist:
 3. Prefer semantic HTML and visible text before adding ARIA attributes.
 4. Use `aria-label` only when visible text or element semantics are not enough.
 5. Keep ARIA names in sync with visible labels and tests.
+   5a. Route all user-facing strings through Lingui - `<Trans>`/`t` in components,
+   `msg` + `i18n._()` in non-React code, `Intl` formatters for numbers/units. No
+   hardcoded UI text (lint enforces this). See `docs/architecture/i18n.md`.
 6. Keep announcement surfaces centralized; avoid ad hoc live regions unless the
    feature owns a distinct announcement contract.
 7. Clear or replace announcement state before re-announcing the same message.

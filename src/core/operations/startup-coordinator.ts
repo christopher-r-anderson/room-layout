@@ -1,6 +1,8 @@
+import { msg } from '@lingui/core/macro'
 import { toast } from 'sonner'
 import { createDefaultSceneState } from '@/core/model/scene-defaults'
 import { isSceneStateAtDefaults } from '@/core/model/scene-model'
+import { i18n } from '@/shared/i18n/i18n'
 import { sceneCommands, clearSceneServices } from '@/scene/scene-commands'
 import { clearFurnitureAssetPrefetch } from './furniture-asset-prefetch'
 import { feedbackActions } from '../stores/feedback-store'
@@ -23,9 +25,6 @@ import {
 } from '../persistence/scene-url'
 import { runStartupRestoreFlow } from '../persistence/restore-flow'
 import type { RestorableState } from '../persistence/restore-flow.types'
-
-const ASSET_ERROR_MESSAGE =
-  'Unable to load room editor assets. Retry available.'
 
 // Resets the editor surface back to a clean slate. Used by the asset-error and
 // retry transitions so a failed or restarted load never leaves stale scene or
@@ -210,8 +209,11 @@ export function notifyAssetError(error: Error) {
   })
   dialogActions.closeActiveDialog()
   resetStartupShell()
-  toast.error(ASSET_ERROR_MESSAGE)
-  feedbackActions.announceAssertive(ASSET_ERROR_MESSAGE)
+  const assetError = i18n._(
+    msg`Unable to load room editor assets. Retry available.`,
+  )
+  toast.error(assetError)
+  feedbackActions.announceAssertive(assetError)
 }
 
 // The user asked to retry startup. Clear any open dialog and the surface, drop

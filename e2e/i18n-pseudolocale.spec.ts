@@ -1,0 +1,174 @@
+import { readFileSync } from 'node:fs'
+import path from 'node:path'
+import AxeBuilder from '@axe-core/playwright'
+import { expect, test, type Page } from '@playwright/test'
+import { formatter } from '@lingui/format-po'
+import { waitForEditorReadyAnyLocale } from './support/editor-harness'
+
+const WCAG_AA_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']
+
+// Loading the editor under the `en-XA` pseudo-locale exercises the i18n pipeline:
+// per-locale catalog code-splitting and dynamic activation, that every visible
+// string and accessible name routes through Lingui (an unwrapped one shows as
+// plain ASCII English), and that the layout survives the length expansion.
+
+// The pseudo-locale replaces ASCII letters with accented Latin-Extended forms.
+const ACCENTED_LATIN = /[À-ɏ]/
+
+// Exact pseudo-translations resolved from the committed catalog, so the spec
+// locates controls by accessible name without hardcoding generated text.
+let pseudoCatalog: Record<string, string> = {}
+
+test.beforeAll(async () => {
+  const filename = path.resolve('src/shared/i18n/locales/en-XA.po')
+  const fmt = formatter({ origins: false, lineNumbers: false })
+  const catalog = await fmt.parse(readFileSync(filename, 'utf8'), {
+    locale: 'en-XA',
+    sourceLocale: 'en',
+    filename,
+  })
+  pseudoCatalog = Object.fromEntries(
+    Object.values(catalog).map((entry) => [
+      entry.message ?? '',
+      entry.translation ?? '',
+    ]),
+  )
+})
+
+function pseudo(source: string): string {
+  const translation = pseudoCatalog[source]
+  if (!translation) {
+    throw new Error(`No en-XA catalog entry for "${source}"`)
+  }
+  return translation
+}
+
+// Manifest-provided labels (furniture names, environment finish labels) come
+// from the catalog manifest, not the Lingui catalogs, and render in their
+// manifest language under every locale (a documented boundary), so accessible
+// names that are exactly a manifest label are exempt below.
+const MANIFEST_PROVIDED_LABELS = (() => {
+  const manifest = JSON.parse(
+    readFileSync(path.resolve('public/catalog-manifest.json'), 'utf8'),
+  ) as {
+    catalog: { name: string }[]
+    environment: Record<string, { label: string }[] | string>
+  }
+  const labels = manifest.catalog.map((entry) => entry.name)
+  for (const value of Object.values(manifest.environment)) {
+    if (Array.isArray(value)) {
+      labels.push(...value.map((entry) => entry.label))
+    }
+  }
+  return new Set(labels)
+})()
+
+// Every aria-label that carries words must be pseudo-localized. Labels are the
+// strings no visual review sees, so this sweep is the regression net for them.
+async function expectAriaLabelsLocalized(page: Page) {
+  const labels = await page.evaluate(() =>
+    Array.from(document.querySelectorAll('[aria-label]'), (element) =>
+      element.getAttribute('aria-label'),
+    ),
+  )
+  const unlocalized = labels.filter(
+    (label): label is string =>
+      label !== null &&
+      /[A-Za-z]{2,}/.test(label) &&
+      !ACCENTED_LATIN.test(label) &&
+      !MANIFEST_PROVIDED_LABELS.has(label),
+  )
+  expect(unlocalized).toEqual([])
+}
+
+async function expectNoHorizontalOverflow(page: Page) {
+  // Length expansion must not introduce horizontal document overflow on this
+  // full-viewport app (a DOM measurement, not a pixel diff).
+  const horizontalOverflow = await page.evaluate(() => {
+    const el = document.scrollingElement ?? document.documentElement
+    return el.scrollWidth - el.clientWidth
+  })
+  expect(horizontalOverflow).toBeLessThanOrEqual(1)
+}
+
+async function expectAxeConformance(page: Page, context: string) {
+  const axeResult = await new AxeBuilder({ page })
+    .withTags(WCAG_AA_TAGS)
+    .analyze()
+  expect(
+    axeResult.violations,
+    `Expected no axe violations under the en-XA pseudo-locale (${context})`,
+  ).toEqual([])
+}
+
+test.describe('pseudo-locale', () => {
+  test('activates the split en-XA catalog and survives length expansion', async ({
+    page,
+  }) => {
+    await page.goto('/?lang=en-XA')
+    await waitForEditorReadyAnyLocale(page)
+
+    // The lazily-imported pseudo catalog activated and reflected on <html>.
+    await expect(page.locator('html')).toHaveAttribute('lang', 'en-XA')
+
+    // A control resolves to its exact catalog translation, confirming strings
+    // come from the split catalog rather than falling back to English.
+    const addFurnitureButton = page.getByRole('button', {
+      name: pseudo('Add Furniture'),
+    })
+    await expect(addFurnitureButton).toBeVisible()
+
+    // No untranslated leaks: a representative visible label must not survive
+    // verbatim - if it does, that string bypassed Lingui.
+    const bodyText = await page.locator('body').innerText()
+    expect(bodyText).not.toContain('Add Furniture')
+    expect(bodyText).toMatch(ACCENTED_LATIN)
+
+    await expectAriaLabelsLocalized(page)
+    await expectNoHorizontalOverflow(page)
+    await expectAxeConformance(page, 'editor')
+
+    // The catalog drawer: exercises drawer copy plus the per-entry footprint
+    // labels, and the aria sweep now covers the manifest-name exemption.
+    await addFurnitureButton.click()
+    const catalogDrawer = page.getByRole('dialog', {
+      name: pseudo('Add furniture'),
+    })
+    await expect(catalogDrawer).toBeVisible()
+    await expectAriaLabelsLocalized(page)
+    await expectNoHorizontalOverflow(page)
+    await expectAxeConformance(page, 'catalog drawer')
+    await page.keyboard.press('Escape')
+    await expect(catalogDrawer).toBeHidden()
+
+    // The room panel: picker headings/descriptions are localized while the
+    // finish option labels are manifest-provided (exempt, documented boundary).
+    await page.locator('button[aria-controls="room-surface"]').click()
+    const roomSurface = page.getByRole('complementary', {
+      name: pseudo('Room'),
+    })
+    await expect(roomSurface).toBeVisible()
+    await expect(
+      roomSurface.getByText(pseudo('Wall finish')).first(),
+    ).toBeVisible()
+    await expectAriaLabelsLocalized(page)
+    await expectNoHorizontalOverflow(page)
+    await expectAxeConformance(page, 'room panel')
+    await page.keyboard.press('Escape')
+    await expect(roomSurface).toBeHidden()
+
+    // The project info dialog: its attribution terms come from JSON-held labels
+    // that must still route through the catalog.
+    await page
+      .getByRole('button', { name: pseudo('Open project and asset info') })
+      .click()
+    const infoDialog = page.getByRole('dialog', {
+      name: pseudo('Project & Asset Info'),
+    })
+    await expect(infoDialog).toBeVisible()
+    await expect(infoDialog.getByText(pseudo('Author')).first()).toBeVisible()
+    expect(await infoDialog.innerText()).not.toContain('Author')
+    await expectAriaLabelsLocalized(page)
+    await expectAxeConformance(page, 'project info dialog')
+  })
+})

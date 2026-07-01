@@ -3,10 +3,8 @@ import { useExclusionRegistry } from '@/shared/layout/overlay-exclusion-context'
 import { useSelectedFurniture } from '@/core/stores/scene-document-store'
 import { SelectedDetailsView } from './selected-details-view'
 import { useSelectedItemInteraction } from './selected-item-interaction-context'
-import {
-  invalidSelectedItemDetailValueMessage,
-  updateSelectedItemDetails,
-} from './selected-item-detail-actions'
+import { updateSelectedItemDetails } from './selected-item-detail-actions'
+import { formatSelectedItemDetailsInvalidValueMessage } from './selected-item-detail-messages'
 
 export function SelectedDetailsPanel() {
   const interaction = useSelectedItemInteraction()
@@ -30,7 +28,9 @@ export function SelectedDetailsPanel() {
         selectedFurniture={selectedFurniture}
         sectionRef={registerExclusionElement('selected-details')}
         consumeBlurCommitSuppression={interaction.consumeBlurCommitSuppression}
-        onInvalidSelectedItemDetailValue={invalidSelectedItemDetailValueMessage}
+        onInvalidSelectedItemDetailValue={
+          formatSelectedItemDetailsInvalidValueMessage
+        }
         onUpdateSelectedItemDetails={updateSelectedItemDetails}
       />
     </div>

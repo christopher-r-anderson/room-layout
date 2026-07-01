@@ -13,6 +13,11 @@ import {
   DialogTitle,
 } from '@/shared/ui/dialog'
 import { ScrollArea } from '@/shared/ui/scroll-area'
+import { Trans } from '@lingui/react/macro'
+
+// Proper name and repository URL: identity data, not translatable copy.
+const AUTHOR_NAME = 'Christopher Anderson'
+const REPOSITORY_LABEL = 'github.com/christopher-r-anderson/room-layout'
 
 export function ProjectInfoDialog({
   onOpenChange,
@@ -25,10 +30,14 @@ export function ProjectInfoDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent id="project-info-dialog">
         <DialogHeader>
-          <DialogTitle>Project &amp; Asset Info</DialogTitle>
+          <DialogTitle>
+            <Trans>Project &amp; Asset Info</Trans>
+          </DialogTitle>
           <DialogDescription>
-            Room Layout: an open source 3D furniture layout tool. All 3D assets
-            are CC-licensed and attributed below.
+            <Trans>
+              Room Layout: an open source 3D furniture layout tool. All 3D
+              assets are CC-licensed and attributed below.
+            </Trans>
           </DialogDescription>
         </DialogHeader>
         <ScrollArea className="max-h-[75vh]">
@@ -41,10 +50,12 @@ export function ProjectInfoDialog({
                 id="project-links-heading"
                 className="text-sm font-semibold text-foreground"
               >
-                Repository
+                <Trans>Repository</Trans>
               </h3>
               <DescriptionList>
-                <DescriptionTerm>Author</DescriptionTerm>
+                <DescriptionTerm>
+                  <Trans>Author</Trans>
+                </DescriptionTerm>
                 <DescriptionDetail>
                   <a
                     className="underline underline-offset-3"
@@ -52,10 +63,12 @@ export function ProjectInfoDialog({
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    Christopher Anderson <span aria-hidden>↗</span>
+                    {AUTHOR_NAME} <span aria-hidden>↗</span>
                   </a>
                 </DescriptionDetail>
-                <DescriptionTerm>Source code</DescriptionTerm>
+                <DescriptionTerm>
+                  <Trans>Source code</Trans>
+                </DescriptionTerm>
                 <DescriptionDetail>
                   <a
                     className="underline underline-offset-3"
@@ -63,11 +76,12 @@ export function ProjectInfoDialog({
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    github.com/christopher-r-anderson/room-layout{' '}
-                    <span aria-hidden>↗</span>
+                    {REPOSITORY_LABEL} <span aria-hidden>↗</span>
                   </a>
                 </DescriptionDetail>
-                <DescriptionTerm>License</DescriptionTerm>
+                <DescriptionTerm>
+                  <Trans>License</Trans>
+                </DescriptionTerm>
                 <DescriptionDetail>
                   <a
                     className="underline underline-offset-3"

@@ -1,4 +1,5 @@
 import { Toolbar } from '@base-ui/react/toolbar'
+import { Trans, useLingui } from '@lingui/react/macro'
 import {
   IconBoxAlignBottom,
   IconBoxAlignBottomRight,
@@ -22,6 +23,7 @@ export function CameraTools({
   hasSelection,
   displayLabels = true,
 }: CameraToolsProps) {
+  const { t } = useLingui()
   const dispatch = useCommandDispatch()
   // Buttons reverse so their icons hug the physical right edge this cluster pins to
   // (for right-thumb reach), keeping icons in place as labels collapse. Physical by
@@ -32,11 +34,15 @@ export function CameraTools({
     <Surface padding="snug" className="flex flex-col gap-1.5">
       <Caption className={cn('flex items-center gap-1 px-2', buttonClass)}>
         <IconCamera className="size-3.5" aria-hidden="true" />
-        {displayLabels ? <span>Camera</span> : null}
+        {displayLabels ? (
+          <span>
+            <Trans>Camera</Trans>
+          </span>
+        ) : null}
       </Caption>
       <Toolbar.Root
         orientation="vertical"
-        aria-label="Camera"
+        aria-label={t`Camera`}
         className="flex flex-col gap-1"
       >
         <ToolButton
@@ -44,8 +50,8 @@ export function CameraTools({
             dispatch({ kind: 'set-camera-preset', preset: 'corner' })
           }}
           shortcuts="1"
-          label="Switch to Corner view"
-          visibleLabel="Corner"
+          label={t`Switch to Corner view`}
+          visibleLabel={t`Corner`}
           displayLabel={displayLabels}
           className={buttonClass}
           icon={<IconBoxAlignBottomRight />}
@@ -56,8 +62,8 @@ export function CameraTools({
             dispatch({ kind: 'set-camera-preset', preset: 'front' })
           }}
           shortcuts="2"
-          label="Switch to Front view"
-          visibleLabel="Front"
+          label={t`Switch to Front view`}
+          visibleLabel={t`Front`}
           displayLabel={displayLabels}
           className={buttonClass}
           icon={<IconBoxAlignBottom />}
@@ -68,8 +74,8 @@ export function CameraTools({
             dispatch({ kind: 'set-camera-preset', preset: 'side' })
           }}
           shortcuts="3"
-          label="Switch to Side view"
-          visibleLabel="Side"
+          label={t`Switch to Side view`}
+          visibleLabel={t`Side`}
           displayLabel={displayLabels}
           className={buttonClass}
           icon={<IconBoxAlignRight />}
@@ -80,8 +86,8 @@ export function CameraTools({
             dispatch({ kind: 'set-camera-preset', preset: 'top' })
           }}
           shortcuts="4"
-          label="Switch to Top view"
-          visibleLabel="Top"
+          label={t`Switch to Top view`}
+          visibleLabel={t`Top`}
           displayLabel={displayLabels}
           className={buttonClass}
           icon={<IconBoxMargin />}
@@ -92,9 +98,9 @@ export function CameraTools({
             dispatch({ kind: 'focus-selected' })
           }}
           disabled={!hasSelection}
-          disabledMessage="No item selected"
+          disabledMessage={t`No item selected`}
           shortcuts="F"
-          label="Focus Selected"
+          label={t`Focus Selected`}
           displayLabel={displayLabels}
           className={buttonClass}
           icon={<IconFocus2 />}

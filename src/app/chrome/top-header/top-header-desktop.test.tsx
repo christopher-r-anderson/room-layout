@@ -1,8 +1,7 @@
 // @vitest-environment jsdom
 
-import { render, screen } from '@testing-library/react'
+import { render, screen } from '@/test/render'
 import { describe, expect, it, vi } from 'vitest'
-import { ROOM_TRIGGER_TOOLTIP } from '@/features/room-surface/room-copy'
 import { TopHeaderDesktop } from './top-header-desktop'
 import type { TopHeaderDesktopProps } from './top-header.types'
 
@@ -74,7 +73,9 @@ describe('TopHeaderDesktop', () => {
   it('describes the room trigger with wall and floor copy', () => {
     render(<TopHeaderDesktop {...createProps()} />)
 
-    expect(screen.getByText(ROOM_TRIGGER_TOOLTIP)).toBeInTheDocument()
+    expect(
+      screen.getByText('Adjust wall, floor, and lighting'),
+    ).toBeInTheDocument()
   })
 
   it('keeps share as a direct visible action in the desktop header', () => {

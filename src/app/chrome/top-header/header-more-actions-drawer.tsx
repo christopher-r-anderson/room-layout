@@ -7,6 +7,7 @@ import {
   DrawerTitle,
 } from '@/shared/ui/drawer'
 import { IconInfoCircle, IconKeyboard, IconRotate2 } from '@tabler/icons-react'
+import { Trans } from '@lingui/react/macro'
 import { ShareSceneButton } from './share-scene-button'
 
 export function HeaderMoreActionsDrawer({
@@ -38,9 +39,11 @@ export function HeaderMoreActionsDrawer({
         }}
       >
         <DrawerHeader>
-          <DrawerTitle>More actions</DrawerTitle>
+          <DrawerTitle>
+            <Trans>More actions</Trans>
+          </DrawerTitle>
           <DrawerDescription>
-            Share, start over, or reference help.
+            <Trans>Share, start over, or reference help.</Trans>
           </DrawerDescription>
         </DrawerHeader>
 
@@ -59,7 +62,9 @@ export function HeaderMoreActionsDrawer({
             onClick={onOpenStartOver}
           >
             <IconRotate2 aria-hidden="true" />
-            <span>Start Over</span>
+            <span>
+              <Trans>Start Over</Trans>
+            </span>
           </Button>
           <Button
             type="button"
@@ -69,7 +74,9 @@ export function HeaderMoreActionsDrawer({
             onClick={onOpenKeyboardShortcuts}
           >
             <IconKeyboard aria-hidden="true" />
-            <span>Keyboard shortcuts</span>
+            <span>
+              <Trans>Keyboard shortcuts</Trans>
+            </span>
           </Button>
           <Button
             type="button"
@@ -79,7 +86,9 @@ export function HeaderMoreActionsDrawer({
             onClick={onOpenProjectInfo}
           >
             <IconInfoCircle aria-hidden="true" />
-            <span>Project info</span>
+            <span>
+              <Trans>Project info</Trans>
+            </span>
           </Button>
         </div>
       </DrawerContent>

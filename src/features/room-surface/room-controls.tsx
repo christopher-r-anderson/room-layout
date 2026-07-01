@@ -12,12 +12,8 @@ import {
   sceneDocumentActions,
   useFloorFinishLoading,
 } from '@/core/stores/scene-document-store'
-import {
-  FLOOR_FINISH_DESCRIPTION,
-  LIGHTING_MOOD_DESCRIPTION,
-  WALL_FINISH_DESCRIPTION,
-} from './room-copy'
 import { FinishPicker } from './finish-picker'
+import { Trans, useLingui } from '@lingui/react/macro'
 
 function formatHexColor(color: number) {
   return `#${color.toString(16).padStart(6, '0')}`
@@ -45,21 +41,8 @@ function swatchCardRenderer<T extends { id: string; label: string }>(
   )
 }
 
-const renderWallCard = swatchCardRenderer<WallFinishOption>(
-  'Paint finish',
-  (item) => ({ backgroundColor: formatHexColor(item.color) }),
-)
-
-const renderLightingCard = swatchCardRenderer<LightingMoodOption>(
-  'Lighting mood',
-  (item) => ({
-    backgroundImage: `linear-gradient(135deg, ${formatHexColor(
-      item.keyLightColor,
-    )}, ${formatHexColor(item.environmentColor)})`,
-  }),
-)
-
 export function RoomControls() {
+  const { t } = useLingui()
   const environmentConfig = useEnvironmentConfig()
   const floorFinishLoading = useFloorFinishLoading()
   const {
@@ -67,6 +50,20 @@ export function RoomControls() {
     activeWallFinishId: wallFinishId,
     activeLightingMoodId: lightingMoodId,
   } = useActiveFinishIds()
+
+  const renderWallCard = swatchCardRenderer<WallFinishOption>(
+    t`Paint finish`,
+    (item) => ({ backgroundColor: formatHexColor(item.color) }),
+  )
+
+  const renderLightingCard = swatchCardRenderer<LightingMoodOption>(
+    t`Lighting mood`,
+    (item) => ({
+      backgroundImage: `linear-gradient(135deg, ${formatHexColor(
+        item.keyLightColor,
+      )}, ${formatHexColor(item.environmentColor)})`,
+    }),
+  )
 
   const renderFloorCard = (item: FloorFinishOption, isSelected: boolean) => (
     <>
@@ -87,7 +84,7 @@ export function RoomControls() {
             {item.label}
           </span>
           <span className="block truncate text-xs text-muted-foreground">
-            Material preview
+            <Trans>Material preview</Trans>
           </span>
         </span>
         {isSelected && floorFinishLoading ? (
@@ -104,15 +101,21 @@ export function RoomControls() {
   return (
     <Tabs defaultValue="walls" className="gap-3">
       <TabsList className="grid w-full grid-cols-3">
-        <TabsTrigger value="walls">Walls</TabsTrigger>
-        <TabsTrigger value="floor">Floor</TabsTrigger>
-        <TabsTrigger value="lighting">Lighting</TabsTrigger>
+        <TabsTrigger value="walls">
+          <Trans>Walls</Trans>
+        </TabsTrigger>
+        <TabsTrigger value="floor">
+          <Trans>Floor</Trans>
+        </TabsTrigger>
+        <TabsTrigger value="lighting">
+          <Trans>Lighting</Trans>
+        </TabsTrigger>
       </TabsList>
 
       <TabsContent value="walls" className="space-y-3">
         <FinishPicker
-          label="Wall finish"
-          description={WALL_FINISH_DESCRIPTION}
+          label={t`Wall finish`}
+          description={t`Pick a wall color for your room.`}
           name="wall-finish"
           options={environmentConfig?.wallFinishes ?? []}
           selectedId={wallFinishId}
@@ -128,8 +131,8 @@ export function RoomControls() {
         aria-busy={floorFinishLoading}
       >
         <FinishPicker
-          label="Floor finish"
-          description={FLOOR_FINISH_DESCRIPTION}
+          label={t`Floor finish`}
+          description={t`Pick a flooring finish for your room.`}
           name="floor-finish"
           options={environmentConfig?.floorFinishes ?? []}
           selectedId={floorFinishId}
@@ -147,7 +150,7 @@ export function RoomControls() {
                   className="animate-spin"
                   aria-hidden="true"
                 />
-                Updating
+                <Trans>Updating</Trans>
               </span>
             ) : null
           }
@@ -156,8 +159,8 @@ export function RoomControls() {
 
       <TabsContent value="lighting" className="space-y-3">
         <FinishPicker
-          label="Lighting mood"
-          description={LIGHTING_MOOD_DESCRIPTION}
+          label={t`Lighting mood`}
+          description={t`Match your home lighting to preview furniture in the right tone.`}
           name="lighting-mood"
           options={environmentConfig?.lightingMoods ?? []}
           selectedId={lightingMoodId}

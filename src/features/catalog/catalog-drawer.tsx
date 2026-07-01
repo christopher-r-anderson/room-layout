@@ -1,4 +1,6 @@
 import { type ReactElement } from 'react'
+import { Trans, useLingui } from '@lingui/react/macro'
+import { formatDecimal } from '@/shared/i18n/formatters'
 import { Button } from '@/shared/ui/button'
 import {
   Drawer,
@@ -20,20 +22,20 @@ import {
   useActiveCatalogId,
 } from './catalog-selection-store'
 
-function formatMeasurement(value: number) {
-  return Number(value.toFixed(2)).toString()
-}
-
-function formatFootprintLabel(width: number, depth: number) {
-  return `${formatMeasurement(width)}m x ${formatMeasurement(depth)}m footprint`
-}
-
 export function CatalogDrawer({
   triggerButton,
 }: {
   triggerButton: ReactElement
 }) {
+  const { t } = useLingui()
   const catalog = useCatalogEntries()
+
+  const formatFootprintLabel = (width: number, depth: number) => {
+    const widthLabel = formatDecimal(width, 2)
+    const depthLabel = formatDecimal(depth, 2)
+    return t`${widthLabel}m x ${depthLabel}m footprint`
+  }
+
   const catalogIdToAdd = useActiveCatalogId()
   const open = useDialogOpen(catalogDialogId)
 
@@ -42,15 +44,19 @@ export function CatalogDrawer({
       <DrawerTrigger asChild>{triggerButton}</DrawerTrigger>
       <DrawerContent>
         <DrawerHeader>
-          <DrawerTitle>Add furniture</DrawerTitle>
+          <DrawerTitle>
+            <Trans>Add furniture</Trans>
+          </DrawerTitle>
           <DrawerDescription>
-            Choose a piece, then place it into the room.
+            <Trans>Choose a piece, then place it into the room.</Trans>
           </DrawerDescription>
         </DrawerHeader>
 
         <div className="px-6 max-h-[90vh] sm:max-h-[30vh] overflow-y-auto">
           <fieldset className="grid grid-cols-5 gap-2 border-0 p-0 pb-2 max-[980px]:grid-cols-3 max-[760px]:grid-cols-2 max-[520px]:grid-cols-1">
-            <legend className="sr-only">Furniture type to add</legend>
+            <legend className="sr-only">
+              <Trans>Furniture type to add</Trans>
+            </legend>
             {catalog.map((entry) => {
               const isSelected = catalogIdToAdd === entry.id
 
@@ -114,10 +120,12 @@ export function CatalogDrawer({
               }
             }}
           >
-            Add Item
+            <Trans>Add Item</Trans>
           </Button>
           <DrawerClose asChild>
-            <Button variant="outline">Close</Button>
+            <Button variant="outline">
+              <Trans>Close</Trans>
+            </Button>
           </DrawerClose>
         </DrawerFooter>
       </DrawerContent>

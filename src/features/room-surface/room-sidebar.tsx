@@ -10,7 +10,7 @@ import { ScrollArea } from '@/shared/ui/scroll-area'
 import { IconX } from '@tabler/icons-react'
 import type { Ref } from 'react'
 import { RoomControls } from './room-controls'
-import { ROOM_SURFACE_DESCRIPTION } from './room-copy'
+import { Trans, useLingui } from '@lingui/react/macro'
 
 export function RoomSidebar({
   containerRef,
@@ -21,6 +21,8 @@ export function RoomSidebar({
   open: boolean
   onClose: () => void
 }) {
+  const { t } = useLingui()
+
   if (!open) {
     return null
   }
@@ -45,14 +47,20 @@ export function RoomSidebar({
       <Card variant="overlay" className="flex h-full flex-col">
         <CardHeader className="flex flex-row items-start justify-between gap-3 space-y-0">
           <div className="space-y-1">
-            <CardTitle id="room-surface-title">Room</CardTitle>
-            <CardDescription>{ROOM_SURFACE_DESCRIPTION}</CardDescription>
+            <CardTitle id="room-surface-title">
+              <Trans>Room</Trans>
+            </CardTitle>
+            <CardDescription>
+              <Trans>
+                Adjust wall finishes, flooring, and lighting to match your room.
+              </Trans>
+            </CardDescription>
           </div>
           <Button
             type="button"
             variant="ghost"
             size="icon-sm"
-            aria-label="Close room panel"
+            aria-label={t`Close room panel`}
             onClick={onClose}
           >
             <IconX aria-hidden="true" />

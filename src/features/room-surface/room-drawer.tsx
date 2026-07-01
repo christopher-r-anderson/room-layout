@@ -8,7 +8,7 @@ import {
   DrawerTitle,
 } from '@/shared/ui/drawer'
 import { RoomControls } from './room-controls'
-import { ROOM_SURFACE_DESCRIPTION } from './room-copy'
+import { Trans } from '@lingui/react/macro'
 
 export function RoomDrawer({
   contentRef,
@@ -45,8 +45,14 @@ export function RoomDrawer({
         }}
       >
         <DrawerHeader>
-          <DrawerTitle>Room</DrawerTitle>
-          <DrawerDescription>{ROOM_SURFACE_DESCRIPTION}</DrawerDescription>
+          <DrawerTitle>
+            <Trans>Room</Trans>
+          </DrawerTitle>
+          <DrawerDescription>
+            <Trans>
+              Adjust wall finishes, flooring, and lighting to match your room.
+            </Trans>
+          </DrawerDescription>
         </DrawerHeader>
         <ScrollArea className="min-h-0 flex-1 px-4 pb-4">
           <RoomControls />

@@ -1,10 +1,10 @@
+import { msg } from '@lingui/core/macro'
 import { toast } from 'sonner'
 import { dialogActions } from '@/core/stores/dialog-store'
 import { feedbackActions } from '@/core/stores/feedback-store'
 import { resetSceneToDefaults } from '@/core/persistence/scene-reset'
+import { i18n } from '@/shared/i18n/i18n'
 import { startOverDialogId } from './start-over-dialog-definition'
-
-const STARTED_OVER_MESSAGE = 'Started over. Your changes were cleared.'
 
 /**
  * Opens the start-over confirmation dialog and clears any stale status message
@@ -27,6 +27,7 @@ export function startOverIntent() {
 export function confirmStartOver() {
   dialogActions.closeActiveDialog()
   resetSceneToDefaults()
-  feedbackActions.announcePolite(STARTED_OVER_MESSAGE)
-  toast.success(STARTED_OVER_MESSAGE)
+  const startedOver = i18n._(msg`Started over. Your changes were cleared.`)
+  feedbackActions.announcePolite(startedOver)
+  toast.success(startedOver)
 }

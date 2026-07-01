@@ -1,0 +1,621 @@
+msgid ""
+msgstr ""
+"POT-Creation-Date: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: @lingui/cli\n"
+"Language: en-XA\n"
+
+msgid "{deletedName} removed from room."
+msgstr "[{deletedName} ŕēḿōvēď ƒŕōḿ ŕōōḿ.āēīōūáéíóúāēī]"
+
+msgid "{fieldLabel} must be a valid number."
+msgstr "[{fieldLabel} ḿũśţ ƀē à vàĺĩď ńũḿƀēŕ.āēīōūáéíóúāēīōū]"
+
+msgid "{fieldLabel} must stay inside the room."
+msgstr "[{fieldLabel} ḿũśţ śţàŷ ĩńśĩďē ţĥē ŕōōḿ.āēīōūáéíóúāēīōūá]"
+
+msgid "{fieldLabel} overlaps another item."
+msgstr "[{fieldLabel} ōvēŕĺàƥś àńōţĥēŕ ĩţēḿ.āēīōūáéíóúāēīō]"
+
+msgid "{itemName} details updated."
+msgstr "[{itemName} ďēţàĩĺś ũƥďàţēď.āēīōūáéíóúāēīōū]"
+
+msgid "{itemName} Placement"
+msgstr "[{itemName} Ƥĺàćēḿēńţāēīōūáéíóúāēīō]"
+
+msgid "{movedItemName} moved to X {x} and Z {z}."
+msgstr "[{movedItemName} ḿōvēď ţō X {x} àńď Ź {z}.āēīōūáéíóúāēīōūáé]"
+
+msgid "{rotatingName} rotated."
+msgstr "[{rotatingName} ŕōţàţēď.āēīōūáéíóúāēī]"
+
+msgid "{selectedName} added to room."
+msgstr "[{selectedName} àďďēď ţō ŕōōḿ.āēīōūáéíóúāēīōūá]"
+
+msgid "{selectedName} selected."
+msgstr "[{selectedName} śēĺēćţēď.āēīōūáéíóúāēīō]"
+
+msgid "{selectedName} selected. Press Shift+T to reach its actions."
+msgstr "[{selectedName} śēĺēćţēď. Ƥŕēśś Śĥĩƒţ+Ţ ţō ŕēàćĥ ĩţś àćţĩōńś.āēīōūáéíóúāēīōūáéíóúāēīō]"
+
+msgid "{widthLabel}m x {depthLabel}m footprint"
+msgstr "[{widthLabel}ḿ x {depthLabel}ḿ ƒōōţƥŕĩńţāēīōūáéíóúāēīōūá]"
+
+msgid "3D Room View (No Selection)"
+msgstr "[3Ď Ŕōōḿ Vĩēŵ (Ńō Śēĺēćţĩōń)āēīōūáéíóúāēīōū]"
+
+msgid "A required furniture model did not load correctly, so editor interactions are temporarily unavailable."
+msgstr "[À ŕēqũĩŕēď ƒũŕńĩţũŕē ḿōďēĺ ďĩď ńōţ ĺōàď ćōŕŕēćţĺŷ, śō ēďĩţōŕ ĩńţēŕàćţĩōńś àŕē ţēḿƥōŕàŕĩĺŷ ũńàvàĩĺàƀĺē.āēīōūáéíóúāēīōūáéíóúāēīōūáéíóúāēīōūáéíóúā]"
+
+msgid "Actions"
+msgstr "[Àćţĩōńśāēīōūáé]"
+
+msgid "Add furniture"
+msgstr "[Àďď ƒũŕńĩţũŕēāēīōūáéíóú]"
+
+msgid "Add Furniture"
+msgstr "[Àďď Ƒũŕńĩţũŕēāēīōūáéíóú]"
+
+msgid "Add Item"
+msgstr "[Àďď Ĩţēḿāēīōūáéí]"
+
+msgid "Adjust wall finishes, flooring, and lighting to match your room."
+msgstr "[Àďĵũśţ ŵàĺĺ ƒĩńĩśĥēś, ƒĺōōŕĩńğ, àńď ĺĩğĥţĩńğ ţō ḿàţćĥ ŷōũŕ ŕōōḿ.āēīōūáéíóúāēīōūáéíóúāēīōūá]"
+
+msgid "Adjust wall, floor, and lighting"
+msgstr "[Àďĵũśţ ŵàĺĺ, ƒĺōōŕ, àńď ĺĩğĥţĩńğāēīōūáéíóúāēī]"
+
+msgid "Apply typed detail value"
+msgstr "[Àƥƥĺŷ ţŷƥēď ďēţàĩĺ vàĺũēāēīōūáéíóúāēīō]"
+
+msgid "Asset {assetNumber} of {total}"
+msgstr "[Àśśēţ {assetNumber} ōƒ {total}āēīōūáéíóúāēīōūáé]"
+
+msgid "Asset loading failed"
+msgstr "[Àśśēţ ĺōàďĩńğ ƒàĩĺēďāēīōūáéíóúāēīō]"
+
+msgid "Author"
+msgstr "[Àũţĥōŕāēīōūá]"
+
+msgid "Back wall"
+msgstr "[Ɓàćķ ŵàĺĺāēīōūáéíó]"
+
+msgid "Browse"
+msgstr "[Ɓŕōŵśēāēīōūá]"
+
+msgid "Camera"
+msgstr "[Ćàḿēŕàāēīōūá]"
+
+msgid "Camera Controls"
+msgstr "[Ćàḿēŕà Ćōńţŕōĺśāēīōūáéíóúā]"
+
+msgid "Cancel"
+msgstr "[Ćàńćēĺāēīōūá]"
+
+msgid "Cancel typed detail draft"
+msgstr "[Ćàńćēĺ ţŷƥēď ďēţàĩĺ ďŕàƒţāēīōūáéíóúāēīō]"
+
+msgid "Catalog data is invalid"
+msgstr "[Ćàţàĺōğ ďàţà ĩś ĩńvàĺĩďāēīōūáéíóúāēī]"
+
+msgid "Catalog request failed"
+msgstr "[Ćàţàĺōğ ŕēqũēśţ ƒàĩĺēďāēīōūáéíóúāēī]"
+
+msgid "Catalog request timed out"
+msgstr "[Ćàţàĺōğ ŕēqũēśţ ţĩḿēď ōũţāēīōūáéíóúāēīō]"
+
+msgid "Check your connection and retry loading the catalog."
+msgstr "[Ćĥēćķ ŷōũŕ ćōńńēćţĩōń àńď ŕēţŕŷ ĺōàďĩńğ ţĥē ćàţàĺōğ.āēīōūáéíóúāēīōūáéíóúā]"
+
+msgid "Choose a piece, then place it into the room."
+msgstr "[Ćĥōōśē à ƥĩēćē, ţĥēń ƥĺàćē ĩţ ĩńţō ţĥē ŕōōḿ.āēīōūáéíóúāēīōūáéí]"
+
+msgid "Clear preview/selection"
+msgstr "[Ćĺēàŕ ƥŕēvĩēŵ/śēĺēćţĩōńāēīōūáéíóúāēī]"
+
+msgid "Clear selection"
+msgstr "[Ćĺēàŕ śēĺēćţĩōńāēīōūáéíóúā]"
+
+msgid "Close"
+msgstr "[Ćĺōśēāēīōū]"
+
+msgid "Close room panel"
+msgstr "[Ćĺōśē ŕōōḿ ƥàńēĺāēīōūáéíóúāē]"
+
+msgid "Confirm the manifest schema and asset paths, then retry."
+msgstr "[Ćōńƒĩŕḿ ţĥē ḿàńĩƒēśţ śćĥēḿà àńď àśśēţ ƥàţĥś, ţĥēń ŕēţŕŷ.āēīōūáéíóúāēīōūáéíóúāēī]"
+
+msgid "Copied"
+msgstr "[Ćōƥĩēďāēīōūá]"
+
+msgid "Corner"
+msgstr "[Ćōŕńēŕāēīōūá]"
+
+msgid "Could not copy URL to clipboard."
+msgstr "[Ćōũĺď ńōţ ćōƥŷ ŨŔĹ ţō ćĺĩƥƀōàŕď.āēīōūáéíóúāēī]"
+
+msgid "Could not open share options."
+msgstr "[Ćōũĺď ńōţ ōƥēń śĥàŕē ōƥţĩōńś.āēīōūáéíóúāēīōūá]"
+
+msgid "Current item: {currentAsset}"
+msgstr "[Ćũŕŕēńţ ĩţēḿ: {currentAsset}āēīōūáéíóúāēīōūá]"
+
+msgid "Details"
+msgstr "[Ďēţàĩĺśāēīōūáé]"
+
+msgid "Distance from back wall (m)"
+msgstr "[Ďĩśţàńćē ƒŕōḿ ƀàćķ ŵàĺĺ (ḿ)āēīōūáéíóúāēīōū]"
+
+msgid "Distance from left wall (m)"
+msgstr "[Ďĩśţàńćē ƒŕōḿ ĺēƒţ ŵàĺĺ (ḿ)āēīōūáéíóúāēīōū]"
+
+msgid "Draft could not be restored."
+msgstr "[Ďŕàƒţ ćōũĺď ńōţ ƀē ŕēśţōŕēď.āēīōūáéíóúāēīōūá]"
+
+msgid "Draft could not be restored. Starting with an empty room."
+msgstr "[Ďŕàƒţ ćōũĺď ńōţ ƀē ŕēśţōŕēď. Śţàŕţĩńğ ŵĩţĥ àń ēḿƥţŷ ŕōōḿ.āēīōūáéíóúāēīōūáéíóúāēī]"
+
+msgid "Draft failed to restore. Starting with an empty room."
+msgstr "[Ďŕàƒţ ƒàĩĺēď ţō ŕēśţōŕē. Śţàŕţĩńğ ŵĩţĥ àń ēḿƥţŷ ŕōōḿ.āēīōūáéíóúāēīōūáéíóúāē]"
+
+msgid "Edit the selected item."
+msgstr "[Ēďĩţ ţĥē śēĺēćţēď ĩţēḿ.āēīōūáéíóúāēī]"
+
+msgid "Editor status"
+msgstr "[Ēďĩţōŕ śţàţũśāēīōūáéíóú]"
+
+msgid "Fetching the furniture catalog"
+msgstr "[Ƒēţćĥĩńğ ţĥē ƒũŕńĩţũŕē ćàţàĺōğāēīōūáéíóúāēīōūáé]"
+
+msgid "Finish dragging before editing item details."
+msgstr "[Ƒĩńĩśĥ ďŕàğğĩńğ ƀēƒōŕē ēďĩţĩńğ ĩţēḿ ďēţàĩĺś.āēīōūáéíóúāēīōūáéí]"
+
+msgid "Finish dragging before using movement controls."
+msgstr "[Ƒĩńĩśĥ ďŕàğğĩńğ ƀēƒōŕē ũśĩńğ ḿōvēḿēńţ ćōńţŕōĺś.āēīōūáéíóúāēīōūáéíó]"
+
+msgid "Finishing up the room view"
+msgstr "[Ƒĩńĩśĥĩńğ ũƥ ţĥē ŕōōḿ vĩēŵāēīōūáéíóúāēīōū]"
+
+msgid "Floor"
+msgstr "[Ƒĺōōŕāēīōū]"
+
+msgid "Floor finish"
+msgstr "[Ƒĺōōŕ ƒĩńĩśĥāēīōūáéíó]"
+
+msgid "Focus"
+msgstr "[Ƒōćũśāēīōū]"
+
+msgid "Focus Furniture in room"
+msgstr "[Ƒōćũś Ƒũŕńĩţũŕē ĩń ŕōōḿāēīōūáéíóúāēī]"
+
+msgid "Focus inspector"
+msgstr "[Ƒōćũś ĩńśƥēćţōŕāēīōūáéíóúā]"
+
+msgid "Focus room view"
+msgstr "[Ƒōćũś ŕōōḿ vĩēŵāēīōūáéíóúā]"
+
+msgid "Focus Selected"
+msgstr "[Ƒōćũś Śēĺēćţēďāēīōūáéíóú]"
+
+msgid "Focus selected item"
+msgstr "[Ƒōćũś śēĺēćţēď ĩţēḿāēīōūáéíóúāēīō]"
+
+msgid "Focus selected item actions"
+msgstr "[Ƒōćũś śēĺēćţēď ĩţēḿ àćţĩōńśāēīōūáéíóúāēīōū]"
+
+msgid "Front"
+msgstr "[Ƒŕōńţāēīōū]"
+
+msgid "Furniture asset loading progress"
+msgstr "[Ƒũŕńĩţũŕē àśśēţ ĺōàďĩńğ ƥŕōğŕēśśāēīōūáéíóúāēī]"
+
+msgid "Furniture in room"
+msgstr "[Ƒũŕńĩţũŕē ĩń ŕōōḿāēīōūáéíóúāē]"
+
+msgid "Furniture items"
+msgstr "[Ƒũŕńĩţũŕē ĩţēḿśāēīōūáéíóúā]"
+
+msgid "Furniture type to add"
+msgstr "[Ƒũŕńĩţũŕē ţŷƥē ţō àďďāēīōūáéíóúāē]"
+
+msgid "Header actions"
+msgstr "[Ĥēàďēŕ àćţĩōńśāēīōūáéíóú]"
+
+msgid "History"
+msgstr "[Ĥĩśţōŕŷāēīōūáé]"
+
+msgid "History Actions"
+msgstr "[Ĥĩśţōŕŷ Àćţĩōńśāēīōūáéíóúā]"
+
+msgid "Interactive 3D room editor"
+msgstr "[Ĩńţēŕàćţĩvē 3Ď ŕōōḿ ēďĩţōŕāēīōūáéíóúāēīōū]"
+
+msgid "Keyboard shortcuts"
+msgstr "[Ķēŷƀōàŕď śĥōŕţćũţśāēīōūáéíóúāēī]"
+
+msgid "Keyboard Shortcuts"
+msgstr "[Ķēŷƀōàŕď Śĥōŕţćũţśāēīōūáéíóúāēī]"
+
+msgid "Left wall"
+msgstr "[Ĺēƒţ ŵàĺĺāēīōūáéíó]"
+
+msgid "License"
+msgstr "[Ĺĩćēńśēāēīōūáé]"
+
+msgid "Lighting"
+msgstr "[Ĺĩğĥţĩńğāēīōūáéí]"
+
+msgid "Lighting mood"
+msgstr "[Ĺĩğĥţĩńğ ḿōōďāēīōūáéíóú]"
+
+msgid "Loading scene assets"
+msgstr "[Ĺōàďĩńğ śćēńē àśśēţśāēīōūáéíóúāēīō]"
+
+msgid "Match your home lighting to preview furniture in the right tone."
+msgstr "[Ḿàţćĥ ŷōũŕ ĥōḿē ĺĩğĥţĩńğ ţō ƥŕēvĩēŵ ƒũŕńĩţũŕē ĩń ţĥē ŕĩğĥţ ţōńē.āēīōūáéíóúāēīōūáéíóúāēīōūá]"
+
+msgid "Material preview"
+msgstr "[Ḿàţēŕĩàĺ ƥŕēvĩēŵāēīōūáéíóúāē]"
+
+msgid "More actions"
+msgstr "[Ḿōŕē àćţĩōńśāēīōūáéíó]"
+
+msgid "Motion (Hold)"
+msgstr "[Ḿōţĩōń (Ĥōĺď)āēīōūáéíóú]"
+
+msgid "Move"
+msgstr "[Ḿōvēāēīō]"
+
+msgid "Move farther (1.0 m)"
+msgstr "[Ḿōvē ƒàŕţĥēŕ (1.0 ḿ)āēīōūáéíóúāēīō]"
+
+msgid "Move finely (0.1 m)"
+msgstr "[Ḿōvē ƒĩńēĺŷ (0.1 ḿ)āēīōūáéíóúāēīō]"
+
+msgid "Movement blocked by another furniture item."
+msgstr "[Ḿōvēḿēńţ ƀĺōćķēď ƀŷ àńōţĥēŕ ƒũŕńĩţũŕē ĩţēḿ.āēīōūáéíóúāēīōūáéí]"
+
+msgid "Movement blocked by room bounds."
+msgstr "[Ḿōvēḿēńţ ƀĺōćķēď ƀŷ ŕōōḿ ƀōũńďś.āēīōūáéíóúāēī]"
+
+msgid "Navigation"
+msgstr "[Ńàvĩğàţĩōńāēīōūáéíó]"
+
+msgid "No furniture in the room."
+msgstr "[Ńō ƒũŕńĩţũŕē ĩń ţĥē ŕōōḿ.āēīōūáéíóúāēīō]"
+
+msgid "No item selected"
+msgstr "[Ńō ĩţēḿ śēĺēćţēďāēīōūáéíóúāē]"
+
+msgid "No next history"
+msgstr "[Ńō ńēxţ ĥĩśţōŕŷāēīōūáéíóúā]"
+
+msgid "No previous history"
+msgstr "[Ńō ƥŕēvĩōũś ĥĩśţōŕŷāēīōūáéíóúāēīō]"
+
+msgid "No safe placement slot is available for that furniture item."
+msgstr "[Ńō śàƒē ƥĺàćēḿēńţ śĺōţ ĩś àvàĩĺàƀĺē ƒōŕ ţĥàţ ƒũŕńĩţũŕē ĩţēḿ.āēīōūáéíóúāēīōūáéíóúāēīō]"
+
+msgid "No selected furniture item was available to delete."
+msgstr "[Ńō śēĺēćţēď ƒũŕńĩţũŕē ĩţēḿ ŵàś àvàĩĺàƀĺē ţō ďēĺēţē.āēīōūáéíóúāēīōūáéíóúā]"
+
+msgid "Notes/Modifications"
+msgstr "[Ńōţēś/Ḿōďĩƒĩćàţĩōńśāēīōūáéíóúāēīō]"
+
+msgid "Notifications"
+msgstr "[Ńōţĩƒĩćàţĩōńśāēīōūáéíóú]"
+
+msgid "Nudge selected item (0.5 m)"
+msgstr "[Ńũďğē śēĺēćţēď ĩţēḿ (0.5 ḿ)āēīōūáéíóúāēīōū]"
+
+msgid "Open project and asset info"
+msgstr "[Ōƥēń ƥŕōĵēćţ àńď àśśēţ ĩńƒōāēīōūáéíóúāēīōū]"
+
+msgid "Orbit camera"
+msgstr "[Ōŕƀĩţ ćàḿēŕàāēīōūáéíó]"
+
+msgid "Paint finish"
+msgstr "[Ƥàĩńţ ƒĩńĩśĥāēīōūáéíó]"
+
+msgid "Pan camera"
+msgstr "[Ƥàń ćàḿēŕàāēīōūáéíó]"
+
+msgid "Pane focus"
+msgstr "[Ƥàńē ƒōćũśāēīōūáéíó]"
+
+msgid "Photographer"
+msgstr "[Ƥĥōţōğŕàƥĥēŕāēīōūáéíó]"
+
+msgid "Pick a flooring finish for your room."
+msgstr "[Ƥĩćķ à ƒĺōōŕĩńğ ƒĩńĩśĥ ƒōŕ ŷōũŕ ŕōōḿ.āēīōūáéíóúāēīōū]"
+
+msgid "Pick a wall color for your room."
+msgstr "[Ƥĩćķ à ŵàĺĺ ćōĺōŕ ƒōŕ ŷōũŕ ŕōōḿ.āēīōūáéíóúāēī]"
+
+msgid "Position (m)"
+msgstr "[Ƥōśĩţĩōń (ḿ)āēīōūáéíó]"
+
+msgid "Preparing furniture assets..."
+msgstr "[Ƥŕēƥàŕĩńğ ƒũŕńĩţũŕē àśśēţś...āēīōūáéíóúāēīōūá]"
+
+msgid "Preparing the editor"
+msgstr "[Ƥŕēƥàŕĩńğ ţĥē ēďĩţōŕāēīōūáéíóúāēīō]"
+
+msgid "Preparing the room editor"
+msgstr "[Ƥŕēƥàŕĩńğ ţĥē ŕōōḿ ēďĩţōŕāēīōūáéíóúāēīō]"
+
+msgid "Preview first/last"
+msgstr "[Ƥŕēvĩēŵ ƒĩŕśţ/ĺàśţāēīōūáéíóúāēī]"
+
+msgid "Preview next item"
+msgstr "[Ƥŕēvĩēŵ ńēxţ ĩţēḿāēīōūáéíóúāē]"
+
+msgid "Preview previous item"
+msgstr "[Ƥŕēvĩēŵ ƥŕēvĩōũś ĩţēḿāēīōūáéíóúāē]"
+
+msgid "Processing"
+msgstr "[Ƥŕōćēśśĩńğāēīōūáéíó]"
+
+msgid "Project & Asset Info"
+msgstr "[Ƥŕōĵēćţ & Àśśēţ Ĩńƒōāēīōūáéíóúāēīō]"
+
+msgid "Project and asset info"
+msgstr "[Ƥŕōĵēćţ àńď àśśēţ ĩńƒōāēīōūáéíóúāēī]"
+
+msgid "Project info"
+msgstr "[Ƥŕōĵēćţ ĩńƒōāēīōūáéíó]"
+
+msgid "Quick reference for room-view, camera, selected item, and scene shortcuts. Most shortcuts below work only while the 3D room view is focused. Use the header controls for Add Furniture and Room, then open More on mobile for sharing and the other scene actions."
+msgstr "[Qũĩćķ ŕēƒēŕēńćē ƒōŕ ŕōōḿ-vĩēŵ, ćàḿēŕà, śēĺēćţēď ĩţēḿ, àńď śćēńē śĥōŕţćũţś. Ḿōśţ śĥōŕţćũţś ƀēĺōŵ ŵōŕķ ōńĺŷ ŵĥĩĺē ţĥē 3Ď ŕōōḿ vĩēŵ ĩś ƒōćũśēď. Ũśē ţĥē ĥēàďēŕ ćōńţŕōĺś ƒōŕ Àďď Ƒũŕńĩţũŕē àńď Ŕōōḿ, ţĥēń ōƥēń Ḿōŕē ōń ḿōƀĩĺē ƒōŕ śĥàŕĩńğ àńď ţĥē ōţĥēŕ śćēńē àćţĩōńś.āēīōūáéíóúāēīōūáéíóúāēīōūáéíóúāēīōūáéíóúāēīōūáéíóúāēīōūáéíóúāēīōūáéíóúāēīōūáéíóúāēīōūáéíóúāēīōūáéíóúāēīō]"
+
+msgid "Redo"
+msgstr "[Ŕēďōāēīō]"
+
+msgid "Redo complete."
+msgstr "[Ŕēďō ćōḿƥĺēţē.āēīōūáéíóú]"
+
+#. placeholder {0}: pendingDeleteFurniture.name
+msgid "Remove {0} from your room layout?"
+msgstr "[Ŕēḿōvē {0} ƒŕōḿ ŷōũŕ ŕōōḿ ĺàŷōũţ?āēīōūáéíóúāēīō]"
+
+msgid "Remove item"
+msgstr "[Ŕēḿōvē ĩţēḿāēīōūáéí]"
+
+msgid "Remove item from room?"
+msgstr "[Ŕēḿōvē ĩţēḿ ƒŕōḿ ŕōōḿ?āēīōūáéíóúāēī]"
+
+msgid "Remove the selected item from your room layout?"
+msgstr "[Ŕēḿōvē ţĥē śēĺēćţēď ĩţēḿ ƒŕōḿ ŷōũŕ ŕōōḿ ĺàŷōũţ?āēīōūáéíóúāēīōūáéíó]"
+
+msgid "Repository"
+msgstr "[Ŕēƥōśĩţōŕŷāēīōūáéíó]"
+
+msgid "Restored your saved draft."
+msgstr "[Ŕēśţōŕēď ŷōũŕ śàvēď ďŕàƒţ.āēīōūáéíóúāēīōū]"
+
+msgid "Retry Loading"
+msgstr "[Ŕēţŕŷ Ĺōàďĩńğāēīōūáéíóú]"
+
+msgid "Retry to attempt startup again."
+msgstr "[Ŕēţŕŷ ţō àţţēḿƥţ śţàŕţũƥ àğàĩń.āēīōūáéíóúāēī]"
+
+msgid "Retry to request the essential assets again."
+msgstr "[Ŕēţŕŷ ţō ŕēqũēśţ ţĥē ēśśēńţĩàĺ àśśēţś àğàĩń.āēīōūáéíóúāēīōūáéí]"
+
+msgid "Room"
+msgstr "[Ŕōōḿāēīō]"
+
+msgid "Room layout restored from shared link."
+msgstr "[Ŕōōḿ ĺàŷōũţ ŕēśţōŕēď ƒŕōḿ śĥàŕēď ĺĩńķ.āēīōūáéíóúāēīōūá]"
+
+msgid "Room layout shared."
+msgstr "[Ŕōōḿ ĺàŷōũţ śĥàŕēď.āēīōūáéíóúāēīō]"
+
+msgid "Room Layout: an open source 3D furniture layout tool. All 3D assets are CC-licensed and attributed below."
+msgstr "[Ŕōōḿ Ĺàŷōũţ: àń ōƥēń śōũŕćē 3Ď ƒũŕńĩţũŕē ĺàŷōũţ ţōōĺ. Àĺĺ 3Ď àśśēţś àŕē ĆĆ-ĺĩćēńśēď àńď àţţŕĩƀũţēď ƀēĺōŵ.āēīōūáéíóúāēīōūáéíóúāēīōūáéíóúāēīōūáéíóúāē]"
+
+msgid "Rotate"
+msgstr "[Ŕōţàţēāēīōūá]"
+
+msgid "Rotate clockwise"
+msgstr "[Ŕōţàţē ćĺōćķŵĩśēāēīōūáéíóúāē]"
+
+msgid "Rotate counterclockwise"
+msgstr "[Ŕōţàţē ćōũńţēŕćĺōćķŵĩśēāēīōūáéíóúāēī]"
+
+msgid "Rotation (deg)"
+msgstr "[Ŕōţàţĩōń (ďēğ)āēīōūáéíóú]"
+
+msgid "Scene"
+msgstr "[Śćēńēāēīōū]"
+
+msgid "Scene already matches defaults"
+msgstr "[Śćēńē àĺŕēàďŷ ḿàţćĥēś ďēƒàũĺţśāēīōūáéíóúāēīōūáé]"
+
+msgid "Scene is too large to share as a URL."
+msgstr "[Śćēńē ĩś ţōō ĺàŕğē ţō śĥàŕē àś à ŨŔĹ.āēīōūáéíóúāēīōū]"
+
+msgid "Scene URL copied to clipboard."
+msgstr "[Śćēńē ŨŔĹ ćōƥĩēď ţō ćĺĩƥƀōàŕď.āēīōūáéíóúāēīōūáé]"
+
+msgid "Scene/Global"
+msgstr "[Śćēńē/Ğĺōƀàĺāēīōūáéíó]"
+
+msgid "Select"
+msgstr "[Śēĺēćţāēīōūá]"
+
+msgid "Select a furniture item first."
+msgstr "[Śēĺēćţ à ƒũŕńĩţũŕē ĩţēḿ ƒĩŕśţ.āēīōūáéíóúāēīōūáé]"
+
+msgid "Select an item to fine-tune placement."
+msgstr "[Śēĺēćţ àń ĩţēḿ ţō ƒĩńē-ţũńē ƥĺàćēḿēńţ.āēīōūáéíóúāēīōūá]"
+
+msgid "Select previewed item"
+msgstr "[Śēĺēćţ ƥŕēvĩēŵēď ĩţēḿāēīōūáéíóúāē]"
+
+msgid "Selected"
+msgstr "[Śēĺēćţēďāēīōūáéí]"
+
+msgid "Selected Item"
+msgstr "[Śēĺēćţēď Ĩţēḿāēīōūáéíóú]"
+
+msgid "Selected item actions"
+msgstr "[Śēĺēćţēď ĩţēḿ àćţĩōńśāēīōūáéíóúāē]"
+
+msgid "Selection"
+msgstr "[Śēĺēćţĩōńāēīōūáéíó]"
+
+msgid "Selection cleared."
+msgstr "[Śēĺēćţĩōń ćĺēàŕēď.āēīōūáéíóúāēī]"
+
+msgid "Share"
+msgstr "[Śĥàŕēāēīōū]"
+
+msgid "Share room layout"
+msgstr "[Śĥàŕē ŕōōḿ ĺàŷōũţāēīōūáéíóúāē]"
+
+msgid "Share, start over, or reference help."
+msgstr "[Śĥàŕē, śţàŕţ ōvēŕ, ōŕ ŕēƒēŕēńćē ĥēĺƥ.āēīōūáéíóúāēīōū]"
+
+msgid "Shared"
+msgstr "[Śĥàŕēďāēīōūá]"
+
+msgid "Shared link and draft could not be restored."
+msgstr "[Śĥàŕēď ĺĩńķ àńď ďŕàƒţ ćōũĺď ńōţ ƀē ŕēśţōŕēď.āēīōūáéíóúāēīōūáéí]"
+
+msgid "Shared link and draft could not be restored. Starting with an empty room."
+msgstr "[Śĥàŕēď ĺĩńķ àńď ďŕàƒţ ćōũĺď ńōţ ƀē ŕēśţōŕēď. Śţàŕţĩńğ ŵĩţĥ àń ēḿƥţŷ ŕōōḿ.āēīōūáéíóúāēīōūáéíóúāēīōūáéíóú]"
+
+msgid "Shared link contained unknown furniture. Draft restored."
+msgstr "[Śĥàŕēď ĺĩńķ ćōńţàĩńēď ũńķńōŵń ƒũŕńĩţũŕē. Ďŕàƒţ ŕēśţōŕēď.āēīōūáéíóúāēīōūáéíóúāēī]"
+
+msgid "Shared link contained unrecognized furniture."
+msgstr "[Śĥàŕēď ĺĩńķ ćōńţàĩńēď ũńŕēćōğńĩźēď ƒũŕńĩţũŕē.āēīōūáéíóúāēīōūáéí]"
+
+msgid "Shared link contained unrecognized furniture. Starting with an empty room."
+msgstr "[Śĥàŕēď ĺĩńķ ćōńţàĩńēď ũńŕēćōğńĩźēď ƒũŕńĩţũŕē. Śţàŕţĩńğ ŵĩţĥ àń ēḿƥţŷ ŕōōḿ.āēīōūáéíóúāēīōūáéíóúāēīōūáéíóú]"
+
+msgid "Shared link could not be restored."
+msgstr "[Śĥàŕēď ĺĩńķ ćōũĺď ńōţ ƀē ŕēśţōŕēď.āēīōūáéíóúāēīō]"
+
+msgid "Shared link could not be restored. Draft also failed to restore. Starting with an empty room."
+msgstr "[Śĥàŕēď ĺĩńķ ćōũĺď ńōţ ƀē ŕēśţōŕēď. Ďŕàƒţ àĺśō ƒàĩĺēď ţō ŕēśţōŕē. Śţàŕţĩńğ ŵĩţĥ àń ēḿƥţŷ ŕōōḿ.āēīōūáéíóúāēīōūáéíóúāēīōūáéíóúāēīōūáéí]"
+
+msgid "Shared link could not be restored. Recovered your local draft."
+msgstr "[Śĥàŕēď ĺĩńķ ćōũĺď ńōţ ƀē ŕēśţōŕēď. Ŕēćōvēŕēď ŷōũŕ ĺōćàĺ ďŕàƒţ.āēīōūáéíóúāēīōūáéíóúāēīōū]"
+
+msgid "Shared link could not be restored. Starting with an empty room."
+msgstr "[Śĥàŕēď ĺĩńķ ćōũĺď ńōţ ƀē ŕēśţōŕēď. Śţàŕţĩńğ ŵĩţĥ àń ēḿƥţŷ ŕōōḿ.āēīōūáéíóúāēīōūáéíóúāēīōūá]"
+
+msgid "Shared link had unknown furniture. Draft also failed to restore. Starting with an empty room."
+msgstr "[Śĥàŕēď ĺĩńķ ĥàď ũńķńōŵń ƒũŕńĩţũŕē. Ďŕàƒţ àĺśō ƒàĩĺēď ţō ŕēśţōŕē. Śţàŕţĩńğ ŵĩţĥ àń ēḿƥţŷ ŕōōḿ.āēīōūáéíóúāēīōūáéíóúāēīōūáéíóúāēīōūáéí]"
+
+msgid "Shared link was invalid. Draft also failed to restore. Starting with an empty room."
+msgstr "[Śĥàŕēď ĺĩńķ ŵàś ĩńvàĺĩď. Ďŕàƒţ àĺśō ƒàĩĺēď ţō ŕēśţōŕē. Śţàŕţĩńğ ŵĩţĥ àń ēḿƥţŷ ŕōōḿ.āēīōūáéíóúāēīōūáéíóúāēīōūáéíóúāēīō]"
+
+msgid "Shared link was invalid. Recovered your local draft."
+msgstr "[Śĥàŕēď ĺĩńķ ŵàś ĩńvàĺĩď. Ŕēćōvēŕēď ŷōũŕ ĺōćàĺ ďŕàƒţ.āēīōūáéíóúāēīōūáéíóúā]"
+
+msgid "Side"
+msgstr "[Śĩďēāēīō]"
+
+msgid "Source"
+msgstr "[Śōũŕćēāēīōūá]"
+
+msgid "Source code"
+msgstr "[Śōũŕćē ćōďēāēīōūáéí]"
+
+msgid "Start over"
+msgstr "[Śţàŕţ ōvēŕāēīōūáéíó]"
+
+msgid "Start Over"
+msgstr "[Śţàŕţ Ōvēŕāēīōūáéíó]"
+
+msgid "Start over?"
+msgstr "[Śţàŕţ ōvēŕ?āēīōūáéí]"
+
+msgid "Started over. Your changes were cleared."
+msgstr "[Śţàŕţēď ōvēŕ. Ŷōũŕ ćĥàńğēś ŵēŕē ćĺēàŕēď.āēīōūáéíóúāēīōūá]"
+
+msgid "Starting asset requests"
+msgstr "[Śţàŕţĩńğ àśśēţ ŕēqũēśţśāēīōūáéíóúāēī]"
+
+msgid "Startup failed"
+msgstr "[Śţàŕţũƥ ƒàĩĺēďāēīōūáéíóú]"
+
+msgid "Switch to Corner view"
+msgstr "[Śŵĩţćĥ ţō Ćōŕńēŕ vĩēŵāēīōūáéíóúāē]"
+
+msgid "Switch to Front view"
+msgstr "[Śŵĩţćĥ ţō Ƒŕōńţ vĩēŵāēīōūáéíóúāēīō]"
+
+msgid "Switch to Side view"
+msgstr "[Śŵĩţćĥ ţō Śĩďē vĩēŵāēīōūáéíóúāēīō]"
+
+msgid "Switch to Top view"
+msgstr "[Śŵĩţćĥ ţō Ţōƥ vĩēŵāēīōūáéíóúāēī]"
+
+msgid "Tab / Enter applies offset. Esc cancels."
+msgstr "[Ţàƀ / Ēńţēŕ àƥƥĺĩēś ōƒƒśēţ. Ēść ćàńćēĺś.āēīōūáéíóúāēīōūá]"
+
+msgid "Tab / Enter applies rotation. Esc cancels."
+msgstr "[Ţàƀ / Ēńţēŕ àƥƥĺĩēś ŕōţàţĩōń. Ēść ćàńćēĺś.āēīōūáéíóúāēīōūáé]"
+
+msgid "The editor could not download the furniture catalog required to start."
+msgstr "[Ţĥē ēďĩţōŕ ćōũĺď ńōţ ďōŵńĺōàď ţĥē ƒũŕńĩţũŕē ćàţàĺōğ ŕēqũĩŕēď ţō śţàŕţ.āēīōūáéíóúāēīōūáéíóúāēīōūáéí]"
+
+msgid "The editor will unlock after the required furniture models finish loading."
+msgstr "[Ţĥē ēďĩţōŕ ŵĩĺĺ ũńĺōćķ àƒţēŕ ţĥē ŕēqũĩŕēď ƒũŕńĩţũŕē ḿōďēĺś ƒĩńĩśĥ ĺōàďĩńğ.āēīōūáéíóúāēīōūáéíóúāēīōūáéíóú]"
+
+msgid "The furniture catalog request timed out before startup completed."
+msgstr "[Ţĥē ƒũŕńĩţũŕē ćàţàĺōğ ŕēqũēśţ ţĩḿēď ōũţ ƀēƒōŕē śţàŕţũƥ ćōḿƥĺēţēď.āēīōūáéíóúāēīōūáéíóúāēīōūá]"
+
+msgid "The furniture catalog was fetched but failed validation checks."
+msgstr "[Ţĥē ƒũŕńĩţũŕē ćàţàĺōğ ŵàś ƒēţćĥēď ƀũţ ƒàĩĺēď vàĺĩďàţĩōń ćĥēćķś.āēīōūáéíóúāēīōūáéíóúāēīōūá]"
+
+msgid "The room editor could not start"
+msgstr "[Ţĥē ŕōōḿ ēďĩţōŕ ćōũĺď ńōţ śţàŕţāēīōūáéíóúāēī]"
+
+msgid "The room editor could not start due to an unexpected startup error."
+msgstr "[Ţĥē ŕōōḿ ēďĩţōŕ ćōũĺď ńōţ śţàŕţ ďũē ţō àń ũńēxƥēćţēď śţàŕţũƥ ēŕŕōŕ.āēīōūáéíóúāēīōūáéíóúāēīōūáé]"
+
+msgid "The selected furniture entry is no longer available."
+msgstr "[Ţĥē śēĺēćţēď ƒũŕńĩţũŕē ēńţŕŷ ĩś ńō ĺōńğēŕ àvàĩĺàƀĺē.āēīōūáéíóúāēīōūáéíóúā]"
+
+msgid "This clears your current changes and restores the default room."
+msgstr "[Ţĥĩś ćĺēàŕś ŷōũŕ ćũŕŕēńţ ćĥàńğēś àńď ŕēśţōŕēś ţĥē ďēƒàũĺţ ŕōōḿ.āēīōūáéíóúāēīōūáéíóúāēīōūá]"
+
+msgid "Toggle furniture list visibility"
+msgstr "[Ţōğğĺē ƒũŕńĩţũŕē ĺĩśţ vĩśĩƀĩĺĩţŷāēīōūáéíóúāēī]"
+
+msgid "Top"
+msgstr "[Ţōƥāēī]"
+
+msgid "Unable to load room editor assets. Retry available."
+msgstr "[Ũńàƀĺē ţō ĺōàď ŕōōḿ ēďĩţōŕ àśśēţś. Ŕēţŕŷ àvàĩĺàƀĺē.āēīōūáéíóúāēīōūáéíóúā]"
+
+msgid "Undo"
+msgstr "[Ũńďōāēīō]"
+
+msgid "Undo complete."
+msgstr "[Ũńďō ćōḿƥĺēţē.āēīōūáéíóú]"
+
+msgid "Updating"
+msgstr "[Ũƥďàţĩńğāēīōūáéí]"
+
+msgid "Use the arrow keys to browse items in the room, then press Enter or Space to select one."
+msgstr "[Ũśē ţĥē àŕŕōŵ ķēŷś ţō ƀŕōŵśē ĩţēḿś ĩń ţĥē ŕōōḿ, ţĥēń ƥŕēśś Ēńţēŕ ōŕ Śƥàćē ţō śēĺēćţ ōńē.āēīōūáéíóúāēīōūáéíóúāēīōūáéíóúāēīōūá]"
+
+msgid "View Presets"
+msgstr "[Vĩēŵ Ƥŕēśēţśāēīōūáéíó]"
+
+msgid "Wall finish"
+msgstr "[Ŵàĺĺ ƒĩńĩśĥāēīōūáéí]"
+
+msgid "Walls"
+msgstr "[Ŵàĺĺśāēīōū]"
+
+msgid "Zoom in/out"
+msgstr "[Źōōḿ ĩń/ōũţāēīōūáéí]"

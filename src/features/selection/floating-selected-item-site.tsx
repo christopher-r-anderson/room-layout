@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro'
 import { useSelectedFurniture } from '@/core/stores/scene-document-store'
 import {
   useSelectedItemActionsSizeRef,
@@ -14,6 +15,7 @@ import { useReportToolbarEngagement } from './use-report-toolbar-engagement'
  * it floats.
  */
 export function FloatingSelectedItemSite() {
+  const { t } = useLingui()
   const placement = useSelectedItemPlacement()
   const actionsSizeRef = useSelectedItemActionsSizeRef()
   const selectedFurniture = useSelectedFurniture()
@@ -37,7 +39,7 @@ export function FloatingSelectedItemSite() {
       // `top-0 left-0` is the origin for the JS-computed translate3d below; those
       // pixel offsets are physical, so the anchor stays physical, not logical.
       className="absolute top-0 left-0 pointer-events-auto transition-[transform,opacity] duration-150 ease-out"
-      aria-label="Selected item actions"
+      aria-label={t`Selected item actions`}
       data-selected-toolbar-candidate={placement.candidateId}
       data-selected-toolbar-mode="floating"
       style={{

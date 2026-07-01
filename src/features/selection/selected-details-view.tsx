@@ -1,4 +1,5 @@
 import { useId, useState, type Ref } from 'react'
+import { Trans, useLingui } from '@lingui/react/macro'
 import type {
   SelectedItemDetailField,
   UpdateSelectedItemDetailsInput,
@@ -20,40 +21,13 @@ type FieldOverride =
       sourceItem: FurnitureItem
     }
 
-const FIELD_CONFIG: {
+interface FieldConfigEntry {
   key: SelectedItemDetailField
   label: string
   shortLabel: string
   group: 'position' | 'rotation'
   helpText: string
-}[] = [
-  {
-    key: 'positionX',
-    label: 'Distance from left wall (m)',
-    shortLabel: 'Left wall',
-    group: 'position',
-    helpText: 'Tab / Enter applies offset. Esc cancels.',
-  },
-  {
-    key: 'positionZ',
-    label: 'Distance from back wall (m)',
-    shortLabel: 'Back wall',
-    group: 'position',
-    helpText: 'Tab / Enter applies offset. Esc cancels.',
-  },
-  {
-    key: 'rotationDegrees',
-    label: 'Rotation (deg)',
-    shortLabel: 'Rotate',
-    group: 'rotation',
-    helpText: 'Tab / Enter applies rotation. Esc cancels.',
-  },
-]
-
-const POSITION_FIELDS = FIELD_CONFIG.filter(
-  (field) => field.group === 'position',
-)
-const ROTATION_FIELD = FIELD_CONFIG.find((field) => field.group === 'rotation')
+}
 
 function normalizeDegrees(value: number) {
   const normalized = value % 360
@@ -65,6 +39,8 @@ function normalizeDegrees(value: number) {
   return normalized
 }
 
+// Editable field values keep a fixed `.`-decimal format: the commit path parses
+// them with `Number()`, so a localized decimal separator would not round-trip.
 function formatMeters(value: number) {
   const roundedValue = Number(value.toFixed(3))
 
@@ -110,7 +86,7 @@ export function SelectedDetailsPlaceholder({
         className,
       )}
     >
-      Select an item to fine-tune placement.
+      <Trans>Select an item to fine-tune placement.</Trans>
     </p>
   )
 }
@@ -132,8 +108,44 @@ export function SelectedDetailsView({
     input: UpdateSelectedItemDetailsInput,
   ) => UpdateSelectedItemDetailsResult
 }) {
+  const { t } = useLingui()
   const titleId = useId()
   const committedDrafts = createDrafts(selectedFurniture)
+  // Bound to a plain identifier so the extracted message reads
+  // "{itemName} Placement" rather than an anonymous "{0}" placeholder.
+  const itemName = selectedFurniture.name
+
+  // Resolved per render so labels track the active locale. `label` is dual-use:
+  // it is displayed and also passed as the interpolated field name in commit
+  // error messages, so it must be a resolved string.
+  const fieldConfig: FieldConfigEntry[] = [
+    {
+      key: 'positionX',
+      label: t`Distance from left wall (m)`,
+      shortLabel: t`Left wall`,
+      group: 'position',
+      helpText: t`Tab / Enter applies offset. Esc cancels.`,
+    },
+    {
+      key: 'positionZ',
+      label: t`Distance from back wall (m)`,
+      shortLabel: t`Back wall`,
+      group: 'position',
+      helpText: t`Tab / Enter applies offset. Esc cancels.`,
+    },
+    {
+      key: 'rotationDegrees',
+      label: t`Rotation (deg)`,
+      shortLabel: t`Rotate`,
+      group: 'rotation',
+      helpText: t`Tab / Enter applies rotation. Esc cancels.`,
+    },
+  ]
+  const positionFields = fieldConfig.filter(
+    (field) => field.group === 'position',
+  )
+  const rotationField = fieldConfig.find((field) => field.group === 'rotation')
+
   const [fieldOverrides, setFieldOverrides] = useState<
     Partial<Record<SelectedItemDetailField, FieldOverride>>
   >({})
@@ -242,11 +254,11 @@ export function SelectedDetailsView({
   }
 
   const firstErrorField =
-    FIELD_CONFIG.find(({ key }) => Boolean(errors[key]))?.key ?? null
+    fieldConfig.find(({ key }) => Boolean(errors[key]))?.key ?? null
   const supportField = firstErrorField ?? (focusWithin ? activeField : null)
   const visualSupportMessage = supportField
     ? (errors[supportField] ??
-      FIELD_CONFIG.find((field) => field.key === supportField)?.helpText ??
+      fieldConfig.find((field) => field.key === supportField)?.helpText ??
       null)
     : null
   const supportErrorMessage = firstErrorField ? errors[firstErrorField] : null
@@ -257,7 +269,7 @@ export function SelectedDetailsView({
     label,
     shortLabel,
     helpText,
-  }: (typeof FIELD_CONFIG)[number]) => {
+  }: FieldConfigEntry) => {
     const inputId = `${titleId}-${key}`
     const helpId = `${inputId}-help`
     const errorId = `${inputId}-error`
@@ -343,25 +355,25 @@ export function SelectedDetailsView({
       <Card variant="overlay" className="w-full" size="sm">
         <CardHeader className="gap-0.5 flex justify-between">
           <CardTitle id={titleId} className="truncate">
-            {selectedFurniture.name} Placement
+            <Trans>{itemName} Placement</Trans>
           </CardTitle>
         </CardHeader>
         <CardContent data-selected-item-details-root>
           <div className="flex gap-2 w-max m-auto">
             <div className="min-w-0 rounded-md border border-border/60 bg-muted/20 p-2">
               <p className="text-[11px]/4 font-medium text-muted-foreground">
-                Position (m)
+                <Trans>Position (m)</Trans>
               </p>
               <div className="mt-1.5 grid grid-cols-2 gap-2">
-                {POSITION_FIELDS.map(renderField)}
+                {positionFields.map(renderField)}
               </div>
             </div>
             <div className="min-w-0 rounded-md border border-border/60 bg-muted/20 p-2">
               <p className="text-[11px]/4 font-medium text-muted-foreground">
-                Rotation (deg)
+                <Trans>Rotation (deg)</Trans>
               </p>
               <div className="mt-1.5">
-                {ROTATION_FIELD ? renderField(ROTATION_FIELD) : null}
+                {rotationField ? renderField(rotationField) : null}
               </div>
             </div>
           </div>
@@ -372,7 +384,7 @@ export function SelectedDetailsView({
               supportIsError ? 'text-destructive' : 'text-muted-foreground',
             )}
           >
-            {visualSupportMessage ?? 'Edit the selected item.'}
+            {visualSupportMessage ?? t`Edit the selected item.`}
           </p>
           {supportErrorMessage ? (
             <p aria-atomic="true" aria-live="assertive" className="sr-only">

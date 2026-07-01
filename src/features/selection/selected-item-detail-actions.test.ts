@@ -16,10 +16,7 @@ import {
 } from '@/core/stores/selection-focus-store'
 import { sceneCommands } from '@/scene/scene-commands'
 import { feedbackActions } from '@/core/stores/feedback-store'
-import {
-  invalidSelectedItemDetailValueMessage,
-  updateSelectedItemDetails,
-} from './selected-item-detail-actions'
+import { updateSelectedItemDetails } from './selected-item-detail-actions'
 import { CHAIR } from '@/test/support/furniture'
 
 vi.mock('@/core/stores/feedback-store', () => ({
@@ -46,14 +43,6 @@ describe('selected-item-detail-actions', () => {
   afterEach(() => {
     vi.restoreAllMocks()
     vi.clearAllMocks()
-  })
-
-  describe('invalidSelectedItemDetailValueMessage', () => {
-    it('formats the invalid-value message for the supplied field', () => {
-      expect(invalidSelectedItemDetailValueMessage('Left wall')).toBe(
-        'Left wall must be a valid number.',
-      )
-    })
   })
 
   describe('updateSelectedItemDetails', () => {

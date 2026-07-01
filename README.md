@@ -56,10 +56,13 @@ pnpm format       # check formatting
 pnpm format:write # apply formatting
 pnpm fix          # lint + format fixes
 
-pnpm preflight    # full gate: lint, format, typecheck, test:run, knip, build, test:e2e
+pnpm preflight    # full gate: lint, format, typecheck, test:run, knip, i18n:check, build, test:e2e
 
 pnpm knip         # check for unused files and exports
 pnpm knip:fix     # remove unused files and exports
+
+pnpm i18n:extract # scan source and update the Lingui message catalogs
+pnpm i18n:check   # extract + fail on uncommitted catalog drift (CI gate)
 
 pnpm test         # watch unit tests
 pnpm test:run     # run unit tests
@@ -69,9 +72,6 @@ pnpm test:e2e         # run browser integration tests
 pnpm test:e2e:headed  # run browser integration tests in headed mode
 pnpm test:e2e:ui      # open the Playwright UI runner
 ```
-
-For current UI component policy and the temporary knip export exception, see
-`docs/architecture/ui-components.md`.
 
 ## 🤖 Testing
 
@@ -127,13 +127,14 @@ In addition to this README, project-specific guides are available:
 - [Core](docs/architecture/core.md): The core layer — store inventory, operations, commands, and persistence.
 - [Scene and Core](docs/architecture/scene-and-core.md): The data-model/engine seam — who owns furniture data vs. the rules that change it.
 - [Dialogs and Overlays](docs/architecture/dialogs-and-overlays.md): The active-surface dialog/overlay model, blocking semantics, mutual exclusion, and focus return.
+- [Internationalization](docs/architecture/i18n.md): Lingui + `Intl` localization, per-locale catalog splitting, string authoring, and adding a locale.
 
 ### Contributor Workflows
 
 - [Testing Guide](docs/architecture/testing.md): Contributor test lane selection and browser test workflow guidance.
 - [Catalog and Assets](docs/architecture/catalog-and-assets.md): Manifest editing, validation, texture and model pipelines, and asset contract notes.
 - [Catalog Manifest Schema](docs/reference/catalog-manifest-schema.md): Full catalog manifest field reference and validation constraints.
-- [UI Components Policy](docs/architecture/ui-components.md): shadcn ownership model and knip export exception.
+- [UI Components Policy](docs/architecture/ui-components.md): shadcn ownership model and the logical CSS property convention.
 
 ### Feature and Behavior References
 

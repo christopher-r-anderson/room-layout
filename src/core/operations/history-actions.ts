@@ -1,6 +1,8 @@
+import { msg } from '@lingui/core/macro'
 import { feedbackActions } from '@/core/stores/feedback-store'
 import { selectionEffects } from '@/core/operations/selection-effects'
 import { sceneCommands } from '@/scene/scene-commands'
+import { i18n } from '@/shared/i18n/i18n'
 
 export function undo() {
   const undid = sceneCommands.isSceneReady() ? sceneCommands.undo() : false
@@ -16,7 +18,7 @@ export function undo() {
   feedbackActions.clearStatusMessage()
 
   if (undid) {
-    feedbackActions.announcePolite('Undo complete.')
+    feedbackActions.announcePolite(i18n._(msg`Undo complete.`))
   }
 }
 
@@ -34,6 +36,6 @@ export function redo() {
   feedbackActions.clearStatusMessage()
 
   if (redid) {
-    feedbackActions.announcePolite('Redo complete.')
+    feedbackActions.announcePolite(i18n._(msg`Redo complete.`))
   }
 }

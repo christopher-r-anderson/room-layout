@@ -1,3 +1,6 @@
+import { msg } from '@lingui/core/macro'
+import { i18n } from '@/shared/i18n/i18n'
+
 export type SelectedItemDetailsBlockReason =
   | 'no-selection'
   | 'dragging'
@@ -11,13 +14,13 @@ export function formatSelectedItemDetailsBlockedMessage(
 ) {
   switch (reason) {
     case 'blocked-bounds':
-      return `${fieldLabel} must stay inside the room.`
+      return i18n._(msg`${fieldLabel} must stay inside the room.`)
     case 'blocked-collision':
-      return `${fieldLabel} overlaps another item.`
+      return i18n._(msg`${fieldLabel} overlaps another item.`)
     case 'dragging':
-      return 'Finish dragging before editing item details.'
+      return i18n._(msg`Finish dragging before editing item details.`)
     case 'no-selection':
-      return 'Select a furniture item first.'
+      return i18n._(msg`Select a furniture item first.`)
     case 'no-op':
       return ''
   }
@@ -26,5 +29,5 @@ export function formatSelectedItemDetailsBlockedMessage(
 export function formatSelectedItemDetailsInvalidValueMessage(
   fieldLabel: string,
 ) {
-  return `${fieldLabel} must be a valid number.`
+  return i18n._(msg`${fieldLabel} must be a valid number.`)
 }

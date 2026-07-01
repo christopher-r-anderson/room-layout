@@ -1,5 +1,6 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
   "tags": ["-lintignore"],
-  "ignoreBinaries": ["gltf-transform"]
+  "ignoreBinaries": ["gltf-transform"],
+  "ignore": ["lingui.config.ts", "src/shared/i18n/po.d.ts"]
 }

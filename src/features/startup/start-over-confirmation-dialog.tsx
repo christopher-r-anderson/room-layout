@@ -1,3 +1,4 @@
+import { Trans } from '@lingui/react/macro'
 import { useRef } from 'react'
 import {
   AlertDialog,
@@ -43,9 +44,13 @@ export function StartOverConfirmationDialog({
         }}
       >
         <AlertDialogHeader>
-          <AlertDialogTitle>Start over?</AlertDialogTitle>
+          <AlertDialogTitle>
+            <Trans>Start over?</Trans>
+          </AlertDialogTitle>
           <AlertDialogDescription>
-            This clears your current changes and restores the default room.
+            <Trans>
+              This clears your current changes and restores the default room.
+            </Trans>
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
@@ -55,7 +60,7 @@ export function StartOverConfirmationDialog({
               onClose()
             }}
           >
-            Cancel
+            <Trans>Cancel</Trans>
           </AlertDialogCancel>
           <AlertDialogAction
             onClick={() => {
@@ -63,7 +68,7 @@ export function StartOverConfirmationDialog({
               onConfirm()
             }}
           >
-            Start Over
+            <Trans>Start Over</Trans>
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

@@ -16,7 +16,6 @@ import {
 } from '@/core/stores/editor-lifecycle-store'
 import { dialogActions } from '@/core/stores/dialog-store'
 import { sceneCommands } from '@/scene/scene-commands'
-import { DELETE_SELECTION_MISSING_MESSAGE } from '@/shared/messages/command-messages'
 import { feedbackActions } from '@/core/stores/feedback-store'
 import { selectionEffects } from '@/core/operations/selection-effects'
 import { confirmDeleteSelection, openDeleteDialog } from './deletion-actions'
@@ -68,7 +67,7 @@ describe('deletion-actions', () => {
     expect(closeActiveDialog).toHaveBeenCalled()
     expect(deleteSelection).not.toHaveBeenCalled()
     expect(feedbackActions.setStatusMessage).toHaveBeenCalledWith(
-      DELETE_SELECTION_MISSING_MESSAGE,
+      'No selected furniture item was available to delete.',
     )
     expect(selectionEffects.notePendingSelection).toHaveBeenCalledWith(null)
   })

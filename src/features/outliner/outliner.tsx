@@ -33,6 +33,7 @@ import {
 } from '@/core/stores/scene-document-store'
 import { usePreviewedId } from '@/core/operations/previewed-id'
 import { useIsBlockingOverlayOpen } from '@/core/stores/dialog-store'
+import { Trans, useLingui } from '@lingui/react/macro'
 
 const OUTLINER_EXPANDED_PREFERENCE_KEY = 'outliner-expanded'
 
@@ -41,6 +42,7 @@ function loadStoredExpandedState() {
 }
 
 export function Outliner() {
+  const { t } = useLingui()
   const items = useItems()
   const selectedId = useSceneDocumentStore((state) => state.selectedId)
   const isBlockingOverlayOpen = useIsBlockingOverlayOpen()
@@ -120,7 +122,9 @@ export function Outliner() {
           className="w-full"
         >
           <CardHeader>
-            <CardTitle id={headingId}>Furniture in room</CardTitle>
+            <CardTitle id={headingId}>
+              <Trans>Furniture in room</Trans>
+            </CardTitle>
             <CardAction>
               <CollapsibleTrigger
                 render={
@@ -130,7 +134,7 @@ export function Outliner() {
                     variant="ghost"
                     size="icon-sm"
                     aria-controls={contentId}
-                    aria-label="Toggle furniture list visibility"
+                    aria-label={t`Toggle furniture list visibility`}
                     className="mb-2"
                   />
                 }
@@ -142,10 +146,12 @@ export function Outliner() {
 
           <CollapsibleContent render={<CardContent id={contentId} />}>
             {items.length === 0 ? (
-              <p className="text-muted-foreground">No furniture in the room.</p>
+              <p className="text-muted-foreground">
+                <Trans>No furniture in the room.</Trans>
+              </p>
             ) : (
               <ScrollArea className="max-h-40">
-                <ul className="space-y-2" aria-label="Furniture items">
+                <ul className="space-y-2" aria-label={t`Furniture items`}>
                   {items.map((item) => {
                     const isSelected = item.id === selectedId
                     const isPreviewed = item.id === previewedId && !isSelected
@@ -209,7 +215,11 @@ export function Outliner() {
                                 : 'text-muted-foreground',
                             )}
                           >
-                            {isSelected ? 'Selected' : 'Select'}
+                            {isSelected ? (
+                              <Trans>Selected</Trans>
+                            ) : (
+                              <Trans>Select</Trans>
+                            )}
                           </span>
                         </button>
                       </li>
