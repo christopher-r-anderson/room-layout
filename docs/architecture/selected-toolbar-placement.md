@@ -9,7 +9,7 @@ This document is an overview of how the selected-item action toolbar chooses its
 - `src/features/selection/use-report-toolbar-engagement.ts`
 - `src/core/stores/toolbar-interaction-store.ts`
 - `src/features/selection/floating-selected-item-site.tsx`
-- `src/features/selection/docked-selected-item-site.tsx`
+- `src/app/chrome/editor-overlay.tsx` (mobile docks the same toolbar above the details panel)
 - `src/features/selection/selected-item-tools.tsx`
 - `src/features/selection/selected-details-view.tsx`
 - `src/shared/hooks/use-element-rect.ts`

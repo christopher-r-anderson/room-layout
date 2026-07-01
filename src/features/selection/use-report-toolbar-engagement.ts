@@ -8,19 +8,17 @@ import { toolbarInteractionActions } from '@/core/stores/toolbar-interaction-sto
 // owns layout, this owns the "is the user using it" policy.
 //
 // Engagement is scoped to the current selection's toolbar: it resets whenever the
-// toolbar stops showing, unmounts, or the selection changes. The wrapper can be
-// removed or retargeted before its paired pointer-leave/blur fires, and the
-// rotation grace is a global latch, so without the reset a stale flag (or a
-// still-running grace timer) would pin the next toolbar from its first frame.
+// toolbar's (visibility, selection) context changes or the wrapper unmounts. The
+// wrapper can be removed or retargeted before its paired pointer-leave/blur
+// fires, and the rotation grace is a global latch, so without the reset a stale
+// flag (or a still-running grace timer) would pin the next toolbar. `showing` and
+// `selectionKey` are the effect's trigger only — the cleanup runs on every change
+// (including one that starts while the toolbar is already hidden) and on unmount.
 export function useReportToolbarEngagement(
   showing: boolean,
   selectionKey: string | null,
 ) {
   useEffect(() => {
-    if (!showing) {
-      return
-    }
-
     return () => {
       toolbarInteractionActions.reset()
     }

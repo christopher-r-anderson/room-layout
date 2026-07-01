@@ -11,6 +11,7 @@ import {
 } from '@/core/stores/editor-lifecycle-store'
 import { sceneCommands } from '@/scene/scene-commands'
 import { feedbackActions } from '@/core/stores/feedback-store'
+import { toolbarInteractionActions } from '@/core/stores/toolbar-interaction-store'
 import { CHAIR } from '@/test/support/furniture'
 import { moveSelection, rotateSelection } from './movement-actions'
 
@@ -132,5 +133,36 @@ describe('movement-actions', () => {
     expect(feedbackActions.announcePolite).toHaveBeenCalledWith(
       'Chair rotated.',
     )
+  })
+
+  it('arms the toolbar pin grace on a real rotation', () => {
+    vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
+    vi.spyOn(sceneCommands, 'rotateSelection').mockImplementation(
+      () => undefined,
+    )
+    const reportRotationSpy = vi.spyOn(
+      toolbarInteractionActions,
+      'reportRotation',
+    )
+
+    rotateSelection(1)
+
+    expect(reportRotationSpy).toHaveBeenCalledTimes(1)
+  })
+
+  it('does not arm the toolbar pin grace when nothing is selected', () => {
+    sceneDocumentActions.setSelectedId(null)
+    vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
+    vi.spyOn(sceneCommands, 'rotateSelection').mockImplementation(
+      () => undefined,
+    )
+    const reportRotationSpy = vi.spyOn(
+      toolbarInteractionActions,
+      'reportRotation',
+    )
+
+    rotateSelection(1)
+
+    expect(reportRotationSpy).not.toHaveBeenCalled()
   })
 })
