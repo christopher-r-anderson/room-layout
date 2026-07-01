@@ -81,7 +81,7 @@ function AssetAttribution({
         {contributors.map((contributor) => (
           <Fragment key={`${contributor.label}:${contributor.name}`}>
             <DescriptionTerm>
-              {contributor.label in CONTRIBUTOR_LABELS
+              {Object.hasOwn(CONTRIBUTOR_LABELS, contributor.label)
                 ? i18n._(CONTRIBUTOR_LABELS[contributor.label])
                 : contributor.label}
             </DescriptionTerm>

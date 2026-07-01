@@ -43,16 +43,25 @@ function pseudo(source: string): string {
   return translation
 }
 
-// Furniture names come from the catalog manifest, not the Lingui catalogs, and
-// render in their manifest language under every locale (a documented boundary),
-// so accessible names that are exactly a manifest name are exempt below.
-const MANIFEST_FURNITURE_NAMES = new Set(
-  (
-    JSON.parse(
-      readFileSync(path.resolve('public/catalog-manifest.json'), 'utf8'),
-    ) as { catalog: { name: string }[] }
-  ).catalog.map((entry) => entry.name),
-)
+// Manifest-provided labels (furniture names, environment finish labels) come
+// from the catalog manifest, not the Lingui catalogs, and render in their
+// manifest language under every locale (a documented boundary), so accessible
+// names that are exactly a manifest label are exempt below.
+const MANIFEST_PROVIDED_LABELS = (() => {
+  const manifest = JSON.parse(
+    readFileSync(path.resolve('public/catalog-manifest.json'), 'utf8'),
+  ) as {
+    catalog: { name: string }[]
+    environment: Record<string, { label: string }[] | string>
+  }
+  const labels = manifest.catalog.map((entry) => entry.name)
+  for (const value of Object.values(manifest.environment)) {
+    if (Array.isArray(value)) {
+      labels.push(...value.map((entry) => entry.label))
+    }
+  }
+  return new Set(labels)
+})()
 
 // Every aria-label that carries words must be pseudo-localized. Labels are the
 // strings no visual review sees, so this sweep is the regression net for them.
@@ -67,7 +76,7 @@ async function expectAriaLabelsLocalized(page: Page) {
       label !== null &&
       /[A-Za-z]{2,}/.test(label) &&
       !ACCENTED_LATIN.test(label) &&
-      !MANIFEST_FURNITURE_NAMES.has(label),
+      !MANIFEST_PROVIDED_LABELS.has(label),
   )
   expect(unlocalized).toEqual([])
 }
@@ -131,6 +140,22 @@ test.describe('pseudo-locale', () => {
     await expectAxeConformance(page, 'catalog drawer')
     await page.keyboard.press('Escape')
     await expect(catalogDrawer).toBeHidden()
+
+    // The room panel: picker headings/descriptions are localized while the
+    // finish option labels are manifest-provided (exempt, documented boundary).
+    await page.locator('button[aria-controls="room-surface"]').click()
+    const roomSurface = page.getByRole('complementary', {
+      name: pseudo('Room'),
+    })
+    await expect(roomSurface).toBeVisible()
+    await expect(
+      roomSurface.getByText(pseudo('Wall finish')).first(),
+    ).toBeVisible()
+    await expectAriaLabelsLocalized(page)
+    await expectNoHorizontalOverflow(page)
+    await expectAxeConformance(page, 'room panel')
+    await page.keyboard.press('Escape')
+    await expect(roomSurface).toBeHidden()
 
     // The project info dialog: its attribution terms come from JSON-held labels
     // that must still route through the catalog.
