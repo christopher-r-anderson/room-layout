@@ -69,16 +69,25 @@ export default defineConfig([
     },
   },
 
-  // i18n guard: fail on hardcoded JSX text so new user-facing strings go through
-  // Lingui macros. Scoped to JSX text only (attributes like aria-label are not
-  // flagged) to avoid noise; vendored shadcn/base-ui primitives and tests are
-  // exempt. `msg`/`t`/<Trans> usages are not literals and pass.
+  // i18n guard: fail on hardcoded JSX text and on the user-facing string
+  // attributes (the ones screen readers and tooltips surface, which no visual
+  // review catches) so new UI strings go through Lingui macros. Other attributes
+  // are not checked, to avoid noise; vendored shadcn/base-ui primitives and
+  // tests are exempt. `msg`/`t`/<Trans> usages are not literals and pass.
   {
     files: ['src/**/*.tsx'],
     ignores: ['src/**/*.test.tsx', 'src/shared/ui/**'],
     plugins: { i18next },
     rules: {
-      'i18next/no-literal-string': ['error', { mode: 'jsx-text-only' }],
+      'i18next/no-literal-string': [
+        'error',
+        {
+          mode: 'jsx-only',
+          'jsx-attributes': {
+            include: ['aria-label', 'title', 'placeholder', 'alt'],
+          },
+        },
+      ],
     },
   },
 
