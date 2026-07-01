@@ -86,4 +86,16 @@ describe('toolbarInteractionStore', () => {
     vi.advanceTimersByTime(600)
     expect(engaged()).toBe(false)
   })
+
+  it('exposes reset on the actions, clearing all engagement including grace', () => {
+    toolbarInteractionActions.setPointerOver(true)
+    toolbarInteractionActions.setFocusWithin(true)
+    toolbarInteractionActions.reportRotation()
+
+    toolbarInteractionActions.reset()
+    expect(engaged()).toBe(false)
+
+    vi.advanceTimersByTime(600)
+    expect(engaged()).toBe(false)
+  })
 })

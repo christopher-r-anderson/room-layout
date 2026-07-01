@@ -20,22 +20,24 @@ export function FloatingSelectedItemSite() {
   const actionsSizeRef = useSelectedItemActionsSizeRef()
   const selectedFurniture = useSelectedFurniture()
 
+  const selectedId = selectedFurniture?.id ?? null
   const isFloating = selectedFurniture !== null && placement.site === 'floating'
 
-  // The section can be removed (deletion, deselection, layout switch) before its
-  // paired pointer-leave/blur fires, which would strand engagement flags as true
-  // and pin the next selection's toolbar from its first frame. Clear them when
-  // the floating toolbar stops showing or unmounts.
+  // Engagement is scoped to the current selection's toolbar. Reset it whenever
+  // the floating toolbar stops showing, unmounts, or the selection changes — the
+  // section can be removed or retargeted before its paired pointer-leave/blur
+  // fires, and the rotation grace is a global latch, so without this a stale
+  // flag (or a still-running grace timer) would pin the next toolbar from its
+  // first frame. A full reset also cancels the grace timer.
   useEffect(() => {
     if (!isFloating) {
       return
     }
 
     return () => {
-      toolbarInteractionActions.setPointerOver(false)
-      toolbarInteractionActions.setFocusWithin(false)
+      toolbarInteractionActions.reset()
     }
-  }, [isFloating])
+  }, [isFloating, selectedId])
 
   if (selectedFurniture === null) {
     return null
