@@ -1,3 +1,4 @@
+import type { MessageDescriptor } from '@lingui/core'
 import type { RestoreOutcome } from '@/core/stores/editor-lifecycle-store'
 import type { FurnitureInstance } from '@/domain/furniture'
 
@@ -20,8 +21,10 @@ export interface RestoreFlowNotifications {
   toastError: (message: string) => void
 }
 
+// Message descriptors, not resolved strings: the report helpers translate them
+// with `i18n._()` at fire-time, so only the branch actually taken resolves.
 export interface InvalidRestoreCase {
-  statusMessage: string
-  assertiveMessage: string
-  toastMessage: string
+  statusMessage: MessageDescriptor
+  assertiveMessage: MessageDescriptor
+  toastMessage: MessageDescriptor
 }

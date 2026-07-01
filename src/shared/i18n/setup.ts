@@ -95,7 +95,8 @@ function resolveLocale(): SupportedLocale {
 
 // Loads (if needed), activates, and reflects a locale on <html>. The `?lang=`
 // override is intentionally transient and not persisted; a stored preference is
-// honored on read but only written by an explicit in-app choice.
+// honored on read but would only ever be written by an explicit in-app choice
+// (no such switcher exists yet).
 async function switchLocale(locale: string): Promise<void> {
   await loadLocale(locale)
   i18n.activate(locale)

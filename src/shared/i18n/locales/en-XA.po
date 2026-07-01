@@ -7,42 +7,41 @@ msgstr ""
 "X-Generator: @lingui/cli\n"
 "Language: en-XA\n"
 
-#. placeholder {0}: selectedFurniture.name
-msgid "{0} Placement"
-msgstr "[{0} Ƥĺàćēḿēńţāēīōūáéíó]"
-
 msgid "{deletedName} removed from room."
-msgstr "[{deletedName} ŕēḿōvēď ƒŕōḿ ŕōōḿ.āēīōūáéíóúāēīō]"
+msgstr "[{deletedName} ŕēḿōvēď ƒŕōḿ ŕōōḿ.āēīōūáéíóúāēī]"
 
 msgid "{fieldLabel} must be a valid number."
-msgstr "[{fieldLabel} ḿũśţ ƀē à vàĺĩď ńũḿƀēŕ.āēīōūáéíóúāēīō]"
+msgstr "[{fieldLabel} ḿũśţ ƀē à vàĺĩď ńũḿƀēŕ.āēīōūáéíóúāēīōū]"
 
 msgid "{fieldLabel} must stay inside the room."
-msgstr "[{fieldLabel} ḿũśţ śţàŷ ĩńśĩďē ţĥē ŕōōḿ.āēīōūáéíóúāēīōū]"
+msgstr "[{fieldLabel} ḿũśţ śţàŷ ĩńśĩďē ţĥē ŕōōḿ.āēīōūáéíóúāēīōūá]"
 
 msgid "{fieldLabel} overlaps another item."
-msgstr "[{fieldLabel} ōvēŕĺàƥś àńōţĥēŕ ĩţēḿ.āēīōūáéíóúāēī]"
+msgstr "[{fieldLabel} ōvēŕĺàƥś àńōţĥēŕ ĩţēḿ.āēīōūáéíóúāēīō]"
 
 msgid "{itemName} details updated."
-msgstr "[{itemName} ďēţàĩĺś ũƥďàţēď.āēīōūáéíóúāē]"
+msgstr "[{itemName} ďēţàĩĺś ũƥďàţēď.āēīōūáéíóúāēīōū]"
+
+msgid "{itemName} Placement"
+msgstr "[{itemName} Ƥĺàćēḿēńţāēīōūáéíóúāēīō]"
 
 msgid "{movedItemName} moved to X {x} and Z {z}."
-msgstr "[{movedItemName} ḿōvēď ţō X āēīōūáéíó{x} àńď Ź āēīōūáé{z}.ā]"
+msgstr "[{movedItemName} ḿōvēď ţō X {x} àńď Ź {z}.āēīōūáéíóúāēīōūáé]"
 
 msgid "{rotatingName} rotated."
-msgstr "[{rotatingName} ŕōţàţēď.āēīōūáéíó]"
+msgstr "[{rotatingName} ŕōţàţēď.āēīōūáéíóúāēī]"
 
 msgid "{selectedName} added to room."
-msgstr "[{selectedName} àďďēď ţō ŕōōḿ.āēīōūáéíóúā]"
+msgstr "[{selectedName} àďďēď ţō ŕōōḿ.āēīōūáéíóúāēīōūá]"
 
 msgid "{selectedName} selected."
-msgstr "[{selectedName} śēĺēćţēď.āēīōūáéíó]"
+msgstr "[{selectedName} śēĺēćţēď.āēīōūáéíóúāēīō]"
 
 msgid "{selectedName} selected. Press Shift+T to reach its actions."
-msgstr "[{selectedName} śēĺēćţēď. Ƥŕēśś Śĥĩƒţ+Ţ ţō ŕēàćĥ ĩţś àćţĩōńś.āēīōūáéíóúāēīōūáéíó]"
+msgstr "[{selectedName} śēĺēćţēď. Ƥŕēśś Śĥĩƒţ+Ţ ţō ŕēàćĥ ĩţś àćţĩōńś.āēīōūáéíóúāēīōūáéíóúāēīō]"
 
 msgid "{widthLabel}m x {depthLabel}m footprint"
-msgstr "[{widthLabel}ḿ x āēīō{depthLabel}ḿ ƒōōţƥŕĩńţāēīōūáéí]"
+msgstr "[{widthLabel}ḿ x {depthLabel}ḿ ƒōōţƥŕĩńţāēīōūáéíóúāēīōūá]"
 
 msgid "3D Room View (No Selection)"
 msgstr "[3Ď Ŕōōḿ Vĩēŵ (Ńō Śēĺēćţĩōń)āēīōūáéíóúāēīōū]"
@@ -72,7 +71,7 @@ msgid "Apply typed detail value"
 msgstr "[Àƥƥĺŷ ţŷƥēď ďēţàĩĺ vàĺũēāēīōūáéíóúāēīō]"
 
 msgid "Asset {assetNumber} of {total}"
-msgstr "[Àśśēţ āēīōūá{assetNumber} ōƒ āēīō{total}]"
+msgstr "[Àśśēţ {assetNumber} ōƒ {total}āēīōūáéíóúāēīōūáé]"
 
 msgid "Asset loading failed"
 msgstr "[Àśśēţ ĺōàďĩńğ ƒàĩĺēďāēīōūáéíóúāēīō]"
@@ -141,7 +140,7 @@ msgid "Could not open share options."
 msgstr "[Ćōũĺď ńōţ ōƥēń śĥàŕē ōƥţĩōńś.āēīōūáéíóúāēīōūá]"
 
 msgid "Current item: {currentAsset}"
-msgstr "[Ćũŕŕēńţ ĩţēḿ: āēīōūáéíóú{currentAsset}]"
+msgstr "[Ćũŕŕēńţ ĩţēḿ: {currentAsset}āēīōūáéíóúāēīōūá]"
 
 msgid "Details"
 msgstr "[Ďēţàĩĺśāēīōūáé]"
@@ -305,6 +304,9 @@ msgstr "[Ńō śēĺēćţēď ƒũŕńĩţũŕē ĩţēḿ ŵàś àvàĩĺàƀ
 msgid "Notes/Modifications"
 msgstr "[Ńōţēś/Ḿōďĩƒĩćàţĩōńśāēīōūáéíóúāēīō]"
 
+msgid "Notifications"
+msgstr "[Ńōţĩƒĩćàţĩōńśāēīōūáéíóú]"
+
 msgid "Nudge selected item (0.5 m)"
 msgstr "[Ńũďğē śēĺēćţēď ĩţēḿ (0.5 ḿ)āēīōūáéíóúāēīōū]"
 
@@ -322,6 +324,9 @@ msgstr "[Ƥàń ćàḿēŕàāēīōūáéíó]"
 
 msgid "Pane focus"
 msgstr "[Ƥàńē ƒōćũśāēīōūáéíó]"
+
+msgid "Photographer"
+msgstr "[Ƥĥōţōğŕàƥĥēŕāēīōūáéíó]"
 
 msgid "Pick a flooring finish for your room."
 msgstr "[Ƥĩćķ à ƒĺōōŕĩńğ ƒĩńĩśĥ ƒōŕ ŷōũŕ ŕōōḿ.āēīōūáéíóúāēīōū]"
@@ -350,6 +355,9 @@ msgstr "[Ƥŕēvĩēŵ ńēxţ ĩţēḿāēīōūáéíóúāē]"
 msgid "Preview previous item"
 msgstr "[Ƥŕēvĩēŵ ƥŕēvĩōũś ĩţēḿāēīōūáéíóúāē]"
 
+msgid "Processing"
+msgstr "[Ƥŕōćēśśĩńğāēīōūáéíó]"
+
 msgid "Project & Asset Info"
 msgstr "[Ƥŕōĵēćţ & Àśśēţ Ĩńƒōāēīōūáéíóúāēīō]"
 
@@ -370,7 +378,7 @@ msgstr "[Ŕēďō ćōḿƥĺēţē.āēīōūáéíóú]"
 
 #. placeholder {0}: pendingDeleteFurniture.name
 msgid "Remove {0} from your room layout?"
-msgstr "[Ŕēḿōvē āēīōūáé{0} ƒŕōḿ ŷōũŕ ŕōōḿ ĺàŷōũţ?āēīōūáéíóúāēī]"
+msgstr "[Ŕēḿōvē {0} ƒŕōḿ ŷōũŕ ŕōōḿ ĺàŷōũţ?āēīōūáéíóúāēīō]"
 
 msgid "Remove item"
 msgstr "[Ŕēḿōvē ĩţēḿāēīōūáéí]"
@@ -398,9 +406,6 @@ msgstr "[Ŕēţŕŷ ţō ŕēqũēśţ ţĥē ēśśēńţĩàĺ àśśēţś à
 
 msgid "Room"
 msgstr "[Ŕōōḿāēīō]"
-
-msgid "Room Layout"
-msgstr "[Ŕōōḿ Ĺàŷōũţāēīōūáéí]"
 
 msgid "Room layout restored from shared link."
 msgstr "[Ŕōōḿ ĺàŷōũţ ŕēśţōŕēď ƒŕōḿ śĥàŕēď ĺĩńķ.āēīōūáéíóúāēīōūá]"

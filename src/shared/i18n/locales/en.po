@@ -13,11 +13,6 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
-#. placeholder {0}: selectedFurniture.name
-#: src/features/selection/selected-details-view.tsx
-msgid "{0} Placement"
-msgstr "{0} Placement"
-
 #: src/features/selection/deletion-actions.ts
 msgid "{deletedName} removed from room."
 msgstr "{deletedName} removed from room."
@@ -37,6 +32,10 @@ msgstr "{fieldLabel} overlaps another item."
 #: src/features/selection/selected-item-detail-actions.ts
 msgid "{itemName} details updated."
 msgstr "{itemName} details updated."
+
+#: src/features/selection/selected-details-view.tsx
+msgid "{itemName} Placement"
+msgstr "{itemName} Placement"
 
 #: src/core/operations/movement-actions.ts
 msgid "{movedItemName} moved to X {x} and Z {z}."
@@ -108,6 +107,7 @@ msgstr "Asset {assetNumber} of {total}"
 msgid "Asset loading failed"
 msgstr "Asset loading failed"
 
+#: src/features/project-info/asset-attribution.tsx
 #: src/features/project-info/project-info-dialog.tsx
 msgid "Author"
 msgstr "Author"
@@ -420,6 +420,10 @@ msgstr "No selected furniture item was available to delete."
 msgid "Notes/Modifications"
 msgstr "Notes/Modifications"
 
+#: src/app/chrome/editor-body.tsx
+msgid "Notifications"
+msgstr "Notifications"
+
 #: src/features/keyboard/keyboard-shortcuts.definitions.ts
 msgid "Nudge selected item (0.5 m)"
 msgstr "Nudge selected item (0.5 m)"
@@ -443,6 +447,10 @@ msgstr "Pan camera"
 #: src/features/keyboard/keyboard-shortcuts.definitions.ts
 msgid "Pane focus"
 msgstr "Pane focus"
+
+#: src/features/project-info/asset-attribution.tsx
+msgid "Photographer"
+msgstr "Photographer"
 
 #: src/features/room-surface/room-controls.tsx
 msgid "Pick a flooring finish for your room."
@@ -479,6 +487,10 @@ msgstr "Preview next item"
 #: src/features/keyboard/keyboard-shortcuts.definitions.ts
 msgid "Preview previous item"
 msgstr "Preview previous item"
+
+#: src/features/project-info/asset-attribution.tsx
+msgid "Processing"
+msgstr "Processing"
 
 #: src/features/project-info/project-info-dialog.tsx
 msgid "Project & Asset Info"
@@ -550,11 +562,6 @@ msgstr "Retry to request the essential assets again."
 #: src/features/room-surface/room-sidebar.tsx
 msgid "Room"
 msgstr "Room"
-
-#: src/app/chrome/editor-body.tsx
-#: src/core/operations/share-scene.ts
-msgid "Room Layout"
-msgstr "Room Layout"
 
 #: src/core/persistence/restore-flow.ts
 msgid "Room layout restored from shared link."

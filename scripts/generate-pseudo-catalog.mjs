@@ -91,18 +91,6 @@ function accent(text) {
   return out
 }
 
-// Accent a literal text run and pad it (with accented filler) up to its
-// length-based target, leaving digits/punctuation/whitespace-only runs alone.
-function accentAndExpand(text) {
-  const accented = accent(text)
-  const visible = text.replace(/\s/g, '').length
-  if (visible === 0) return accented
-  const target = Math.ceil(text.length * targetRatio(text.length))
-  const chars = [...accented]
-  for (let i = 0; chars.length < target; i++) chars.push(PAD[i % PAD.length])
-  return chars.join('')
-}
-
 // ICU plural/select messages have keywords (plural/select/one/other) and nested
 // braces that character substitution would corrupt. Until a proper ICU-aware
 // transform is needed, such messages are bracketed but left un-accented.
@@ -110,14 +98,24 @@ const ICU_COMPLEX = /,\s*(plural|select|selectordinal)\s*,/i
 
 function pseudoize(message) {
   if (ICU_COMPLEX.test(message)) return message
-  return message
+  // Accent only literal text runs; placeholders ({name}, ICU `#`) pass through.
+  const accented = message
     .split(/(\{[^}]*\}|#)/g)
     .map((part) =>
       part === '#' || (part.startsWith('{') && part.endsWith('}'))
         ? part
-        : accentAndExpand(part),
+        : accent(part),
     )
     .join('')
+  // Expansion is sized on the whole message (not per fragment, which would
+  // over-expand multi-placeholder strings) and appended at the end so the
+  // sentence stays readable.
+  if (!/[A-Za-z]/.test(message)) return accented
+  const length = [...message].length
+  const target = Math.ceil(length * targetRatio(length))
+  let pad = ''
+  for (let i = 0; pad.length + length < target; i++) pad += PAD[i % PAD.length]
+  return accented + pad
 }
 
 const fmt = formatter({ origins: false, lineNumbers: false })

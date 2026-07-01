@@ -12,19 +12,12 @@ import type {
   UpdateSelectedItemDetailsInput,
   UpdateSelectedItemDetailsResult,
 } from '@/core/types/selected-item.types'
-import {
-  formatSelectedItemDetailsBlockedMessage,
-  formatSelectedItemDetailsInvalidValueMessage,
-} from './selected-item-detail-messages'
+import { formatSelectedItemDetailsBlockedMessage } from './selected-item-detail-messages'
 
 function normalizeDegreesRadians(valueDegrees: number) {
   const normalizedDegrees = ((valueDegrees % 360) + 360) % 360
   const counterclockwiseDegrees = (360 - normalizedDegrees) % 360
   return (counterclockwiseDegrees * Math.PI) / 180
-}
-
-export function invalidSelectedItemDetailValueMessage(fieldLabel: string) {
-  return formatSelectedItemDetailsInvalidValueMessage(fieldLabel)
 }
 
 export function updateSelectedItemDetails(

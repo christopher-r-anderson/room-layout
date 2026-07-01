@@ -4,6 +4,7 @@ import { feedbackActions } from '@/core/stores/feedback-store'
 import { serializeSceneToUrl } from '@/core/persistence/scene-url'
 import { getActiveFinishIds } from '@/core/operations/active-finish-ids'
 import { i18n } from '@/shared/i18n/i18n'
+import { APP_NAME } from '@/shared/messages/app-identity'
 import { LANG_QUERY_PARAM } from '@/shared/i18n/locales'
 
 /**
@@ -39,7 +40,7 @@ export async function shareScene(): Promise<'shared' | 'copied' | null> {
   }
 
   const shareData = {
-    title: i18n._(msg`Room Layout`),
+    title: APP_NAME,
     url,
   }
 

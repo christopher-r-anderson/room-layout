@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import type { I18n } from '@lingui/core'
+import type { MessageDescriptor } from '@lingui/core'
 import { msg } from '@lingui/core/macro'
 import { Trans, useLingui } from '@lingui/react/macro'
 import { Button } from '@/shared/ui/button'
@@ -13,73 +13,56 @@ interface InitializationErrorProps {
   errorMessage: string | null
 }
 
-function getErrorCopy(
-  i18n: I18n,
-  errorKind: StartupErrorKind | null,
-  errorMessage: string | null,
-) {
-  if (errorKind === 'manifest-timeout') {
-    return {
-      label: i18n._(msg`Catalog request timed out`),
-      description: i18n._(
-        msg`The furniture catalog request timed out before startup completed.`,
-      ),
-      note: i18n._(msg`Check your connection and retry loading the catalog.`),
-    }
-  }
+interface ErrorCopy {
+  label: MessageDescriptor
+  description: MessageDescriptor
+  note: MessageDescriptor
+}
 
-  if (errorKind === 'manifest-network') {
-    return {
-      label: i18n._(msg`Catalog request failed`),
-      description: i18n._(
-        msg`The editor could not download the furniture catalog required to start.`,
-      ),
-      note: i18n._(msg`Check your connection and retry loading the catalog.`),
-    }
-  }
+const ERROR_COPY: Record<StartupErrorKind, ErrorCopy> = {
+  'manifest-timeout': {
+    label: msg`Catalog request timed out`,
+    description: msg`The furniture catalog request timed out before startup completed.`,
+    note: msg`Check your connection and retry loading the catalog.`,
+  },
+  'manifest-network': {
+    label: msg`Catalog request failed`,
+    description: msg`The editor could not download the furniture catalog required to start.`,
+    note: msg`Check your connection and retry loading the catalog.`,
+  },
+  'manifest-validation': {
+    label: msg`Catalog data is invalid`,
+    description: msg`The furniture catalog was fetched but failed validation checks.`,
+    note: msg`Confirm the manifest schema and asset paths, then retry.`,
+  },
+  'asset-load': {
+    label: msg`Asset loading failed`,
+    description: msg`A required furniture model did not load correctly, so editor interactions are temporarily unavailable.`,
+    note: msg`Retry to request the essential assets again.`,
+  },
+}
 
-  if (errorKind === 'manifest-validation') {
-    return {
-      label: i18n._(msg`Catalog data is invalid`),
-      description: i18n._(
-        msg`The furniture catalog was fetched but failed validation checks.`,
-      ),
-      note: i18n._(
-        msg`Confirm the manifest schema and asset paths, then retry.`,
-      ),
-    }
-  }
-
-  if (errorKind === 'asset-load') {
-    return {
-      label: i18n._(msg`Asset loading failed`),
-      description: i18n._(
-        msg`A required furniture model did not load correctly, so editor interactions are temporarily unavailable.`,
-      ),
-      note: i18n._(msg`Retry to request the essential assets again.`),
-    }
-  }
-
-  return {
-    label: i18n._(msg`Startup failed`),
-    description:
-      errorMessage ??
-      i18n._(
-        msg`The room editor could not start due to an unexpected startup error.`,
-      ),
-    note: i18n._(msg`Retry to attempt startup again.`),
-  }
+// Fallback for an error with no classified kind; a caller-provided message
+// (already human-readable) takes precedence over the generic description.
+const UNKNOWN_ERROR_COPY: ErrorCopy = {
+  label: msg`Startup failed`,
+  description: msg`The room editor could not start due to an unexpected startup error.`,
+  note: msg`Retry to attempt startup again.`,
 }
 
 export function InitializationError({
   errorKind,
   errorMessage,
 }: InitializationErrorProps) {
-  // Subscribe to locale changes so the error copy re-resolves when a non-default
-  // locale activates after this overlay has mounted.
   const { i18n } = useLingui()
   const retryButtonRef = useRef<HTMLButtonElement | null>(null)
-  const copy = getErrorCopy(i18n, errorKind, errorMessage)
+  const errorCopy = errorKind ? ERROR_COPY[errorKind] : UNKNOWN_ERROR_COPY
+  const copy = {
+    label: i18n._(errorCopy.label),
+    description:
+      (errorKind ? null : errorMessage) ?? i18n._(errorCopy.description),
+    note: i18n._(errorCopy.note),
+  }
 
   useEffect(() => {
     retryButtonRef.current?.focus()

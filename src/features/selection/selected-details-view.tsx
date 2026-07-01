@@ -111,6 +111,9 @@ export function SelectedDetailsView({
   const { t } = useLingui()
   const titleId = useId()
   const committedDrafts = createDrafts(selectedFurniture)
+  // Bound to a plain identifier so the extracted message reads
+  // "{itemName} Placement" rather than an anonymous "{0}" placeholder.
+  const itemName = selectedFurniture.name
 
   // Resolved per render so labels track the active locale. `label` is dual-use:
   // it is displayed and also passed as the interpolated field name in commit
@@ -352,7 +355,7 @@ export function SelectedDetailsView({
       <Card variant="overlay" className="w-full" size="sm">
         <CardHeader className="gap-0.5 flex justify-between">
           <CardTitle id={titleId} className="truncate">
-            <Trans>{selectedFurniture.name} Placement</Trans>
+            <Trans>{itemName} Placement</Trans>
           </CardTitle>
         </CardHeader>
         <CardContent data-selected-item-details-root>

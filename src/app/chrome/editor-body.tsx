@@ -21,6 +21,7 @@ import { useKeyboardShortcuts } from '@/features/keyboard/use-keyboard-shortcuts
 import { useCameraKeyState } from '@/features/keyboard/use-camera-key-state'
 import { useCommandDispatch } from '@/core/commands/command-dispatch-context'
 import { clearCanvasSelection } from '@/core/operations/selection-actions'
+import { APP_NAME } from '@/shared/messages/app-identity'
 import { useEditorRefs } from '@/shared/providers/editor-refs-context'
 import { Announcer } from './feedback/announcer'
 import { Toaster } from '@/shared/ui/sonner'
@@ -113,9 +114,7 @@ export function EditorBody({ testOverlaysHidden }: EditorBodyProps) {
       aria-busy={startupLoadingActive}
       data-test-overlays-hidden={testOverlaysHidden ? 'true' : 'false'}
     >
-      <h1 className="sr-only">
-        <Trans>Room Layout</Trans>
-      </h1>
+      <h1 className="sr-only">{APP_NAME}</h1>
       <section
         aria-describedby="scene-instructions"
         aria-label={t`Interactive 3D room editor`}
@@ -157,7 +156,8 @@ export function EditorBody({ testOverlaysHidden }: EditorBodyProps) {
 
       {testOverlaysHidden ? null : <EditorOverlay />}
       <Announcer />
-      <Toaster />
+      {/* Sonner's toast region label defaults to hardcoded English. */}
+      <Toaster containerAriaLabel={t`Notifications`} />
     </main>
   )
 }

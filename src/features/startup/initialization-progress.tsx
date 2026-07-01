@@ -1,19 +1,14 @@
 import { useEffect, useRef } from 'react'
-import { msg } from '@lingui/core/macro'
 import { Trans, useLingui } from '@lingui/react/macro'
 import { useFurnitureAssetPrefetchProgress } from '@/core/operations/furniture-asset-prefetch'
 import { useStartupLoadingActive } from '@/core/stores/editor-lifecycle-store'
-import { i18n } from '@/shared/i18n/i18n'
 import { formatPercent } from '@/shared/i18n/formatters'
 import { Caption } from '@/shared/ui/caption'
 import { Card, CardContent } from '@/shared/ui/card'
 import { Progress } from '@/shared/ui/progress'
 
-function formatAssetLabel(item: string) {
-  if (!item) {
-    return i18n._(msg`Preparing furniture assets...`)
-  }
-
+// Reduces an asset URL to its filename; asset filenames are not translatable.
+function formatAssetFilename(item: string) {
   const normalizedItem = item.split('?')[0]
   const filename = normalizedItem.split('/').pop()
 
@@ -47,7 +42,9 @@ export function InitializationProgress() {
         ? t`Preparing the editor`
         : t`Starting asset requests`
 
-  const currentAsset = formatAssetLabel(currentItem)
+  const currentAsset = currentItem
+    ? formatAssetFilename(currentItem)
+    : t`Preparing furniture assets...`
   const detailText =
     stage === 'downloading'
       ? t`Current item: ${currentAsset}`

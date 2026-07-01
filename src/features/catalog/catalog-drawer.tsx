@@ -1,6 +1,4 @@
 import { type ReactElement } from 'react'
-import type { I18n } from '@lingui/core'
-import { msg } from '@lingui/core/macro'
 import { Trans, useLingui } from '@lingui/react/macro'
 import { formatDecimal } from '@/shared/i18n/formatters'
 import { Button } from '@/shared/ui/button'
@@ -24,21 +22,20 @@ import {
   useActiveCatalogId,
 } from './catalog-selection-store'
 
-function formatFootprintLabel(i18n: I18n, width: number, depth: number) {
-  const widthLabel = formatDecimal(width, 2)
-  const depthLabel = formatDecimal(depth, 2)
-  return i18n._(msg`${widthLabel}m x ${depthLabel}m footprint`)
-}
-
 export function CatalogDrawer({
   triggerButton,
 }: {
   triggerButton: ReactElement
 }) {
-  // Subscribe to locale changes so footprint labels re-resolve when a non-default
-  // locale activates after first render.
-  const { i18n } = useLingui()
+  const { t } = useLingui()
   const catalog = useCatalogEntries()
+
+  const formatFootprintLabel = (width: number, depth: number) => {
+    const widthLabel = formatDecimal(width, 2)
+    const depthLabel = formatDecimal(depth, 2)
+    return t`${widthLabel}m x ${depthLabel}m footprint`
+  }
+
   const catalogIdToAdd = useActiveCatalogId()
   const open = useDialogOpen(catalogDialogId)
 
@@ -100,7 +97,6 @@ export function CatalogDrawer({
                       </span>
                       <span className="text-xs/relaxed text-muted-foreground">
                         {formatFootprintLabel(
-                          i18n,
                           entry.footprintSize.width,
                           entry.footprintSize.depth,
                         )}
