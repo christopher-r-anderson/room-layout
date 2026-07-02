@@ -6,6 +6,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { TopHeaderMobile } from './top-header-mobile'
 import { topHeaderDialogOpenChange } from './top-header-dialog-bindings'
 import type { TopHeaderMobileProps } from './top-header.types'
+import { OverlayExclusionProvider } from '@/shared/layout/overlay-exclusion-provider'
 
 vi.mock('@/features/catalog/catalog-drawer', () => ({
   CatalogDrawer: () => <button type="button">Add furniture</button>,
@@ -50,9 +51,20 @@ function createProps(
   }
 }
 
+function renderMobileHeader(overrides?: Partial<TopHeaderMobileProps>) {
+  return render(
+    <OverlayExclusionProvider
+      registerExclusionElement={() => vi.fn()}
+      exclusionRects={{}}
+    >
+      <TopHeaderMobile {...createProps(overrides)} />
+    </OverlayExclusionProvider>,
+  )
+}
+
 describe('TopHeaderMobile', () => {
   it('describes the room trigger with wall and floor copy', () => {
-    render(<TopHeaderMobile {...createProps()} />)
+    renderMobileHeader()
 
     expect(
       screen.getByText('Adjust wall, floor, and lighting'),
@@ -60,13 +72,7 @@ describe('TopHeaderMobile', () => {
   })
 
   it('exposes dialog trigger semantics for the More actions drawer', () => {
-    render(
-      <TopHeaderMobile
-        {...createProps({
-          isHeaderMoreActionsOpen: true,
-        })}
-      />,
-    )
+    renderMobileHeader({ isHeaderMoreActionsOpen: true })
 
     const trigger = screen.getByRole('button', {
       name: 'More actions',
@@ -89,7 +95,7 @@ describe('TopHeaderMobile', () => {
       .spyOn(topHeaderDialogOpenChange, 'headerMoreActions')
       .mockReturnValue(true)
 
-    render(<TopHeaderMobile {...createProps()} />)
+    renderMobileHeader()
 
     const trigger = screen.getByRole('button', { name: 'More actions' })
 
@@ -103,13 +109,7 @@ describe('TopHeaderMobile', () => {
   })
 
   it('keeps share inside the More actions drawer instead of the mobile header row', () => {
-    const { container } = render(
-      <TopHeaderMobile
-        {...createProps({
-          isHeaderMoreActionsOpen: true,
-        })}
-      />,
-    )
+    const { container } = renderMobileHeader({ isHeaderMoreActionsOpen: true })
 
     const mobileHeaderRoot = container.querySelector('[data-top-header-root]')
 

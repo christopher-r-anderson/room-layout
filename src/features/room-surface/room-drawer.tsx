@@ -11,13 +11,13 @@ import { RoomControls } from './room-controls'
 import { Trans } from '@lingui/react/macro'
 
 export function RoomDrawer({
-  contentRef,
+  ref,
   open,
   onOpenChange,
   onCloseAutoFocus,
   restoreFocusOnClose = true,
 }: {
-  contentRef?: Ref<HTMLDivElement>
+  ref?: Ref<HTMLDivElement>
   open: boolean
   onOpenChange: (open: boolean) => void
   onCloseAutoFocus?: () => void
@@ -32,7 +32,7 @@ export function RoomDrawer({
       }}
     >
       <DrawerContent
-        ref={contentRef}
+        ref={ref}
         id="room-drawer"
         showOverlay={false}
         className="h-[50dvh] min-h-[50dvh] max-h-[50dvh] overflow-hidden"

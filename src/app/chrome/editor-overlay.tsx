@@ -35,13 +35,7 @@ export function EditorOverlay() {
         className="pointer-events-none fixed inset-2 flex flex-col justify-between gap-2"
         inert={startupOverlayActive}
       >
-        <TopHeader
-          topHeaderRef={registerExclusionElement('top-header')}
-          desktopRoomSidebarRef={registerExclusionElement(
-            'desktop-room-sidebar',
-          )}
-          mobileRoomDrawerRef={registerExclusionElement('mobile-room-drawer')}
-        />
+        <TopHeader />
 
         {isDesktop && <FloatingSelectedItemSite />}
 
@@ -88,7 +82,9 @@ export function EditorOverlay() {
               </div>
             ) : null}
             {hasSelection ? (
-              <SelectedDetailsPanel />
+              <SelectedDetailsPanel
+                ref={registerExclusionElement('selected-details')}
+              />
             ) : (
               <div
                 ref={registerExclusionElement('selected-details')}

@@ -13,22 +13,22 @@ import { topHeaderDialogOpenChange } from './top-header-dialog-bindings'
 import { topHeaderFocusRegistry } from './top-header-focus'
 import type { TopHeaderDesktopProps } from './top-header.types'
 import { TopHeaderSurface } from './top-header-surface'
+import { useExclusionRegistry } from '@/shared/layout/overlay-exclusion-context'
 
 export function TopHeaderDesktop({
-  desktopRoomSidebarRef,
   history,
   isRoomSurfaceOpen,
   isKeyboardShortcutsOpen,
   isProjectInfoOpen,
   startOverDisabled,
-  topHeaderRef,
 }: TopHeaderDesktopProps) {
   const { t } = useLingui()
+  const registerExclusionElement = useExclusionRegistry()
 
   return (
     <>
       <Toolbar.Root
-        ref={topHeaderRef}
+        ref={registerExclusionElement('top-header')}
         data-top-header-root
         aria-label={t`Header actions`}
         className="pointer-events-auto flex flex-wrap items-center justify-between gap-x-0 gap-y-2"
@@ -159,7 +159,7 @@ export function TopHeaderDesktop({
       </Toolbar.Root>
 
       <RoomSidebar
-        containerRef={desktopRoomSidebarRef}
+        ref={registerExclusionElement('room-surface')}
         open={isRoomSurfaceOpen}
         onClose={() => {
           topHeaderDialogOpenChange.roomSurface(false)
