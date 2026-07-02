@@ -34,8 +34,8 @@ imports:
   (`src/app/dialogs/bootstrap-dialog-registry.ts`) before any dialog consumer
   renders.
 
-The feature-facing contract (`DialogId`, `DialogKind`, `DialogOpenRequest`,
-`DialogDefinition`, `DialogRuntimeContext`) lives in `core/dialog-contract.ts`,
+The feature-facing contract (`DialogId`, `DialogKind`, `DialogDefinition`,
+`DialogRuntimeContext`) lives in `core/dialog-contract.ts`,
 which features can import without depending on the store.
 
 ## Blocking overlays
@@ -88,7 +88,7 @@ surface that opened a dialog owns restoring focus:
 
 - Blocking dialogs rely on Base UI restoring focus to their opener on close.
 - The top header restores focus explicitly through a module-level registry
-  (`src/app/chrome/top-header/header-focus-registry.ts`) where native restore is
+  (`src/app/chrome/top-header/top-header-focus.ts`) where native restore is
   unreliable: the non-modal room surface, and the mobile More drawer whose items
   unmount on close.
 - Confirming Start Over disables the Start Over button, so the header walks to the
