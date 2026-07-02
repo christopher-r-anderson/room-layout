@@ -1,9 +1,9 @@
 import type { DialogDefinition } from '@/core/dialog-contract'
 
-export const deleteDialogId = 'delete' as const
+export const DELETE_DIALOG_ID = 'delete' as const
 
 export const deleteDialogDefinition = {
-  id: deleteDialogId,
+  id: DELETE_DIALOG_ID,
   kind: 'blocking',
   canOpen: (context) => {
     return context.isDialogsEnabled() && context.getSelectedFurniture() !== null

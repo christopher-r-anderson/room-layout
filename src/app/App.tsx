@@ -1,5 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
-import { getSceneIsAtDefaults } from '@/core/operations/use-scene-is-at-defaults'
+import { useEffect, useState } from 'react'
 import { startEditorReconcilers } from '@/core/operations/editor-reconcilers'
 import { useEnvironmentConfig } from '@/core/stores/assets-store'
 import { useStartupBootstrap } from '@/features/startup/use-startup-bootstrap'
@@ -9,10 +8,7 @@ import { perfCounters } from '@/shared/debug/perf-counters'
 import { IS_E2E_BUILD } from '@/shared/env/e2e'
 import { useDraftPersistence } from '@/features/url-scene/use-draft-persistence'
 import { useTestStateBridge } from './testing/use-test-state-bridge'
-import {
-  buildDialogRuntimeContext,
-  bootstrapDialogRegistry,
-} from './dialogs/bootstrap-dialog-registry'
+import { bootstrapDialogRegistry } from './dialogs/bootstrap-dialog-registry'
 
 function App() {
   if (import.meta.env.DEV || IS_E2E_BUILD) {
@@ -27,16 +23,9 @@ function App() {
     environmentConfig,
   })
 
-  const dialogRuntimeContext = useMemo(
-    () =>
-      buildDialogRuntimeContext({
-        canStartOver: () => !getSceneIsAtDefaults(),
-      }),
-    [],
-  )
   useEffect(() => {
-    bootstrapDialogRegistry(dialogRuntimeContext)
-  }, [dialogRuntimeContext])
+    bootstrapDialogRegistry()
+  }, [])
 
   useEffect(() => startEditorReconcilers(), [])
 

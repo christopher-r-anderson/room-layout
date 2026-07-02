@@ -9,7 +9,9 @@ import {
 import { IconInfoCircle, IconKeyboard, IconRotate2 } from '@tabler/icons-react'
 import { Trans } from '@lingui/react/macro'
 import { dialogActions, useDialogOpen } from '@/core/stores/dialog-store'
-import { DIALOG_IDS } from '@/app/dialogs/dialog-registry'
+import { HEADER_MORE_ACTIONS_DIALOG_ID } from './header-more-actions-dialog-definition'
+import { KEYBOARD_SHORTCUTS_DIALOG_ID } from '@/features/keyboard/keyboard-shortcuts-dialog-definition'
+import { PROJECT_INFO_DIALOG_ID } from '@/features/project-info/project-info-dialog-definition'
 import { useCommandDispatch } from '@/core/commands/command-dispatch-context'
 import { useSceneIsAtDefaults } from '@/core/operations/use-scene-is-at-defaults'
 import { ShareSceneButton } from './share-scene-button'
@@ -23,14 +25,14 @@ export const HEADER_MORE_ACTIONS_CONTENT_ID = 'header-more-actions-content'
 
 export function HeaderMoreActionsDrawer() {
   const dispatch = useCommandDispatch()
-  const open = useDialogOpen(DIALOG_IDS.headerMoreActions)
+  const open = useDialogOpen(HEADER_MORE_ACTIONS_DIALOG_ID)
   const startOverDisabled = useSceneIsAtDefaults()
 
   // Hand off from More actions to another surface: close the drawer first, then
   // open the target on the next microtask so the drawer's focus handling settles
   // before the next surface traps focus.
   const openFromMoreActions = (openTarget: () => void) => {
-    dialogActions.setDialogOpen(DIALOG_IDS.headerMoreActions, false)
+    dialogActions.setDialogOpen(HEADER_MORE_ACTIONS_DIALOG_ID, false)
     queueMicrotask(openTarget)
   }
 
@@ -38,7 +40,7 @@ export function HeaderMoreActionsDrawer() {
     <Drawer
       open={open}
       onOpenChange={(next) =>
-        dialogActions.setDialogOpen(DIALOG_IDS.headerMoreActions, next)
+        dialogActions.setDialogOpen(HEADER_MORE_ACTIONS_DIALOG_ID, next)
       }
       autoFocus
     >
@@ -88,7 +90,7 @@ export function HeaderMoreActionsDrawer() {
             className="justify-start"
             onClick={() => {
               openFromMoreActions(() => {
-                dialogActions.openDialog(DIALOG_IDS.keyboardShortcuts)
+                dialogActions.openDialog(KEYBOARD_SHORTCUTS_DIALOG_ID)
               })
             }}
           >
@@ -104,7 +106,7 @@ export function HeaderMoreActionsDrawer() {
             className="justify-start"
             onClick={() => {
               openFromMoreActions(() => {
-                dialogActions.openDialog(DIALOG_IDS.projectInfo)
+                dialogActions.openDialog(PROJECT_INFO_DIALOG_ID)
               })
             }}
           >

@@ -1,8 +1,8 @@
 import type { DialogDefinition } from '@/core/dialog-contract'
 
-const projectInfoDialogId = 'project-info' as const
+export const PROJECT_INFO_DIALOG_ID = 'project-info' as const
 
 export const projectInfoDialogDefinition = {
-  id: projectInfoDialogId,
+  id: PROJECT_INFO_DIALOG_ID,
   kind: 'blocking',
 } satisfies DialogDefinition

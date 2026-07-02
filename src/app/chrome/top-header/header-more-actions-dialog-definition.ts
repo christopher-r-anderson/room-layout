@@ -1,8 +1,8 @@
 import type { DialogDefinition } from '@/core/dialog-contract'
 
-const headerMoreActionsDialogId = 'header-more-actions' as const
+export const HEADER_MORE_ACTIONS_DIALOG_ID = 'header-more-actions' as const
 
 export const headerMoreActionsDialogDefinition = {
-  id: headerMoreActionsDialogId,
+  id: HEADER_MORE_ACTIONS_DIALOG_ID,
   kind: 'blocking',
 } satisfies DialogDefinition

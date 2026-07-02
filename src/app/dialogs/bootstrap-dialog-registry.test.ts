@@ -15,80 +15,67 @@ import {
   sceneDocumentActions,
 } from '@/core/stores/scene-document-store'
 import { createHistoryState } from '@/shared/lib/ui/editor-history'
-import { DIALOG_IDS } from '@/app/dialogs/dialog-registry'
+import { CATALOG_DIALOG_ID } from '@/features/catalog/catalog-dialog-definition'
 import { CHAIR } from '@/test/support/furniture'
 import {
+  DIALOG_DEFINITIONS,
   bootstrapDialogRegistry,
-  buildDialogRuntimeContext,
+  dialogRuntimeContext,
   resetDialogRegistryForTests,
 } from './bootstrap-dialog-registry'
-
-function createContext() {
-  return {
-    isDialogsEnabled: () => true,
-    getSelectedFurniture: () => null,
-    canStartOver: () => true,
-  }
-}
 
 describe('bootstrapDialogRegistry', () => {
   beforeEach(() => {
     resetDialogStore()
     resetDialogRegistryForTests()
+    resetEditorLifecycleStore()
+    resetSceneDocumentStore()
   })
 
-  it('registers dialog definitions and configures runtime context', () => {
-    bootstrapDialogRegistry(createContext())
+  it('registers dialog definitions and configures the runtime context', () => {
+    bootstrapDialogRegistry()
+    editorLifecycleActions.markAssetsReady()
 
     expect(Object.keys(dialogStoreForTests.getState().registry).sort()).toEqual(
-      [...Object.values(DIALOG_IDS)].sort(),
+      DIALOG_DEFINITIONS.map((definition) => definition.id).sort(),
     )
-    expect(dialogActions.openDialog(DIALOG_IDS.catalog)).toBe(true)
+    expect(dialogActions.openDialog(CATALOG_DIALOG_ID)).toBe(true)
   })
 
   it('is idempotent and does not duplicate registrations', () => {
-    bootstrapDialogRegistry(createContext())
+    bootstrapDialogRegistry()
     const firstRegistryKeys = Object.keys(
       dialogStoreForTests.getState().registry,
     )
 
-    bootstrapDialogRegistry(createContext())
+    bootstrapDialogRegistry()
     const secondRegistryKeys = Object.keys(
       dialogStoreForTests.getState().registry,
     )
 
     expect(secondRegistryKeys).toEqual(firstRegistryKeys)
-    expect(secondRegistryKeys).toHaveLength(Object.values(DIALOG_IDS).length)
+    expect(secondRegistryKeys).toHaveLength(DIALOG_DEFINITIONS.length)
   })
 })
 
-describe('buildDialogRuntimeContext', () => {
+describe('dialogRuntimeContext', () => {
   beforeEach(() => {
     resetEditorLifecycleStore()
     resetSceneDocumentStore()
   })
 
-  it('derives dialog readiness from editor runtime store', () => {
-    const context = buildDialogRuntimeContext({
-      canStartOver: () => true,
-    })
-
-    expect(context.isDialogsEnabled()).toBe(false)
+  it('derives dialog readiness from the editor lifecycle store', () => {
+    expect(dialogRuntimeContext.isDialogsEnabled()).toBe(false)
 
     editorLifecycleActions.markAssetsReady()
 
-    expect(context.isDialogsEnabled()).toBe(true)
+    expect(dialogRuntimeContext.isDialogsEnabled()).toBe(true)
   })
 
   it('reads selected furniture from scene store state', () => {
-    const context = buildDialogRuntimeContext({
-      canStartOver: () => false,
-    })
-
     sceneDocumentActions.setHistory(createHistoryState([CHAIR]))
     sceneDocumentActions.setSelectedId(CHAIR.id)
 
-    expect(context.getSelectedFurniture()).toEqual(CHAIR)
-    expect(context.canStartOver()).toBe(false)
+    expect(dialogRuntimeContext.getSelectedFurniture()).toEqual(CHAIR)
   })
 })

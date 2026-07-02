@@ -4,7 +4,7 @@ import { dialogActions } from '@/core/stores/dialog-store'
 import { feedbackActions } from '@/core/stores/feedback-store'
 import { resetSceneToDefaults } from '@/core/persistence/scene-reset'
 import { i18n } from '@/shared/i18n/i18n'
-import { startOverDialogId } from './start-over-dialog-definition'
+import { START_OVER_DIALOG_ID } from './start-over-dialog-definition'
 
 /**
  * Opens the start-over confirmation dialog and clears any stale status message
@@ -12,7 +12,7 @@ import { startOverDialogId } from './start-over-dialog-definition'
  * blocking surface holds the editor).
  */
 export function startOverIntent() {
-  const opened = dialogActions.openDialog(startOverDialogId)
+  const opened = dialogActions.openDialog(START_OVER_DIALOG_ID)
 
   if (opened) {
     feedbackActions.clearStatusMessage()

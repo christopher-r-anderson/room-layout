@@ -29,10 +29,9 @@ imports:
   open/close operations, and the dialog-open selectors.
 - **Features** own each dialog's `DialogDefinition` — its `kind`, `canOpen`
   guard, and payload derivation — in the owning feature folder.
-- **App** bootstraps: it aggregates the definitions
-  (`src/app/dialogs/dialog-registry.ts`) and registers them once
-  (`src/app/dialogs/bootstrap-dialog-registry.ts`) before any dialog consumer
-  renders.
+- **App** bootstraps: `src/app/dialogs/bootstrap-dialog-registry.ts` holds the
+  definition membership list, composes the runtime context, and registers the
+  definitions once before any dialog consumer renders.
 
 The feature-facing contract (`DialogId`, `DialogKind`, `DialogOpenRequest`,
 `DialogDefinition`, `DialogRuntimeContext`) lives in `core/dialog-contract.ts`,

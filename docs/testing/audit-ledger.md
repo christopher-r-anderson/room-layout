@@ -164,7 +164,7 @@ Grouped by type. ✅ = applied in Phase 1, ↪ = deferred (with reason).
 ### B. Broken / brittle correctness — all applied
 
 - ✅ `app/chrome/top-header/top-header.test.tsx` — fixed the dead `vi.mock` path; assert the desktop layout actually renders.
-- ✅ `app/dialogs/bootstrap-dialog-registry.test.ts` — assert the registry matches `DIALOG_IDS` instead of `.toBe(7)`.
+- ✅ `app/dialogs/bootstrap-dialog-registry.test.ts` — assert the registry matches `DIALOG_DEFINITIONS` instead of `.toBe(7)`.
 - ✅ `core/persistence/scene-draft.test.ts` — write the invalid payload via `saveJson` instead of the lib-prefixed key.
 
 ### C. Over-mocking / tautological assertions

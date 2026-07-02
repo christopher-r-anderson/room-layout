@@ -1,8 +1,8 @@
 import type { DialogDefinition } from '@/core/dialog-contract'
 
-const keyboardShortcutsDialogId = 'keyboard-shortcuts' as const
+export const KEYBOARD_SHORTCUTS_DIALOG_ID = 'keyboard-shortcuts' as const
 
 export const keyboardShortcutsDialogDefinition = {
-  id: keyboardShortcutsDialogId,
+  id: KEYBOARD_SHORTCUTS_DIALOG_ID,
   kind: 'blocking',
 } satisfies DialogDefinition
