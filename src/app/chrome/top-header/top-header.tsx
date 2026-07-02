@@ -3,7 +3,6 @@ import { useHeaderLayoutMode } from '@/shared/layout/use-header-layout-mode'
 import { TopHeaderDesktop } from './top-header-desktop'
 import { TopHeaderMobile } from './top-header-mobile'
 import { TopHeaderDialogs } from './top-header-dialogs'
-import type { TopHeaderContainerProps } from './top-header.types'
 import {
   dialogActions,
   useDialogOpen,
@@ -15,11 +14,7 @@ import { useCommandDispatch } from '@/core/commands/command-dispatch-context'
 import { useHistoryAvailability } from '@/core/stores/scene-document-store'
 import { topHeaderDialogOpenChange } from './top-header-dialog-bindings'
 
-export function TopHeader({
-  topHeaderRef,
-  desktopRoomSidebarRef,
-  mobileRoomDrawerRef,
-}: TopHeaderContainerProps) {
+export function TopHeader() {
   const dispatch = useCommandDispatch()
   const startOverDisabled = useSceneIsAtDefaults()
   const historyAvailability = useHistoryAvailability()
@@ -73,7 +68,6 @@ export function TopHeader({
       canUndo: historyAvailability.canUndo,
     },
     startOverDisabled,
-    topHeaderRef,
   } as const
 
   return (
@@ -81,7 +75,6 @@ export function TopHeader({
       {layoutMode === 'mobile' ? (
         <TopHeaderMobile
           {...sharedToolbarProps}
-          mobileRoomDrawerRef={mobileRoomDrawerRef}
           isRoomSurfaceOpen={isRoomSurfaceOpen}
           isHeaderMoreActionsOpen={isHeaderMoreActionsOpen}
           blockingOverlayOpen={isBlockingOverlayOpen}
@@ -98,7 +91,6 @@ export function TopHeader({
       ) : (
         <TopHeaderDesktop
           {...sharedToolbarProps}
-          desktopRoomSidebarRef={desktopRoomSidebarRef}
           isRoomSurfaceOpen={isRoomSurfaceOpen}
           isKeyboardShortcutsOpen={isKeyboardShortcutsDialogOpen}
           isProjectInfoOpen={isInfoDialogOpen}

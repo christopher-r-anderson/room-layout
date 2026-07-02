@@ -15,10 +15,10 @@ import {
 import { topHeaderFocusRegistry } from './top-header-focus'
 import type { TopHeaderMobileProps } from './top-header.types'
 import { TopHeaderSurface } from './top-header-surface'
+import { useExclusionRegistry } from '@/shared/layout/overlay-exclusion-context'
 
 export function TopHeaderMobile({
   history,
-  mobileRoomDrawerRef,
   isRoomSurfaceOpen,
   isHeaderMoreActionsOpen,
   blockingOverlayOpen,
@@ -26,13 +26,13 @@ export function TopHeaderMobile({
   onOpenKeyboardShortcutsFromHeaderMoreActions,
   onOpenStartOverFromHeaderMoreActions,
   onOpenProjectInfoFromHeaderMoreActions,
-  topHeaderRef,
 }: TopHeaderMobileProps) {
   const { t } = useLingui()
+  const registerExclusionElement = useExclusionRegistry()
 
   return (
     <div
-      ref={topHeaderRef}
+      ref={registerExclusionElement('top-header')}
       data-top-header-root
       className="pointer-events-auto"
     >
@@ -111,7 +111,7 @@ export function TopHeaderMobile({
       </Toolbar.Root>
 
       <RoomDrawer
-        contentRef={mobileRoomDrawerRef}
+        ref={registerExclusionElement('room-surface')}
         open={isRoomSurfaceOpen}
         onOpenChange={topHeaderDialogOpenChange.roomSurface}
         onCloseAutoFocus={() => {

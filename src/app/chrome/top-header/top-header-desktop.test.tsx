@@ -4,6 +4,7 @@ import { render, screen } from '@/test/render'
 import { describe, expect, it, vi } from 'vitest'
 import { TopHeaderDesktop } from './top-header-desktop'
 import type { TopHeaderDesktopProps } from './top-header.types'
+import { OverlayExclusionProvider } from '@/shared/layout/overlay-exclusion-provider'
 
 vi.mock('@/features/catalog/catalog-drawer', () => ({
   CatalogDrawer: ({ triggerButton }: { triggerButton?: React.ReactNode }) => (
@@ -55,7 +56,6 @@ function createProps(
   overrides: Partial<TopHeaderDesktopProps> = {},
 ): TopHeaderDesktopProps {
   return {
-    desktopRoomSidebarRef: undefined,
     history: {
       canRedo: false,
       canUndo: false,
@@ -64,14 +64,24 @@ function createProps(
     isKeyboardShortcutsOpen: false,
     isProjectInfoOpen: false,
     startOverDisabled: false,
-    topHeaderRef: undefined,
     ...overrides,
   }
 }
 
+function renderDesktopHeader(overrides?: Partial<TopHeaderDesktopProps>) {
+  return render(
+    <OverlayExclusionProvider
+      registerExclusionElement={() => vi.fn()}
+      exclusionRects={{}}
+    >
+      <TopHeaderDesktop {...createProps(overrides)} />
+    </OverlayExclusionProvider>,
+  )
+}
+
 describe('TopHeaderDesktop', () => {
   it('describes the room trigger with wall and floor copy', () => {
-    render(<TopHeaderDesktop {...createProps()} />)
+    renderDesktopHeader()
 
     expect(
       screen.getByText('Adjust wall, floor, and lighting'),
@@ -79,7 +89,7 @@ describe('TopHeaderDesktop', () => {
   })
 
   it('keeps share as a direct visible action in the desktop header', () => {
-    const { container } = render(<TopHeaderDesktop {...createProps()} />)
+    const { container } = renderDesktopHeader()
 
     const desktopHeaderRoot = container.querySelector('[data-top-header-root]')
     const shareButton = screen.getByRole('button', {

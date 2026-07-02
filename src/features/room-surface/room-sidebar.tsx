@@ -13,11 +13,11 @@ import { RoomControls } from './room-controls'
 import { Trans, useLingui } from '@lingui/react/macro'
 
 export function RoomSidebar({
-  containerRef,
+  ref,
   open,
   onClose,
 }: {
-  containerRef?: Ref<HTMLElement>
+  ref?: Ref<HTMLElement>
   open: boolean
   onClose: () => void
 }) {
@@ -29,7 +29,7 @@ export function RoomSidebar({
 
   return (
     <aside
-      ref={containerRef}
+      ref={ref}
       id="room-surface"
       aria-labelledby="room-surface-title"
       // Pinned to the physical right edge: the camera tools clear this panel on the
