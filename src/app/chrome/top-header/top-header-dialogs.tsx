@@ -5,7 +5,6 @@ import { confirmStartOver } from '@/features/startup/start-over-actions'
 import { dialogActions, useDialogOpen } from '@/core/stores/dialog-store'
 import { DIALOG_IDS } from '@/app/dialogs/dialog-registry'
 import { useHeaderLayoutMode } from '@/shared/layout/use-header-layout-mode'
-import { topHeaderDialogOpenChange } from './top-header-dialog-bindings'
 import { topHeaderFocusRegistry } from './top-header-focus'
 
 /**
@@ -31,7 +30,7 @@ export function TopHeaderDialogs() {
       <KeyboardShortcutsDialog
         open={isKeyboardShortcutsOpen}
         onOpenChange={(open) => {
-          topHeaderDialogOpenChange.keyboardShortcuts(open)
+          dialogActions.setDialogOpen(DIALOG_IDS.keyboardShortcuts, open)
 
           if (!open) {
             returnFocusToMoreActionsOnMobile()
@@ -42,7 +41,7 @@ export function TopHeaderDialogs() {
       <ProjectInfoDialog
         open={isProjectInfoOpen}
         onOpenChange={(open) => {
-          topHeaderDialogOpenChange.projectInfo(open)
+          dialogActions.setDialogOpen(DIALOG_IDS.projectInfo, open)
 
           if (!open) {
             returnFocusToMoreActionsOnMobile()

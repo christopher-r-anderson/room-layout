@@ -4,7 +4,8 @@ import { render, screen } from '@/test/render'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { TopHeaderMobile } from './top-header-mobile'
-import { topHeaderDialogOpenChange } from './top-header-dialog-bindings'
+import { dialogActions } from '@/core/stores/dialog-store'
+import { DIALOG_IDS } from '@/app/dialogs/dialog-registry'
 import type { TopHeaderMobileProps } from './top-header.types'
 import { OverlayExclusionProvider } from '@/shared/layout/overlay-exclusion-provider'
 
@@ -91,8 +92,8 @@ describe('TopHeaderMobile', () => {
 
   it('opens the More actions drawer through shared dialog state', async () => {
     const user = userEvent.setup()
-    const onHeaderMoreActionsOpenChange = vi
-      .spyOn(topHeaderDialogOpenChange, 'headerMoreActions')
+    const setDialogOpen = vi
+      .spyOn(dialogActions, 'setDialogOpen')
       .mockReturnValue(true)
 
     renderMobileHeader()
@@ -103,9 +104,12 @@ describe('TopHeaderMobile', () => {
 
     await user.click(trigger)
 
-    expect(onHeaderMoreActionsOpenChange).toHaveBeenCalledWith(true)
+    expect(setDialogOpen).toHaveBeenCalledWith(
+      DIALOG_IDS.headerMoreActions,
+      true,
+    )
 
-    onHeaderMoreActionsOpenChange.mockRestore()
+    setDialogOpen.mockRestore()
   })
 
   it('keeps share inside the More actions drawer instead of the mobile header row', () => {

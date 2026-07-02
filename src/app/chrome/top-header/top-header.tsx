@@ -12,7 +12,6 @@ import { DIALOG_IDS } from '@/app/dialogs/dialog-registry'
 import { useSceneIsAtDefaults } from '@/core/operations/use-scene-is-at-defaults'
 import { useCommandDispatch } from '@/core/commands/command-dispatch-context'
 import { useHistoryAvailability } from '@/core/stores/scene-document-store'
-import { topHeaderDialogOpenChange } from './top-header-dialog-bindings'
 
 export function TopHeader() {
   const dispatch = useCommandDispatch()
@@ -40,19 +39,19 @@ export function TopHeader() {
   // then open the target on the next microtask so the drawer's focus handling
   // settles before the next surface traps focus.
   const openFromHeaderMoreActions = (open: () => void) => {
-    topHeaderDialogOpenChange.headerMoreActions(false)
+    dialogActions.setDialogOpen(DIALOG_IDS.headerMoreActions, false)
     queueMicrotask(open)
   }
 
   const onOpenKeyboardShortcutsFromHeaderMoreActions = () => {
     openFromHeaderMoreActions(() => {
-      topHeaderDialogOpenChange.keyboardShortcuts(true)
+      dialogActions.setDialogOpen(DIALOG_IDS.keyboardShortcuts, true)
     })
   }
 
   const onOpenProjectInfoFromHeaderMoreActions = () => {
     openFromHeaderMoreActions(() => {
-      topHeaderDialogOpenChange.projectInfo(true)
+      dialogActions.setDialogOpen(DIALOG_IDS.projectInfo, true)
     })
   }
 

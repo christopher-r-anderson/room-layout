@@ -8,14 +8,18 @@ import { IconDotsVertical, IconHomeCog } from '@tabler/icons-react'
 import { RoomDrawer } from '@/features/room-surface/room-drawer'
 import { HeaderMoreActionsDrawer } from './header-more-actions-drawer'
 import { Trans, useLingui } from '@lingui/react/macro'
-import {
-  HEADER_MORE_ACTIONS_CONTENT_ID,
-  topHeaderDialogOpenChange,
-} from './top-header-dialog-bindings'
+import { dialogActions } from '@/core/stores/dialog-store'
+import { DIALOG_IDS } from '@/app/dialogs/dialog-registry'
 import { topHeaderFocusRegistry } from './top-header-focus'
 import type { TopHeaderMobileProps } from './top-header.types'
 import { TopHeaderSurface } from './top-header-surface'
 import { useExclusionRegistry } from '@/shared/layout/overlay-exclusion-context'
+
+/**
+ * Stable DOM id for the "More actions" drawer content. It is referenced by the
+ * trigger's `aria-controls`, so it must stay a fixed string.
+ */
+const HEADER_MORE_ACTIONS_CONTENT_ID = 'header-more-actions-content'
 
 export function TopHeaderMobile({
   history,
@@ -58,7 +62,10 @@ export function TopHeaderMobile({
                     aria-expanded={isRoomSurfaceOpen}
                     aria-haspopup="dialog"
                     onClick={() => {
-                      topHeaderDialogOpenChange.roomSurface(!isRoomSurfaceOpen)
+                      dialogActions.setDialogOpen(
+                        DIALOG_IDS.roomSurface,
+                        !isRoomSurfaceOpen,
+                      )
                     }}
                   >
                     <IconHomeCog size={16} aria-hidden="true" />
@@ -95,7 +102,10 @@ export function TopHeaderMobile({
                     aria-expanded={isHeaderMoreActionsOpen}
                     aria-haspopup="dialog"
                     onClick={() => {
-                      topHeaderDialogOpenChange.headerMoreActions(true)
+                      dialogActions.setDialogOpen(
+                        DIALOG_IDS.headerMoreActions,
+                        true,
+                      )
                     }}
                   >
                     <IconDotsVertical aria-hidden="true" />
@@ -113,7 +123,9 @@ export function TopHeaderMobile({
       <RoomDrawer
         ref={registerExclusionElement('room-surface')}
         open={isRoomSurfaceOpen}
-        onOpenChange={topHeaderDialogOpenChange.roomSurface}
+        onOpenChange={(open) =>
+          dialogActions.setDialogOpen(DIALOG_IDS.roomSurface, open)
+        }
         onCloseAutoFocus={() => {
           topHeaderFocusRegistry.focus('top-header-room')
         }}
@@ -124,7 +136,9 @@ export function TopHeaderMobile({
         contentId={HEADER_MORE_ACTIONS_CONTENT_ID}
         startOverDisabled={startOverDisabled}
         open={isHeaderMoreActionsOpen}
-        onOpenChange={topHeaderDialogOpenChange.headerMoreActions}
+        onOpenChange={(open) =>
+          dialogActions.setDialogOpen(DIALOG_IDS.headerMoreActions, open)
+        }
         onCloseAutoFocus={() => {
           topHeaderFocusRegistry.focus('top-header-more-actions')
         }}
