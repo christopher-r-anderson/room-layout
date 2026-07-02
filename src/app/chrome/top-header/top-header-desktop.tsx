@@ -9,22 +9,22 @@ import { Trans, useLingui } from '@lingui/react/macro'
 import { RoomSidebar } from '@/features/room-surface/room-sidebar'
 import { StartOverButton } from './start-over-button'
 import { ShareSceneButton } from './share-scene-button'
-import { dialogActions } from '@/core/stores/dialog-store'
+import { dialogActions, useDialogOpen } from '@/core/stores/dialog-store'
 import { DIALOG_IDS } from '@/app/dialogs/dialog-registry'
+import { useHistoryAvailability } from '@/core/stores/scene-document-store'
+import { useSceneIsAtDefaults } from '@/core/operations/use-scene-is-at-defaults'
 import { topHeaderFocusRegistry } from './top-header-focus'
-import type { TopHeaderDesktopProps } from './top-header.types'
 import { TopHeaderSurface } from './top-header-surface'
 import { useExclusionRegistry } from '@/shared/layout/overlay-exclusion-context'
 
-export function TopHeaderDesktop({
-  history,
-  isRoomSurfaceOpen,
-  isKeyboardShortcutsOpen,
-  isProjectInfoOpen,
-  startOverDisabled,
-}: TopHeaderDesktopProps) {
+export function TopHeaderDesktop() {
   const { t } = useLingui()
   const registerExclusionElement = useExclusionRegistry()
+  const history = useHistoryAvailability()
+  const startOverDisabled = useSceneIsAtDefaults()
+  const isRoomSurfaceOpen = useDialogOpen(DIALOG_IDS.roomSurface)
+  const isKeyboardShortcutsOpen = useDialogOpen(DIALOG_IDS.keyboardShortcuts)
+  const isProjectInfoOpen = useDialogOpen(DIALOG_IDS.projectInfo)
 
   return (
     <>

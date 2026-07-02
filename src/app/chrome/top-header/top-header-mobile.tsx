@@ -8,11 +8,16 @@ import { IconDotsVertical, IconHomeCog } from '@tabler/icons-react'
 import { RoomDrawer } from '@/features/room-surface/room-drawer'
 import { HeaderMoreActionsDrawer } from './header-more-actions-drawer'
 import { Trans, useLingui } from '@lingui/react/macro'
-import { dialogActions } from '@/core/stores/dialog-store'
+import {
+  dialogActions,
+  useDialogOpen,
+  useIsBlockingOverlayOpen,
+} from '@/core/stores/dialog-store'
 import { DIALOG_IDS } from '@/app/dialogs/dialog-registry'
 import { useCommandDispatch } from '@/core/commands/command-dispatch-context'
+import { useHistoryAvailability } from '@/core/stores/scene-document-store'
+import { useSceneIsAtDefaults } from '@/core/operations/use-scene-is-at-defaults'
 import { topHeaderFocusRegistry } from './top-header-focus'
-import type { TopHeaderMobileProps } from './top-header.types'
 import { TopHeaderSurface } from './top-header-surface'
 import { useExclusionRegistry } from '@/shared/layout/overlay-exclusion-context'
 
@@ -22,16 +27,15 @@ import { useExclusionRegistry } from '@/shared/layout/overlay-exclusion-context'
  */
 const HEADER_MORE_ACTIONS_CONTENT_ID = 'header-more-actions-content'
 
-export function TopHeaderMobile({
-  history,
-  isRoomSurfaceOpen,
-  isHeaderMoreActionsOpen,
-  blockingOverlayOpen,
-  startOverDisabled,
-}: TopHeaderMobileProps) {
+export function TopHeaderMobile() {
   const { t } = useLingui()
   const registerExclusionElement = useExclusionRegistry()
   const dispatch = useCommandDispatch()
+  const history = useHistoryAvailability()
+  const startOverDisabled = useSceneIsAtDefaults()
+  const isRoomSurfaceOpen = useDialogOpen(DIALOG_IDS.roomSurface)
+  const isHeaderMoreActionsOpen = useDialogOpen(DIALOG_IDS.headerMoreActions)
+  const blockingOverlayOpen = useIsBlockingOverlayOpen()
 
   // Hand off from More actions to another surface: close the drawer first, then
   // open the target on the next microtask so the drawer's focus handling settles
