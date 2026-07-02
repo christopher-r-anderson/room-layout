@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { render } from '@testing-library/react'
+import { render } from '@/test/render'
 import { describe, expect, it } from 'vitest'
 
 import { KbdShortcutDisplay } from './keyboard-shortcut-display'

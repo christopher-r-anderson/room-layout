@@ -313,6 +313,9 @@ msgstr "[Ńũďğē śēĺēćţēď ĩţēḿ (0.5 ḿ)āēīōūáéíóúāē
 msgid "Open project and asset info"
 msgstr "[Ōƥēń ƥŕōĵēćţ àńď àśśēţ ĩńƒōāēīōūáéíóúāēīōū]"
 
+msgid "or"
+msgstr "[ōŕāē]"
+
 msgid "Orbit camera"
 msgstr "[Ōŕƀĩţ ćàḿēŕàāēīōūáéíó]"
 

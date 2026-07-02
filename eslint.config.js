@@ -72,12 +72,13 @@ export default defineConfig([
   // i18n guard: fail on hardcoded JSX text and on the user-facing string
   // attributes (the ones screen readers and tooltips surface, which no visual
   // review catches) so new UI strings go through Lingui macros. Other attributes
-  // are not checked, to avoid noise; shared/ui primitives (scaffolded with
-  // literals) and tests are exempt. `msg`/`t`/<Trans> usages are not literals
-  // and pass.
+  // are not checked, to avoid noise; tests are exempt. shared/ui is covered
+  // too — it is project-owned, so freshly scaffolded components localize their
+  // literals as part of install. `msg`/`t`/<Trans> usages are not literals and
+  // pass.
   {
     files: ['src/**/*.tsx'],
-    ignores: ['src/**/*.test.tsx', 'src/shared/ui/**'],
+    ignores: ['src/**/*.test.tsx'],
     plugins: { i18next },
     rules: {
       'i18next/no-literal-string': [
