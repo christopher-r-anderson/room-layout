@@ -7,16 +7,12 @@ import {
   selectionFocusActions,
   useRoomViewFocusRequest,
 } from '@/core/stores/selection-focus-store'
-import { usePreviewedId } from '@/core/operations/previewed-id'
-import { useActiveFinishIds } from '@/core/operations/active-finish-ids'
 import { useSceneIsAtDefaults } from '@/core/operations/use-scene-is-at-defaults'
 import {
   useEditorInteractionsEnabled,
-  useSceneEpoch,
   useStartupLoadingActive,
   useStartupOverlayActive,
 } from '@/core/stores/editor-lifecycle-store'
-import { useCatalogEntries, useCollections } from '@/core/stores/assets-store'
 import { useKeyboardShortcuts } from '@/features/keyboard/use-keyboard-shortcuts'
 import { useCameraKeyState } from '@/features/keyboard/use-camera-key-state'
 import { useCommandDispatch } from '@/core/commands/command-dispatch-context'
@@ -37,16 +33,7 @@ export interface EditorBodyProps {
 
 export function EditorBody({ testOverlaysHidden }: EditorBodyProps) {
   const { t } = useLingui()
-  const previewedId = usePreviewedId()
-  const {
-    selectedFloorOption,
-    selectedWallOption,
-    selectedLightingMoodOption,
-  } = useActiveFinishIds()
   const [roomViewHasFocus, setRoomViewHasFocus] = useState(false)
-  const catalog = useCatalogEntries()
-  const collections = useCollections()
-  const sceneEpoch = useSceneEpoch()
   const sceneIsAtDefaults = useSceneIsAtDefaults()
   const editorInteractionsEnabled = useEditorInteractionsEnabled()
   const isBlockingOverlayOpen = useIsBlockingOverlayOpen()
@@ -141,16 +128,7 @@ export function EditorBody({ testOverlaysHidden }: EditorBodyProps) {
           </Trans>
         </p>
         <Suspense fallback={null}>
-          <SceneCanvas
-            sceneEpoch={sceneEpoch}
-            onPointerMissed={handleCanvasPointerMissed}
-            catalog={catalog}
-            collections={collections}
-            previewedId={previewedId}
-            selectedFloorOption={selectedFloorOption}
-            selectedWallOption={selectedWallOption}
-            selectedLightingMoodOption={selectedLightingMoodOption}
-          />
+          <SceneCanvas onPointerMissed={handleCanvasPointerMissed} />
         </Suspense>
       </section>
 
