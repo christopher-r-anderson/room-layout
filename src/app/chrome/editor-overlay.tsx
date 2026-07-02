@@ -42,7 +42,8 @@ export function EditorOverlay() {
         {/* When the room panel is open, clear its full width plus the standard
             inset gap so the toolbar isn't butted against the panel edge. The panel
             is pinned to the physical right edge, so this clearance is physical too. */}
-        <div
+        <CameraTools
+          ref={registerExclusionElement('camera-tools')}
           className={cn(
             'z-20 pointer-events-auto self-end mt-28 mb-auto',
             isDesktop &&
@@ -50,49 +51,33 @@ export function EditorOverlay() {
               // logical-css-allow: clears the right-pinned room panel
               'mr-[calc(var(--spacing-room-panel)+var(--spacing)*2)]',
           )}
-          ref={registerExclusionElement('camera-tools')}
-        >
-          <CameraTools
-            hasSelection={hasSelection}
-            displayLabels={isDesktop && !isRoomSurfaceOpen}
-          />
-        </div>
+          hasSelection={hasSelection}
+          displayLabels={isDesktop && !isRoomSurfaceOpen}
+        />
 
         <div className="grid gap-2 md:justify-items-start md:items-end md:grid-cols-2 md:grid-rows-[1fr_auto]">
-          <div
-            className="pointer-events-auto"
+          <StatusMessage
             ref={registerExclusionElement('status')}
-          >
-            <StatusMessage />
-          </div>
+            className="pointer-events-auto"
+          />
 
           {isDesktop && (
-            <div
+            <Outliner
               ref={registerExclusionElement('outliner')}
               className="md:min-w-80 pointer-events-auto"
-            >
-              <Outliner />
-            </div>
+            />
           )}
 
           <div className="flex flex-col gap-2 pointer-events-auto md:col-start-2 md:row-start-1 md:row-span-2 md:justify-self-end">
             {!isDesktop && hasSelection ? (
-              <div className="w-fit">
-                <SelectedItemToolbar />
-              </div>
+              <SelectedItemToolbar className="w-fit" />
             ) : null}
             {hasSelection ? (
               <SelectedDetailsPanel
                 ref={registerExclusionElement('selected-details')}
               />
             ) : (
-              <div
-                ref={registerExclusionElement('selected-details')}
-                aria-hidden="true"
-                className="contents"
-              >
-                <SelectedDetailsPlaceholder />
-              </div>
+              <SelectedDetailsPlaceholder aria-hidden="true" />
             )}
           </div>
         </div>
