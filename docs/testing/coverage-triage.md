@@ -111,5 +111,7 @@ Intentionally e2e-tested, presentational, trivial, or config:
 
 ## Out of scope (standing)
 
-Chasing a coverage number; testing vendored `shared/ui/*`; testing pure-constant
-modules (`domain/geometry/room-metrics.ts`).
+Chasing a coverage number; re-testing Base UI primitive behavior through
+`shared/ui` wrappers (project-added contracts there are in scope — see
+`intentional-unit-exclusions.md`); testing pure-constant modules
+(`domain/geometry/room-metrics.ts`).

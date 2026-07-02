@@ -114,8 +114,6 @@ export default defineConfig({
         ...coverageConfigDefaults.exclude,
         'src/test/**',
         'src/**/scene-test-support.ts',
-        // Vendored shadcn/base-ui primitives — testing them tests the library.
-        'src/shared/ui/**',
       ],
     },
   },
