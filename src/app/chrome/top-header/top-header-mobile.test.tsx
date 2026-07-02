@@ -92,8 +92,8 @@ describe('TopHeaderMobile', () => {
 
   it('opens the More actions drawer through shared dialog state', async () => {
     const user = userEvent.setup()
-    const setDialogOpen = vi
-      .spyOn(dialogActions, 'setDialogOpen')
+    const openDialog = vi
+      .spyOn(dialogActions, 'openDialog')
       .mockReturnValue(true)
 
     renderMobileHeader()
@@ -104,12 +104,9 @@ describe('TopHeaderMobile', () => {
 
     await user.click(trigger)
 
-    expect(setDialogOpen).toHaveBeenCalledWith(
-      DIALOG_IDS.headerMoreActions,
-      true,
-    )
+    expect(openDialog).toHaveBeenCalledWith(DIALOG_IDS.headerMoreActions)
 
-    setDialogOpen.mockRestore()
+    openDialog.mockRestore()
   })
 
   it('keeps share inside the More actions drawer instead of the mobile header row', () => {

@@ -6,7 +6,10 @@ import { HistoryTools } from '@/features/history/history-tools'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/shared/ui/tooltip'
 import { IconDotsVertical, IconHomeCog } from '@tabler/icons-react'
 import { RoomDrawer } from '@/features/room-surface/room-drawer'
-import { HeaderMoreActionsDrawer } from './header-more-actions-drawer'
+import {
+  HeaderMoreActionsDrawer,
+  HEADER_MORE_ACTIONS_CONTENT_ID,
+} from './header-more-actions-drawer'
 import { Trans, useLingui } from '@lingui/react/macro'
 import {
   dialogActions,
@@ -14,36 +17,18 @@ import {
   useIsBlockingOverlayOpen,
 } from '@/core/stores/dialog-store'
 import { DIALOG_IDS } from '@/app/dialogs/dialog-registry'
-import { useCommandDispatch } from '@/core/commands/command-dispatch-context'
 import { useHistoryAvailability } from '@/core/stores/scene-document-store'
-import { useSceneIsAtDefaults } from '@/core/operations/use-scene-is-at-defaults'
 import { topHeaderFocusRegistry } from './top-header-focus'
 import { TopHeaderSurface } from './top-header-surface'
 import { useExclusionRegistry } from '@/shared/layout/overlay-exclusion-context'
 
-/**
- * Stable DOM id for the "More actions" drawer content. It is referenced by the
- * trigger's `aria-controls`, so it must stay a fixed string.
- */
-const HEADER_MORE_ACTIONS_CONTENT_ID = 'header-more-actions-content'
-
 export function TopHeaderMobile() {
   const { t } = useLingui()
   const registerExclusionElement = useExclusionRegistry()
-  const dispatch = useCommandDispatch()
   const history = useHistoryAvailability()
-  const startOverDisabled = useSceneIsAtDefaults()
   const isRoomSurfaceOpen = useDialogOpen(DIALOG_IDS.roomSurface)
   const isHeaderMoreActionsOpen = useDialogOpen(DIALOG_IDS.headerMoreActions)
   const blockingOverlayOpen = useIsBlockingOverlayOpen()
-
-  // Hand off from More actions to another surface: close the drawer first, then
-  // open the target on the next microtask so the drawer's focus handling settles
-  // before the next surface traps focus.
-  const openFromMoreActions = (open: () => void) => {
-    dialogActions.setDialogOpen(DIALOG_IDS.headerMoreActions, false)
-    queueMicrotask(open)
-  }
 
   return (
     <div
@@ -113,10 +98,7 @@ export function TopHeaderMobile() {
                     aria-expanded={isHeaderMoreActionsOpen}
                     aria-haspopup="dialog"
                     onClick={() => {
-                      dialogActions.setDialogOpen(
-                        DIALOG_IDS.headerMoreActions,
-                        true,
-                      )
+                      dialogActions.openDialog(DIALOG_IDS.headerMoreActions)
                     }}
                   >
                     <IconDotsVertical aria-hidden="true" />
@@ -143,32 +125,7 @@ export function TopHeaderMobile() {
         restoreFocusOnClose={!blockingOverlayOpen}
       />
 
-      <HeaderMoreActionsDrawer
-        contentId={HEADER_MORE_ACTIONS_CONTENT_ID}
-        startOverDisabled={startOverDisabled}
-        open={isHeaderMoreActionsOpen}
-        onOpenChange={(open) =>
-          dialogActions.setDialogOpen(DIALOG_IDS.headerMoreActions, open)
-        }
-        onCloseAutoFocus={() => {
-          topHeaderFocusRegistry.focus('top-header-more-actions')
-        }}
-        onOpenKeyboardShortcuts={() => {
-          openFromMoreActions(() =>
-            dialogActions.setDialogOpen(DIALOG_IDS.keyboardShortcuts, true),
-          )
-        }}
-        onOpenStartOver={() => {
-          openFromMoreActions(() => {
-            dispatch({ kind: 'start-over' })
-          })
-        }}
-        onOpenProjectInfo={() => {
-          openFromMoreActions(() =>
-            dialogActions.setDialogOpen(DIALOG_IDS.projectInfo, true),
-          )
-        }}
-      />
+      <HeaderMoreActionsDrawer />
     </div>
   )
 }
