@@ -92,11 +92,13 @@ describe('SceneOutliner', () => {
       getSelectedFurniture: () => READ_MODEL.items[0] ?? null,
       canStartOver: () => true,
     })
-    dialogActions.registerDialogDefinition({
-      id: deleteDialogId,
-      kind: 'blocking',
-      canOpen: (context) => context.getSelectedFurniture() !== null,
-    })
+    dialogActions.registerDialogDefinitions([
+      {
+        id: deleteDialogId,
+        kind: 'blocking',
+        canOpen: (context) => context.getSelectedFurniture() !== null,
+      },
+    ])
     editorLifecycleActions.markAssetsReady()
     seedScene()
   })

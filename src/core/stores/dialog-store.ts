@@ -20,7 +20,6 @@ interface DialogStoreState {
   runtimeContext: DialogRuntimeContext | null
   registry: Partial<Record<DialogId, DialogDefinition>>
   configureRuntimeContext: (context: DialogRuntimeContext) => void
-  registerDialogDefinition: (definition: DialogDefinition) => void
   registerDialogDefinitions: (definitions: DialogDefinition[]) => void
   openDialog: (id: DialogId) => boolean
   setDialogOpen: (id: DialogId, open: boolean) => boolean
@@ -66,23 +65,6 @@ function createDialogStore() {
           return {
             ...state,
             runtimeContext: context,
-          }
-        })
-      },
-      registerDialogDefinition: (definition) => {
-        set((state) => {
-          const current = state.registry[definition.id]
-
-          if (current === definition) {
-            return state
-          }
-
-          return {
-            ...state,
-            registry: {
-              ...state.registry,
-              [definition.id]: definition,
-            },
           }
         })
       },
@@ -192,9 +174,6 @@ export const dialogActions = {
   configureRuntimeContext: (context: DialogRuntimeContext) => {
     dialogStore.getState().configureRuntimeContext(context)
   },
-  registerDialogDefinition: (definition: DialogDefinition) => {
-    dialogStore.getState().registerDialogDefinition(definition)
-  },
   registerDialogDefinitions: (definitions: DialogDefinition[]) => {
     dialogStore.getState().registerDialogDefinitions(definitions)
   },
@@ -218,9 +197,6 @@ export const dialogActions = {
 export function resetDialogStore() {
   dialogActions.reset()
 }
-
-export const useActiveSurface = () =>
-  useDialogStore((state) => state.activeSurface)
 
 export const useDialogOpen = (id: DialogId) =>
   useDialogStore((state) => state.activeSurface?.id === id)

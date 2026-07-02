@@ -4,8 +4,8 @@ import { act, renderHook } from '@testing-library/react'
 import { beforeEach, describe, expect, it } from 'vitest'
 import {
   dialogActions,
+  dialogStoreForTests,
   resetDialogStore,
-  useActiveSurface,
   useDialogOpen,
   useIsBlockingOverlayOpen,
 } from './dialog-store'
@@ -32,11 +32,10 @@ beforeEach(() => {
 
 describe('dialogStore', () => {
   it('tracks a single active surface and blocking state by dialog kind', () => {
-    const { result: activeSurface } = renderHook(() => useActiveSurface())
     const { result: isDeleteOpen } = renderHook(() => useDialogOpen('delete'))
     const { result: isBlocking } = renderHook(() => useIsBlockingOverlayOpen())
 
-    expect(activeSurface.current).toBeNull()
+    expect(dialogStoreForTests.getState().activeSurface).toBeNull()
     expect(isDeleteOpen.current).toBe(false)
     expect(isBlocking.current).toBe(false)
 
@@ -44,7 +43,7 @@ describe('dialogStore', () => {
       dialogActions.openDialog('delete')
     })
 
-    expect(activeSurface.current?.id).toBe('delete')
+    expect(dialogStoreForTests.getState().activeSurface?.id).toBe('delete')
     expect(isDeleteOpen.current).toBe(true)
     expect(isBlocking.current).toBe(true)
 
@@ -52,7 +51,7 @@ describe('dialogStore', () => {
       dialogActions.closeActiveDialog()
     })
 
-    expect(activeSurface.current).toBeNull()
+    expect(dialogStoreForTests.getState().activeSurface).toBeNull()
     expect(isDeleteOpen.current).toBe(false)
     expect(isBlocking.current).toBe(false)
   })
@@ -74,10 +73,12 @@ describe('dialogStore', () => {
       getSelectedFurniture: () => null,
       canStartOver: () => true,
     })
-    dialogActions.registerDialogDefinition({
-      id: 'delete',
-      kind: 'blocking',
-    })
+    dialogActions.registerDialogDefinitions([
+      {
+        id: 'delete',
+        kind: 'blocking',
+      },
+    ])
 
     const opened = dialogActions.openDialog('delete')
 
