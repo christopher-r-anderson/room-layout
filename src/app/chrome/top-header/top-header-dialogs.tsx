@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { KeyboardShortcutsDialog } from '@/features/keyboard/keyboard-shortcuts-help'
 import { ProjectInfoDialog } from '@/features/project-info/project-info-dialog'
 import { StartOverConfirmationDialog } from '@/features/startup/start-over-confirmation-dialog'
@@ -5,7 +6,6 @@ import { confirmStartOver } from '@/features/startup/start-over-actions'
 import { dialogActions, useDialogOpen } from '@/core/stores/dialog-store'
 import { DIALOG_IDS } from '@/app/dialogs/dialog-registry'
 import { useHeaderLayoutMode } from '@/shared/layout/use-header-layout-mode'
-import { topHeaderDialogOpenChange } from './top-header-dialog-bindings'
 import { topHeaderFocusRegistry } from './top-header-focus'
 
 /**
@@ -19,6 +19,16 @@ export function TopHeaderDialogs() {
   const isKeyboardShortcutsOpen = useDialogOpen(DIALOG_IDS.keyboardShortcuts)
   const isProjectInfoOpen = useDialogOpen(DIALOG_IDS.projectInfo)
   const isStartOverOpen = useDialogOpen(DIALOG_IDS.startOver)
+  const isHeaderMoreActionsOpen = useDialogOpen(DIALOG_IDS.headerMoreActions)
+
+  // More actions is mobile-only and blocking. It has no desktop equivalent, so
+  // if the viewport widens while it is open we close it to avoid leaving the
+  // blocking-overlay state active with no surface able to dismiss it.
+  useEffect(() => {
+    if (layoutMode === 'desktop' && isHeaderMoreActionsOpen) {
+      dialogActions.setDialogOpen(DIALOG_IDS.headerMoreActions, false)
+    }
+  }, [layoutMode, isHeaderMoreActionsOpen])
 
   const returnFocusToMoreActionsOnMobile = () => {
     if (layoutMode === 'mobile') {
@@ -31,7 +41,7 @@ export function TopHeaderDialogs() {
       <KeyboardShortcutsDialog
         open={isKeyboardShortcutsOpen}
         onOpenChange={(open) => {
-          topHeaderDialogOpenChange.keyboardShortcuts(open)
+          dialogActions.setDialogOpen(DIALOG_IDS.keyboardShortcuts, open)
 
           if (!open) {
             returnFocusToMoreActionsOnMobile()
@@ -42,7 +52,7 @@ export function TopHeaderDialogs() {
       <ProjectInfoDialog
         open={isProjectInfoOpen}
         onOpenChange={(open) => {
-          topHeaderDialogOpenChange.projectInfo(open)
+          dialogActions.setDialogOpen(DIALOG_IDS.projectInfo, open)
 
           if (!open) {
             returnFocusToMoreActionsOnMobile()

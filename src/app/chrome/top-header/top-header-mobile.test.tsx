@@ -2,10 +2,11 @@
 
 import { render, screen } from '@/test/render'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { TopHeaderMobile } from './top-header-mobile'
-import { topHeaderDialogOpenChange } from './top-header-dialog-bindings'
-import type { TopHeaderMobileProps } from './top-header.types'
+import { dialogActions, resetDialogStore } from '@/core/stores/dialog-store'
+import { DIALOG_DEFINITIONS, DIALOG_IDS } from '@/app/dialogs/dialog-registry'
+import { CommandDispatchProvider } from '@/core/commands/command-dispatch-provider'
 import { OverlayExclusionProvider } from '@/shared/layout/overlay-exclusion-provider'
 
 vi.mock('@/features/catalog/catalog-drawer', () => ({
@@ -32,33 +33,32 @@ vi.mock('@/shared/ui/tooltip', () => ({
   TooltipTrigger: ({ render }: { render: React.ReactNode }) => <>{render}</>,
 }))
 
-function createProps(
-  overrides: Partial<TopHeaderMobileProps> = {},
-): TopHeaderMobileProps {
-  return {
-    history: {
-      canRedo: false,
-      canUndo: false,
-    },
-    isRoomSurfaceOpen: false,
-    isHeaderMoreActionsOpen: false,
-    blockingOverlayOpen: false,
-    startOverDisabled: false,
-    onOpenKeyboardShortcutsFromHeaderMoreActions: vi.fn(),
-    onOpenProjectInfoFromHeaderMoreActions: vi.fn(),
-    onOpenStartOverFromHeaderMoreActions: vi.fn(),
-    ...overrides,
-  }
+beforeEach(() => {
+  resetDialogStore()
+})
+
+// The header now reads dialog state from the store, so tests that need the More
+// actions drawer open register the definitions and open it directly.
+function openMoreActionsDialog() {
+  dialogActions.registerDialogDefinitions(DIALOG_DEFINITIONS)
+  dialogActions.configureRuntimeContext({
+    isDialogsEnabled: () => true,
+    getSelectedFurniture: () => null,
+    canStartOver: () => false,
+  })
+  dialogActions.setDialogOpen(DIALOG_IDS.headerMoreActions, true)
 }
 
-function renderMobileHeader(overrides?: Partial<TopHeaderMobileProps>) {
+function renderMobileHeader() {
   return render(
-    <OverlayExclusionProvider
-      registerExclusionElement={() => vi.fn()}
-      exclusionRects={{}}
-    >
-      <TopHeaderMobile {...createProps(overrides)} />
-    </OverlayExclusionProvider>,
+    <CommandDispatchProvider value={vi.fn()}>
+      <OverlayExclusionProvider
+        registerExclusionElement={() => vi.fn()}
+        exclusionRects={{}}
+      >
+        <TopHeaderMobile />
+      </OverlayExclusionProvider>
+    </CommandDispatchProvider>,
   )
 }
 
@@ -72,7 +72,8 @@ describe('TopHeaderMobile', () => {
   })
 
   it('exposes dialog trigger semantics for the More actions drawer', () => {
-    renderMobileHeader({ isHeaderMoreActionsOpen: true })
+    openMoreActionsDialog()
+    renderMobileHeader()
 
     const trigger = screen.getByRole('button', {
       name: 'More actions',
@@ -91,8 +92,8 @@ describe('TopHeaderMobile', () => {
 
   it('opens the More actions drawer through shared dialog state', async () => {
     const user = userEvent.setup()
-    const onHeaderMoreActionsOpenChange = vi
-      .spyOn(topHeaderDialogOpenChange, 'headerMoreActions')
+    const openDialog = vi
+      .spyOn(dialogActions, 'openDialog')
       .mockReturnValue(true)
 
     renderMobileHeader()
@@ -103,13 +104,14 @@ describe('TopHeaderMobile', () => {
 
     await user.click(trigger)
 
-    expect(onHeaderMoreActionsOpenChange).toHaveBeenCalledWith(true)
+    expect(openDialog).toHaveBeenCalledWith(DIALOG_IDS.headerMoreActions)
 
-    onHeaderMoreActionsOpenChange.mockRestore()
+    openDialog.mockRestore()
   })
 
   it('keeps share inside the More actions drawer instead of the mobile header row', () => {
-    const { container } = renderMobileHeader({ isHeaderMoreActionsOpen: true })
+    openMoreActionsDialog()
+    const { container } = renderMobileHeader()
 
     const mobileHeaderRoot = container.querySelector('[data-top-header-root]')
 

@@ -61,9 +61,7 @@ describe('dialogStore', () => {
     const { result } = renderHook(() => useIsBlockingOverlayOpen())
 
     act(() => {
-      dialogActions.openDialog('room-surface', {
-        payload: { layout: 'desktop' },
-      })
+      dialogActions.openDialog('room-surface')
     })
 
     expect(result.current).toBe(false)

@@ -6,29 +6,29 @@ import { HistoryTools } from '@/features/history/history-tools'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/shared/ui/tooltip'
 import { IconDotsVertical, IconHomeCog } from '@tabler/icons-react'
 import { RoomDrawer } from '@/features/room-surface/room-drawer'
-import { HeaderMoreActionsDrawer } from './header-more-actions-drawer'
+import {
+  HeaderMoreActionsDrawer,
+  HEADER_MORE_ACTIONS_CONTENT_ID,
+} from './header-more-actions-drawer'
 import { Trans, useLingui } from '@lingui/react/macro'
 import {
-  HEADER_MORE_ACTIONS_CONTENT_ID,
-  topHeaderDialogOpenChange,
-} from './top-header-dialog-bindings'
+  dialogActions,
+  useDialogOpen,
+  useIsBlockingOverlayOpen,
+} from '@/core/stores/dialog-store'
+import { DIALOG_IDS } from '@/app/dialogs/dialog-registry'
+import { useHistoryAvailability } from '@/core/stores/scene-document-store'
 import { topHeaderFocusRegistry } from './top-header-focus'
-import type { TopHeaderMobileProps } from './top-header.types'
 import { TopHeaderSurface } from './top-header-surface'
 import { useExclusionRegistry } from '@/shared/layout/overlay-exclusion-context'
 
-export function TopHeaderMobile({
-  history,
-  isRoomSurfaceOpen,
-  isHeaderMoreActionsOpen,
-  blockingOverlayOpen,
-  startOverDisabled,
-  onOpenKeyboardShortcutsFromHeaderMoreActions,
-  onOpenStartOverFromHeaderMoreActions,
-  onOpenProjectInfoFromHeaderMoreActions,
-}: TopHeaderMobileProps) {
+export function TopHeaderMobile() {
   const { t } = useLingui()
   const registerExclusionElement = useExclusionRegistry()
+  const history = useHistoryAvailability()
+  const isRoomSurfaceOpen = useDialogOpen(DIALOG_IDS.roomSurface)
+  const isHeaderMoreActionsOpen = useDialogOpen(DIALOG_IDS.headerMoreActions)
+  const blockingOverlayOpen = useIsBlockingOverlayOpen()
 
   return (
     <div
@@ -58,7 +58,10 @@ export function TopHeaderMobile({
                     aria-expanded={isRoomSurfaceOpen}
                     aria-haspopup="dialog"
                     onClick={() => {
-                      topHeaderDialogOpenChange.roomSurface(!isRoomSurfaceOpen)
+                      dialogActions.setDialogOpen(
+                        DIALOG_IDS.roomSurface,
+                        !isRoomSurfaceOpen,
+                      )
                     }}
                   >
                     <IconHomeCog size={16} aria-hidden="true" />
@@ -95,7 +98,7 @@ export function TopHeaderMobile({
                     aria-expanded={isHeaderMoreActionsOpen}
                     aria-haspopup="dialog"
                     onClick={() => {
-                      topHeaderDialogOpenChange.headerMoreActions(true)
+                      dialogActions.openDialog(DIALOG_IDS.headerMoreActions)
                     }}
                   >
                     <IconDotsVertical aria-hidden="true" />
@@ -113,25 +116,16 @@ export function TopHeaderMobile({
       <RoomDrawer
         ref={registerExclusionElement('room-surface')}
         open={isRoomSurfaceOpen}
-        onOpenChange={topHeaderDialogOpenChange.roomSurface}
+        onOpenChange={(open) =>
+          dialogActions.setDialogOpen(DIALOG_IDS.roomSurface, open)
+        }
         onCloseAutoFocus={() => {
           topHeaderFocusRegistry.focus('top-header-room')
         }}
         restoreFocusOnClose={!blockingOverlayOpen}
       />
 
-      <HeaderMoreActionsDrawer
-        contentId={HEADER_MORE_ACTIONS_CONTENT_ID}
-        startOverDisabled={startOverDisabled}
-        open={isHeaderMoreActionsOpen}
-        onOpenChange={topHeaderDialogOpenChange.headerMoreActions}
-        onCloseAutoFocus={() => {
-          topHeaderFocusRegistry.focus('top-header-more-actions')
-        }}
-        onOpenKeyboardShortcuts={onOpenKeyboardShortcutsFromHeaderMoreActions}
-        onOpenStartOver={onOpenStartOverFromHeaderMoreActions}
-        onOpenProjectInfo={onOpenProjectInfoFromHeaderMoreActions}
-      />
+      <HeaderMoreActionsDrawer />
     </div>
   )
 }

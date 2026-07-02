@@ -3,7 +3,6 @@
 import { render, screen } from '@/test/render'
 import { describe, expect, it, vi } from 'vitest'
 import { TopHeaderDesktop } from './top-header-desktop'
-import type { TopHeaderDesktopProps } from './top-header.types'
 import { OverlayExclusionProvider } from '@/shared/layout/overlay-exclusion-provider'
 
 vi.mock('@/features/catalog/catalog-drawer', () => ({
@@ -52,29 +51,13 @@ vi.mock('./start-over-button', () => ({
   StartOverButton: () => <button type="button">Start over</button>,
 }))
 
-function createProps(
-  overrides: Partial<TopHeaderDesktopProps> = {},
-): TopHeaderDesktopProps {
-  return {
-    history: {
-      canRedo: false,
-      canUndo: false,
-    },
-    isRoomSurfaceOpen: false,
-    isKeyboardShortcutsOpen: false,
-    isProjectInfoOpen: false,
-    startOverDisabled: false,
-    ...overrides,
-  }
-}
-
-function renderDesktopHeader(overrides?: Partial<TopHeaderDesktopProps>) {
+function renderDesktopHeader() {
   return render(
     <OverlayExclusionProvider
       registerExclusionElement={() => vi.fn()}
       exclusionRects={{}}
     >
-      <TopHeaderDesktop {...createProps(overrides)} />
+      <TopHeaderDesktop />
     </OverlayExclusionProvider>,
   )
 }
