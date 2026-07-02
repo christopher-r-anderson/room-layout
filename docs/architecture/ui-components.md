@@ -11,6 +11,24 @@ are not treated as immutable vendor code.
 Use shadcn install flows as scaffolding, then maintain resulting components as
 normal repository code.
 
+## Testing
+
+Ownership extends to testing: `shared/ui` follows the repository's value rule
+(test for value, never for a coverage number — see
+[testing.md](testing.md#coverage)), not a blanket exclusion.
+
+- Thin wrappers over Base UI primitives are not unit-tested. Their interaction
+  behavior (open/close, focus, dismissal) is the library's, tested upstream;
+  the project layer is composition and styling, exercised by the e2e lane
+  through real dialogs, drawers, and toolbars.
+- Components that add a project contract are unit-tested in place — e.g.
+  `tool-button` (label/assistive-tech contract), `dialog`/`alert-dialog`
+  (mobile gutter survival under caller class merges), and
+  `keyboard-shortcut-display` (shortcut formatting).
+- The folder is included in the coverage map like any owned code; the
+  deliberate unit-level gaps are recorded in
+  [intentional-unit-exclusions.md](../testing/intentional-unit-exclusions.md).
+
 ## Logical CSS Properties
 
 Inline-axis spacing and alignment use logical Tailwind utilities (`ms`/`me`,

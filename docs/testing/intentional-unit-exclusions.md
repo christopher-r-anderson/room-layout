@@ -49,6 +49,19 @@ is e2e-covered.
   already-tested reconcilers).
 - Debug / test infra: `shared/debug/perf-counters.ts`,
   `app/testing/use-test-state-bridge.ts`.
+- `shared/ui/*` thin wrappers: styling wrappers over Base UI primitives
+  (`tooltip`, `tabs`, `drawer`, `collapsible`, `scroll-area`, `progress`,
+  `sonner`, `button`, `card`) and purely presentational bespoke pieces
+  (`surface`, `caption`, `kbd`, `description-list`, the `*-variants` modules).
+  These components are project-owned (see
+  [ui-components.md](../architecture/ui-components.md)), but their interaction
+  behavior (open/close, focus, dismissal) is Base UI's — tested upstream — and
+  the project layer is composition and class strings, exercised throughout the
+  e2e lane (dialog/drawer/toolbar flows, `editor-a11y-audits`). Unit tests here
+  would re-test the library or pin class names. Components that **add a project
+  contract** are unit-tested in place: `tool-button` (label/AT contract),
+  `dialog`/`alert-dialog` (gutter survival, `data-size`),
+  `keyboard-shortcut-display` (shortcut formatting).
 
 ## Accepted gaps (not covered anywhere, by choice)
 
@@ -80,5 +93,7 @@ choice is explicit, not an oversight.
 
 ## Out of scope (standing)
 
-Chasing a coverage number; testing vendored `shared/ui/*` primitives; testing
-pure-constant modules (`domain/geometry/room-metrics.ts`).
+Chasing a coverage number; re-testing Base UI primitive behavior through
+`shared/ui` wrappers (the library tests that; project-added contracts there
+**are** in scope — see above); testing pure-constant modules
+(`domain/geometry/room-metrics.ts`).
