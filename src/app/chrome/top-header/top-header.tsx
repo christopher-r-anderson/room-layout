@@ -10,11 +10,9 @@ import {
 } from '@/core/stores/dialog-store'
 import { DIALOG_IDS } from '@/app/dialogs/dialog-registry'
 import { useSceneIsAtDefaults } from '@/core/operations/use-scene-is-at-defaults'
-import { useCommandDispatch } from '@/core/commands/command-dispatch-context'
 import { useHistoryAvailability } from '@/core/stores/scene-document-store'
 
 export function TopHeader() {
-  const dispatch = useCommandDispatch()
   const startOverDisabled = useSceneIsAtDefaults()
   const historyAvailability = useHistoryAvailability()
   const isRoomSurfaceOpen = useDialogOpen(DIALOG_IDS.roomSurface)
@@ -35,32 +33,6 @@ export function TopHeader() {
     }
   }, [layoutMode, isHeaderMoreActionsOpen])
 
-  // Handing off from More actions to another dialog: close the drawer first,
-  // then open the target on the next microtask so the drawer's focus handling
-  // settles before the next surface traps focus.
-  const openFromHeaderMoreActions = (open: () => void) => {
-    dialogActions.setDialogOpen(DIALOG_IDS.headerMoreActions, false)
-    queueMicrotask(open)
-  }
-
-  const onOpenKeyboardShortcutsFromHeaderMoreActions = () => {
-    openFromHeaderMoreActions(() => {
-      dialogActions.setDialogOpen(DIALOG_IDS.keyboardShortcuts, true)
-    })
-  }
-
-  const onOpenProjectInfoFromHeaderMoreActions = () => {
-    openFromHeaderMoreActions(() => {
-      dialogActions.setDialogOpen(DIALOG_IDS.projectInfo, true)
-    })
-  }
-
-  const onOpenStartOverFromHeaderMoreActions = () => {
-    openFromHeaderMoreActions(() => {
-      dispatch({ kind: 'start-over' })
-    })
-  }
-
   const sharedToolbarProps = {
     history: {
       canRedo: historyAvailability.canRedo,
@@ -77,15 +49,6 @@ export function TopHeader() {
           isRoomSurfaceOpen={isRoomSurfaceOpen}
           isHeaderMoreActionsOpen={isHeaderMoreActionsOpen}
           blockingOverlayOpen={isBlockingOverlayOpen}
-          onOpenKeyboardShortcutsFromHeaderMoreActions={
-            onOpenKeyboardShortcutsFromHeaderMoreActions
-          }
-          onOpenStartOverFromHeaderMoreActions={
-            onOpenStartOverFromHeaderMoreActions
-          }
-          onOpenProjectInfoFromHeaderMoreActions={
-            onOpenProjectInfoFromHeaderMoreActions
-          }
         />
       ) : (
         <TopHeaderDesktop

@@ -10,6 +10,7 @@ import { HeaderMoreActionsDrawer } from './header-more-actions-drawer'
 import { Trans, useLingui } from '@lingui/react/macro'
 import { dialogActions } from '@/core/stores/dialog-store'
 import { DIALOG_IDS } from '@/app/dialogs/dialog-registry'
+import { useCommandDispatch } from '@/core/commands/command-dispatch-context'
 import { topHeaderFocusRegistry } from './top-header-focus'
 import type { TopHeaderMobileProps } from './top-header.types'
 import { TopHeaderSurface } from './top-header-surface'
@@ -27,12 +28,18 @@ export function TopHeaderMobile({
   isHeaderMoreActionsOpen,
   blockingOverlayOpen,
   startOverDisabled,
-  onOpenKeyboardShortcutsFromHeaderMoreActions,
-  onOpenStartOverFromHeaderMoreActions,
-  onOpenProjectInfoFromHeaderMoreActions,
 }: TopHeaderMobileProps) {
   const { t } = useLingui()
   const registerExclusionElement = useExclusionRegistry()
+  const dispatch = useCommandDispatch()
+
+  // Hand off from More actions to another surface: close the drawer first, then
+  // open the target on the next microtask so the drawer's focus handling settles
+  // before the next surface traps focus.
+  const openFromMoreActions = (open: () => void) => {
+    dialogActions.setDialogOpen(DIALOG_IDS.headerMoreActions, false)
+    queueMicrotask(open)
+  }
 
   return (
     <div
@@ -142,9 +149,21 @@ export function TopHeaderMobile({
         onCloseAutoFocus={() => {
           topHeaderFocusRegistry.focus('top-header-more-actions')
         }}
-        onOpenKeyboardShortcuts={onOpenKeyboardShortcutsFromHeaderMoreActions}
-        onOpenStartOver={onOpenStartOverFromHeaderMoreActions}
-        onOpenProjectInfo={onOpenProjectInfoFromHeaderMoreActions}
+        onOpenKeyboardShortcuts={() => {
+          openFromMoreActions(() =>
+            dialogActions.setDialogOpen(DIALOG_IDS.keyboardShortcuts, true),
+          )
+        }}
+        onOpenStartOver={() => {
+          openFromMoreActions(() => {
+            dispatch({ kind: 'start-over' })
+          })
+        }}
+        onOpenProjectInfo={() => {
+          openFromMoreActions(() =>
+            dialogActions.setDialogOpen(DIALOG_IDS.projectInfo, true),
+          )
+        }}
       />
     </div>
   )

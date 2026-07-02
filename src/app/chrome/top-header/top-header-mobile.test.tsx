@@ -6,6 +6,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { TopHeaderMobile } from './top-header-mobile'
 import { dialogActions } from '@/core/stores/dialog-store'
 import { DIALOG_IDS } from '@/app/dialogs/dialog-registry'
+import { CommandDispatchProvider } from '@/core/commands/command-dispatch-provider'
 import type { TopHeaderMobileProps } from './top-header.types'
 import { OverlayExclusionProvider } from '@/shared/layout/overlay-exclusion-provider'
 
@@ -45,21 +46,20 @@ function createProps(
     isHeaderMoreActionsOpen: false,
     blockingOverlayOpen: false,
     startOverDisabled: false,
-    onOpenKeyboardShortcutsFromHeaderMoreActions: vi.fn(),
-    onOpenProjectInfoFromHeaderMoreActions: vi.fn(),
-    onOpenStartOverFromHeaderMoreActions: vi.fn(),
     ...overrides,
   }
 }
 
 function renderMobileHeader(overrides?: Partial<TopHeaderMobileProps>) {
   return render(
-    <OverlayExclusionProvider
-      registerExclusionElement={() => vi.fn()}
-      exclusionRects={{}}
-    >
-      <TopHeaderMobile {...createProps(overrides)} />
-    </OverlayExclusionProvider>,
+    <CommandDispatchProvider value={vi.fn()}>
+      <OverlayExclusionProvider
+        registerExclusionElement={() => vi.fn()}
+        exclusionRects={{}}
+      >
+        <TopHeaderMobile {...createProps(overrides)} />
+      </OverlayExclusionProvider>
+    </CommandDispatchProvider>,
   )
 }
 
