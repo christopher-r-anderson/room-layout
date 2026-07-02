@@ -13,7 +13,9 @@ import { SelectedDetailsPanel } from '@/features/selection/selected-details-pane
 import { FloatingSelectedItemSite } from '@/features/selection/floating-selected-item-site'
 import { SelectedItemToolbar } from '@/features/selection/selected-item-toolbar'
 import { SelectedDetailsPlaceholder } from '@/features/selection/selected-details-view'
-import { TopHeader } from './top-header/top-header'
+import { TopHeaderDesktop } from './top-header/top-header-desktop'
+import { TopHeaderMobile } from './top-header/top-header-mobile'
+import { TopHeaderDialogs } from './top-header/top-header-dialogs'
 import { useExclusionRegistry } from '@/shared/layout/overlay-exclusion-context'
 import { useHeaderLayoutMode } from '@/shared/layout/use-header-layout-mode'
 import { useDialogOpen } from '@/core/stores/dialog-store'
@@ -35,7 +37,7 @@ export function EditorOverlay() {
         className="pointer-events-none fixed inset-2 flex flex-col justify-between gap-2"
         inert={startupOverlayActive}
       >
-        <TopHeader />
+        {isDesktop ? <TopHeaderDesktop /> : <TopHeaderMobile />}
 
         {isDesktop && <FloatingSelectedItemSite />}
 
@@ -82,6 +84,7 @@ export function EditorOverlay() {
           </div>
         </div>
       </div>
+      <TopHeaderDialogs />
       <DeleteConfirmationDialogHost />
       <InitializationProgress />
       {assetError ? (
