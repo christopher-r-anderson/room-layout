@@ -16,7 +16,8 @@ import {
   useDialogOpen,
   useIsBlockingOverlayOpen,
 } from '@/core/stores/dialog-store'
-import { DIALOG_IDS } from '@/app/dialogs/dialog-registry'
+import { roomSurfaceDialogId } from '@/features/room-surface/room-surface-dialog-definition'
+import { headerMoreActionsDialogId } from './header-more-actions-dialog-definition'
 import { useHistoryAvailability } from '@/core/stores/scene-document-store'
 import { topHeaderFocusRegistry } from './top-header-focus'
 import { TopHeaderSurface } from './top-header-surface'
@@ -26,8 +27,8 @@ export function TopHeaderMobile() {
   const { t } = useLingui()
   const registerExclusionElement = useExclusionRegistry()
   const history = useHistoryAvailability()
-  const isRoomSurfaceOpen = useDialogOpen(DIALOG_IDS.roomSurface)
-  const isHeaderMoreActionsOpen = useDialogOpen(DIALOG_IDS.headerMoreActions)
+  const isRoomSurfaceOpen = useDialogOpen(roomSurfaceDialogId)
+  const isHeaderMoreActionsOpen = useDialogOpen(headerMoreActionsDialogId)
   const blockingOverlayOpen = useIsBlockingOverlayOpen()
 
   return (
@@ -59,7 +60,7 @@ export function TopHeaderMobile() {
                     aria-haspopup="dialog"
                     onClick={() => {
                       dialogActions.setDialogOpen(
-                        DIALOG_IDS.roomSurface,
+                        roomSurfaceDialogId,
                         !isRoomSurfaceOpen,
                       )
                     }}
@@ -98,7 +99,7 @@ export function TopHeaderMobile() {
                     aria-expanded={isHeaderMoreActionsOpen}
                     aria-haspopup="dialog"
                     onClick={() => {
-                      dialogActions.openDialog(DIALOG_IDS.headerMoreActions)
+                      dialogActions.openDialog(headerMoreActionsDialogId)
                     }}
                   >
                     <IconDotsVertical aria-hidden="true" />
@@ -117,7 +118,7 @@ export function TopHeaderMobile() {
         ref={registerExclusionElement('room-surface')}
         open={isRoomSurfaceOpen}
         onOpenChange={(open) =>
-          dialogActions.setDialogOpen(DIALOG_IDS.roomSurface, open)
+          dialogActions.setDialogOpen(roomSurfaceDialogId, open)
         }
         onCloseAutoFocus={() => {
           topHeaderFocusRegistry.focus('top-header-room')

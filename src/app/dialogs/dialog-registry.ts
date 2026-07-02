@@ -7,36 +7,15 @@ import { roomSurfaceDialogDefinition } from '@/features/room-surface/room-surfac
 import { deleteDialogDefinition } from '@/features/selection/delete-dialog-definition'
 import { startOverDialogDefinition } from '@/features/startup/start-over-dialog-definition'
 
-const dialogDefinitions = {
-  catalog: catalogDialogDefinition,
-  delete: deleteDialogDefinition,
-  roomSurface: roomSurfaceDialogDefinition,
-  keyboardShortcuts: keyboardShortcutsDialogDefinition,
-  projectInfo: projectInfoDialogDefinition,
-  headerMoreActions: headerMoreActionsDialogDefinition,
-  startOver: startOverDialogDefinition,
-} as const satisfies Record<string, DialogDefinition>
-
-type AppDialogDefinition =
-  (typeof dialogDefinitions)[keyof typeof dialogDefinitions]
-
-export const DIALOG_DEFINITIONS = Object.values(
-  dialogDefinitions,
-) as AppDialogDefinition[]
-
-function deriveDialogIds<TDefinitions extends Record<string, { id: string }>>(
-  definitions: TDefinitions,
-): {
-  [K in keyof TDefinitions]: TDefinitions[K]['id']
-} {
-  return Object.fromEntries(
-    Object.entries(definitions).map(([key, definition]) => [
-      key,
-      definition.id,
-    ]),
-  ) as {
-    [K in keyof TDefinitions]: TDefinitions[K]['id']
-  }
-}
-
-export const DIALOG_IDS = deriveDialogIds(dialogDefinitions)
+// The dialogs registered in the store at startup. Each dialog's id lives on its
+// own definition (and its exported id constant); this is only the membership
+// list, so consumers reference ids via those constants, not through here.
+export const DIALOG_DEFINITIONS: DialogDefinition[] = [
+  catalogDialogDefinition,
+  deleteDialogDefinition,
+  roomSurfaceDialogDefinition,
+  keyboardShortcutsDialogDefinition,
+  projectInfoDialogDefinition,
+  headerMoreActionsDialogDefinition,
+  startOverDialogDefinition,
+]

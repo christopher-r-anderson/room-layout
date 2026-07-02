@@ -7,7 +7,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { FurnitureItem } from '@/domain/furniture'
 import { TooltipProvider } from '@/shared/ui/tooltip'
 import { createHistoryState } from '@/shared/lib/ui/editor-history'
-import { DIALOG_IDS } from '@/app/dialogs/dialog-registry'
+import { catalogDialogId } from '@/features/catalog/catalog-dialog-definition'
+import { roomSurfaceDialogId } from '@/features/room-surface/room-surface-dialog-definition'
 import { resetDialogStore } from '@/core/stores/dialog-store'
 import { dialogActions } from '@/core/stores/dialog-store'
 import {
@@ -198,11 +199,11 @@ beforeEach(() => {
   })
   dialogActions.registerDialogDefinitions([
     {
-      id: DIALOG_IDS.catalog,
+      id: catalogDialogId,
       kind: 'blocking',
     },
     {
-      id: DIALOG_IDS.roomSurface,
+      id: roomSurfaceDialogId,
       kind: 'non-blocking',
       canOpen: (context) => context.isDialogsEnabled(),
     },

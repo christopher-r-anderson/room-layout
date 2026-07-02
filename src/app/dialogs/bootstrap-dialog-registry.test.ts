@@ -15,7 +15,8 @@ import {
   sceneDocumentActions,
 } from '@/core/stores/scene-document-store'
 import { createHistoryState } from '@/shared/lib/ui/editor-history'
-import { DIALOG_IDS } from '@/app/dialogs/dialog-registry'
+import { DIALOG_DEFINITIONS } from '@/app/dialogs/dialog-registry'
+import { catalogDialogId } from '@/features/catalog/catalog-dialog-definition'
 import { CHAIR } from '@/test/support/furniture'
 import {
   bootstrapDialogRegistry,
@@ -41,9 +42,9 @@ describe('bootstrapDialogRegistry', () => {
     bootstrapDialogRegistry(createContext())
 
     expect(Object.keys(dialogStoreForTests.getState().registry).sort()).toEqual(
-      [...Object.values(DIALOG_IDS)].sort(),
+      DIALOG_DEFINITIONS.map((definition) => definition.id).sort(),
     )
-    expect(dialogActions.openDialog(DIALOG_IDS.catalog)).toBe(true)
+    expect(dialogActions.openDialog(catalogDialogId)).toBe(true)
   })
 
   it('is idempotent and does not duplicate registrations', () => {
@@ -58,7 +59,7 @@ describe('bootstrapDialogRegistry', () => {
     )
 
     expect(secondRegistryKeys).toEqual(firstRegistryKeys)
-    expect(secondRegistryKeys).toHaveLength(Object.values(DIALOG_IDS).length)
+    expect(secondRegistryKeys).toHaveLength(DIALOG_DEFINITIONS.length)
   })
 })
 

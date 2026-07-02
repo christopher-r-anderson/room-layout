@@ -1,6 +1,6 @@
 import type { DialogDefinition } from '@/core/dialog-contract'
 
-const roomSurfaceDialogId = 'room-surface' as const
+export const roomSurfaceDialogId = 'room-surface' as const
 
 export const roomSurfaceDialogDefinition = {
   id: roomSurfaceDialogId,

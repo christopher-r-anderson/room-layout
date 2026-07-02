@@ -10,7 +10,9 @@ import { RoomSidebar } from '@/features/room-surface/room-sidebar'
 import { StartOverButton } from './start-over-button'
 import { ShareSceneButton } from './share-scene-button'
 import { dialogActions, useDialogOpen } from '@/core/stores/dialog-store'
-import { DIALOG_IDS } from '@/app/dialogs/dialog-registry'
+import { roomSurfaceDialogId } from '@/features/room-surface/room-surface-dialog-definition'
+import { keyboardShortcutsDialogId } from '@/features/keyboard/keyboard-shortcuts-dialog-definition'
+import { projectInfoDialogId } from '@/features/project-info/project-info-dialog-definition'
 import { useHistoryAvailability } from '@/core/stores/scene-document-store'
 import { useSceneIsAtDefaults } from '@/core/operations/use-scene-is-at-defaults'
 import { topHeaderFocusRegistry } from './top-header-focus'
@@ -22,9 +24,9 @@ export function TopHeaderDesktop() {
   const registerExclusionElement = useExclusionRegistry()
   const history = useHistoryAvailability()
   const startOverDisabled = useSceneIsAtDefaults()
-  const isRoomSurfaceOpen = useDialogOpen(DIALOG_IDS.roomSurface)
-  const isKeyboardShortcutsOpen = useDialogOpen(DIALOG_IDS.keyboardShortcuts)
-  const isProjectInfoOpen = useDialogOpen(DIALOG_IDS.projectInfo)
+  const isRoomSurfaceOpen = useDialogOpen(roomSurfaceDialogId)
+  const isKeyboardShortcutsOpen = useDialogOpen(keyboardShortcutsDialogId)
+  const isProjectInfoOpen = useDialogOpen(projectInfoDialogId)
 
   return (
     <>
@@ -53,7 +55,7 @@ export function TopHeaderDesktop() {
                       aria-expanded={isRoomSurfaceOpen}
                       onClick={() => {
                         dialogActions.setDialogOpen(
-                          DIALOG_IDS.roomSurface,
+                          roomSurfaceDialogId,
                           !isRoomSurfaceOpen,
                         )
                       }}
@@ -63,10 +65,7 @@ export function TopHeaderDesktop() {
                         }
 
                         event.preventDefault()
-                        dialogActions.setDialogOpen(
-                          DIALOG_IDS.roomSurface,
-                          false,
-                        )
+                        dialogActions.setDialogOpen(roomSurfaceDialogId, false)
                       }}
                     >
                       <IconHomeCog size={16} aria-hidden="true" />
@@ -111,10 +110,7 @@ export function TopHeaderDesktop() {
                       aria-expanded={isKeyboardShortcutsOpen}
                       aria-label={t`Keyboard shortcuts`}
                       onClick={() => {
-                        dialogActions.setDialogOpen(
-                          DIALOG_IDS.keyboardShortcuts,
-                          true,
-                        )
+                        dialogActions.openDialog(keyboardShortcutsDialogId)
                       }}
                     >
                       <IconKeyboard aria-hidden="true" />
@@ -144,10 +140,7 @@ export function TopHeaderDesktop() {
                       aria-expanded={isProjectInfoOpen}
                       aria-label={t`Open project and asset info`}
                       onClick={() => {
-                        dialogActions.setDialogOpen(
-                          DIALOG_IDS.projectInfo,
-                          true,
-                        )
+                        dialogActions.openDialog(projectInfoDialogId)
                       }}
                     >
                       <IconInfoCircle aria-hidden="true" />
@@ -173,7 +166,7 @@ export function TopHeaderDesktop() {
         ref={registerExclusionElement('room-surface')}
         open={isRoomSurfaceOpen}
         onClose={() => {
-          dialogActions.setDialogOpen(DIALOG_IDS.roomSurface, false)
+          dialogActions.setDialogOpen(roomSurfaceDialogId, false)
           topHeaderFocusRegistry.focus('top-header-room')
         }}
       />

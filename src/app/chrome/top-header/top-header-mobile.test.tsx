@@ -5,7 +5,8 @@ import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { TopHeaderMobile } from './top-header-mobile'
 import { dialogActions, resetDialogStore } from '@/core/stores/dialog-store'
-import { DIALOG_DEFINITIONS, DIALOG_IDS } from '@/app/dialogs/dialog-registry'
+import { DIALOG_DEFINITIONS } from '@/app/dialogs/dialog-registry'
+import { headerMoreActionsDialogId } from './header-more-actions-dialog-definition'
 import { CommandDispatchProvider } from '@/core/commands/command-dispatch-provider'
 import { OverlayExclusionProvider } from '@/shared/layout/overlay-exclusion-provider'
 
@@ -46,7 +47,7 @@ function openMoreActionsDialog() {
     getSelectedFurniture: () => null,
     canStartOver: () => false,
   })
-  dialogActions.setDialogOpen(DIALOG_IDS.headerMoreActions, true)
+  dialogActions.openDialog(headerMoreActionsDialogId)
 }
 
 function renderMobileHeader() {
@@ -104,7 +105,7 @@ describe('TopHeaderMobile', () => {
 
     await user.click(trigger)
 
-    expect(openDialog).toHaveBeenCalledWith(DIALOG_IDS.headerMoreActions)
+    expect(openDialog).toHaveBeenCalledWith(headerMoreActionsDialogId)
 
     openDialog.mockRestore()
   })

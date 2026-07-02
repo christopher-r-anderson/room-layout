@@ -4,7 +4,10 @@ import { ProjectInfoDialog } from '@/features/project-info/project-info-dialog'
 import { StartOverConfirmationDialog } from '@/features/startup/start-over-confirmation-dialog'
 import { confirmStartOver } from '@/features/startup/start-over-actions'
 import { dialogActions, useDialogOpen } from '@/core/stores/dialog-store'
-import { DIALOG_IDS } from '@/app/dialogs/dialog-registry'
+import { keyboardShortcutsDialogId } from '@/features/keyboard/keyboard-shortcuts-dialog-definition'
+import { projectInfoDialogId } from '@/features/project-info/project-info-dialog-definition'
+import { startOverDialogId } from '@/features/startup/start-over-dialog-definition'
+import { headerMoreActionsDialogId } from './header-more-actions-dialog-definition'
 import { useHeaderLayoutMode } from '@/shared/layout/use-header-layout-mode'
 import { topHeaderFocusRegistry } from './top-header-focus'
 
@@ -16,17 +19,17 @@ import { topHeaderFocusRegistry } from './top-header-focus'
  */
 export function TopHeaderDialogs() {
   const layoutMode = useHeaderLayoutMode()
-  const isKeyboardShortcutsOpen = useDialogOpen(DIALOG_IDS.keyboardShortcuts)
-  const isProjectInfoOpen = useDialogOpen(DIALOG_IDS.projectInfo)
-  const isStartOverOpen = useDialogOpen(DIALOG_IDS.startOver)
-  const isHeaderMoreActionsOpen = useDialogOpen(DIALOG_IDS.headerMoreActions)
+  const isKeyboardShortcutsOpen = useDialogOpen(keyboardShortcutsDialogId)
+  const isProjectInfoOpen = useDialogOpen(projectInfoDialogId)
+  const isStartOverOpen = useDialogOpen(startOverDialogId)
+  const isHeaderMoreActionsOpen = useDialogOpen(headerMoreActionsDialogId)
 
   // More actions is mobile-only and blocking. It has no desktop equivalent, so
   // if the viewport widens while it is open we close it to avoid leaving the
   // blocking-overlay state active with no surface able to dismiss it.
   useEffect(() => {
     if (layoutMode === 'desktop' && isHeaderMoreActionsOpen) {
-      dialogActions.setDialogOpen(DIALOG_IDS.headerMoreActions, false)
+      dialogActions.setDialogOpen(headerMoreActionsDialogId, false)
     }
   }, [layoutMode, isHeaderMoreActionsOpen])
 
@@ -41,7 +44,7 @@ export function TopHeaderDialogs() {
       <KeyboardShortcutsDialog
         open={isKeyboardShortcutsOpen}
         onOpenChange={(open) => {
-          dialogActions.setDialogOpen(DIALOG_IDS.keyboardShortcuts, open)
+          dialogActions.setDialogOpen(keyboardShortcutsDialogId, open)
 
           if (!open) {
             returnFocusToMoreActionsOnMobile()
@@ -52,7 +55,7 @@ export function TopHeaderDialogs() {
       <ProjectInfoDialog
         open={isProjectInfoOpen}
         onOpenChange={(open) => {
-          dialogActions.setDialogOpen(DIALOG_IDS.projectInfo, open)
+          dialogActions.setDialogOpen(projectInfoDialogId, open)
 
           if (!open) {
             returnFocusToMoreActionsOnMobile()
