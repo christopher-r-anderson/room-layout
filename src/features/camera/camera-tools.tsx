@@ -1,3 +1,4 @@
+import type { Ref } from 'react'
 import { Toolbar } from '@base-ui/react/toolbar'
 import { Trans, useLingui } from '@lingui/react/macro'
 import {
@@ -17,11 +18,15 @@ import { useCommandDispatch } from '@/core/commands/command-dispatch-context'
 export interface CameraToolsProps {
   hasSelection: boolean
   displayLabels?: boolean
+  ref?: Ref<HTMLDivElement>
+  className?: string
 }
 
 export function CameraTools({
   hasSelection,
   displayLabels = true,
+  ref,
+  className,
 }: CameraToolsProps) {
   const { t } = useLingui()
   const dispatch = useCommandDispatch()
@@ -31,7 +36,11 @@ export function CameraTools({
   const buttonClass = 'flex-row-reverse sm:justify-between'
 
   return (
-    <Surface padding="snug" className="flex flex-col gap-1.5">
+    <Surface
+      ref={ref}
+      padding="snug"
+      className={cn('flex flex-col gap-1.5', className)}
+    >
       <Caption className={cn('flex items-center gap-1 px-2', buttonClass)}>
         <IconCamera className="size-3.5" aria-hidden="true" />
         {displayLabels ? (

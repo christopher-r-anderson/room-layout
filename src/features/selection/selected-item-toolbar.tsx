@@ -5,6 +5,7 @@ import { useEditorRefs } from '@/shared/providers/editor-refs-context'
 import { useSelectedItemInteraction } from './selected-item-interaction-context'
 import { SelectedItemTools } from './selected-item-tools'
 import { Surface } from '@/shared/ui/surface'
+import { cn } from '@/shared/lib/utils'
 
 /**
  * The connected selected-item action toolbar (rotate + delete). It owns the
@@ -12,7 +13,7 @@ import { Surface } from '@/shared/ui/surface'
  * Callers decide where it sits: desktop floats it near the object, mobile docks
  * it above the details panel.
  */
-export function SelectedItemToolbar() {
+export function SelectedItemToolbar({ className }: { className?: string }) {
   const interaction = useSelectedItemInteraction()
   const selectedFurniture = useSelectedFurniture()
   const dispatch = useCommandDispatch()
@@ -48,7 +49,7 @@ export function SelectedItemToolbar() {
       ref={selectedToolbarRef}
       padding="snug"
       data-slot="selected-item-toolbar"
-      className="pointer-events-auto"
+      className={cn('pointer-events-auto', className)}
       onKeyDown={handleEscapeToRoomView}
     >
       <SelectedItemTools

@@ -1,4 +1,11 @@
-import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
+import {
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type Ref,
+} from 'react'
 import {
   Card,
   CardAction,
@@ -41,7 +48,13 @@ function loadStoredExpandedState() {
   return loadBooleanPreference(OUTLINER_EXPANDED_PREFERENCE_KEY, true)
 }
 
-export function Outliner() {
+export function Outliner({
+  ref,
+  className,
+}: {
+  ref?: Ref<HTMLElement>
+  className?: string
+}) {
   const { t } = useLingui()
   const items = useItems()
   const selectedId = useSceneDocumentStore((state) => state.selectedId)
@@ -114,7 +127,19 @@ export function Outliner() {
   }, [disabled, focusRequest, isExpanded, items])
 
   return (
-    <section ref={containerRef} aria-labelledby={headingId} tabIndex={-1}>
+    <section
+      ref={(node) => {
+        containerRef.current = node
+        if (typeof ref === 'function') {
+          ref(node)
+        } else if (ref) {
+          ref.current = node
+        }
+      }}
+      className={className}
+      aria-labelledby={headingId}
+      tabIndex={-1}
+    >
       <Card size="sm" variant="overlay" className="w-full">
         <Collapsible
           open={isExpanded}

@@ -1,4 +1,4 @@
-import { useId, useState, type Ref } from 'react'
+import { useId, useState, type ComponentProps, type Ref } from 'react'
 import { Trans, useLingui } from '@lingui/react/macro'
 import type {
   SelectedItemDetailField,
@@ -76,11 +76,11 @@ function createDrafts(item: FurnitureItem) {
 
 export function SelectedDetailsPlaceholder({
   className,
-}: {
-  className?: string
-}) {
+  ...props
+}: ComponentProps<'p'>) {
   return (
     <p
+      {...props}
       className={cn(
         'rounded-md border border-border/70 bg-background/90 px-3 py-2 text-xs/relaxed text-muted-foreground shadow-sm',
         className,
