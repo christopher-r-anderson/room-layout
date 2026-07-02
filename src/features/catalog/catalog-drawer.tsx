@@ -16,7 +16,7 @@ import { cn } from '@/shared/lib/utils'
 import { useDialogOpen } from '@/core/stores/dialog-store'
 import { useCatalogEntries } from '@/core/stores/assets-store'
 import { addFurniture, setCatalogDrawerOpen } from './catalog-actions'
-import { catalogDialogId } from './catalog-dialog-definition'
+import { CATALOG_DIALOG_ID } from './catalog-dialog-definition'
 import {
   catalogSelectionActions,
   useActiveCatalogId,
@@ -37,7 +37,7 @@ export function CatalogDrawer({
   }
 
   const catalogIdToAdd = useActiveCatalogId()
-  const open = useDialogOpen(catalogDialogId)
+  const open = useDialogOpen(CATALOG_DIALOG_ID)
 
   return (
     <Drawer open={open} onOpenChange={setCatalogDrawerOpen} autoFocus>

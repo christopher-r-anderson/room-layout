@@ -19,7 +19,7 @@ import { TopHeaderDialogs } from './top-header/top-header-dialogs'
 import { useExclusionRegistry } from '@/shared/layout/overlay-exclusion-context'
 import { useHeaderLayoutMode } from '@/shared/layout/use-header-layout-mode'
 import { useDialogOpen } from '@/core/stores/dialog-store'
-import { DIALOG_IDS } from '@/app/dialogs/dialog-registry'
+import { ROOM_SURFACE_DIALOG_ID } from '@/features/room-surface/room-surface-dialog-definition'
 import { cn } from '@/shared/lib/utils'
 
 export function EditorOverlay() {
@@ -27,7 +27,7 @@ export function EditorOverlay() {
   const hasSelection = useHasSelection()
   const assetError = useAssetError()
   const startupOverlayActive = useStartupOverlayActive()
-  const isRoomSurfaceOpen = useDialogOpen(DIALOG_IDS.roomSurface)
+  const isRoomSurfaceOpen = useDialogOpen(ROOM_SURFACE_DIALOG_ID)
   const layoutMode = useHeaderLayoutMode()
   const isDesktop = layoutMode === 'desktop'
 

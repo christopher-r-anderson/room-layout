@@ -11,7 +11,7 @@ import {
 import { selectionEffects } from '@/core/operations/selection-effects'
 import { sceneCommands } from '@/scene/scene-commands'
 import { DELETE_SELECTION_MISSING_MESSAGE } from '@/shared/messages/command-messages'
-import { deleteDialogId } from './delete-dialog-definition'
+import { DELETE_DIALOG_ID } from './delete-dialog-definition'
 
 export function confirmDeleteSelection(
   pendingDeleteFurniture: FurnitureItem | null,
@@ -71,7 +71,7 @@ export function confirmDeleteSelection(
 }
 
 export function openDeleteDialog(returnFocusTo: 'room-view' | 'outliner') {
-  const opened = dialogActions.openDialog(deleteDialogId)
+  const opened = dialogActions.openDialog(DELETE_DIALOG_ID)
 
   if (opened) {
     selectionEffects.notePostDeleteFocusTarget(returnFocusTo)

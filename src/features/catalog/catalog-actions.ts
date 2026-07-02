@@ -8,7 +8,7 @@ import {
   ADD_FURNITURE_NO_SPACE_MESSAGE,
   ADD_FURNITURE_UNKNOWN_CATALOG_MESSAGE,
 } from '@/shared/messages/command-messages'
-import { catalogDialogId } from './catalog-dialog-definition'
+import { CATALOG_DIALOG_ID } from './catalog-dialog-definition'
 import { getActiveCatalogId } from './catalog-selection-store'
 
 export function addFurniture(): boolean {
@@ -47,7 +47,7 @@ export function addFurniture(): boolean {
 }
 
 export function setCatalogDrawerOpen(open: boolean) {
-  const changed = dialogActions.setDialogOpen(catalogDialogId, open)
+  const changed = dialogActions.setDialogOpen(CATALOG_DIALOG_ID, open)
 
   if (open && changed) {
     feedbackActions.clearStatusMessage()

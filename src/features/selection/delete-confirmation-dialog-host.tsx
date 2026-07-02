@@ -4,7 +4,7 @@ import {
   useDialogPayload,
 } from '@/core/stores/dialog-store'
 import type { FurnitureItem } from '@/domain/furniture'
-import { deleteDialogId } from './delete-dialog-definition'
+import { DELETE_DIALOG_ID } from './delete-dialog-definition'
 import { DeleteConfirmationDialog } from './delete-confirmation-dialog'
 import { confirmDeleteSelection } from './deletion-actions'
 
@@ -14,9 +14,9 @@ import { confirmDeleteSelection } from './deletion-actions'
  * belongs to, rather than in the app chrome.
  */
 export function DeleteConfirmationDialogHost() {
-  const open = useDialogOpen(deleteDialogId)
+  const open = useDialogOpen(DELETE_DIALOG_ID)
   const pendingDeleteFurniture = useDialogPayload(
-    deleteDialogId,
+    DELETE_DIALOG_ID,
   ) as FurnitureItem | null
 
   return (

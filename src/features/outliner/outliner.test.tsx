@@ -8,7 +8,7 @@ import {
   loadBooleanPreference,
   saveBooleanPreference,
 } from '@/shared/lib/ui/storage'
-import { DIALOG_IDS } from '@/app/dialogs/dialog-registry'
+import { DELETE_DIALOG_ID } from '@/features/selection/delete-dialog-definition'
 import { dialogActions, resetDialogStore } from '@/core/stores/dialog-store'
 import {
   editorLifecycleActions,
@@ -93,7 +93,7 @@ describe('SceneOutliner', () => {
       canStartOver: () => true,
     })
     dialogActions.registerDialogDefinition({
-      id: DIALOG_IDS.delete,
+      id: DELETE_DIALOG_ID,
       kind: 'blocking',
       canOpen: (context) => context.getSelectedFurniture() !== null,
     })
@@ -291,7 +291,7 @@ describe('SceneOutliner', () => {
 
     it('does not preview while a blocking dialog is open', async () => {
       const user = userEvent.setup()
-      dialogActions.openDialog(DIALOG_IDS.delete)
+      dialogActions.openDialog(DELETE_DIALOG_ID)
 
       renderOutliner()
       const button = screen.getByRole('button', { name: /leather couch/i })

@@ -1,9 +1,9 @@
 import type { DialogDefinition } from '@/core/dialog-contract'
 
-export const catalogDialogId = 'catalog' as const
+export const CATALOG_DIALOG_ID = 'catalog' as const
 
 export const catalogDialogDefinition = {
-  id: catalogDialogId,
+  id: CATALOG_DIALOG_ID,
   kind: 'blocking',
   canOpen: (context) => context.isDialogsEnabled(),
 } satisfies DialogDefinition
