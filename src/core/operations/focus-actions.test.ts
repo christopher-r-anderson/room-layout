@@ -112,7 +112,7 @@ describe('startOutlinerFocusReconciler', () => {
       focusContainer: true,
     })
 
-    dialogActions.openDialog('room-surface', { payload: { layout: 'desktop' } })
+    dialogActions.openDialog('room-surface')
 
     expect(selectionFocusStore.getState().outlinerFocusRequest).not.toBeNull()
   })

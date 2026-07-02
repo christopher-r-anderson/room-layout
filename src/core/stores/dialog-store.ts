@@ -6,7 +6,6 @@ import type {
   DialogDefinition,
   DialogId,
   DialogKind,
-  DialogOpenRequest,
   DialogRuntimeContext,
 } from '../dialog-contract'
 
@@ -23,12 +22,8 @@ interface DialogStoreState {
   configureRuntimeContext: (context: DialogRuntimeContext) => void
   registerDialogDefinition: (definition: DialogDefinition) => void
   registerDialogDefinitions: (definitions: DialogDefinition[]) => void
-  openDialog: (id: DialogId, request?: DialogOpenRequest) => boolean
-  setDialogOpen: (
-    id: DialogId,
-    open: boolean,
-    request?: DialogOpenRequest,
-  ) => boolean
+  openDialog: (id: DialogId) => boolean
+  setDialogOpen: (id: DialogId, open: boolean) => boolean
   closeActiveDialog: () => void
   isDialogOpen: (id: DialogId) => boolean
   reset: () => void
@@ -48,11 +43,8 @@ function getInitialDialogStoreState(): Pick<
 function resolveActiveSurface(
   definition: DialogDefinition,
   context: DialogRuntimeContext,
-  request?: DialogOpenRequest,
 ): ActiveSurfaceState {
-  const payload = definition.getPayload
-    ? definition.getPayload(context, request)
-    : (request?.payload ?? null)
+  const payload = definition.getPayload ? definition.getPayload(context) : null
 
   return {
     id: definition.id,
@@ -118,7 +110,7 @@ function createDialogStore() {
           }
         })
       },
-      openDialog: (id, request) => {
+      openDialog: (id) => {
         const state = get()
         const definition = state.registry[id]
         const context = state.runtimeContext
@@ -132,15 +124,11 @@ function createDialogStore() {
           return false
         }
 
-        if (definition.canOpen && !definition.canOpen(context, request)) {
+        if (definition.canOpen && !definition.canOpen(context)) {
           return false
         }
 
-        const nextActiveSurface = resolveActiveSurface(
-          definition,
-          context,
-          request,
-        )
+        const nextActiveSurface = resolveActiveSurface(definition, context)
 
         set((currentState) => ({
           ...currentState,
@@ -149,7 +137,7 @@ function createDialogStore() {
 
         return true
       },
-      setDialogOpen: (id, open, request) => {
+      setDialogOpen: (id, open) => {
         if (!open) {
           set((state) => {
             if (state.activeSurface?.id !== id) {
@@ -164,7 +152,7 @@ function createDialogStore() {
           return true
         }
 
-        return get().openDialog(id, request)
+        return get().openDialog(id)
       },
       closeActiveDialog: () => {
         set((state) => {
@@ -210,11 +198,11 @@ export const dialogActions = {
   registerDialogDefinitions: (definitions: DialogDefinition[]) => {
     dialogStore.getState().registerDialogDefinitions(definitions)
   },
-  openDialog: (id: DialogId, request?: DialogOpenRequest) => {
-    return dialogStore.getState().openDialog(id, request)
+  openDialog: (id: DialogId) => {
+    return dialogStore.getState().openDialog(id)
   },
-  setDialogOpen: (id: DialogId, open: boolean, request?: DialogOpenRequest) => {
-    return dialogStore.getState().setDialogOpen(id, open, request)
+  setDialogOpen: (id: DialogId, open: boolean) => {
+    return dialogStore.getState().setDialogOpen(id, open)
   },
   closeActiveDialog: () => {
     dialogStore.getState().closeActiveDialog()
