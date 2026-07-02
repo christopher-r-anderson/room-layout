@@ -432,6 +432,10 @@ msgstr "Nudge selected item (0.5 m)"
 msgid "Open project and asset info"
 msgstr "Open project and asset info"
 
+#: src/shared/ui/keyboard-shortcut-display.tsx
+msgid "or"
+msgstr "or"
+
 #: src/features/keyboard/keyboard-shortcuts.definitions.ts
 msgid "Orbit camera"
 msgstr "Orbit camera"

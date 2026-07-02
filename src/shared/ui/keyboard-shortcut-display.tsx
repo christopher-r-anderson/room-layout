@@ -1,3 +1,4 @@
+import { Trans } from '@lingui/react/macro'
 import { parseAriaShortcuts } from '@/shared/lib/utils'
 import React from 'react'
 import { Kbd, KbdGroup } from './kbd'
@@ -28,7 +29,12 @@ export function KbdShortcutDisplay({
 
         return (
           <React.Fragment key={sIndex}>
-            {sIndex > 0 && <span> or </span>}
+            {sIndex > 0 && (
+              <span>
+                {' '}
+                <Trans>or</Trans>{' '}
+              </span>
+            )}
             {shortcutElement}
           </React.Fragment>
         )
