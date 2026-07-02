@@ -4,17 +4,14 @@ import { cn } from '@/shared/lib/utils'
 import { useStatusMessage } from '@/core/stores/feedback-store'
 
 export function StatusMessage({
-  message,
   ref,
   className,
 }: {
-  message?: string | null
   ref?: Ref<HTMLParagraphElement>
   className?: string
 }) {
   const { t } = useLingui()
-  const storeMessage = useStatusMessage()
-  const resolvedMessage = message === undefined ? storeMessage : message
+  const resolvedMessage = useStatusMessage()
 
   return (
     <p

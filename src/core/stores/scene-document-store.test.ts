@@ -22,7 +22,6 @@ import {
   useHasSelection,
   useHistoryAvailability,
   useItems,
-  useItemIds,
   useLightingMoodId,
   useSelectedId,
   useSelectedFurniture,
@@ -181,23 +180,6 @@ describe('sceneDocumentStore', () => {
 
     expect(sceneDocumentStore.getState().selectedId).toBeNull()
     expect(sceneDocumentStore.getState().previewedIdRaw).toBeNull()
-  })
-
-  it('returns stable item ids until the id list changes', () => {
-    const items = [FURNITURE_ITEM]
-    const { result } = renderHook(() => useItemIds())
-
-    act(() => {
-      seedSceneItems(items, { selectedId: FURNITURE_ITEM.id })
-    })
-
-    const initialIds = result.current
-
-    act(() => {
-      seedSceneItems(items, { selectedId: FURNITURE_ITEM.id })
-    })
-
-    expect(result.current).toBe(initialIds)
   })
 
   it('reconciles removed preview ids from the backing scene items', () => {

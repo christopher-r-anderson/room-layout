@@ -22,7 +22,6 @@ export type EditorCommand =
   | { kind: 'focus-selected' }
   | { kind: 'canvas-select-previewed' }
   | { kind: 'clear-selection' }
-  | { kind: 'share' }
   | { kind: 'set-camera-preset'; preset: CameraPreset }
   | { kind: 'move-selection'; delta: MoveSelectionDelta }
   | { kind: 'rotate-selection'; direction: RotationDirection }

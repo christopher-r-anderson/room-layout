@@ -22,7 +22,6 @@ function createMockHandlers(): EditorCommandHandlers {
     'set-camera-preset': vi.fn(),
     'canvas-browse': vi.fn(),
     'canvas-select-previewed': vi.fn(),
-    share: vi.fn(),
   }
 }
 
@@ -38,7 +37,6 @@ describe('runEditorCommand', () => {
     { kind: 'focus-selected' },
     { kind: 'canvas-select-previewed' },
     { kind: 'clear-selection' },
-    { kind: 'share' },
     { kind: 'set-camera-preset', preset: 'side' },
     { kind: 'move-selection', delta: { x: -1, z: 0 } },
     { kind: 'rotate-selection', direction: -1 },

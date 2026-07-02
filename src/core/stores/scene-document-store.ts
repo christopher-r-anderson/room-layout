@@ -51,16 +51,6 @@ function areHistoryAvailabilityEqual(
   return left.canUndo === right.canUndo && left.canRedo === right.canRedo
 }
 
-function areStringArraysEqual(
-  left: readonly string[],
-  right: readonly string[],
-) {
-  return (
-    left.length === right.length &&
-    left.every((value, index) => value === right[index])
-  )
-}
-
 function getInitialSceneDocument() {
   return {
     history: createHistoryState<FurnitureItem[]>([]),
@@ -317,11 +307,6 @@ export const useLightingMoodId = () =>
   useSceneDocumentStore((state) => state.lightingMoodId)
 export const useFloorFinishLoading = () =>
   useSceneDocumentStore((state) => state.floorFinishLoading)
-export const useItemIds = () =>
-  useSceneDocumentStore(
-    (state) => state.history.present.map((item) => item.id),
-    areStringArraysEqual,
-  )
 export const useSelectedFurniture = () =>
   useSceneDocumentStore(selectSelectedFurniture)
 

@@ -169,14 +169,8 @@ export function isEditorInteractive() {
   return editorLifecycleStore.getState().startupPhase === 'ready'
 }
 
-export const useStartupPhase = () =>
-  useEditorLifecycleStore((state) => state.startupPhase)
 export const useAssetError = () =>
   useEditorLifecycleStore((state) => state.assetError)
-export const useRestoreOutcome = () =>
-  useEditorLifecycleStore((state) => state.restoreOutcome)
-export const useRestoreAttemptCount = () =>
-  useEditorLifecycleStore((state) => state.restoreAttemptCount)
 export const useSceneEpoch = () =>
   useEditorLifecycleStore((state) => state.sceneEpoch)
 export const useRetryToken = () =>

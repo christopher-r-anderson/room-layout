@@ -11,7 +11,6 @@ import {
 } from '@/core/operations/view-actions'
 import { openDeleteDialog } from '@/features/selection/deletion-actions'
 import { startOverIntent } from '@/features/startup/start-over-actions'
-import { shareScene } from '@/core/operations/share-scene'
 import {
   browseCanvasPreview,
   selectCanvasPreviewed,
@@ -57,8 +56,5 @@ export function useEditorCommandHandlers(): EditorCommandHandlers {
       browseCanvasPreview(command.direction)
     },
     'canvas-select-previewed': selectCanvasPreviewed,
-    share: () => {
-      void shareScene()
-    },
   }
 }

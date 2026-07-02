@@ -8,13 +8,10 @@ import {
   resetEditorLifecycleStore,
   useAssetError,
   useEditorInteractionsEnabled,
-  useRestoreAttemptCount,
-  useRestoreOutcome,
   useRetryToken,
   useSceneEpoch,
   useStartupLoadingActive,
   useStartupOverlayActive,
-  useStartupPhase,
 } from './editor-lifecycle-store'
 
 beforeEach(() => {
@@ -89,38 +86,27 @@ describe('editorLifecycleStore', () => {
   })
 
   it('exposes derived selectors for startup gating', () => {
-    const { result: phase } = renderHook(() => useStartupPhase())
     const { result: loading } = renderHook(() => useStartupLoadingActive())
     const { result: overlay } = renderHook(() => useStartupOverlayActive())
     const { result: enabled } = renderHook(() => useEditorInteractionsEnabled())
     const { result: assetError } = renderHook(() => useAssetError())
-    const { result: outcome } = renderHook(() => useRestoreOutcome())
-    const { result: attempts } = renderHook(() => useRestoreAttemptCount())
     const { result: sceneEpoch } = renderHook(() => useSceneEpoch())
     const { result: retryToken } = renderHook(() => useRetryToken())
 
-    expect(phase.current).toBe('loading')
     expect(loading.current).toBe(true)
     expect(overlay.current).toBe(true)
     expect(enabled.current).toBe(false)
     expect(assetError.current).toBeNull()
-    expect(outcome.current).toBeNull()
-    expect(attempts.current).toBe(0)
     expect(sceneEpoch.current).toBe(0)
     expect(retryToken.current).toBe(0)
 
     act(() => {
-      editorLifecycleActions.incrementRestoreAttempt()
-      editorLifecycleActions.recordRestoreOutcome('invalid')
       editorLifecycleActions.markAssetsReady()
     })
 
-    expect(phase.current).toBe('ready')
     expect(loading.current).toBe(false)
     expect(overlay.current).toBe(false)
     expect(enabled.current).toBe(true)
-    expect(outcome.current).toBe('invalid')
-    expect(attempts.current).toBe(1)
 
     act(() => {
       editorLifecycleActions.requestRetry()
@@ -128,6 +114,5 @@ describe('editorLifecycleStore', () => {
 
     expect(sceneEpoch.current).toBe(1)
     expect(retryToken.current).toBe(1)
-    expect(phase.current).toBe('loading')
   })
 })
