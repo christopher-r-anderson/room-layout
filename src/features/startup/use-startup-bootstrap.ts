@@ -18,7 +18,9 @@ import { createDevPerfLogger } from './perf-log'
 
 const perfLog = createDevPerfLogger('🚀')
 
-const MANIFEST_TIMEOUT_MS = 5000
+// The manifest is a small JSON, but a throttled connection needs headroom for
+// connection setup before a 5s cutoff would fire spuriously.
+const MANIFEST_TIMEOUT_MS = 15000
 
 function classifyManifestError(
   error: unknown,

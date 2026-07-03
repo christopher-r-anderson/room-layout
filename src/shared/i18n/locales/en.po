@@ -89,6 +89,10 @@ msgstr "Add Item"
 msgid "Adding…"
 msgstr "Adding…"
 
+#: src/features/catalog/catalog-drawer.tsx
+msgid "Adding… {percentLabel}"
+msgstr "Adding… {percentLabel}"
+
 #: src/features/room-surface/room-drawer.tsx
 #: src/features/room-surface/room-sidebar.tsx
 msgid "Adjust wall finishes, flooring, and lighting to match your room."

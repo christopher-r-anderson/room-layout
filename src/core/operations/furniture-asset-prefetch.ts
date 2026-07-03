@@ -1,5 +1,6 @@
 import { useStoreWithEqualityFn } from 'zustand/traditional'
 import { createStore } from 'zustand/vanilla'
+import { streamFetch } from './stream-fetch'
 
 // Engine-free furniture-asset prefetch. This module downloads the GLB bytes with
 // a streaming progress read and holds them in memory, with NO dependency on
@@ -114,48 +115,25 @@ async function fetchBufferWithProgress(
   url: string,
   signal: AbortSignal,
 ): Promise<ArrayBuffer> {
-  const response = await fetch(url, { signal })
-  if (!response.ok) {
-    throw new Error(
-      `Failed to prefetch furniture asset ${url}: ${String(response.status)}`,
-    )
-  }
-
-  const declaredLength = Number(response.headers.get('content-length')) || 0
-  if (declaredLength > 0) {
-    addTotalBytes(declaredLength)
-  }
-
-  if (!response.body) {
-    // No streaming body available; fall back to a single read.
-    const buffer = await response.arrayBuffer()
-    addReceivedBytes(buffer.byteLength, url)
-    return buffer
-  }
-
-  const reader = response.body.getReader()
-  const chunks: Uint8Array[] = []
-  let received = 0
-
-  for (;;) {
-    const { done, value } = await reader.read()
-    if (done) {
-      break
-    }
-
-    chunks.push(value)
-    received += value.length
-    addReceivedBytes(value.length, url)
-  }
-
-  const merged = new Uint8Array(received)
-  let offset = 0
-  for (const chunk of chunks) {
-    merged.set(chunk, offset)
-    offset += chunk.length
-  }
-
-  return merged.buffer
+  // streamFetch reports cumulative per-file progress; the aggregate store tracks
+  // deltas across all files, so translate one into the other. A stalled transfer
+  // rejects here (bounding gated startup loads) and surfaces as a startup error.
+  let lastReceived = 0
+  let totalAdded = false
+  return streamFetch(url, {
+    signal,
+    onProgress: ({ receivedBytes, totalBytes }) => {
+      if (!totalAdded && totalBytes > 0) {
+        addTotalBytes(totalBytes)
+        totalAdded = true
+      }
+      const delta = receivedBytes - lastReceived
+      if (delta > 0) {
+        lastReceived = receivedBytes
+        addReceivedBytes(delta, url)
+      }
+    },
+  })
 }
 
 /**

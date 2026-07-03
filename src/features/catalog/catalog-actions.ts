@@ -14,7 +14,7 @@ import {
 import { CATALOG_DIALOG_ID } from './catalog-dialog-definition'
 import { getActiveCatalogId } from './catalog-selection-store'
 
-function resolveCollectionSourcePath(catalogId: string): string | null {
+export function resolveCollectionSourcePath(catalogId: string): string | null {
   const { catalog, collections } = assetsStore.getState()
   const entry = catalog.find((candidate) => candidate.id === catalogId)
   if (!entry) {

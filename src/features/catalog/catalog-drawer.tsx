@@ -14,11 +14,14 @@ import {
   DrawerTrigger,
 } from '@/shared/ui/drawer'
 import { cn } from '@/shared/lib/utils'
+import { formatPercent } from '@/shared/i18n/formatters'
 import { useDialogOpen } from '@/core/stores/dialog-store'
 import { useCatalogEntries } from '@/core/stores/assets-store'
+import { useCollectionLoadPercent } from '@/core/stores/collection-load-progress-store'
 import {
   addFurniture,
   prefetchCatalogItem,
+  resolveCollectionSourcePath,
   setCatalogDrawerOpen,
 } from './catalog-actions'
 import { CATALOG_DIALOG_ID } from './catalog-dialog-definition'
@@ -43,6 +46,12 @@ export function CatalogDrawer({
 
   const catalogIdToAdd = useActiveCatalogId()
   const open = useDialogOpen(CATALOG_DIALOG_ID)
+  const selectedSourcePath = catalogIdToAdd
+    ? resolveCollectionSourcePath(catalogIdToAdd)
+    : null
+  const loadPercent = useCollectionLoadPercent(selectedSourcePath)
+  const percentLabel =
+    loadPercent !== null ? formatPercent(loadPercent / 100) : null
   // `isSubmitting` disables the button immediately (no double-add); the pending
   // label/spinner is delayed so a fast or already-loaded add never flashes it.
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -158,7 +167,11 @@ export function CatalogDrawer({
                   className="shrink-0 animate-spin"
                   aria-hidden="true"
                 />
-                <Trans>Adding…</Trans>
+                {percentLabel !== null ? (
+                  <Trans>Adding… {percentLabel}</Trans>
+                ) : (
+                  <Trans>Adding…</Trans>
+                )}
               </>
             ) : (
               <Trans>Add Item</Trans>

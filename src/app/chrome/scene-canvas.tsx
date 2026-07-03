@@ -10,6 +10,8 @@ import {
 import { selectByCanvasPointer } from '@/core/operations/selection-actions'
 import { previewFromScene } from '@/core/operations/preview-actions'
 import { whenPrefetched } from '@/core/operations/furniture-asset-prefetch'
+import { streamFetch } from '@/core/operations/stream-fetch'
+import { collectionLoadProgressActions } from '@/core/stores/collection-load-progress-store'
 import { sceneDocumentActions } from '@/core/stores/scene-document-store'
 import { useSceneEpoch } from '@/core/stores/editor-lifecycle-store'
 import { useGatedCollectionPaths } from '@/core/stores/startup-gate-store'
@@ -57,13 +59,20 @@ export default function SceneCanvas({ onPointerMissed }: SceneCanvasProps) {
       if (gated) {
         return whenPrefetched(path)
       }
-      return fetch(path).then((response) => {
-        if (!response.ok) {
-          throw new Error(
-            `Failed to fetch furniture collection ${path}: ${String(response.status)}`,
-          )
-        }
-        return response.arrayBuffer()
+      // Stream on-demand loads too: a stall timeout bounds them (so a stuck add
+      // fails rather than hangs) and the byte progress drives the drawer's
+      // determinate "Adding... N%".
+      return streamFetch(path, {
+        onProgress: ({ receivedBytes, totalBytes }) => {
+          if (totalBytes > 0) {
+            collectionLoadProgressActions.setPercent(
+              path,
+              Math.round((receivedBytes / totalBytes) * 100),
+            )
+          }
+        },
+      }).finally(() => {
+        collectionLoadProgressActions.clear(path)
       })
     },
     [],
