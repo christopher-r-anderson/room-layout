@@ -26,6 +26,19 @@ function resolveCollectionSourcePath(catalogId: string): string | null {
   return collection?.sourcePath ?? null
 }
 
+// Prefetch-on-intent: start loading a catalog item's model when it is selected,
+// so a subsequent Add is usually instant. Fire-and-forget - the actual Add
+// surfaces any load failure - and idempotent with the Add's own ensure call.
+export function prefetchCatalogItem(catalogId: string): void {
+  const sourcePath = resolveCollectionSourcePath(catalogId)
+  if (!sourcePath) {
+    return
+  }
+  void sceneCommands.ensureCollectionLoaded(sourcePath).catch(() => {
+    // Swallowed here; a real add of this item reports the failure to the user.
+  })
+}
+
 // Under environment-first loading a catalog item's model may not be loaded when
 // the user adds it, so this ensures the collection is loaded before dispatching
 // the add. It is idempotent and resolves immediately for already-loaded

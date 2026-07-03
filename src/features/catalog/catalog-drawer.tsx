@@ -1,5 +1,6 @@
-import { type ReactElement, useState } from 'react'
+import { type ReactElement, useEffect, useState } from 'react'
 import { Trans, useLingui } from '@lingui/react/macro'
+import { IconLoader } from '@tabler/icons-react'
 import { formatDecimal } from '@/shared/i18n/formatters'
 import { Button } from '@/shared/ui/button'
 import {
@@ -15,7 +16,11 @@ import {
 import { cn } from '@/shared/lib/utils'
 import { useDialogOpen } from '@/core/stores/dialog-store'
 import { useCatalogEntries } from '@/core/stores/assets-store'
-import { addFurniture, setCatalogDrawerOpen } from './catalog-actions'
+import {
+  addFurniture,
+  prefetchCatalogItem,
+  setCatalogDrawerOpen,
+} from './catalog-actions'
 import { CATALOG_DIALOG_ID } from './catalog-dialog-definition'
 import {
   catalogSelectionActions,
@@ -38,20 +43,34 @@ export function CatalogDrawer({
 
   const catalogIdToAdd = useActiveCatalogId()
   const open = useDialogOpen(CATALOG_DIALOG_ID)
-  const [isAdding, setIsAdding] = useState(false)
+  // `isSubmitting` disables the button immediately (no double-add); the pending
+  // label/spinner is delayed so a fast or already-loaded add never flashes it.
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [showPending, setShowPending] = useState(false)
 
-  // Adding awaits the item's model when it is not yet loaded (environment-first),
-  // so the button reflects that brief pending state and closes the drawer on
-  // success.
+  // Prefetch-on-select: start loading the selected item's model while the drawer
+  // is open, so the Add is usually instant by the time the user commits.
+  useEffect(() => {
+    if (open && catalogIdToAdd) {
+      prefetchCatalogItem(catalogIdToAdd)
+    }
+  }, [open, catalogIdToAdd])
+
   const handleAddItem = async () => {
-    setIsAdding(true)
+    setIsSubmitting(true)
+    const PENDING_DELAY_MS = 300
+    const pendingTimer = window.setTimeout(() => {
+      setShowPending(true)
+    }, PENDING_DELAY_MS)
     try {
       const added = await addFurniture()
       if (added) {
         setCatalogDrawerOpen(false)
       }
     } finally {
-      setIsAdding(false)
+      window.clearTimeout(pendingTimer)
+      setIsSubmitting(false)
+      setShowPending(false)
     }
   }
 
@@ -127,12 +146,23 @@ export function CatalogDrawer({
 
         <DrawerFooter>
           <Button
-            disabled={!catalogIdToAdd || isAdding}
+            disabled={!catalogIdToAdd || isSubmitting}
             onClick={() => {
               void handleAddItem()
             }}
           >
-            {isAdding ? <Trans>Adding…</Trans> : <Trans>Add Item</Trans>}
+            {showPending ? (
+              <>
+                <IconLoader
+                  size={16}
+                  className="shrink-0 animate-spin"
+                  aria-hidden="true"
+                />
+                <Trans>Adding…</Trans>
+              </>
+            ) : (
+              <Trans>Add Item</Trans>
+            )}
           </Button>
           <DrawerClose asChild>
             <Button variant="outline">
