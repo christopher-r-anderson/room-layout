@@ -10,4 +10,6 @@ export const ADD_FURNITURE_UNKNOWN_CATALOG_MESSAGE: MessageDescriptor = msg`The 
 
 export const ADD_FURNITURE_LOAD_FAILED_MESSAGE: MessageDescriptor = msg`Couldn't load that item. Check your connection and try again.`
 
+export const ADD_FURNITURE_UNAVAILABLE_MESSAGE: MessageDescriptor = msg`That item isn't available right now.`
+
 export const DELETE_SELECTION_MISSING_MESSAGE: MessageDescriptor = msg`No selected furniture item was available to delete.`

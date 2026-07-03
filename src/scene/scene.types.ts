@@ -31,6 +31,11 @@ export type AddFurnitureResult =
   | { ok: true; id: string }
   | { ok: false; reason: 'unknown-catalog' | 'no-space' }
 
+// Why an on-demand collection load failed. 'unavailable' is a permanent failure
+// (HTTP error - the model is missing/broken, retrying will not help);
+// 'connection' is transient (network error or stall timeout - a re-add may work).
+export type CollectionLoadFailureKind = 'unavailable' | 'connection'
+
 export type SelectByIdResult =
   | { ok: true; status: 'selected' | 'cleared' }
   | { ok: false; status: 'not-found' | 'blocked-dragging' }

@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { useThree } from '@react-three/fiber'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 import { configureGltfKtx2 } from '@/scene/internal/three/gltf-ktx2'
+import type { CollectionLoadFailureKind } from '../../scene.types'
 import {
   collectionScenesActions,
   isCollectionFailed,
@@ -29,11 +30,15 @@ export function CollectionLoader({
   gatedCollectionPaths,
   onDemandCollectionPaths,
   resolveBytes,
+  classifyLoadError,
   onGatedError,
 }: {
   gatedCollectionPaths: string[]
   onDemandCollectionPaths: string[]
   resolveBytes: (path: string, gated: boolean) => Promise<ArrayBuffer>
+  // Injected by the app (which owns the core fetch errors): classifies a failure
+  // as permanent ('unavailable') or transient ('connection').
+  classifyLoadError: (error: unknown) => CollectionLoadFailureKind
   onGatedError: (error: Error) => void
 }) {
   const gl = useThree((state) => state.gl)
@@ -79,9 +84,13 @@ export function CollectionLoader({
           onGatedError(normalized)
         } else {
           // On-demand failures are isolated: the editor stays usable and only
-          // this collection is unavailable. Mark it so an awaiting add rejects
-          // (rather than hanging) and a re-add can retry.
-          collectionScenesActions.markFailed(path)
+          // this collection is unavailable. Mark it (with why) so an awaiting add
+          // rejects rather than hanging, a re-add can retry a transient failure,
+          // and the catalog can mark a permanently-unavailable item.
+          collectionScenesActions.markFailed(
+            path,
+            classifyLoadError(normalized),
+          )
           console.warn(
             `Failed to load furniture collection on demand: ${path}`,
             normalized,
@@ -102,6 +111,7 @@ export function CollectionLoader({
     gatedCollectionPaths,
     onDemandCollectionPaths,
     resolveBytes,
+    classifyLoadError,
     onGatedError,
   ])
 

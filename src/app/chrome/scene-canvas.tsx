@@ -10,9 +10,10 @@ import {
 import { selectByCanvasPointer } from '@/core/operations/selection-actions'
 import { previewFromScene } from '@/core/operations/preview-actions'
 import { whenPrefetched } from '@/core/operations/furniture-asset-prefetch'
-import { streamFetch } from '@/core/operations/stream-fetch'
+import { AssetHttpError, streamFetch } from '@/core/operations/stream-fetch'
 import { collectionLoadProgressActions } from '@/core/stores/collection-load-progress-store'
 import { sceneDocumentActions } from '@/core/stores/scene-document-store'
+import type { CollectionLoadFailureKind } from '@/scene/scene.types'
 import { useSceneEpoch } from '@/core/stores/editor-lifecycle-store'
 import { useGatedCollectionPaths } from '@/core/stores/startup-gate-store'
 import { useCatalogEntries, useCollections } from '@/core/stores/assets-store'
@@ -78,6 +79,14 @@ export default function SceneCanvas({ onPointerMissed }: SceneCanvasProps) {
     [],
   )
 
+  // A non-ok HTTP response means the model is missing/broken (permanent); a
+  // network error or stall abort is a transient connection problem.
+  const classifyLoadError = useCallback(
+    (error: unknown): CollectionLoadFailureKind =>
+      error instanceof AssetHttpError ? 'unavailable' : 'connection',
+    [],
+  )
+
   return (
     <Canvas
       camera={{
@@ -119,6 +128,7 @@ export default function SceneCanvas({ onPointerMissed }: SceneCanvasProps) {
         gatedCollectionPaths={gatedCollectionPaths}
         onDemandCollectionPaths={onDemandCollectionPaths}
         resolveBytes={resolveBytes}
+        classifyLoadError={classifyLoadError}
         onGatedError={notifyAssetError}
       />
     </Canvas>

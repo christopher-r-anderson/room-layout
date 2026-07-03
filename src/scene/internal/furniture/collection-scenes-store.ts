@@ -4,6 +4,7 @@ import { subscribeWithSelector } from 'zustand/middleware'
 import { createStore } from 'zustand/vanilla'
 import type { Object3D } from 'three'
 import { useItems } from '@/core/scene-contracts'
+import type { CollectionLoadFailureKind } from '../../scene.types'
 
 // Reactive registry of parsed furniture-collection scenes, plus the set of
 // collections something has asked to load on demand. This replaces the old
@@ -20,16 +21,18 @@ interface CollectionScenesState {
   // scene did not reference). Drives which on-demand collections the loader
   // pulls in; kept for the session so an added item's collection stays available.
   wanted: Set<string>
-  // sourcePaths whose on-demand load failed. A failed collection is not retried
-  // automatically; requesting it again (a re-add) clears the mark and retries.
-  failed: Set<string>
+  // sourcePaths whose on-demand load failed, mapped to why. A failed collection
+  // is not retried automatically; requesting it again (a re-add) clears the mark
+  // and retries. 'unavailable' (permanent) collections are never retried and are
+  // surfaced as unavailable in the catalog.
+  failed: Map<string, CollectionLoadFailureKind>
 }
 
 const collectionScenesStore = createStore<CollectionScenesState>()(
   subscribeWithSelector(() => ({
     loaded: new Map<string, Object3D>(),
     wanted: new Set<string>(),
-    failed: new Set<string>(),
+    failed: new Map<string, CollectionLoadFailureKind>(),
   })),
 )
 
@@ -51,18 +54,18 @@ export const collectionScenesActions = {
     collectionScenesStore.setState((state) => {
       const wanted = new Set(state.wanted)
       wanted.add(path)
-      const failed = new Set(state.failed)
+      const failed = new Map(state.failed)
       failed.delete(path)
       return { ...state, wanted, failed }
     })
   },
-  markFailed(path: string) {
+  markFailed(path: string, kind: CollectionLoadFailureKind) {
     collectionScenesStore.setState((state) => {
-      if (state.failed.has(path)) {
+      if (state.failed.get(path) === kind) {
         return state
       }
-      const failed = new Set(state.failed)
-      failed.add(path)
+      const failed = new Map(state.failed)
+      failed.set(path, kind)
       return { ...state, failed }
     })
   },
@@ -70,7 +73,7 @@ export const collectionScenesActions = {
     collectionScenesStore.setState({
       loaded: new Map<string, Object3D>(),
       wanted: new Set<string>(),
-      failed: new Set<string>(),
+      failed: new Map<string, CollectionLoadFailureKind>(),
     })
   },
 }
@@ -85,6 +88,18 @@ export function isCollectionLoaded(path: string): boolean {
 
 export function isCollectionFailed(path: string): boolean {
   return collectionScenesStore.getState().failed.has(path)
+}
+
+export function getCollectionFailureKind(
+  path: string,
+): CollectionLoadFailureKind | null {
+  return collectionScenesStore.getState().failed.get(path) ?? null
+}
+
+// Reactive map of failed collections to why they failed, for the catalog to mark
+// unavailable (permanent) items.
+export function useFailedCollections(): Map<string, CollectionLoadFailureKind> {
+  return useStoreWithEqualityFn(collectionScenesStore, (state) => state.failed)
 }
 
 // Ensures a collection is parsed and registered. Requesting it (re)marks it

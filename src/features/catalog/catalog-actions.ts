@@ -9,6 +9,7 @@ import { i18n } from '@/shared/i18n/i18n'
 import {
   ADD_FURNITURE_LOAD_FAILED_MESSAGE,
   ADD_FURNITURE_NO_SPACE_MESSAGE,
+  ADD_FURNITURE_UNAVAILABLE_MESSAGE,
   ADD_FURNITURE_UNKNOWN_CATALOG_MESSAGE,
 } from '@/shared/messages/command-messages'
 import { CATALOG_DIALOG_ID } from './catalog-dialog-definition'
@@ -59,11 +60,18 @@ export async function addFurniture(): Promise<boolean> {
     try {
       await sceneCommands.ensureCollectionLoaded(sourcePath)
     } catch {
-      // The model failed to load (e.g. offline). Surface it rather than leaving
-      // the add pending forever; a re-add retries the load. A toast (not the
-      // status region) so it is visible over the open catalog drawer, which
-      // aria-hides the background chrome.
-      toast.error(i18n._(ADD_FURNITURE_LOAD_FAILED_MESSAGE))
+      // The model failed to load. Message by cause: a permanent failure (missing
+      // asset) says it is unavailable and will not invite a futile retry; a
+      // transient one (connection/stall) invites a re-add. A toast (not the status
+      // region) so it is visible over the open drawer, which aria-hides the chrome.
+      const failureKind = sceneCommands.getCollectionFailureKind(sourcePath)
+      toast.error(
+        i18n._(
+          failureKind === 'unavailable'
+            ? ADD_FURNITURE_UNAVAILABLE_MESSAGE
+            : ADD_FURNITURE_LOAD_FAILED_MESSAGE,
+        ),
+      )
       selectionEffects.notePendingSource(null)
       selectionEffects.notePendingSelection(null)
       return false

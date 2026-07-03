@@ -18,6 +18,7 @@ import { formatPercent } from '@/shared/i18n/formatters'
 import { useDialogOpen } from '@/core/stores/dialog-store'
 import { useCatalogEntries } from '@/core/stores/assets-store'
 import { useCollectionLoadPercent } from '@/core/stores/collection-load-progress-store'
+import { useFailedCollections } from '@/scene/scene-commands'
 import {
   addFurniture,
   prefetchCatalogItem,
@@ -46,9 +47,13 @@ export function CatalogDrawer({
 
   const catalogIdToAdd = useActiveCatalogId()
   const open = useDialogOpen(CATALOG_DIALOG_ID)
+  const failedCollections = useFailedCollections()
   const selectedSourcePath = catalogIdToAdd
     ? resolveCollectionSourcePath(catalogIdToAdd)
     : null
+  const selectedUnavailable = selectedSourcePath
+    ? failedCollections.get(selectedSourcePath) === 'unavailable'
+    : false
   const loadPercent = useCollectionLoadPercent(selectedSourcePath)
   const percentLabel =
     loadPercent !== null ? formatPercent(loadPercent / 100) : null
@@ -103,9 +108,19 @@ export function CatalogDrawer({
             </legend>
             {catalog.map((entry) => {
               const isSelected = catalogIdToAdd === entry.id
+              const entrySourcePath = resolveCollectionSourcePath(entry.id)
+              const isUnavailable = entrySourcePath
+                ? failedCollections.get(entrySourcePath) === 'unavailable'
+                : false
 
               return (
-                <label key={entry.id} className="block min-w-0 cursor-pointer">
+                <label
+                  key={entry.id}
+                  className={cn(
+                    'block min-w-0',
+                    isUnavailable ? 'cursor-not-allowed' : 'cursor-pointer',
+                  )}
+                >
                   <input
                     className="peer sr-only"
                     aria-label={entry.name}
@@ -113,6 +128,7 @@ export function CatalogDrawer({
                     name="furniture-catalog"
                     value={entry.id}
                     checked={isSelected}
+                    disabled={isUnavailable}
                     onChange={(event) => {
                       catalogSelectionActions.setSelectedCatalogId(
                         event.target.value,
@@ -122,9 +138,11 @@ export function CatalogDrawer({
                   <span
                     className={cn(
                       'grid h-full gap-2 rounded-lg border bg-card p-2 transition-all duration-150 peer-focus-visible:ring-2 peer-focus-visible:ring-ring/50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50',
-                      isSelected
-                        ? 'border-primary/60 bg-primary/5'
-                        : 'hover:border-foreground/20 hover:shadow-sm',
+                      isUnavailable
+                        ? ''
+                        : isSelected
+                          ? 'border-primary/60 bg-primary/5'
+                          : 'hover:border-foreground/20 hover:shadow-sm',
                     )}
                     aria-hidden="true"
                   >
@@ -139,12 +157,18 @@ export function CatalogDrawer({
                       <span className="text-xs/relaxed font-medium text-foreground">
                         {entry.name}
                       </span>
-                      <span className="text-xs/relaxed text-muted-foreground">
-                        {formatFootprintLabel(
-                          entry.footprintSize.width,
-                          entry.footprintSize.depth,
-                        )}
-                      </span>
+                      {isUnavailable ? (
+                        <span className="text-xs/relaxed font-medium text-destructive">
+                          <Trans>Unavailable</Trans>
+                        </span>
+                      ) : (
+                        <span className="text-xs/relaxed text-muted-foreground">
+                          {formatFootprintLabel(
+                            entry.footprintSize.width,
+                            entry.footprintSize.depth,
+                          )}
+                        </span>
+                      )}
                     </span>
                   </span>
                 </label>
@@ -155,7 +179,7 @@ export function CatalogDrawer({
 
         <DrawerFooter>
           <Button
-            disabled={!catalogIdToAdd || isSubmitting}
+            disabled={!catalogIdToAdd || isSubmitting || selectedUnavailable}
             onClick={() => {
               void handleAddItem()
             }}

@@ -560,6 +560,9 @@ msgstr "[Ţàƀ / Ēńţēŕ àƥƥĺĩēś ōƒƒśēţ. Ēść ćàńćēĺś.
 msgid "Tab / Enter applies rotation. Esc cancels."
 msgstr "[Ţàƀ / Ēńţēŕ àƥƥĺĩēś ŕōţàţĩōń. Ēść ćàńćēĺś.āēīōūáéíóúāēīōūáé]"
 
+msgid "That item isn't available right now."
+msgstr "[Ţĥàţ ĩţēḿ ĩśń'ţ àvàĩĺàƀĺē ŕĩğĥţ ńōŵ.āēīōūáéíóúāēīōū]"
+
 msgid "The editor could not download the furniture catalog required to start."
 msgstr "[Ţĥē ēďĩţōŕ ćōũĺď ńōţ ďōŵńĺōàď ţĥē ƒũŕńĩţũŕē ćàţàĺōğ ŕēqũĩŕēď ţō śţàŕţ.āēīōūáéíóúāēīōūáéíóúāēīōūáéí]"
 
@@ -589,6 +592,9 @@ msgstr "[Ţōƥāēī]"
 
 msgid "Unable to load room editor assets. Retry available."
 msgstr "[Ũńàƀĺē ţō ĺōàď ŕōōḿ ēďĩţōŕ àśśēţś. Ŕēţŕŷ àvàĩĺàƀĺē.āēīōūáéíóúāēīōūáéíóúā]"
+
+msgid "Unavailable"
+msgstr "[Ũńàvàĩĺàƀĺēāēīōūáéí]"
 
 msgid "Undo"
 msgstr "[Ũńďōāēīō]"

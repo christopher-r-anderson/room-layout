@@ -44,7 +44,7 @@ describe('collection-scenes-store', () => {
     const pending = ensureCollectionLoaded('/models/b.glb')
 
     await Promise.resolve()
-    collectionScenesActions.markFailed('/models/b.glb')
+    collectionScenesActions.markFailed('/models/b.glb', 'connection')
 
     await expect(pending).rejects.toThrow(/failed to load/i)
   })
@@ -52,7 +52,7 @@ describe('collection-scenes-store', () => {
   it('retries after a failure: re-requesting clears the failure and resolves on load', async () => {
     const firstAttempt = ensureCollectionLoaded('/models/b.glb')
     await Promise.resolve()
-    collectionScenesActions.markFailed('/models/b.glb')
+    collectionScenesActions.markFailed('/models/b.glb', 'connection')
     await expect(firstAttempt).rejects.toThrow()
 
     // A re-add clears the failure and the retry resolves once it registers.
@@ -64,7 +64,7 @@ describe('collection-scenes-store', () => {
   it('reset clears loaded, wanted, and failed state', () => {
     collectionScenesActions.registerScene('/models/a.glb', new Object3D())
     collectionScenesActions.requestCollection('/models/c.glb')
-    collectionScenesActions.markFailed('/models/c.glb')
+    collectionScenesActions.markFailed('/models/c.glb', 'connection')
 
     resetCollectionScenes()
 

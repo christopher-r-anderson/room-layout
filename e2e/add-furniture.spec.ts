@@ -79,3 +79,29 @@ test('surfaces an error and recovers when an added item fails to load', async ({
   await expect(picker).toBeHidden()
   await expect.poll(async () => (await readSceneState(page)).itemCount).toBe(1)
 })
+
+test('marks a permanently-unavailable item and blocks adding it', async ({
+  page,
+}) => {
+  // A 404 (missing/broken asset) is a permanent failure, unlike a dropped
+  // connection: the item is marked unavailable rather than left retry-able.
+  await page.route(/\/models\/.+\.glb(?:\?.*)?$/, (route) =>
+    route.fulfill({ status: 404 }),
+  )
+  await page.goto('/')
+  await waitForEditorReady(page)
+
+  const picker = page.getByRole('dialog', { name: 'Add furniture' })
+  await page.getByRole('button', { name: 'Add Furniture' }).click()
+  await expect(picker).toBeVisible()
+  await picker.getByText('Leather Couch', { exact: true }).click()
+
+  // Prefetch-on-select loads (and 404s) the model, so the item becomes
+  // unavailable and cannot be added.
+  await expect(picker.getByText('Unavailable').first()).toBeVisible()
+  await expect(
+    picker.getByRole('radio', { name: 'Leather Couch' }),
+  ).toBeDisabled()
+  await expect(picker.getByRole('button', { name: 'Add Item' })).toBeDisabled()
+  expect((await readSceneState(page)).itemCount).toBe(0)
+})

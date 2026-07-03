@@ -4,6 +4,19 @@ export interface StreamFetchProgress {
   totalBytes: number
 }
 
+// Thrown for a non-ok HTTP response (the asset is missing/broken). Distinct from
+// a network error or a stall abort so callers can treat it as a *permanent*
+// failure (retrying will not help) rather than a transient connection problem.
+export class AssetHttpError extends Error {
+  readonly status: number
+
+  constructor(url: string, status: number) {
+    super(`Failed to fetch ${url}: ${String(status)}`)
+    this.name = 'AssetHttpError'
+    this.status = status
+  }
+}
+
 // Default stall timeout. A *stall* timeout (no bytes for this long) rather than a
 // total-duration one bounds a load without false-positiving on a slow but
 // progressing connection - a large model on slow mobile can legitimately take a
@@ -59,7 +72,7 @@ export async function streamFetch(
     armStall()
     const response = await fetch(url, { signal: controller.signal })
     if (!response.ok) {
-      throw new Error(`Failed to fetch ${url}: ${String(response.status)}`)
+      throw new AssetHttpError(url, response.status)
     }
 
     const totalBytes = Number(response.headers.get('content-length')) || 0

@@ -776,6 +776,10 @@ msgstr "Tab / Enter applies offset. Esc cancels."
 msgid "Tab / Enter applies rotation. Esc cancels."
 msgstr "Tab / Enter applies rotation. Esc cancels."
 
+#: src/shared/messages/command-messages.ts
+msgid "That item isn't available right now."
+msgstr "That item isn't available right now."
+
 #: src/features/startup/initialization-error.tsx
 msgid "The editor could not download the furniture catalog required to start."
 msgstr "The editor could not download the furniture catalog required to start."
@@ -816,6 +820,10 @@ msgstr "Top"
 #: src/core/operations/startup-coordinator.ts
 msgid "Unable to load room editor assets. Retry available."
 msgstr "Unable to load room editor assets. Retry available."
+
+#: src/features/catalog/catalog-drawer.tsx
+msgid "Unavailable"
+msgstr "Unavailable"
 
 #: src/features/history/history-tools.tsx
 #: src/features/keyboard/keyboard-shortcuts.definitions.ts
