@@ -8,8 +8,20 @@ import path from 'node:path'
 // (three/r3f/drei/postprocessing) is lazy-loaded behind it and downloads in
 // parallel, so it carries a looser budget.
 const BUDGETS = [
-  { label: 'shell (entry)', pattern: /^index-.*\.js$/, maxGzipKB: 215 },
+  { label: 'shell (entry)', pattern: /^index-.*\.js$/, maxGzipKB: 150 },
   { label: 'engine (lazy)', pattern: /^scene-canvas-.*\.js$/, maxGzipKB: 350 },
+  // The editor chrome (top header, tools, panels, dialogs, and their base-ui and
+  // icon deps) is code-split out of the shell and mounts only once the editor is
+  // ready; it is warmed in parallel during loading, so it never blocks paint.
+  { label: 'chrome (lazy)', pattern: /^editor-overlay-.*\.js$/, maxGzipKB: 70 },
+  // Pure furniture/room geometry shared by both the shell (placement engine) and
+  // the lazy chrome chunk; rolldown hoists it into its own shared chunk so it is
+  // not duplicated across the two.
+  {
+    label: 'geometry (shared)',
+    pattern: /^room-metrics-.*\.js$/,
+    maxGzipKB: 8,
+  },
   // Lazily-imported per-locale message catalogs. Each is fetched only when its
   // locale is activated; the active locale is never in the shell chunk.
   { label: 'locale (lazy)', pattern: /^locale-.*\.js$/, maxGzipKB: 20 },

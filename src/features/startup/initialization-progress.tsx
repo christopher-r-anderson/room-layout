@@ -1,64 +1,35 @@
-import { useEffect, useRef } from 'react'
-import { Trans, useLingui } from '@lingui/react/macro'
+import { useLingui } from '@lingui/react/macro'
 import { useFurnitureAssetPrefetchProgress } from '@/core/operations/furniture-asset-prefetch'
 import { useStartupLoadingActive } from '@/core/stores/editor-lifecycle-store'
 import { formatPercent } from '@/shared/i18n/formatters'
-import { Caption } from '@/shared/ui/caption'
-import { Card, CardContent } from '@/shared/ui/card'
 import { Progress } from '@/shared/ui/progress'
 
-// Reduces an asset URL to its filename; asset filenames are not translatable.
-function formatAssetFilename(item: string) {
-  const normalizedItem = item.split('?')[0]
-  const filename = normalizedItem.split('/').pop()
-
-  return filename ?? normalizedItem
-}
-
+// Minimal startup loader. It shares the opaque, theme-matched full-screen
+// treatment of the pre-paint spinner in index.html so the hand-off from that
+// spinner to this React screen is seamless rather than a jump into an app-shell
+// panel. It keeps a progress readout (bar + percent) but drops the card, heading,
+// body copy, and per-asset filenames, which read as a professional tool rather
+// than a consumer loading screen.
 export function InitializationProgress() {
   const { t } = useLingui()
   const visible = useStartupLoadingActive()
-  const { currentItem, loadedCount, percent, total } =
-    useFurnitureAssetPrefetchProgress()
-  const panelRef = useRef<HTMLDivElement | null>(null)
+  const { loadedCount, percent, total } = useFurnitureAssetPrefetchProgress()
   const roundedProgress = Math.round(percent)
 
   // Before the manifest resolves there is nothing to count yet (preparing); once
   // every file's bytes are in, the engine is seeding/parsing them (finalizing).
-  // Distinguishing these from the active download keeps the panel from reading
-  // "Starting asset requests" at 100%.
   const stage =
     total === 0
       ? 'preparing'
       : loadedCount < total
         ? 'downloading'
         : 'finalizing'
-
-  const assetNumber = Math.min(loadedCount + 1, total)
   const statusText =
     stage === 'downloading'
-      ? t`Asset ${assetNumber} of ${total}`
+      ? t`Loading furniture`
       : stage === 'finalizing'
-        ? t`Preparing the editor`
-        : t`Starting asset requests`
-
-  const currentAsset = currentItem
-    ? formatAssetFilename(currentItem)
-    : t`Preparing furniture assets...`
-  const detailText =
-    stage === 'downloading'
-      ? t`Current item: ${currentAsset}`
-      : stage === 'finalizing'
-        ? t`Finishing up the room view`
-        : t`Fetching the furniture catalog`
-
-  useEffect(() => {
-    if (!visible) {
-      return
-    }
-
-    panelRef.current?.focus()
-  }, [visible])
+        ? t`Almost ready`
+        : t`Getting things ready`
 
   if (!visible) {
     return null
@@ -66,55 +37,33 @@ export function InitializationProgress() {
 
   return (
     <section
-      className="absolute inset-0 grid place-items-center bg-background/75 p-6 max-[720px]:p-4"
+      className="absolute inset-0 grid place-items-center bg-background p-6"
+      role="status"
       aria-live="polite"
+      aria-label={t`Loading the room`}
     >
-      <Card
-        ref={panelRef}
-        className="w-[min(26.25rem,calc(100vw-2rem))] gap-3"
-        role="region"
-        aria-labelledby="startup-loading-title"
-        aria-describedby="startup-loading-description startup-loading-progress-label"
-        tabIndex={-1}
-      >
-        <CardContent className="grid gap-3 p-5">
-          <Caption>
-            <Trans>Loading scene assets</Trans>
-          </Caption>
-          <h2
-            id="startup-loading-title"
-            className="text-2xl font-semibold leading-tight max-[720px]:text-[1.375rem]"
-          >
-            <Trans>Preparing the room editor</Trans>
-          </h2>
-          <p
-            id="startup-loading-description"
-            className="text-sm leading-relaxed text-foreground"
-          >
-            <Trans>
-              The editor will unlock after the required furniture models finish
-              loading.
-            </Trans>
-          </p>
-          <Progress
-            value={roundedProgress}
-            aria-label={t`Furniture asset loading progress`}
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-valuenow={roundedProgress}
-          />
-          <div className="flex items-baseline justify-between gap-3 text-sm text-foreground max-[720px]:flex-col max-[720px]:items-start">
-            <strong>{formatPercent(roundedProgress / 100)}</strong>
-            <span>{statusText}</span>
-          </div>
-          <p
-            id="startup-loading-progress-label"
-            className="text-sm leading-relaxed text-foreground"
-          >
-            {detailText}
-          </p>
-        </CardContent>
-      </Card>
+      <div className="grid w-[min(18rem,calc(100vw-3rem))] justify-items-center gap-4">
+        {/* Matches the pre-paint spinner in index.html (size, weight, tint, speed)
+            so the two loaders read as one continuous screen. */}
+        <span
+          aria-hidden="true"
+          className="size-10 animate-spin rounded-full border-[3px] border-black/10 border-t-black/45 [animation-duration:0.8s] motion-reduce:[animation-duration:2s] dark:border-white/12 dark:border-t-white/55"
+        />
+        <Progress
+          className="w-full"
+          value={roundedProgress}
+          aria-label={t`Room loading progress`}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={roundedProgress}
+        />
+        <p className="flex w-full items-baseline justify-between gap-2 text-sm text-muted-foreground">
+          <span className="font-medium tabular-nums text-foreground">
+            {formatPercent(roundedProgress / 100)}
+          </span>
+          <span>{statusText}</span>
+        </p>
+      </div>
     </section>
   )
 }

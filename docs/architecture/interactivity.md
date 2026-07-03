@@ -45,8 +45,8 @@ reason); plain header buttons are wrapped as `<Toolbar.Button render={…}>`.
 Disabled state only ever encodes an intrinsic capability gap — no history to undo,
 no selection to act on, a scene already at defaults, nothing picked to add. It
 never encodes "the editor isn't ready yet": startup readiness is a background
-concern handled by the inert seam (next section), so no control carries a
-loading-disabled state.
+concern handled by deferring the chrome and the canvas inert seam (next section),
+so no control carries a loading-disabled state.
 
 ## Background neutralization
 
@@ -62,17 +62,20 @@ chrome carries no `inert` of its own.
   `autoFocus` the standard modal mechanism covers everything; no manual `inert`.
 - **Non-blocking surfaces** (the Room panel) deliberately leave the chrome live.
 
-The one hand-rolled `inert` in the app is the **startup** seam on the
-editor-overlay wrapper (`editor-overlay.tsx`), where there is no modal to own it:
+During startup the editor chrome is **not mounted at all**: `EditorOverlay` is
+code-split and rendered only once the editor is ready (`editor-body.tsx`), so
+there is no chrome to neutralize while assets load. What _is_ mounted during
+loading is the canvas — it drives the asset load — so it carries the one
+hand-rolled `inert` seam in the app, where there is no modal to own it:
 
 ```text
 <main>
-  <section "Interactive 3D room editor">     ← canvas
-  <EditorOverlay>
-    <div inert={startupOverlayActive}>        ← the only seam
-      TopHeader · FloatingSelectedItemSite · CameraTools · Outliner ·
-      SelectedItemToolbar · SelectedDetailsPanel
-    dialogs / drawers render in portals OUTSIDE this wrapper
+  <section "Interactive 3D room editor" inert={startupOverlayActive}>  ← canvas, the only seam
+    <SceneCanvas>
+  {editorReady && <EditorOverlay>}     ← TopHeader · CameraTools · Outliner ·
+                                          panels · toolbars, mounted only when ready
+  <InitializationProgress> / <InitializationError>   ← shell-level loading UI
+    dialogs / drawers render in portals
 ```
 
 `inert` covers pointer events, focus, and the accessibility tree — but not
