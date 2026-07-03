@@ -40,16 +40,6 @@ export const collectionScenesActions = {
       return { ...state, loaded }
     })
   },
-  unregisterScene(path: string) {
-    collectionScenesStore.setState((state) => {
-      if (!state.loaded.has(path)) {
-        return state
-      }
-      const loaded = new Map(state.loaded)
-      loaded.delete(path)
-      return { ...state, loaded }
-    })
-  },
   wantCollection(path: string) {
     collectionScenesStore.setState((state) => {
       if (state.wanted.has(path)) {
@@ -72,7 +62,7 @@ export function getLoadedCollectionScenes(): Map<string, Object3D> {
   return collectionScenesStore.getState().loaded
 }
 
-function isCollectionLoaded(path: string): boolean {
+export function isCollectionLoaded(path: string): boolean {
   return collectionScenesStore.getState().loaded.has(path)
 }
 

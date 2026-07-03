@@ -12,13 +12,10 @@ afterEach(() => {
 })
 
 describe('collection-scenes-store', () => {
-  it('registers and unregisters parsed scenes', () => {
+  it('registers parsed scenes', () => {
     const scene = new Object3D()
     collectionScenesActions.registerScene('/models/a.glb', scene)
     expect(getLoadedCollectionScenes().get('/models/a.glb')).toBe(scene)
-
-    collectionScenesActions.unregisterScene('/models/a.glb')
-    expect(getLoadedCollectionScenes().has('/models/a.glb')).toBe(false)
   })
 
   it('resolves ensureCollectionLoaded immediately for an already-loaded collection', async () => {
