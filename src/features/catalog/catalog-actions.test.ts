@@ -19,7 +19,10 @@ import {
   ADD_FURNITURE_NO_SPACE_MESSAGE,
   ADD_FURNITURE_UNKNOWN_CATALOG_MESSAGE,
 } from '@/shared/messages/command-messages'
-import { resetCatalogSelectionStore } from './catalog-selection-store'
+import {
+  catalogSelectionActions,
+  resetCatalogSelectionStore,
+} from './catalog-selection-store'
 import { addFurniture } from './catalog-actions'
 
 vi.mock('@/core/operations/selection-effects', () => ({
@@ -74,6 +77,7 @@ describe('addFurniture', () => {
   })
 
   it('maps add-furniture failures through shared messages', async () => {
+    catalogSelectionActions.setSelectedCatalogId('chair')
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
     const addFurnitureCommand = vi.spyOn(sceneCommands, 'addFurniture')
 
@@ -94,6 +98,7 @@ describe('addFurniture', () => {
   })
 
   it('marks toolbar selection effects after a successful add', async () => {
+    catalogSelectionActions.setSelectedCatalogId('chair')
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
     vi.spyOn(sceneCommands, 'addFurniture').mockReturnValue({
       ok: true,

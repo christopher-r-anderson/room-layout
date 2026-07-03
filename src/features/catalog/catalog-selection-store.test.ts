@@ -40,17 +40,17 @@ describe('getActiveCatalogId', () => {
     expect(getActiveCatalogId()).toBe('b')
   })
 
-  it('falls back to the first entry when the stored selection is stale', () => {
+  it('returns empty when the stored selection is stale (no default)', () => {
     loadCatalog(['a', 'b'])
     catalogSelectionActions.setSelectedCatalogId('removed')
 
-    expect(getActiveCatalogId()).toBe('a')
+    expect(getActiveCatalogId()).toBe('')
   })
 
-  it('falls back to the first entry when nothing is selected', () => {
+  it('returns empty when nothing is selected (no default)', () => {
     loadCatalog(['a', 'b'])
 
-    expect(getActiveCatalogId()).toBe('a')
+    expect(getActiveCatalogId()).toBe('')
   })
 
   it('returns an empty string when the catalog is empty', () => {
