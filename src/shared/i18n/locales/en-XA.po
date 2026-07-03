@@ -61,6 +61,9 @@ msgstr "[Àďď Ƒũŕńĩţũŕēāēīōūáéíóú]"
 msgid "Add Item"
 msgstr "[Àďď Ĩţēḿāēīōūáéí]"
 
+msgid "Adding…"
+msgstr "[Àďďĩńğ…āēīōūáé]"
+
 msgid "Adjust wall finishes, flooring, and lighting to match your room."
 msgstr "[Àďĵũśţ ŵàĺĺ ƒĩńĩśĥēś, ƒĺōōŕĩńğ, àńď ĺĩğĥţĩńğ ţō ḿàţćĥ ŷōũŕ ŕōōḿ.āēīōūáéíóúāēīōūáéíóúāēīōūá]"
 

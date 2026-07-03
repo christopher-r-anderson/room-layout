@@ -34,6 +34,7 @@ function resetStartupShell() {
   resetSelectionFocusStore()
   resetToolbarGeometryStore()
   resetToolbarInteractionStore()
+  sceneCommands.resetCollections()
   clearSceneServices()
 }
 

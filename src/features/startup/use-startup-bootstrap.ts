@@ -5,6 +5,9 @@ import {
   useRetryToken,
 } from '@/core/stores/editor-lifecycle-store'
 import { assetsActions } from '@/core/stores/assets-store'
+import { startupGateActions } from '@/core/stores/startup-gate-store'
+import { resolveReferencedCollectionPaths } from '@/core/persistence/referenced-collections'
+import { loadSceneDraft } from '@/core/persistence/scene-draft'
 import type { StartupErrorKind } from '@/core/types/startup.types'
 import {
   fetchCatalogManifest,
@@ -91,11 +94,22 @@ export function useStartupBootstrap() {
           collections: result.collections,
           environmentConfig: result.environment,
         })
+
+        // The gated set is the collections the restored scene (shared link or
+        // local draft) references; a fresh/empty scene gates on none and unlocks
+        // as soon as the room mounts. Only the gated set is prefetched and drives
+        // the loader; the rest of the catalog loads lazily on demand.
+        const gatedCollectionPaths = resolveReferencedCollectionPaths({
+          href: window.location.href,
+          draft: loadSceneDraft(),
+          catalog: result.catalog,
+          collections: result.collections,
+        })
+        startupGateActions.setGatedCollectionPaths(gatedCollectionPaths)
+
         editorLifecycleActions.beginAssetLoad()
 
-        prefetchFurnitureCollections(
-          result.collections.map((c) => c.sourcePath),
-        )
+        prefetchFurnitureCollections(gatedCollectionPaths)
       } catch (error) {
         if (cancelled) return
 

@@ -49,6 +49,7 @@ vi.mock('@/scene/scene-commands', () => ({
   clearSceneServices: vi.fn(),
   sceneCommands: {
     restoreInitialLayout: vi.fn(),
+    resetCollections: vi.fn(),
   },
 }))
 

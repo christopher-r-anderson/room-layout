@@ -1,6 +1,4 @@
-import type { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 import { getMeshes } from '@/scene/internal/three/get-meshes'
-import { configureGltfKtx2 } from '@/scene/internal/three/gltf-ktx2'
 import { Room } from './internal/environment/room'
 import { Lighting } from './internal/environment/lighting'
 import { resolveMoodExposure } from './internal/environment/lighting-mood'
@@ -11,7 +9,6 @@ import type {
 } from '@/domain/environment-materials'
 import { CameraControls } from './internal/camera/camera-controls'
 import { InteractiveFurniture } from './internal/furniture/interactive-furniture'
-import { useGLTF } from '@react-three/drei'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import type { CameraControlsImpl } from '@react-three/drei'
 import { useThree } from '@react-three/fiber'
@@ -48,6 +45,12 @@ import {
   clearSceneServices,
   registerSceneServices,
 } from './internal/scene-services'
+import { useLoadedCollectionScenes } from './internal/furniture/collection-scenes-store'
+
+// Public scene component surface for the app-side loader orchestration
+// (scene-canvas). The matching hook lives on the scene-commands contract so this
+// component module stays component-only (react-refresh).
+export { CollectionLoader } from './internal/furniture/collection-loader'
 
 const FLOOR_PLANE_Y = 0
 const SNAP_SIZE = 0.5
@@ -63,6 +66,7 @@ export function Scene({
   renderQuality = 'default',
   catalog,
   collections,
+  gatedCollectionPaths = [],
   onCanvasPointerSelection,
   onAssetsReady,
   previewedId = null,
@@ -75,6 +79,7 @@ export function Scene({
   renderQuality?: 'default' | 'e2e-low'
   catalog: FurnitureCatalogEntry[]
   collections: FurnitureCollection[]
+  gatedCollectionPaths?: string[]
   onCanvasPointerSelection?: (id: string) => void
   onAssetsReady?: () => void
   previewedId?: string | null
@@ -101,54 +106,40 @@ export function Scene({
     [canvasWidth, canvasHeight],
   )
   const invalidate = useThree((state) => state.invalidate)
-  const gl = useThree((state) => state.gl)
   // Accessor for fresh r3f state when we need to imperatively touch the renderer
   // (e.g. tone-mapping exposure) without subscribing to or mutating a hook value.
   const getThreeState = useThree((state) => state.get)
-  const collectionPaths = useMemo(
-    () => collections.map((c) => c.sourcePath),
-    [collections],
-  )
-  // Meshopt geometry is auto-decoded by drei; KTX2 textures need the Basis
-  // transcoder wired onto the loader (Draco is unused — we compress with Meshopt).
-  // drei's loader is built from three-stdlib; cast to the three/addons GLTFLoader
-  // our KTX2 helper uses (identical at runtime, nominally distinct in TS).
-  const gltfResult = useGLTF(collectionPaths, false, true, (loader) => {
-    configureGltfKtx2(loader as unknown as GLTFLoader, gl)
-  }) as { scene: Object3D } | { scene: Object3D }[]
-
-  const sourceScenesByPath = useMemo(() => {
-    const gltfScenes = Array.isArray(gltfResult) ? gltfResult : [gltfResult]
-
-    return new Map<string, Object3D>(
-      collectionPaths.map((sourcePath, index) => [
-        sourcePath,
-        gltfScenes[index].scene,
-      ]),
-    )
-  }, [gltfResult, collectionPaths])
+  // Parsed collection scenes register into this store as their loaders resolve
+  // (CollectionLoader, mounted by scene-canvas outside this component's Suspense).
+  // The map is partial and grows as collections load, so the room renders before
+  // any furniture and each item appears once its collection is present.
+  const sourceScenesByPath = useLoadedCollectionScenes()
 
   const sourceScenesByCollectionId = useMemo(() => {
-    const gltfScenes = Array.isArray(gltfResult) ? gltfResult : [gltfResult]
-
-    return new Map<string, Object3D>(
-      collections.map((collection, index) => [
-        collection.id,
-        gltfScenes[index].scene,
-      ]),
-    )
-  }, [collections, gltfResult])
+    const byCollectionId = new Map<string, Object3D>()
+    for (const collection of collections) {
+      const scene = sourceScenesByPath.get(collection.sourcePath)
+      if (scene) {
+        byCollectionId.set(collection.id, scene)
+      }
+    }
+    return byCollectionId
+  }, [collections, sourceScenesByPath])
 
   useMemo(() => {
-    if (collectionPaths.length === 0) {
+    if (sourceScenesByCollectionId.size === 0) {
       return
     }
 
+    // Only the collections currently loaded can be validated; unloaded ones are
+    // re-checked here as they register.
     validateCatalogAssetNodes({
-      catalog,
+      catalog: catalog.filter((entry) =>
+        sourceScenesByCollectionId.has(entry.collectionId),
+      ),
       sourceScenesByCollectionId,
     })
-  }, [catalog, collectionPaths.length, sourceScenesByCollectionId])
+  }, [catalog, sourceScenesByCollectionId])
 
   const hasReportedAssetsReadyRef = useRef(false)
   const cameraControlsRef = useRef<CameraControlsImpl | null>(null)
@@ -204,7 +195,6 @@ export function Scene({
     isDragging: Boolean(dragState),
     catalog,
     collections,
-    sourceScenesByPath,
   })
 
   const {
@@ -229,7 +219,6 @@ export function Scene({
     clearDragState,
     catalog,
     collections,
-    sourceScenesByPath,
     bounds: ROOM_BOUNDS,
     edgeSnapThreshold: EDGE_SNAP_THRESHOLD,
     snapSize: SNAP_SIZE,
@@ -313,9 +302,12 @@ export function Scene({
   }, [getThreeState, invalidate, moodExposure])
 
   useEffect(() => {
-    // Do not report ready if no collections have been passed yet
-    // this happens during the loading-manifest phase when App renders Scene with [] initially.
-    if (collectionPaths.length === 0) {
+    // Environment-first readiness: unlock once the manifest has arrived (so the
+    // room and camera are mounted) AND every collection the restored scene
+    // references is parsed. An empty scene has no gated collections, so it
+    // unlocks as soon as the manifest is present - it never waits on furniture.
+    // The remaining catalog loads lazily on demand and does not gate this.
+    if (collections.length === 0) {
       return
     }
 
@@ -323,9 +315,21 @@ export function Scene({
       return
     }
 
+    const gatedReady = gatedCollectionPaths.every((path) =>
+      sourceScenesByPath.has(path),
+    )
+    if (!gatedReady) {
+      return
+    }
+
     hasReportedAssetsReadyRef.current = true
     onAssetsReady?.()
-  }, [onAssetsReady, collectionPaths.length, sourceScenesByPath])
+  }, [
+    onAssetsReady,
+    collections.length,
+    gatedCollectionPaths,
+    sourceScenesByPath,
+  ])
 
   const handlePreviewStart = useCallback(
     (id: string) => {

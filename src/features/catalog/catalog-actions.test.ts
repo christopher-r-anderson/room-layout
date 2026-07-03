@@ -63,22 +63,22 @@ afterEach(() => {
 })
 
 describe('addFurniture', () => {
-  it('clears stale add state without invoking the scene while not ready', () => {
+  it('clears stale add state without invoking the scene while not ready', async () => {
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(false)
     const addFurnitureCommand = vi.spyOn(sceneCommands, 'addFurniture')
 
-    expect(addFurniture()).toBe(false)
+    expect(await addFurniture()).toBe(false)
     expect(addFurnitureCommand).not.toHaveBeenCalled()
     expect(selectionEffects.notePendingSource).toHaveBeenCalledWith(null)
     expect(selectionEffects.notePendingSelection).toHaveBeenCalledWith(null)
   })
 
-  it('maps add-furniture failures through shared messages', () => {
+  it('maps add-furniture failures through shared messages', async () => {
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
     const addFurnitureCommand = vi.spyOn(sceneCommands, 'addFurniture')
 
     addFurnitureCommand.mockReturnValueOnce({ ok: false, reason: 'no-space' })
-    expect(addFurniture()).toBe(false)
+    expect(await addFurniture()).toBe(false)
     expect(feedbackStore.getState().statusMessage).toBe(
       i18n._(ADD_FURNITURE_NO_SPACE_MESSAGE),
     )
@@ -87,20 +87,20 @@ describe('addFurniture', () => {
       ok: false,
       reason: 'unknown-catalog',
     })
-    expect(addFurniture()).toBe(false)
+    expect(await addFurniture()).toBe(false)
     expect(feedbackStore.getState().statusMessage).toBe(
       i18n._(ADD_FURNITURE_UNKNOWN_CATALOG_MESSAGE),
     )
   })
 
-  it('marks toolbar selection effects after a successful add', () => {
+  it('marks toolbar selection effects after a successful add', async () => {
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
     vi.spyOn(sceneCommands, 'addFurniture').mockReturnValue({
       ok: true,
       id: 'item-1',
     })
 
-    expect(addFurniture()).toBe(true)
+    expect(await addFurniture()).toBe(true)
     expect(selectionFocusStore.getState().selectedSource).toBe('toolbar')
     expect(selectionEffects.notePendingSource).toHaveBeenCalledWith('toolbar')
     expect(selectionEffects.notePendingSelection).toHaveBeenCalledWith({

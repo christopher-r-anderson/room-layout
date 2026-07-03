@@ -3,7 +3,15 @@ import {
   getSceneServices,
   getSceneServicesIfReady,
 } from './internal/scene-services'
+import {
+  ensureCollectionLoaded,
+  resetCollectionScenes,
+} from './internal/furniture/collection-scenes-store'
 import type { FurnitureInstance } from '@/domain/furniture'
+
+// Hook half of the on-demand loader surface, exposed here (a component-free
+// contract module) so scene-canvas can import it without breaking react-refresh.
+export { useActiveOnDemandCollectionPaths } from './internal/furniture/collection-scenes-store'
 import type {
   AddFurnitureResult,
   CameraKeyState,
@@ -46,6 +54,19 @@ export const sceneCommands = {
   },
   setCameraKeyState: (keyState: CameraKeyState) => {
     getSceneServicesIfReady()?.setCameraKeyState(keyState)
+  },
+
+  // On-demand collection loading. Resolves once the collection at `sourcePath`
+  // is parsed and registered, so the add flow can await a not-yet-loaded model
+  // before dispatching addFurniture. Loading is driven reactively (the wanted
+  // set mounts a loader), so this does not require a registered scene service.
+  ensureCollectionLoaded: (sourcePath: string): Promise<void> => {
+    return ensureCollectionLoaded(sourcePath)
+  },
+  // Drops all loaded/wanted collection state. Called on error/retry teardown
+  // (before the scene epoch remounts) so a fresh cycle starts clean.
+  resetCollections: () => {
+    resetCollectionScenes()
   },
 
   // Mutations — require a ready scene; throw otherwise (see policy above).

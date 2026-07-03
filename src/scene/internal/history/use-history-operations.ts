@@ -1,5 +1,4 @@
 import { useCallback } from 'react'
-import type { Object3D } from 'three'
 import type { FurnitureInstance } from '@/domain/furniture'
 import type {
   FurnitureCatalogEntry,
@@ -11,12 +10,12 @@ import {
 } from '@/core/scene-contracts'
 import { redoSceneHistory, undoSceneHistory } from './scene-history-state'
 import { buildRestoredSceneHistory } from './restored-scene-history'
+import { getLoadedCollectionScenes } from '../furniture/collection-scenes-store'
 
 interface UseHistoryOperationsOptions {
   isDragging: boolean
   catalog: FurnitureCatalogEntry[]
   collections: FurnitureCollection[]
-  sourceScenesByPath: Map<string, Object3D>
 }
 
 // Undo/redo/restore service handlers. Each reads the authoritative history from
@@ -27,7 +26,6 @@ export function useHistoryOperations({
   isDragging,
   catalog,
   collections,
-  sourceScenesByPath,
 }: UseHistoryOperationsOptions) {
   const undo = useCallback(() => {
     const { history, selectedId } = sceneDocumentStore.getState()
@@ -63,14 +61,16 @@ export function useHistoryOperations({
         instances,
         catalog,
         collections,
-        sourceScenesByPath,
+        // The gated collections are guaranteed loaded before readiness fires
+        // (which is when restore runs), so reading fresh here is safe.
+        sourceScenesByPath: getLoadedCollectionScenes(),
       })
 
       sceneDocumentActions.setInstanceIdCounter(restoredState.instanceIdSeed)
       sceneDocumentActions.setHistory(restoredState.history)
       sceneDocumentActions.setSelectedId(null)
     },
-    [catalog, collections, sourceScenesByPath],
+    [catalog, collections],
   )
 
   return { undo, redo, restoreInitialLayout }

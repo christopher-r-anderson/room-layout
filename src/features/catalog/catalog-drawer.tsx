@@ -1,4 +1,4 @@
-import { type ReactElement } from 'react'
+import { type ReactElement, useState } from 'react'
 import { Trans, useLingui } from '@lingui/react/macro'
 import { formatDecimal } from '@/shared/i18n/formatters'
 import { Button } from '@/shared/ui/button'
@@ -38,6 +38,22 @@ export function CatalogDrawer({
 
   const catalogIdToAdd = useActiveCatalogId()
   const open = useDialogOpen(CATALOG_DIALOG_ID)
+  const [isAdding, setIsAdding] = useState(false)
+
+  // Adding awaits the item's model when it is not yet loaded (environment-first),
+  // so the button reflects that brief pending state and closes the drawer on
+  // success.
+  const handleAddItem = async () => {
+    setIsAdding(true)
+    try {
+      const added = await addFurniture()
+      if (added) {
+        setCatalogDrawerOpen(false)
+      }
+    } finally {
+      setIsAdding(false)
+    }
+  }
 
   return (
     <Drawer open={open} onOpenChange={setCatalogDrawerOpen} autoFocus>
@@ -111,16 +127,12 @@ export function CatalogDrawer({
 
         <DrawerFooter>
           <Button
-            disabled={!catalogIdToAdd}
+            disabled={!catalogIdToAdd || isAdding}
             onClick={() => {
-              const added = addFurniture()
-
-              if (added) {
-                setCatalogDrawerOpen(false)
-              }
+              void handleAddItem()
             }}
           >
-            <Trans>Add Item</Trans>
+            {isAdding ? <Trans>Adding…</Trans> : <Trans>Add Item</Trans>}
           </Button>
           <DrawerClose asChild>
             <Button variant="outline">
