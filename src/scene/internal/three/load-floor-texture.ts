@@ -14,16 +14,11 @@ export interface FloorTextures {
   normal: Texture
 }
 
-function getBasisTranscoderPath(): string {
-  const baseUrl = import.meta.env.BASE_URL
-  return `${baseUrl}basis/`
-}
-
 const textureCache = new Map<string, Promise<FloorTextures>>()
 const textureLoader = new TextureLoader()
-const ktx2Loader = new KTX2Loader()
-  .setTranscoderPath(getBasisTranscoderPath())
-  .setWorkerLimit(2)
+// KTX2Loader resolves the Basis transcoder from three's own bundled copy (via
+// import.meta.url), so no transcoder path is configured here.
+const ktx2Loader = new KTX2Loader().setWorkerLimit(2)
 const ktx2SupportDetectedForRenderer = new WeakSet<WebGLRenderer>()
 
 function getTextureCacheKey(option: FloorFinishOption): string {

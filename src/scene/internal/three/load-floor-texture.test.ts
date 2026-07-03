@@ -1,8 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { FloorFinishOption } from '@/domain/environment-materials'
 
-const expectedBasisTranscoderPath = `${import.meta.env.BASE_URL}basis/`
-
 interface MockTexture {
   colorSpace: unknown
   repeat: { set: ReturnType<typeof vi.fn> }
@@ -17,7 +15,6 @@ type LoadPlan =
 let loadPlans: LoadPlan[] = []
 let loadCallUrls: string[] = []
 const mockDetectSupport = vi.fn()
-const mockSetTranscoderPath = vi.fn()
 const mockSetWorkerLimit = vi.fn()
 
 function createMockTexture(): MockTexture {
@@ -65,11 +62,6 @@ vi.mock('three', () => {
 
 vi.mock('three/addons/loaders/KTX2Loader.js', () => {
   class KTX2Loader {
-    setTranscoderPath(path: string) {
-      mockSetTranscoderPath(path)
-      return this
-    }
-
     setWorkerLimit(limit: number) {
       mockSetWorkerLimit(limit)
       return this
@@ -105,7 +97,6 @@ describe('loadFloorTexture', () => {
     loadPlans = []
     loadCallUrls = []
     mockDetectSupport.mockClear()
-    mockSetTranscoderPath.mockClear()
     mockSetWorkerLimit.mockClear()
   })
 
@@ -130,10 +121,6 @@ describe('loadFloorTexture', () => {
 
     const module = await import('./load-floor-texture')
     const mockRenderer = {} as never
-
-    expect(mockSetTranscoderPath).toHaveBeenCalledWith(
-      expectedBasisTranscoderPath,
-    )
 
     await expect(module.loadFloorTexture(option, mockRenderer)).rejects.toThrow(
       'transient network failure',
