@@ -13,6 +13,14 @@ const BUDGETS = [
   // Lazily-imported per-locale message catalogs. Each is fetched only when its
   // locale is activated; the active locale is never in the shell chunk.
   { label: 'locale (lazy)', pattern: /^locale-.*\.js$/, maxGzipKB: 20 },
+  // three's KTX2Loader Basis transcoder glue (the paired .wasm is not JS, so it
+  // is not budgeted here). Fetched lazily by the loader only when decoding KTX2
+  // textures, never part of the shell.
+  {
+    label: 'transcoder (lazy)',
+    pattern: /^basis_transcoder-.*\.js$/,
+    maxGzipKB: 20,
+  },
 ]
 
 const ASSETS_DIR = path.resolve('dist/assets')

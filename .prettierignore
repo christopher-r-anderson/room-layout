@@ -4,7 +4,6 @@ dist/
 
 assets-source/
 public/models/
-public/basis/
 
 # Agent worktrees (full repo copies) and session state.
 .claude/

@@ -8,9 +8,6 @@
     "node": ">=22.19"
   },
   "scripts": {
-    "basis:sync": "node ./scripts/copy-basis-transcoder.mjs",
-    "postinstall": "pnpm run basis:sync",
-    "prebuild": "pnpm run basis:sync",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "analyze-bundle": "ANALYZE=1 vite build && echo \"Bundle report: bundle-report.html\"",
@@ -54,7 +51,7 @@
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.6.0",
     "tailwindcss": "^4.3.0",
-    "three": "^0.184.0",
+    "three": "^0.185.1",
     "tw-animate-css": "^1.4.0",
     "vaul": "^1.1.2",
     "zustand": "^5.0.14"
@@ -76,7 +73,7 @@
     "@types/node": "^24.12.4",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "@types/three": "^0.184.1",
+    "@types/three": "^0.185.0",
     "@vitejs/plugin-react": "^6.0.2",
     "@vitest/coverage-v8": "4.1.6",
     "@vitest/eslint-plugin": "^1.6.20",
