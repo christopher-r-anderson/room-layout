@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { render, screen, waitFor, within } from '@/test/render'
+import { flushMicrotasks, render, screen, waitFor, within } from '@/test/render'
 import userEvent from '@testing-library/user-event'
 import React from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -267,7 +267,12 @@ describe('EditorOverlay integration', () => {
       name: /Leather Armchair/i,
     })
 
-    outlinerItem.focus()
+    // Focusing an item inside the outliner scroll area schedules a deferred
+    // re-measure; focus inside act (via flushMicrotasks) so the state update
+    // commits wrapped.
+    await flushMicrotasks(() => {
+      outlinerItem.focus()
+    })
     expect(outlinerItem).toHaveFocus()
 
     await user.tab()

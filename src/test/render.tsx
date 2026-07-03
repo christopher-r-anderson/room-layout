@@ -1,6 +1,10 @@
 /* eslint-disable react-refresh/only-export-components -- test-only render helper, not part of HMR */
 import type { ReactElement, ReactNode } from 'react'
-import { render as rtlRender, type RenderOptions } from '@testing-library/react'
+import {
+  act,
+  render as rtlRender,
+  type RenderOptions,
+} from '@testing-library/react'
 import { I18nProvider } from '@lingui/react'
 import { i18n } from '@/shared/i18n/i18n'
 
@@ -15,5 +19,19 @@ function render(ui: ReactElement, options?: Omit<RenderOptions, 'wrapper'>) {
   return rtlRender(ui, { wrapper: AllProviders, ...options })
 }
 
+// Runs an optional synchronous interaction and then drains the microtask queue,
+// all inside act, so state updates deferred via queueMicrotask (e.g. Base UI
+// ScrollArea's mount-time thumb measurement) commit wrapped instead of firing
+// after a synchronous interaction as "not wrapped in act(...)" warnings that
+// also leak into later test files. Pass the interaction (rather than running it
+// before calling) when it is what schedules the deferred update, so its
+// scheduling happens within act's tracking.
+async function flushMicrotasks(interaction?: () => void) {
+  await act(async () => {
+    interaction?.()
+    await Promise.resolve()
+  })
+}
+
 export * from '@testing-library/react'
-export { render }
+export { render, flushMicrotasks }

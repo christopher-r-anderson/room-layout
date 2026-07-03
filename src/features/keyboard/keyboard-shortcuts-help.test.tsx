@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { render, screen, within } from '@/test/render'
+import { flushMicrotasks, render, screen, within } from '@/test/render'
 import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
 import { describe, expect, it, vi } from 'vitest'
@@ -82,7 +82,7 @@ describe('KeyboardShortcutsDialog', () => {
     ).not.toBeInTheDocument()
   })
 
-  it('renders compact alternatives and Apple-specific modifier labels', () => {
+  it('renders compact alternatives and Apple-specific modifier labels', async () => {
     const restoreNavigator = mockNavigatorPlatform(
       'MacIntel',
       'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
@@ -90,6 +90,9 @@ describe('KeyboardShortcutsDialog', () => {
 
     try {
       render(<KeyboardShortcutsDialog open onOpenChange={() => undefined} />)
+      // Flush the scroll area's deferred mount measurement so its state update
+      // commits inside act instead of after the test.
+      await flushMicrotasks()
 
       const panCameraRow = screen.getByText('Pan camera').closest('tr')
 
