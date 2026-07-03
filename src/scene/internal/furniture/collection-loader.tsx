@@ -24,7 +24,7 @@ function resourceBasePath(path: string): string {
   return lastSlash >= 0 ? path.slice(0, lastSlash + 1) : ''
 }
 
-export function CollectionLoaderHost({
+export function CollectionLoader({
   gatedCollectionPaths,
   onDemandCollectionPaths,
   resolveBytes,

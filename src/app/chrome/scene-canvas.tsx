@@ -1,7 +1,7 @@
 import { Canvas } from '@react-three/fiber'
 import { useCallback } from 'react'
 import { NeutralToneMapping, SRGBColorSpace } from 'three'
-import { Scene, CollectionLoaderHost } from '@/scene/scene'
+import { Scene, CollectionLoader } from '@/scene/scene'
 import { useActiveOnDemandCollectionPaths } from '@/scene/scene-commands'
 import {
   completeAssetLoad,
@@ -29,7 +29,7 @@ export interface SceneCanvasProps {
 //
 // Environment-first loading: <Scene> renders the room/lighting/camera
 // immediately and reads parsed collections from a store, so it never suspends on
-// furniture. <CollectionLoaderHost> loads collections imperatively - gated ones
+// furniture. <CollectionLoader> loads collections imperatively - gated ones
 // from the startup prefetch (which gate the unlock; a failure surfaces the
 // startup error) and on-demand ones from a direct fetch (isolated failures).
 export default function SceneCanvas({ onPointerMissed }: SceneCanvasProps) {
@@ -105,7 +105,7 @@ export default function SceneCanvas({ onPointerMissed }: SceneCanvasProps) {
 
       {/* Keyed by epoch so a retry remounts with a fresh loader and reloads the
           re-prefetched gated bytes. */}
-      <CollectionLoaderHost
+      <CollectionLoader
         key={sceneEpoch}
         gatedCollectionPaths={gatedCollectionPaths}
         onDemandCollectionPaths={onDemandCollectionPaths}
