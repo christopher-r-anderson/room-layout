@@ -4,6 +4,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 import { configureGltfKtx2 } from '@/scene/internal/three/gltf-ktx2'
 import {
   collectionScenesActions,
+  isCollectionFailed,
   isCollectionLoaded,
 } from './collection-scenes-store'
 
@@ -43,6 +44,11 @@ export function CollectionLoader({
     loaderRef.current = loader
   }
   const inFlightRef = useRef<Set<string>>(new Set())
+  // Gated failures must not auto-retry within a startup cycle (retry is the
+  // explicit Retry button, which remounts this host on a new epoch). This ref is
+  // component-local so it survives store resets on error; the store's `failed`
+  // set governs on-demand paths instead, where a re-add is meant to retry.
+  const failedGatedRef = useRef<Set<string>>(new Set())
 
   useEffect(() => {
     const loader = loaderRef.current
@@ -50,9 +56,13 @@ export function CollectionLoader({
       return
     }
     const inFlight = inFlightRef.current
+    const failedGated = failedGatedRef.current
 
     const load = async (path: string, gated: boolean) => {
       if (isCollectionLoaded(path) || inFlight.has(path)) {
+        return
+      }
+      if (gated ? failedGated.has(path) : isCollectionFailed(path)) {
         return
       }
       inFlight.add(path)
@@ -65,10 +75,13 @@ export function CollectionLoader({
           error instanceof Error ? error : new Error(String(error))
         if (gated) {
           // A gated collection is required to unlock; surface the startup error.
+          failedGated.add(path)
           onGatedError(normalized)
         } else {
           // On-demand failures are isolated: the editor stays usable and only
-          // this collection is unavailable.
+          // this collection is unavailable. Mark it so an awaiting add rejects
+          // (rather than hanging) and a re-add can retry.
+          collectionScenesActions.markFailed(path)
           console.warn(
             `Failed to load furniture collection on demand: ${path}`,
             normalized,

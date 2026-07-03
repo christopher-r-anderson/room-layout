@@ -16,16 +16,20 @@ import { useItems } from '@/core/scene-contracts'
 interface CollectionScenesState {
   // sourcePath -> parsed GLTF scene root.
   loaded: Map<string, Object3D>
-  // sourcePaths explicitly requested on demand (e.g. an add for a collection the
-  // restored scene did not reference). Kept for the session; loaders for these
-  // stay mounted so the parsed scene remains available.
+  // sourcePaths requested on demand (e.g. an add for a collection the restored
+  // scene did not reference). Drives which on-demand collections the loader
+  // pulls in; kept for the session so an added item's collection stays available.
   wanted: Set<string>
+  // sourcePaths whose on-demand load failed. A failed collection is not retried
+  // automatically; requesting it again (a re-add) clears the mark and retries.
+  failed: Set<string>
 }
 
 const collectionScenesStore = createStore<CollectionScenesState>()(
   subscribeWithSelector(() => ({
     loaded: new Map<string, Object3D>(),
     wanted: new Set<string>(),
+    failed: new Set<string>(),
   })),
 )
 
@@ -40,20 +44,33 @@ export const collectionScenesActions = {
       return { ...state, loaded }
     })
   },
-  wantCollection(path: string) {
+  // Request an on-demand collection (or re-request a failed one). Always writes a
+  // fresh `wanted` set so useActiveOnDemandCollectionPaths recomputes and the
+  // loader re-attempts, and clears any prior failure so the retry can proceed.
+  requestCollection(path: string) {
     collectionScenesStore.setState((state) => {
-      if (state.wanted.has(path)) {
-        return state
-      }
       const wanted = new Set(state.wanted)
       wanted.add(path)
-      return { ...state, wanted }
+      const failed = new Set(state.failed)
+      failed.delete(path)
+      return { ...state, wanted, failed }
+    })
+  },
+  markFailed(path: string) {
+    collectionScenesStore.setState((state) => {
+      if (state.failed.has(path)) {
+        return state
+      }
+      const failed = new Set(state.failed)
+      failed.add(path)
+      return { ...state, failed }
     })
   },
   reset() {
     collectionScenesStore.setState({
       loaded: new Map<string, Object3D>(),
       wanted: new Set<string>(),
+      failed: new Set<string>(),
     })
   },
 }
@@ -66,33 +83,45 @@ export function isCollectionLoaded(path: string): boolean {
   return collectionScenesStore.getState().loaded.has(path)
 }
 
-// Ensures a collection is parsed and registered, resolving once its scene is in
-// the store. Requesting it adds the path to `wanted`, which mounts a loader (via
-// useActiveOnDemandCollectionPaths); the promise resolves off the store so the
-// caller never races a stale React render. Callers (the add flow) await this
-// before a mutation that needs the collection's source scene.
+export function isCollectionFailed(path: string): boolean {
+  return collectionScenesStore.getState().failed.has(path)
+}
+
+// Ensures a collection is parsed and registered. Requesting it (re)marks it
+// wanted and clears any prior failure, which makes the loader (re)attempt it; the
+// promise resolves once the scene registers, or rejects if the load fails - so
+// the add flow can surface an error and recover instead of hanging. Settles off
+// the store so the caller never races a stale React render.
 export function ensureCollectionLoaded(path: string): Promise<void> {
   if (isCollectionLoaded(path)) {
     return Promise.resolve()
   }
 
-  collectionScenesActions.wantCollection(path)
+  collectionScenesActions.requestCollection(path)
 
-  return new Promise<void>((resolve) => {
-    const unsubscribe = collectionScenesStore.subscribe(
-      (state) => state.loaded,
-      (loaded) => {
-        if (loaded.has(path)) {
-          unsubscribe()
-          resolve()
-        }
-      },
-    )
+  return new Promise<void>((resolve, reject) => {
+    let settled = false
+    const finish = (run: () => void) => {
+      if (settled) {
+        return
+      }
+      settled = true
+      unsubscribe()
+      run()
+    }
+    const unsubscribe = collectionScenesStore.subscribe((state) => {
+      if (state.loaded.has(path)) {
+        finish(resolve)
+      } else if (state.failed.has(path)) {
+        finish(() => {
+          reject(new Error(`furniture collection failed to load: ${path}`))
+        })
+      }
+    })
 
     // Guard the window between the initial check and subscribing.
     if (isCollectionLoaded(path)) {
-      unsubscribe()
-      resolve()
+      finish(resolve)
     }
   })
 }
@@ -105,10 +134,10 @@ export function useLoadedCollectionScenes(): Map<string, Object3D> {
   return useStoreWithEqualityFn(collectionScenesStore, (state) => state.loaded)
 }
 
-// The collections that need an on-demand loader mounted right now: every
+// The on-demand collections the loader should pull in right now: every
 // collection referenced by a current scene item, plus anything explicitly
-// wanted, minus the gated collections (those already have loaders under the
-// startup seed gate). Added items keep their collection mounted via this set.
+// wanted, minus the gated collections (which the loader already handles from the
+// startup prefetch). Added items keep their collection loaded via this set.
 export function useActiveOnDemandCollectionPaths(
   gatedCollectionPaths: string[],
 ): string[] {

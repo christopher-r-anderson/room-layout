@@ -2,7 +2,10 @@ import { expect, test, type Page } from '@playwright/test'
 import {
   addFurniture,
   dragSelectedFurniture,
+  failFurnitureAssetRequestsUntilRetry,
   openEditor,
+  readSceneState,
+  waitForEditorReady,
 } from './support/editor-harness'
 
 function expectUniqueItemIds(itemIds: string[]) {
@@ -46,4 +49,33 @@ test('keeps successful adds free of false no-space errors and duplicate ids', as
   await expectNoSafePlacementError(page)
 
   expect(thirdAddState.selectedName).toBe('Leather Armchair')
+})
+
+test('surfaces an error and recovers when an added item fails to load', async ({
+  page,
+}) => {
+  const assetFailure = await failFurnitureAssetRequestsUntilRetry(page)
+
+  // Empty scene unlocks despite failing furniture requests (environment-first);
+  // the failure only bites when the user adds an item whose model must load.
+  await page.goto('/')
+  await waitForEditorReady(page)
+
+  const picker = page.getByRole('dialog', { name: 'Add furniture' })
+  await page.getByRole('button', { name: 'Add Furniture' }).click()
+  await expect(picker).toBeVisible()
+  await picker.getByText('Leather Couch', { exact: true }).click()
+  await picker.getByRole('button', { name: 'Add Item' }).click()
+
+  // Instead of hanging on "Adding...", the add reports the failure (a toast,
+  // visible over the drawer), adds nothing, and the button recovers.
+  await expect(page.getByText('Check your connection')).toBeVisible()
+  await expect(picker.getByRole('button', { name: 'Add Item' })).toBeEnabled()
+  expect((await readSceneState(page)).itemCount).toBe(0)
+
+  // Retrying after the network recovers succeeds.
+  assetFailure.allowRequests()
+  await picker.getByRole('button', { name: 'Add Item' }).click()
+  await expect(picker).toBeHidden()
+  await expect.poll(async () => (await readSceneState(page)).itemCount).toBe(1)
 })

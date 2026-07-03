@@ -199,6 +199,10 @@ msgstr "Could not copy URL to clipboard."
 msgid "Could not open share options."
 msgstr "Could not open share options."
 
+#: src/shared/messages/command-messages.ts
+msgid "Couldn't load that item. Check your connection and try again."
+msgstr "Couldn't load that item. Check your connection and try again."
+
 #: src/features/keyboard/keyboard-shortcuts.definitions.ts
 msgid "Details"
 msgstr "Details"

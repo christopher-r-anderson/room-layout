@@ -4,8 +4,10 @@ import { selectionFocusActions } from '@/core/stores/selection-focus-store'
 import { selectionEffects } from '@/core/operations/selection-effects'
 import { assetsStore } from '@/core/stores/assets-store'
 import { sceneCommands } from '@/scene/scene-commands'
+import { toast } from 'sonner'
 import { i18n } from '@/shared/i18n/i18n'
 import {
+  ADD_FURNITURE_LOAD_FAILED_MESSAGE,
   ADD_FURNITURE_NO_SPACE_MESSAGE,
   ADD_FURNITURE_UNKNOWN_CATALOG_MESSAGE,
 } from '@/shared/messages/command-messages'
@@ -41,7 +43,18 @@ export async function addFurniture(): Promise<boolean> {
 
   const sourcePath = resolveCollectionSourcePath(catalogIdToAdd)
   if (sourcePath) {
-    await sceneCommands.ensureCollectionLoaded(sourcePath)
+    try {
+      await sceneCommands.ensureCollectionLoaded(sourcePath)
+    } catch {
+      // The model failed to load (e.g. offline). Surface it rather than leaving
+      // the add pending forever; a re-add retries the load. A toast (not the
+      // status region) so it is visible over the open catalog drawer, which
+      // aria-hides the background chrome.
+      toast.error(i18n._(ADD_FURNITURE_LOAD_FAILED_MESSAGE))
+      selectionEffects.notePendingSource(null)
+      selectionEffects.notePendingSelection(null)
+      return false
+    }
   }
 
   // The scene may have been torn down while the model loaded (retry/teardown).

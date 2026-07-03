@@ -142,6 +142,9 @@ msgstr "[Ćōũĺď ńōţ ćōƥŷ ŨŔĹ ţō ćĺĩƥƀōàŕď.āēīōūá�
 msgid "Could not open share options."
 msgstr "[Ćōũĺď ńōţ ōƥēń śĥàŕē ōƥţĩōńś.āēīōūáéíóúāēīōūá]"
 
+msgid "Couldn't load that item. Check your connection and try again."
+msgstr "[Ćōũĺďń'ţ ĺōàď ţĥàţ ĩţēḿ. Ćĥēćķ ŷōũŕ ćōńńēćţĩōń àńď ţŕŷ àğàĩń.āēīōūáéíóúāēīōūáéíóúāēīōū]"
+
 msgid "Details"
 msgstr "[Ďēţàĩĺśāēīōūáé]"
 
