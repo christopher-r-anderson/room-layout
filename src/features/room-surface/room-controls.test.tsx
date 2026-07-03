@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { fireEvent, render, screen } from '@/test/render'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { RoomControls } from '@/features/room-surface/room-controls'
 import { assetsActions, resetAssetsStore } from '@/core/stores/assets-store'
 import {
@@ -21,11 +21,6 @@ beforeEach(() => {
   sceneDocumentActions.setFloorFinishId('wood-floor')
   sceneDocumentActions.setWallFinishId('light-gray')
   sceneDocumentActions.setLightingMoodId('daylight')
-})
-
-afterEach(() => {
-  resetAssetsStore()
-  resetSceneDocumentStore()
 })
 
 describe('RoomControls', () => {

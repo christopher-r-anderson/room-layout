@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { afterEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { renderHook } from '@testing-library/react'
 import type { EnvironmentMaterialConfig } from '@/domain/environment-materials'
 import { assetsStore, resetAssetsStore } from '@/core/stores/assets-store'
@@ -79,7 +79,10 @@ function seed(
 }
 
 describe('active-finish-ids', () => {
-  afterEach(() => {
+  // Reset before each test rather than after: resetting while the renderHook
+  // component is still mounted re-renders it outside act (cleanup unmounts
+  // later), which triggers "not wrapped in act(...)" warnings.
+  beforeEach(() => {
     resetAssetsStore()
     resetSceneDocumentStore()
   })

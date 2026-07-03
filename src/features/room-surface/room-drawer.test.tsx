@@ -1,9 +1,15 @@
 // @vitest-environment jsdom
 
-import { fireEvent, render, screen, waitFor } from '@/test/render'
+import {
+  fireEvent,
+  flushMicrotasks,
+  render,
+  screen,
+  waitFor,
+} from '@/test/render'
 import userEvent from '@testing-library/user-event'
 import React from 'react'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { RoomDrawer } from '@/features/room-surface/room-drawer'
 import { assetsActions, resetAssetsStore } from '@/core/stores/assets-store'
 import {
@@ -14,11 +20,6 @@ import {
 import { createEnvironmentConfig } from './test-fixtures'
 
 beforeEach(() => {
-  resetAssetsStore()
-  resetSceneDocumentStore()
-})
-
-afterEach(() => {
   resetAssetsStore()
   resetSceneDocumentStore()
 })
@@ -114,7 +115,7 @@ describe('RoomDrawer', () => {
     expect(onCloseAutoFocus).not.toHaveBeenCalled()
   })
 
-  it('mounts the connected room controls in the drawer surface', () => {
+  it('mounts the connected room controls in the drawer surface', async () => {
     assetsActions.setAssets({
       catalog: [],
       collections: [],
@@ -125,6 +126,9 @@ describe('RoomDrawer', () => {
     sceneDocumentActions.setFloorFinishLoading(true)
 
     render(<RoomDrawer open={true} onOpenChange={vi.fn()} />)
+    // Flush the scroll area's deferred mount measurement so its state update
+    // commits inside act instead of after the test.
+    await flushMicrotasks()
 
     fireEvent.click(screen.getByRole('tab', { name: 'Floor' }))
 

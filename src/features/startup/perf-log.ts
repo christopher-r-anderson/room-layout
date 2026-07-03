@@ -1,7 +1,7 @@
 export function createDevPerfLogger(prefix: string) {
-  if (!import.meta.env.DEV) {
+  if (!import.meta.env.DEV || import.meta.env.MODE === 'test') {
     return () => {
-      // no-op outside development builds
+      // no-op outside the dev server (production builds and test runs)
     }
   }
 

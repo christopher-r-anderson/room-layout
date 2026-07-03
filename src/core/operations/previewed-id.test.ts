@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { renderHook } from '@testing-library/react'
 import { createHistoryState } from '@/shared/lib/ui/editor-history'
 import type { FurnitureItem } from '@/domain/furniture'
@@ -63,12 +63,6 @@ describe('usePreviewedId / getPreviewedId', () => {
     editorLifecycleActions.markAssetsReady()
     sceneDocumentActions.setHistory(createHistoryState([item('a')]))
     sceneDocumentActions.setPreviewedId('a')
-  })
-
-  afterEach(() => {
-    resetSceneDocumentStore()
-    resetEditorLifecycleStore()
-    resetDialogStore()
   })
 
   it('reads the gated previewed id from the stores', () => {
