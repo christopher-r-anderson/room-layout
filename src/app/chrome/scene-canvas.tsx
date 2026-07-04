@@ -1,5 +1,5 @@
 import { Canvas } from '@react-three/fiber'
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 import { NeutralToneMapping, SRGBColorSpace } from 'three'
 import { Scene, CollectionLoader } from '@/scene/scene'
 import { useActiveOnDemandCollectionPaths } from '@/scene/scene-commands'
@@ -32,9 +32,10 @@ export interface SceneCanvasProps {
 //
 // Environment-first loading: <Scene> renders the room/lighting/camera
 // immediately and reads parsed collections from a store, so it never suspends on
-// furniture. <CollectionLoader> loads collections imperatively - gated ones
-// from the startup prefetch (which gate the unlock; a failure surfaces the
-// startup error) and on-demand ones from a direct fetch (isolated failures).
+// furniture. <CollectionLoader> loads collections imperatively; this module owns
+// the gated-vs-on-demand policy - where a collection's bytes come from - while the
+// loader stays a uniform mechanism and the Scene derives readiness/error from the
+// store.
 export default function SceneCanvas({ onPointerMissed }: SceneCanvasProps) {
   const sceneEpoch = useSceneEpoch()
   const catalog = useCatalogEntries()
@@ -42,6 +43,10 @@ export default function SceneCanvas({ onPointerMissed }: SceneCanvasProps) {
   const gatedCollectionPaths = useGatedCollectionPaths()
   const onDemandCollectionPaths =
     useActiveOnDemandCollectionPaths(gatedCollectionPaths)
+  const collectionPaths = useMemo(
+    () => [...gatedCollectionPaths, ...onDemandCollectionPaths],
+    [gatedCollectionPaths, onDemandCollectionPaths],
+  )
   const previewedId = usePreviewedId()
   const {
     selectedFloorOption,
@@ -50,26 +55,23 @@ export default function SceneCanvas({ onPointerMissed }: SceneCanvasProps) {
   } = useActiveFinishIds()
   const { renderQuality, shadowMode, exposure } = resolveRenderQuality()
 
-  // Gated collections reuse the streamed prefetch bytes (also feeds the loader
-  // progress); on-demand collections are fetched directly on first use. In both
-  // cases the loader parses the bytes straight into the scene store, so a
-  // collection is fetched at most once per session without relying on HTTP cache
-  // headers.
+  // Gated collections reuse the streamed prefetch bytes; on-demand collections are
+  // fetched directly on first use (streamed so a stall timeout bounds them and the
+  // byte progress drives the drawer's "Adding... N%"). Either way the loader parses
+  // the bytes straight into the scene store, so a collection is fetched at most
+  // once per session without relying on HTTP cache headers.
   const resolveBytes = useCallback(
-    (path: string, gated: boolean): Promise<ArrayBuffer> => {
-      if (gated) {
+    (path: string): Promise<ArrayBuffer> => {
+      if (gatedCollectionPaths.includes(path)) {
         return whenPrefetched(path)
       }
-      // Stream on-demand loads too: a stall timeout bounds them (so a stuck add
-      // fails rather than hangs) and the byte progress drives the drawer's
-      // determinate "Adding... N%".
       return streamFetch(path, {
         onProgress: (progress) => {
           collectionLoadProgressActions.setProgress(path, progress)
         },
       })
     },
-    [],
+    [gatedCollectionPaths],
   )
 
   // A non-ok HTTP response means the model is missing/broken (permanent); a
@@ -95,7 +97,8 @@ export default function SceneCanvas({ onPointerMissed }: SceneCanvasProps) {
       onPointerMissed={onPointerMissed}
       shadows={shadowMode}
     >
-      {/* Scene renders the environment now and furniture as collections register;
+      {/* Scene renders the environment now and furniture as collections register,
+          and reports readiness / a gated-collection failure from the store;
           validation/render failures surface via the error boundary. */}
       <SceneAssetErrorBoundary key={sceneEpoch} onError={notifyAssetError}>
         <Scene
@@ -105,6 +108,7 @@ export default function SceneCanvas({ onPointerMissed }: SceneCanvasProps) {
           gatedCollectionPaths={gatedCollectionPaths}
           onCanvasPointerSelection={selectByCanvasPointer}
           onAssetsReady={completeAssetLoad}
+          onAssetsError={notifyAssetError}
           previewedId={previewedId}
           onPreviewChange={previewFromScene}
           floorOption={selectedFloorOption}
@@ -118,11 +122,9 @@ export default function SceneCanvas({ onPointerMissed }: SceneCanvasProps) {
           re-prefetched gated bytes. */}
       <CollectionLoader
         key={sceneEpoch}
-        gatedCollectionPaths={gatedCollectionPaths}
-        onDemandCollectionPaths={onDemandCollectionPaths}
+        collectionPaths={collectionPaths}
         resolveBytes={resolveBytes}
         classifyLoadError={classifyLoadError}
-        onGatedError={notifyAssetError}
       />
     </Canvas>
   )

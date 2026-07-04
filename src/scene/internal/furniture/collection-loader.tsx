@@ -9,37 +9,32 @@ import {
   isCollectionLoaded,
 } from './collection-scenes-store'
 
-// Imperative furniture-collection loader. It parses prefetched (gated) or
-// freshly fetched (on-demand) GLB bytes with a single configured GLTFLoader and
-// registers the result in the collection-scenes store. This replaces the old
-// useGLTF-per-collection + Suspense + THREE.Cache-seeding approach: there is now
-// one loading path for both gated and on-demand collections, nothing suspends
-// (so the room renders immediately), and in-session dedup is the store itself -
-// a parsed collection is never re-fetched or re-parsed. Renders nothing; the
-// Scene reads the store to render furniture and to gate readiness.
+// Imperative furniture-collection loader. It parses each requested collection's
+// GLB bytes with a single configured GLTFLoader and records the outcome in the
+// collection-scenes store - a parsed scene on success, a failure kind on error.
+// It is a pure mechanism: it does not distinguish gated from on-demand and has no
+// startup coupling. `resolveBytes` (supplied by the app) decides where a
+// collection's bytes come from, and readiness/error policy is derived from the
+// store by the Scene. In-session dedup is the store itself: a loaded or failed
+// collection is never re-fetched (a re-request clears its failure first).
 //
 // Configuring KTX2 needs the WebGLRenderer, so this lives inside the Canvas.
-// Meshopt geometry is auto-decoded by drei's loader wiring; KTX2 textures need
-// the Basis transcoder configured onto the loader.
+// Meshopt geometry is auto-decoded; KTX2 textures need the Basis transcoder.
 function resourceBasePath(path: string): string {
   const lastSlash = path.lastIndexOf('/')
   return lastSlash >= 0 ? path.slice(0, lastSlash + 1) : ''
 }
 
 export function CollectionLoader({
-  gatedCollectionPaths,
-  onDemandCollectionPaths,
+  collectionPaths,
   resolveBytes,
   classifyLoadError,
-  onGatedError,
 }: {
-  gatedCollectionPaths: string[]
-  onDemandCollectionPaths: string[]
-  resolveBytes: (path: string, gated: boolean) => Promise<ArrayBuffer>
-  // Injected by the app (which owns the core fetch errors): classifies a failure
+  collectionPaths: string[]
+  resolveBytes: (path: string) => Promise<ArrayBuffer>
+  // Supplied by the app (which owns the core fetch errors): classifies a failure
   // as permanent ('unavailable') or transient ('connection').
   classifyLoadError: (error: unknown) => CollectionLoadFailureKind
-  onGatedError: (error: Error) => void
 }) {
   const gl = useThree((state) => state.gl)
   const loaderRef = useRef<GLTFLoader | null>(null)
@@ -49,11 +44,6 @@ export function CollectionLoader({
     loaderRef.current = loader
   }
   const inFlightRef = useRef<Set<string>>(new Set())
-  // Gated failures must not auto-retry within a startup cycle (retry is the
-  // explicit Retry button, which remounts this host on a new epoch). This ref is
-  // component-local so it survives store resets on error; the store's `failed`
-  // set governs on-demand paths instead, where a re-add is meant to retry.
-  const failedGatedRef = useRef<Set<string>>(new Set())
 
   useEffect(() => {
     const loader = loaderRef.current
@@ -61,59 +51,36 @@ export function CollectionLoader({
       return
     }
     const inFlight = inFlightRef.current
-    const failedGated = failedGatedRef.current
 
-    const load = async (path: string, gated: boolean) => {
-      if (isCollectionLoaded(path) || inFlight.has(path)) {
-        return
-      }
-      if (gated ? failedGated.has(path) : isCollectionFailed(path)) {
+    const load = async (path: string) => {
+      if (
+        isCollectionLoaded(path) ||
+        isCollectionFailed(path) ||
+        inFlight.has(path)
+      ) {
         return
       }
       inFlight.add(path)
       try {
-        const bytes = await resolveBytes(path, gated)
+        const bytes = await resolveBytes(path)
         const gltf = await loader.parseAsync(bytes, resourceBasePath(path))
         collectionScenesActions.registerScene(path, gltf.scene)
       } catch (error) {
-        const normalized =
-          error instanceof Error ? error : new Error(String(error))
-        if (gated) {
-          // A gated collection is required to unlock; surface the startup error.
-          failedGated.add(path)
-          onGatedError(normalized)
-        } else {
-          // On-demand failures are isolated: the editor stays usable and only
-          // this collection is unavailable. Mark it (with why) so an awaiting add
-          // rejects rather than hanging, a re-add can retry a transient failure,
-          // and the catalog can mark a permanently-unavailable item.
-          collectionScenesActions.markFailed(
-            path,
-            classifyLoadError(normalized),
-          )
-          console.warn(
-            `Failed to load furniture collection on demand: ${path}`,
-            normalized,
-          )
-        }
+        // Record why it failed so an awaiting add rejects (rather than hanging), a
+        // re-add can retry a transient failure, the catalog can mark a permanently
+        // unavailable item, and the Scene can surface a gated failure as a startup
+        // error. Not retried until the failure is cleared (a re-request).
+        collectionScenesActions.markFailed(path, classifyLoadError(error))
+        console.warn(`Failed to load furniture collection: ${path}`, error)
       } finally {
         inFlight.delete(path)
       }
     }
 
-    for (const path of gatedCollectionPaths) {
-      void load(path, true)
+    for (const path of collectionPaths) {
+      void load(path)
     }
-    for (const path of onDemandCollectionPaths) {
-      void load(path, false)
-    }
-  }, [
-    gatedCollectionPaths,
-    onDemandCollectionPaths,
-    resolveBytes,
-    classifyLoadError,
-    onGatedError,
-  ])
+  }, [collectionPaths, resolveBytes, classifyLoadError])
 
   return null
 }

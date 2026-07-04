@@ -45,7 +45,10 @@ import {
   clearSceneServices,
   registerSceneServices,
 } from './internal/scene-services'
-import { useLoadedCollectionScenes } from './internal/furniture/collection-scenes-store'
+import {
+  useFailedCollections,
+  useLoadedCollectionScenes,
+} from './internal/furniture/collection-scenes-store'
 
 // Public scene component surface for the app-side loader orchestration
 // (scene-canvas). The matching hook lives on the scene-commands contract so this
@@ -69,6 +72,7 @@ export function Scene({
   gatedCollectionPaths = [],
   onCanvasPointerSelection,
   onAssetsReady,
+  onAssetsError,
   previewedId = null,
   onPreviewChange,
   floorOption = null,
@@ -82,6 +86,7 @@ export function Scene({
   gatedCollectionPaths?: string[]
   onCanvasPointerSelection?: (id: string) => void
   onAssetsReady?: () => void
+  onAssetsError?: (error: Error) => void
   previewedId?: string | null
   onPreviewChange?: (id: string | null) => void
   floorOption?: FloorFinishOption | null
@@ -114,6 +119,7 @@ export function Scene({
   // The map is partial and grows as collections load, so the room renders before
   // any furniture and each item appears once its collection is present.
   const sourceScenesByPath = useLoadedCollectionScenes()
+  const failedCollections = useFailedCollections()
 
   const sourceScenesByCollectionId = useMemo(() => {
     const byCollectionId = new Map<string, Object3D>()
@@ -302,16 +308,32 @@ export function Scene({
   }, [getThreeState, invalidate, moodExposure])
 
   useEffect(() => {
-    // Environment-first readiness: unlock once the manifest has arrived (so the
-    // room and camera are mounted) AND every collection the restored scene
-    // references is parsed. An empty scene has no gated collections, so it
-    // unlocks as soon as the manifest is present - it never waits on furniture.
-    // The remaining catalog loads lazily on demand and does not gate this.
+    // Environment-first startup outcome, derived from the collection store:
+    // - a gated collection failing to load is a startup error;
+    // - otherwise, unlock once the manifest has arrived (room/camera mounted) AND
+    //   every collection the restored scene references is parsed.
+    // An empty scene has no gated collections, so it unlocks as soon as the
+    // manifest is present - it never waits on furniture. The remaining catalog
+    // loads lazily on demand and does not gate this. Fires at most once per
+    // startup cycle (the ref resets when the scene remounts on retry).
     if (collections.length === 0) {
       return
     }
 
     if (hasReportedAssetsReadyRef.current) {
+      return
+    }
+
+    const failedGatedPath = gatedCollectionPaths.find((path) =>
+      failedCollections.has(path),
+    )
+    if (failedGatedPath) {
+      hasReportedAssetsReadyRef.current = true
+      onAssetsError?.(
+        new Error(
+          `gated furniture collection failed to load: ${failedGatedPath}`,
+        ),
+      )
       return
     }
 
@@ -326,9 +348,11 @@ export function Scene({
     onAssetsReady?.()
   }, [
     onAssetsReady,
+    onAssetsError,
     collections.length,
     gatedCollectionPaths,
     sourceScenesByPath,
+    failedCollections,
   ])
 
   const handlePreviewStart = useCallback(

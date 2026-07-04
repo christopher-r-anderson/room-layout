@@ -34,7 +34,6 @@ function resetStartupShell() {
   resetSelectionFocusStore()
   resetToolbarGeometryStore()
   resetToolbarInteractionStore()
-  sceneCommands.resetCollections()
   clearSceneServices()
 }
 
@@ -224,6 +223,10 @@ export function notifyAssetError(error: Error) {
 export function requestAssetRetry() {
   dialogActions.closeActiveDialog()
   resetStartupShell()
+  // Only reset collection state on an explicit retry (which remounts the loader
+  // via the epoch), not on the error path: a gated failure's `failed` mark must
+  // survive so the loader does not immediately re-attempt and loop.
+  sceneCommands.resetCollections()
   clearFurnitureAssetPrefetch()
 
   editorLifecycleActions.requestRetry()
