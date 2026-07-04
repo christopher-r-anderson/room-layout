@@ -1,4 +1,4 @@
-import { type ReactElement, useEffect, useState } from 'react'
+import { type ReactElement } from 'react'
 import { Trans, useLingui } from '@lingui/react/macro'
 import { IconLoader } from '@tabler/icons-react'
 import { formatDecimal } from '@/shared/i18n/formatters'
@@ -14,14 +14,10 @@ import {
   DrawerTrigger,
 } from '@/shared/ui/drawer'
 import { cn } from '@/shared/lib/utils'
-import { formatPercent } from '@/shared/i18n/formatters'
 import { useDialogOpen } from '@/core/stores/dialog-store'
 import { useCatalogEntries } from '@/core/stores/assets-store'
-import { useCollectionLoadPercent } from '@/core/stores/collection-load-progress-store'
 import { useFailedCollections } from '@/scene/collection-loading'
 import {
-  addFurniture,
-  prefetchCatalogItem,
   resolveCollectionSourcePath,
   setCatalogDrawerOpen,
 } from './catalog-actions'
@@ -30,6 +26,7 @@ import {
   catalogSelectionActions,
   useActiveCatalogId,
 } from './catalog-selection-store'
+import { useAddFurniture } from './use-add-furniture'
 
 export function CatalogDrawer({
   triggerButton,
@@ -48,45 +45,16 @@ export function CatalogDrawer({
   const catalogIdToAdd = useActiveCatalogId()
   const open = useDialogOpen(CATALOG_DIALOG_ID)
   const failedCollections = useFailedCollections()
-  const selectedSourcePath = catalogIdToAdd
-    ? resolveCollectionSourcePath(catalogIdToAdd)
-    : null
+  const {
+    submit,
+    isSubmitting,
+    showPending,
+    percentLabel,
+    selectedSourcePath,
+  } = useAddFurniture({ catalogIdToAdd, open })
   const selectedUnavailable = selectedSourcePath
     ? failedCollections.get(selectedSourcePath) === 'unavailable'
     : false
-  const loadPercent = useCollectionLoadPercent(selectedSourcePath)
-  const percentLabel =
-    loadPercent !== null ? formatPercent(loadPercent / 100) : null
-  // `isSubmitting` disables the button immediately (no double-add); the pending
-  // label/spinner is delayed so a fast or already-loaded add never flashes it.
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [showPending, setShowPending] = useState(false)
-
-  // Prefetch-on-select: start loading the selected item's model while the drawer
-  // is open, so the Add is usually instant by the time the user commits.
-  useEffect(() => {
-    if (open && catalogIdToAdd) {
-      prefetchCatalogItem(catalogIdToAdd)
-    }
-  }, [open, catalogIdToAdd])
-
-  const handleAddItem = async () => {
-    setIsSubmitting(true)
-    const PENDING_DELAY_MS = 300
-    const pendingTimer = window.setTimeout(() => {
-      setShowPending(true)
-    }, PENDING_DELAY_MS)
-    try {
-      const added = await addFurniture()
-      if (added) {
-        setCatalogDrawerOpen(false)
-      }
-    } finally {
-      window.clearTimeout(pendingTimer)
-      setIsSubmitting(false)
-      setShowPending(false)
-    }
-  }
 
   return (
     <Drawer open={open} onOpenChange={setCatalogDrawerOpen} autoFocus>
@@ -180,9 +148,7 @@ export function CatalogDrawer({
         <DrawerFooter>
           <Button
             disabled={!catalogIdToAdd || isSubmitting || selectedUnavailable}
-            onClick={() => {
-              void handleAddItem()
-            }}
+            onClick={submit}
           >
             {showPending ? (
               <>
