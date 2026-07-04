@@ -3,21 +3,7 @@ import {
   getSceneServices,
   getSceneServicesIfReady,
 } from './internal/scene-services'
-import {
-  ensureCollectionLoaded,
-  getCollectionFailureKind,
-  resetCollectionScenes,
-} from './internal/furniture/collection-scenes-store'
 import type { FurnitureInstance } from '@/domain/furniture'
-import type { CollectionLoadFailureKind } from './scene.types'
-
-// Hook halves of the on-demand loader surface, exposed here (a component-free
-// contract module) so scene-canvas / the catalog can import them without
-// breaking react-refresh.
-export {
-  useActiveOnDemandCollectionPaths,
-  useFailedCollections,
-} from './internal/furniture/collection-scenes-store'
 import type {
   AddFurnitureResult,
   CameraKeyState,
@@ -60,26 +46,6 @@ export const sceneCommands = {
   },
   setCameraKeyState: (keyState: CameraKeyState) => {
     getSceneServicesIfReady()?.setCameraKeyState(keyState)
-  },
-
-  // On-demand collection loading. Resolves once the collection at `sourcePath`
-  // is parsed and registered, so the add flow can await a not-yet-loaded model
-  // before dispatching addFurniture. Loading is driven reactively (the wanted
-  // set mounts a loader), so this does not require a registered scene service.
-  ensureCollectionLoaded: (sourcePath: string): Promise<void> => {
-    return ensureCollectionLoaded(sourcePath)
-  },
-  // Why a collection's on-demand load failed, or null. The add flow reads this
-  // after a rejected ensureCollectionLoaded to message by cause.
-  getCollectionFailureKind: (
-    sourcePath: string,
-  ): CollectionLoadFailureKind | null => {
-    return getCollectionFailureKind(sourcePath)
-  },
-  // Drops all loaded/wanted collection state. Called on error/retry teardown
-  // (before the scene epoch remounts) so a fresh cycle starts clean.
-  resetCollections: () => {
-    resetCollectionScenes()
   },
 
   // Mutations — require a ready scene; throw otherwise (see policy above).

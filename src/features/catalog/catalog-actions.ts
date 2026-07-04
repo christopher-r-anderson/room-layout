@@ -4,6 +4,10 @@ import { selectionFocusActions } from '@/core/stores/selection-focus-store'
 import { selectionEffects } from '@/core/operations/selection-effects'
 import { assetsStore } from '@/core/stores/assets-store'
 import { sceneCommands } from '@/scene/scene-commands'
+import {
+  ensureCollectionLoaded,
+  getCollectionFailureKind,
+} from '@/scene/collection-loading'
 import { toast } from 'sonner'
 import { i18n } from '@/shared/i18n/i18n'
 import {
@@ -35,7 +39,7 @@ export function prefetchCatalogItem(catalogId: string): void {
   if (!sourcePath) {
     return
   }
-  void sceneCommands.ensureCollectionLoaded(sourcePath).catch(() => {
+  void ensureCollectionLoaded(sourcePath).catch(() => {
     // Swallowed here; a real add of this item reports the failure to the user.
   })
 }
@@ -58,13 +62,13 @@ export async function addFurniture(): Promise<boolean> {
   const sourcePath = resolveCollectionSourcePath(catalogIdToAdd)
   if (sourcePath) {
     try {
-      await sceneCommands.ensureCollectionLoaded(sourcePath)
+      await ensureCollectionLoaded(sourcePath)
     } catch {
       // The model failed to load. Message by cause: a permanent failure (missing
       // asset) says it is unavailable and will not invite a futile retry; a
       // transient one (connection/stall) invites a re-add. A toast (not the status
       // region) so it is visible over the open drawer, which aria-hides the chrome.
-      const failureKind = sceneCommands.getCollectionFailureKind(sourcePath)
+      const failureKind = getCollectionFailureKind(sourcePath)
       toast.error(
         i18n._(
           failureKind === 'unavailable'

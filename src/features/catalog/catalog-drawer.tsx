@@ -18,7 +18,7 @@ import { formatPercent } from '@/shared/i18n/formatters'
 import { useDialogOpen } from '@/core/stores/dialog-store'
 import { useCatalogEntries } from '@/core/stores/assets-store'
 import { useCollectionLoadPercent } from '@/core/stores/collection-load-progress-store'
-import { useFailedCollections } from '@/scene/scene-commands'
+import { useFailedCollections } from '@/scene/collection-loading'
 import {
   addFurniture,
   prefetchCatalogItem,

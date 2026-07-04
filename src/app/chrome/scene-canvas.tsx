@@ -2,7 +2,7 @@ import { Canvas } from '@react-three/fiber'
 import { useCallback, useMemo } from 'react'
 import { NeutralToneMapping, SRGBColorSpace } from 'three'
 import { Scene, CollectionLoader } from '@/scene/scene'
-import { useActiveOnDemandCollectionPaths } from '@/scene/scene-commands'
+import { useActiveOnDemandCollectionPaths } from '@/scene/collection-loading'
 import {
   completeAssetLoad,
   notifyAssetError,
