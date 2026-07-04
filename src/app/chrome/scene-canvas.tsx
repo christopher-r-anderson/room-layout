@@ -64,16 +64,9 @@ export default function SceneCanvas({ onPointerMissed }: SceneCanvasProps) {
       // fails rather than hangs) and the byte progress drives the drawer's
       // determinate "Adding... N%".
       return streamFetch(path, {
-        onProgress: ({ receivedBytes, totalBytes }) => {
-          if (totalBytes > 0) {
-            collectionLoadProgressActions.setPercent(
-              path,
-              Math.round((receivedBytes / totalBytes) * 100),
-            )
-          }
+        onProgress: (progress) => {
+          collectionLoadProgressActions.setProgress(path, progress)
         },
-      }).finally(() => {
-        collectionLoadProgressActions.clear(path)
       })
     },
     [],

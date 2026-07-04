@@ -1,44 +1,12 @@
-import { useStoreWithEqualityFn } from 'zustand/traditional'
-import { createStore } from 'zustand/vanilla'
 import { streamFetch } from './stream-fetch'
+import { collectionLoadProgressActions } from '@/core/stores/collection-load-progress-store'
 
-// Engine-free furniture-asset prefetch. This module downloads the GLB bytes with
-// a streaming progress read and holds them in memory, with NO dependency on
+// Engine-free furniture-asset prefetch for the gated (restored-scene) collections.
+// It downloads the GLB bytes and holds them in memory, with NO dependency on
 // three/drei — so it ships in the initial shell bundle and its fetches run in
-// parallel with the lazy engine chunk's download. The engine side later seeds
-// these buffers into THREE.Cache (see app/chrome/seed-gltf-cache) so useGLTF
-// parses from memory instead of issuing a second network request.
-
-export interface FurnitureAssetPrefetchProgress {
-  /** True while any prefetch request is in flight. */
-  active: boolean
-  /** Total number of files requested. */
-  total: number
-  /** Files fully downloaded. */
-  loadedCount: number
-  /** Total bytes across files whose Content-Length is known. */
-  totalBytes: number
-  /** Bytes received so far. */
-  receivedBytes: number
-  /** Completion percentage in the range 0–100, guaranteed finite. */
-  percent: number
-  /** URL of the most recently active request, or '' before the first request. */
-  currentItem: string
-}
-
-const INITIAL_PROGRESS: FurnitureAssetPrefetchProgress = {
-  active: false,
-  total: 0,
-  loadedCount: 0,
-  totalBytes: 0,
-  receivedBytes: 0,
-  percent: 0,
-  currentItem: '',
-}
-
-const progressStore = createStore<FurnitureAssetPrefetchProgress>()(
-  () => INITIAL_PROGRESS,
-)
+// parallel with the lazy engine chunk's download. The engine-side loader later
+// parses these buffers (awaited via whenPrefetched) instead of refetching.
+// Download progress is reported per collection to collection-load-progress-store.
 
 interface AssetDeferred {
   promise: Promise<ArrayBuffer>
@@ -71,67 +39,16 @@ function deferredFor(url: string): AssetDeferred {
   return deferred
 }
 
-function computePercent(receivedBytes: number, totalBytes: number) {
-  if (totalBytes <= 0) {
-    return 0
-  }
-
-  return Math.max(0, Math.min(100, (receivedBytes / totalBytes) * 100))
-}
-
-// All mutations go through functional updaters so the parallel per-file fetches
-// accumulate atomically rather than racing on a read-modify-write.
-function addTotalBytes(delta: number) {
-  progressStore.setState((state) => {
-    const totalBytes = state.totalBytes + delta
-    return {
-      ...state,
-      totalBytes,
-      percent: computePercent(state.receivedBytes, totalBytes),
-    }
-  })
-}
-
-function addReceivedBytes(delta: number, currentItem: string) {
-  progressStore.setState((state) => {
-    const receivedBytes = state.receivedBytes + delta
-    return {
-      ...state,
-      receivedBytes,
-      currentItem,
-      percent: computePercent(receivedBytes, state.totalBytes),
-    }
-  })
-}
-
-function markFileLoaded() {
-  progressStore.setState((state) => {
-    const loadedCount = state.loadedCount + 1
-    return { ...state, loadedCount, active: loadedCount < state.total }
-  })
-}
-
 async function fetchBufferWithProgress(
   url: string,
   signal: AbortSignal,
 ): Promise<ArrayBuffer> {
-  // streamFetch reports cumulative per-file progress; the aggregate store tracks
-  // deltas across all files, so translate one into the other. A stalled transfer
-  // rejects here (bounding gated startup loads) and surfaces as a startup error.
-  let lastReceived = 0
-  let totalAdded = false
+  // Report per-collection progress; a stalled transfer rejects here (bounding
+  // gated startup loads) and surfaces as a startup error.
   return streamFetch(url, {
     signal,
-    onProgress: ({ receivedBytes, totalBytes }) => {
-      if (!totalAdded && totalBytes > 0) {
-        addTotalBytes(totalBytes)
-        totalAdded = true
-      }
-      const delta = receivedBytes - lastReceived
-      if (delta > 0) {
-        lastReceived = receivedBytes
-        addReceivedBytes(delta, url)
-      }
+    onProgress: (progress) => {
+      collectionLoadProgressActions.setProgress(url, progress)
     },
   })
 }
@@ -145,12 +62,6 @@ async function fetchBufferWithProgress(
 export function prefetchFurnitureCollections(urls: string[]): void {
   abortController ??= new AbortController()
   const { signal } = abortController
-
-  progressStore.setState((state) => ({
-    ...state,
-    active: urls.length > 0,
-    total: urls.length,
-  }))
 
   for (const url of urls) {
     if (started.has(url)) {
@@ -166,7 +77,6 @@ export function prefetchFurnitureCollections(urls: string[]): void {
         if (deferreds.get(url) !== deferred) {
           return
         }
-        markFileLoaded()
         deferred.resolve(buffer)
       })
       .catch((error: unknown) => {
@@ -193,9 +103,5 @@ export function clearFurnitureAssetPrefetch(): void {
   abortController = null
   started.clear()
   deferreds.clear()
-  progressStore.setState(() => INITIAL_PROGRESS)
-}
-
-export function useFurnitureAssetPrefetchProgress(): FurnitureAssetPrefetchProgress {
-  return useStoreWithEqualityFn(progressStore, (state) => state)
+  collectionLoadProgressActions.reset()
 }
