@@ -1,4 +1,4 @@
-import { type ReactElement } from 'react'
+import { type ReactElement, useMemo } from 'react'
 import { Trans, useLingui } from '@lingui/react/macro'
 import { IconLoader } from '@tabler/icons-react'
 import { formatDecimal } from '@/shared/i18n/formatters'
@@ -15,12 +15,9 @@ import {
 } from '@/shared/ui/drawer'
 import { cn } from '@/shared/lib/utils'
 import { useDialogOpen } from '@/core/stores/dialog-store'
-import { useCatalogEntries } from '@/core/stores/assets-store'
+import { useCatalogEntries, useCollections } from '@/core/stores/assets-store'
 import { useFailedCollections } from '@/scene/collection-loading'
-import {
-  resolveCollectionSourcePath,
-  setCatalogDrawerOpen,
-} from './catalog-actions'
+import { setCatalogDrawerOpen } from './catalog-actions'
 import { CATALOG_DIALOG_ID } from './catalog-dialog-definition'
 import {
   catalogSelectionActions,
@@ -35,6 +32,20 @@ export function CatalogDrawer({
 }) {
   const { t } = useLingui()
   const catalog = useCatalogEntries()
+  const collections = useCollections()
+
+  // sourcePath per catalog entry, so per-tile availability is one map lookup
+  // rather than an assetsStore read each render.
+  const sourcePathByCatalogId = useMemo(() => {
+    const byCatalogId = new Map<string, string>()
+    for (const entry of catalog) {
+      const collection = collections.find((c) => c.id === entry.collectionId)
+      if (collection) {
+        byCatalogId.set(entry.id, collection.sourcePath)
+      }
+    }
+    return byCatalogId
+  }, [catalog, collections])
 
   const formatFootprintLabel = (width: number, depth: number) => {
     const widthLabel = formatDecimal(width, 2)
@@ -76,7 +87,7 @@ export function CatalogDrawer({
             </legend>
             {catalog.map((entry) => {
               const isSelected = catalogIdToAdd === entry.id
-              const entrySourcePath = resolveCollectionSourcePath(entry.id)
+              const entrySourcePath = sourcePathByCatalogId.get(entry.id)
               const isUnavailable = entrySourcePath
                 ? failedCollections.get(entrySourcePath) === 'unavailable'
                 : false
