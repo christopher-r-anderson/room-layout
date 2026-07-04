@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { toast } from 'sonner'
 import { resetSceneDocumentStore } from '@/core/stores/scene-document-store'
-import { feedbackStore, resetFeedbackStore } from '@/core/stores/feedback-store'
+import { resetFeedbackStore } from '@/core/stores/feedback-store'
 import {
   resetSelectionFocusStore,
   selectionFocusStore,
@@ -24,6 +25,10 @@ import {
   resetCatalogSelectionStore,
 } from './catalog-selection-store'
 import { addFurniture } from './catalog-actions'
+
+vi.mock('sonner', () => ({
+  toast: { error: vi.fn(), success: vi.fn(), warning: vi.fn() },
+}))
 
 vi.mock('@/core/operations/selection-effects', () => ({
   selectionEffects: {
@@ -83,7 +88,7 @@ describe('addFurniture', () => {
 
     addFurnitureCommand.mockReturnValueOnce({ ok: false, reason: 'no-space' })
     expect(await addFurniture()).toBe(false)
-    expect(feedbackStore.getState().statusMessage).toBe(
+    expect(toast.error).toHaveBeenLastCalledWith(
       i18n._(ADD_FURNITURE_NO_SPACE_MESSAGE),
     )
 
@@ -92,7 +97,7 @@ describe('addFurniture', () => {
       reason: 'unknown-catalog',
     })
     expect(await addFurniture()).toBe(false)
-    expect(feedbackStore.getState().statusMessage).toBe(
+    expect(toast.error).toHaveBeenLastCalledWith(
       i18n._(ADD_FURNITURE_UNKNOWN_CATALOG_MESSAGE),
     )
   })

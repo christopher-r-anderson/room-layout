@@ -88,7 +88,9 @@ export async function addFurniture(): Promise<boolean> {
   const result = sceneCommands.addFurniture(catalogIdToAdd)
 
   if (!result.ok) {
-    feedbackActions.setStatusMessage(
+    // A toast (like the load failures) so it is visible over the open drawer;
+    // the status region is aria-hidden behind it.
+    toast.error(
       i18n._(
         result.reason === 'no-space'
           ? ADD_FURNITURE_NO_SPACE_MESSAGE
