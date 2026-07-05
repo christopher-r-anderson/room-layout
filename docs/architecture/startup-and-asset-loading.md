@@ -59,10 +59,12 @@ flowchart LR
 
 - **Bootstrap** (`features/startup/use-startup-bootstrap.ts`): fetches and validates
   the catalog manifest into `assets-store`, resolves the **gated set** - the
-  collections the restored URL/draft actually references
+  collections the restored URL/draft may reference
   (`core/persistence/referenced-collections.ts`, read-only over the restore
   flow's own `selectPrimaryRestoreState`, so gate and restore share one
-  precedence rule) - into the loading store, and warms the byte source for it. The gated set is `null` until resolved (and again
+  precedence rule; a valid draft stays gated alongside a valid link because it
+  remains the apply-failure fallback) - into the loading store, and warms the
+  byte source for it. The gated set is `null` until resolved (and again
   after a retry resets it), so readiness can never complete against a stale or
   unknown gate.
 - **Byte source** (`core/operations/collection-bytes.ts`): one fetch per
@@ -125,13 +127,13 @@ Failures are classified (`collection-loading-store.ts`) as:
 
 How each surfaces:
 
-| Failure                                         | Surface                                            | Recovery                           |
-| ----------------------------------------------- | -------------------------------------------------- | ---------------------------------- |
-| Manifest fetch fails                            | startup error overlay                              | retry                              |
-| A **gated** collection fails                    | startup error overlay                              | retry (re-downloads)               |
-| An **on-demand** add fails                      | toast (the open drawer aria-hides the status line) | re-add retries a transient failure |
-| A permanently `unavailable` catalog item        | shown non-selectable in the catalog                | -                                  |
-| A GLB missing a manifest-referenced node        | gated: startup error; on-demand: unavailable tile  | fix the asset/manifest             |
+| Failure                                  | Surface                                            | Recovery                           |
+| ---------------------------------------- | -------------------------------------------------- | ---------------------------------- |
+| Manifest fetch fails                     | startup error overlay                              | retry                              |
+| A **gated** collection fails             | startup error overlay                              | retry (re-downloads)               |
+| An **on-demand** add fails               | toast (the open drawer aria-hides the status line) | re-add retries a transient failure |
+| A permanently `unavailable` catalog item | shown non-selectable in the catalog                | -                                  |
+| A GLB missing a manifest-referenced node | gated: startup error; on-demand: unavailable tile  | fix the asset/manifest             |
 
 The add flow never hangs: `ensureCollectionLoaded` rejects on failure so the drawer
 can message by cause instead of waiting forever.

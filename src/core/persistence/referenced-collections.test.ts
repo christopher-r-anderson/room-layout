@@ -59,11 +59,22 @@ describe('resolveReferencedCollectionPaths', () => {
     ).toEqual(['/models/a.glb'])
   })
 
-  it('prefers the URL over a local draft', () => {
+  it('gates the link plus the valid draft, which stays the apply-failure fallback', () => {
     expect(
       resolveReferencedCollectionPaths({
         href: sceneRoute([instance('chair')]),
         draft: draft([instance('table')]),
+        catalog,
+        collections,
+      }),
+    ).toEqual(['/models/a.glb', '/models/b.glb'])
+  })
+
+  it('does not gate an invalid draft alongside a valid link', () => {
+    expect(
+      resolveReferencedCollectionPaths({
+        href: sceneRoute([instance('chair')]),
+        draft: draft([instance('does-not-exist')]),
         catalog,
         collections,
       }),
