@@ -51,11 +51,6 @@ import {
 } from './internal/scene-services'
 import { useLoadedCollectionScenes } from './internal/furniture/collection-scene-registry'
 
-// Public scene component surface for the app-side loader orchestration
-// (scene-canvas). The matching hook lives on the scene-commands contract so this
-// component module stays component-only (react-refresh).
-export { CollectionLoader } from './internal/furniture/collection-loader'
-
 const FLOOR_PLANE_Y = 0
 const SNAP_SIZE = 0.5
 const EDGE_SNAP_THRESHOLD = 0.12
