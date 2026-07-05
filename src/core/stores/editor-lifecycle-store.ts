@@ -20,10 +20,15 @@ interface EditorLifecycleStoreState {
   restoreAttemptCount: number
   sceneEpoch: number
   retryToken: number
+  // Whether the Scene is currently mounted (the r3f canvas is up). Driven by the
+  // Scene's mount/unmount; the startup readiness observer gates on it so the
+  // loading overlay never lifts before the scene has mounted.
+  sceneMounted: boolean
   markAssetsReady: () => void
   beginAssetLoad: () => void
   requestRetry: () => void
   setAssetError: (error: EditorAssetError) => void
+  setSceneMounted: (mounted: boolean) => void
   recordRestoreOutcome: (outcome: RestoreOutcome | null) => void
   incrementRestoreAttempt: () => void
   reset: () => void
@@ -36,6 +41,7 @@ const INITIAL_EDITOR_LIFECYCLE_STATE = {
   restoreAttemptCount: 0,
   sceneEpoch: 0,
   retryToken: 0,
+  sceneMounted: false,
 }
 
 function getInitialEditorLifecycleState() {
@@ -99,6 +105,11 @@ export const editorLifecycleStore = createStore<EditorLifecycleStoreState>()(
         }
       })
     },
+    setSceneMounted: (mounted) => {
+      set((state) =>
+        state.sceneMounted === mounted ? state : { ...state, sceneMounted: mounted },
+      )
+    },
     recordRestoreOutcome: (outcome) => {
       set((state) => {
         if (state.restoreOutcome === outcome) {
@@ -146,6 +157,9 @@ export const editorLifecycleActions = {
   setAssetError: (error: EditorAssetError) => {
     editorLifecycleStore.getState().setAssetError(error)
   },
+  setSceneMounted: (mounted: boolean) => {
+    editorLifecycleStore.getState().setSceneMounted(mounted)
+  },
   recordRestoreOutcome: (outcome: RestoreOutcome | null) => {
     editorLifecycleStore.getState().recordRestoreOutcome(outcome)
   },
@@ -161,6 +175,12 @@ export function resetEditorLifecycleStore() {
   editorLifecycleActions.reset()
 }
 
+// Scene reports its own mount/unmount through this (via scene-contracts); the
+// startup readiness observer gates on it.
+export function setSceneMounted(mounted: boolean) {
+  editorLifecycleActions.setSceneMounted(mounted)
+}
+
 // Imperative (non-React) read of whether the editor is interactive: startup has
 // finished and assets are ready. The single predicate operations gate on, so the
 // readiness rule lives in one place instead of being re-derived from the store
@@ -169,6 +189,8 @@ export function isEditorInteractive() {
   return editorLifecycleStore.getState().startupPhase === 'ready'
 }
 
+export const useSceneMounted = () =>
+  useEditorLifecycleStore((state) => state.sceneMounted)
 export const useStartupPhase = () =>
   useEditorLifecycleStore((state) => state.startupPhase)
 export const useAssetError = () =>

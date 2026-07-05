@@ -42,7 +42,7 @@ import { perfCounters } from '@/shared/debug/perf-counters'
 import { IS_E2E_BUILD } from '@/shared/env/e2e'
 import {
   sceneDocumentActions,
-  useFailedCollections,
+  setSceneMounted,
   useItems,
 } from '@/core/scene-contracts'
 import {
@@ -65,10 +65,7 @@ export function Scene({
   renderQuality = 'default',
   catalog,
   collections,
-  gatedCollectionPaths = [],
   onCanvasPointerSelection,
-  onAssetsReady,
-  onAssetsError,
   previewedId = null,
   onPreviewChange,
   floorOption = null,
@@ -79,10 +76,7 @@ export function Scene({
   renderQuality?: 'default' | 'e2e-low'
   catalog: FurnitureCatalogEntry[]
   collections: FurnitureCollection[]
-  gatedCollectionPaths?: string[]
   onCanvasPointerSelection?: (id: string) => void
-  onAssetsReady?: () => void
-  onAssetsError?: (error: Error) => void
   previewedId?: string | null
   onPreviewChange?: (id: string | null) => void
   floorOption?: FloorFinishOption | null
@@ -115,7 +109,6 @@ export function Scene({
   // The map is partial and grows as collections load, so the room renders before
   // any furniture and each item appears once its collection is present.
   const sourceScenesByPath = useLoadedCollectionScenes()
-  const failedCollections = useFailedCollections()
 
   const sourceScenesByCollectionId = useMemo(() => {
     const byCollectionId = new Map<string, Object3D>()
@@ -143,7 +136,6 @@ export function Scene({
     })
   }, [catalog, sourceScenesByCollectionId])
 
-  const hasReportedAssetsReadyRef = useRef(false)
   const cameraControlsRef = useRef<CameraControlsImpl | null>(null)
   const cameraKeyStateRef = useRef<CameraKeyState>(new Set())
   const furniture = useItems()
@@ -288,6 +280,16 @@ export function Scene({
     handleUndo,
   ])
 
+  // Report mount/unmount so core can gate startup readiness on the canvas being up.
+  // Its own effect (not the services effect above, which re-runs as handlers change)
+  // so the signal tracks only the actual mount lifecycle.
+  useEffect(() => {
+    setSceneMounted(true)
+    return () => {
+      setSceneMounted(false)
+    }
+  }, [])
+
   const isDragging = Boolean(dragState)
 
   useEffect(() => {
@@ -302,54 +304,6 @@ export function Scene({
     getThreeState().gl.toneMappingExposure = moodExposure
     invalidate()
   }, [getThreeState, invalidate, moodExposure])
-
-  useEffect(() => {
-    // Environment-first startup outcome, derived from the collection store:
-    // - a gated collection failing to load is a startup error;
-    // - otherwise, unlock once the manifest has arrived (room/camera mounted) AND
-    //   every collection the restored scene references is parsed.
-    // An empty scene has no gated collections, so it unlocks as soon as the
-    // manifest is present - it never waits on furniture. The remaining catalog
-    // loads lazily on demand and does not gate this. Fires at most once per
-    // startup cycle (the ref resets when the scene remounts on retry).
-    if (collections.length === 0) {
-      return
-    }
-
-    if (hasReportedAssetsReadyRef.current) {
-      return
-    }
-
-    const failedGatedPath = gatedCollectionPaths.find((path) =>
-      failedCollections.has(path),
-    )
-    if (failedGatedPath) {
-      hasReportedAssetsReadyRef.current = true
-      onAssetsError?.(
-        new Error(
-          `gated furniture collection failed to load: ${failedGatedPath}`,
-        ),
-      )
-      return
-    }
-
-    const gatedReady = gatedCollectionPaths.every((path) =>
-      sourceScenesByPath.has(path),
-    )
-    if (!gatedReady) {
-      return
-    }
-
-    hasReportedAssetsReadyRef.current = true
-    onAssetsReady?.()
-  }, [
-    onAssetsReady,
-    onAssetsError,
-    collections.length,
-    gatedCollectionPaths,
-    sourceScenesByPath,
-    failedCollections,
-  ])
 
   const handlePreviewStart = useCallback(
     (id: string) => {

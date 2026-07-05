@@ -14,12 +14,15 @@ export {
 
 export { toolbarGeometryActions } from './stores/toolbar-geometry-store'
 
-// Collection-loading seam: the scene loader reports parse outcomes back to the
-// core loading store, and the Scene observes gated-collection failures. The
-// parsed scene objects themselves stay scene-internal (collection-scene-registry).
+// The Scene reports its own mount/unmount so core can gate startup readiness on the
+// canvas actually being up (avoids lifting the loading overlay before first paint).
+export { setSceneMounted } from './stores/editor-lifecycle-store'
+
+// Collection-loading seam: the scene loader reports parse outcomes (loaded/failed)
+// back to the core loading store. The parsed scene objects themselves stay
+// scene-internal (collection-scene-registry).
 export {
   collectionLoadingActions,
   isCollectionLoaded,
   isCollectionFailed,
-  useFailedCollections,
 } from './stores/collection-loading-store'

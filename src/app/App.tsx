@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { startEditorReconcilers } from '@/core/operations/editor-reconcilers'
 import { useEnvironmentConfig } from '@/core/stores/assets-store'
 import { useStartupBootstrap } from '@/features/startup/use-startup-bootstrap'
+import { useStartupReadiness } from '@/features/startup/use-startup-readiness'
 import { EditorBody } from './chrome/editor-body'
 import { EditorProviders } from './chrome/providers/editor-providers'
 import { perfCounters } from '@/shared/debug/perf-counters'
@@ -17,6 +18,7 @@ function App() {
   const [testOverlaysHidden, setTestOverlaysHidden] = useState(false)
 
   useStartupBootstrap()
+  useStartupReadiness()
   const environmentConfig = useEnvironmentConfig()
 
   useDraftPersistence({

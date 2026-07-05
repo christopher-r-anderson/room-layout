@@ -134,9 +134,15 @@ export function getCollectionFailureKind(
 }
 
 // Reactive map of failed collections to why they failed, for the catalog to mark
-// unavailable (permanent) items and for the Scene to surface a gated failure.
+// unavailable (permanent) items.
 export function useFailedCollections(): Map<string, CollectionLoadFailureKind> {
   return useStoreWithEqualityFn(collectionLoadingStore, (state) => state.failed)
+}
+
+// Reactive set of loaded collection paths, for the startup readiness observer to
+// tell when the gated collections have all parsed.
+export function useLoadedCollections(): Set<string> {
+  return useStoreWithEqualityFn(collectionLoadingStore, (state) => state.loaded)
 }
 
 // Ensures a collection is loaded and registered. Requesting it (re)marks it wanted

@@ -4,10 +4,7 @@ import { NeutralToneMapping, SRGBColorSpace } from 'three'
 import { Scene } from '@/scene/scene'
 import { CollectionLoader } from '@/scene/collection-loader'
 import { useActiveOnDemandCollectionPaths } from '@/core/stores/collection-loading-store'
-import {
-  completeAssetLoad,
-  notifyAssetError,
-} from '@/core/operations/startup-coordinator'
+import { notifyAssetError } from '@/core/operations/startup-coordinator'
 import { selectByCanvasPointer } from '@/core/operations/selection-actions'
 import { previewFromScene } from '@/core/operations/preview-actions'
 import { whenPrefetched } from '@/core/operations/furniture-asset-prefetch'
@@ -89,18 +86,15 @@ export default function SceneCanvas({ onPointerMissed }: SceneCanvasProps) {
       onPointerMissed={onPointerMissed}
       shadows={shadowMode}
     >
-      {/* Scene renders the environment now and furniture as collections register,
-          and reports readiness / a gated-collection failure from the store;
+      {/* Scene renders the environment now and furniture as collections register;
+          startup readiness is observed in core (useStartupReadiness), and
           validation/render failures surface via the error boundary. */}
       <SceneAssetErrorBoundary key={sceneEpoch} onError={notifyAssetError}>
         <Scene
           renderQuality={renderQuality}
           catalog={catalog}
           collections={collections}
-          gatedCollectionPaths={gatedCollectionPaths}
           onCanvasPointerSelection={selectByCanvasPointer}
-          onAssetsReady={completeAssetLoad}
-          onAssetsError={notifyAssetError}
           previewedId={previewedId}
           onPreviewChange={previewFromScene}
           floorOption={selectedFloorOption}
