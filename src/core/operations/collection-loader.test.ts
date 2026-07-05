@@ -30,9 +30,7 @@ vi.mock('@/scene/scene-commands', () => ({
 
 const { fetchCollectionBytesMock, releaseCollectionBytesMock } = vi.hoisted(
   () => ({
-    fetchCollectionBytesMock: vi.fn(() =>
-      Promise.resolve(new ArrayBuffer(4)),
-    ),
+    fetchCollectionBytesMock: vi.fn(() => Promise.resolve(new ArrayBuffer(4))),
     releaseCollectionBytesMock: vi.fn(),
   }),
 )
@@ -86,9 +84,7 @@ describe('loadCollection', () => {
   })
 
   it('marks a failure with its classification', async () => {
-    fetchCollectionBytesMock.mockRejectedValue(
-      new TypeError('Failed to fetch'),
-    )
+    fetchCollectionBytesMock.mockRejectedValue(new TypeError('Failed to fetch'))
 
     await loadCollection('/models/a.glb')
 
@@ -151,9 +147,7 @@ describe('ensureCollectionLoaded', () => {
   })
 
   it('rejects when the load fails', async () => {
-    fetchCollectionBytesMock.mockRejectedValue(
-      new TypeError('Failed to fetch'),
-    )
+    fetchCollectionBytesMock.mockRejectedValue(new TypeError('Failed to fetch'))
 
     await expect(ensureCollectionLoaded('/models/b.glb')).rejects.toThrow(
       /failed to load/i,
@@ -203,9 +197,7 @@ describe('startCollectionLoadReconciler', () => {
       editorLifecycleStore.getState().setSceneMounted(true)
       collectionLoadingActions.requestCollection('/models/flaky.glb')
       await vi.waitFor(() => {
-        expect(getCollectionFailureKind('/models/flaky.glb')).toBe(
-          'connection',
-        )
+        expect(getCollectionFailureKind('/models/flaky.glb')).toBe('connection')
       })
       expect(fetchCollectionBytesMock).toHaveBeenCalledTimes(1)
 

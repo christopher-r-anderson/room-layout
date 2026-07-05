@@ -81,8 +81,7 @@ export async function loadCollection(path: string): Promise<void> {
 // Every collection that should be loaded now - the gated set plus the ones
 // referenced by current items plus explicit requests - minus settled outcomes.
 function resolvePendingCollectionPaths(): string[] {
-  const { gated, wanted, loaded, failed } =
-    collectionLoadingStore.getState()
+  const { gated, wanted, loaded, failed } = collectionLoadingStore.getState()
   const paths = new Set<string>(gated ?? [])
   for (const item of sceneDocumentStore.getState().history.present) {
     paths.add(item.sourcePath)

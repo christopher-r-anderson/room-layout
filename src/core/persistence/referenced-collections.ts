@@ -29,10 +29,7 @@ export function resolveReferencedCollectionPaths({
     catalog,
   })
   const items = primary.state?.items ?? []
-  const sourcePathByCatalogId = buildSourcePathByCatalogId(
-    catalog,
-    collections,
-  )
+  const sourcePathByCatalogId = buildSourcePathByCatalogId(catalog, collections)
   const paths = new Set<string>()
 
   for (const item of items) {

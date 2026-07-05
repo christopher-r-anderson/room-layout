@@ -11,11 +11,11 @@ First paint depends only on a small shell; the heavy 3D engine and the editor
 chrome are code-split out and load lazily. Budgets are regression-gated by
 `scripts/check-bundle-budget.mjs`.
 
-| Chunk                          | Contents                                                                         | Loads                                         |
-| ------------------------------ | -------------------------------------------------------------------------------- | --------------------------------------------- |
-| shell (`index-*.js`)           | app skeleton, the loading UI, the engine-free byte source, placement geometry   | eagerly (first paint)                         |
-| engine (`scene-canvas-*.js`)   | three / r3f / drei / postprocessing                                              | lazily, in parallel with the shell's fetches  |
-| chrome (`editor-overlay-*.js`) | editor panels, toolbars, icon deps                                               | lazily, once the editor is interactive        |
+| Chunk                          | Contents                                                                      | Loads                                        |
+| ------------------------------ | ----------------------------------------------------------------------------- | -------------------------------------------- |
+| shell (`index-*.js`)           | app skeleton, the loading UI, the engine-free byte source, placement geometry | eagerly (first paint)                        |
+| engine (`scene-canvas-*.js`)   | three / r3f / drei / postprocessing                                           | lazily, in parallel with the shell's fetches |
+| chrome (`editor-overlay-*.js`) | editor panels, toolbars, icon deps                                            | lazily, once the editor is interactive       |
 
 Two consequences worth knowing:
 
@@ -38,8 +38,8 @@ Two consequences worth knowing:
 
 Two supporting signals:
 
-- `sceneEpoch` / `retryToken` bump on load/retry and re-key the scene subtree, so a
-  retry remounts a fresh scene and loader.
+- `sceneEpoch` / `retryToken` bump on load/retry and re-key the scene subtree, so
+  a retry remounts a fresh scene (whose mount re-kicks the collection loads).
 - `sceneMounted` - a reactive flag the `Scene` sets on mount/unmount (through
   `scene-contracts`). Readiness gates on it so the overlay never lifts before the
   canvas has mounted (an empty scene has no furniture to wait on, so without this
@@ -84,10 +84,10 @@ flowchart LR
   chain never depends on React render timing. Loads are keyed to the scene epoch;
   a stale cycle's result is discarded rather than written into a fresh one.
 - **Readiness** (`features/startup/use-startup-readiness.ts`, run from `App`): once
-  startup is loading, the scene has mounted, and the manifest is present, it resolves
-  the gated collections - every one loaded -> `completeAssetLoad`; any one failed ->
-  `notifyAssetError`. It fires once per cycle because firing flips the phase off
-  `loading`.
+  startup is loading, the scene has mounted, and the gated set is resolved, it
+  resolves the gated collections - every one loaded -> `completeAssetLoad`; any
+  one failed -> `notifyAssetError`. It fires once per cycle because firing flips
+  the phase off `loading`.
 
 The split of state is intentional: the parsed `Object3D`s are a scene render
 artifact (`collection-scene-registry`, scene-internal), while the three-free
@@ -100,8 +100,8 @@ registry on the strength of the core flag.
 
 ## Gated vs on-demand
 
-- **Gated** collections gate the unlock. A fresh or empty scene references none, so
-  it becomes interactive as soon as the scene mounts and the manifest is present -
+- **Gated** collections gate the unlock. A fresh or empty scene references none,
+  so it becomes interactive as soon as the scene mounts and the gate resolves -
   it never waits on furniture.
 - **On-demand** collections are catalog adds. Selecting an item warms it
   (prefetch-on-select) and the add awaits its parse (`ensureCollectionLoaded`), so a

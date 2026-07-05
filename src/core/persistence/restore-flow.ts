@@ -138,9 +138,7 @@ export function validateDraftState(
   draft: SceneDraftState | null,
   catalog: FurnitureCatalogEntry[],
 ): SceneDraftState | null {
-  return draft && validateCatalogReferences(draft.items, catalog)
-    ? draft
-    : null
+  return draft && validateCatalogReferences(draft.items, catalog) ? draft : null
 }
 
 export type PrimaryRestoreState =
