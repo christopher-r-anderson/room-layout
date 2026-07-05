@@ -3,7 +3,7 @@ import { useStoreWithEqualityFn } from 'zustand/traditional'
 import { subscribeWithSelector } from 'zustand/middleware'
 import { createStore } from 'zustand/vanilla'
 import { shallow } from 'zustand/shallow'
-import { useItems } from './scene-document-store'
+import { useItemSourcePaths } from './scene-document-store'
 import { AssetHttpError } from '../operations/stream-fetch'
 
 // The three-free loading lifecycle for furniture collections, keyed by sourcePath:
@@ -193,7 +193,7 @@ export function ensureCollectionLoaded(path: string): Promise<void> {
 export function useActiveOnDemandCollectionPaths(
   gatedCollectionPaths: string[],
 ): string[] {
-  const items = useItems()
+  const itemSourcePaths = useItemSourcePaths()
   const wanted = useStoreWithEqualityFn(
     collectionLoadingStore,
     (state) => state.wanted,
@@ -202,9 +202,9 @@ export function useActiveOnDemandCollectionPaths(
   return useMemo(() => {
     const gated = new Set(gatedCollectionPaths)
     const paths = new Set<string>()
-    for (const item of items) {
-      if (!gated.has(item.sourcePath)) {
-        paths.add(item.sourcePath)
+    for (const path of itemSourcePaths) {
+      if (!gated.has(path)) {
+        paths.add(path)
       }
     }
     for (const path of wanted) {
@@ -213,7 +213,7 @@ export function useActiveOnDemandCollectionPaths(
       }
     }
     return [...paths]
-  }, [items, wanted, gatedCollectionPaths])
+  }, [itemSourcePaths, wanted, gatedCollectionPaths])
 }
 
 // The download percent for one collection, or null when its size is unknown or it
