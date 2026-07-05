@@ -2,7 +2,7 @@ import { Canvas } from '@react-three/fiber'
 import { useCallback, useMemo } from 'react'
 import { NeutralToneMapping, SRGBColorSpace } from 'three'
 import { Scene, CollectionLoader } from '@/scene/scene'
-import { useActiveOnDemandCollectionPaths } from '@/scene/collection-loading'
+import { useActiveOnDemandCollectionPaths } from '@/core/stores/collection-loading-store'
 import {
   completeAssetLoad,
   notifyAssetError,
@@ -10,10 +10,9 @@ import {
 import { selectByCanvasPointer } from '@/core/operations/selection-actions'
 import { previewFromScene } from '@/core/operations/preview-actions'
 import { whenPrefetched } from '@/core/operations/furniture-asset-prefetch'
-import { AssetHttpError, streamFetch } from '@/core/operations/stream-fetch'
-import { collectionLoadProgressActions } from '@/core/stores/collection-load-progress-store'
+import { streamFetch } from '@/core/operations/stream-fetch'
+import { collectionLoadingActions } from '@/core/stores/collection-loading-store'
 import { sceneDocumentActions } from '@/core/stores/scene-document-store'
-import type { CollectionLoadFailureKind } from '@/scene/scene.types'
 import { useSceneEpoch } from '@/core/stores/editor-lifecycle-store'
 import { useGatedCollectionPaths } from '@/core/stores/startup-gate-store'
 import { useCatalogEntries, useCollections } from '@/core/stores/assets-store'
@@ -58,8 +57,8 @@ export default function SceneCanvas({ onPointerMissed }: SceneCanvasProps) {
   // Gated collections reuse the streamed prefetch bytes; on-demand collections are
   // fetched directly on first use (streamed so a stall timeout bounds them and the
   // byte progress drives the drawer's "Adding... N%"). Either way the loader parses
-  // the bytes straight into the scene store, so a collection is fetched at most
-  // once per session without relying on HTTP cache headers.
+  // the bytes and reports the outcome to the core loading store, so a collection is
+  // fetched at most once per session without relying on HTTP cache headers.
   const resolveBytes = useCallback(
     (path: string): Promise<ArrayBuffer> => {
       if (gatedCollectionPaths.includes(path)) {
@@ -67,19 +66,11 @@ export default function SceneCanvas({ onPointerMissed }: SceneCanvasProps) {
       }
       return streamFetch(path, {
         onProgress: (progress) => {
-          collectionLoadProgressActions.setProgress(path, progress)
+          collectionLoadingActions.setProgress(path, progress)
         },
       })
     },
     [gatedCollectionPaths],
-  )
-
-  // A non-ok HTTP response means the model is missing/broken (permanent); a
-  // network error or stall abort is a transient connection problem.
-  const classifyLoadError = useCallback(
-    (error: unknown): CollectionLoadFailureKind =>
-      error instanceof AssetHttpError ? 'unavailable' : 'connection',
-    [],
   )
 
   return (
@@ -124,7 +115,6 @@ export default function SceneCanvas({ onPointerMissed }: SceneCanvasProps) {
         key={sceneEpoch}
         collectionPaths={collectionPaths}
         resolveBytes={resolveBytes}
-        classifyLoadError={classifyLoadError}
       />
     </Canvas>
   )

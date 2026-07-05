@@ -10,7 +10,7 @@ import {
 } from '@/core/scene-contracts'
 import { redoSceneHistory, undoSceneHistory } from './scene-history-state'
 import { buildRestoredSceneHistory } from './restored-scene-history'
-import { getLoadedCollectionScenes } from '../furniture/collection-scenes-store'
+import { getLoadedCollectionScenes } from '../furniture/collection-scene-registry'
 
 interface UseHistoryOperationsOptions {
   isDragging: boolean

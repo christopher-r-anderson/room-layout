@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { useGatedLoadProgress } from '@/core/stores/collection-load-progress-store'
+import { useGatedLoadProgress } from '@/core/stores/collection-loading-store'
 import { useGatedCollectionPaths } from '@/core/stores/startup-gate-store'
 import { useStartupLoadingActive } from '@/core/stores/editor-lifecycle-store'
 import { formatPercent } from '@/shared/i18n/formatters'

@@ -52,8 +52,12 @@ vi.mock('@/scene/scene-commands', () => ({
   },
 }))
 
-vi.mock('@/scene/collection-loading', () => ({
-  resetCollectionScenes: vi.fn(),
+vi.mock('@/scene/collection-registry', () => ({
+  resetCollectionSceneRegistry: vi.fn(),
+}))
+
+vi.mock('@/core/stores/collection-loading-store', () => ({
+  resetCollectionLoading: vi.fn(),
 }))
 
 vi.mock('sonner', () => ({

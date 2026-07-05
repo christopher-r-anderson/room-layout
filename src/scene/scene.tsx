@@ -40,15 +40,16 @@ import {
 import { useToolbarGeometryProjection } from './internal/selection/use-toolbar-geometry-projection'
 import { perfCounters } from '@/shared/debug/perf-counters'
 import { IS_E2E_BUILD } from '@/shared/env/e2e'
-import { sceneDocumentActions, useItems } from '@/core/scene-contracts'
+import {
+  sceneDocumentActions,
+  useFailedCollections,
+  useItems,
+} from '@/core/scene-contracts'
 import {
   clearSceneServices,
   registerSceneServices,
 } from './internal/scene-services'
-import {
-  useFailedCollections,
-  useLoadedCollectionScenes,
-} from './internal/furniture/collection-scenes-store'
+import { useLoadedCollectionScenes } from './internal/furniture/collection-scene-registry'
 
 // Public scene component surface for the app-side loader orchestration
 // (scene-canvas). The matching hook lives on the scene-commands contract so this

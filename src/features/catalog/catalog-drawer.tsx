@@ -16,7 +16,7 @@ import {
 import { cn } from '@/shared/lib/utils'
 import { useDialogOpen } from '@/core/stores/dialog-store'
 import { useCatalogEntries, useCollections } from '@/core/stores/assets-store'
-import { useFailedCollections } from '@/scene/collection-loading'
+import { useFailedCollections } from '@/core/stores/collection-loading-store'
 import { setCatalogDrawerOpen } from './catalog-actions'
 import { CATALOG_DIALOG_ID } from './catalog-dialog-definition'
 import {

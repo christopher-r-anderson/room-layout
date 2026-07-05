@@ -1,12 +1,12 @@
 import { streamFetch } from './stream-fetch'
-import { collectionLoadProgressActions } from '@/core/stores/collection-load-progress-store'
+import { collectionLoadingActions } from '@/core/stores/collection-loading-store'
 
 // Engine-free furniture-asset prefetch for the gated (restored-scene) collections.
 // It downloads the GLB bytes and holds them in memory, with NO dependency on
 // three/drei — so it ships in the initial shell bundle and its fetches run in
 // parallel with the lazy engine chunk's download. The engine-side loader later
 // parses these buffers (awaited via whenPrefetched) instead of refetching.
-// Download progress is reported per collection to collection-load-progress-store.
+// Download progress is reported per collection to the core loading store.
 
 interface AssetDeferred {
   promise: Promise<ArrayBuffer>
@@ -48,7 +48,7 @@ async function fetchBufferWithProgress(
   return streamFetch(url, {
     signal,
     onProgress: (progress) => {
-      collectionLoadProgressActions.setProgress(url, progress)
+      collectionLoadingActions.setProgress(url, progress)
     },
   })
 }
@@ -97,11 +97,12 @@ export function whenPrefetched(url: string): Promise<ArrayBuffer> {
   return deferredFor(url).promise
 }
 
-/** Abort in-flight prefetches and drop all buffered bytes (used on retry). */
+// Abort in-flight prefetches and drop all buffered bytes (used on retry). The
+// loading-store reset (progress/loaded/wanted/failed) is owned by
+// resetCollectionLoading, which the retry runs alongside this.
 export function clearFurnitureAssetPrefetch(): void {
   abortController?.abort()
   abortController = null
   started.clear()
   deferreds.clear()
-  collectionLoadProgressActions.reset()
 }

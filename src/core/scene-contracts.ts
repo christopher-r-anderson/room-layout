@@ -13,3 +13,13 @@ export {
 } from './stores/scene-document-store'
 
 export { toolbarGeometryActions } from './stores/toolbar-geometry-store'
+
+// Collection-loading seam: the scene loader reports parse outcomes back to the
+// core loading store, and the Scene observes gated-collection failures. The
+// parsed scene objects themselves stay scene-internal (collection-scene-registry).
+export {
+  collectionLoadingActions,
+  isCollectionLoaded,
+  isCollectionFailed,
+  useFailedCollections,
+} from './stores/collection-loading-store'

@@ -7,7 +7,7 @@ import { sceneCommands } from '@/scene/scene-commands'
 import {
   ensureCollectionLoaded,
   getCollectionFailureKind,
-} from '@/scene/collection-loading'
+} from '@/core/stores/collection-loading-store'
 import { toast } from 'sonner'
 import { i18n } from '@/shared/i18n/i18n'
 import {

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { formatPercent } from '@/shared/i18n/formatters'
-import { useCollectionLoadPercent } from '@/core/stores/collection-load-progress-store'
+import { useCollectionLoadPercent } from '@/core/stores/collection-loading-store'
 import {
   addFurniture,
   prefetchCatalogItem,

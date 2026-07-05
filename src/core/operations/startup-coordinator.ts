@@ -4,7 +4,8 @@ import { createDefaultSceneState } from '@/core/model/scene-defaults'
 import { isSceneStateAtDefaults } from '@/core/model/scene-model'
 import { i18n } from '@/shared/i18n/i18n'
 import { sceneCommands, clearSceneServices } from '@/scene/scene-commands'
-import { resetCollectionScenes } from '@/scene/collection-loading'
+import { resetCollectionSceneRegistry } from '@/scene/collection-registry'
+import { resetCollectionLoading } from '@/core/stores/collection-loading-store'
 import { clearFurnitureAssetPrefetch } from './furniture-asset-prefetch'
 import { feedbackActions } from '../stores/feedback-store'
 import { dialogActions } from '../stores/dialog-store'
@@ -226,8 +227,10 @@ export function requestAssetRetry() {
   resetStartupShell()
   // Only reset collection state on an explicit retry (which remounts the loader
   // via the epoch), not on the error path: a gated failure's `failed` mark must
-  // survive so the loader does not immediately re-attempt and loop.
-  resetCollectionScenes()
+  // survive so the loader does not immediately re-attempt and loop. Clears the core
+  // loading lifecycle and the scene's parsed-collection registry together.
+  resetCollectionLoading()
+  resetCollectionSceneRegistry()
   clearFurnitureAssetPrefetch()
 
   editorLifecycleActions.requestRetry()

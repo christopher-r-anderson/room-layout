@@ -15,7 +15,7 @@ vi.mock('./catalog-actions', () => ({
   setCatalogDrawerOpen: setCatalogDrawerOpenMock,
 }))
 
-vi.mock('@/core/stores/collection-load-progress-store', () => ({
+vi.mock('@/core/stores/collection-loading-store', () => ({
   useCollectionLoadPercent: () => null,
 }))
 

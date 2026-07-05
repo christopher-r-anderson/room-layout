@@ -16,7 +16,7 @@ import {
   resolveSetSelectionTransformInHistory,
   rotateSelectedFurnitureInHistory,
 } from './furniture-operations'
-import { getLoadedCollectionScenes } from './collection-scenes-store'
+import { getLoadedCollectionScenes } from './collection-scene-registry'
 import type {
   AddFurnitureResult,
   MoveSelectionResult,

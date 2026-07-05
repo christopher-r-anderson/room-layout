@@ -2,20 +2,20 @@ import { useEffect, useRef } from 'react'
 import { useThree } from '@react-three/fiber'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 import { configureGltfKtx2 } from '@/scene/internal/three/gltf-ktx2'
-import type { CollectionLoadFailureKind } from '../../scene.types'
 import {
-  collectionScenesActions,
+  collectionLoadingActions,
   isCollectionFailed,
   isCollectionLoaded,
-} from './collection-scenes-store'
+} from '@/core/scene-contracts'
+import { registerCollectionScene } from './collection-scene-registry'
 
 // Imperative furniture-collection loader. It parses each requested collection's
-// GLB bytes with a single configured GLTFLoader and records the outcome in the
-// collection-scenes store - a parsed scene on success, a failure kind on error.
-// It is a pure mechanism: it does not distinguish gated from on-demand and has no
-// startup coupling. `resolveBytes` (supplied by the app) decides where a
-// collection's bytes come from, and readiness/error policy is derived from the
-// store by the Scene. In-session dedup is the store itself: a loaded or failed
+// GLB bytes with a single configured GLTFLoader, registers the parsed scene in the
+// scene-layer registry, and reports the outcome to the core loading store (loaded
+// or failed). It is a pure mechanism: it does not distinguish gated from on-demand
+// and has no startup coupling. `resolveBytes` (supplied by the app) decides where
+// a collection's bytes come from; readiness/error policy is derived from the store
+// by the Scene. In-session dedup is the loading store itself: a loaded or failed
 // collection is never re-fetched (a re-request clears its failure first).
 //
 // Configuring KTX2 needs the WebGLRenderer, so this lives inside the Canvas.
@@ -28,13 +28,9 @@ function resourceBasePath(path: string): string {
 export function CollectionLoader({
   collectionPaths,
   resolveBytes,
-  classifyLoadError,
 }: {
   collectionPaths: string[]
   resolveBytes: (path: string) => Promise<ArrayBuffer>
-  // Supplied by the app (which owns the core fetch errors): classifies a failure
-  // as permanent ('unavailable') or transient ('connection').
-  classifyLoadError: (error: unknown) => CollectionLoadFailureKind
 }) {
   const gl = useThree((state) => state.gl)
   const loaderRef = useRef<GLTFLoader | null>(null)
@@ -64,13 +60,15 @@ export function CollectionLoader({
       try {
         const bytes = await resolveBytes(path)
         const gltf = await loader.parseAsync(bytes, resourceBasePath(path))
-        collectionScenesActions.registerScene(path, gltf.scene)
+        registerCollectionScene(path, gltf.scene)
+        collectionLoadingActions.markLoaded(path)
       } catch (error) {
-        // Record why it failed so an awaiting add rejects (rather than hanging), a
-        // re-add can retry a transient failure, the catalog can mark a permanently
-        // unavailable item, and the Scene can surface a gated failure as a startup
-        // error. Not retried until the failure is cleared (a re-request).
-        collectionScenesActions.markFailed(path, classifyLoadError(error))
+        // Report the failure (classified in core) so an awaiting add rejects
+        // (rather than hanging), a re-add can retry a transient failure, the
+        // catalog can mark a permanently unavailable item, and the Scene can
+        // surface a gated failure as a startup error. Not retried until the
+        // failure is cleared (a re-request).
+        collectionLoadingActions.markFailed(path, error)
         console.warn(`Failed to load furniture collection: ${path}`, error)
       } finally {
         inFlight.delete(path)
@@ -80,7 +78,7 @@ export function CollectionLoader({
     for (const path of collectionPaths) {
       void load(path)
     }
-  }, [collectionPaths, resolveBytes, classifyLoadError])
+  }, [collectionPaths, resolveBytes])
 
   return null
 }
