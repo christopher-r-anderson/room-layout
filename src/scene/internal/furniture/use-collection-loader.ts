@@ -36,6 +36,18 @@ export function useCollectionLoader({
   }
   const inFlightRef = useRef<Set<string>>(new Set())
 
+  // Flipped on unmount so in-flight loads from a retired loader (the retry
+  // teardown remounts it via the epoch key) do not write their results into the
+  // fresh cycle's stores after the reset. Deliberately not per-effect-run: a load
+  // still in flight across a dep change must report when it settles.
+  const retiredRef = useRef(false)
+  useEffect(() => {
+    retiredRef.current = false
+    return () => {
+      retiredRef.current = true
+    }
+  }, [])
+
   useEffect(() => {
     const loader = loaderRef.current
     if (!loader) {
@@ -55,9 +67,15 @@ export function useCollectionLoader({
       try {
         const bytes = await resolveBytes(path)
         const gltf = await loader.parseAsync(bytes, resourceBasePath(path))
+        if (retiredRef.current) {
+          return
+        }
         registerCollectionScene(path, gltf.scene)
         collectionLoadingActions.markLoaded(path)
       } catch (error) {
+        if (retiredRef.current) {
+          return
+        }
         // Report the failure (classified in core) so an awaiting add rejects
         // instead of hanging and the outcome drives catalog/startup handling. Not
         // retried until cleared by a re-request.
