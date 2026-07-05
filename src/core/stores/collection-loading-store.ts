@@ -2,7 +2,10 @@ import { useStoreWithEqualityFn } from 'zustand/traditional'
 import { subscribeWithSelector } from 'zustand/middleware'
 import { createStore } from 'zustand/vanilla'
 import { shallow } from 'zustand/shallow'
-import { AssetHttpError } from '../operations/stream-fetch'
+import {
+  AssetHttpError,
+  type StreamFetchProgress,
+} from '../operations/stream-fetch'
 
 // The three-free loading lifecycle for furniture collections, keyed by sourcePath:
 // the gated set, download progress, which are wanted on demand, and which have
@@ -32,11 +35,8 @@ function classifyCollectionLoadError(
   return 'unavailable'
 }
 
-export interface CollectionDownloadProgress {
-  receivedBytes: number
-  // Bytes expected from Content-Length, or 0 when the server does not send it.
-  totalBytes: number
-}
+// The store's progress entries are exactly what streamFetch reports.
+export type CollectionDownloadProgress = StreamFetchProgress
 
 interface CollectionLoadingState {
   // The gated set: the collections the restored scene references, which startup
@@ -214,7 +214,10 @@ export interface GatedLoadProgress {
 }
 
 // Aggregate download progress across the gated collections, for the startup
-// loader. Computed at read time from the per-collection progress.
+// loader. Computed at read time from the per-collection progress. The percent
+// only aggregates collections with a known Content-Length (unknown sizes would
+// skew the denominator); a parsed collection always counts as byte-complete, so
+// a missing Content-Length cannot pin the loader in its downloading stage.
 export function useGatedLoadProgress(): GatedLoadProgress {
   return useStoreWithEqualityFn(
     collectionLoadingStore,
@@ -225,14 +228,14 @@ export function useGatedLoadProgress(): GatedLoadProgress {
       let loadedCount = 0
       for (const path of gatedPaths) {
         const progress = state.progressByPath.get(path)
-        if (!progress) {
-          continue
+        const hasKnownSize = progress !== undefined && progress.totalBytes > 0
+        if (hasKnownSize) {
+          receivedBytes += Math.min(progress.receivedBytes, progress.totalBytes)
+          totalBytes += progress.totalBytes
         }
-        receivedBytes += progress.receivedBytes
-        totalBytes += progress.totalBytes
         if (
-          progress.totalBytes > 0 &&
-          progress.receivedBytes >= progress.totalBytes
+          state.loaded.has(path) ||
+          (hasKnownSize && progress.receivedBytes >= progress.totalBytes)
         ) {
           loadedCount += 1
         }

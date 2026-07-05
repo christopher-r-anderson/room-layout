@@ -9,6 +9,7 @@ import {
   resetCollectionLoading,
   useGatedCollectionPaths,
   useGatedCollectionsResolved,
+  useGatedLoadProgress,
 } from './collection-loading-store'
 
 afterEach(() => {
@@ -84,6 +85,30 @@ describe('collection-loading-store', () => {
     expect(renderHook(() => useGatedCollectionsResolved()).result.current).toBe(
       true,
     )
+  })
+
+  it('counts a parsed collection as byte-complete even without a Content-Length', () => {
+    collectionLoadingActions.setGatedCollectionPaths([
+      '/models/sized.glb',
+      '/models/unsized.glb',
+    ])
+    collectionLoadingActions.setProgress('/models/sized.glb', {
+      receivedBytes: 10,
+      totalBytes: 10,
+    })
+    // No Content-Length: bytes stream with totalBytes 0, then the parse lands.
+    collectionLoadingActions.setProgress('/models/unsized.glb', {
+      receivedBytes: 7,
+      totalBytes: 0,
+    })
+    collectionLoadingActions.markLoaded('/models/unsized.glb')
+
+    const { result } = renderHook(() => useGatedLoadProgress())
+
+    expect(result.current.total).toBe(2)
+    expect(result.current.loadedCount).toBe(2)
+    // The unknown-size bytes stay out of the aggregate percent.
+    expect(result.current.percent).toBe(100)
   })
 
   it('reset returns the gated set to unresolved so a retry cannot read a stale gate', () => {
