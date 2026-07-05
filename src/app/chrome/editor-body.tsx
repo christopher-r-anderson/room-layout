@@ -29,10 +29,9 @@ import { Toaster } from '@/shared/ui/sonner'
 // downloads in parallel with — and never blocks — the initial shell paint.
 const SceneCanvas = lazy(() => import('./scene-canvas'))
 
-// The editor chrome (top header, tools, panels, dialogs, and their base-ui and
-// icon deps) is never needed while startup assets load, so it is code-split out
-// of the initial shell into its own chunk and mounts only once the editor is
-// ready. The shell keeps just the loading/error UI and the canvas boundary.
+// The editor chrome is code-split into its own chunk and mounts only once the
+// editor is ready, so it stays out of the initial shell (which keeps just the
+// loading/error UI and the canvas boundary).
 const importEditorChrome = () => import('./editor-overlay')
 const EditorOverlay = lazy(() =>
   importEditorChrome().then((module) => ({ default: module.EditorOverlay })),
@@ -76,11 +75,9 @@ export function EditorBody({ testOverlaysHidden }: EditorBodyProps) {
     }
   }, [])
 
-  // Warm the code-split chrome chunk during loading so it is already cached by
-  // the time the editor unlocks; the import is idempotent (the module map dedups
-  // it with React.lazy's own request). Kept off the index.html modulepreload list
-  // deliberately so it does not contend at high priority with the furniture
-  // asset downloads the user is actually waiting on.
+  // Warm the chrome chunk during loading so it is cached by the time the editor
+  // unlocks. Kept off the index.html modulepreload list deliberately, so it does
+  // not contend at high priority with the furniture downloads the user waits on.
   useEffect(() => {
     void importEditorChrome()
   }, [])
@@ -153,8 +150,6 @@ export function EditorBody({ testOverlaysHidden }: EditorBodyProps) {
         </Suspense>
       </section>
 
-      {/* The chrome mounts only once the editor is interactive; during startup
-          the shell shows just the loader (or the error UI), never the panels. */}
       {editorInteractionsEnabled && !testOverlaysHidden ? (
         <Suspense fallback={null}>
           <EditorOverlay />

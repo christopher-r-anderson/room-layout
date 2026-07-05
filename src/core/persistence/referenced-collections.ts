@@ -6,13 +6,10 @@ import type {
 import { parseSceneUrl, validateCatalogReferences } from './scene-url'
 import type { SceneDraftState } from './scene-draft'
 
-// Resolves, at bootstrap, which collection GLBs the scene about to be restored
-// references - the "gated" set the editor must load before it unlocks. It mirrors
-// the precedence of the actual restore (runStartupRestoreFlow): a valid shared
-// link wins, else a valid local draft, else nothing (a fresh/empty scene, which
-// gates on no furniture at all). It is deliberately read-only - it does not
-// consume the URL param or apply anything; the real restore does that once at
-// readiness.
+// Resolves the gated set at bootstrap: which collections the scene about to be
+// restored references. It mirrors the restore precedence (shared link, else local
+// draft, else nothing) but is read-only - it must not consume the URL param or
+// apply anything; the real restore does that once at readiness.
 export function resolveReferencedCollectionPaths({
   href,
   draft,

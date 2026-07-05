@@ -6,22 +6,18 @@ import { shallow } from 'zustand/shallow'
 import { useItems } from './scene-document-store'
 import { AssetHttpError } from '../operations/stream-fetch'
 
-// The three-free loading lifecycle for furniture collections, keyed by
-// sourcePath. This is the orchestration side of collection loading: download
-// progress, which collections are requested on demand, and which have finished or
-// failed. It deliberately holds no three.js: the parsed scene objects live in the
-// scene layer's registry (collection-scene-registry), and the loader reports the
-// outcome back here. All of this store's inputs (document items, gated set,
-// prefetch bytes) and most of its consumers (startup, catalog) are core/features,
-// which is why it lives here rather than in the scene.
+// The three-free loading lifecycle for furniture collections, keyed by sourcePath:
+// download progress, which are wanted on demand, and which have loaded or failed.
+// It holds no three.js - the parsed objects live in the scene registry
+// (collection-scene-registry) and the loader reports outcomes back here - and lives
+// in core because its inputs and consumers are core/features. See
+// docs/architecture/startup-and-asset-loading.md.
 
 // Why a collection's load failed. 'unavailable' is permanent (a missing/broken
 // asset, from a non-ok HTTP response) and is never retried; 'connection' is
 // transient (network error or stall) and a re-request retries it.
 export type CollectionLoadFailureKind = 'unavailable' | 'connection'
 
-// A non-ok HTTP response means the model is missing/broken (permanent); anything
-// else (network error, stall abort) is a transient connection problem.
 function classifyCollectionLoadError(
   error: unknown,
 ): CollectionLoadFailureKind {
@@ -145,11 +141,9 @@ export function useLoadedCollections(): Set<string> {
   return useStoreWithEqualityFn(collectionLoadingStore, (state) => state.loaded)
 }
 
-// Ensures a collection is loaded and registered. Requesting it (re)marks it wanted
-// and clears any prior failure, which makes the loader (re)attempt it; the promise
-// resolves once the loader reports it loaded, or rejects if it fails - so the add
-// flow can surface an error and recover instead of hanging. Settles off the store
-// so the caller never races a stale React render.
+// Requests a collection and resolves once the loader reports it loaded, or rejects
+// if it fails - so the add flow surfaces an error instead of hanging. Settles off
+// the store, so the caller never races a stale React render.
 export function ensureCollectionLoaded(path: string): Promise<void> {
   if (isCollectionLoaded(path)) {
     return Promise.resolve()
@@ -184,10 +178,8 @@ export function ensureCollectionLoaded(path: string): Promise<void> {
   })
 }
 
-// The on-demand collections the loader should pull in right now: every collection
-// referenced by a current scene item, plus anything explicitly wanted, minus the
-// gated collections (which the loader already handles from the startup prefetch).
-// Added items keep their collection loaded via this set.
+// The on-demand collections the loader should pull in now: those referenced by a
+// current scene item plus anything explicitly wanted, minus the gated set.
 export function useActiveOnDemandCollectionPaths(
   gatedCollectionPaths: string[],
 ): string[] {
@@ -235,7 +227,6 @@ export function useCollectionLoadPercent(path: string | null): number | null {
 }
 
 export interface GatedLoadProgress {
-  // Number of gated collections, and how many have fully downloaded.
   total: number
   loadedCount: number
   // Aggregate download percent (0-100) across the gated set.

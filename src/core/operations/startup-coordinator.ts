@@ -183,11 +183,9 @@ function runRestoreOnce() {
   })
 }
 
-// The scene reported its assets are ready. On the first ready notification of a
-// session, run the one-time restore flow (shared link → draft → defaults); on
-// every notification, suppress the pending-selection announcement and mark the
-// editor ready. The restore is guarded by the lifecycle store's attempt count so
-// it does not re-run on a Scene remount or after a retry.
+// Assets are ready. Runs the one-time restore flow (shared link -> draft ->
+// defaults) on the first ready of a session, guarded by the attempt count so a
+// Scene remount or retry does not re-run it.
 export function completeAssetLoad() {
   if (editorLifecycleStore.getState().restoreAttemptCount === 0) {
     editorLifecycleActions.incrementRestoreAttempt()
@@ -202,8 +200,6 @@ export function completeAssetLoad() {
   editorLifecycleActions.markAssetsReady()
 }
 
-// The scene failed to load assets. Record the asset error, dismiss any open
-// dialog, reset the surface, and surface the failure to the user.
 export function notifyAssetError(error: Error) {
   editorLifecycleActions.setAssetError({
     kind: 'asset-load',
@@ -218,10 +214,8 @@ export function notifyAssetError(error: Error) {
   feedbackActions.announceAssertive(assetError)
 }
 
-// The user asked to retry startup. Clear any open dialog and the surface, drop
-// the prefetched asset bytes so the retry re-downloads them, then bump the
-// lifecycle retry token so the bootstrap fetch effect re-runs and the Scene
-// remounts (re-seeding THREE.Cache from the fresh prefetch).
+// Retry startup: drop the prefetched asset bytes so it re-downloads, then bump the
+// retry token so the bootstrap fetch re-runs and the Scene remounts.
 export function requestAssetRetry() {
   dialogActions.closeActiveDialog()
   resetStartupShell()

@@ -104,10 +104,9 @@ export function Scene({
   // Accessor for fresh r3f state when we need to imperatively touch the renderer
   // (e.g. tone-mapping exposure) without subscribing to or mutating a hook value.
   const getThreeState = useThree((state) => state.get)
-  // Parsed collection scenes register into this store as their loaders resolve
-  // (CollectionLoader, mounted by scene-canvas outside this component's Suspense).
-  // The map is partial and grows as collections load, so the room renders before
-  // any furniture and each item appears once its collection is present.
+  // Parsed collection scenes, registered by the loader as they resolve. Partial and
+  // growing, so the room renders before any furniture; each item appears once its
+  // collection is present.
   const sourceScenesByPath = useLoadedCollectionScenes()
 
   const sourceScenesByCollectionId = useMemo(() => {

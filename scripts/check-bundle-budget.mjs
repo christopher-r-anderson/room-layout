@@ -10,9 +10,8 @@ import path from 'node:path'
 const BUDGETS = [
   { label: 'shell (entry)', pattern: /^index-.*\.js$/, maxGzipKB: 150 },
   { label: 'engine (lazy)', pattern: /^scene-canvas-.*\.js$/, maxGzipKB: 350 },
-  // The editor chrome (top header, tools, panels, dialogs, and their base-ui and
-  // icon deps) is code-split out of the shell and mounts only once the editor is
-  // ready; it is warmed in parallel during loading, so it never blocks paint.
+  // The editor chrome, code-split out of the shell and mounted only once the editor
+  // is ready (see editor-body).
   { label: 'chrome (lazy)', pattern: /^editor-overlay-.*\.js$/, maxGzipKB: 70 },
   // Pure furniture/room geometry shared by both the shell (placement engine) and
   // the lazy chrome chunk; rolldown hoists it into its own shared chunk so it is

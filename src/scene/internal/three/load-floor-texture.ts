@@ -28,7 +28,6 @@ export async function loadFloorTexture(
 ): Promise<FloorTextures> {
   const cacheKey = getTextureCacheKey(option)
 
-  // Return cached promise if already loading or loaded
   const cached = textureCache.get(cacheKey)
   if (cached) {
     return cached
@@ -40,13 +39,11 @@ export async function loadFloorTexture(
       loadTexture(option.normalPath, renderer),
     ])
 
-    // Configure diffuse as sRGB color data.
     diffuse.colorSpace = SRGBColorSpace
     diffuse.wrapS = RepeatWrapping
     diffuse.wrapT = RepeatWrapping
     diffuse.needsUpdate = true
 
-    // Configure normal as non-color data.
     normal.colorSpace = NoColorSpace
     normal.wrapS = RepeatWrapping
     normal.wrapT = RepeatWrapping

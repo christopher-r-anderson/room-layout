@@ -6,14 +6,10 @@ import { formatPercent } from '@/shared/i18n/formatters'
 import { APP_NAME } from '@/shared/messages/app-identity'
 import { Progress } from '@/shared/ui/progress'
 
-// Minimal startup loader. It shares the opaque, theme-matched full-screen
-// treatment of the pre-paint spinner in index.html so the hand-off from that
-// spinner to this React screen is seamless rather than a jump into an app-shell
-// panel. It keeps a progress readout (bar + percent) but drops the card, heading,
-// body copy, and per-asset filenames, which read as a professional tool rather
-// than a consumer loading screen. The column (spinner, brand, bar, status row)
-// mirrors the index.html skeleton element-for-element so the spinner does not
-// shift when React replaces the skeleton.
+// Minimal startup loader. Its column (spinner, brand, bar, status row) mirrors the
+// index.html pre-paint skeleton element-for-element, with the same opaque
+// theme-matched treatment, so the hand-off when React replaces the skeleton does
+// not shift or flash.
 export function InitializationProgress() {
   const { t } = useLingui()
   const visible = useStartupLoadingActive()

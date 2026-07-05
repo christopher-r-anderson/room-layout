@@ -17,10 +17,9 @@ export class AssetHttpError extends Error {
   }
 }
 
-// Default stall timeout. A *stall* timeout (no bytes for this long) rather than a
-// total-duration one bounds a load without false-positiving on a slow but
-// progressing connection - a large model on slow mobile can legitimately take a
-// while, but a truly stuck transfer stops producing bytes.
+// A *stall* timeout (no bytes for this long), not a total-duration one, so a slow
+// but progressing connection is not falsely aborted while a truly stuck transfer
+// still is.
 const DEFAULT_STALL_TIMEOUT_MS = 15_000
 
 // Fetches a URL as an ArrayBuffer, streaming the body so progress is reported and

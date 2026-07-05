@@ -2,12 +2,9 @@ import { useStoreWithEqualityFn } from 'zustand/traditional'
 import { createStore } from 'zustand/vanilla'
 import { shallow } from 'zustand/shallow'
 
-// The collection GLBs the current startup must load before the editor unlocks:
-// the collections referenced by the restored scene (shared link / local draft),
-// or empty for a fresh/empty scene. Bootstrap computes this from the manifest +
-// restore source; scene-canvas reads it to prefetch/seed the gated set and to
-// gate the Scene's readiness. Everything else in the catalog loads lazily on
-// demand and is not part of this set.
+// The gated set: the collections the restored scene references, which startup must
+// load before the editor unlocks (empty for a fresh scene). Everything else in the
+// catalog loads on demand. See docs/architecture/startup-and-asset-loading.md.
 interface StartupGateState {
   gatedCollectionPaths: string[]
 }

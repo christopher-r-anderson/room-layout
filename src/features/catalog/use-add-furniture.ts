@@ -44,8 +44,8 @@ export function useAddFurniture({
   const percentLabel =
     loadPercent !== null ? formatPercent(loadPercent / 100) : null
 
-  // Prefetch-on-select: start loading the selected model while the drawer is open,
-  // so the add is usually instant by the time the user commits.
+  // Prefetch the selected model while the drawer is open, so the add is usually
+  // instant (see prefetchCatalogItem).
   useEffect(() => {
     if (open && catalogIdToAdd) {
       prefetchCatalogItem(catalogIdToAdd)

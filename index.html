@@ -21,14 +21,11 @@
       })()
     </script>
     <style>
-      /* Pre-paint shell: shown until the app chunk parses and React mounts (which
-         replaces #root's contents). Inline + theme-matched so there is no blank
-         page and no flash while the engine chunk downloads in parallel. The column
-         mirrors the React loader (InitializationProgress) element-for-element -
-         spinner, brand, bar, status line, same sizes and gaps - so the spinner
-         sits at the identical Y and does not jump when React takes over. Colors are
-         literal copies of the index.css theme tokens (the bundle CSS that defines
-         those variables is not loaded yet at first paint). */
+      /* Pre-paint shell shown until React mounts. Inline and theme-matched, its
+         column mirrors the React loader (InitializationProgress) element-for-element
+         so nothing shifts or flashes when React takes over. Colors are literal
+         copies of the index.css theme tokens - the bundle CSS that defines those
+         variables is not loaded yet at first paint. */
       #app-skeleton {
         position: fixed;
         inset: 0;

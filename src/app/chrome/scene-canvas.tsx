@@ -23,16 +23,10 @@ export interface SceneCanvasProps {
   onPointerMissed: () => void
 }
 
-// The 3D engine (three + r3f + drei + postprocessing) is isolated behind this
-// module so it can be code-split out of the initial shell bundle via React.lazy
-// in editor-body. Nothing here is imported statically from the shell.
-//
-// Environment-first loading: <Scene> renders the room/lighting/camera
-// immediately and reads parsed collections from a store, so it never suspends on
-// furniture. <CollectionLoader> loads collections imperatively; this module owns
-// the gated-vs-on-demand policy - where a collection's bytes come from - while the
-// loader stays a uniform mechanism and the Scene derives readiness/error from the
-// store.
+// The code-split boundary for the 3D engine (three + r3f + drei + postprocessing):
+// lazily imported by editor-body, with nothing here imported statically from the
+// shell. It also owns the gated-vs-on-demand byte policy for the loader (where a
+// collection's bytes come from). See docs/architecture/startup-and-asset-loading.md.
 export default function SceneCanvas({ onPointerMissed }: SceneCanvasProps) {
   const sceneEpoch = useSceneEpoch()
   const catalog = useCatalogEntries()
@@ -52,11 +46,9 @@ export default function SceneCanvas({ onPointerMissed }: SceneCanvasProps) {
   } = useActiveFinishIds()
   const { renderQuality, shadowMode, exposure } = resolveRenderQuality()
 
-  // Gated collections reuse the streamed prefetch bytes; on-demand collections are
-  // fetched directly on first use (streamed so a stall timeout bounds them and the
-  // byte progress drives the drawer's "Adding... N%"). Either way the loader parses
-  // the bytes and reports the outcome to the core loading store, so a collection is
-  // fetched at most once per session without relying on HTTP cache headers.
+  // Gated collections reuse the prefetched bytes; on-demand ones stream on first
+  // use (a stall timeout bounds them and the byte progress drives the drawer's
+  // "Adding... N%"). Either way a collection is fetched at most once per session.
   const resolveBytes = useCallback(
     (path: string): Promise<ArrayBuffer> => {
       if (gatedCollectionPaths.includes(path)) {
@@ -86,9 +78,7 @@ export default function SceneCanvas({ onPointerMissed }: SceneCanvasProps) {
       onPointerMissed={onPointerMissed}
       shadows={shadowMode}
     >
-      {/* Scene renders the environment now and furniture as collections register;
-          startup readiness is observed in core (useStartupReadiness), and
-          validation/render failures surface via the error boundary. */}
+      {/* Validation/render failures surface via the error boundary. */}
       <SceneAssetErrorBoundary key={sceneEpoch} onError={notifyAssetError}>
         <Scene
           renderQuality={renderQuality}

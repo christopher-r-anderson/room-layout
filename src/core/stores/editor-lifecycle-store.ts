@@ -107,7 +107,9 @@ export const editorLifecycleStore = createStore<EditorLifecycleStoreState>()(
     },
     setSceneMounted: (mounted) => {
       set((state) =>
-        state.sceneMounted === mounted ? state : { ...state, sceneMounted: mounted },
+        state.sceneMounted === mounted
+          ? state
+          : { ...state, sceneMounted: mounted },
       )
     },
     recordRestoreOutcome: (outcome) => {
@@ -175,16 +177,12 @@ export function resetEditorLifecycleStore() {
   editorLifecycleActions.reset()
 }
 
-// Scene reports its own mount/unmount through this (via scene-contracts); the
-// startup readiness observer gates on it.
 export function setSceneMounted(mounted: boolean) {
   editorLifecycleActions.setSceneMounted(mounted)
 }
 
-// Imperative (non-React) read of whether the editor is interactive: startup has
-// finished and assets are ready. The single predicate operations gate on, so the
-// readiness rule lives in one place instead of being re-derived from the store
-// internals at every call site. The React equivalent is useEditorInteractionsEnabled.
+// Imperative (non-React) editor-interactive predicate, so the readiness rule lives
+// in one place. React equivalent: useEditorInteractionsEnabled.
 export function isEditorInteractive() {
   return editorLifecycleStore.getState().startupPhase === 'ready'
 }

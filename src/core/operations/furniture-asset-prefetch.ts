@@ -1,12 +1,11 @@
 import { streamFetch } from './stream-fetch'
 import { collectionLoadingActions } from '@/core/stores/collection-loading-store'
 
-// Engine-free furniture-asset prefetch for the gated (restored-scene) collections.
-// It downloads the GLB bytes and holds them in memory, with NO dependency on
-// three/drei — so it ships in the initial shell bundle and its fetches run in
-// parallel with the lazy engine chunk's download. The engine-side loader later
-// parses these buffers (awaited via whenPrefetched) instead of refetching.
-// Download progress is reported per collection to the core loading store.
+// Engine-free prefetch of the gated (restored-scene) collections: it downloads the
+// GLB bytes and holds them in memory with no three/drei dependency, so it ships in
+// the shell and fetches in parallel with the lazy engine chunk rather than waiting
+// for it. The loader later parses these buffers (awaited via whenPrefetched)
+// instead of refetching. See docs/architecture/startup-and-asset-loading.md.
 
 interface AssetDeferred {
   promise: Promise<ArrayBuffer>

@@ -18,10 +18,8 @@ interface UseHistoryOperationsOptions {
   collections: FurnitureCollection[]
 }
 
-// Undo/redo/restore service handlers. Each reads the authoritative history from
-// the document store, runs the pure history transition, and writes the result
-// back. Extracted from the Scene component so the imperative surface lives apart
-// from rendering.
+// Undo/redo/restore service handlers - the imperative surface, kept apart from
+// rendering.
 export function useHistoryOperations({
   isDragging,
   catalog,
