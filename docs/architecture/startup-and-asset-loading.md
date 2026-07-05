@@ -60,8 +60,9 @@ flowchart LR
 - **Bootstrap** (`features/startup/use-startup-bootstrap.ts`): fetches and validates
   the catalog manifest into `assets-store`, resolves the **gated set** - the
   collections the restored URL/draft actually references
-  (`core/persistence/referenced-collections.ts`) - into the loading store, and
-  warms the byte source for it. The gated set is `null` until resolved (and again
+  (`core/persistence/referenced-collections.ts`, read-only over the restore
+  flow's own `selectPrimaryRestoreState`, so gate and restore share one
+  precedence rule) - into the loading store, and warms the byte source for it. The gated set is `null` until resolved (and again
   after a retry resets it), so readiness can never complete against a stale or
   unknown gate.
 - **Byte source** (`core/operations/collection-bytes.ts`): one fetch per

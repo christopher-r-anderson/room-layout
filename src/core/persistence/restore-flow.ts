@@ -133,6 +133,44 @@ function restoreFromInvalidLinkWithDraftFallback(
   )
 }
 
+// A local draft only participates in restore when its references are valid.
+export function validateDraftState(
+  draft: SceneDraftState | null,
+  catalog: FurnitureCatalogEntry[],
+): SceneDraftState | null {
+  return draft && validateCatalogReferences(draft.items, catalog)
+    ? draft
+    : null
+}
+
+export type PrimaryRestoreState =
+  | { source: 'link'; state: RestorableState }
+  | { source: 'draft'; state: SceneDraftState }
+  | { source: 'none'; state: null }
+
+// The single statement of restore precedence: a valid shared link wins, else a
+// valid local draft, else nothing. The restore flow attempts this source first
+// (its runtime fallbacks for apply failures stay below), and bootstrap derives
+// the startup gate from the same selection - one rule, so the gate cannot
+// silently diverge from what restore will attempt.
+export function selectPrimaryRestoreState({
+  parseResult,
+  validDraftState,
+  catalog,
+}: {
+  parseResult: ParseSceneUrlResult
+  validDraftState: SceneDraftState | null
+  catalog: FurnitureCatalogEntry[]
+}): PrimaryRestoreState {
+  if (parseResult.ok && validateCatalogReferences(parseResult.items, catalog)) {
+    return { source: 'link', state: parseResult }
+  }
+  if (validDraftState) {
+    return { source: 'draft', state: validDraftState }
+  }
+  return { source: 'none', state: null }
+}
+
 export function runStartupRestoreFlow(options: {
   parseResult: ParseSceneUrlResult
   catalog: FurnitureCatalogEntry[]
@@ -150,27 +188,34 @@ export function runStartupRestoreFlow(options: {
     notifications,
   } = options
 
-  if (parseResult.ok) {
-    if (validateCatalogReferences(parseResult.items, catalog)) {
-      try {
-        applyState(parseResult)
-        notifications.setRestoreOutcome('restored')
-        const restoredFromLink = i18n._(
-          msg`Room layout restored from shared link.`,
-        )
-        notifications.announcePolite(restoredFromLink)
-        notifications.toastSuccess(restoredFromLink)
-      } catch {
-        restoreFromInvalidLinkWithDraftFallback(
-          notifications,
-          applyState,
-          validDraftState,
-          APPLY_FAILED_LINK_CASES,
-        )
-      }
-      return
-    }
+  const primary = selectPrimaryRestoreState({
+    parseResult,
+    validDraftState,
+    catalog,
+  })
 
+  if (primary.source === 'link') {
+    try {
+      applyState(primary.state)
+      notifications.setRestoreOutcome('restored')
+      const restoredFromLink = i18n._(
+        msg`Room layout restored from shared link.`,
+      )
+      notifications.announcePolite(restoredFromLink)
+      notifications.toastSuccess(restoredFromLink)
+    } catch {
+      restoreFromInvalidLinkWithDraftFallback(
+        notifications,
+        applyState,
+        validDraftState,
+        APPLY_FAILED_LINK_CASES,
+      )
+    }
+    return
+  }
+
+  if (parseResult.ok) {
+    // The link parsed but references furniture the catalog does not know.
     restoreFromInvalidLinkWithDraftFallback(
       notifications,
       applyState,

@@ -23,9 +23,11 @@ import { loadSceneDraft, saveSceneDraft } from '../persistence/scene-draft'
 import {
   parseSceneUrl,
   removeSceneParamFromUrl,
-  validateCatalogReferences,
 } from '../persistence/scene-url'
-import { runStartupRestoreFlow } from '../persistence/restore-flow'
+import {
+  runStartupRestoreFlow,
+  validateDraftState,
+} from '../persistence/restore-flow'
 import type { RestorableState } from '../persistence/restore-flow.types'
 
 // Resets the editor surface back to a clean slate. Used by the asset-error and
@@ -142,10 +144,7 @@ function runRestoreOnce() {
     })
   }
 
-  const validDraftState =
-    draftState && validateCatalogReferences(draftState.items, catalog)
-      ? draftState
-      : null
+  const validDraftState = validateDraftState(draftState, catalog)
 
   const defaultSceneState = createDefaultSceneState({
     defaultFloorFinishId,
