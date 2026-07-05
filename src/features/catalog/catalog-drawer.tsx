@@ -92,6 +92,11 @@ export function CatalogDrawer({
                     isUnavailable ? 'cursor-not-allowed' : 'cursor-pointer',
                   )}
                 >
+                  {/* Also locked while an add is submitting: the add captured
+                      the selected id, so switching mid-add would show a
+                      different selection than the item being placed. The
+                      dimmed treatment stays tied to isUnavailable so a fast
+                      add does not flash every tile. */}
                   <input
                     className="peer sr-only"
                     aria-label={entry.name}
@@ -99,7 +104,7 @@ export function CatalogDrawer({
                     name="furniture-catalog"
                     value={entry.id}
                     checked={isSelected}
-                    disabled={isUnavailable}
+                    disabled={isUnavailable || isSubmitting}
                     onChange={(event) => {
                       catalogSelectionActions.setSelectedCatalogId(
                         event.target.value,
@@ -108,9 +113,9 @@ export function CatalogDrawer({
                   />
                   <span
                     className={cn(
-                      'grid h-full gap-2 rounded-lg border bg-card p-2 transition-all duration-150 peer-focus-visible:ring-2 peer-focus-visible:ring-ring/50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50',
+                      'grid h-full gap-2 rounded-lg border bg-card p-2 transition-all duration-150 peer-focus-visible:ring-2 peer-focus-visible:ring-ring/50',
                       isUnavailable
-                        ? ''
+                        ? 'cursor-not-allowed opacity-50'
                         : isSelected
                           ? 'border-primary/60 bg-primary/5'
                           : 'hover:border-foreground/20 hover:shadow-sm',
