@@ -181,6 +181,22 @@ describe('ensureCollectionLoaded', () => {
 })
 
 describe('startCollectionLoadReconciler', () => {
+  it('kicks loads for state that was already in place when it started', async () => {
+    // Gate resolved and scene mounted before the reconciler exists - it must
+    // reconcile on start, not wait for the next store update.
+    editorLifecycleStore.getState().setSceneMounted(true)
+    collectionLoadingActions.setGatedCollectionPaths(['/models/pre.glb'])
+
+    const stop = startCollectionLoadReconciler()
+    try {
+      await vi.waitFor(() => {
+        expect(isCollectionLoaded('/models/pre.glb')).toBe(true)
+      })
+    } finally {
+      stop()
+    }
+  })
+
   it('loads the gated set once the scene mounts, and newly wanted paths as they arrive', async () => {
     const stop = startCollectionLoadReconciler()
     try {

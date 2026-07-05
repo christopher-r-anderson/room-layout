@@ -127,6 +127,12 @@ export function startCollectionLoadReconciler(): () => void {
     ),
   ]
 
+  // Reconcile what already holds: the subscriptions only fire on future
+  // updates, so state set before the reconciler started (a resolved gate, a
+  // mounted scene) must be caught up here rather than waiting for the next
+  // unrelated change.
+  kickPendingCollectionLoads()
+
   return () => {
     for (const unsubscribe of unsubscribes) {
       unsubscribe()
