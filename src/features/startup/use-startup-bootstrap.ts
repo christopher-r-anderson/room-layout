@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { prefetchFurnitureCollections } from '@/core/operations/furniture-asset-prefetch'
+import { warmCollectionBytes } from '@/core/operations/collection-bytes'
 import {
   editorLifecycleActions,
   useRetryToken,
@@ -96,7 +96,7 @@ export function useStartupBootstrap() {
         })
 
         // The gated set the restored scene references (empty for a fresh scene):
-        // only these are prefetched and gate the unlock; the rest loads on demand.
+        // only these are warmed here and gate the unlock; the rest loads on demand.
         const gatedCollectionPaths = resolveReferencedCollectionPaths({
           href: window.location.href,
           draft: loadSceneDraft(),
@@ -107,7 +107,7 @@ export function useStartupBootstrap() {
 
         editorLifecycleActions.beginAssetLoad()
 
-        prefetchFurnitureCollections(gatedCollectionPaths)
+        warmCollectionBytes(gatedCollectionPaths)
       } catch (error) {
         if (cancelled) return
 

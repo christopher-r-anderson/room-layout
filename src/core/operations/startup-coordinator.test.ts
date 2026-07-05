@@ -10,7 +10,7 @@ import { dialogActions } from '../stores/dialog-store'
 import { feedbackActions } from '../stores/feedback-store'
 import { selectionEffects } from './selection-effects'
 import { runStartupRestoreFlow } from '../persistence/restore-flow'
-import { clearFurnitureAssetPrefetch } from './furniture-asset-prefetch'
+import { clearCollectionBytes } from './collection-bytes'
 import { clearSceneServices } from '@/scene/scene-commands'
 import {
   completeAssetLoad,
@@ -41,8 +41,8 @@ vi.mock('../stores/feedback-store', () => ({
   },
 }))
 
-vi.mock('./furniture-asset-prefetch', () => ({
-  clearFurnitureAssetPrefetch: vi.fn(),
+vi.mock('./collection-bytes', () => ({
+  clearCollectionBytes: vi.fn(),
 }))
 
 vi.mock('@/scene/scene-commands', () => ({
@@ -114,10 +114,10 @@ describe('startup-coordinator', () => {
     )
   })
 
-  it('clears the prefetched assets and bumps the retry token', () => {
+  it('clears the buffered assets and bumps the retry token', () => {
     requestAssetRetry()
 
-    expect(clearFurnitureAssetPrefetch).toHaveBeenCalledTimes(1)
+    expect(clearCollectionBytes).toHaveBeenCalledTimes(1)
     expect(editorLifecycleStore.getState().retryToken).toBe(1)
     expect(editorLifecycleStore.getState().sceneEpoch).toBe(1)
     expect(feedbackActions.clearAssertiveAnnouncement).toHaveBeenCalledTimes(1)

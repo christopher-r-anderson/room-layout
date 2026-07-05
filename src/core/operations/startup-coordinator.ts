@@ -6,7 +6,7 @@ import { i18n } from '@/shared/i18n/i18n'
 import { sceneCommands, clearSceneServices } from '@/scene/scene-commands'
 import { resetCollectionSceneRegistry } from '@/scene/collection-registry'
 import { resetCollectionLoading } from '@/core/stores/collection-loading-store'
-import { clearFurnitureAssetPrefetch } from './furniture-asset-prefetch'
+import { clearCollectionBytes } from './collection-bytes'
 import { feedbackActions } from '../stores/feedback-store'
 import { dialogActions } from '../stores/dialog-store'
 import {
@@ -214,7 +214,7 @@ export function notifyAssetError(error: Error) {
   feedbackActions.announceAssertive(assetError)
 }
 
-// Retry startup: drop the prefetched asset bytes so it re-downloads, then bump the
+// Retry startup: drop the buffered asset bytes so it re-downloads, then bump the
 // retry token so the bootstrap fetch re-runs and the Scene remounts.
 export function requestAssetRetry() {
   dialogActions.closeActiveDialog()
@@ -225,7 +225,7 @@ export function requestAssetRetry() {
   // loading lifecycle and the scene's parsed-collection registry together.
   resetCollectionLoading()
   resetCollectionSceneRegistry()
-  clearFurnitureAssetPrefetch()
+  clearCollectionBytes()
 
   editorLifecycleActions.requestRetry()
   feedbackActions.clearAssertiveAnnouncement()

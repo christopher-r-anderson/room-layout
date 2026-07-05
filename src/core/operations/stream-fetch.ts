@@ -24,7 +24,7 @@ const DEFAULT_STALL_TIMEOUT_MS = 15_000
 
 // Fetches a URL as an ArrayBuffer, streaming the body so progress is reported and
 // a stalled transfer aborts (rejecting) instead of hanging indefinitely. Used by
-// both the gated startup prefetch and on-demand collection loads.
+// every collection download through the shared byte source.
 export async function streamFetch(
   url: string,
   {

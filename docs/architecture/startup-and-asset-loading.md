@@ -13,13 +13,13 @@ chrome are code-split out and load lazily. Budgets are regression-gated by
 
 | Chunk                          | Contents                                                                         | Loads                                         |
 | ------------------------------ | -------------------------------------------------------------------------------- | --------------------------------------------- |
-| shell (`index-*.js`)           | app skeleton, the loading UI, the engine-free asset prefetch, placement geometry | eagerly (first paint)                         |
-| engine (`scene-canvas-*.js`)   | three / r3f / drei / postprocessing                                              | lazily, in parallel with the shell's prefetch |
+| shell (`index-*.js`)           | app skeleton, the loading UI, the engine-free byte source, placement geometry   | eagerly (first paint)                         |
+| engine (`scene-canvas-*.js`)   | three / r3f / drei / postprocessing                                              | lazily, in parallel with the shell's fetches  |
 | chrome (`editor-overlay-*.js`) | editor panels, toolbars, icon deps                                               | lazily, once the editor is interactive        |
 
 Two consequences worth knowing:
 
-- **The asset prefetch is deliberately engine-free** (`core/operations/furniture-asset-prefetch.ts`
+- **The collection byte source is deliberately engine-free** (`core/operations/collection-bytes.ts`
   deals only in `ArrayBuffer`s, no three import). Because it ships in the shell, a
   restored scene's furniture bytes download _in parallel_ with the larger engine
   chunk instead of waiting for it.
@@ -49,8 +49,8 @@ Two supporting signals:
 
 ```mermaid
 flowchart LR
-  boot["bootstrap\n(fetch manifest,\ncompute gated set)"] --> prefetch["prefetch\n(shell, engine-free)"]
-  prefetch --> stream["stream-fetch\n(stall timeout)"]
+  boot["bootstrap\n(fetch manifest,\ncompute gated set)"] --> bytes["byte source\n(shell, engine-free)"]
+  bytes --> stream["stream-fetch\n(stall timeout)"]
   stream --> parse["parse in scene\n(KTX2 needs the renderer)"]
   parse --> registry["scene registry\n(Object3D)"]
   parse --> store["core loading store\n(loaded / failed)"]
@@ -61,9 +61,14 @@ flowchart LR
   the catalog manifest into `assets-store`, resolves the **gated set** - the
   collections the restored URL/draft actually references
   (`core/persistence/referenced-collections.ts`) - into the loading store, and
-  starts the prefetch. The gated set is `null` until resolved (and again after a
-  retry resets it), so readiness can never complete against a stale or unknown
-  gate.
+  warms the byte source for it. The gated set is `null` until resolved (and again
+  after a retry resets it), so readiness can never complete against a stale or
+  unknown gate.
+- **Byte source** (`core/operations/collection-bytes.ts`): one fetch per
+  collection per cycle, shared by every consumer - bootstrap warms the gated set,
+  on-demand paths start on first request. Buffers are released once parsed (the
+  registry's parsed scene supersedes them); a failed fetch forgets its entry so a
+  re-request retries.
 - **Stream-fetch** (`core/operations/stream-fetch.ts`): a streaming fetch with a
   _stall_ timeout (aborts if no bytes arrive for ~15s, rather than a total-duration
   cap, so slow connections are not failed) that reports byte progress and throws
@@ -82,8 +87,8 @@ flowchart LR
 The split of state is intentional: the parsed `Object3D`s are a scene render
 artifact (`collection-scene-registry`, scene-internal), while the three-free
 loading lifecycle - progress, which collections are wanted, loaded, or failed -
-lives in `core/stores/collection-loading-store.ts` next to the prefetch and gating
-it coordinates with. The loader is the bridge, reporting outcomes up to core via
+lives in `core/stores/collection-loading-store.ts` next to the byte source and
+gating it coordinates with. The loader is the bridge, reporting outcomes up to core via
 `scene-contracts`.
 
 ## Gated vs on-demand
@@ -97,8 +102,9 @@ it coordinates with. The loader is the bridge, reporting outcomes up to core via
   wanted set lives in the loading store and keeps an added item's collection
   available for the session.
 
-Both paths run through the same loader; `scene-canvas`'s `resolveBytes` chooses the
-byte source (the prefetched buffer for gated paths, a direct stream for on-demand).
+Both paths run through the same loader and the same byte source; the only
+difference is when the download starts (bootstrap warms the gated set, an
+on-demand path starts on first request).
 
 ## Failure model
 
@@ -125,7 +131,7 @@ can message by cause instead of waiting forever.
 ## Retry
 
 `requestAssetRetry` (`core/operations/startup-coordinator.ts`) resets the core
-loading lifecycle and the scene registry, clears the prefetch buffers, and bumps the
+loading lifecycle and the scene registry, clears the byte source, and bumps the
 epoch so a fresh loader remounts and re-downloads. Reset happens **only** on an
 explicit retry - on the error path a gated failure's mark survives, so the loader
 does not immediately re-attempt and loop.
@@ -134,7 +140,7 @@ does not immediately re-attempt and loop.
 
 - Phases / signals: `core/stores/editor-lifecycle-store.ts`
 - Gating: `core/persistence/referenced-collections.ts`
-- Fetch: `core/operations/stream-fetch.ts`, `core/operations/furniture-asset-prefetch.ts`
+- Fetch: `core/operations/stream-fetch.ts`, `core/operations/collection-bytes.ts`
 - Loading state: `core/stores/collection-loading-store.ts`
 - Parse / registry: `scene/internal/furniture/use-collection-loader.ts`, `collection-scene-registry.ts`
 - Orchestration: `features/startup/use-startup-bootstrap.ts`, `use-startup-readiness.ts`, `core/operations/startup-coordinator.ts`
