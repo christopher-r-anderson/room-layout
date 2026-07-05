@@ -68,7 +68,7 @@ export const editorLifecycleStore = createStore<EditorLifecycleStoreState>()(
     },
     beginAssetLoad: () => {
       // A manifest has arrived; start a fresh asset-load cycle. Bumping the
-      // scene epoch forces the Scene to remount and reload GLTFs.
+      // scene epoch remounts the Scene and the collection loader.
       set((state) => ({
         ...state,
         startupPhase: 'loading',

@@ -13,8 +13,8 @@ interface AssetDeferred {
   reject: (error: unknown) => void
 }
 
-// One deferred per URL. The engine-side seed-gate may await a URL (via
-// whenPrefetched) before its fetch has been kicked off — on a retry the Scene
+// One deferred per URL. The collection loader may await a URL (via
+// whenPrefetched) before its fetch has been kicked off — on a retry the loader
 // remounts before the re-prefetch runs — so a not-yet-started URL returns a
 // pending promise rather than rejecting, and the later prefetch resolves it.
 const deferreds = new Map<string, AssetDeferred>()
