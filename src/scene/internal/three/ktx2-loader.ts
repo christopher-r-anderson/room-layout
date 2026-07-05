@@ -20,8 +20,9 @@ export function getKtx2Loader(renderer: WebGLRenderer): KTX2Loader {
 }
 
 // Configures a furniture GLTFLoader to decode the KTX2 (Basis) textures embedded
-// in the compressed GLBs, using the shared loader. Meshopt geometry needs no
-// setup - it is auto-decoded.
+// in the compressed GLBs, using the shared loader. This is the only decoder the
+// GLBs need: the asset pipeline ships geometry uncompressed (see
+// docs/architecture/catalog-and-assets.md), so no Meshopt/Draco setup here.
 export function configureGltfKtx2(loader: GLTFLoader, renderer: WebGLRenderer) {
   loader.setKTX2Loader(getKtx2Loader(renderer))
 }
