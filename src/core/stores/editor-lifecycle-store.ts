@@ -67,14 +67,23 @@ export const editorLifecycleStore = createStore<EditorLifecycleStoreState>()(
       })
     },
     beginAssetLoad: () => {
-      // A manifest has arrived; start a fresh asset-load cycle. Bumping the
-      // scene epoch remounts the Scene and the collection loader.
-      set((state) => ({
-        ...state,
-        startupPhase: 'loading',
-        assetError: null,
-        sceneEpoch: state.sceneEpoch + 1,
-      }))
+      set((state) => {
+        // An error that surfaced since this cycle began (e.g. a failed engine
+        // chunk fetch racing the manifest fetch) holds until an explicit
+        // retry; a late manifest success must not clear it and strand the
+        // loader.
+        if (state.startupPhase === 'errored') {
+          return state
+        }
+        // A manifest has arrived; start a fresh asset-load cycle. Bumping the
+        // scene epoch remounts the Scene and the collection loader.
+        return {
+          ...state,
+          startupPhase: 'loading',
+          assetError: null,
+          sceneEpoch: state.sceneEpoch + 1,
+        }
+      })
     },
     requestRetry: () => {
       // Re-run startup from the manifest fetch. The retry token re-triggers the

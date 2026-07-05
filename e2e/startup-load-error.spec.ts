@@ -53,3 +53,28 @@ test('does not error an empty scene when a background furniture request fails', 
   expect(state.assetError).toBe(false)
   expect(state.itemCount).toBe(0)
 })
+
+test('surfaces a failed engine chunk as a startup error and recovers on retry', async ({
+  page,
+}) => {
+  // A stale deploy or dropped connection can 404/abort the lazy engine chunk;
+  // that must surface the startup error + retry, not crash the React tree.
+  let blockEngineChunk = true
+  await page.route(/\/assets\/scene-canvas-.*\.js(?:\?.*)?$/, (route) => {
+    if (blockEngineChunk) {
+      return route.abort()
+    }
+    return route.continue()
+  })
+
+  await page.goto('/')
+
+  const errorHeading = page.getByText('The room editor could not start')
+  await expect(errorHeading).toBeVisible({ timeout: EDITOR_READY_TIMEOUT_MS })
+
+  blockEngineChunk = false
+  await page.getByRole('button', { name: 'Retry Loading' }).click()
+
+  const state = await waitForEditorReady(page)
+  expect(state.assetError).toBe(false)
+})
