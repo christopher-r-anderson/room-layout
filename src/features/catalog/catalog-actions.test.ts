@@ -2,7 +2,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { toast } from 'sonner'
 import { resetSceneDocumentStore } from '@/core/stores/scene-document-store'
-import { resetFeedbackStore } from '@/core/stores/feedback-store'
+import { feedbackStore, resetFeedbackStore } from '@/core/stores/feedback-store'
 import {
   resetSelectionFocusStore,
   selectionFocusStore,
@@ -91,6 +91,14 @@ describe('addFurniture', () => {
     expect(toast.error).toHaveBeenLastCalledWith(
       i18n._(ADD_FURNITURE_NO_SPACE_MESSAGE),
     )
+    // Also announced assertively: the drawer aria-hides the toast region but
+    // live regions are exempt, so the announcer reaches assistive tech. The
+    // announcement lands on the store's clear-then-set tick.
+    await vi.waitFor(() => {
+      expect(feedbackStore.getState().assertiveAnnouncement).toBe(
+        i18n._(ADD_FURNITURE_NO_SPACE_MESSAGE),
+      )
+    })
 
     addFurnitureCommand.mockReturnValueOnce({
       ok: false,

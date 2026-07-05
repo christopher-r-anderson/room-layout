@@ -50,10 +50,9 @@ export async function addFurniture(): Promise<boolean> {
     } catch {
       // The model failed to load. Message by cause: a permanent failure (missing
       // asset) says it is unavailable and will not invite a futile retry; a
-      // transient one (connection/stall) invites a re-add. A toast (not the status
-      // region) so it is visible over the open drawer, which aria-hides the chrome.
+      // transient one (connection/stall) invites a re-add.
       const failureKind = getCollectionFailureKind(sourcePath)
-      toast.error(
+      reportAddFailure(
         i18n._(
           failureKind === 'unavailable'
             ? ADD_FURNITURE_UNAVAILABLE_MESSAGE
@@ -76,9 +75,7 @@ export async function addFurniture(): Promise<boolean> {
   const result = sceneCommands.addFurniture(catalogIdToAdd)
 
   if (!result.ok) {
-    // A toast (like the load failures) so it is visible over the open drawer;
-    // the status region is aria-hidden behind it.
-    toast.error(
+    reportAddFailure(
       i18n._(
         result.reason === 'no-space'
           ? ADD_FURNITURE_NO_SPACE_MESSAGE
@@ -97,6 +94,16 @@ export async function addFurniture(): Promise<boolean> {
     requestOutlinerFocus: false,
   })
   return true
+}
+
+// Add failures surface on two channels while the drawer is open: a toast for
+// visual users (the status region sits under the drawer overlay), and an
+// assertive announcement for assistive tech - the drawer's aria-hiding exempts
+// aria-live regions, so the announcer stays live while the toast region,
+// mounted without aria-live, does not.
+function reportAddFailure(message: string) {
+  toast.error(message)
+  feedbackActions.announceAssertive(message)
 }
 
 export function setCatalogDrawerOpen(open: boolean) {

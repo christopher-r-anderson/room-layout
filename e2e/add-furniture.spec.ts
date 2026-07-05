@@ -67,9 +67,16 @@ test('surfaces an error and recovers when an added item fails to load', async ({
   await picker.getByText('Leather Couch', { exact: true }).click()
   await picker.getByRole('button', { name: 'Add Item' }).click()
 
-  // Instead of hanging on "Adding...", the add reports the failure (a toast,
-  // visible over the drawer), adds nothing, and the button recovers.
-  await expect(page.getByText('Check your connection')).toBeVisible()
+  // Instead of hanging on "Adding...", the add reports the failure on both
+  // channels - a toast visible over the drawer, and an assertive announcement
+  // (the drawer's aria-hiding exempts live regions) - adds nothing, and the
+  // button recovers.
+  await expect(
+    page.getByLabel(/notifications/i).getByText('Check your connection'),
+  ).toBeVisible()
+  await expect(
+    page.locator('[data-announcer-channel="assertive"]'),
+  ).toContainText('Check your connection')
   await expect(picker.getByRole('button', { name: 'Add Item' })).toBeEnabled()
   expect((await readSceneState(page)).itemCount).toBe(0)
 
