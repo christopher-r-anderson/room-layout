@@ -8,8 +8,9 @@ Purpose
 
 Contains
 
-- `App.tsx`: bootstrap and render — perf gate, dialog registry bootstrap,
-  reconcilers, and the test bridge, composing the provider tree.
+- `App.tsx`: bootstrap and render — perf gate, startup bootstrap + the core
+  readiness observer, dialog registry bootstrap, reconcilers, and the test bridge,
+  composing the provider tree.
 - `chrome/`: app-shell composition (editor body/overlay, top header, feedback)
   and the provider-composition root in `chrome/providers`.
 - `commands/`: assembles the editor command map and the view-bound focus command

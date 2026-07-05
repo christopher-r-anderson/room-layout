@@ -225,8 +225,11 @@ below is the human-readable summary.
   loaded GLB subtree, startup fails as a hard asset contract error.
 - `uiBoundsNodeName` affects toolbar bounds selection only; it is not an
   authored point anchor and it does not bypass overlap checks.
-- Failed asset preloads also trigger the startup error overlay; operators must
-  ensure all paths in the manifest are valid and accessible.
+- How model-load failures surface depends on whether the collection gates
+  startup (restored-scene assets → error overlay) or is an on-demand catalog add
+  (→ in-drawer message), and whether the failure is permanent or transient. The
+  full model is in
+  [startup-and-asset-loading.md](../architecture/startup-and-asset-loading.md).
 
 ## Example
 

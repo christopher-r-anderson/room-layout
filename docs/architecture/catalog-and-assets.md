@@ -83,11 +83,11 @@ Compression recipe (structure-preserving — no flatten/join, so the catalog's
 - geometry: left uncompressed — these meshes are tiny, so Meshopt's lossy
   quantization would risk minor degradation for ~no gain.
 
-The runtime wires the Basis transcoder onto the furniture loader
-(`scene/internal/three/gltf-ktx2.ts`), using the same `KTX2Loader` setup as the
-floor textures. `KTX2Loader` resolves the transcoder from three's own bundled copy
-(via `import.meta.url`), which the bundler emits as a hashed asset. The Blender
-helpers (export / introspect / relink) live in `scripts/blender/`.
+At runtime the furniture loader and the floor textures share one KTX2 loader
+(`scene/internal/three/ktx2-loader.ts`) — a single Basis-transcoder worker pool.
+`KTX2Loader` resolves the transcoder from three's own bundled copy (via
+`import.meta.url`), which the bundler emits as a hashed asset. The Blender helpers
+(export / introspect / relink) live in `scripts/blender/`.
 
 ## Catalog Preview Thumbnails
 

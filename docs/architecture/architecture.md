@@ -94,7 +94,7 @@ For local context inside each area, see:
 
 These are temporary or intentionally narrow.
 
-- Scene runtime imports in app/features are allowlisted to a small contract surface (`scene-commands`, `scene.types`); `app` may additionally import `scene` itself (lazily, behind the code-split engine chunk). `shared` no longer imports scene at all.
+- Scene runtime imports in app/features are allowlisted to a small contract surface (`scene-commands`, `scene.types`, `collection-registry`, `collection-loader`); `app` may additionally import `scene` itself (lazily, behind the code-split engine chunk). `shared` no longer imports scene at all. The reverse seam (scene reaching core) stays confined to `scene-contracts`, which the collection loader uses to report load outcomes.
 
 ## Future Improvements
 
@@ -112,6 +112,7 @@ These are temporary or intentionally narrow.
 - Agent operating contract and policy routing: `AGENTS.md`, `.agents/README.md`
 - Core layer reference: `docs/architecture/core.md`
 - Scene⇄core data-model/engine seam: `docs/architecture/scene-and-core.md`
+- Startup, asset loading, and the bundle split: `docs/architecture/startup-and-asset-loading.md`
 - Dialog and overlay model: `docs/architecture/dialogs-and-overlays.md`
 - Interactivity (toolbars, disabled state, inert seam): `docs/architecture/interactivity.md`
 - Selected toolbar placement details: `docs/architecture/selected-toolbar-placement.md`
