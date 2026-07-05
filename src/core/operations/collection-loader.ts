@@ -1,3 +1,4 @@
+import { shallow } from 'zustand/shallow'
 import { sceneCommands } from '@/scene/scene-commands'
 import {
   collectionLoadingActions,
@@ -113,7 +114,13 @@ export function startCollectionLoadReconciler(): () => void {
       (state) => state.sceneMounted,
       kickPendingCollectionLoads,
     ),
-    collectionLoadingStore.subscribe(kickPendingCollectionLoads),
+    // Only the fields that decide which paths are pending - not progressByPath,
+    // whose per-chunk updates would otherwise kick on every streamed chunk.
+    collectionLoadingStore.subscribe(
+      (state) => [state.gated, state.wanted, state.loaded, state.failed],
+      kickPendingCollectionLoads,
+      { equalityFn: shallow },
+    ),
     sceneDocumentStore.subscribe(
       (state) => state.history.present,
       kickPendingCollectionLoads,
