@@ -2,7 +2,7 @@ import { dialogActions } from '@/core/stores/dialog-store'
 import { feedbackActions } from '@/core/stores/feedback-store'
 import { selectionFocusActions } from '@/core/stores/selection-focus-store'
 import { selectionEffects } from '@/core/operations/selection-effects'
-import { assetsStore } from '@/core/stores/assets-store'
+import { getSourcePathForCatalogId } from '@/core/stores/assets-store'
 import { sceneCommands } from '@/scene/scene-commands'
 import { ensureCollectionLoaded } from '@/core/operations/collection-loader'
 import { getCollectionFailureKind } from '@/core/stores/collection-loading-store'
@@ -17,23 +17,11 @@ import {
 import { CATALOG_DIALOG_ID } from './catalog-dialog-definition'
 import { getActiveCatalogId } from './catalog-selection-store'
 
-export function resolveCollectionSourcePath(catalogId: string): string | null {
-  const { catalog, collections } = assetsStore.getState()
-  const entry = catalog.find((candidate) => candidate.id === catalogId)
-  if (!entry) {
-    return null
-  }
-  const collection = collections.find(
-    (candidate) => candidate.id === entry.collectionId,
-  )
-  return collection?.sourcePath ?? null
-}
-
 // Prefetch-on-intent: start loading a catalog item's model when it is selected,
 // so a subsequent Add is usually instant. Fire-and-forget - the actual Add
 // surfaces any load failure - and idempotent with the Add's own ensure call.
 export function prefetchCatalogItem(catalogId: string): void {
-  const sourcePath = resolveCollectionSourcePath(catalogId)
+  const sourcePath = getSourcePathForCatalogId(catalogId)
   if (!sourcePath) {
     return
   }
@@ -55,7 +43,7 @@ export async function addFurniture(): Promise<boolean> {
     return false
   }
 
-  const sourcePath = resolveCollectionSourcePath(catalogIdToAdd)
+  const sourcePath = getSourcePathForCatalogId(catalogIdToAdd)
   if (sourcePath) {
     try {
       await ensureCollectionLoaded(sourcePath)

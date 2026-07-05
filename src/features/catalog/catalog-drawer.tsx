@@ -1,4 +1,4 @@
-import { type ReactElement, useMemo } from 'react'
+import { type ReactElement } from 'react'
 import { Trans, useLingui } from '@lingui/react/macro'
 import { IconLoader } from '@tabler/icons-react'
 import { formatDecimal } from '@/shared/i18n/formatters'
@@ -15,7 +15,10 @@ import {
 } from '@/shared/ui/drawer'
 import { cn } from '@/shared/lib/utils'
 import { useDialogOpen } from '@/core/stores/dialog-store'
-import { useCatalogEntries, useCollections } from '@/core/stores/assets-store'
+import {
+  useCatalogEntries,
+  useSourcePathByCatalogId,
+} from '@/core/stores/assets-store'
 import { useFailedCollections } from '@/core/stores/collection-loading-store'
 import { setCatalogDrawerOpen } from './catalog-actions'
 import { CATALOG_DIALOG_ID } from './catalog-dialog-definition'
@@ -32,20 +35,9 @@ export function CatalogDrawer({
 }) {
   const { t } = useLingui()
   const catalog = useCatalogEntries()
-  const collections = useCollections()
-
-  // sourcePath per catalog entry, so per-tile availability is one map lookup
-  // rather than an assetsStore read each render.
-  const sourcePathByCatalogId = useMemo(() => {
-    const byCatalogId = new Map<string, string>()
-    for (const entry of catalog) {
-      const collection = collections.find((c) => c.id === entry.collectionId)
-      if (collection) {
-        byCatalogId.set(entry.id, collection.sourcePath)
-      }
-    }
-    return byCatalogId
-  }, [catalog, collections])
+  // Derived once per manifest in the assets store; per-tile availability is one
+  // map lookup.
+  const sourcePathByCatalogId = useSourcePathByCatalogId()
 
   const formatFootprintLabel = (width: number, depth: number) => {
     const widthLabel = formatDecimal(width, 2)

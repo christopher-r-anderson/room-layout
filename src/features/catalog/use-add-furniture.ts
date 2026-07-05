@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
 import { formatPercent } from '@/shared/i18n/formatters'
 import { useCollectionLoadPercent } from '@/core/stores/collection-loading-store'
+import { useSourcePathByCatalogId } from '@/core/stores/assets-store'
 import {
   addFurniture,
   prefetchCatalogItem,
-  resolveCollectionSourcePath,
   setCatalogDrawerOpen,
 } from './catalog-actions'
 
@@ -37,8 +37,9 @@ export function useAddFurniture({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showPending, setShowPending] = useState(false)
 
+  const sourcePathByCatalogId = useSourcePathByCatalogId()
   const selectedSourcePath = catalogIdToAdd
-    ? resolveCollectionSourcePath(catalogIdToAdd)
+    ? (sourcePathByCatalogId.get(catalogIdToAdd) ?? null)
     : null
   const loadPercent = useCollectionLoadPercent(selectedSourcePath)
   const percentLabel =

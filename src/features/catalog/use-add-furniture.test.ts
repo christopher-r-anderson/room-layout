@@ -11,7 +11,6 @@ const { addFurnitureMock, setCatalogDrawerOpenMock } = vi.hoisted(() => ({
 vi.mock('./catalog-actions', () => ({
   addFurniture: addFurnitureMock,
   prefetchCatalogItem: vi.fn(),
-  resolveCollectionSourcePath: () => null,
   setCatalogDrawerOpen: setCatalogDrawerOpenMock,
 }))
 

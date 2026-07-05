@@ -2,6 +2,7 @@ import type {
   FurnitureCatalogEntry,
   FurnitureCollection,
 } from '@/domain/catalog'
+import { buildSourcePathByCatalogId } from '@/core/stores/assets-store'
 import { parseSceneUrl } from './scene-url'
 import type { SceneDraftState } from './scene-draft'
 import { selectPrimaryRestoreState, validateDraftState } from './restore-flow'
@@ -28,19 +29,16 @@ export function resolveReferencedCollectionPaths({
     catalog,
   })
   const items = primary.state?.items ?? []
+  const sourcePathByCatalogId = buildSourcePathByCatalogId(
+    catalog,
+    collections,
+  )
   const paths = new Set<string>()
 
   for (const item of items) {
-    const entry = catalog.find((candidate) => candidate.id === item.catalogId)
-    if (!entry) {
-      continue
-    }
-
-    const collection = collections.find(
-      (candidate) => candidate.id === entry.collectionId,
-    )
-    if (collection) {
-      paths.add(collection.sourcePath)
+    const sourcePath = sourcePathByCatalogId.get(item.catalogId)
+    if (sourcePath) {
+      paths.add(sourcePath)
     }
   }
 

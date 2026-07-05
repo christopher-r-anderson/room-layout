@@ -20,6 +20,7 @@ import {
 
 vi.mock('../persistence/restore-flow', () => ({
   runStartupRestoreFlow: vi.fn(),
+  validateDraftState: vi.fn(() => null),
 }))
 
 vi.mock('../persistence/scene-draft', () => ({
