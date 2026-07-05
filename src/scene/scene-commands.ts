@@ -52,6 +52,9 @@ export const sceneCommands = {
   addFurniture: (catalogId: string): AddFurnitureResult => {
     return getSceneServices().addFurniture(catalogId)
   },
+  loadCollectionScene: (path: string, bytes: ArrayBuffer): Promise<void> => {
+    return getSceneServices().loadCollectionScene(path, bytes)
+  },
   clearSelection: () => {
     getSceneServices().clearSelection()
   },

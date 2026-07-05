@@ -322,16 +322,6 @@ export const useItemIds = () =>
     (state) => state.history.present.map((item) => item.id),
     areStringArraysEqual,
   )
-// Distinct collection sourcePaths referenced by the current items. Value-equal
-// results keep their identity, so consumers (the collection loader chain) do not
-// recompute on unrelated item changes such as moves.
-export const useItemSourcePaths = () =>
-  useSceneDocumentStore(
-    (state) => [
-      ...new Set(state.history.present.map((item) => item.sourcePath)),
-    ],
-    areStringArraysEqual,
-  )
 export const useSelectedFurniture = () =>
   useSceneDocumentStore(selectSelectedFurniture)
 

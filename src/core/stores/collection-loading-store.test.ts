@@ -4,8 +4,8 @@ import { renderHook } from '@testing-library/react'
 import { AssetHttpError } from '../operations/stream-fetch'
 import {
   collectionLoadingActions,
-  ensureCollectionLoaded,
   getCollectionFailureKind,
+  isCollectionLoaded,
   resetCollectionLoading,
   useGatedCollectionPaths,
   useGatedCollectionsResolved,
@@ -16,47 +16,27 @@ afterEach(() => {
 })
 
 describe('collection-loading-store', () => {
-  it('resolves ensureCollectionLoaded immediately for an already-loaded collection', async () => {
+  it('markLoaded clears a prior failure mark', () => {
+    collectionLoadingActions.markFailed(
+      '/models/a.glb',
+      new TypeError('Failed to fetch'),
+    )
+
     collectionLoadingActions.markLoaded('/models/a.glb')
-    await expect(
-      ensureCollectionLoaded('/models/a.glb'),
-    ).resolves.toBeUndefined()
+
+    expect(isCollectionLoaded('/models/a.glb')).toBe(true)
+    expect(getCollectionFailureKind('/models/a.glb')).toBeNull()
   })
 
-  it('resolves ensureCollectionLoaded once the loader reports it loaded', async () => {
-    let resolved = false
-    const pending = ensureCollectionLoaded('/models/b.glb').then(() => {
-      resolved = true
-    })
+  it('requestCollection clears a failure mark so a retry can proceed', () => {
+    collectionLoadingActions.markFailed(
+      '/models/a.glb',
+      new TypeError('Failed to fetch'),
+    )
 
-    // Still pending until the loader marks it loaded.
-    await Promise.resolve()
-    expect(resolved).toBe(false)
+    collectionLoadingActions.requestCollection('/models/a.glb')
 
-    collectionLoadingActions.markLoaded('/models/b.glb')
-    await pending
-    expect(resolved).toBe(true)
-  })
-
-  it('rejects ensureCollectionLoaded when the collection is marked failed', async () => {
-    const pending = ensureCollectionLoaded('/models/b.glb')
-
-    await Promise.resolve()
-    collectionLoadingActions.markFailed('/models/b.glb', new Error('offline'))
-
-    await expect(pending).rejects.toThrow(/failed to load/i)
-  })
-
-  it('retries after a failure: re-requesting clears the failure and resolves on load', async () => {
-    const firstAttempt = ensureCollectionLoaded('/models/b.glb')
-    await Promise.resolve()
-    collectionLoadingActions.markFailed('/models/b.glb', new Error('offline'))
-    await expect(firstAttempt).rejects.toThrow()
-
-    // A re-add clears the failure and the retry resolves once it loads.
-    const retry = ensureCollectionLoaded('/models/b.glb')
-    collectionLoadingActions.markLoaded('/models/b.glb')
-    await expect(retry).resolves.toBeUndefined()
+    expect(getCollectionFailureKind('/models/a.glb')).toBeNull()
   })
 
   it('classifies a non-ok HTTP failure as permanently unavailable', () => {

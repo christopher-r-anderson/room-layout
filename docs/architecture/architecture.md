@@ -94,7 +94,7 @@ For local context inside each area, see:
 
 These are temporary or intentionally narrow.
 
-- Scene runtime imports in app/features are allowlisted to a small contract surface (`scene-commands`, `scene.types`, `collection-registry`, `collection-loader`); `app` may additionally import `scene` itself (lazily, behind the code-split engine chunk). `shared` no longer imports scene at all. The reverse seam (scene reaching core) stays confined to `scene-contracts`, which the collection loader uses to report load outcomes.
+- Scene runtime imports in app/features are allowlisted to a small contract surface (`scene-commands`, `scene.types`, `collection-registry`); `app` may additionally import `scene` itself (lazily, behind the code-split engine chunk). `shared` no longer imports scene at all. The reverse seam (scene reaching core) stays confined to `scene-contracts`.
 
 ## Future Improvements
 

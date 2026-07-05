@@ -11,7 +11,8 @@ Layout
   the startup/asset-loading state (`editor-lifecycle-store`,
   `collection-loading-store`).
 - `operations/` — cross-cutting operations over the stores (history/movement/
-  selection actions, `startup-coordinator`, preview actions + reconciler,
+  selection actions, `startup-coordinator`, the collection load pipeline
+  (`collection-loader`, `collection-bytes`), preview actions + reconciler,
   `selection-effects`). These orchestrate writes across stores and scene
   commands for behavior that spans features.
 - `persistence/` — scene state ↔ storage/URL (`scene-draft`, `scene-url`,

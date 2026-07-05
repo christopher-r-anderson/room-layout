@@ -50,6 +50,7 @@ import {
   registerSceneServices,
 } from './internal/scene-services'
 import { useLoadedCollectionScenes } from './internal/furniture/collection-scene-registry'
+import { createCollectionSceneLoader } from './internal/furniture/collection-scene-loader'
 
 const FLOOR_PLANE_Y = 0
 const SNAP_SIZE = 0.5
@@ -101,9 +102,16 @@ export function Scene({
     [canvasWidth, canvasHeight],
   )
   const invalidate = useThree((state) => state.invalidate)
+  const gl = useThree((state) => state.gl)
   // Accessor for fresh r3f state when we need to imperatively touch the renderer
   // (e.g. tone-mapping exposure) without subscribing to or mutating a hook value.
   const getThreeState = useThree((state) => state.get)
+  // Parse-and-register for collection GLBs, exposed to core through the services
+  // below; created per renderer because the KTX2 transcoder config needs it.
+  const loadCollectionScene = useMemo(
+    () => createCollectionSceneLoader(gl),
+    [gl],
+  )
   // Parsed collection scenes, registered by the loader as they resolve. Partial and
   // growing, so the room renders before any furniture; each item appears once its
   // collection is present.
@@ -247,6 +255,7 @@ export function Scene({
       focusSelected: handleFocusSelected,
       getCameraPosition: handleGetCameraPosition,
       getSnapshot,
+      loadCollectionScene,
       moveSelection: handleMoveSelection,
       redo: handleRedo,
       restoreInitialLayout: handleRestoreInitialLayout,
@@ -268,6 +277,7 @@ export function Scene({
     handleFocusSelected,
     handleGetCameraPosition,
     getSnapshot,
+    loadCollectionScene,
     handleMoveSelection,
     handleRedo,
     handleRestoreInitialLayout,

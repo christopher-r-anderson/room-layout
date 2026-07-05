@@ -18,6 +18,7 @@ function createFakeServices(): SceneServices {
       cameraPosition: [0, 0, 0] as [number, number, number],
       items: [],
     }),
+    loadCollectionScene: () => Promise.resolve(),
     moveSelection: () => ({
       ok: false as const,
       reason: 'no-selection' as const,

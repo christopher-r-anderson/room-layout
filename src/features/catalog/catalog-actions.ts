@@ -4,10 +4,8 @@ import { selectionFocusActions } from '@/core/stores/selection-focus-store'
 import { selectionEffects } from '@/core/operations/selection-effects'
 import { assetsStore } from '@/core/stores/assets-store'
 import { sceneCommands } from '@/scene/scene-commands'
-import {
-  ensureCollectionLoaded,
-  getCollectionFailureKind,
-} from '@/core/stores/collection-loading-store'
+import { ensureCollectionLoaded } from '@/core/operations/collection-loader'
+import { getCollectionFailureKind } from '@/core/stores/collection-loading-store'
 import { toast } from 'sonner'
 import { i18n } from '@/shared/i18n/i18n'
 import {

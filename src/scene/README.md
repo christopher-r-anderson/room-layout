@@ -12,13 +12,13 @@ Structure
   does not hold operation logic.
 - `scene-commands.ts` / `scene.types.ts` — the down-contract (imperative surface
   app/core call) and its types.
-- `collection-loader.tsx` / `collection-registry.ts` — public entry points for the
-  app-driven furniture-collection loader (mounted in the Canvas) and the
-  parsed-collection registry reset. See
+- `collection-registry.ts` — public entry point for the parsed-collection
+  registry reset (the retry teardown calls it). Collection loading itself is
+  driven from core through `scene-commands.loadCollectionScene`. See
   `docs/architecture/startup-and-asset-loading.md`.
 - `internal/` — scene-private implementation, grouped by concern:
   - `furniture/` — furniture mutation operations, the interactive mesh, and the
-    imperative collection loader/registry.
+    collection parse service/registry.
   - `camera/` — controls, presets, camera operations, held-key motion.
   - `selection/` — selection state/operations and selected-toolbar geometry.
   - `history/` — undo/redo transitions and restore-history building.

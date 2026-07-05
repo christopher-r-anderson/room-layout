@@ -50,10 +50,10 @@ Two supporting signals:
 ```mermaid
 flowchart LR
   boot["bootstrap\n(fetch manifest,\ncompute gated set)"] --> bytes["byte source\n(shell, engine-free)"]
-  bytes --> stream["stream-fetch\n(stall timeout)"]
-  stream --> parse["parse in scene\n(KTX2 needs the renderer)"]
+  bytes --> pipeline["load pipeline\n(core, reconciler-kicked)"]
+  pipeline --> parse["parse in scene\n(service; KTX2 needs the renderer)"]
   parse --> registry["scene registry\n(Object3D)"]
-  parse --> store["core loading store\n(loaded / failed)"]
+  pipeline --> store["core loading store\n(loaded / failed)"]
   store --> ready["readiness observer\n-> ready / errored"]
 ```
 
@@ -73,11 +73,15 @@ flowchart LR
   _stall_ timeout (aborts if no bytes arrive for ~15s, rather than a total-duration
   cap, so slow connections are not failed) that reports byte progress and throws
   `AssetHttpError` on a non-ok response.
-- **Parse** (`scene/internal/furniture/use-collection-loader.ts`): runs inside the
-  Canvas because configuring the KTX2/Basis transcoder needs the live
-  `WebGLRenderer`. It parses bytes to an `Object3D`, registers it in the scene-side
-  `collection-scene-registry`, and reports the outcome (loaded / failed) to the core
-  `collection-loading-store`.
+- **Load pipeline** (`core/operations/collection-loader.ts`): core drives each
+  load end-to-end - fetch the bytes, have the scene parse and register them
+  (`sceneCommands.loadCollectionScene`, backed by
+  `scene/internal/furniture/collection-scene-loader.ts`, which needs the live
+  `WebGLRenderer` for KTX2), then mark the outcome in the loading store. A
+  standing reconciler kicks pending loads whenever their inputs change (scene
+  mounts, gate resolves, an item appears, an on-demand request arrives), so the
+  chain never depends on React render timing. Loads are keyed to the scene epoch;
+  a stale cycle's result is discarded rather than written into a fresh one.
 - **Readiness** (`features/startup/use-startup-readiness.ts`, run from `App`): once
   startup is loading, the scene has mounted, and the manifest is present, it resolves
   the gated collections - every one loaded -> `completeAssetLoad`; any one failed ->
@@ -86,10 +90,12 @@ flowchart LR
 
 The split of state is intentional: the parsed `Object3D`s are a scene render
 artifact (`collection-scene-registry`, scene-internal), while the three-free
-loading lifecycle - progress, which collections are wanted, loaded, or failed -
-lives in `core/stores/collection-loading-store.ts` next to the byte source and
-gating it coordinates with. The loader is the bridge, reporting outcomes up to core via
-`scene-contracts`.
+loading lifecycle - the gate, progress, which collections are wanted, loaded, or
+failed - lives in `core/stores/collection-loading-store.ts` next to the byte
+source and gating it coordinates with. The scene contributes exactly one
+capability, parse-and-register, through scene services; registration happens
+inside it, before core marks the collection loaded, so consumers may read the
+registry on the strength of the core flag.
 
 ## Gated vs on-demand
 
@@ -102,7 +108,7 @@ gating it coordinates with. The loader is the bridge, reporting outcomes up to c
   wanted set lives in the loading store and keeps an added item's collection
   available for the session.
 
-Both paths run through the same loader and the same byte source; the only
+Both paths run through the same pipeline and the same byte source; the only
 difference is when the download starts (bootstrap warms the gated set, an
 on-demand path starts on first request).
 
@@ -132,9 +138,10 @@ can message by cause instead of waiting forever.
 
 `requestAssetRetry` (`core/operations/startup-coordinator.ts`) resets the core
 loading lifecycle and the scene registry, clears the byte source, and bumps the
-epoch so a fresh loader remounts and re-downloads. Reset happens **only** on an
-explicit retry - on the error path a gated failure's mark survives, so the loader
-does not immediately re-attempt and loop.
+epoch so the remounting Scene re-kicks the loads and re-downloads; a load still
+in flight from the stale epoch discards its result. Reset happens **only** on an
+explicit retry - on the error path a gated failure's mark survives, so the
+pipeline does not immediately re-attempt and loop.
 
 ## Pointers
 
@@ -142,7 +149,8 @@ does not immediately re-attempt and loop.
 - Gating: `core/persistence/referenced-collections.ts`
 - Fetch: `core/operations/stream-fetch.ts`, `core/operations/collection-bytes.ts`
 - Loading state: `core/stores/collection-loading-store.ts`
-- Parse / registry: `scene/internal/furniture/use-collection-loader.ts`, `collection-scene-registry.ts`
+- Load pipeline: `core/operations/collection-loader.ts`
+- Parse / registry: `scene/internal/furniture/collection-scene-loader.ts`, `collection-scene-registry.ts`
 - Orchestration: `features/startup/use-startup-bootstrap.ts`, `use-startup-readiness.ts`, `core/operations/startup-coordinator.ts`
 - Bundle budgets: `scripts/check-bundle-budget.mjs`
 

@@ -1,16 +1,14 @@
-import { useMemo } from 'react'
 import { useStoreWithEqualityFn } from 'zustand/traditional'
 import { subscribeWithSelector } from 'zustand/middleware'
 import { createStore } from 'zustand/vanilla'
 import { shallow } from 'zustand/shallow'
-import { useItemSourcePaths } from './scene-document-store'
 import { AssetHttpError } from '../operations/stream-fetch'
 
 // The three-free loading lifecycle for furniture collections, keyed by sourcePath:
-// download progress, which are wanted on demand, and which have loaded or failed.
-// It holds no three.js - the parsed objects live in the scene registry
-// (collection-scene-registry) and the loader reports outcomes back here - and lives
-// in core because its inputs and consumers are core/features. See
+// the gated set, download progress, which are wanted on demand, and which have
+// loaded or failed. It holds no three.js - the parsed objects live in the scene
+// registry (collection-scene-registry) and the load pipeline
+// (operations/collection-loader) reports outcomes back here. See
 // docs/architecture/startup-and-asset-loading.md.
 
 // Why a collection's load failed. 'unavailable' is permanent (a missing, broken,
@@ -71,7 +69,10 @@ function createInitialCollectionLoadingState(): CollectionLoadingState {
   }
 }
 
-const collectionLoadingStore = createStore<CollectionLoadingState>()(
+// Exported for the non-React load pipeline (operations/collection-loader), which
+// subscribes for its reconciler and settles ensureCollectionLoaded off store
+// changes. React consumers use the selector hooks below.
+export const collectionLoadingStore = createStore<CollectionLoadingState>()(
   subscribeWithSelector(() => createInitialCollectionLoadingState()),
 )
 
@@ -87,7 +88,7 @@ export const collectionLoadingActions = {
       return { ...state, progressByPath }
     })
   },
-  // Reported by the scene loader once a collection has parsed and registered. A
+  // Reported by the load pipeline once a collection has parsed and registered. A
   // successful load also clears any prior failure mark.
   markLoaded(path: string) {
     collectionLoadingStore.setState((state) => {
@@ -101,8 +102,8 @@ export const collectionLoadingActions = {
       return { ...state, loaded, failed }
     })
   },
-  // Reported by the scene loader when a collection fails to load; the raw error is
-  // classified here (this layer owns the HTTP error type).
+  // Reported by the load pipeline when a collection fails to load; the raw error
+  // is classified here (this layer owns the HTTP error type).
   markFailed(path: string, error: unknown) {
     const kind = classifyCollectionLoadError(error)
     collectionLoadingStore.setState((state) => {
@@ -115,8 +116,8 @@ export const collectionLoadingActions = {
     })
   },
   // Request an on-demand collection (or re-request a failed one). Always writes a
-  // fresh `wanted` set so useActiveOnDemandCollectionPaths recomputes and the
-  // loader re-attempts, and clears any prior failure so the retry can proceed.
+  // fresh `wanted` set so the load reconciler is notified even for a re-request,
+  // and clears any prior failure so the retry can proceed.
   requestCollection(path: string) {
     collectionLoadingStore.setState((state) => {
       const wanted = new Set(state.wanted)
@@ -161,43 +162,6 @@ export function useLoadedCollections(): Set<string> {
   return useStoreWithEqualityFn(collectionLoadingStore, (state) => state.loaded)
 }
 
-// Requests a collection and resolves once the loader reports it loaded, or rejects
-// if it fails - so the add flow surfaces an error instead of hanging. Settles off
-// the store, so the caller never races a stale React render.
-export function ensureCollectionLoaded(path: string): Promise<void> {
-  if (isCollectionLoaded(path)) {
-    return Promise.resolve()
-  }
-
-  collectionLoadingActions.requestCollection(path)
-
-  return new Promise<void>((resolve, reject) => {
-    let settled = false
-    const finish = (run: () => void) => {
-      if (settled) {
-        return
-      }
-      settled = true
-      unsubscribe()
-      run()
-    }
-    const unsubscribe = collectionLoadingStore.subscribe((state) => {
-      if (state.loaded.has(path)) {
-        finish(resolve)
-      } else if (state.failed.has(path)) {
-        finish(() => {
-          reject(new Error(`furniture collection failed to load: ${path}`))
-        })
-      }
-    })
-
-    // Guard the window between the initial check and subscribing.
-    if (isCollectionLoaded(path)) {
-      finish(resolve)
-    }
-  })
-}
-
 const NO_GATED_PATHS: string[] = []
 
 // The gated set, or [] while bootstrap has not resolved it yet. Use
@@ -220,33 +184,6 @@ export function useGatedCollectionsResolved(): boolean {
     collectionLoadingStore,
     (state) => state.gated !== null,
   )
-}
-
-// The on-demand collections the loader should pull in now: those referenced by a
-// current scene item plus anything explicitly wanted, minus the gated set.
-export function useActiveOnDemandCollectionPaths(): string[] {
-  const gatedCollectionPaths = useGatedCollectionPaths()
-  const itemSourcePaths = useItemSourcePaths()
-  const wanted = useStoreWithEqualityFn(
-    collectionLoadingStore,
-    (state) => state.wanted,
-  )
-
-  return useMemo(() => {
-    const gated = new Set(gatedCollectionPaths)
-    const paths = new Set<string>()
-    for (const path of itemSourcePaths) {
-      if (!gated.has(path)) {
-        paths.add(path)
-      }
-    }
-    for (const path of wanted) {
-      if (!gated.has(path)) {
-        paths.add(path)
-      }
-    }
-    return [...paths]
-  }, [itemSourcePaths, wanted, gatedCollectionPaths])
 }
 
 // The download percent for one collection, or null when its size is unknown or it

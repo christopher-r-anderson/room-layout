@@ -53,6 +53,7 @@ function registerDefaultSceneServices(
     deleteSelection: () => true,
     focusSelected: () => undefined,
     getCameraPosition: () => [0, 0, 0],
+    loadCollectionScene: () => Promise.resolve(),
     getSnapshot: () => ({
       cameraPosition: [0, 0, 0] as [number, number, number],
       items: [],
