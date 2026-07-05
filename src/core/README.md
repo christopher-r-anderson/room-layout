@@ -8,7 +8,7 @@ Layout
 
 - `stores/` — the zustand stores and their selector hooks: the scene data model
   (`scene-document-store`), the catalog/environment manifest (`assets-store`), and
-  the startup/asset-loading state (`editor-lifecycle-store`, `startup-gate-store`,
+  the startup/asset-loading state (`editor-lifecycle-store`,
   `collection-loading-store`).
 - `operations/` — cross-cutting operations over the stores (history/movement/
   selection actions, `startup-coordinator`, preview actions + reconciler,

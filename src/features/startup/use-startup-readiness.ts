@@ -3,10 +3,10 @@ import {
   completeAssetLoad,
   notifyAssetError,
 } from '@/core/operations/startup-coordinator'
-import { useCollections } from '@/core/stores/assets-store'
-import { useGatedCollectionPaths } from '@/core/stores/startup-gate-store'
 import {
   useFailedCollections,
+  useGatedCollectionPaths,
+  useGatedCollectionsResolved,
   useLoadedCollections,
 } from '@/core/stores/collection-loading-store'
 import {
@@ -23,13 +23,15 @@ import {
 export function useStartupReadiness() {
   const loadingActive = useStartupLoadingActive()
   const sceneMounted = useSceneMounted()
-  const collections = useCollections()
+  const gatedCollectionsResolved = useGatedCollectionsResolved()
   const gatedCollectionPaths = useGatedCollectionPaths()
   const failedCollections = useFailedCollections()
   const loadedCollections = useLoadedCollections()
 
   useEffect(() => {
-    if (!loadingActive || !sceneMounted || collections.length === 0) {
+    // An unresolved gate (bootstrap has not computed it yet, or a retry reset it)
+    // means the outcome is not knowable - a fresh scene resolves to [], not null.
+    if (!loadingActive || !sceneMounted || !gatedCollectionsResolved) {
       return
     }
 
@@ -54,7 +56,7 @@ export function useStartupReadiness() {
   }, [
     loadingActive,
     sceneMounted,
-    collections.length,
+    gatedCollectionsResolved,
     gatedCollectionPaths,
     failedCollections,
     loadedCollections,

@@ -5,7 +5,7 @@ import {
   useRetryToken,
 } from '@/core/stores/editor-lifecycle-store'
 import { assetsActions } from '@/core/stores/assets-store'
-import { startupGateActions } from '@/core/stores/startup-gate-store'
+import { collectionLoadingActions } from '@/core/stores/collection-loading-store'
 import { resolveReferencedCollectionPaths } from '@/core/persistence/referenced-collections'
 import { loadSceneDraft } from '@/core/persistence/scene-draft'
 import type { StartupErrorKind } from '@/core/types/startup.types'
@@ -103,7 +103,7 @@ export function useStartupBootstrap() {
           catalog: result.catalog,
           collections: result.collections,
         })
-        startupGateActions.setGatedCollectionPaths(gatedCollectionPaths)
+        collectionLoadingActions.setGatedCollectionPaths(gatedCollectionPaths)
 
         editorLifecycleActions.beginAssetLoad()
 

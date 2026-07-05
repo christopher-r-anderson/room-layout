@@ -3,16 +3,18 @@ import { useCallback, useMemo } from 'react'
 import { NeutralToneMapping, SRGBColorSpace } from 'three'
 import { Scene } from '@/scene/scene'
 import { CollectionLoader } from '@/scene/collection-loader'
-import { useActiveOnDemandCollectionPaths } from '@/core/stores/collection-loading-store'
+import {
+  collectionLoadingActions,
+  useActiveOnDemandCollectionPaths,
+  useGatedCollectionPaths,
+} from '@/core/stores/collection-loading-store'
 import { notifyAssetError } from '@/core/operations/startup-coordinator'
 import { selectByCanvasPointer } from '@/core/operations/selection-actions'
 import { previewFromScene } from '@/core/operations/preview-actions'
 import { whenPrefetched } from '@/core/operations/furniture-asset-prefetch'
 import { streamFetch } from '@/core/operations/stream-fetch'
-import { collectionLoadingActions } from '@/core/stores/collection-loading-store'
 import { sceneDocumentActions } from '@/core/stores/scene-document-store'
 import { useSceneEpoch } from '@/core/stores/editor-lifecycle-store'
-import { useGatedCollectionPaths } from '@/core/stores/startup-gate-store'
 import { useCatalogEntries, useCollections } from '@/core/stores/assets-store'
 import { usePreviewedId } from '@/core/operations/previewed-id'
 import { useActiveFinishIds } from '@/core/operations/active-finish-ids'
@@ -32,8 +34,7 @@ export default function SceneCanvas({ onPointerMissed }: SceneCanvasProps) {
   const catalog = useCatalogEntries()
   const collections = useCollections()
   const gatedCollectionPaths = useGatedCollectionPaths()
-  const onDemandCollectionPaths =
-    useActiveOnDemandCollectionPaths(gatedCollectionPaths)
+  const onDemandCollectionPaths = useActiveOnDemandCollectionPaths()
   const collectionPaths = useMemo(
     () => [...gatedCollectionPaths, ...onDemandCollectionPaths],
     [gatedCollectionPaths, onDemandCollectionPaths],

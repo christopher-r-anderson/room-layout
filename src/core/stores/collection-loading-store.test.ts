@@ -1,10 +1,14 @@
+// @vitest-environment jsdom
 import { afterEach, describe, expect, it } from 'vitest'
+import { renderHook } from '@testing-library/react'
 import { AssetHttpError } from '../operations/stream-fetch'
 import {
   collectionLoadingActions,
   ensureCollectionLoaded,
   getCollectionFailureKind,
   resetCollectionLoading,
+  useGatedCollectionPaths,
+  useGatedCollectionsResolved,
 } from './collection-loading-store'
 
 afterEach(() => {
@@ -85,6 +89,31 @@ describe('collection-loading-store', () => {
       new Error('Invalid glTF chunk'),
     )
     expect(getCollectionFailureKind('/models/c.glb')).toBe('unavailable')
+  })
+
+  it('reports the gated set as unresolved until bootstrap sets it, empty set included', () => {
+    expect(renderHook(() => useGatedCollectionsResolved()).result.current).toBe(
+      false,
+    )
+    expect(renderHook(() => useGatedCollectionPaths()).result.current).toEqual(
+      [],
+    )
+
+    collectionLoadingActions.setGatedCollectionPaths([])
+
+    expect(renderHook(() => useGatedCollectionsResolved()).result.current).toBe(
+      true,
+    )
+  })
+
+  it('reset returns the gated set to unresolved so a retry cannot read a stale gate', () => {
+    collectionLoadingActions.setGatedCollectionPaths(['/models/a.glb'])
+
+    resetCollectionLoading()
+
+    expect(renderHook(() => useGatedCollectionsResolved()).result.current).toBe(
+      false,
+    )
   })
 
   it('reset clears progress, loaded, wanted, and failed state', () => {

@@ -60,8 +60,10 @@ flowchart LR
 - **Bootstrap** (`features/startup/use-startup-bootstrap.ts`): fetches and validates
   the catalog manifest into `assets-store`, resolves the **gated set** - the
   collections the restored URL/draft actually references
-  (`core/persistence/referenced-collections.ts`) - into `startup-gate-store`, and
-  starts the prefetch.
+  (`core/persistence/referenced-collections.ts`) - into the loading store, and
+  starts the prefetch. The gated set is `null` until resolved (and again after a
+  retry resets it), so readiness can never complete against a stale or unknown
+  gate.
 - **Stream-fetch** (`core/operations/stream-fetch.ts`): a streaming fetch with a
   _stall_ timeout (aborts if no bytes arrive for ~15s, rather than a total-duration
   cap, so slow connections are not failed) that reports byte progress and throws
@@ -131,7 +133,7 @@ does not immediately re-attempt and loop.
 ## Pointers
 
 - Phases / signals: `core/stores/editor-lifecycle-store.ts`
-- Gating: `core/persistence/referenced-collections.ts`, `core/stores/startup-gate-store.ts`
+- Gating: `core/persistence/referenced-collections.ts`
 - Fetch: `core/operations/stream-fetch.ts`, `core/operations/furniture-asset-prefetch.ts`
 - Loading state: `core/stores/collection-loading-store.ts`
 - Parse / registry: `scene/internal/furniture/use-collection-loader.ts`, `collection-scene-registry.ts`

@@ -1,6 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
 import { useGatedLoadProgress } from '@/core/stores/collection-loading-store'
-import { useGatedCollectionPaths } from '@/core/stores/startup-gate-store'
 import { useStartupLoadingActive } from '@/core/stores/editor-lifecycle-store'
 import { formatPercent } from '@/shared/i18n/formatters'
 import { APP_NAME } from '@/shared/messages/app-identity'
@@ -13,9 +12,7 @@ import { Progress } from '@/shared/ui/progress'
 export function InitializationProgress() {
   const { t } = useLingui()
   const visible = useStartupLoadingActive()
-  const gatedCollectionPaths = useGatedCollectionPaths()
-  const { loadedCount, percent, total } =
-    useGatedLoadProgress(gatedCollectionPaths)
+  const { loadedCount, percent, total } = useGatedLoadProgress()
   const roundedProgress = Math.round(percent)
 
   // Before the manifest resolves there is nothing to count yet (preparing); once

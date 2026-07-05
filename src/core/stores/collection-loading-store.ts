@@ -41,6 +41,12 @@ export interface CollectionDownloadProgress {
 }
 
 interface CollectionLoadingState {
+  // The gated set: the collections the restored scene references, which startup
+  // must load before the editor unlocks (empty for a fresh scene; everything else
+  // loads on demand). null until bootstrap resolves it from the manifest - the
+  // readiness observer treats null as "not knowable yet", so a retry (which
+  // resets it) cannot complete against a stale gate.
+  gated: string[] | null
   progressByPath: Map<string, CollectionDownloadProgress>
   // sourcePaths whose scene has parsed and registered. A three-free mirror of the
   // scene registry's keys, so core can await/observe loading without three.
@@ -55,16 +61,25 @@ interface CollectionLoadingState {
   failed: Map<string, CollectionLoadFailureKind>
 }
 
-const collectionLoadingStore = createStore<CollectionLoadingState>()(
-  subscribeWithSelector(() => ({
+function createInitialCollectionLoadingState(): CollectionLoadingState {
+  return {
+    gated: null,
     progressByPath: new Map<string, CollectionDownloadProgress>(),
     loaded: new Set<string>(),
     wanted: new Set<string>(),
     failed: new Map<string, CollectionLoadFailureKind>(),
-  })),
+  }
+}
+
+const collectionLoadingStore = createStore<CollectionLoadingState>()(
+  subscribeWithSelector(() => createInitialCollectionLoadingState()),
 )
 
 export const collectionLoadingActions = {
+  // Resolved once per load cycle by bootstrap, after the manifest arrives.
+  setGatedCollectionPaths(paths: string[]) {
+    collectionLoadingStore.setState((state) => ({ ...state, gated: paths }))
+  },
   setProgress(path: string, progress: CollectionDownloadProgress) {
     collectionLoadingStore.setState((state) => {
       const progressByPath = new Map(state.progressByPath)
@@ -112,12 +127,7 @@ export const collectionLoadingActions = {
     })
   },
   reset() {
-    collectionLoadingStore.setState({
-      progressByPath: new Map<string, CollectionDownloadProgress>(),
-      loaded: new Set<string>(),
-      wanted: new Set<string>(),
-      failed: new Map<string, CollectionLoadFailureKind>(),
-    })
+    collectionLoadingStore.setState(createInitialCollectionLoadingState())
   },
 }
 
@@ -188,11 +198,34 @@ export function ensureCollectionLoaded(path: string): Promise<void> {
   })
 }
 
+const NO_GATED_PATHS: string[] = []
+
+// The gated set, or [] while bootstrap has not resolved it yet. Use
+// useGatedCollectionsResolved to distinguish "resolved to empty" from "unknown".
+export function useGatedCollectionPaths(): string[] {
+  return (
+    useStoreWithEqualityFn(
+      collectionLoadingStore,
+      (state) => state.gated,
+      shallow,
+    ) ?? NO_GATED_PATHS
+  )
+}
+
+// Whether bootstrap has resolved the gated set for the current load cycle. The
+// readiness observer gates on this rather than on a proxy such as manifest
+// contents, so an unresolved (or reset-by-retry) gate can never read as ready.
+export function useGatedCollectionsResolved(): boolean {
+  return useStoreWithEqualityFn(
+    collectionLoadingStore,
+    (state) => state.gated !== null,
+  )
+}
+
 // The on-demand collections the loader should pull in now: those referenced by a
 // current scene item plus anything explicitly wanted, minus the gated set.
-export function useActiveOnDemandCollectionPaths(
-  gatedCollectionPaths: string[],
-): string[] {
+export function useActiveOnDemandCollectionPaths(): string[] {
+  const gatedCollectionPaths = useGatedCollectionPaths()
   const itemSourcePaths = useItemSourcePaths()
   const wanted = useStoreWithEqualityFn(
     collectionLoadingStore,
@@ -245,10 +278,11 @@ export interface GatedLoadProgress {
 
 // Aggregate download progress across the gated collections, for the startup
 // loader. Computed at read time from the per-collection progress.
-export function useGatedLoadProgress(gatedPaths: string[]): GatedLoadProgress {
+export function useGatedLoadProgress(): GatedLoadProgress {
   return useStoreWithEqualityFn(
     collectionLoadingStore,
     (state) => {
+      const gatedPaths = state.gated ?? NO_GATED_PATHS
       let receivedBytes = 0
       let totalBytes = 0
       let loadedCount = 0
