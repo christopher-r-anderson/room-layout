@@ -49,8 +49,6 @@ export function prefetchCatalogItem(catalogId: string): void {
 // the add. It is idempotent and resolves immediately for already-loaded
 // collections; the model is already downloading in the background for the rest.
 export async function addFurniture(): Promise<boolean> {
-  feedbackActions.clearStatusMessage()
-
   const catalogIdToAdd = getActiveCatalogId()
 
   if (!catalogIdToAdd || !sceneCommands.isSceneReady()) {
