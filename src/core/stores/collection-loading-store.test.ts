@@ -29,7 +29,7 @@ describe('collection-loading-store', () => {
     expect(getCollectionFailureKind('/models/a.glb')).toBeNull()
   })
 
-  it('requestCollection clears a failure mark so a retry can proceed', () => {
+  it('requestCollection clears a transient failure mark so a retry can proceed', () => {
     collectionLoadingActions.markFailed(
       '/models/a.glb',
       new TypeError('Failed to fetch'),
@@ -38,6 +38,17 @@ describe('collection-loading-store', () => {
     collectionLoadingActions.requestCollection('/models/a.glb')
 
     expect(getCollectionFailureKind('/models/a.glb')).toBeNull()
+  })
+
+  it('requestCollection preserves a permanent unavailable mark', () => {
+    collectionLoadingActions.markFailed(
+      '/models/a.glb',
+      new AssetHttpError('/models/a.glb', 404),
+    )
+
+    collectionLoadingActions.requestCollection('/models/a.glb')
+
+    expect(getCollectionFailureKind('/models/a.glb')).toBe('unavailable')
   })
 
   it('classifies a non-ok HTTP failure as permanently unavailable', () => {

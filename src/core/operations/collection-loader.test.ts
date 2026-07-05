@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { AssetHttpError } from './stream-fetch'
 import {
   collectionLoadingActions,
   getCollectionFailureKind,
@@ -164,6 +165,18 @@ describe('ensureCollectionLoaded', () => {
       ensureCollectionLoaded('/models/b.glb'),
     ).resolves.toBeUndefined()
     expect(isCollectionLoaded('/models/b.glb')).toBe(true)
+  })
+
+  it('rejects a permanently unavailable path without re-downloading it', async () => {
+    collectionLoadingActions.markFailed(
+      '/models/gone.glb',
+      new AssetHttpError('/models/gone.glb', 404),
+    )
+
+    await expect(ensureCollectionLoaded('/models/gone.glb')).rejects.toThrow(
+      /failed to load/i,
+    )
+    expect(fetchCollectionBytesMock).not.toHaveBeenCalled()
   })
 })
 

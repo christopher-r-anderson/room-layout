@@ -54,8 +54,9 @@ interface CollectionLoadingState {
   // in; kept for the session so an added item's collection stays available.
   wanted: Set<string>
   // sourcePaths whose load failed, mapped to why. Not retried automatically;
-  // re-requesting clears the mark and retries. 'unavailable' items are surfaced as
-  // unavailable in the catalog and never auto-retried.
+  // re-requesting clears a transient 'connection' mark and retries, while
+  // 'unavailable' items are surfaced as unavailable in the catalog and keep
+  // their mark until an explicit startup retry resets everything.
   failed: Map<string, CollectionLoadFailureKind>
 }
 
@@ -116,14 +117,19 @@ export const collectionLoadingActions = {
     })
   },
   // Request an on-demand collection (or re-request a failed one). Always writes a
-  // fresh `wanted` set so the load reconciler is notified even for a re-request,
-  // and clears any prior failure so the retry can proceed.
+  // fresh `wanted` set so the load reconciler is notified even for a re-request.
+  // Only a transient `connection` failure is cleared for the retry: an
+  // `unavailable` mark is permanent for the session (re-requesting a missing or
+  // broken asset cannot help, and clearing it would flicker its catalog tile
+  // back to selectable); only an explicit startup retry resets it.
   requestCollection(path: string) {
     collectionLoadingStore.setState((state) => {
       const wanted = new Set(state.wanted)
       wanted.add(path)
       const failed = new Map(state.failed)
-      failed.delete(path)
+      if (failed.get(path) === 'connection') {
+        failed.delete(path)
+      }
       return { ...state, wanted, failed }
     })
   },

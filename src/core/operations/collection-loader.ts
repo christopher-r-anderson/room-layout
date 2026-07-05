@@ -159,19 +159,25 @@ export function ensureCollectionLoaded(path: string): Promise<void> {
       unsubscribe()
       run()
     }
+    const rejectFailed = () => {
+      reject(new Error(`furniture collection failed to load: ${path}`))
+    }
     const unsubscribe = collectionLoadingStore.subscribe((state) => {
       if (state.loaded.has(path)) {
         finish(resolve)
       } else if (state.failed.has(path)) {
-        finish(() => {
-          reject(new Error(`furniture collection failed to load: ${path}`))
-        })
+        finish(rejectFailed)
       }
     })
 
-    // Guard the window between the initial check and subscribing.
+    // Settle states that already hold: a load that won the window between the
+    // initial check and subscribing, or a preserved permanent failure (which
+    // requestCollection deliberately does not clear, so no store change will
+    // fire the subscription).
     if (isCollectionLoaded(path)) {
       finish(resolve)
+    } else if (isCollectionFailed(path)) {
+      finish(rejectFailed)
     }
   })
 }
