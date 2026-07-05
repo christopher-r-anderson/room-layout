@@ -48,7 +48,7 @@ export default function SceneCanvas({ onPointerMissed }: SceneCanvasProps) {
       onPointerMissed={onPointerMissed}
       shadows={shadowMode}
     >
-      {/* Validation/render failures surface via the error boundary. Keyed by
+      {/* Render failures surface via the error boundary. Keyed by
           epoch so a retry remounts a fresh Scene, whose remount re-kicks the
           collection loads through the cleared byte source. */}
       <SceneAssetErrorBoundary key={sceneEpoch} onError={notifyAssetError}>

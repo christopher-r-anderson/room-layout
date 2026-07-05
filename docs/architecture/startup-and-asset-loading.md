@@ -75,8 +75,9 @@ flowchart LR
   cap, so slow connections are not failed) that reports byte progress and throws
   `AssetHttpError` on a non-ok response.
 - **Load pipeline** (`core/operations/collection-loader.ts`): core drives each
-  load end-to-end - fetch the bytes, have the scene parse and register them
-  (`sceneCommands.loadCollectionScene`, backed by
+  load end-to-end - fetch the bytes, have the scene parse, validate (every
+  catalog entry of the collection must resolve its manifest-referenced nodes),
+  and register them (`sceneCommands.loadCollectionScene`, backed by
   `scene/internal/furniture/collection-scene-loader.ts`, which needs the live
   `WebGLRenderer` for KTX2), then mark the outcome in the loading store. A
   standing reconciler kicks pending loads whenever their inputs change (scene
@@ -130,7 +131,7 @@ How each surfaces:
 | A **gated** collection fails                    | startup error overlay                              | retry (re-downloads)               |
 | An **on-demand** add fails                      | toast (the open drawer aria-hides the status line) | re-add retries a transient failure |
 | A permanently `unavailable` catalog item        | shown non-selectable in the catalog                | -                                  |
-| A loaded GLB missing a manifest-referenced node | startup error (via the scene error boundary)       | fix the asset/manifest             |
+| A GLB missing a manifest-referenced node        | gated: startup error; on-demand: unavailable tile  | fix the asset/manifest             |
 
 The add flow never hangs: `ensureCollectionLoaded` rejects on failure so the drawer
 can message by cause instead of waiting forever.

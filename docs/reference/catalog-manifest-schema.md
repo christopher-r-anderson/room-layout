@@ -222,7 +222,9 @@ below is the human-readable summary.
 - If `uiBoundsNodeName` is omitted, selected-item toolbar placement falls back
   to projected render bounds or object origin.
 - If `uiBoundsNodeName` is present but the referenced node is missing from the
-  loaded GLB subtree, startup fails as a hard asset contract error.
+  loaded GLB subtree, the collection fails validation during its load (a hard
+  asset contract error): a startup error when the collection gates startup, a
+  permanently unavailable catalog item otherwise.
 - `uiBoundsNodeName` affects toolbar bounds selection only; it is not an
   authored point anchor and it does not bypass overlap checks.
 - How model-load failures surface depends on whether the collection gates

@@ -12,7 +12,6 @@ import { InteractiveFurniture } from './internal/furniture/interactive-furniture
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import type { CameraControlsImpl } from '@react-three/drei'
 import { useThree } from '@react-three/fiber'
-import { type Object3D } from 'three'
 import { SelectionOutlineEffect } from './internal/selection/selection-outline-effect'
 import { type LayoutBounds } from '@/domain/geometry/furniture-layout'
 import type {
@@ -23,7 +22,6 @@ import {
   areFurnitureCollectionsEqual,
   updateFurniturePositionInHistory,
 } from './internal/furniture/furniture-operations'
-import { validateCatalogAssetNodes } from './internal/validate-catalog-asset-nodes'
 import { useHistoryOperations } from './internal/history/use-history-operations'
 import type { CameraKeyState } from './scene.types'
 import { useSceneDrag } from './internal/drag/use-scene-drag'
@@ -106,42 +104,17 @@ export function Scene({
   // Accessor for fresh r3f state when we need to imperatively touch the renderer
   // (e.g. tone-mapping exposure) without subscribing to or mutating a hook value.
   const getThreeState = useThree((state) => state.get)
-  // Parse-and-register for collection GLBs, exposed to core through the services
-  // below; created per renderer because the KTX2 transcoder config needs it.
+  // Parse, validate, and register for collection GLBs, exposed to core through
+  // the services below; created per renderer because the KTX2 transcoder config
+  // needs it.
   const loadCollectionScene = useMemo(
-    () => createCollectionSceneLoader(gl),
-    [gl],
+    () => createCollectionSceneLoader({ renderer: gl, catalog, collections }),
+    [gl, catalog, collections],
   )
   // Parsed collection scenes, registered by the loader as they resolve. Partial and
   // growing, so the room renders before any furniture; each item appears once its
   // collection is present.
   const sourceScenesByPath = useLoadedCollectionScenes()
-
-  const sourceScenesByCollectionId = useMemo(() => {
-    const byCollectionId = new Map<string, Object3D>()
-    for (const collection of collections) {
-      const scene = sourceScenesByPath.get(collection.sourcePath)
-      if (scene) {
-        byCollectionId.set(collection.id, scene)
-      }
-    }
-    return byCollectionId
-  }, [collections, sourceScenesByPath])
-
-  useMemo(() => {
-    if (sourceScenesByCollectionId.size === 0) {
-      return
-    }
-
-    // Only the collections currently loaded can be validated; unloaded ones are
-    // re-checked here as they register.
-    validateCatalogAssetNodes({
-      catalog: catalog.filter((entry) =>
-        sourceScenesByCollectionId.has(entry.collectionId),
-      ),
-      sourceScenesByCollectionId,
-    })
-  }, [catalog, sourceScenesByCollectionId])
 
   const cameraControlsRef = useRef<CameraControlsImpl | null>(null)
   const cameraKeyStateRef = useRef<CameraKeyState>(new Set())
