@@ -54,6 +54,11 @@ export function useAddFurniture({
   }, [open, catalogIdToAdd])
 
   const submit = useCallback(() => {
+    // The button is disabled while submitting, but guard re-entry anyway so a
+    // future non-button trigger cannot race two adds.
+    if (isSubmitting) {
+      return
+    }
     setIsSubmitting(true)
     const pendingTimer = window.setTimeout(() => {
       setShowPending(true)
@@ -69,7 +74,7 @@ export function useAddFurniture({
         setIsSubmitting(false)
         setShowPending(false)
       })
-  }, [])
+  }, [isSubmitting])
 
   return { submit, isSubmitting, showPending, percentLabel, selectedSourcePath }
 }
