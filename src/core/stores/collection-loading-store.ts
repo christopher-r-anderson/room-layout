@@ -13,15 +13,25 @@ import { AssetHttpError } from '../operations/stream-fetch'
 // in core because its inputs and consumers are core/features. See
 // docs/architecture/startup-and-asset-loading.md.
 
-// Why a collection's load failed. 'unavailable' is permanent (a missing/broken
-// asset, from a non-ok HTTP response) and is never retried; 'connection' is
-// transient (network error or stall) and a re-request retries it.
+// Why a collection's load failed. 'unavailable' is permanent (a missing, broken,
+// or unparseable asset) and is never retried; 'connection' is transient (network
+// error or stall) and a re-request retries it.
 export type CollectionLoadFailureKind = 'unavailable' | 'connection'
 
 function classifyCollectionLoadError(
   error: unknown,
 ): CollectionLoadFailureKind {
-  return error instanceof AssetHttpError ? 'unavailable' : 'connection'
+  if (error instanceof AssetHttpError) {
+    return 'unavailable'
+  }
+  // Transport-level failures: fetch rejects with a TypeError on a network error
+  // and with a DOMException (AbortError / TimeoutError) on an abort or stall.
+  if (error instanceof DOMException || error instanceof TypeError) {
+    return 'connection'
+  }
+  // Anything else failed after the bytes arrived (e.g. GLB parse), so retrying
+  // the download cannot help - treat it as permanent.
+  return 'unavailable'
 }
 
 export interface CollectionDownloadProgress {

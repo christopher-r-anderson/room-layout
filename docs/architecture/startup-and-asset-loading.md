@@ -102,8 +102,9 @@ byte source (the prefetched buffer for gated paths, a direct stream for on-deman
 
 Failures are classified (`collection-loading-store.ts`) as:
 
-- **`unavailable`** - a non-ok HTTP response (`AssetHttpError`): the model is
-  missing or broken. Permanent; never auto-retried.
+- **`unavailable`** - a non-ok HTTP response (`AssetHttpError`) or a
+  post-download failure such as a GLB parse error: the model is missing or
+  broken. Permanent; never auto-retried.
 - **`connection`** - a network error or stall abort. Transient; a re-request retries.
 
 How each surfaces:

@@ -64,8 +64,27 @@ describe('collection-loading-store', () => {
   })
 
   it('classifies a network/stall failure as a transient connection problem', () => {
-    collectionLoadingActions.markFailed('/models/c.glb', new Error('aborted'))
+    // fetch rejects with a TypeError on a network error, and with a DOMException
+    // (AbortError / TimeoutError) on an abort or stall.
+    collectionLoadingActions.markFailed(
+      '/models/c.glb',
+      new TypeError('Failed to fetch'),
+    )
     expect(getCollectionFailureKind('/models/c.glb')).toBe('connection')
+
+    collectionLoadingActions.markFailed(
+      '/models/d.glb',
+      new DOMException('Asset download stalled', 'TimeoutError'),
+    )
+    expect(getCollectionFailureKind('/models/d.glb')).toBe('connection')
+  })
+
+  it('classifies a post-download failure (e.g. GLB parse) as permanently unavailable', () => {
+    collectionLoadingActions.markFailed(
+      '/models/c.glb',
+      new Error('Invalid glTF chunk'),
+    )
+    expect(getCollectionFailureKind('/models/c.glb')).toBe('unavailable')
   })
 
   it('reset clears progress, loaded, wanted, and failed state', () => {
