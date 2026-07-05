@@ -6,8 +6,8 @@ import {
   type WebGLRenderer,
   type Texture,
 } from 'three'
-import { KTX2Loader } from 'three/addons/loaders/KTX2Loader.js'
 import type { FloorFinishOption } from '@/domain/environment-materials'
+import { getKtx2Loader } from './ktx2-loader'
 
 export interface FloorTextures {
   diffuse: Texture
@@ -16,10 +16,6 @@ export interface FloorTextures {
 
 const textureCache = new Map<string, Promise<FloorTextures>>()
 const textureLoader = new TextureLoader()
-// KTX2Loader resolves the Basis transcoder from three's own bundled copy (via
-// import.meta.url), so no transcoder path is configured here.
-const ktx2Loader = new KTX2Loader().setWorkerLimit(2)
-const ktx2SupportDetectedForRenderer = new WeakSet<WebGLRenderer>()
 
 function getTextureCacheKey(option: FloorFinishOption): string {
   const { id, diffusePath, normalPath } = option
@@ -39,14 +35,9 @@ export async function loadFloorTexture(
   }
 
   const loadPromise = (async () => {
-    if (!ktx2SupportDetectedForRenderer.has(renderer)) {
-      ktx2Loader.detectSupport(renderer)
-      ktx2SupportDetectedForRenderer.add(renderer)
-    }
-
     const [diffuse, normal] = await Promise.all([
-      loadTexture(option.diffusePath),
-      loadTexture(option.normalPath),
+      loadTexture(option.diffusePath, renderer),
+      loadTexture(option.normalPath, renderer),
     ])
 
     // Configure diffuse as sRGB color data.
@@ -73,9 +64,9 @@ export async function loadFloorTexture(
   return retryablePromise
 }
 
-function loadTexture(path: string): Promise<Texture> {
+function loadTexture(path: string, renderer: WebGLRenderer): Promise<Texture> {
   if (path.toLowerCase().endsWith('.ktx2')) {
-    return ktx2Loader.loadAsync(path)
+    return getKtx2Loader(renderer).loadAsync(path)
   }
 
   return new Promise<Texture>((resolve, reject) => {

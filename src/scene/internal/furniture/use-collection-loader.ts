@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { useThree } from '@react-three/fiber'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
-import { configureGltfKtx2 } from '@/scene/internal/three/gltf-ktx2'
+import { configureGltfKtx2 } from '@/scene/internal/three/ktx2-loader'
 import {
   collectionLoadingActions,
   isCollectionFailed,
