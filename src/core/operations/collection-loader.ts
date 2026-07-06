@@ -173,6 +173,14 @@ export function ensureCollectionLoaded(path: string): Promise<void> {
         finish(resolve)
       } else if (state.failed.has(path)) {
         finish(rejectFailed)
+      } else if (!state.wanted.has(path)) {
+        // Only a full reset (the retry teardown) removes a requested path from
+        // `wanted`; the in-flight load discards its result on the epoch guard,
+        // so nothing would ever settle this promise - reject instead of
+        // leaking the subscription and hanging the caller.
+        finish(() => {
+          reject(new Error(`furniture collection load was reset: ${path}`))
+        })
       }
     })
 

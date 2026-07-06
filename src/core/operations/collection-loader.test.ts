@@ -167,6 +167,18 @@ describe('ensureCollectionLoaded', () => {
     expect(isCollectionLoaded('/models/b.glb')).toBe(true)
   })
 
+  it('rejects a pending request when the retry teardown resets the store', async () => {
+    // The in-flight load never settles the store for its path after a reset
+    // (epoch guard), so the waiter must settle off the reset itself.
+    const bytes = deferred<ArrayBuffer>()
+    fetchCollectionBytesMock.mockReturnValue(bytes.promise)
+
+    const pending = ensureCollectionLoaded('/models/slow.glb')
+    resetCollectionLoading()
+
+    await expect(pending).rejects.toThrow(/load was reset/)
+  })
+
   it('rejects a permanently unavailable path without re-downloading it', async () => {
     collectionLoadingActions.markFailed(
       '/models/gone.glb',
