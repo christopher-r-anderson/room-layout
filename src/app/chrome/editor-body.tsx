@@ -9,13 +9,11 @@ import {
 } from '@/core/stores/selection-focus-store'
 import { useSceneIsAtDefaults } from '@/core/operations/use-scene-is-at-defaults'
 import {
-  editorLifecycleStore,
   useAssetError,
   useEditorInteractionsEnabled,
   useStartupLoadingActive,
   useStartupOverlayActive,
 } from '@/core/stores/editor-lifecycle-store'
-import { notifyAssetError } from '@/core/operations/startup-coordinator'
 import { InitializationError } from '@/features/startup/initialization-error'
 import { InitializationProgress } from '@/features/startup/initialization-progress'
 import { useKeyboardShortcuts } from '@/features/keyboard/use-keyboard-shortcuts'
@@ -25,43 +23,8 @@ import { clearCanvasSelection } from '@/core/operations/selection-actions'
 import { APP_NAME } from '@/shared/messages/app-identity'
 import { useEditorRefs } from '@/shared/providers/editor-refs-context'
 import { Announcer } from './feedback/announcer'
+import { withStartupChunkRetry } from './startup-chunk-retry'
 import { Toaster } from '@/shared/ui/sonner'
-
-// Resolves on the next explicit startup retry (the token bumps only then).
-function nextRetryRequest(): Promise<void> {
-  return new Promise((resolve) => {
-    const unsubscribe = editorLifecycleStore.subscribe(
-      (state) => state.retryToken,
-      () => {
-        unsubscribe()
-        resolve()
-      },
-    )
-  })
-}
-
-// A failed chunk fetch (stale deploy, dropped connection) must surface the
-// startup error + retry rather than crash the tree - and React.lazy caches a
-// rejected factory for the component's lifetime, so the factory never rejects:
-// it reports the failure and turns the retry into a full reload. A reload
-// (not a re-import) because the browser may cache the failed module fetch,
-// and after a stale deploy the old hashed URL is gone regardless - only
-// re-reading index.html picks up the fresh chunk graph.
-function withStartupChunkRetry<T>(load: () => Promise<T>): () => Promise<T> {
-  return async () => {
-    try {
-      return await load()
-    } catch (error) {
-      notifyAssetError(
-        error instanceof Error ? error : new Error(String(error)),
-      )
-      await nextRetryRequest()
-      window.location.reload()
-      // Keep the factory pending while the reload tears the page down.
-      return new Promise<never>(() => undefined)
-    }
-  }
-}
 
 // The 3D engine (three/r3f/drei) lives in this lazily-imported chunk so it
 // downloads in parallel with — and never blocks — the initial shell paint.

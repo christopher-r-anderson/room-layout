@@ -127,13 +127,14 @@ Failures are classified (`collection-loading-store.ts`) as:
 
 How each surfaces:
 
-| Failure                                  | Surface                                            | Recovery                           |
-| ---------------------------------------- | -------------------------------------------------- | ---------------------------------- |
-| Manifest fetch fails                     | startup error overlay                              | retry                              |
-| A **gated** collection fails             | startup error overlay                              | retry (re-downloads)               |
-| An **on-demand** add fails               | toast (the open drawer aria-hides the status line) | re-add retries a transient failure |
-| A permanently `unavailable` catalog item | shown non-selectable in the catalog                | -                                  |
-| A GLB missing a manifest-referenced node | gated: startup error; on-demand: unavailable tile  | fix the asset/manifest             |
+| Failure                                  | Surface                                           | Recovery                           |
+| ---------------------------------------- | ------------------------------------------------- | ---------------------------------- |
+| Manifest fetch fails                     | startup error overlay                             | retry                              |
+| An engine/chrome chunk fails to load     | startup error overlay                             | retry (reloads for a fresh graph)  |
+| A **gated** collection fails             | startup error overlay                             | retry (re-downloads)               |
+| An **on-demand** add fails               | toast + assertive announcement                    | re-add retries a transient failure |
+| A permanently `unavailable` catalog item | shown non-selectable in the catalog               | -                                  |
+| A GLB missing a manifest-referenced node | gated: startup error; on-demand: unavailable tile | fix the asset/manifest             |
 
 The add flow never hangs: `ensureCollectionLoaded` rejects on failure so the drawer
 can message by cause instead of waiting forever.
@@ -146,6 +147,19 @@ epoch so the remounting Scene re-kicks the loads and re-downloads; a load still
 in flight from the stale epoch discards its result. Reset happens **only** on an
 explicit retry - on the error path a gated failure's mark survives, so the
 pipeline does not immediately re-attempt and loop.
+
+Two special cases:
+
+- A failed **app chunk** fetch (`app/chrome/startup-chunk-retry.ts`) turns the
+  retry into a full page reload: the browser may cache the failed module fetch,
+  and after a stale deploy only re-reading `index.html` picks up the fresh
+  chunk graph. An errored phase is sticky against a late manifest success
+  (`beginAssetLoad` no-ops on `errored`), so a chunk failure that races the
+  manifest fetch keeps the error overlay up until that retry.
+- An add failure while the drawer is open reports on two channels: a toast for
+  visual users, and an assertive announcement for assistive tech - the drawer's
+  aria-hiding exempts `aria-live` regions, so the announcer stays live while
+  the toast region does not announce.
 
 ## Pointers
 

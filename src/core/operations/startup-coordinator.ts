@@ -29,6 +29,7 @@ import {
   validateDraftState,
 } from '../persistence/restore-flow'
 import type { RestorableState } from '../persistence/restore-flow.types'
+import type { StartupErrorKind } from '../types/startup.types'
 
 // Resets the editor surface back to a clean slate. Used by the asset-error and
 // retry transitions so a failed or restarted load never leaves stale scene or
@@ -199,9 +200,9 @@ export function completeAssetLoad() {
   editorLifecycleActions.markAssetsReady()
 }
 
-export function notifyAssetError(error: Error) {
+function reportStartupError(kind: StartupErrorKind, error: Error) {
   editorLifecycleActions.setAssetError({
-    kind: 'asset-load',
+    kind,
     message: error.message,
   })
   dialogActions.closeActiveDialog()
@@ -211,6 +212,18 @@ export function notifyAssetError(error: Error) {
   )
   toast.error(assetError)
   feedbackActions.announceAssertive(assetError)
+}
+
+// A furniture/scene asset failed while loading or rendering.
+export function notifyAssetError(error: Error) {
+  reportStartupError('asset-load', error)
+}
+
+// One of the app's own lazy chunks (engine, chrome) failed to fetch. Kept as a
+// distinct kind because its recovery differs: the retry reloads the page (see
+// startup-chunk-retry) rather than re-requesting assets in place.
+export function notifyChunkLoadError(error: Error) {
+  reportStartupError('app-chunk', error)
 }
 
 // Retry startup: drop the buffered asset bytes so it re-downloads, then bump the

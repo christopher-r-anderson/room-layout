@@ -169,6 +169,9 @@ msgstr "[Ďŕàƒţ ƒàĩĺēď ţō ŕēśţōŕē. Śţàŕţĩńğ ŵĩţĥ 
 msgid "Edit the selected item."
 msgstr "[Ēďĩţ ţĥē śēĺēćţēď ĩţēḿ.āēīōūáéíóúāēī]"
 
+msgid "Editor failed to load"
+msgstr "[Ēďĩţōŕ ƒàĩĺēď ţō ĺōàďāēīōūáéíóúāē]"
+
 msgid "Editor status"
 msgstr "[Ēďĩţōŕ śţàţũśāēīōūáéíóú]"
 
@@ -331,6 +334,9 @@ msgstr "[Ƥàń ćàḿēŕàāēīōūáéíó]"
 msgid "Pane focus"
 msgstr "[Ƥàńē ƒōćũśāēīōūáéíó]"
 
+msgid "Part of the editor's code did not load. This can happen after an update or a dropped connection."
+msgstr "[Ƥàŕţ ōƒ ţĥē ēďĩţōŕ'ś ćōďē ďĩď ńōţ ĺōàď. Ţĥĩś ćàń ĥàƥƥēń àƒţēŕ àń ũƥďàţē ōŕ à ďŕōƥƥēď ćōńńēćţĩōń.āēīōūáéíóúāēīōūáéíóúāēīōūáéíóúāēīōūáéíó]"
+
 msgid "Photographer"
 msgstr "[Ƥĥōţōğŕàƥĥēŕāēīōūáéíó]"
 
@@ -397,6 +403,9 @@ msgstr "[Ŕēţŕŷ Ĺōàďĩńğāēīōūáéíóú]"
 
 msgid "Retry to attempt startup again."
 msgstr "[Ŕēţŕŷ ţō àţţēḿƥţ śţàŕţũƥ àğàĩń.āēīōūáéíóúāēī]"
+
+msgid "Retry to reload the editor."
+msgstr "[Ŕēţŕŷ ţō ŕēĺōàď ţĥē ēďĩţōŕ.āēīōūáéíóúāēīōū]"
 
 msgid "Retry to request the essential assets again."
 msgstr "[Ŕēţŕŷ ţō ŕēqũēśţ ţĥē ēśśēńţĩàĺ àśśēţś àğàĩń.āēīōūáéíóúāēīōūáéí]"

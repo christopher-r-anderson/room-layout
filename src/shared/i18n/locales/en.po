@@ -235,6 +235,10 @@ msgstr "Draft failed to restore. Starting with an empty room."
 msgid "Edit the selected item."
 msgstr "Edit the selected item."
 
+#: src/features/startup/initialization-error.tsx
+msgid "Editor failed to load"
+msgstr "Editor failed to load"
+
 #: src/app/chrome/feedback/status-message.tsx
 msgid "Editor status"
 msgstr "Editor status"
@@ -456,6 +460,10 @@ msgstr "Pan camera"
 msgid "Pane focus"
 msgstr "Pane focus"
 
+#: src/features/startup/initialization-error.tsx
+msgid "Part of the editor's code did not load. This can happen after an update or a dropped connection."
+msgstr "Part of the editor's code did not load. This can happen after an update or a dropped connection."
+
 #: src/features/project-info/asset-attribution.tsx
 msgid "Photographer"
 msgstr "Photographer"
@@ -547,6 +555,10 @@ msgstr "Retry Loading"
 #: src/features/startup/initialization-error.tsx
 msgid "Retry to attempt startup again."
 msgstr "Retry to attempt startup again."
+
+#: src/features/startup/initialization-error.tsx
+msgid "Retry to reload the editor."
+msgstr "Retry to reload the editor."
 
 #: src/features/startup/initialization-error.tsx
 msgid "Retry to request the essential assets again."
