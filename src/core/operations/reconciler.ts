@@ -16,13 +16,20 @@ export function createReconciler(
 
     const cleanups = setup()
 
-    activeStop = () => {
+    const stop = () => {
+      // Only the live generation's stop may tear down: a stale handle kept
+      // across a stop/restart cycle would otherwise re-run old cleanups and
+      // orphan the active subscriptions.
+      if (activeStop !== stop) {
+        return
+      }
       for (const cleanup of cleanups) {
         cleanup()
       }
       activeStop = null
     }
+    activeStop = stop
 
-    return activeStop
+    return stop
   }
 }
