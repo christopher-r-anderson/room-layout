@@ -7,6 +7,7 @@ import {
   useSelectionFocusStore,
 } from '@/core/stores/selection-focus-store'
 import { subscribeToBlockingOverlay } from '@/core/stores/dialog-store'
+import { createReconciler } from '@/core/operations/reconciler'
 
 /**
  * Routes focus into the outliner with intelligent fallback: the selected item if
@@ -39,19 +40,13 @@ export function requestOutlinerFocus() {
   })
 }
 
-let activeOutlinerFocusUnsubscribe: (() => void) | null = null
-
 /**
  * When a blocking overlay opens, cancel any pending outliner-focus request — the
  * outliner is behind the overlay, so the queued focus must not fire. Idempotent;
  * returns an unsubscribe.
  */
-export function startOutlinerFocusReconciler(): () => void {
-  if (activeOutlinerFocusUnsubscribe) {
-    return activeOutlinerFocusUnsubscribe
-  }
-
-  const unsubscribe = subscribeToBlockingOverlay((isOpen, wasOpen) => {
+export const startOutlinerFocusReconciler = createReconciler(() => [
+  subscribeToBlockingOverlay((isOpen, wasOpen) => {
     if (!isOpen || wasOpen) {
       return
     }
@@ -61,12 +56,5 @@ export function startOutlinerFocusReconciler(): () => void {
     }
 
     selectionFocusActions.clearOutlinerFocusRequest()
-  })
-
-  activeOutlinerFocusUnsubscribe = () => {
-    unsubscribe()
-    activeOutlinerFocusUnsubscribe = null
-  }
-
-  return activeOutlinerFocusUnsubscribe
-}
+  }),
+])

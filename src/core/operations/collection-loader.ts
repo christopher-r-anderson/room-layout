@@ -12,6 +12,7 @@ import {
   fetchCollectionBytes,
   releaseCollectionBytes,
 } from './collection-bytes'
+import { createReconciler } from './reconciler'
 
 // The collection load pipeline, driven imperatively from core: fetch the bytes
 // (shared byte source), have the scene parse and register them
@@ -108,7 +109,7 @@ function kickPendingCollectionLoads() {
  * remount), the gated set resolving, an item appearing, or an on-demand request
  * each kick the pending loads. Kicks are cheap and loadCollection is idempotent.
  */
-export function startCollectionLoadReconciler(): () => void {
+export const startCollectionLoadReconciler = createReconciler(() => {
   const unsubscribes = [
     useEditorLifecycleStore.subscribe(
       (state) => state.sceneMounted,
@@ -133,12 +134,8 @@ export function startCollectionLoadReconciler(): () => void {
   // unrelated change.
   kickPendingCollectionLoads()
 
-  return () => {
-    for (const unsubscribe of unsubscribes) {
-      unsubscribe()
-    }
-  }
-}
+  return unsubscribes
+})
 
 /**
  * Requests a collection and resolves once it is loaded, or rejects if it fails -

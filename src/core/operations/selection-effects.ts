@@ -8,6 +8,7 @@ import {
   useSelectionFocusStore,
 } from '../stores/selection-focus-store'
 import { useSceneDocumentStore } from '../stores/scene-document-store'
+import { createReconciler } from './reconciler'
 import type { InteractionSource } from '../types/interaction.types'
 import type {
   PendingSelectionChangeBehavior,
@@ -231,36 +232,25 @@ function scheduleReconcile() {
   })
 }
 
-let activeUnsubscribe: (() => void) | null = null
-
 /**
  * Subscribes selection-effects reconciliation to scene-state changes. Intended
  * to run once at app startup; idempotent so repeated calls reuse the active
  * subscription.
  */
-export function startSelectionEffectsReconciler(): () => void {
-  if (activeUnsubscribe) {
-    return activeUnsubscribe
-  }
-
+export const startSelectionEffectsReconciler = createReconciler(() => {
   syncReconcilerTrackers()
 
-  const unsubscribe = useSceneDocumentStore.subscribe(
-    (state) => ({
-      items: state.history.present,
-      selectedId: state.selectedId,
-    }),
-    scheduleReconcile,
-    {
-      equalityFn: (a, b) =>
-        a.items === b.items && a.selectedId === b.selectedId,
-    },
-  )
-
-  activeUnsubscribe = () => {
-    unsubscribe()
-    activeUnsubscribe = null
-  }
-
-  return activeUnsubscribe
-}
+  return [
+    useSceneDocumentStore.subscribe(
+      (state) => ({
+        items: state.history.present,
+        selectedId: state.selectedId,
+      }),
+      scheduleReconcile,
+      {
+        equalityFn: (a, b) =>
+          a.items === b.items && a.selectedId === b.selectedId,
+      },
+    ),
+  ]
+})
