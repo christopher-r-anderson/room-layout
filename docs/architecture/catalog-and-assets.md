@@ -127,5 +127,6 @@ Two authoring-pipeline checks that are not field-schema rules:
 
 - `README.md`
 - `docs/reference/catalog-manifest-schema.md`
+- `docs/architecture/startup-and-asset-loading.md` (how the assets built here load at runtime)
 - `docs/architecture/selected-toolbar-placement.md`
 - `docs/guide/url-scene-sharing.md`

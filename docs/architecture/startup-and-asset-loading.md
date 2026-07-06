@@ -5,27 +5,54 @@ collections stream in. The organizing principle is **environment-first**: the
 room, lighting, and camera are interactive within seconds, and furniture models
 load independently rather than blocking first paint.
 
-## Bundle split
+Two load stories run in parallel and meet at startup readiness:
 
-First paint depends only on a small shell; the heavy 3D engine and the editor
-chrome are code-split out and load lazily. Budgets are regression-gated by
-`scripts/check-bundle-budget.mjs`.
+- **The app load** - the page and its code chunks, and which UI owns the screen
+  at each stage.
+- **The collection load pipeline** - how furniture GLBs download, parse, and
+  become renderable.
 
-| Chunk                          | Contents                                                                      | Loads                                        |
-| ------------------------------ | ----------------------------------------------------------------------------- | -------------------------------------------- |
-| shell (`index-*.js`)           | app skeleton, the loading UI, the engine-free byte source, placement geometry | eagerly (first paint)                        |
-| engine (`scene-canvas-*.js`)   | three / r3f / drei / postprocessing                                           | lazily, in parallel with the shell's fetches |
-| chrome (`editor-overlay-*.js`) | editor panels, toolbars, icon deps                                            | lazily, once the editor is interactive       |
+## The app load
 
-Two consequences worth knowing:
+```mermaid
+flowchart LR
+  html["index.html\n(inline skeleton\nowns first paint)"] --> shell["shell chunk\n(React loader, bootstrap,\nbyte source)"]
+  shell --> engine["engine chunk\n(canvas + room,\nparse service)"]
+  shell -. warms .-> chrome["chrome chunk\n(editor panels)"]
+  engine --> ready(("editor\nready"))
+  ready --> chrome
+```
 
-- **The collection byte source is deliberately engine-free** (`core/operations/collection-bytes.ts`
-  deals only in `ArrayBuffer`s, no three import). Because it ships in the shell, a
-  restored scene's furniture bytes download _in parallel_ with the larger engine
-  chunk instead of waiting for it.
-- **`index.html` renders an `#app-skeleton` loader that mirrors the React loader**
-  (`InitializationProgress`) element-for-element, so the handoff from static HTML
-  to the mounted app has no layout shift.
+Readiness also waits on the gated furniture collections, which download in
+parallel with the engine chunk - that story is the
+[collection load pipeline](#the-collection-load-pipeline) below.
+
+What the user sees, in order:
+
+1. **The static skeleton** - inline in `index.html`, on screen before any
+   JavaScript arrives.
+2. **The React loader** (`InitializationProgress`) - replaces the skeleton in
+   place. The two mirror each other element-for-element (column geometry, theme
+   colors), so the handoff has no layout shift or flash.
+3. **The editor** - at ready the loader lifts to the already-mounted room and
+   the chrome mounts from its chunk (warmed during loading, so it is usually
+   cached by then). A startup failure replaces this step with the error
+   overlay and its retry.
+
+The chunks, whose gzip sizes are regression-gated by
+`scripts/check-bundle-budget.mjs`:
+
+| Chunk                                | Contents                                                                                    |
+| ------------------------------------ | ------------------------------------------------------------------------------------------- |
+| shell (`index-*.js`)                 | app skeleton, loading/error UI, bootstrap + the engine-free byte source, placement geometry |
+| engine (`scene-canvas-*.js`, lazy)   | three / r3f / drei / postprocessing; the canvas, room, and collection parse service         |
+| chrome (`editor-overlay-*.js`, lazy) | editor panels, toolbars, icon deps                                                          |
+
+One consequence worth calling out: **the collection byte source is deliberately
+engine-free** (`core/operations/collection-bytes.ts` deals only in
+`ArrayBuffer`s, no three import). Because it ships in the shell, a restored
+scene's furniture bytes download _in parallel_ with the larger engine chunk
+instead of waiting for it.
 
 ## Startup phases
 
@@ -45,16 +72,25 @@ Two supporting signals:
   canvas has mounted (an empty scene has no furniture to wait on, so without this
   the overlay could clear before first paint).
 
-## The loading pipeline
+## The collection load pipeline
+
+The pipeline spans the core/scene boundary: everything except the parse lives in
+core (and ships in the shell); the scene contributes exactly one capability,
+parse-and-register, because configuring the KTX2 transcoder needs the live
+renderer.
 
 ```mermaid
 flowchart LR
-  boot["bootstrap\n(fetch manifest,\ncompute gated set)"] --> bytes["byte source\n(shell, engine-free)"]
-  bytes --> pipeline["load pipeline\n(core, reconciler-kicked)"]
-  pipeline --> parse["parse in scene\n(service; KTX2 needs the renderer)"]
-  parse --> registry["scene registry\n(Object3D)"]
-  pipeline --> store["core loading store\n(loaded / failed)"]
-  store --> ready["readiness observer\n-> ready / errored"]
+  subgraph core["core (ships in the shell)"]
+    boot["bootstrap\n(fetch manifest,\ncompute gated set)"] --> bytes["byte source\n(engine-free)"]
+    bytes --> pipeline["load pipeline\n(reconciler-kicked)"]
+    pipeline --> store["loading store\n(loaded / failed)"]
+    store --> readiness["readiness observer\n-> ready / errored"]
+  end
+  subgraph scene["scene (engine chunk)"]
+    parse["parse service\n(KTX2 needs the renderer)"] --> registry["scene registry\n(Object3D)"]
+  end
+  pipeline --> parse
 ```
 
 - **Bootstrap** (`features/startup/use-startup-bootstrap.ts`): fetches and validates
@@ -80,12 +116,12 @@ flowchart LR
   load end-to-end - fetch the bytes, have the scene parse, validate (every
   catalog entry of the collection must resolve its manifest-referenced nodes),
   and register them (`sceneCommands.loadCollectionScene`, backed by
-  `scene/internal/furniture/collection-scene-loader.ts`, which needs the live
-  `WebGLRenderer` for KTX2), then mark the outcome in the loading store. A
-  standing reconciler kicks pending loads whenever their inputs change (scene
-  mounts, gate resolves, an item appears, an on-demand request arrives), so the
-  chain never depends on React render timing. Loads are keyed to the scene epoch;
-  a stale cycle's result is discarded rather than written into a fresh one.
+  `scene/internal/furniture/collection-scene-loader.ts`), then mark the outcome
+  in the loading store. A standing reconciler kicks pending loads whenever their
+  inputs change (scene mounts, gate resolves, an item appears, an on-demand
+  request arrives), so the chain never depends on React render timing. Loads are
+  keyed to the scene epoch; a stale cycle's result is discarded rather than
+  written into a fresh one.
 - **Readiness** (`features/startup/use-startup-readiness.ts`, run from `App`): once
   startup is loading, the scene has mounted, and the gated set is resolved, it
   resolves the gated collections - every one loaded -> `completeAssetLoad`; any
@@ -96,9 +132,8 @@ The split of state is intentional: the parsed `Object3D`s are a scene render
 artifact (`collection-scene-registry`, scene-internal), while the three-free
 loading lifecycle - the gate, progress, which collections are wanted, loaded, or
 failed - lives in `core/stores/collection-loading-store.ts` next to the byte
-source and gating it coordinates with. The scene contributes exactly one
-capability, parse-and-register, through scene services; registration happens
-inside it, before core marks the collection loaded, so consumers may read the
+source and gating it coordinates with. Registration happens inside the parse
+service, before core marks the collection loaded, so consumers may read the
 registry on the strength of the core flag.
 
 ## Gated vs on-demand
@@ -171,6 +206,7 @@ Two special cases:
 - Load pipeline: `core/operations/collection-loader.ts`
 - Parse / registry: `scene/internal/furniture/collection-scene-loader.ts`, `collection-scene-registry.ts`
 - Orchestration: `features/startup/use-startup-bootstrap.ts`, `use-startup-readiness.ts`, `core/operations/startup-coordinator.ts`
+- Chunk-failure recovery: `app/chrome/startup-chunk-retry.ts`
 - Bundle budgets: `scripts/check-bundle-budget.mjs`
 
 ## Related docs
