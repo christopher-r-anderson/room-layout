@@ -6,7 +6,8 @@ import {
   useToolbarInteractionStore,
 } from './toolbar-interaction-store'
 
-const engaged = () => selectToolbarEngaged(useToolbarInteractionStore.getState())
+const engaged = () =>
+  selectToolbarEngaged(useToolbarInteractionStore.getState())
 
 beforeEach(() => {
   vi.useFakeTimers()

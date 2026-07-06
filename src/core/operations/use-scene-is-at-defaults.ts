@@ -5,7 +5,10 @@ import {
 } from '@/domain/environment-materials'
 import { isFreshSceneState } from '@/core/model/scene-defaults'
 import type { FurnitureItem } from '@/domain/furniture'
-import { useAssetsStore, useEnvironmentConfig } from '@/core/stores/assets-store'
+import {
+  useAssetsStore,
+  useEnvironmentConfig,
+} from '@/core/stores/assets-store'
 import {
   sceneDocumentStore,
   useFloorFinishId,

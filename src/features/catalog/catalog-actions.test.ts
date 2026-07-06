@@ -2,7 +2,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { toast } from 'sonner'
 import { resetSceneDocumentStore } from '@/core/stores/scene-document-store'
-import { useFeedbackStore, resetFeedbackStore } from '@/core/stores/feedback-store'
+import {
+  useFeedbackStore,
+  resetFeedbackStore,
+} from '@/core/stores/feedback-store'
 import {
   resetSelectionFocusStore,
   useSelectionFocusStore,

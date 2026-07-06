@@ -88,7 +88,9 @@ describe('startSelectionEffectsReconciler', () => {
     sceneDocumentActions.setSelectedId(CHAIR.id)
     await flushReconcile()
 
-    expect(useSelectionFocusStore.getState().selectedSource).toBe('panel-pointer')
+    expect(useSelectionFocusStore.getState().selectedSource).toBe(
+      'panel-pointer',
+    )
     expect(setSelectedSourceSpy).toHaveBeenCalledTimes(1)
 
     sceneDocumentActions.setSelectedId(CHAIR.id)

@@ -10,7 +10,10 @@ import {
   type LightingMoodOption,
   type WallFinishOption,
 } from '@/domain/environment-materials'
-import { useAssetsStore, useEnvironmentConfig } from '@/core/stores/assets-store'
+import {
+  useAssetsStore,
+  useEnvironmentConfig,
+} from '@/core/stores/assets-store'
 import {
   sceneDocumentStore,
   useFloorFinishId,

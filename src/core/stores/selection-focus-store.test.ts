@@ -17,7 +17,9 @@ describe('useSelectionFocusStore', () => {
     expect(useSelectionFocusStore.getState().selectedSource).toBeNull()
 
     selectionFocusActions.setSelectedSource('canvas-pointer')
-    expect(useSelectionFocusStore.getState().selectedSource).toBe('canvas-pointer')
+    expect(useSelectionFocusStore.getState().selectedSource).toBe(
+      'canvas-pointer',
+    )
 
     selectionFocusActions.setSelectedSource(null)
     expect(useSelectionFocusStore.getState().selectedSource).toBeNull()
@@ -32,7 +34,9 @@ describe('useSelectionFocusStore', () => {
     expect(useSelectionFocusStore.getState().outlinerFocusRequest).toBeNull()
 
     selectionFocusActions.requestOutlinerFocus(request)
-    expect(useSelectionFocusStore.getState().outlinerFocusRequest).toEqual(request)
+    expect(useSelectionFocusStore.getState().outlinerFocusRequest).toEqual(
+      request,
+    )
 
     selectionFocusActions.clearOutlinerFocusRequest()
     expect(useSelectionFocusStore.getState().outlinerFocusRequest).toBeNull()

@@ -99,7 +99,9 @@ describe('startOutlinerFocusReconciler', () => {
       token: 1,
       focusContainer: true,
     })
-    expect(useSelectionFocusStore.getState().outlinerFocusRequest).not.toBeNull()
+    expect(
+      useSelectionFocusStore.getState().outlinerFocusRequest,
+    ).not.toBeNull()
 
     dialogActions.openDialog('delete')
 
@@ -114,6 +116,8 @@ describe('startOutlinerFocusReconciler', () => {
 
     dialogActions.openDialog('room-surface')
 
-    expect(useSelectionFocusStore.getState().outlinerFocusRequest).not.toBeNull()
+    expect(
+      useSelectionFocusStore.getState().outlinerFocusRequest,
+    ).not.toBeNull()
   })
 })
