@@ -7,6 +7,9 @@ import {
   sceneDocumentActions,
   useSceneDocumentStore,
 } from '@/core/stores/scene-document-store'
+import { useSelectionStore } from '@/core/stores/selection-store'
+import type { InteractionSource } from '@/core/types/interaction.types'
+import { applySelection } from './selection-mutations'
 import { useAssetsStore } from '@/core/stores/assets-store'
 import { getCollectionNodeDefaults } from '@/core/stores/collection-scene-registry'
 import type {
@@ -33,7 +36,8 @@ import {
 // disappears.
 
 export function deleteSelection(): boolean {
-  const { history, selectedId } = useSceneDocumentStore.getState()
+  const { history } = useSceneDocumentStore.getState()
+  const { selectedId } = useSelectionStore.getState()
   const operationResult = deleteSelectionFromHistory(history, selectedId)
 
   if (!operationResult.deleted) {
@@ -41,7 +45,7 @@ export function deleteSelection(): boolean {
   }
 
   sceneDocumentActions.setHistory(operationResult.history)
-  sceneDocumentActions.setSelectedId(null)
+  applySelection(null, null)
 
   return true
 }
@@ -51,7 +55,8 @@ export function moveSelection(
   _options?: { source?: MoveSource },
 ): MoveSelectionResult {
   void _options
-  const { history, selectedId, isDragging } = useSceneDocumentStore.getState()
+  const { history, isDragging } = useSceneDocumentStore.getState()
+  const { selectedId } = useSelectionStore.getState()
   const { history: nextHistory, result } = resolveMoveSelectionInHistory({
     history,
     selectedId,
@@ -72,7 +77,8 @@ export function setSelectionTransform(input: {
   position?: [number, number, number]
   rotationY?: number
 }): UpdateSelectionTransformResult {
-  const { history, selectedId, isDragging } = useSceneDocumentStore.getState()
+  const { history, isDragging } = useSceneDocumentStore.getState()
+  const { selectedId } = useSelectionStore.getState()
   const { history: nextHistory, result } =
     resolveSetSelectionTransformInHistory({
       history,
@@ -90,7 +96,8 @@ export function setSelectionTransform(input: {
 }
 
 export function rotateSelection(deltaRadians: number) {
-  const { history, selectedId } = useSceneDocumentStore.getState()
+  const { history } = useSceneDocumentStore.getState()
+  const { selectedId } = useSelectionStore.getState()
   const nextHistory = rotateSelectedFurnitureInHistory({
     history,
     selectedId,
@@ -101,7 +108,10 @@ export function rotateSelection(deltaRadians: number) {
   sceneDocumentActions.setHistory(nextHistory)
 }
 
-export function addFurniture(catalogId: string): AddFurnitureResult {
+export function addFurniture(
+  catalogId: string,
+  options?: { source?: InteractionSource },
+): AddFurnitureResult {
   const { history, instanceIdCounter } = useSceneDocumentStore.getState()
   const { catalog, collections } = useAssetsStore.getState()
   const operationResult = addFurnitureToHistory({
@@ -123,8 +133,9 @@ export function addFurniture(catalogId: string): AddFurnitureResult {
 
   if (operationResult.incrementInstanceId) {
     sceneDocumentActions.setInstanceIdCounter(instanceIdCounter + 1)
-    sceneDocumentActions.setSelectedId(
+    applySelection(
       operationResult.result.ok ? operationResult.result.id : null,
+      options?.source ?? null,
     )
   }
 

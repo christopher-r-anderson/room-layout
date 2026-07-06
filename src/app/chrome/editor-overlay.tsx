@@ -1,4 +1,4 @@
-import { useHasSelection } from '@/core/stores/scene-document-store'
+import { useHasSelection } from '@/core/stores/selection-store'
 import { CameraTools } from '@/features/camera/camera-tools'
 import { DeleteConfirmationDialogHost } from '@/features/selection/delete-confirmation-dialog-host'
 import { StatusMessage } from './feedback/status-message'

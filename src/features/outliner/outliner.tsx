@@ -31,10 +31,11 @@ import type { PanelInteractionSource } from '@/core/types/interaction.types'
 import { selectById } from '@/core/operations/selection-actions'
 import { previewFromOutliner } from '@/core/operations/preview-actions'
 import {
-  selectionFocusActions,
+  selectionActions,
   useOutlinerFocusRequest,
-} from '@/core/stores/selection-focus-store'
-import { useItems, useSelectedId } from '@/core/stores/scene-document-store'
+} from '@/core/stores/selection-store'
+import { useItems } from '@/core/stores/scene-document-store'
+import { useSelectedId } from '@/core/stores/selection-store'
 import { usePreviewedId } from '@/core/operations/previewed-id'
 import { useIsBlockingOverlayOpen } from '@/core/stores/dialog-store'
 import { Trans, useLingui } from '@lingui/react/macro'
@@ -79,13 +80,13 @@ export function Outliner({
     if (!isExpanded) {
       // Keep focus on a visible control when collapsed instead of targeting hidden content.
       toggleButtonRef.current?.focus()
-      selectionFocusActions.clearOutlinerFocusRequest()
+      selectionActions.clearOutlinerFocusRequest()
       return
     }
 
     if (focusRequest.focusContainer) {
       containerRef.current?.focus()
-      selectionFocusActions.clearOutlinerFocusRequest()
+      selectionActions.clearOutlinerFocusRequest()
       return
     }
 
@@ -96,14 +97,14 @@ export function Outliner({
 
       if (selectedButton) {
         selectedButton.focus()
-        selectionFocusActions.clearOutlinerFocusRequest()
+        selectionActions.clearOutlinerFocusRequest()
         return
       }
     }
 
     if (items.length === 0) {
       containerRef.current?.focus()
-      selectionFocusActions.clearOutlinerFocusRequest()
+      selectionActions.clearOutlinerFocusRequest()
       return
     }
 
@@ -120,7 +121,7 @@ export function Outliner({
 
     nextButton.focus()
 
-    selectionFocusActions.clearOutlinerFocusRequest()
+    selectionActions.clearOutlinerFocusRequest()
   }, [disabled, focusRequest, isExpanded, items])
 
   return (

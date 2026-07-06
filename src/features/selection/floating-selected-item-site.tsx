@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro'
-import { useSelectedFurniture } from '@/core/stores/scene-document-store'
+import { useSelectedFurniture } from '@/core/operations/selected-furniture'
 import {
   useSelectedItemActionsSizeRef,
   useSelectedItemPlacement,

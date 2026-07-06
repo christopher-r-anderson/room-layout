@@ -7,10 +7,10 @@ import {
   sceneDocumentActions,
 } from '@/core/stores/scene-document-store'
 import {
-  resetSelectionFocusStore,
-  selectionFocusActions,
-  useSelectionFocusStore,
-} from '@/core/stores/selection-focus-store'
+  resetSelectionStore,
+  selectionActions,
+  useSelectionStore,
+} from '@/core/stores/selection-store'
 import { dialogActions, resetDialogStore } from '@/core/stores/dialog-store'
 import {
   requestOutlinerFocus,
@@ -35,16 +35,16 @@ function item(id: string): FurnitureItem {
 describe('requestOutlinerFocus', () => {
   beforeEach(() => {
     resetSceneDocumentStore()
-    resetSelectionFocusStore()
+    resetSelectionStore()
   })
 
   it('queues a focus request targeting the selected item', () => {
     sceneDocumentActions.setHistory(createHistoryState([item('a'), item('b')]))
-    sceneDocumentActions.setSelectedId('b')
+    selectionActions.setSelection('b', null)
 
     requestOutlinerFocus()
 
-    expect(useSelectionFocusStore.getState().outlinerFocusRequest).toEqual(
+    expect(useSelectionStore.getState().outlinerFocusRequest).toEqual(
       expect.objectContaining({ targetSelectedId: 'b' }),
     )
   })
@@ -54,7 +54,7 @@ describe('requestOutlinerFocus', () => {
 
     requestOutlinerFocus()
 
-    expect(useSelectionFocusStore.getState().outlinerFocusRequest).toEqual(
+    expect(useSelectionStore.getState().outlinerFocusRequest).toEqual(
       expect.objectContaining({ preferredIndex: 0 }),
     )
   })
@@ -64,7 +64,7 @@ describe('requestOutlinerFocus', () => {
 
     requestOutlinerFocus()
 
-    expect(useSelectionFocusStore.getState().outlinerFocusRequest).toEqual(
+    expect(useSelectionStore.getState().outlinerFocusRequest).toEqual(
       expect.objectContaining({ focusContainer: true }),
     )
   })
@@ -75,7 +75,7 @@ describe('startOutlinerFocusReconciler', () => {
 
   beforeEach(() => {
     resetDialogStore()
-    resetSelectionFocusStore()
+    resetSelectionStore()
     dialogActions.configureRuntimeContext({
       isDialogsEnabled: () => true,
       getSelectedFurniture: () => null,
@@ -91,33 +91,29 @@ describe('startOutlinerFocusReconciler', () => {
   afterEach(() => {
     stop()
     resetDialogStore()
-    resetSelectionFocusStore()
+    resetSelectionStore()
   })
 
   it('clears a pending outliner-focus request when a blocking overlay opens', () => {
-    selectionFocusActions.requestOutlinerFocus({
+    selectionActions.requestOutlinerFocus({
       token: 1,
       focusContainer: true,
     })
-    expect(
-      useSelectionFocusStore.getState().outlinerFocusRequest,
-    ).not.toBeNull()
+    expect(useSelectionStore.getState().outlinerFocusRequest).not.toBeNull()
 
     dialogActions.openDialog('delete')
 
-    expect(useSelectionFocusStore.getState().outlinerFocusRequest).toBeNull()
+    expect(useSelectionStore.getState().outlinerFocusRequest).toBeNull()
   })
 
   it('leaves the request when a non-blocking overlay opens', () => {
-    selectionFocusActions.requestOutlinerFocus({
+    selectionActions.requestOutlinerFocus({
       token: 1,
       focusContainer: true,
     })
 
     dialogActions.openDialog('room-surface')
 
-    expect(
-      useSelectionFocusStore.getState().outlinerFocusRequest,
-    ).not.toBeNull()
+    expect(useSelectionStore.getState().outlinerFocusRequest).not.toBeNull()
   })
 })

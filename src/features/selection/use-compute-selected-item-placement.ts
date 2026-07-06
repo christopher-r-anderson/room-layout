@@ -3,7 +3,7 @@ import { useElementRect } from '@/shared/hooks/use-element-rect'
 import { useElementSize } from '@/shared/hooks/use-element-size'
 import { useEditorRefs } from '@/shared/providers/editor-refs-context'
 import { useExclusionRects } from '@/shared/layout/overlay-exclusion-context'
-import { useSelectedFurniture } from '@/core/stores/scene-document-store'
+import { useSelectedFurniture } from '@/core/operations/selected-furniture'
 import { useToolbarGeometry } from '@/core/stores/toolbar-geometry-store'
 import { useToolbarEngaged } from '@/core/stores/toolbar-interaction-store'
 import {

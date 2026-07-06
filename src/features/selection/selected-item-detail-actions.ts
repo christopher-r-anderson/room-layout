@@ -2,11 +2,8 @@ import { msg } from '@lingui/core/macro'
 import { resolvePositionFromWallClearances } from '@/domain/geometry/wall-clearance'
 import { i18n } from '@/shared/i18n/i18n'
 import { feedbackActions } from '@/core/stores/feedback-store'
-import {
-  useSceneDocumentStore,
-  selectSelectedFurniture,
-} from '@/core/stores/scene-document-store'
-import { selectionFocusActions } from '@/core/stores/selection-focus-store'
+import { getSelectedFurniture } from '@/core/operations/selected-furniture'
+import { selectionActions } from '@/core/stores/selection-store'
 import { sceneCommands } from '@/core/scene-commands'
 import { setSelectionTransform } from '@/core/operations/furniture-mutations'
 import type {
@@ -26,9 +23,7 @@ export function updateSelectedItemDetails(
 ): UpdateSelectedItemDetailsResult {
   feedbackActions.clearStatusMessage()
 
-  const selectedFurniture = selectSelectedFurniture(
-    useSceneDocumentStore.getState(),
-  )
+  const selectedFurniture = getSelectedFurniture()
 
   if (!selectedFurniture || !sceneCommands.isSceneReady()) {
     return {
@@ -62,7 +57,7 @@ export function updateSelectedItemDetails(
   })
 
   if (result.ok) {
-    selectionFocusActions.setSelectedSource('panel-keyboard')
+    selectionActions.setSelection(result.item.id, 'panel-keyboard')
     const itemName = result.item.name
     feedbackActions.announcePolite(i18n._(msg`${itemName} details updated.`))
     return { ok: true, item: result.item }

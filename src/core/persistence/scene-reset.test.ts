@@ -9,7 +9,7 @@ import {
   useSceneDocumentStore,
 } from '@/core/stores/scene-document-store'
 import { sceneCommands } from '@/core/scene-commands'
-import { selectionEffects } from '@/core/operations/selection-effects'
+import { feedbackActions } from '@/core/stores/feedback-store'
 import { restoreInitialLayout } from '@/core/operations/history-mutations'
 import { loadSceneDraft, saveSceneDraft } from '@/core/persistence/scene-draft'
 import { CHAIR } from '@/test/support/furniture'
@@ -109,18 +109,15 @@ describe('resetSceneToDefaults', () => {
     expect(sceneCommands.setCameraPreset).not.toHaveBeenCalled()
   })
 
-  it('clears the selection without announcing it', () => {
+  it('clears the layout silently, without a selection announcement', () => {
     loadEnvironment()
-    const notePendingSelection = vi.spyOn(
-      selectionEffects,
-      'notePendingSelection',
-    )
+    const announcePolite = vi.spyOn(feedbackActions, 'announcePolite')
 
     resetSceneToDefaults()
 
-    expect(notePendingSelection).toHaveBeenCalledWith({
-      announceMode: 'suppress',
-      requestOutlinerFocus: false,
-    })
+    // restoreInitialLayout clears the selection pointer itself; the reset must
+    // not announce that clear.
+    expect(restoreInitialLayout).toHaveBeenCalledWith([])
+    expect(announcePolite).not.toHaveBeenCalled()
   })
 })

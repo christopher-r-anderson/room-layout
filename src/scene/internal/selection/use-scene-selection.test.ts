@@ -3,94 +3,44 @@
 import { act, renderHook } from '@testing-library/react'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { Group } from 'three'
-import { resetSceneDocumentStore } from '@/core/stores/scene-document-store'
+import {
+  resetSelectionStore,
+  selectionActions,
+} from '@/core/stores/selection-store'
 import { createDummyMesh } from '@/test/support/three-fixtures'
 import { useSceneSelection } from './use-scene-selection'
-import type { FurnitureItem } from '@/domain/furniture'
-
-function createFurnitureItem(id: string): FurnitureItem {
-  return {
-    id,
-    catalogId: 'catalog-chair',
-    name: `Chair ${id}`,
-    kind: 'armchair',
-    collectionId: 'collection-1',
-    nodeName: 'ChairNode',
-    sourcePath: '/models/chair.glb',
-    footprintSize: { width: 1, depth: 1 },
-    position: [0, 0, 0],
-    rotationY: 0,
-  }
-}
 
 beforeEach(() => {
-  resetSceneDocumentStore()
+  resetSelectionStore()
 })
 
 describe('useSceneSelection', () => {
   it('starts with no selection state', () => {
-    const { result } = renderHook(() =>
-      useSceneSelection({ furniture: [createFurnitureItem('item-1')] }),
-    )
+    const { result } = renderHook(() => useSceneSelection())
 
     expect(result.current.selectedId).toBeNull()
-    expect(result.current.selectedFurniture).toBeNull()
     expect(result.current.selection).toEqual([])
   })
 
-  it('selectFurniture(id) resolves selected id and furniture', () => {
-    const furniture = [
-      createFurnitureItem('item-1'),
-      createFurnitureItem('item-2'),
-    ]
-    const { result } = renderHook(() => useSceneSelection({ furniture }))
+  it('reflects the selection store pointer', () => {
+    const { result } = renderHook(() => useSceneSelection())
 
     act(() => {
-      result.current.selectFurniture('item-2')
+      selectionActions.setSelection('item-2', 'canvas-pointer')
     })
 
     expect(result.current.selectedId).toBe('item-2')
-    expect(result.current.selectedFurniture?.id).toBe('item-2')
-  })
-
-  it('selectFurniture(null) clears selection', () => {
-    const furniture = [createFurnitureItem('item-1')]
-    const { result } = renderHook(() => useSceneSelection({ furniture }))
 
     act(() => {
-      result.current.selectFurniture('item-1')
-    })
-    expect(result.current.selectedId).toBe('item-1')
-
-    act(() => {
-      result.current.selectFurniture(null)
+      selectionActions.setSelection(null, null)
     })
 
     expect(result.current.selectedId).toBeNull()
-    expect(result.current.selectedFurniture).toBeNull()
-  })
-
-  it('selectFurniture(unknown-id) actively clears selection from a non-null state', () => {
-    const furniture = [createFurnitureItem('item-1')]
-    const { result } = renderHook(() => useSceneSelection({ furniture }))
-
-    act(() => {
-      result.current.selectFurniture('item-1')
-    })
-    expect(result.current.selectedId).toBe('item-1')
-
-    act(() => {
-      result.current.selectFurniture('missing-id')
-    })
-
-    expect(result.current.selectedId).toBeNull()
-    expect(result.current.selectedFurniture).toBeNull()
+    expect(result.current.selection).toEqual([])
   })
 
   it('registerObject(id, object) stores object in objectRefs', () => {
-    const { result } = renderHook(() =>
-      useSceneSelection({ furniture: [createFurnitureItem('item-1')] }),
-    )
+    const { result } = renderHook(() => useSceneSelection())
     const object = new Group()
 
     act(() => {
@@ -101,15 +51,13 @@ describe('useSceneSelection', () => {
   })
 
   it('registerObject(id, null) removes the object and clears selectedObject-derived meshes', () => {
-    const { result } = renderHook(() =>
-      useSceneSelection({ furniture: [createFurnitureItem('item-1')] }),
-    )
+    const { result } = renderHook(() => useSceneSelection())
     const object = new Group()
     object.add(createDummyMesh())
 
     act(() => {
       result.current.registerObject('item-1', object)
-      result.current.setSelectedIdAndResolveObject('item-1')
+      selectionActions.setSelection('item-1', 'canvas-pointer')
     })
 
     expect(result.current.selectedId).toBe('item-1')
@@ -124,16 +72,14 @@ describe('useSceneSelection', () => {
     expect(result.current.selection).toEqual([])
   })
 
-  it('setSelectedIdAndResolveObject(id) resolves selectedObject through registered refs', () => {
-    const { result } = renderHook(() =>
-      useSceneSelection({ furniture: [createFurnitureItem('item-1')] }),
-    )
+  it('resolves the selected object through registered refs', () => {
+    const { result } = renderHook(() => useSceneSelection())
     const object = new Group()
     object.add(createDummyMesh())
 
     act(() => {
       result.current.registerObject('item-1', object)
-      result.current.setSelectedIdAndResolveObject('item-1')
+      selectionActions.setSelection('item-1', 'canvas-pointer')
     })
 
     expect(result.current.selectedId).toBe('item-1')
@@ -141,9 +87,7 @@ describe('useSceneSelection', () => {
   })
 
   it('selection derives from getMeshes(selectedObject)', () => {
-    const { result } = renderHook(() =>
-      useSceneSelection({ furniture: [createFurnitureItem('item-1')] }),
-    )
+    const { result } = renderHook(() => useSceneSelection())
     const object = new Group()
     const meshA = createDummyMesh()
     const meshB = createDummyMesh()
@@ -151,7 +95,7 @@ describe('useSceneSelection', () => {
 
     act(() => {
       result.current.registerObject('item-1', object)
-      result.current.setSelectedIdAndResolveObject('item-1')
+      selectionActions.setSelection('item-1', 'canvas-pointer')
     })
 
     expect(result.current.selection).toHaveLength(2)
@@ -160,14 +104,12 @@ describe('useSceneSelection', () => {
   })
 
   it('late registerObject resolves selectedObject for an already-selected id', () => {
-    const { result } = renderHook(() =>
-      useSceneSelection({ furniture: [createFurnitureItem('item-1')] }),
-    )
+    const { result } = renderHook(() => useSceneSelection())
     const object = new Group()
     object.add(createDummyMesh())
 
     act(() => {
-      result.current.setSelectedIdAndResolveObject('item-1')
+      selectionActions.setSelection('item-1', 'canvas-pointer')
     })
 
     expect(result.current.selectedId).toBe('item-1')

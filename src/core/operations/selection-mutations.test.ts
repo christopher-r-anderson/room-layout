@@ -5,33 +5,52 @@ import {
   sceneDocumentActions,
   useSceneDocumentStore,
 } from '@/core/stores/scene-document-store'
+import {
+  resetSelectionStore,
+  selectionActions,
+  useSelectionStore,
+} from '@/core/stores/selection-store'
 import { CHAIR } from '@/test/support/furniture'
-import { clearSelection, selectById } from './selection-mutations'
+import {
+  applySelection,
+  clearSelection,
+  selectById,
+} from './selection-mutations'
+
+function resetStores() {
+  resetSceneDocumentStore()
+  resetSelectionStore()
+}
 
 beforeEach(() => {
-  resetSceneDocumentStore()
+  resetStores()
   sceneDocumentActions.setHistory(createHistoryState([CHAIR]))
 })
 
-afterEach(resetSceneDocumentStore)
+afterEach(resetStores)
 
-it('selectById selects an existing item', () => {
-  expect(selectById(CHAIR.id)).toEqual({ ok: true, status: 'selected' })
-  expect(useSceneDocumentStore.getState().selectedId).toBe(CHAIR.id)
+it('selectById selects an existing item and records the source', () => {
+  expect(selectById(CHAIR.id, 'panel-keyboard')).toEqual({
+    ok: true,
+    status: 'selected',
+  })
+  expect(useSelectionStore.getState().selectedId).toBe(CHAIR.id)
+  expect(useSelectionStore.getState().selectedSource).toBe('panel-keyboard')
 })
 
 it('selectById clears the selection for a null id', () => {
-  sceneDocumentActions.setSelectedId(CHAIR.id)
+  selectionActions.setSelection(CHAIR.id, 'canvas-pointer')
 
   expect(selectById(null)).toEqual({ ok: true, status: 'cleared' })
-  expect(useSceneDocumentStore.getState().selectedId).toBeNull()
+  expect(useSelectionStore.getState().selectedId).toBeNull()
+  expect(useSelectionStore.getState().selectedSource).toBeNull()
 })
 
 it('selectById reports not-found and keeps the current selection', () => {
-  sceneDocumentActions.setSelectedId(CHAIR.id)
+  selectionActions.setSelection(CHAIR.id, 'canvas-pointer')
 
   expect(selectById('ghost')).toEqual({ ok: false, status: 'not-found' })
-  expect(useSceneDocumentStore.getState().selectedId).toBe(CHAIR.id)
+  expect(useSelectionStore.getState().selectedId).toBe(CHAIR.id)
 })
 
 it('selectById is blocked while a drag is in progress', () => {
@@ -41,22 +60,47 @@ it('selectById is blocked while a drag is in progress', () => {
     ok: false,
     status: 'blocked-dragging',
   })
-  expect(useSceneDocumentStore.getState().selectedId).toBeNull()
+  expect(useSelectionStore.getState().selectedId).toBeNull()
 })
 
 it('clearSelection is a no-op while a drag is in progress', () => {
-  sceneDocumentActions.setSelectedId(CHAIR.id)
+  selectionActions.setSelection(CHAIR.id, 'canvas-pointer')
   sceneDocumentActions.setDragging(true)
 
   clearSelection()
 
-  expect(useSceneDocumentStore.getState().selectedId).toBe(CHAIR.id)
+  expect(useSelectionStore.getState().selectedId).toBe(CHAIR.id)
 })
 
 it('clearSelection clears the selection outside a drag', () => {
-  sceneDocumentActions.setSelectedId(CHAIR.id)
+  selectionActions.setSelection(CHAIR.id, 'canvas-pointer')
 
   clearSelection()
 
-  expect(useSceneDocumentStore.getState().selectedId).toBeNull()
+  expect(useSelectionStore.getState().selectedId).toBeNull()
+  expect(useSelectionStore.getState().selectedSource).toBeNull()
+})
+
+it('applySelection clears the hover preview whenever the pointer changes', () => {
+  sceneDocumentActions.setPreviewedId(CHAIR.id)
+
+  applySelection(CHAIR.id, 'canvas-pointer')
+
+  expect(useSelectionStore.getState().selectedId).toBe(CHAIR.id)
+  expect(useSceneDocumentStore.getState().previewedIdRaw).toBeNull()
+
+  sceneDocumentActions.setPreviewedId(CHAIR.id)
+  applySelection(null, null)
+
+  expect(useSelectionStore.getState().selectedId).toBeNull()
+  expect(useSceneDocumentStore.getState().previewedIdRaw).toBeNull()
+})
+
+it('applySelection keeps the hover preview when the pointer does not move', () => {
+  applySelection(CHAIR.id, 'canvas-pointer')
+  sceneDocumentActions.setPreviewedId(CHAIR.id)
+
+  applySelection(CHAIR.id, 'canvas-pointer')
+
+  expect(useSceneDocumentStore.getState().previewedIdRaw).toBe(CHAIR.id)
 })

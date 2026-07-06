@@ -6,10 +6,10 @@ import {
   sceneDocumentActions,
 } from '@/core/stores/scene-document-store'
 import {
-  resetSelectionFocusStore,
-  selectionFocusActions,
-  useSelectionFocusStore,
-} from '@/core/stores/selection-focus-store'
+  resetSelectionStore,
+  selectionActions,
+  useSelectionStore,
+} from '@/core/stores/selection-store'
 import {
   editorLifecycleActions,
   resetEditorLifecycleStore,
@@ -17,7 +17,6 @@ import {
 import { dialogActions } from '@/core/stores/dialog-store'
 import { sceneCommands } from '@/core/scene-commands'
 import { feedbackActions } from '@/core/stores/feedback-store'
-import { selectionEffects } from '@/core/operations/selection-effects'
 import { deleteSelection } from '@/core/operations/furniture-mutations'
 import { confirmDeleteSelection, openDeleteDialog } from './deletion-actions'
 import { CHAIR } from '@/test/support/furniture'
@@ -42,19 +41,9 @@ vi.mock('@/core/stores/feedback-store', () => ({
   },
 }))
 
-vi.mock('@/core/operations/selection-effects', () => ({
-  selectionEffects: {
-    notePendingSelection: vi.fn(),
-    notePendingSource: vi.fn(),
-    notePostDeleteOutlinerFocusIndex: vi.fn(),
-    notePostDeleteFocusTarget: vi.fn(),
-    consumePostDeleteFocusTarget: vi.fn().mockReturnValue(null),
-  },
-}))
-
 beforeEach(() => {
   resetSceneDocumentStore()
-  resetSelectionFocusStore()
+  resetSelectionStore()
   resetEditorLifecycleStore()
   sceneDocumentActions.setHistory(createHistoryState([CHAIR]))
   editorLifecycleActions.markAssetsReady()
@@ -77,69 +66,89 @@ describe('deletion-actions', () => {
     expect(feedbackActions.setStatusMessage).toHaveBeenCalledWith(
       'No selected furniture item was available to delete.',
     )
-    expect(selectionEffects.notePendingSelection).toHaveBeenCalledWith(null)
+    expect(useSelectionStore.getState().roomViewFocusRequest).toBeNull()
+    expect(useSelectionStore.getState().outlinerFocusRequest).toBeNull()
   })
 
   it('requests room-view focus after delete when canvas was the source', () => {
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
     vi.mocked(deleteSelection).mockReturnValue(true)
     vi.spyOn(dialogActions, 'closeActiveDialog')
-    selectionFocusActions.setSelectedSource('canvas-keyboard')
+    selectionActions.setSelection(CHAIR.id, 'canvas-keyboard')
 
     confirmDeleteSelection(CHAIR)
 
-    expect(useSelectionFocusStore.getState().roomViewFocusRequest).toEqual(
+    expect(useSelectionStore.getState().roomViewFocusRequest).toEqual(
       expect.any(Number),
     )
-    expect(
-      selectionEffects.notePostDeleteOutlinerFocusIndex,
-    ).toHaveBeenCalledWith(null)
+    expect(useSelectionStore.getState().outlinerFocusRequest).toBeNull()
     expect(feedbackActions.announcePolite).toHaveBeenCalledWith(
       `${CHAIR.name} removed from room.`,
     )
   })
 
-  it('queues outliner focus restore index when not a canvas source', () => {
+  it('requests outliner focus at the deleted index when not a canvas source', () => {
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
     vi.mocked(deleteSelection).mockReturnValue(true)
     vi.spyOn(dialogActions, 'closeActiveDialog')
-    selectionFocusActions.setSelectedSource('panel-keyboard')
+    selectionActions.setSelection(CHAIR.id, 'panel-keyboard')
 
     confirmDeleteSelection(CHAIR)
 
-    expect(useSelectionFocusStore.getState().roomViewFocusRequest).toBeNull()
-    expect(
-      selectionEffects.notePostDeleteOutlinerFocusIndex,
-    ).toHaveBeenCalledWith(0)
-  })
-
-  it('records post-delete focus target on open from outliner', () => {
-    vi.spyOn(dialogActions, 'openDialog').mockReturnValue(true)
-
-    openDeleteDialog('outliner')
-
-    expect(selectionEffects.notePostDeleteFocusTarget).toHaveBeenCalledWith(
-      'outliner',
+    expect(useSelectionStore.getState().roomViewFocusRequest).toBeNull()
+    expect(useSelectionStore.getState().outlinerFocusRequest).toEqual(
+      expect.objectContaining({ preferredIndex: 0 }),
     )
   })
 
-  it('records room-view focus target on open from room view', () => {
+  it('returns focus to the outliner when the dialog was opened from it', () => {
+    vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
+    vi.mocked(deleteSelection).mockReturnValue(true)
     vi.spyOn(dialogActions, 'openDialog').mockReturnValue(true)
+    vi.spyOn(dialogActions, 'closeActiveDialog')
+    // Canvas source would otherwise send focus to the room view; the recorded
+    // open target must win.
+    selectionActions.setSelection(CHAIR.id, 'canvas-keyboard')
+
+    openDeleteDialog('outliner')
+    confirmDeleteSelection(CHAIR)
+
+    expect(useSelectionStore.getState().roomViewFocusRequest).toBeNull()
+    expect(useSelectionStore.getState().outlinerFocusRequest).toEqual(
+      expect.objectContaining({ preferredIndex: 0 }),
+    )
+  })
+
+  it('returns focus to the room view when the dialog was opened from it', () => {
+    vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
+    vi.mocked(deleteSelection).mockReturnValue(true)
+    vi.spyOn(dialogActions, 'openDialog').mockReturnValue(true)
+    vi.spyOn(dialogActions, 'closeActiveDialog')
+    selectionActions.setSelection(CHAIR.id, 'panel-keyboard')
 
     openDeleteDialog('room-view')
+    confirmDeleteSelection(CHAIR)
 
-    expect(selectionEffects.notePostDeleteFocusTarget).toHaveBeenCalledWith(
-      'room-view',
+    expect(useSelectionStore.getState().roomViewFocusRequest).toEqual(
+      expect.any(Number),
     )
+    expect(useSelectionStore.getState().outlinerFocusRequest).toBeNull()
   })
 
-  it('clears the post-delete target when the dialog refuses to open', () => {
+  it('drops the recorded focus target when the dialog refuses to open', () => {
+    vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
+    vi.mocked(deleteSelection).mockReturnValue(true)
     vi.spyOn(dialogActions, 'openDialog').mockReturnValue(false)
+    vi.spyOn(dialogActions, 'closeActiveDialog')
+    selectionActions.setSelection(CHAIR.id, 'canvas-keyboard')
 
     openDeleteDialog('outliner')
+    confirmDeleteSelection(CHAIR)
 
-    expect(selectionEffects.notePostDeleteFocusTarget).toHaveBeenCalledWith(
-      null,
+    // With no recorded target, the canvas source decides: room view.
+    expect(useSelectionStore.getState().roomViewFocusRequest).toEqual(
+      expect.any(Number),
     )
+    expect(useSelectionStore.getState().outlinerFocusRequest).toBeNull()
   })
 })

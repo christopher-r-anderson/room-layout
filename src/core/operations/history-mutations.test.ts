@@ -10,6 +10,11 @@ import {
   sceneDocumentActions,
   useSceneDocumentStore,
 } from '@/core/stores/scene-document-store'
+import {
+  resetSelectionStore,
+  selectionActions,
+  useSelectionStore,
+} from '@/core/stores/selection-store'
 import { assetsActions, resetAssetsStore } from '@/core/stores/assets-store'
 import {
   registerParsedCollectionScene,
@@ -33,7 +38,7 @@ function seedCommittedChairHistory() {
   sceneDocumentActions.setHistory(
     commitHistoryPresent(createHistoryState<FurnitureItem[]>([]), [CHAIR]),
   )
-  sceneDocumentActions.setSelectedId(CHAIR.id)
+  selectionActions.setSelection(CHAIR.id, null)
 }
 
 function seedLoadedChairCollection() {
@@ -53,6 +58,7 @@ function seedLoadedChairCollection() {
 
 function resetAllStores() {
   resetSceneDocumentStore()
+  resetSelectionStore()
   resetAssetsStore()
   resetCollectionSceneRegistry()
 }
@@ -65,16 +71,14 @@ it('undo and redo round-trip the history and reconcile the selection', () => {
 
   expect(undo()).toBe(true)
 
-  let state = useSceneDocumentStore.getState()
-  expect(state.history.present).toEqual([])
+  expect(useSceneDocumentStore.getState().history.present).toEqual([])
   // The selected item no longer exists in the undone state.
-  expect(state.selectedId).toBeNull()
+  expect(useSelectionStore.getState().selectedId).toBeNull()
 
   expect(redo()).toBe(true)
 
-  state = useSceneDocumentStore.getState()
-  expect(state.history.present).toEqual([CHAIR])
-  expect(state.selectedId).toBeNull()
+  expect(useSceneDocumentStore.getState().history.present).toEqual([CHAIR])
+  expect(useSelectionStore.getState().selectedId).toBeNull()
 })
 
 it('undo and redo report false when there is nothing to step to', () => {
@@ -88,9 +92,8 @@ it('undo and redo are blocked while a drag is in progress', () => {
 
   expect(undo()).toBe(false)
 
-  const state = useSceneDocumentStore.getState()
-  expect(state.history.present).toEqual([CHAIR])
-  expect(state.selectedId).toBe(CHAIR.id)
+  expect(useSceneDocumentStore.getState().history.present).toEqual([CHAIR])
+  expect(useSelectionStore.getState().selectedId).toBe(CHAIR.id)
   expect(redo()).toBe(false)
 })
 
@@ -120,5 +123,5 @@ it('restoreInitialLayout seeds a fresh history, instance counter, and cleared se
     rotationY: Math.PI / 2,
   })
   expect(state.instanceIdCounter).toBe(3)
-  expect(state.selectedId).toBeNull()
+  expect(useSelectionStore.getState().selectedId).toBeNull()
 })

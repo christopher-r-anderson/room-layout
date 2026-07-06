@@ -1,9 +1,6 @@
 import { msg } from '@lingui/core/macro'
 import { feedbackActions } from '@/core/stores/feedback-store'
-import {
-  useSceneDocumentStore,
-  selectSelectedFurniture,
-} from '@/core/stores/scene-document-store'
+import { getSelectedFurniture } from '@/core/operations/selected-furniture'
 import { toolbarInteractionActions } from '@/core/stores/toolbar-interaction-store'
 import { sceneCommands } from '@/core/scene-commands'
 import {
@@ -37,8 +34,7 @@ export function moveSelection(
   delta: { x: number; z: number },
   options?: { source?: MoveSource },
 ): MoveSelectionResult {
-  const movedItemName =
-    selectSelectedFurniture(useSceneDocumentStore.getState())?.name ?? null
+  const movedItemName = getSelectedFurniture()?.name ?? null
   feedbackActions.clearStatusMessage()
 
   const result = sceneCommands.isSceneReady()
@@ -69,9 +65,7 @@ export function moveSelection(
 }
 
 export function rotateSelection(direction: -1 | 1) {
-  const rotatingFurniture = selectSelectedFurniture(
-    useSceneDocumentStore.getState(),
-  )
+  const rotatingFurniture = getSelectedFurniture()
   const rotatingName = rotatingFurniture?.name ?? null
   feedbackActions.clearStatusMessage()
 

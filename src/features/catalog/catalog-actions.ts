@@ -1,8 +1,8 @@
 import { dialogActions } from '@/core/stores/dialog-store'
 import { feedbackActions } from '@/core/stores/feedback-store'
-import { selectionFocusActions } from '@/core/stores/selection-focus-store'
-import { selectionEffects } from '@/core/operations/selection-effects'
 import { getSourcePathForCatalogId } from '@/core/stores/assets-store'
+import { useSceneDocumentStore } from '@/core/stores/scene-document-store'
+import { announceSelectionChange } from '@/core/operations/selection-actions'
 import { sceneCommands } from '@/core/scene-commands'
 import { addFurniture as addFurnitureToDocument } from '@/core/operations/furniture-mutations'
 import { ensureCollectionLoaded } from '@/core/operations/collection-loader'
@@ -39,8 +39,6 @@ export async function addFurniture(): Promise<boolean> {
   const catalogIdToAdd = getActiveCatalogId()
 
   if (!catalogIdToAdd || !sceneCommands.isSceneReady()) {
-    selectionEffects.notePendingSource(null)
-    selectionEffects.notePendingSelection(null)
     return false
   }
 
@@ -60,20 +58,16 @@ export async function addFurniture(): Promise<boolean> {
             : ADD_FURNITURE_LOAD_FAILED_MESSAGE,
         ),
       )
-      selectionEffects.notePendingSource(null)
-      selectionEffects.notePendingSelection(null)
       return false
     }
   }
 
   // The scene may have been torn down while the model loaded (retry/teardown).
   if (!sceneCommands.isSceneReady()) {
-    selectionEffects.notePendingSource(null)
-    selectionEffects.notePendingSelection(null)
     return false
   }
 
-  const result = addFurnitureToDocument(catalogIdToAdd)
+  const result = addFurnitureToDocument(catalogIdToAdd, { source: 'toolbar' })
 
   if (!result.ok) {
     reportAddFailure(
@@ -83,16 +77,14 @@ export async function addFurniture(): Promise<boolean> {
           : ADD_FURNITURE_UNKNOWN_CATALOG_MESSAGE,
       ),
     )
-    selectionEffects.notePendingSource(null)
-    selectionEffects.notePendingSelection(null)
     return false
   }
 
-  selectionFocusActions.setSelectedSource('toolbar')
-  selectionEffects.notePendingSource('toolbar')
-  selectionEffects.notePendingSelection({
+  announceSelectionChange({
     announceMode: 'added',
-    requestOutlinerFocus: false,
+    items: useSceneDocumentStore.getState().history.present,
+    newId: result.id,
+    previousSelectedId: null,
   })
   return true
 }

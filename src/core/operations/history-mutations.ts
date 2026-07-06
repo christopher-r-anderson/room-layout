@@ -3,6 +3,8 @@ import {
   sceneDocumentActions,
   useSceneDocumentStore,
 } from '@/core/stores/scene-document-store'
+import { useSelectionStore } from '@/core/stores/selection-store'
+import { applySelection } from './selection-mutations'
 import { useAssetsStore } from '@/core/stores/assets-store'
 import { getCollectionNodeDefaults } from '@/core/stores/collection-scene-registry'
 import { redoSceneHistory, undoSceneHistory } from './scene-history-state'
@@ -11,7 +13,8 @@ import { buildRestoredSceneHistory } from './restored-scene-history'
 // Undo/redo/restore document mutations.
 
 export function undo(): boolean {
-  const { history, selectedId, isDragging } = useSceneDocumentStore.getState()
+  const { history, isDragging } = useSceneDocumentStore.getState()
+  const { selectedId } = useSelectionStore.getState()
   const undoResult = undoSceneHistory({ history, selectedId, isDragging })
 
   if (!undoResult.didChange) {
@@ -19,13 +22,14 @@ export function undo(): boolean {
   }
 
   sceneDocumentActions.setHistory(undoResult.history)
-  sceneDocumentActions.setSelectedId(undoResult.selectedId)
+  applySelection(undoResult.selectedId, null)
 
   return true
 }
 
 export function redo(): boolean {
-  const { history, selectedId, isDragging } = useSceneDocumentStore.getState()
+  const { history, isDragging } = useSceneDocumentStore.getState()
+  const { selectedId } = useSelectionStore.getState()
   const redoResult = redoSceneHistory({ history, selectedId, isDragging })
 
   if (!redoResult.didChange) {
@@ -33,7 +37,7 @@ export function redo(): boolean {
   }
 
   sceneDocumentActions.setHistory(redoResult.history)
-  sceneDocumentActions.setSelectedId(redoResult.selectedId)
+  applySelection(redoResult.selectedId, null)
 
   return true
 }
@@ -51,5 +55,5 @@ export function restoreInitialLayout(instances: FurnitureInstance[]) {
 
   sceneDocumentActions.setInstanceIdCounter(restoredState.instanceIdSeed)
   sceneDocumentActions.setHistory(restoredState.history)
-  sceneDocumentActions.setSelectedId(null)
+  applySelection(null, null)
 }

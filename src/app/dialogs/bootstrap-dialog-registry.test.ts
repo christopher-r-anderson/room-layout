@@ -14,6 +14,10 @@ import {
   resetSceneDocumentStore,
   sceneDocumentActions,
 } from '@/core/stores/scene-document-store'
+import {
+  resetSelectionStore,
+  selectionActions,
+} from '@/core/stores/selection-store'
 import { createHistoryState } from '@/shared/lib/ui/editor-history'
 import { CATALOG_DIALOG_ID } from '@/features/catalog/catalog-dialog-definition'
 import { CHAIR } from '@/test/support/furniture'
@@ -30,6 +34,7 @@ describe('bootstrapDialogRegistry', () => {
     resetDialogRegistryForTests()
     resetEditorLifecycleStore()
     resetSceneDocumentStore()
+    resetSelectionStore()
   })
 
   it('registers dialog definitions and configures the runtime context', () => {
@@ -62,6 +67,7 @@ describe('dialogRuntimeContext', () => {
   beforeEach(() => {
     resetEditorLifecycleStore()
     resetSceneDocumentStore()
+    resetSelectionStore()
   })
 
   it('derives dialog readiness from the editor lifecycle store', () => {
@@ -74,7 +80,7 @@ describe('dialogRuntimeContext', () => {
 
   it('reads selected furniture from scene store state', () => {
     sceneDocumentActions.setHistory(createHistoryState([CHAIR]))
-    sceneDocumentActions.setSelectedId(CHAIR.id)
+    selectionActions.setSelection(CHAIR.id, null)
 
     expect(dialogRuntimeContext.getSelectedFurniture()).toEqual(CHAIR)
   })

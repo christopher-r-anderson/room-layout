@@ -14,7 +14,8 @@ Layout
 - `operations/` — cross-cutting operations over the stores (history/movement/
   selection actions, `startup-coordinator`, the collection load pipeline
   (`collection-loader`, `collection-bytes`), preview actions + reconciler,
-  `selection-effects`, `draft-persistence`). These orchestrate writes across
+  `selection-actions`/`selection-mutations`, `draft-persistence`). These
+  orchestrate writes across
   stores and scene commands for behavior that spans features; standing
   reconcilers are built with `createReconciler` and started from
   `startEditorReconcilers`.

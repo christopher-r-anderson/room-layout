@@ -12,6 +12,7 @@ import {
   sceneDocumentActions,
   useSceneDocumentStore,
 } from '@/core/stores/scene-document-store'
+import { selectByCanvasPointer } from '@/core/operations/selection-actions'
 import { useSceneDrag } from './use-scene-drag'
 import type { LayoutBounds } from '@/domain/geometry/furniture-layout'
 import type { FurnitureItem } from '@/domain/furniture'
@@ -33,6 +34,10 @@ vi.mock('./furniture-drag', () => ({
 
 vi.mock('@/domain/geometry/furniture-layout', () => ({
   resolveMovedFurniturePosition: mockResolveMovedFurniturePosition,
+}))
+
+vi.mock('@/core/operations/selection-actions', () => ({
+  selectByCanvasPointer: vi.fn(),
 }))
 
 function createFurnitureItem(id: string): FurnitureItem {
@@ -65,7 +70,6 @@ function defaultOptions(
 
   return {
     furniture,
-    selectFurniture: vi.fn(),
     updateFurniturePosition: vi.fn(),
     updateHistory: vi.fn(),
     bounds: {
@@ -144,7 +148,7 @@ describe('useSceneDrag', () => {
         z: 3,
       },
     })
-    expect(options.selectFurniture).toHaveBeenCalledWith('item-1')
+    expect(selectByCanvasPointer).toHaveBeenCalledWith('item-1')
     // The document drag flag is written synchronously with the gesture.
     expect(useSceneDocumentStore.getState().isDragging).toBe(true)
   })

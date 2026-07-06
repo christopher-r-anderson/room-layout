@@ -19,12 +19,9 @@ import {
   useSceneDocumentStore,
   useFloorFinishId,
   useFloorFinishLoading,
-  useHasSelection,
   useHistoryAvailability,
   useItems,
   useLightingMoodId,
-  useSelectedId,
-  useSelectedFurniture,
   useWallFinishId,
 } from './scene-document-store'
 
@@ -35,12 +32,8 @@ beforeEach(() => {
   clearSceneServices()
 })
 
-function seedSceneItems(
-  items: FurnitureItem[],
-  options?: { selectedId?: string | null },
-) {
+function seedSceneItems(items: FurnitureItem[]) {
   sceneDocumentActions.setHistory(createHistoryState(items))
-  sceneDocumentActions.setSelectedId(options?.selectedId ?? null)
 }
 
 function registerDefaultSceneServices(
@@ -61,28 +54,16 @@ function registerDefaultSceneServices(
 }
 
 describe('useSceneDocumentStore', () => {
-  it('derives selected furniture and selection presence from history and selected id', () => {
+  it('derives the item list from the history present', () => {
     const { result: items } = renderHook(() => useItems())
-    const { result: selectedId } = renderHook(() => useSelectedId())
-    const { result: selectedFurniture } = renderHook(() =>
-      useSelectedFurniture(),
-    )
-    const { result: hasSelection } = renderHook(() => useHasSelection())
+
+    expect(items.current).toEqual([])
 
     act(() => {
-      seedSceneItems([FURNITURE_ITEM], { selectedId: FURNITURE_ITEM.id })
+      seedSceneItems([FURNITURE_ITEM])
     })
 
     expect(items.current).toEqual([FURNITURE_ITEM])
-    expect(selectedId.current).toBe(FURNITURE_ITEM.id)
-    expect(selectedFurniture.current).toEqual(FURNITURE_ITEM)
-    expect(hasSelection.current).toBe(true)
-
-    act(() => {
-      sceneDocumentActions.setSelectedId(null)
-    })
-
-    expect(hasSelection.current).toBe(false)
   })
 
   it('derives history availability from store-owned history and dragging state', () => {
@@ -155,31 +136,13 @@ describe('useSceneDocumentStore', () => {
     expect(floorFinishLoading.current).toBe(false)
   })
 
-  it('updates selected id directly and clears preview when selection changes', () => {
-    act(() => {
-      sceneDocumentActions.setPreviewedId('item-1')
-      sceneDocumentActions.setSelectedId('item-1')
-    })
-
-    expect(useSceneDocumentStore.getState().selectedId).toBe('item-1')
-    expect(useSceneDocumentStore.getState().previewedIdRaw).toBeNull()
-
-    act(() => {
-      sceneDocumentActions.setPreviewedId('item-2')
-      sceneDocumentActions.setSelectedId(null)
-    })
-
-    expect(useSceneDocumentStore.getState().selectedId).toBeNull()
-    expect(useSceneDocumentStore.getState().previewedIdRaw).toBeNull()
-  })
-
   it('reconciles removed preview ids from the backing scene items', () => {
     const consoleErrorSpy = vi
       .spyOn(console, 'error')
       .mockImplementation(() => undefined)
 
     act(() => {
-      seedSceneItems([FURNITURE_ITEM], { selectedId: FURNITURE_ITEM.id })
+      seedSceneItems([FURNITURE_ITEM])
       sceneDocumentActions.setPreviewedId(FURNITURE_ITEM.id)
     })
 

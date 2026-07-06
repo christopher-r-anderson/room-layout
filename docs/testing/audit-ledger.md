@@ -19,7 +19,7 @@ review — see its row).
 **Phase 3 update:** the coverage-expansion phase (see `coverage-triage.md`)
 resolved the `expand`/coverage gaps in `share-scene`, `movement-actions`,
 `get-visual-object-bounds`, `scene-services`, `scene-model`,
-`selection-focus-store`, `validate-catalog-asset-nodes`, `catalog-manifest`, and
+`selection-store`, `validate-catalog-asset-nodes`, `catalog-manifest`, and
 `use-camera-key-motion`, and added new suites for `selected-item-detail-messages`,
 `top-header-focus`, and `scene-reset`. Their rows below describe the original
 audit state.

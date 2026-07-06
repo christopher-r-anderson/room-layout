@@ -14,10 +14,9 @@ import {
 } from '../stores/editor-lifecycle-store'
 import { useAssetsStore } from '../stores/assets-store'
 import { sceneDocumentActions } from '../stores/scene-document-store'
-import { resetSelectionFocusStore } from '../stores/selection-focus-store'
+import { resetSelectionStore } from '../stores/selection-store'
 import { resetToolbarGeometryStore } from '../stores/toolbar-geometry-store'
 import { resetToolbarInteractionStore } from '../stores/toolbar-interaction-store'
-import { selectionEffects } from './selection-effects'
 import { loadSceneDraft, saveSceneDraft } from '../persistence/scene-draft'
 import {
   parseSceneUrl,
@@ -35,7 +34,7 @@ import type { StartupErrorKind } from '../types/startup.types'
 // selection state behind.
 function resetStartupShell() {
   sceneDocumentActions.reset()
-  resetSelectionFocusStore()
+  resetSelectionStore()
   resetToolbarGeometryStore()
   resetToolbarInteractionStore()
   clearSceneServices()
@@ -190,11 +189,6 @@ export function completeAssetLoad() {
     editorLifecycleActions.incrementRestoreAttempt()
     runRestoreOnce()
   }
-
-  selectionEffects.notePendingSelection({
-    announceMode: 'suppress',
-    requestOutlinerFocus: false,
-  })
 
   editorLifecycleActions.markAssetsReady()
 }

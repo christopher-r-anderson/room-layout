@@ -1,7 +1,7 @@
 import { useCallback, type RefObject } from 'react'
 import type { Camera, Object3D } from 'three'
 import type { CameraControlsImpl } from '@react-three/drei'
-import { useSceneDocumentStore } from '@/core/stores/scene-document-store'
+import { useSelectionStore } from '@/core/stores/selection-store'
 import { getVisualObjectBounds } from '../three/get-visual-object-bounds'
 import { CAMERA_PRESETS } from './camera-presets'
 import type { CameraKeyState, CameraPreset } from '@/core/scene.types'
@@ -58,7 +58,7 @@ export function useCameraOperations({
   )
 
   const focusSelected = useCallback(() => {
-    const { selectedId } = useSceneDocumentStore.getState()
+    const { selectedId } = useSelectionStore.getState()
     const controls = cameraControlsRef.current
 
     if (!controls || !selectedId) {

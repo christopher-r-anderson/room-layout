@@ -6,26 +6,24 @@ import {
   sceneDocumentActions,
   useSceneDocumentStore,
 } from '@/core/stores/scene-document-store'
+import { feedbackActions } from '@/core/stores/feedback-store'
 import {
-  feedbackActions,
-  feedbackStoreForTests,
-} from '@/core/stores/feedback-store'
-import {
-  resetSelectionFocusStore,
-  useSelectionFocusStore,
-} from '@/core/stores/selection-focus-store'
+  resetSelectionStore,
+  selectionActions,
+  useSelectionStore,
+} from '@/core/stores/selection-store'
 import {
   editorLifecycleActions,
   resetEditorLifecycleStore,
 } from '@/core/stores/editor-lifecycle-store'
 import { sceneCommands } from '@/core/scene-commands'
-import { selectionEffects } from '@/core/operations/selection-effects'
 import { CHAIR } from '@/test/support/furniture'
 import {
   clearSelection as clearDocumentSelection,
   selectById as selectDocumentById,
 } from './selection-mutations'
 import {
+  announceSelectionChange,
   clearCanvasSelection,
   clearSelection,
   selectByCanvasPointer,
@@ -37,20 +35,36 @@ vi.mock('./selection-mutations', () => ({
   selectById: vi.fn(),
 }))
 
-vi.mock('@/core/operations/selection-effects', () => ({
-  selectionEffects: {
-    notePendingSelection: vi.fn(),
-    notePendingSource: vi.fn(),
-    notePostDeleteOutlinerFocusIndex: vi.fn(),
-    notePostDeleteFocusTarget: vi.fn(),
-    consumePostDeleteFocusTarget: vi.fn(),
+vi.mock('@/core/stores/feedback-store', () => ({
+  feedbackActions: {
+    announcePolite: vi.fn(),
+    announceAssertive: vi.fn(),
+    clearAssertiveAnnouncement: vi.fn(),
+    queueMovementAnnouncement: vi.fn(),
+    clearQueuedMovementAnnouncement: vi.fn(),
+    setStatusMessage: vi.fn(),
+    clearStatusMessage: vi.fn(),
   },
 }))
+
+// The document mutations are mocked; these implementations mirror their store
+// writes so the actions observe a selection pointer that actually moved.
+function mockSelectionMutationsToLand() {
+  vi.mocked(selectDocumentById).mockImplementation((id, source) => {
+    selectionActions.setSelection(id, source ?? null)
+    return id === null
+      ? ({ ok: true, status: 'cleared' } as const)
+      : ({ ok: true, status: 'selected' } as const)
+  })
+  vi.mocked(clearDocumentSelection).mockImplementation(() => {
+    selectionActions.setSelection(null, null)
+  })
+}
 
 describe('selection-actions', () => {
   beforeEach(() => {
     resetSceneDocumentStore()
-    resetSelectionFocusStore()
+    resetSelectionStore()
     resetEditorLifecycleStore()
     sceneDocumentActions.setHistory(createHistoryState([CHAIR]))
     editorLifecycleActions.markAssetsReady()
@@ -63,22 +77,16 @@ describe('selection-actions', () => {
 
   it('clearCanvasSelection clears the selection and the canvas-miss preview together', () => {
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
-    const clearStatusMessage = vi.spyOn(feedbackActions, 'clearStatusMessage')
+    mockSelectionMutationsToLand()
     sceneDocumentActions.setPreviewedId('chair-1')
-    feedbackActions.setStatusMessage('Movement blocked.')
 
     clearCanvasSelection()
 
     // The Escape/canvas-miss path must run the full clearSelection wrapper:
-    // the document selection-clear, the pending-selection note, and the
-    // status-message clear, plus the canvas-miss preview clear.
+    // the selection-clear mutation and the status-message clear, plus the
+    // canvas-miss preview clear.
     expect(clearDocumentSelection).toHaveBeenCalled()
-    expect(selectionEffects.notePendingSelection).toHaveBeenCalledWith({
-      announceMode: 'default',
-      requestOutlinerFocus: false,
-    })
-    expect(clearStatusMessage).toHaveBeenCalled()
-    expect(feedbackStoreForTests.getState().statusMessage).toBeNull()
+    expect(feedbackActions.clearStatusMessage).toHaveBeenCalled()
     expect(useSceneDocumentStore.getState().previewedIdRaw).toBeNull()
   })
 
@@ -95,62 +103,93 @@ describe('selection-actions', () => {
     expect(clearDocumentSelection).not.toHaveBeenCalled()
   })
 
-  it('reconciles canvas pointer selection through selectionEffects', () => {
-    selectByCanvasPointer('chair-1')
-
-    expect(selectionEffects.notePendingSelection).toHaveBeenCalledWith({
-      announceMode: 'default',
-      requestOutlinerFocus: false,
-    })
-    expect(selectionEffects.notePendingSource).toHaveBeenCalledWith(
-      'canvas-pointer',
-    )
-    expect(useSelectionFocusStore.getState().selectedSource).toBe(
-      'canvas-pointer',
-    )
-  })
-
-  it('clears pending source when toggling the same selection off via canvas pointer', () => {
-    sceneDocumentActions.setSelectedId('chair-1')
+  it('selects and announces a canvas pointer selection', () => {
+    mockSelectionMutationsToLand()
 
     selectByCanvasPointer('chair-1')
 
-    expect(selectionEffects.notePendingSelection).toHaveBeenCalledWith(null)
-    expect(selectionEffects.notePendingSource).toHaveBeenCalledWith(null)
+    expect(selectDocumentById).toHaveBeenCalledWith('chair-1', 'canvas-pointer')
+    expect(useSelectionStore.getState().selectedSource).toBe('canvas-pointer')
+    expect(feedbackActions.announcePolite).toHaveBeenCalledWith(
+      'Chair selected.',
+    )
   })
 
-  it('routes selectById announce mode based on the interaction source', () => {
+  it('does not announce a canvas pointer reselect of the same item', () => {
+    mockSelectionMutationsToLand()
+    selectionActions.setSelection('chair-1', 'canvas-pointer')
+
+    selectByCanvasPointer('chair-1')
+
+    expect(feedbackActions.announcePolite).not.toHaveBeenCalled()
+  })
+
+  it('routes selectById announcements by the interaction source', () => {
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
-    vi.mocked(selectDocumentById).mockImplementation((id) => {
-      sceneDocumentActions.setSelectedId(id)
-      return { ok: true, status: 'selected' }
-    })
+    mockSelectionMutationsToLand()
 
     selectById('chair-1', 'panel-keyboard')
 
-    expect(selectionEffects.notePendingSelection).toHaveBeenLastCalledWith({
-      announceMode: 'panel-keyboard',
-      requestOutlinerFocus: false,
-    })
-    expect(selectionEffects.notePendingSource).toHaveBeenCalledWith(
-      'panel-keyboard',
+    expect(feedbackActions.announcePolite).toHaveBeenLastCalledWith(
+      'Chair selected.',
     )
-    expect(useSelectionFocusStore.getState().selectedSource).toBe(
-      'panel-keyboard',
+    expect(useSelectionStore.getState().selectedSource).toBe('panel-keyboard')
+
+    selectionActions.setSelection(null, null)
+    selectById('chair-1', 'canvas-keyboard')
+
+    expect(feedbackActions.announcePolite).toHaveBeenLastCalledWith(
+      'Chair selected. Press Shift+T to reach its actions.',
+    )
+    expect(useSelectionStore.getState().selectedSource).toBe('canvas-keyboard')
+  })
+
+  it('does not announce when selectById lands on the already-selected item', () => {
+    vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
+    mockSelectionMutationsToLand()
+    selectionActions.setSelection('chair-1', 'panel-keyboard')
+
+    selectById('chair-1', 'panel-keyboard')
+
+    expect(feedbackActions.announcePolite).not.toHaveBeenCalled()
+    expect(feedbackActions.clearStatusMessage).toHaveBeenCalled()
+  })
+
+  it('announces an added item through the added mode', () => {
+    announceSelectionChange({
+      announceMode: 'added',
+      items: [CHAIR],
+      newId: CHAIR.id,
+      previousSelectedId: null,
+    })
+
+    expect(feedbackActions.announcePolite).toHaveBeenCalledWith(
+      'Chair added to room.',
     )
   })
 
-  it('clears the editor message and pending behavior on clear selection', () => {
-    feedbackActions.setStatusMessage('stale')
+  it('clears the editor message and announces a landed clear', () => {
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
+    mockSelectionMutationsToLand()
+    selectionActions.setSelection('chair-1', 'canvas-pointer')
 
     clearSelection()
 
     expect(clearDocumentSelection).toHaveBeenCalled()
-    expect(selectionEffects.notePendingSelection).toHaveBeenCalledWith({
-      announceMode: 'default',
-      requestOutlinerFocus: false,
-    })
-    expect(feedbackStoreForTests.getState().statusMessage).toBeNull()
+    expect(feedbackActions.clearStatusMessage).toHaveBeenCalled()
+    expect(feedbackActions.announcePolite).toHaveBeenCalledWith(
+      'Selection cleared.',
+    )
+  })
+
+  it('does not announce a clear that was blocked by the mutation', () => {
+    vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
+    // The mutation no-ops (mid-drag): the store keeps its selection.
+    vi.mocked(clearDocumentSelection).mockImplementation(() => undefined)
+    selectionActions.setSelection('chair-1', 'canvas-pointer')
+
+    clearSelection()
+
+    expect(feedbackActions.announcePolite).not.toHaveBeenCalled()
   })
 })
