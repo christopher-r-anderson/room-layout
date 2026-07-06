@@ -44,7 +44,7 @@ const RESTRICTED_ZUSTAND_IMPORT_PATHS = [
   {
     name: 'zustand/traditional',
     message:
-      'The equality-fn store APIs are retired. Use create() from "zustand"; wrap fresh-object selectors in useShallow from "zustand/react/shallow".',
+      'Use create() from "zustand"; wrap fresh-object selectors in useShallow from "zustand/react/shallow".',
   },
   {
     name: 'zustand/vanilla',

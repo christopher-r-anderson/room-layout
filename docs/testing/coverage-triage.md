@@ -32,7 +32,7 @@ recommendation; the actual cut is a decision for Phase 3.
   have e2e — so every Tier 2 wrapper is genuinely e2e-covered. The skip list below
   is superseded by that doc.
 - **Over-mock rewrites — done.** Per-file outcome:
-  - `focus-actions`: assert the queued `selectionFocusStore` request over spy calls.
+  - `focus-actions`: assert the queued `useSelectionFocusStore` request over spy calls.
   - `selection-actions`: assert the real preview clear in `clearCanvasSelection`;
     the `selectionEffects` payload assertions kept (legitimate boundary tests).
   - `use-scene-snapshot`: swap the mock-mapped content recheck for a stable-getter
