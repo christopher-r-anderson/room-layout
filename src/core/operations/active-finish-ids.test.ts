@@ -2,7 +2,7 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { renderHook } from '@testing-library/react'
 import type { EnvironmentMaterialConfig } from '@/domain/environment-materials'
-import { assetsStore, resetAssetsStore } from '@/core/stores/assets-store'
+import { useAssetsStore, resetAssetsStore } from '@/core/stores/assets-store'
 import {
   resetSceneDocumentStore,
   sceneDocumentStore,
@@ -74,7 +74,7 @@ function seed(
   wallFinishId: string,
   lightingMoodId = 'daylight',
 ) {
-  assetsStore.setState({ environmentConfig: ENVIRONMENT })
+  useAssetsStore.setState({ environmentConfig: ENVIRONMENT })
   sceneDocumentStore.setState({ floorFinishId, wallFinishId, lightingMoodId })
 }
 

@@ -5,7 +5,7 @@ import {
 } from '@/domain/environment-materials'
 import { isFreshSceneState } from '@/core/model/scene-defaults'
 import type { FurnitureItem } from '@/domain/furniture'
-import { assetsStore, useEnvironmentConfig } from '@/core/stores/assets-store'
+import { useAssetsStore, useEnvironmentConfig } from '@/core/stores/assets-store'
 import {
   sceneDocumentStore,
   useFloorFinishId,
@@ -71,7 +71,7 @@ export function useSceneIsAtDefaults(): boolean {
 // Non-reactive read for coordinators and dialog guards (e.g. the start-over
 // `canOpen` gate) that need the current value outside React.
 export function getSceneIsAtDefaults(): boolean {
-  const { environmentConfig } = assetsStore.getState()
+  const { environmentConfig } = useAssetsStore.getState()
   const { history, floorFinishId, wallFinishId, lightingMoodId } =
     sceneDocumentStore.getState()
 

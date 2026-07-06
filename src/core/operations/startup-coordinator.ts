@@ -13,7 +13,7 @@ import {
   editorLifecycleActions,
   editorLifecycleStore,
 } from '../stores/editor-lifecycle-store'
-import { assetsStore } from '../stores/assets-store'
+import { useAssetsStore } from '../stores/assets-store'
 import { sceneDocumentActions } from '../stores/scene-document-store'
 import { resetSelectionFocusStore } from '../stores/selection-focus-store'
 import { resetToolbarGeometryStore } from '../stores/toolbar-geometry-store'
@@ -43,7 +43,7 @@ function resetStartupShell() {
 }
 
 function resolveFinishContext() {
-  const { catalog, environmentConfig } = assetsStore.getState()
+  const { catalog, environmentConfig } = useAssetsStore.getState()
 
   return {
     catalog,

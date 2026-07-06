@@ -10,7 +10,7 @@ import {
   type LightingMoodOption,
   type WallFinishOption,
 } from '@/domain/environment-materials'
-import { assetsStore, useEnvironmentConfig } from '@/core/stores/assets-store'
+import { useAssetsStore, useEnvironmentConfig } from '@/core/stores/assets-store'
 import {
   sceneDocumentStore,
   useFloorFinishId,
@@ -88,7 +88,7 @@ export function getActiveFinishIds(): ActiveFinishIds {
     sceneDocumentStore.getState()
 
   return deriveActiveFinishIds(
-    assetsStore.getState().environmentConfig,
+    useAssetsStore.getState().environmentConfig,
     floorFinishId,
     wallFinishId,
     lightingMoodId,

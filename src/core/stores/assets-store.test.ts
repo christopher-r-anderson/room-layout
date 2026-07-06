@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 import type { FurnitureCatalogEntry } from '@/domain/catalog'
 import {
   assetsActions,
-  assetsStore,
+  useAssetsStore,
   getSourcePathForCatalogId,
   resetAssetsStore,
 } from './assets-store'
@@ -58,6 +58,6 @@ describe('assets-store', () => {
 
     resetAssetsStore()
 
-    expect(assetsStore.getState().sourcePathByCatalogId.size).toBe(0)
+    expect(useAssetsStore.getState().sourcePathByCatalogId.size).toBe(0)
   })
 })
