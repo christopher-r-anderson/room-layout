@@ -1,4 +1,4 @@
-import { assetsStore } from '@/core/stores/assets-store'
+import { useAssetsStore } from '@/core/stores/assets-store'
 import { sceneDocumentActions } from '@/core/stores/scene-document-store'
 import { feedbackActions } from '@/core/stores/feedback-store'
 import { selectionEffects } from '@/core/operations/selection-effects'
@@ -13,7 +13,7 @@ import { sceneCommands } from '@/scene/scene-commands'
  * coordination; feedback (announce/toast) is owned by the caller.
  */
 export function resetSceneToDefaults() {
-  const { environmentConfig } = assetsStore.getState()
+  const { environmentConfig } = useAssetsStore.getState()
 
   clearPreviewOnCanvasMiss()
   feedbackActions.clearStatusMessage()

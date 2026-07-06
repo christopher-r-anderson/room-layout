@@ -1,4 +1,4 @@
-import { sceneDocumentStore } from '@/core/stores/scene-document-store'
+import { useSceneDocumentStore } from '@/core/stores/scene-document-store'
 import { feedbackActions } from '@/core/stores/feedback-store'
 import { selectionFocusActions } from '@/core/stores/selection-focus-store'
 import { selectionEffects } from '@/core/operations/selection-effects'
@@ -8,7 +8,7 @@ import type { SelectByIdResult } from '@/scene/scene.types'
 import type { InteractionSource } from '@/core/types/interaction.types'
 
 export function selectByCanvasPointer(id: string) {
-  const selectedId = sceneDocumentStore.getState().selectedId
+  const selectedId = useSceneDocumentStore.getState().selectedId
 
   selectionEffects.notePendingSelection(
     selectedId === id
@@ -35,7 +35,7 @@ export function selectById(
     }
   }
 
-  const selectedId = sceneDocumentStore.getState().selectedId
+  const selectedId = useSceneDocumentStore.getState().selectedId
   const selectionWillChange = selectedId !== id
   const result = sceneCommands.selectById(id)
   feedbackActions.clearStatusMessage()

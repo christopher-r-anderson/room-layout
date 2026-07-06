@@ -5,9 +5,10 @@ import { feedbackActions } from '../stores/feedback-store'
 import { isEditorInteractive } from '../stores/editor-lifecycle-store'
 import {
   selectionFocusActions,
-  selectionFocusStore,
+  useSelectionFocusStore,
 } from '../stores/selection-focus-store'
-import { sceneDocumentStore } from '../stores/scene-document-store'
+import { useSceneDocumentStore } from '../stores/scene-document-store'
+import { createReconciler } from './reconciler'
 import type { InteractionSource } from '../types/interaction.types'
 import type {
   PendingSelectionChangeBehavior,
@@ -27,10 +28,10 @@ let pendingDeleteFocusTarget: 'room-view' | 'outliner' | null = null
 // against. They live at module scope so reconciliation can run fully outside
 // React.
 let previousItems: FurnitureItem[] =
-  sceneDocumentStore.getState().history.present
+  useSceneDocumentStore.getState().history.present
 let previousReconciledSelectedId: string | null = null
 let previousSideEffectSelectedId: string | null =
-  sceneDocumentStore.getState().selectedId
+  useSceneDocumentStore.getState().selectedId
 
 function announceSelectionChange(options: {
   announceMode: SelectionAnnouncementMode
@@ -126,7 +127,7 @@ export function resetSelectionEffects() {
 }
 
 function syncReconcilerTrackers() {
-  const state = sceneDocumentStore.getState()
+  const state = useSceneDocumentStore.getState()
   previousItems = state.history.present
   previousReconciledSelectedId = null
   previousSideEffectSelectedId = state.selectedId
@@ -137,12 +138,12 @@ function syncReconcilerTrackers() {
 // to run; reads pending intent recorded via `selectionEffects` and the live
 // outliner-focus request, then advances the trackers.
 function reconcileSelectionEffects() {
-  const state = sceneDocumentStore.getState()
+  const state = useSceneDocumentStore.getState()
   const items = state.history.present
   const selectedId = state.selectedId
   const itemsChanged = items !== previousItems
   const outlinerFocusRequest =
-    selectionFocusStore.getState().outlinerFocusRequest
+    useSelectionFocusStore.getState().outlinerFocusRequest
   const editorInteractionsEnabled = isEditorInteractive()
 
   // Post-delete outliner focus runs without a readiness guard, matching the
@@ -231,36 +232,25 @@ function scheduleReconcile() {
   })
 }
 
-let activeUnsubscribe: (() => void) | null = null
-
 /**
  * Subscribes selection-effects reconciliation to scene-state changes. Intended
  * to run once at app startup; idempotent so repeated calls reuse the active
  * subscription.
  */
-export function startSelectionEffectsReconciler(): () => void {
-  if (activeUnsubscribe) {
-    return activeUnsubscribe
-  }
-
+export const startSelectionEffectsReconciler = createReconciler(() => {
   syncReconcilerTrackers()
 
-  const unsubscribe = sceneDocumentStore.subscribe(
-    (state) => ({
-      items: state.history.present,
-      selectedId: state.selectedId,
-    }),
-    scheduleReconcile,
-    {
-      equalityFn: (a, b) =>
-        a.items === b.items && a.selectedId === b.selectedId,
-    },
-  )
-
-  activeUnsubscribe = () => {
-    unsubscribe()
-    activeUnsubscribe = null
-  }
-
-  return activeUnsubscribe
-}
+  return [
+    useSceneDocumentStore.subscribe(
+      (state) => ({
+        items: state.history.present,
+        selectedId: state.selectedId,
+      }),
+      scheduleReconcile,
+      {
+        equalityFn: (a, b) =>
+          a.items === b.items && a.selectedId === b.selectedId,
+      },
+    ),
+  ]
+})

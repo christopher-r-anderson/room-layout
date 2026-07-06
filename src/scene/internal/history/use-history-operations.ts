@@ -6,7 +6,7 @@ import type {
 } from '@/domain/catalog'
 import {
   sceneDocumentActions,
-  sceneDocumentStore,
+  useSceneDocumentStore,
 } from '@/core/scene-contracts'
 import { redoSceneHistory, undoSceneHistory } from './scene-history-state'
 import { buildRestoredSceneHistory } from './restored-scene-history'
@@ -26,7 +26,7 @@ export function useHistoryOperations({
   collections,
 }: UseHistoryOperationsOptions) {
   const undo = useCallback(() => {
-    const { history, selectedId } = sceneDocumentStore.getState()
+    const { history, selectedId } = useSceneDocumentStore.getState()
     const undoResult = undoSceneHistory({ history, selectedId, isDragging })
 
     if (!undoResult.didChange) {
@@ -40,7 +40,7 @@ export function useHistoryOperations({
   }, [isDragging])
 
   const redo = useCallback(() => {
-    const { history, selectedId } = sceneDocumentStore.getState()
+    const { history, selectedId } = useSceneDocumentStore.getState()
     const redoResult = redoSceneHistory({ history, selectedId, isDragging })
 
     if (!redoResult.didChange) {

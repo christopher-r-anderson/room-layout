@@ -4,12 +4,10 @@ import { act, renderHook } from '@testing-library/react'
 import { beforeEach, describe, expect, it } from 'vitest'
 import {
   editorLifecycleActions,
-  editorLifecycleStore,
+  useEditorLifecycleStore,
   resetEditorLifecycleStore,
   useAssetError,
   useEditorInteractionsEnabled,
-  useRestoreAttemptCount,
-  useRestoreOutcome,
   useRetryToken,
   useSceneEpoch,
   useStartupLoadingActive,
@@ -21,9 +19,9 @@ beforeEach(() => {
   resetEditorLifecycleStore()
 })
 
-describe('editorLifecycleStore', () => {
+describe('useEditorLifecycleStore', () => {
   it('starts in loading mode with no asset error and no restore metadata', () => {
-    const state = editorLifecycleStore.getState()
+    const state = useEditorLifecycleStore.getState()
 
     expect(state.startupPhase).toBe('loading')
     expect(state.assetError).toBeNull()
@@ -36,7 +34,7 @@ describe('editorLifecycleStore', () => {
   it('bumps the scene epoch when a manifest begins loading assets', () => {
     editorLifecycleActions.beginAssetLoad()
 
-    const state = editorLifecycleStore.getState()
+    const state = useEditorLifecycleStore.getState()
     expect(state.startupPhase).toBe('loading')
     expect(state.assetError).toBeNull()
     expect(state.sceneEpoch).toBe(1)
@@ -54,7 +52,7 @@ describe('editorLifecycleStore', () => {
 
     editorLifecycleActions.beginAssetLoad()
 
-    let state = editorLifecycleStore.getState()
+    let state = useEditorLifecycleStore.getState()
     expect(state.startupPhase).toBe('errored')
     expect(state.assetError).not.toBeNull()
     expect(state.sceneEpoch).toBe(0)
@@ -62,7 +60,7 @@ describe('editorLifecycleStore', () => {
     editorLifecycleActions.requestRetry()
     editorLifecycleActions.beginAssetLoad()
 
-    state = editorLifecycleStore.getState()
+    state = useEditorLifecycleStore.getState()
     expect(state.startupPhase).toBe('loading')
     expect(state.assetError).toBeNull()
   })
@@ -77,7 +75,7 @@ describe('editorLifecycleStore', () => {
 
     editorLifecycleActions.requestRetry()
 
-    const state = editorLifecycleStore.getState()
+    const state = useEditorLifecycleStore.getState()
     expect(state.startupPhase).toBe('loading')
     expect(state.assetError).toBeNull()
     expect(state.sceneEpoch).toBe(1)
@@ -89,22 +87,22 @@ describe('editorLifecycleStore', () => {
 
   it('transitions between loading, ready, and errored phases', () => {
     editorLifecycleActions.markAssetsReady()
-    expect(editorLifecycleStore.getState().startupPhase).toBe('ready')
-    expect(editorLifecycleStore.getState().assetError).toBeNull()
+    expect(useEditorLifecycleStore.getState().startupPhase).toBe('ready')
+    expect(useEditorLifecycleStore.getState().assetError).toBeNull()
 
     editorLifecycleActions.setAssetError({
       kind: 'asset-load',
       message: 'asset load failed',
     })
-    expect(editorLifecycleStore.getState().startupPhase).toBe('errored')
-    expect(editorLifecycleStore.getState().assetError).toEqual({
+    expect(useEditorLifecycleStore.getState().startupPhase).toBe('errored')
+    expect(useEditorLifecycleStore.getState().assetError).toEqual({
       kind: 'asset-load',
       message: 'asset load failed',
     })
 
     editorLifecycleActions.requestRetry()
-    expect(editorLifecycleStore.getState().startupPhase).toBe('loading')
-    expect(editorLifecycleStore.getState().assetError).toBeNull()
+    expect(useEditorLifecycleStore.getState().startupPhase).toBe('loading')
+    expect(useEditorLifecycleStore.getState().assetError).toBeNull()
   })
 
   it('exposes derived selectors for startup gating', () => {
@@ -113,8 +111,6 @@ describe('editorLifecycleStore', () => {
     const { result: overlay } = renderHook(() => useStartupOverlayActive())
     const { result: enabled } = renderHook(() => useEditorInteractionsEnabled())
     const { result: assetError } = renderHook(() => useAssetError())
-    const { result: outcome } = renderHook(() => useRestoreOutcome())
-    const { result: attempts } = renderHook(() => useRestoreAttemptCount())
     const { result: sceneEpoch } = renderHook(() => useSceneEpoch())
     const { result: retryToken } = renderHook(() => useRetryToken())
 
@@ -123,14 +119,10 @@ describe('editorLifecycleStore', () => {
     expect(overlay.current).toBe(true)
     expect(enabled.current).toBe(false)
     expect(assetError.current).toBeNull()
-    expect(outcome.current).toBeNull()
-    expect(attempts.current).toBe(0)
     expect(sceneEpoch.current).toBe(0)
     expect(retryToken.current).toBe(0)
 
     act(() => {
-      editorLifecycleActions.incrementRestoreAttempt()
-      editorLifecycleActions.recordRestoreOutcome('invalid')
       editorLifecycleActions.markAssetsReady()
     })
 
@@ -138,8 +130,6 @@ describe('editorLifecycleStore', () => {
     expect(loading.current).toBe(false)
     expect(overlay.current).toBe(false)
     expect(enabled.current).toBe(true)
-    expect(outcome.current).toBe('invalid')
-    expect(attempts.current).toBe(1)
 
     act(() => {
       editorLifecycleActions.requestRetry()

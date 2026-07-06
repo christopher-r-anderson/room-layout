@@ -8,7 +8,7 @@ import {
 import {
   resetSelectionFocusStore,
   selectionFocusActions,
-  selectionFocusStore,
+  useSelectionFocusStore,
 } from '@/core/stores/selection-focus-store'
 import {
   editorLifecycleActions,
@@ -80,7 +80,7 @@ describe('deletion-actions', () => {
 
     confirmDeleteSelection(CHAIR)
 
-    expect(selectionFocusStore.getState().roomViewFocusRequest).toEqual(
+    expect(useSelectionFocusStore.getState().roomViewFocusRequest).toEqual(
       expect.any(Number),
     )
     expect(
@@ -99,7 +99,7 @@ describe('deletion-actions', () => {
 
     confirmDeleteSelection(CHAIR)
 
-    expect(selectionFocusStore.getState().roomViewFocusRequest).toBeNull()
+    expect(useSelectionFocusStore.getState().roomViewFocusRequest).toBeNull()
     expect(
       selectionEffects.notePostDeleteOutlinerFocusIndex,
     ).toHaveBeenCalledWith(0)

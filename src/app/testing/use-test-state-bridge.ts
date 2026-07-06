@@ -1,10 +1,10 @@
 import { useEffect, type Dispatch, type SetStateAction } from 'react'
 import {
-  editorLifecycleStore,
+  useEditorLifecycleStore,
   isEditorInteractive,
   type RestoreOutcome,
 } from '@/core/stores/editor-lifecycle-store'
-import { sceneDocumentStore } from '@/core/stores/scene-document-store'
+import { useSceneDocumentStore } from '@/core/stores/scene-document-store'
 import { getPreviewedId } from '@/core/operations/previewed-id'
 import { getActiveFinishIds } from '@/core/operations/active-finish-ids'
 import { sceneCommands } from '@/scene/scene-commands'
@@ -65,7 +65,7 @@ export function useTestStateBridge({
 
     window.__ROOM_LAYOUT_TEST__ = {
       getState: () => {
-        const storeState = sceneDocumentStore.getState()
+        const storeState = useSceneDocumentStore.getState()
         const snapshotItems = sceneCommands.getSnapshot()?.items ?? []
         const pointerTargetsById = new Map(
           snapshotItems.map((item) => [item.id, item.pointerTarget] as const),
@@ -84,7 +84,7 @@ export function useTestStateBridge({
 
         return {
           assetsReady: isEditorInteractive(),
-          assetError: editorLifecycleStore.getState().assetError !== null,
+          assetError: useEditorLifecycleStore.getState().assetError !== null,
           cameraPosition,
           floorFinishId: activeFloorFinishId,
           wallFinishId: activeWallFinishId,
@@ -101,9 +101,9 @@ export function useTestStateBridge({
             rotationY: item.rotationY,
             pointerTarget: pointerTargetsById.get(item.id) ?? null,
           })),
-          restoreOutcome: editorLifecycleStore.getState().restoreOutcome,
+          restoreOutcome: useEditorLifecycleStore.getState().restoreOutcome,
           restoreAttemptCount:
-            editorLifecycleStore.getState().restoreAttemptCount,
+            useEditorLifecycleStore.getState().restoreAttemptCount,
         }
       },
       setOverlaysHidden: (hidden: boolean) => {

@@ -2,16 +2,17 @@ import { shallow } from 'zustand/shallow'
 import { sceneCommands } from '@/scene/scene-commands'
 import {
   collectionLoadingActions,
-  collectionLoadingStore,
+  useCollectionLoadingStore,
   isCollectionFailed,
   isCollectionLoaded,
 } from '../stores/collection-loading-store'
-import { editorLifecycleStore } from '../stores/editor-lifecycle-store'
-import { sceneDocumentStore } from '../stores/scene-document-store'
+import { useEditorLifecycleStore } from '../stores/editor-lifecycle-store'
+import { useSceneDocumentStore } from '../stores/scene-document-store'
 import {
   fetchCollectionBytes,
   releaseCollectionBytes,
 } from './collection-bytes'
+import { createReconciler } from './reconciler'
 
 // The collection load pipeline, driven imperatively from core: fetch the bytes
 // (shared byte source), have the scene parse and register them
@@ -27,7 +28,7 @@ import {
 const inFlight = new Map<string, number>()
 
 function currentSceneEpoch(): number {
-  return editorLifecycleStore.getState().sceneEpoch
+  return useEditorLifecycleStore.getState().sceneEpoch
 }
 
 // Load one collection end-to-end. Idempotent per cycle: already loaded, marked
@@ -82,9 +83,9 @@ export async function loadCollection(path: string): Promise<void> {
 // Every collection that should be loaded now - the gated set plus the ones
 // referenced by current items plus explicit requests - minus settled outcomes.
 function resolvePendingCollectionPaths(): string[] {
-  const { gated, wanted, loaded, failed } = collectionLoadingStore.getState()
+  const { gated, wanted, loaded, failed } = useCollectionLoadingStore.getState()
   const paths = new Set<string>(gated ?? [])
-  for (const item of sceneDocumentStore.getState().history.present) {
+  for (const item of useSceneDocumentStore.getState().history.present) {
     paths.add(item.sourcePath)
   }
   for (const path of wanted) {
@@ -94,7 +95,7 @@ function resolvePendingCollectionPaths(): string[] {
 }
 
 function kickPendingCollectionLoads() {
-  if (!editorLifecycleStore.getState().sceneMounted) {
+  if (!useEditorLifecycleStore.getState().sceneMounted) {
     return
   }
   for (const path of resolvePendingCollectionPaths()) {
@@ -108,20 +109,20 @@ function kickPendingCollectionLoads() {
  * remount), the gated set resolving, an item appearing, or an on-demand request
  * each kick the pending loads. Kicks are cheap and loadCollection is idempotent.
  */
-export function startCollectionLoadReconciler(): () => void {
+export const startCollectionLoadReconciler = createReconciler(() => {
   const unsubscribes = [
-    editorLifecycleStore.subscribe(
+    useEditorLifecycleStore.subscribe(
       (state) => state.sceneMounted,
       kickPendingCollectionLoads,
     ),
     // Only the fields that decide which paths are pending - not progressByPath,
     // whose per-chunk updates would otherwise kick on every streamed chunk.
-    collectionLoadingStore.subscribe(
+    useCollectionLoadingStore.subscribe(
       (state) => [state.gated, state.wanted, state.loaded, state.failed],
       kickPendingCollectionLoads,
       { equalityFn: shallow },
     ),
-    sceneDocumentStore.subscribe(
+    useSceneDocumentStore.subscribe(
       (state) => state.history.present,
       kickPendingCollectionLoads,
     ),
@@ -133,12 +134,8 @@ export function startCollectionLoadReconciler(): () => void {
   // unrelated change.
   kickPendingCollectionLoads()
 
-  return () => {
-    for (const unsubscribe of unsubscribes) {
-      unsubscribe()
-    }
-  }
-}
+  return unsubscribes
+})
 
 /**
  * Requests a collection and resolves once it is loaded, or rejects if it fails -
@@ -168,7 +165,7 @@ export function ensureCollectionLoaded(path: string): Promise<void> {
     const rejectFailed = () => {
       reject(new Error(`furniture collection failed to load: ${path}`))
     }
-    const unsubscribe = collectionLoadingStore.subscribe(
+    const unsubscribe = useCollectionLoadingStore.subscribe(
       (state) => ({
         loaded: state.loaded.has(path),
         failed: state.failed.has(path),

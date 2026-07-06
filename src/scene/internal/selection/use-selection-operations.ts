@@ -1,5 +1,5 @@
 import { useCallback } from 'react'
-import { sceneDocumentStore } from '@/core/scene-contracts'
+import { useSceneDocumentStore } from '@/core/scene-contracts'
 
 interface UseSelectionOperationsOptions {
   isDragging: boolean
@@ -36,7 +36,7 @@ export function useSelectionOperations({
 
   const selectById = useCallback(
     (id: string | null) => {
-      const furnitureItems = sceneDocumentStore.getState().history.present
+      const furnitureItems = useSceneDocumentStore.getState().history.present
 
       if (isDragging) {
         return {

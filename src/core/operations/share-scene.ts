@@ -1,5 +1,5 @@
 import { msg } from '@lingui/core/macro'
-import { sceneDocumentStore } from '@/core/stores/scene-document-store'
+import { useSceneDocumentStore } from '@/core/stores/scene-document-store'
 import { feedbackActions } from '@/core/stores/feedback-store'
 import { serializeSceneToUrl } from '@/core/persistence/scene-url'
 import { getActiveFinishIds } from '@/core/operations/active-finish-ids'
@@ -17,7 +17,7 @@ import { LANG_QUERY_PARAM } from '@/shared/i18n/locales'
  * the scene is too large; user-facing status/announcements are emitted here.
  */
 export async function shareScene(): Promise<'shared' | 'copied' | null> {
-  const items = sceneDocumentStore.getState().history.present
+  const items = useSceneDocumentStore.getState().history.present
   const { activeFloorFinishId, activeWallFinishId, activeLightingMoodId } =
     getActiveFinishIds()
 

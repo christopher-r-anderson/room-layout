@@ -6,15 +6,18 @@ Purpose
 
 Layout
 
-- `stores/` — the zustand stores and their selector hooks: the scene data model
-  (`scene-document-store`), the catalog/environment manifest (`assets-store`), and
-  the startup/asset-loading state (`editor-lifecycle-store`,
-  `collection-loading-store`).
+- `stores/` — the zustand stores: `create()` bound hooks over pure-data state,
+  each with a module-level `xActions` mutation surface and narrow selector
+  hooks. Covers the scene data model (`scene-document-store`), the
+  catalog/environment manifest (`assets-store`), and the startup/asset-loading
+  state (`editor-lifecycle-store`, `collection-loading-store`).
 - `operations/` — cross-cutting operations over the stores (history/movement/
   selection actions, `startup-coordinator`, the collection load pipeline
   (`collection-loader`, `collection-bytes`), preview actions + reconciler,
-  `selection-effects`). These orchestrate writes across stores and scene
-  commands for behavior that spans features.
+  `selection-effects`, `draft-persistence`). These orchestrate writes across
+  stores and scene commands for behavior that spans features; standing
+  reconcilers are built with `createReconciler` and started from
+  `startEditorReconcilers`.
 - `persistence/` — scene state ↔ storage/URL (`scene-draft`, `scene-url`,
   `restore-flow`, `scene-reset`).
 - `commands/` — the `EditorCommand` vocabulary and its dispatch binding.

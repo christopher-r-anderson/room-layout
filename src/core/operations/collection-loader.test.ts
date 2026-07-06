@@ -4,11 +4,10 @@ import {
   collectionLoadingActions,
   getCollectionFailureKind,
   isCollectionLoaded,
-  resetCollectionLoading,
+  resetCollectionLoadingStore,
 } from '../stores/collection-loading-store'
 import {
   editorLifecycleActions,
-  editorLifecycleStore,
   resetEditorLifecycleStore,
 } from '../stores/editor-lifecycle-store'
 import { resetSceneDocumentStore } from '../stores/scene-document-store'
@@ -59,7 +58,7 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.clearAllMocks()
-  resetCollectionLoading()
+  resetCollectionLoadingStore()
   resetEditorLifecycleStore()
   resetSceneDocumentStore()
   vi.restoreAllMocks()
@@ -174,7 +173,7 @@ describe('ensureCollectionLoaded', () => {
     fetchCollectionBytesMock.mockReturnValue(bytes.promise)
 
     const pending = ensureCollectionLoaded('/models/slow.glb')
-    resetCollectionLoading()
+    resetCollectionLoadingStore()
 
     await expect(pending).rejects.toThrow(/load was reset/)
   })
@@ -196,7 +195,7 @@ describe('startCollectionLoadReconciler', () => {
   it('kicks loads for state that was already in place when it started', async () => {
     // Gate resolved and scene mounted before the reconciler exists - it must
     // reconcile on start, not wait for the next store update.
-    editorLifecycleStore.getState().setSceneMounted(true)
+    editorLifecycleActions.setSceneMounted(true)
     collectionLoadingActions.setGatedCollectionPaths(['/models/pre.glb'])
 
     const stop = startCollectionLoadReconciler()
@@ -215,7 +214,7 @@ describe('startCollectionLoadReconciler', () => {
       collectionLoadingActions.setGatedCollectionPaths(['/models/gated.glb'])
       expect(fetchCollectionBytesMock).not.toHaveBeenCalled()
 
-      editorLifecycleStore.getState().setSceneMounted(true)
+      editorLifecycleActions.setSceneMounted(true)
       await vi.waitFor(() => {
         expect(isCollectionLoaded('/models/gated.glb')).toBe(true)
       })
@@ -235,7 +234,7 @@ describe('startCollectionLoadReconciler', () => {
     )
     const stop = startCollectionLoadReconciler()
     try {
-      editorLifecycleStore.getState().setSceneMounted(true)
+      editorLifecycleActions.setSceneMounted(true)
       collectionLoadingActions.requestCollection('/models/flaky.glb')
       await vi.waitFor(() => {
         expect(getCollectionFailureKind('/models/flaky.glb')).toBe('connection')

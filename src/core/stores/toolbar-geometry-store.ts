@@ -1,10 +1,7 @@
-import { useStoreWithEqualityFn } from 'zustand/traditional'
-import { subscribeWithSelector } from 'zustand/middleware'
-import { createStore } from 'zustand/vanilla'
+import { create } from 'zustand'
 import type { ScreenPoint, SelectedToolbarGeometry } from '@/scene/scene.types'
 import { perfCounters } from '@/shared/debug/perf-counters'
 import { IS_E2E_BUILD } from '@/shared/env/e2e'
-import type { EqualityChecker } from '../types/store.types'
 
 // The selected item's toolbar geometry: the scene projects the selected item's
 // bounds to screen points each frame and writes them here; the placement hook
@@ -13,11 +10,9 @@ import type { EqualityChecker } from '../types/store.types'
 // routing because the two share nothing but the word "selection".
 interface ToolbarGeometryStoreState {
   toolbarGeometry: SelectedToolbarGeometry
-  setToolbarGeometry: (geometry: SelectedToolbarGeometry) => void
-  reset: () => void
 }
 
-export const INITIAL_SELECTED_TOOLBAR_GEOMETRY: SelectedToolbarGeometry = {
+const INITIAL_SELECTED_TOOLBAR_GEOMETRY: SelectedToolbarGeometry = {
   kind: 'unavailable',
   selectedId: null,
   reason: 'no-selection',
@@ -63,64 +58,46 @@ function areSelectedToolbarGeometriesEqual(
   )
 }
 
-function getInitialToolbarGeometryState() {
-  return {
-    toolbarGeometry: INITIAL_SELECTED_TOOLBAR_GEOMETRY,
-  }
-}
-
-export const toolbarGeometryStore = createStore<ToolbarGeometryStoreState>()(
-  subscribeWithSelector((set, get) => ({
-    ...getInitialToolbarGeometryState(),
-    setToolbarGeometry: (geometry) => {
-      set((state) => {
-        if (
-          areSelectedToolbarGeometriesEqual(state.toolbarGeometry, geometry)
-        ) {
-          if (import.meta.env.DEV || IS_E2E_BUILD) {
-            perfCounters.incrToolbarSinkNoOp()
-          }
-          return state
-        }
-
-        if (import.meta.env.DEV || IS_E2E_BUILD) {
-          perfCounters.incrToolbarSinkWrite()
-        }
-
-        return {
-          ...state,
-          toolbarGeometry: geometry,
-        }
-      })
-    },
-    reset: () => {
-      set(() => ({
-        ...getInitialToolbarGeometryState(),
-        setToolbarGeometry: get().setToolbarGeometry,
-        reset: get().reset,
-      }))
-    },
-  })),
-)
-
-function useToolbarGeometryStore<T>(
-  selector: (state: ToolbarGeometryStoreState) => T,
-  equalityFn?: EqualityChecker<T>,
-) {
-  return useStoreWithEqualityFn(toolbarGeometryStore, selector, equalityFn)
-}
+// Module-private: the scene writes through toolbarGeometryActions (the one
+// writer) and the placement hook reads through useToolbarGeometry.
+const useToolbarGeometryStore = create<ToolbarGeometryStoreState>()(() => ({
+  toolbarGeometry: INITIAL_SELECTED_TOOLBAR_GEOMETRY,
+}))
 
 export const toolbarGeometryActions = {
   setToolbarGeometry: (geometry: SelectedToolbarGeometry) => {
-    toolbarGeometryStore.getState().setToolbarGeometry(geometry)
+    useToolbarGeometryStore.setState((state) => {
+      if (areSelectedToolbarGeometriesEqual(state.toolbarGeometry, geometry)) {
+        if (import.meta.env.DEV || IS_E2E_BUILD) {
+          perfCounters.incrToolbarSinkNoOp()
+        }
+        return state
+      }
+
+      if (import.meta.env.DEV || IS_E2E_BUILD) {
+        perfCounters.incrToolbarSinkWrite()
+      }
+
+      return { toolbarGeometry: geometry }
+    })
   },
   reset: () => {
-    toolbarGeometryStore.getState().reset()
+    useToolbarGeometryStore.setState(
+      useToolbarGeometryStore.getInitialState(),
+      true,
+    )
   },
 }
 
 export function resetToolbarGeometryStore() {
   toolbarGeometryActions.reset()
+}
+
+export const toolbarGeometryStoreForTests = {
+  getState: () => useToolbarGeometryStore.getState(),
+  getInitialState: () => useToolbarGeometryStore.getInitialState(),
+  subscribe: (listener: () => void) =>
+    useToolbarGeometryStore.subscribe(listener),
 }
 
 export const useToolbarGeometry = () =>

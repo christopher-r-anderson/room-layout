@@ -24,8 +24,13 @@ Two concepts have their own docs:
 
 ## Store inventory
 
-Each store is a Zustand vanilla store exposing selector hooks. "Written by" names
-the only modules that should mutate it.
+Each store is a Zustand `create()` bound hook over pure-data state. The bound
+hook doubles as the imperative handle (`getState`/`subscribe`) for operations
+and reconcilers; mutation goes through the store's module-level `xActions`
+object, and narrow selector hooks (with `useShallow` where a selector builds a
+fresh value) are the React read surface. Features read the narrow hooks, not
+the generic bound hook. "Written by" names the only modules that should mutate
+a store.
 
 - **`scene-document-store`** — the app-facing scene **data model**: furniture
   history (the undo/redo timeline), selection id, preview id, drag state,
@@ -48,9 +53,20 @@ the only modules that should mutate it.
   decide post-delete focus) plus focus-intent tokens (outliner and room-view
   focus handoff). The selection _pointer_ lives in `scene-document-store`; this
   is the view-side routing reconciled on top of it. Written by core operations.
+- **`collection-loading-store`** — the three-free collection loading lifecycle,
+  keyed by sourcePath: the gated set, download progress, on-demand wants, and
+  loaded/failed outcomes with failure classification (`unavailable` vs
+  `connection`). The parsed three.js objects live in the scene layer's
+  collection-scene-registry; see
+  [startup-and-asset-loading.md](startup-and-asset-loading.md). Written by the
+  startup bootstrap and the collection load pipeline.
 - **`toolbar-geometry-store`** — the selected item's projected toolbar geometry,
   a one-writer (scene raf loop) / one-reader (placement hook) data pipe kept
   apart from selection focus routing. Written by scene via `scene-contracts`.
+- **`toolbar-interaction-store`** — whether the user is engaging the selected
+  item toolbar (pointer over, focus within, rotation grace window), read by the
+  placement engine to pin the toolbar. Written by the selection feature's
+  engagement reporting.
 - **`dialog-store`** — generic active-surface dialog state, open/close
   operations, and dialog-open selectors. Model and invariants live in
   [dialogs-and-overlays.md](dialogs-and-overlays.md). Written by dialog actions.
@@ -67,10 +83,20 @@ functions in `core/operations`. They read and write the stores above and call
 cross-feature import ban possible — features coordinate by calling a shared
 operation, never by importing a sibling feature.
 
+Standing reconcilers — store subscriptions that coordinate derived writes
+across stores — are built with `createReconciler` (which owns the idempotency
+guard and cleanup fan-in) and started together from `startEditorReconcilers`
+at app startup: selection effects, outliner focus, preview hygiene, collection
+loading, and draft persistence.
+
 - `history-actions`, `movement-actions`, `selection-actions` — undo/redo,
   move/rotate, selection; gated on startup readiness.
-- `preview-actions` + `use-preview-reconciler` — preview hysteresis as module
-  cells plus a thin reconciler effect.
+- `preview-actions` + `preview-reconciler` — preview hysteresis as module
+  cells plus the reconciler that clears preview state whenever a suppressing
+  gate (drag, blocking overlay, not-ready) holds.
+- `draft-persistence` — mirrors the scene document into the localStorage draft
+  while the editor is ready and not dragging, reading the environment config
+  from `assets-store` at persist time.
 - `startup-coordinator` — `completeAssetLoad` (one-time restore + mark ready),
   `notifyAssetError`, `requestAssetRetry`. Sources catalog/finishes from
   `assets-store`, drives `editor-lifecycle-store`. The React-coupled manifest
@@ -110,16 +136,14 @@ The React dispatch binding lives in `core` (not `app` or `shared`) on purpose: i
 imports the command vocabulary yet must be importable by feature buttons, and the
 boundary rules forbid features importing `app` and forbid `shared` importing
 `core` — so `core` is the only valid home. `core` already contains React anyway
-(store selector hooks, the preview reconciler), so this is consistent, not an
-exception.
+(store selector hooks), so this is consistent, not an exception.
 
 ## Persistence
 
 `core/persistence` serializes the `scene-document-store` data model: `scene-draft`
 (localStorage autosave), `scene-url` (shareable URL codec), `scene-reset`, and
-`restore-flow` (startup restore orchestration). Consumed by operations — chiefly
-`startup-coordinator`. These are homed in `core` (not the `url-scene` feature) so
-operations can use them without a cross-feature import.
+`restore-flow` (startup restore orchestration). Consumed by operations — the
+draft-persistence reconciler and `startup-coordinator` chiefly.
 
 ## Boundaries
 

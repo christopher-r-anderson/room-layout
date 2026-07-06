@@ -1,26 +1,28 @@
 // @vitest-environment jsdom
 
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { OutlinerFocusRequest } from '../types/outliner.types'
 import {
   resetSelectionFocusStore,
   selectionFocusActions,
-  selectionFocusStore,
+  useSelectionFocusStore,
 } from './selection-focus-store'
 
 beforeEach(() => {
   resetSelectionFocusStore()
 })
 
-describe('selectionFocusStore', () => {
+describe('useSelectionFocusStore', () => {
   it('tracks selected source transitions', () => {
-    expect(selectionFocusStore.getState().selectedSource).toBeNull()
+    expect(useSelectionFocusStore.getState().selectedSource).toBeNull()
 
     selectionFocusActions.setSelectedSource('canvas-pointer')
-    expect(selectionFocusStore.getState().selectedSource).toBe('canvas-pointer')
+    expect(useSelectionFocusStore.getState().selectedSource).toBe(
+      'canvas-pointer',
+    )
 
     selectionFocusActions.setSelectedSource(null)
-    expect(selectionFocusStore.getState().selectedSource).toBeNull()
+    expect(useSelectionFocusStore.getState().selectedSource).toBeNull()
   })
 
   it('tracks outliner focus request lifecycle', () => {
@@ -29,25 +31,28 @@ describe('selectionFocusStore', () => {
       targetSelectedId: 'chair-1',
     }
 
-    expect(selectionFocusStore.getState().outlinerFocusRequest).toBeNull()
+    expect(useSelectionFocusStore.getState().outlinerFocusRequest).toBeNull()
 
     selectionFocusActions.requestOutlinerFocus(request)
-    expect(selectionFocusStore.getState().outlinerFocusRequest).toEqual(request)
+    expect(useSelectionFocusStore.getState().outlinerFocusRequest).toEqual(
+      request,
+    )
 
     selectionFocusActions.clearOutlinerFocusRequest()
-    expect(selectionFocusStore.getState().outlinerFocusRequest).toBeNull()
+    expect(useSelectionFocusStore.getState().outlinerFocusRequest).toBeNull()
   })
 
   it('tracks room-view focus request lifecycle', () => {
-    expect(selectionFocusStore.getState().roomViewFocusRequest).toBeNull()
+    expect(useSelectionFocusStore.getState().roomViewFocusRequest).toBeNull()
 
-    // Drive the store method directly with a fixed token (the action wrapper
-    // stamps Date.now(), which would be non-deterministic to assert).
-    selectionFocusStore.getState().requestRoomViewFocus(42)
-    expect(selectionFocusStore.getState().roomViewFocusRequest).toBe(42)
+    // Pin Date.now() so the stamped token is deterministic to assert.
+    const nowSpy = vi.spyOn(Date, 'now').mockReturnValue(42)
+    selectionFocusActions.requestRoomViewFocus()
+    nowSpy.mockRestore()
+    expect(useSelectionFocusStore.getState().roomViewFocusRequest).toBe(42)
 
     selectionFocusActions.clearRoomViewFocusRequest()
-    expect(selectionFocusStore.getState().roomViewFocusRequest).toBeNull()
+    expect(useSelectionFocusStore.getState().roomViewFocusRequest).toBeNull()
   })
 
   it('resets selected source to defaults', () => {
@@ -55,6 +60,6 @@ describe('selectionFocusStore', () => {
 
     resetSelectionFocusStore()
 
-    expect(selectionFocusStore.getState().selectedSource).toBeNull()
+    expect(useSelectionFocusStore.getState().selectedSource).toBeNull()
   })
 })

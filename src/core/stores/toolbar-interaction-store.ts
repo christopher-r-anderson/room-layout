@@ -1,5 +1,4 @@
-import { useStore } from 'zustand'
-import { createStore } from 'zustand/vanilla'
+import { create } from 'zustand'
 
 // Tracks whether the user is actively engaging the selected-item toolbar so the
 // placement engine can pin the toolbar's screen position instead of letting it
@@ -15,10 +14,6 @@ interface ToolbarInteractionStoreState {
   pointerOver: boolean
   focusWithin: boolean
   rotationGraceActive: boolean
-  setPointerOver: (pointerOver: boolean) => void
-  setFocusWithin: (focusWithin: boolean) => void
-  reportRotation: () => void
-  reset: () => void
 }
 
 let rotationGraceTimer: ReturnType<typeof setTimeout> | null = null
@@ -30,48 +25,38 @@ function clearRotationGraceTimer() {
   }
 }
 
-export const toolbarInteractionStore =
-  createStore<ToolbarInteractionStoreState>()((set) => ({
+// Module-private: mutation goes through toolbarInteractionActions and the
+// placement engine reads through useToolbarEngaged.
+const useToolbarInteractionStore = create<ToolbarInteractionStoreState>()(
+  () => ({
     pointerOver: false,
     focusWithin: false,
     rotationGraceActive: false,
-    setPointerOver: (pointerOver) => {
-      set({ pointerOver })
-    },
-    setFocusWithin: (focusWithin) => {
-      set({ focusWithin })
-    },
-    reportRotation: () => {
-      clearRotationGraceTimer()
-      rotationGraceTimer = setTimeout(() => {
-        rotationGraceTimer = null
-        toolbarInteractionStore.setState({ rotationGraceActive: false })
-      }, ROTATION_PIN_GRACE_MS)
-      set({ rotationGraceActive: true })
-    },
-    reset: () => {
-      clearRotationGraceTimer()
-      set({
-        pointerOver: false,
-        focusWithin: false,
-        rotationGraceActive: false,
-      })
-    },
-  }))
+  }),
+)
 
 export const toolbarInteractionActions = {
   setPointerOver: (pointerOver: boolean) => {
-    toolbarInteractionStore.getState().setPointerOver(pointerOver)
+    useToolbarInteractionStore.setState({ pointerOver })
   },
   setFocusWithin: (focusWithin: boolean) => {
-    toolbarInteractionStore.getState().setFocusWithin(focusWithin)
+    useToolbarInteractionStore.setState({ focusWithin })
   },
   reportRotation: () => {
-    toolbarInteractionStore.getState().reportRotation()
+    clearRotationGraceTimer()
+    rotationGraceTimer = setTimeout(() => {
+      rotationGraceTimer = null
+      useToolbarInteractionStore.setState({ rotationGraceActive: false })
+    }, ROTATION_PIN_GRACE_MS)
+    useToolbarInteractionStore.setState({ rotationGraceActive: true })
   },
   // Clears every engagement flag and cancels the pending grace timer in one call.
   reset: () => {
-    toolbarInteractionStore.getState().reset()
+    clearRotationGraceTimer()
+    useToolbarInteractionStore.setState(
+      useToolbarInteractionStore.getInitialState(),
+      true,
+    )
   },
 }
 
@@ -83,5 +68,9 @@ export function selectToolbarEngaged(state: ToolbarInteractionStoreState) {
   return state.pointerOver || state.focusWithin || state.rotationGraceActive
 }
 
+export const toolbarInteractionStoreForTests = {
+  getState: () => useToolbarInteractionStore.getState(),
+}
+
 export const useToolbarEngaged = () =>
-  useStore(toolbarInteractionStore, selectToolbarEngaged)
+  useToolbarInteractionStore(selectToolbarEngaged)

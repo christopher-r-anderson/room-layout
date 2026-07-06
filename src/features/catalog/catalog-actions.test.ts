@@ -2,10 +2,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { toast } from 'sonner'
 import { resetSceneDocumentStore } from '@/core/stores/scene-document-store'
-import { feedbackStore, resetFeedbackStore } from '@/core/stores/feedback-store'
+import {
+  feedbackStoreForTests,
+  resetFeedbackStore,
+} from '@/core/stores/feedback-store'
 import {
   resetSelectionFocusStore,
-  selectionFocusStore,
+  useSelectionFocusStore,
 } from '@/core/stores/selection-focus-store'
 import {
   editorLifecycleActions,
@@ -95,7 +98,7 @@ describe('addFurniture', () => {
     // live regions are exempt, so the announcer reaches assistive tech. The
     // announcement lands on the store's clear-then-set tick.
     await vi.waitFor(() => {
-      expect(feedbackStore.getState().assertiveAnnouncement).toBe(
+      expect(feedbackStoreForTests.getState().assertiveAnnouncement).toBe(
         i18n._(ADD_FURNITURE_NO_SPACE_MESSAGE),
       )
     })
@@ -119,7 +122,7 @@ describe('addFurniture', () => {
     })
 
     expect(await addFurniture()).toBe(true)
-    expect(selectionFocusStore.getState().selectedSource).toBe('toolbar')
+    expect(useSelectionFocusStore.getState().selectedSource).toBe('toolbar')
     expect(selectionEffects.notePendingSource).toHaveBeenCalledWith('toolbar')
     expect(selectionEffects.notePendingSelection).toHaveBeenCalledWith({
       announceMode: 'added',

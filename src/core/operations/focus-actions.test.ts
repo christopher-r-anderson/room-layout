@@ -9,7 +9,7 @@ import {
 import {
   resetSelectionFocusStore,
   selectionFocusActions,
-  selectionFocusStore,
+  useSelectionFocusStore,
 } from '@/core/stores/selection-focus-store'
 import { dialogActions, resetDialogStore } from '@/core/stores/dialog-store'
 import {
@@ -44,7 +44,7 @@ describe('requestOutlinerFocus', () => {
 
     requestOutlinerFocus()
 
-    expect(selectionFocusStore.getState().outlinerFocusRequest).toEqual(
+    expect(useSelectionFocusStore.getState().outlinerFocusRequest).toEqual(
       expect.objectContaining({ targetSelectedId: 'b' }),
     )
   })
@@ -54,7 +54,7 @@ describe('requestOutlinerFocus', () => {
 
     requestOutlinerFocus()
 
-    expect(selectionFocusStore.getState().outlinerFocusRequest).toEqual(
+    expect(useSelectionFocusStore.getState().outlinerFocusRequest).toEqual(
       expect.objectContaining({ preferredIndex: 0 }),
     )
   })
@@ -64,7 +64,7 @@ describe('requestOutlinerFocus', () => {
 
     requestOutlinerFocus()
 
-    expect(selectionFocusStore.getState().outlinerFocusRequest).toEqual(
+    expect(useSelectionFocusStore.getState().outlinerFocusRequest).toEqual(
       expect.objectContaining({ focusContainer: true }),
     )
   })
@@ -99,11 +99,13 @@ describe('startOutlinerFocusReconciler', () => {
       token: 1,
       focusContainer: true,
     })
-    expect(selectionFocusStore.getState().outlinerFocusRequest).not.toBeNull()
+    expect(
+      useSelectionFocusStore.getState().outlinerFocusRequest,
+    ).not.toBeNull()
 
     dialogActions.openDialog('delete')
 
-    expect(selectionFocusStore.getState().outlinerFocusRequest).toBeNull()
+    expect(useSelectionFocusStore.getState().outlinerFocusRequest).toBeNull()
   })
 
   it('leaves the request when a non-blocking overlay opens', () => {
@@ -114,6 +116,8 @@ describe('startOutlinerFocusReconciler', () => {
 
     dialogActions.openDialog('room-surface')
 
-    expect(selectionFocusStore.getState().outlinerFocusRequest).not.toBeNull()
+    expect(
+      useSelectionFocusStore.getState().outlinerFocusRequest,
+    ).not.toBeNull()
   })
 })

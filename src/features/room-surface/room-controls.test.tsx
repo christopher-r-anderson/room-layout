@@ -6,7 +6,7 @@ import { assetsActions, resetAssetsStore } from '@/core/stores/assets-store'
 import {
   resetSceneDocumentStore,
   sceneDocumentActions,
-  sceneDocumentStore,
+  useSceneDocumentStore,
 } from '@/core/stores/scene-document-store'
 import { createEnvironmentConfig } from './test-fixtures'
 
@@ -44,8 +44,10 @@ describe('RoomControls', () => {
     fireEvent.click(screen.getByRole('tab', { name: 'Floor' }))
     fireEvent.click(screen.getByRole('radio', { name: 'Concrete' }))
 
-    expect(sceneDocumentStore.getState().wallFinishId).toBe('warm-white')
-    expect(sceneDocumentStore.getState().floorFinishId).toBe('concrete-floor')
+    expect(useSceneDocumentStore.getState().wallFinishId).toBe('warm-white')
+    expect(useSceneDocumentStore.getState().floorFinishId).toBe(
+      'concrete-floor',
+    )
   })
 
   it('commits lighting mood selection to the scene document', () => {
@@ -54,6 +56,8 @@ describe('RoomControls', () => {
     fireEvent.click(screen.getByRole('tab', { name: 'Lighting' }))
     fireEvent.click(screen.getByRole('radio', { name: 'Soft Lamplight' }))
 
-    expect(sceneDocumentStore.getState().lightingMoodId).toBe('soft-lamplight')
+    expect(useSceneDocumentStore.getState().lightingMoodId).toBe(
+      'soft-lamplight',
+    )
   })
 })

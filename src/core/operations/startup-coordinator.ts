@@ -5,15 +5,15 @@ import { isSceneStateAtDefaults } from '@/core/model/scene-model'
 import { i18n } from '@/shared/i18n/i18n'
 import { sceneCommands, clearSceneServices } from '@/scene/scene-commands'
 import { resetCollectionSceneRegistry } from '@/scene/collection-registry'
-import { resetCollectionLoading } from '@/core/stores/collection-loading-store'
+import { resetCollectionLoadingStore } from '@/core/stores/collection-loading-store'
 import { clearCollectionBytes } from './collection-bytes'
 import { feedbackActions } from '../stores/feedback-store'
 import { dialogActions } from '../stores/dialog-store'
 import {
   editorLifecycleActions,
-  editorLifecycleStore,
+  useEditorLifecycleStore,
 } from '../stores/editor-lifecycle-store'
-import { assetsStore } from '../stores/assets-store'
+import { useAssetsStore } from '../stores/assets-store'
 import { sceneDocumentActions } from '../stores/scene-document-store'
 import { resetSelectionFocusStore } from '../stores/selection-focus-store'
 import { resetToolbarGeometryStore } from '../stores/toolbar-geometry-store'
@@ -35,7 +35,7 @@ import type { StartupErrorKind } from '../types/startup.types'
 // retry transitions so a failed or restarted load never leaves stale scene or
 // selection state behind.
 function resetStartupShell() {
-  sceneDocumentActions.resetSceneDocument()
+  sceneDocumentActions.reset()
   resetSelectionFocusStore()
   resetToolbarGeometryStore()
   resetToolbarInteractionStore()
@@ -43,7 +43,7 @@ function resetStartupShell() {
 }
 
 function resolveFinishContext() {
-  const { catalog, environmentConfig } = assetsStore.getState()
+  const { catalog, environmentConfig } = useAssetsStore.getState()
 
   return {
     catalog,
@@ -187,7 +187,7 @@ function runRestoreOnce() {
 // defaults) on the first ready of a session, guarded by the attempt count so a
 // Scene remount or retry does not re-run it.
 export function completeAssetLoad() {
-  if (editorLifecycleStore.getState().restoreAttemptCount === 0) {
+  if (useEditorLifecycleStore.getState().restoreAttemptCount === 0) {
     editorLifecycleActions.incrementRestoreAttempt()
     runRestoreOnce()
   }
@@ -235,7 +235,7 @@ export function requestAssetRetry() {
   // via the epoch), not on the error path: a gated failure's `failed` mark must
   // survive so the loader does not immediately re-attempt and loop. Clears the core
   // loading lifecycle and the scene's parsed-collection registry together.
-  resetCollectionLoading()
+  resetCollectionLoadingStore()
   resetCollectionSceneRegistry()
   clearCollectionBytes()
 

@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 import {
   sceneDocumentActions,
-  sceneDocumentStore,
+  useSceneDocumentStore,
 } from '@/core/scene-contracts'
 import type {
   FurnitureCatalogEntry,
@@ -48,7 +48,7 @@ export function useFurnitureOperations({
   snapSize,
 }: UseFurnitureOperationsOptions) {
   const deleteSelection = useCallback(() => {
-    const { history, selectedId } = sceneDocumentStore.getState()
+    const { history, selectedId } = useSceneDocumentStore.getState()
     const operationResult = deleteSelectionFromHistory(history, selectedId)
 
     if (!operationResult.deleted) {
@@ -75,7 +75,7 @@ export function useFurnitureOperations({
       _options?: { source?: MoveSource },
     ): MoveSelectionResult => {
       void _options
-      const { history, selectedId } = sceneDocumentStore.getState()
+      const { history, selectedId } = useSceneDocumentStore.getState()
       const { history: nextHistory, result } = resolveMoveSelectionInHistory({
         history,
         selectedId,
@@ -99,7 +99,7 @@ export function useFurnitureOperations({
       position?: [number, number, number]
       rotationY?: number
     }): UpdateSelectionTransformResult => {
-      const { history, selectedId } = sceneDocumentStore.getState()
+      const { history, selectedId } = useSceneDocumentStore.getState()
       const { history: nextHistory, result } =
         resolveSetSelectionTransformInHistory({
           history,
@@ -120,7 +120,7 @@ export function useFurnitureOperations({
 
   const rotateSelection = useCallback(
     (deltaRadians: number) => {
-      const { history, selectedId } = sceneDocumentStore.getState()
+      const { history, selectedId } = useSceneDocumentStore.getState()
       const nextHistory = rotateSelectedFurnitureInHistory({
         history,
         selectedId,
@@ -135,7 +135,7 @@ export function useFurnitureOperations({
 
   const addFurniture = useCallback(
     (catalogId: string): AddFurnitureResult => {
-      const { history, instanceIdCounter } = sceneDocumentStore.getState()
+      const { history, instanceIdCounter } = useSceneDocumentStore.getState()
       const operationResult = addFurnitureToHistory({
         history,
         // Read the freshly parsed collection scenes at call time: the add flow

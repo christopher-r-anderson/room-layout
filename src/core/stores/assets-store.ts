@@ -1,12 +1,9 @@
-import { useStoreWithEqualityFn } from 'zustand/traditional'
-import { subscribeWithSelector } from 'zustand/middleware'
-import { createStore } from 'zustand/vanilla'
+import { create } from 'zustand'
 import type { EnvironmentMaterialConfig } from '@/domain/environment-materials'
 import type {
   FurnitureCatalogEntry,
   FurnitureCollection,
 } from '@/domain/catalog'
-import type { EqualityChecker } from '../types/store.types'
 
 interface Assets {
   catalog: FurnitureCatalogEntry[]
@@ -20,8 +17,6 @@ interface AssetsStoreState extends Assets {
   // the gate resolution) index into this instead of re-joining catalog x
   // collections at each call site.
   sourcePathByCatalogId: Map<string, string>
-  setAssets: (assets: Assets) => void
-  reset: () => void
 }
 
 export function buildSourcePathByCatalogId(
@@ -41,54 +36,30 @@ export function buildSourcePathByCatalogId(
   return byCatalogId
 }
 
-function getInitialAssetsState() {
-  return {
-    catalog: [],
-    collections: [],
-    environmentConfig: null,
-    sourcePathByCatalogId: new Map<string, string>(),
-  }
-}
-
 // App-facing mirror of the startup-loaded catalog manifest. Startup owns the
 // load; this store lets features read the resolved catalog/collections/finishes
 // through narrow hooks instead of receiving them threaded through app chrome.
-export const assetsStore = createStore<AssetsStoreState>()(
-  subscribeWithSelector((set, get) => ({
-    ...getInitialAssetsState(),
-    setAssets: (assets) => {
-      set((state) => ({
-        ...state,
-        ...assets,
-        sourcePathByCatalogId: buildSourcePathByCatalogId(
-          assets.catalog,
-          assets.collections,
-        ),
-      }))
-    },
-    reset: () => {
-      set(() => ({
-        ...getInitialAssetsState(),
-        setAssets: get().setAssets,
-        reset: get().reset,
-      }))
-    },
-  })),
-)
-
-function useAssetsStore<T>(
-  selector: (state: AssetsStoreState) => T,
-  equalityFn?: EqualityChecker<T>,
-) {
-  return useStoreWithEqualityFn(assetsStore, selector, equalityFn)
-}
+export const useAssetsStore = create<AssetsStoreState>()(() => ({
+  catalog: [],
+  collections: [],
+  environmentConfig: null,
+  // getInitialState() hands back this exact Map on reset; setAssets replaces
+  // it wholesale, so it must never be mutated in place.
+  sourcePathByCatalogId: new Map<string, string>(),
+}))
 
 export const assetsActions = {
   setAssets: (assets: Assets) => {
-    assetsStore.getState().setAssets(assets)
+    useAssetsStore.setState({
+      ...assets,
+      sourcePathByCatalogId: buildSourcePathByCatalogId(
+        assets.catalog,
+        assets.collections,
+      ),
+    })
   },
   reset: () => {
-    assetsStore.getState().reset()
+    useAssetsStore.setState(useAssetsStore.getInitialState(), true)
   },
 }
 
@@ -99,7 +70,7 @@ export function resetAssetsStore() {
 // Imperative lookup for action code (the add flow); the hook below is the React
 // equivalent.
 export function getSourcePathForCatalogId(catalogId: string): string | null {
-  return assetsStore.getState().sourcePathByCatalogId.get(catalogId) ?? null
+  return useAssetsStore.getState().sourcePathByCatalogId.get(catalogId) ?? null
 }
 
 export const useCatalogEntries = () => useAssetsStore((state) => state.catalog)

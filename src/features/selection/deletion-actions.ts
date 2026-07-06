@@ -3,10 +3,10 @@ import type { FurnitureItem } from '@/domain/furniture'
 import { i18n } from '@/shared/i18n/i18n'
 import { feedbackActions } from '@/core/stores/feedback-store'
 import { dialogActions } from '@/core/stores/dialog-store'
-import { sceneDocumentStore } from '@/core/stores/scene-document-store'
+import { useSceneDocumentStore } from '@/core/stores/scene-document-store'
 import {
   selectionFocusActions,
-  selectionFocusStore,
+  useSelectionFocusStore,
 } from '@/core/stores/selection-focus-store'
 import { selectionEffects } from '@/core/operations/selection-effects'
 import { sceneCommands } from '@/scene/scene-commands'
@@ -16,8 +16,8 @@ import { DELETE_DIALOG_ID } from './delete-dialog-definition'
 export function confirmDeleteSelection(
   pendingDeleteFurniture: FurnitureItem | null,
 ) {
-  const items = sceneDocumentStore.getState().history.present
-  const selectedSource = selectionFocusStore.getState().selectedSource
+  const items = useSceneDocumentStore.getState().history.present
+  const selectedSource = useSelectionFocusStore.getState().selectedSource
 
   const pendingId = pendingDeleteFurniture?.id ?? null
   const deletedIndex = pendingId

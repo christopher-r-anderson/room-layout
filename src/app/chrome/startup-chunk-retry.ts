@@ -1,4 +1,4 @@
-import { editorLifecycleStore } from '@/core/stores/editor-lifecycle-store'
+import { useEditorLifecycleStore } from '@/core/stores/editor-lifecycle-store'
 import { notifyChunkLoadError } from '@/core/operations/startup-coordinator'
 
 // Recovery for the app's own lazy chunks (engine, chrome). A failed chunk fetch
@@ -13,7 +13,7 @@ import { notifyChunkLoadError } from '@/core/operations/startup-coordinator'
 // Resolves on the next explicit startup retry (the token bumps only then).
 function nextRetryRequest(): Promise<void> {
   return new Promise((resolve) => {
-    const unsubscribe = editorLifecycleStore.subscribe(
+    const unsubscribe = useEditorLifecycleStore.subscribe(
       (state) => state.retryToken,
       () => {
         unsubscribe()

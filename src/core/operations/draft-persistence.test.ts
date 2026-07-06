@@ -1,6 +1,3 @@
-// @vitest-environment jsdom
-
-import { act, renderHook } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createHistoryState } from '@/shared/lib/ui/editor-history'
 import type { EnvironmentMaterialConfig } from '@/domain/environment-materials'
@@ -12,7 +9,8 @@ import {
   resetSceneDocumentStore,
   sceneDocumentActions,
 } from '@/core/stores/scene-document-store'
-import { useDraftPersistence } from './use-draft-persistence'
+import { assetsActions, resetAssetsStore } from '@/core/stores/assets-store'
+import { startDraftPersistenceReconciler } from './draft-persistence'
 
 type SaveSceneDraftArgs = [
   items: ReturnType<typeof createFurnitureItem>[],
@@ -102,79 +100,68 @@ function createFurnitureItem(id: string) {
   }
 }
 
-describe('useDraftPersistence', () => {
+describe('startDraftPersistenceReconciler', () => {
+  let stopReconciler: () => void
+
   beforeEach(() => {
     resetSceneDocumentStore()
     resetEditorLifecycleStore()
+    resetAssetsStore()
+    assetsActions.setAssets({
+      catalog: [],
+      collections: [],
+      environmentConfig,
+    })
     saveSceneDraft.mockReset()
     clearSceneDraft.mockReset()
+    stopReconciler = startDraftPersistenceReconciler()
   })
 
   afterEach(() => {
+    stopReconciler()
     resetSceneDocumentStore()
     resetEditorLifecycleStore()
+    resetAssetsStore()
   })
 
   it('does not persist while startup is still loading', () => {
-    renderHook(() => {
-      useDraftPersistence({ environmentConfig })
-    })
-
-    act(() => {
-      sceneDocumentActions.setHistory(
-        createHistoryState([createFurnitureItem('item-1')]),
-      )
-    })
+    sceneDocumentActions.setHistory(
+      createHistoryState([createFurnitureItem('item-1')]),
+    )
 
     expect(saveSceneDraft).not.toHaveBeenCalled()
     expect(clearSceneDraft).not.toHaveBeenCalled()
   })
 
   it('does not persist while startup is errored', () => {
-    renderHook(() => {
-      useDraftPersistence({ environmentConfig })
+    editorLifecycleActions.setAssetError({
+      kind: 'asset-load',
+      message: 'Unable to load asset',
     })
-
-    act(() => {
-      editorLifecycleActions.setAssetError({
-        kind: 'asset-load',
-        message: 'Unable to load asset',
-      })
-      sceneDocumentActions.setHistory(
-        createHistoryState([createFurnitureItem('item-1')]),
-      )
-    })
+    sceneDocumentActions.setHistory(
+      createHistoryState([createFurnitureItem('item-1')]),
+    )
 
     expect(saveSceneDraft).not.toHaveBeenCalled()
     expect(clearSceneDraft).not.toHaveBeenCalled()
 
-    act(() => {
-      sceneDocumentActions.resetSceneDocument()
-    })
+    sceneDocumentActions.reset()
 
     expect(saveSceneDraft).not.toHaveBeenCalled()
     expect(clearSceneDraft).not.toHaveBeenCalled()
   })
 
   it('saves draft changes once startup is ready', () => {
-    renderHook(() => {
-      useDraftPersistence({ environmentConfig })
-    })
-
-    act(() => {
-      editorLifecycleActions.markAssetsReady()
-    })
+    editorLifecycleActions.markAssetsReady()
 
     expect(clearSceneDraft).toHaveBeenCalledTimes(1)
 
     saveSceneDraft.mockClear()
     clearSceneDraft.mockClear()
 
-    act(() => {
-      sceneDocumentActions.setHistory(
-        createHistoryState([createFurnitureItem('item-1')]),
-      )
-    })
+    sceneDocumentActions.setHistory(
+      createHistoryState([createFurnitureItem('item-1')]),
+    )
 
     expect(saveSceneDraft).toHaveBeenLastCalledWith(
       [createFurnitureItem('item-1')],
@@ -188,32 +175,22 @@ describe('useDraftPersistence', () => {
   })
 
   it('skips persistence during drag and saves after drag ends', () => {
-    renderHook(() => {
-      useDraftPersistence({ environmentConfig })
-    })
-
-    act(() => {
-      editorLifecycleActions.markAssetsReady()
-    })
+    editorLifecycleActions.markAssetsReady()
 
     expect(clearSceneDraft).toHaveBeenCalledTimes(1)
 
     saveSceneDraft.mockClear()
     clearSceneDraft.mockClear()
 
-    act(() => {
-      sceneDocumentActions.setDragging(true)
-      sceneDocumentActions.setHistory(
-        createHistoryState([createFurnitureItem('item-1')]),
-      )
-    })
+    sceneDocumentActions.setDragging(true)
+    sceneDocumentActions.setHistory(
+      createHistoryState([createFurnitureItem('item-1')]),
+    )
 
     expect(saveSceneDraft).not.toHaveBeenCalled()
     expect(clearSceneDraft).not.toHaveBeenCalled()
 
-    act(() => {
-      sceneDocumentActions.setDragging(false)
-    })
+    sceneDocumentActions.setDragging(false)
 
     expect(saveSceneDraft).toHaveBeenLastCalledWith(
       [createFurnitureItem('item-1')],
@@ -226,19 +203,11 @@ describe('useDraftPersistence', () => {
   })
 
   it('clears the draft when the scene returns to defaults', () => {
-    renderHook(() => {
-      useDraftPersistence({ environmentConfig })
-    })
-
-    act(() => {
-      editorLifecycleActions.markAssetsReady()
-    })
+    editorLifecycleActions.markAssetsReady()
 
     expect(clearSceneDraft).toHaveBeenCalled()
 
-    act(() => {
-      sceneDocumentActions.setFloorFinishId('floor-alt')
-    })
+    sceneDocumentActions.setFloorFinishId('floor-alt')
 
     expect(saveSceneDraft).toHaveBeenLastCalledWith([], {
       floorFinishId: 'floor-alt',
@@ -246,9 +215,7 @@ describe('useDraftPersistence', () => {
       lightingMoodId: 'lighting-default',
     })
 
-    act(() => {
-      sceneDocumentActions.setFloorFinishId('floor-default')
-    })
+    sceneDocumentActions.setFloorFinishId('floor-default')
 
     expect(clearSceneDraft).toHaveBeenCalledTimes(2)
   })

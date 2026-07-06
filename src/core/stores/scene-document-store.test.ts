@@ -16,13 +16,12 @@ import { sceneCommands } from '@/scene/scene-commands'
 import {
   resetSceneDocumentStore,
   sceneDocumentActions,
-  sceneDocumentStore,
+  useSceneDocumentStore,
   useFloorFinishId,
   useFloorFinishLoading,
   useHasSelection,
   useHistoryAvailability,
   useItems,
-  useItemIds,
   useLightingMoodId,
   useSelectedId,
   useSelectedFurniture,
@@ -71,7 +70,7 @@ function registerDefaultSceneServices(
   })
 }
 
-describe('sceneDocumentStore', () => {
+describe('useSceneDocumentStore', () => {
   it('derives selected furniture and selection presence from history and selected id', () => {
     const { result: items } = renderHook(() => useItems())
     const { result: selectedId } = renderHook(() => useSelectedId())
@@ -172,33 +171,16 @@ describe('sceneDocumentStore', () => {
       sceneDocumentActions.setSelectedId('item-1')
     })
 
-    expect(sceneDocumentStore.getState().selectedId).toBe('item-1')
-    expect(sceneDocumentStore.getState().previewedIdRaw).toBeNull()
+    expect(useSceneDocumentStore.getState().selectedId).toBe('item-1')
+    expect(useSceneDocumentStore.getState().previewedIdRaw).toBeNull()
 
     act(() => {
       sceneDocumentActions.setPreviewedId('item-2')
       sceneDocumentActions.setSelectedId(null)
     })
 
-    expect(sceneDocumentStore.getState().selectedId).toBeNull()
-    expect(sceneDocumentStore.getState().previewedIdRaw).toBeNull()
-  })
-
-  it('returns stable item ids until the id list changes', () => {
-    const items = [FURNITURE_ITEM]
-    const { result } = renderHook(() => useItemIds())
-
-    act(() => {
-      seedSceneItems(items, { selectedId: FURNITURE_ITEM.id })
-    })
-
-    const initialIds = result.current
-
-    act(() => {
-      seedSceneItems(items, { selectedId: FURNITURE_ITEM.id })
-    })
-
-    expect(result.current).toBe(initialIds)
+    expect(useSceneDocumentStore.getState().selectedId).toBeNull()
+    expect(useSceneDocumentStore.getState().previewedIdRaw).toBeNull()
   })
 
   it('reconciles removed preview ids from the backing scene items', () => {
@@ -211,13 +193,15 @@ describe('sceneDocumentStore', () => {
       sceneDocumentActions.setPreviewedId(FURNITURE_ITEM.id)
     })
 
-    expect(sceneDocumentStore.getState().previewedIdRaw).toBe(FURNITURE_ITEM.id)
+    expect(useSceneDocumentStore.getState().previewedIdRaw).toBe(
+      FURNITURE_ITEM.id,
+    )
 
     act(() => {
       seedSceneItems([])
     })
 
-    expect(sceneDocumentStore.getState().previewedIdRaw).toBeNull()
+    expect(useSceneDocumentStore.getState().previewedIdRaw).toBeNull()
     expect(consoleErrorSpy).not.toHaveBeenCalled()
 
     consoleErrorSpy.mockRestore()

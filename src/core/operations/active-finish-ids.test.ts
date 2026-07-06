@@ -2,10 +2,10 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { renderHook } from '@testing-library/react'
 import type { EnvironmentMaterialConfig } from '@/domain/environment-materials'
-import { assetsStore, resetAssetsStore } from '@/core/stores/assets-store'
+import { useAssetsStore, resetAssetsStore } from '@/core/stores/assets-store'
 import {
   resetSceneDocumentStore,
-  sceneDocumentStore,
+  useSceneDocumentStore,
 } from '@/core/stores/scene-document-store'
 import { getActiveFinishIds, useActiveFinishIds } from './active-finish-ids'
 
@@ -74,8 +74,12 @@ function seed(
   wallFinishId: string,
   lightingMoodId = 'daylight',
 ) {
-  assetsStore.setState({ environmentConfig: ENVIRONMENT })
-  sceneDocumentStore.setState({ floorFinishId, wallFinishId, lightingMoodId })
+  useAssetsStore.setState({ environmentConfig: ENVIRONMENT })
+  useSceneDocumentStore.setState({
+    floorFinishId,
+    wallFinishId,
+    lightingMoodId,
+  })
 }
 
 describe('active-finish-ids', () => {

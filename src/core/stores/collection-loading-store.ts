@@ -1,7 +1,6 @@
-import { useStoreWithEqualityFn } from 'zustand/traditional'
+import { create } from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
-import { createStore } from 'zustand/vanilla'
-import { shallow } from 'zustand/shallow'
+import { useShallow } from 'zustand/react/shallow'
 import {
   AssetHttpError,
   type StreamFetchProgress,
@@ -60,6 +59,9 @@ interface CollectionLoadingState {
   failed: Map<string, CollectionLoadFailureKind>
 }
 
+// getInitialState() hands back the first result of this factory on reset, so the
+// Maps/Sets it creates must never be mutated in place - every action copies on
+// write.
 function createInitialCollectionLoadingState(): CollectionLoadingState {
   return {
     gated: null,
@@ -73,26 +75,26 @@ function createInitialCollectionLoadingState(): CollectionLoadingState {
 // Exported for the non-React load pipeline (operations/collection-loader), which
 // subscribes for its reconciler and settles ensureCollectionLoaded off store
 // changes. React consumers use the selector hooks below.
-export const collectionLoadingStore = createStore<CollectionLoadingState>()(
+export const useCollectionLoadingStore = create<CollectionLoadingState>()(
   subscribeWithSelector(() => createInitialCollectionLoadingState()),
 )
 
 export const collectionLoadingActions = {
   // Resolved once per load cycle by bootstrap, after the manifest arrives.
-  setGatedCollectionPaths(paths: string[]) {
-    collectionLoadingStore.setState((state) => ({ ...state, gated: paths }))
+  setGatedCollectionPaths: (paths: string[]) => {
+    useCollectionLoadingStore.setState({ gated: paths })
   },
-  setProgress(path: string, progress: CollectionDownloadProgress) {
-    collectionLoadingStore.setState((state) => {
+  setProgress: (path: string, progress: CollectionDownloadProgress) => {
+    useCollectionLoadingStore.setState((state) => {
       const progressByPath = new Map(state.progressByPath)
       progressByPath.set(path, progress)
-      return { ...state, progressByPath }
+      return { progressByPath }
     })
   },
   // Reported by the load pipeline once a collection has parsed and registered. A
   // successful load also clears any prior failure mark.
-  markLoaded(path: string) {
-    collectionLoadingStore.setState((state) => {
+  markLoaded: (path: string) => {
+    useCollectionLoadingStore.setState((state) => {
       if (state.loaded.has(path) && !state.failed.has(path)) {
         return state
       }
@@ -100,20 +102,20 @@ export const collectionLoadingActions = {
       loaded.add(path)
       const failed = new Map(state.failed)
       failed.delete(path)
-      return { ...state, loaded, failed }
+      return { loaded, failed }
     })
   },
   // Reported by the load pipeline when a collection fails to load; the raw error
   // is classified here (this layer owns the HTTP error type).
-  markFailed(path: string, error: unknown) {
+  markFailed: (path: string, error: unknown) => {
     const kind = classifyCollectionLoadError(error)
-    collectionLoadingStore.setState((state) => {
+    useCollectionLoadingStore.setState((state) => {
       if (state.failed.get(path) === kind) {
         return state
       }
       const failed = new Map(state.failed)
       failed.set(path, kind)
-      return { ...state, failed }
+      return { failed }
     })
   },
   // Request an on-demand collection (or re-request a failed one). Always writes a
@@ -122,23 +124,26 @@ export const collectionLoadingActions = {
   // `unavailable` mark is permanent for the session (re-requesting a missing or
   // broken asset cannot help, and clearing it would flicker its catalog tile
   // back to selectable); only an explicit startup retry resets it.
-  requestCollection(path: string) {
-    collectionLoadingStore.setState((state) => {
+  requestCollection: (path: string) => {
+    useCollectionLoadingStore.setState((state) => {
       const wanted = new Set(state.wanted)
       wanted.add(path)
       const failed = new Map(state.failed)
       if (failed.get(path) === 'connection') {
         failed.delete(path)
       }
-      return { ...state, wanted, failed }
+      return { wanted, failed }
     })
   },
-  reset() {
-    collectionLoadingStore.setState(createInitialCollectionLoadingState())
+  reset: () => {
+    useCollectionLoadingStore.setState(
+      useCollectionLoadingStore.getInitialState(),
+      true,
+    )
   },
 }
 
-export function resetCollectionLoading() {
+export function resetCollectionLoadingStore() {
   collectionLoadingActions.reset()
 }
 
@@ -150,29 +155,29 @@ function clampPercent(receivedBytes: number, totalBytes: number): number {
 }
 
 export function isCollectionLoaded(path: string): boolean {
-  return collectionLoadingStore.getState().loaded.has(path)
+  return useCollectionLoadingStore.getState().loaded.has(path)
 }
 
 export function isCollectionFailed(path: string): boolean {
-  return collectionLoadingStore.getState().failed.has(path)
+  return useCollectionLoadingStore.getState().failed.has(path)
 }
 
 export function getCollectionFailureKind(
   path: string,
 ): CollectionLoadFailureKind | null {
-  return collectionLoadingStore.getState().failed.get(path) ?? null
+  return useCollectionLoadingStore.getState().failed.get(path) ?? null
 }
 
 // Reactive map of failed collections to why they failed, for the catalog to mark
 // unavailable (permanent) items.
 export function useFailedCollections(): Map<string, CollectionLoadFailureKind> {
-  return useStoreWithEqualityFn(collectionLoadingStore, (state) => state.failed)
+  return useCollectionLoadingStore((state) => state.failed)
 }
 
 // Reactive set of loaded collection paths, for the startup readiness observer to
 // tell when the gated collections have all parsed.
 export function useLoadedCollections(): Set<string> {
-  return useStoreWithEqualityFn(collectionLoadingStore, (state) => state.loaded)
+  return useCollectionLoadingStore((state) => state.loaded)
 }
 
 const NO_GATED_PATHS: string[] = []
@@ -181,11 +186,8 @@ const NO_GATED_PATHS: string[] = []
 // useGatedCollectionsResolved to distinguish "resolved to empty" from "unknown".
 export function useGatedCollectionPaths(): string[] {
   return (
-    useStoreWithEqualityFn(
-      collectionLoadingStore,
-      (state) => state.gated,
-      shallow,
-    ) ?? NO_GATED_PATHS
+    useCollectionLoadingStore(useShallow((state) => state.gated)) ??
+    NO_GATED_PATHS
   )
 }
 
@@ -193,16 +195,13 @@ export function useGatedCollectionPaths(): string[] {
 // readiness observer gates on this rather than on a proxy such as manifest
 // contents, so an unresolved (or reset-by-retry) gate can never read as ready.
 export function useGatedCollectionsResolved(): boolean {
-  return useStoreWithEqualityFn(
-    collectionLoadingStore,
-    (state) => state.gated !== null,
-  )
+  return useCollectionLoadingStore((state) => state.gated !== null)
 }
 
 // The download percent for one collection, or null when its size is unknown or it
 // is not loading (so the Add button falls back to an indeterminate spinner).
 export function useCollectionLoadPercent(path: string | null): number | null {
-  return useStoreWithEqualityFn(collectionLoadingStore, (state) => {
+  return useCollectionLoadingStore((state) => {
     if (!path) {
       return null
     }
@@ -227,9 +226,8 @@ export interface GatedLoadProgress {
 // skew the denominator); a parsed collection always counts as byte-complete, so
 // a missing Content-Length cannot pin the loader in its downloading stage.
 export function useGatedLoadProgress(): GatedLoadProgress {
-  return useStoreWithEqualityFn(
-    collectionLoadingStore,
-    (state) => {
+  return useCollectionLoadingStore(
+    useShallow((state) => {
       const gatedPaths = state.gated ?? NO_GATED_PATHS
       let receivedBytes = 0
       let totalBytes = 0
@@ -250,7 +248,6 @@ export function useGatedLoadProgress(): GatedLoadProgress {
       }
       const percent = clampPercent(receivedBytes, totalBytes)
       return { total: gatedPaths.length, loadedCount, percent }
-    },
-    shallow,
+    }),
   )
 }
