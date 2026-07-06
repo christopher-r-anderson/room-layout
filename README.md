@@ -8,12 +8,14 @@ Pick furniture from a visual catalog, arrange items in real time, adjust room su
 
 ## Design Highlights
 
+- **Environment-first startup**: The room is interactive in seconds while furniture streams in on demand; a shared or restored layout gates only on the collections it actually references
 - **Collision-aware placement**: Furniture stays in valid positions; bounds and collision checks keep layouts safe and predictable
 - **Keyboard-first workflows**: Canvas interaction, item selection via outliner, and details editing all work without drag
 - **Accessible dialog contracts**: Focus management, Escape behavior, and role semantics across overlays and confirmations
 - **Non-modal room editing**: Adjust wall and floor finishes while viewing the result in context, no mode-switching overhead
 - **Smart toolbar placement**: Selection-oriented controls use viewport-relative positioning with deterministic fallback tiers
-- **Asset resilience**: Loading state gates editor controls; failures show a recovery path instead of a broken state
+- **Zero-shift loading handoff**: The pre-paint HTML skeleton and the React loader mirror each other, so the spinner holds its position across the JavaScript handoff
+- **Network + asset resilience**: Stall-aware streaming downloads, permanent-vs-transient failure classification (broken items marked unavailable in the catalog), and a retry path for everything up to a stale deploy's missing chunk
 
 ## ⚡ Quick Start
 
