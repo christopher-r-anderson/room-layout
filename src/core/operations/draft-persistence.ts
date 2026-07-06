@@ -1,16 +1,14 @@
-import { useEffect } from 'react'
 import type { EnvironmentMaterialConfig } from '@/domain/environment-materials'
+import type { FurnitureItem } from '@/domain/furniture'
+import { useAssetsStore } from '@/core/stores/assets-store'
 import { useEditorLifecycleStore } from '@/core/stores/editor-lifecycle-store'
 import { useSceneDocumentStore } from '@/core/stores/scene-document-store'
 import { clearSceneDraft, saveSceneDraft } from '@/core/persistence/scene-draft'
 import { isFreshSceneState } from '@/core/model/scene-defaults'
-
-interface UseDraftPersistenceOptions {
-  environmentConfig: EnvironmentMaterialConfig | null
-}
+import { createReconciler } from './reconciler'
 
 interface DraftSceneState {
-  items: ReturnType<typeof useSceneDocumentStore.getState>['history']['present']
+  items: FurnitureItem[]
   isDragging: boolean
   floorFinishId: string
   wallFinishId: string
@@ -71,11 +69,15 @@ function getActiveFinishIds(
   }
 }
 
-function persistDraft(environmentConfig: EnvironmentMaterialConfig) {
+function persistDraft() {
+  // The environment config lands in the assets store before startup can reach
+  // 'ready', and the phase gate below holds until then - so a null config only
+  // coincides with states that must not persist anyway.
+  const environmentConfig = useAssetsStore.getState().environmentConfig
   const sceneState = getDraftSceneState()
   const startupPhase = useEditorLifecycleStore.getState().startupPhase
 
-  if (startupPhase !== 'ready' || sceneState.isDragging) {
+  if (!environmentConfig || startupPhase !== 'ready' || sceneState.isDragging) {
     return
   }
 
@@ -104,40 +106,30 @@ function persistDraft(environmentConfig: EnvironmentMaterialConfig) {
   })
 }
 
-export function useDraftPersistence({
-  environmentConfig,
-}: UseDraftPersistenceOptions) {
-  useEffect(() => {
-    if (!environmentConfig) {
-      return
-    }
-
-    const persist = () => {
-      persistDraft(environmentConfig)
-    }
-
-    const unsubscribeScene = useSceneDocumentStore.subscribe(
-      (state) => ({
+/**
+ * Mirrors the scene document into the local draft whenever it changes while the
+ * editor is ready and not dragging. Idempotent; returns an unsubscribe.
+ */
+export const startDraftPersistenceReconciler = createReconciler(() => {
+  const unsubscribes = [
+    useSceneDocumentStore.subscribe(
+      (state): DraftSceneState => ({
         items: state.history.present,
         isDragging: state.isDragging,
         floorFinishId: state.floorFinishId,
         wallFinishId: state.wallFinishId,
         lightingMoodId: state.lightingMoodId,
       }),
-      persist,
+      persistDraft,
       { equalityFn: areDraftSceneStatesEqual },
-    )
-
-    const unsubscribeRuntime = useEditorLifecycleStore.subscribe(
+    ),
+    useEditorLifecycleStore.subscribe(
       (state) => state.startupPhase,
-      persist,
-    )
+      persistDraft,
+    ),
+  ]
 
-    persist()
+  persistDraft()
 
-    return () => {
-      unsubscribeScene()
-      unsubscribeRuntime()
-    }
-  }, [environmentConfig])
-}
+  return unsubscribes
+})
