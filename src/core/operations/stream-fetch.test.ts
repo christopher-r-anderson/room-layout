@@ -29,7 +29,7 @@ function abortableFetch() {
     (_url: string, options?: { signal?: AbortSignal }) =>
       new Promise<Response>((_resolve, reject) => {
         options?.signal?.addEventListener('abort', () => {
-          reject(new Error('aborted'))
+          reject(options.signal?.reason as Error)
         })
       }),
   )
@@ -76,7 +76,10 @@ describe('streamFetch', () => {
     const promise = streamFetch('/collection.glb', { stallTimeoutMs: 1000 })
     const caught = promise.catch((error: unknown) => error)
     await vi.advanceTimersByTimeAsync(1001)
-    expect(await caught).toBeInstanceOf(Error)
+    const error = await caught
+    expect(error).toBeInstanceOf(DOMException)
+    expect((error as DOMException).name).toBe('TimeoutError')
+    expect((error as DOMException).message).toMatch(/stalled/)
   })
 
   it('respects an external abort signal', async () => {
@@ -88,6 +91,8 @@ describe('streamFetch', () => {
     })
     const caught = promise.catch((error: unknown) => error)
     controller.abort()
-    expect(await caught).toBeInstanceOf(Error)
+    const error = await caught
+    expect(error).toBeInstanceOf(DOMException)
+    expect((error as DOMException).name).toBe('AbortError')
   })
 })
