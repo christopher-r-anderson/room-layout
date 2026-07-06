@@ -222,6 +222,24 @@ describe('resetCollectionPipeline', () => {
     await loadCollection('/models/a.glb')
     expect(isCollectionLoaded('/models/a.glb')).toBe(true)
   })
+
+  it('does not mark a failure into the fresh cycle when the teardown aborts an in-flight load', async () => {
+    const bytes = deferred<ArrayBuffer>()
+    fetchCollectionBytesMock.mockReturnValue(bytes.promise)
+
+    const pending = loadCollection('/models/streaming.glb')
+    expect(fetchCollectionBytesMock).toHaveBeenCalledTimes(1)
+    // requestAssetRetry's sequence: teardown (which aborts the fetch), then the
+    // epoch bump - both synchronous, so they complete before the abort
+    // rejection can deliver on a microtask.
+    resetCollectionPipeline()
+    editorLifecycleActions.requestRetry()
+    bytes.reject(new DOMException('aborted', 'AbortError'))
+    await pending
+
+    expect(getCollectionFailureKind('/models/streaming.glb')).toBeNull()
+    expect(useCollectionLoadingStore.getState().failed.size).toBe(0)
+  })
 })
 
 describe('startCollectionLoadReconciler', () => {
