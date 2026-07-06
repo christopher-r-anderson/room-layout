@@ -6,11 +6,12 @@ import type { FocusEvent } from 'react'
 import {
   resetToolbarInteractionStore,
   selectToolbarEngaged,
-  toolbarInteractionStore,
+  toolbarInteractionActions,
+  useToolbarInteractionStore,
 } from '@/core/stores/toolbar-interaction-store'
 import { useReportToolbarEngagement } from './use-report-toolbar-engagement'
 
-const engaged = () => selectToolbarEngaged(toolbarInteractionStore.getState())
+const engaged = () => selectToolbarEngaged(useToolbarInteractionStore.getState())
 
 // Builds a blur event out of real DOM nodes so the handler's relatedTarget
 // narrowing and containment check run for real: focus either lands on a control
@@ -82,7 +83,7 @@ describe('useReportToolbarEngagement', () => {
       ({ showing }) => useReportToolbarEngagement(showing, 'item-1'),
       { initialProps: { showing: true } },
     )
-    toolbarInteractionStore.getState().reportRotation()
+    toolbarInteractionActions.reportRotation()
     expect(engaged()).toBe(true)
 
     rerender({ showing: false })
