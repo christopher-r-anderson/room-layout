@@ -157,9 +157,10 @@ Two special cases:
   (`beginAssetLoad` no-ops on `errored`), so a chunk failure that races the
   manifest fetch keeps the error overlay up until that retry.
 - An add failure while the drawer is open reports on two channels: a toast for
-  visual users, and an assertive announcement for assistive tech - the drawer's
-  aria-hiding exempts `aria-live` regions, so the announcer stays live while
-  the toast region does not announce.
+  visual users, and an assertive announcement - the toast region is a polite
+  live region only, and an error in response to a user action should
+  interrupt. Both survive the drawer's aria-hiding, which exempts `aria-live`
+  regions.
 
 ## Pointers
 

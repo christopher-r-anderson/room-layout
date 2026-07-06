@@ -98,9 +98,9 @@ export async function addFurniture(): Promise<boolean> {
 
 // Add failures surface on two channels while the drawer is open: a toast for
 // visual users (the status region sits under the drawer overlay), and an
-// assertive announcement for assistive tech - the drawer's aria-hiding exempts
-// aria-live regions, so the announcer stays live while the toast region,
-// mounted without aria-live, does not.
+// assertive announcement - the toast region is a polite live region only, and
+// an error in response to a user action should interrupt. Both survive the
+// drawer's aria-hiding, which exempts aria-live regions.
 function reportAddFailure(message: string) {
   toast.error(message)
   feedbackActions.announceAssertive(message)
