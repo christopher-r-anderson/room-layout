@@ -6,7 +6,7 @@ import {
   commitHistoryPresent,
   createHistoryState,
 } from '@/shared/lib/ui/editor-history'
-import type { FurnitureInstance, FurnitureItem } from '@/domain/furniture'
+import type { FurnitureItem } from '@/domain/furniture'
 import { makeFurnitureItem } from '@/test/support/furniture'
 import {
   clearSceneServices,
@@ -47,9 +47,6 @@ function registerDefaultSceneServices(
   overrides: Partial<Parameters<typeof registerSceneServices>[0]> = {},
 ) {
   registerSceneServices({
-    addFurniture: () => ({ ok: true, id: 'item-1' }),
-    clearSelection: () => undefined,
-    deleteSelection: () => true,
     focusSelected: () => undefined,
     getCameraPosition: () => [0, 0, 0],
     loadCollectionScene: () => Promise.resolve(),
@@ -57,15 +54,8 @@ function registerDefaultSceneServices(
       cameraPosition: [0, 0, 0] as [number, number, number],
       items: [],
     }),
-    moveSelection: () => ({ ok: false, reason: 'no-selection' }),
-    redo: () => true,
-    restoreInitialLayout: () => undefined,
-    rotateSelection: () => undefined,
-    selectById: () => ({ ok: true, status: 'selected' }),
     setCameraKeyState: () => undefined,
     setCameraPreset: () => undefined,
-    setSelectionTransform: () => ({ ok: false, reason: 'no-selection' }),
-    undo: () => true,
     ...overrides,
   })
 }
@@ -205,165 +195,6 @@ describe('useSceneDocumentStore', () => {
     expect(consoleErrorSpy).not.toHaveBeenCalled()
 
     consoleErrorSpy.mockRestore()
-  })
-
-  it('delegates restoreInitialLayout through registered scene services', () => {
-    const restoreInitialLayout = vi.fn()
-    const instances: FurnitureInstance[] = [
-      {
-        id: 'furniture-instance-1',
-        catalogId: 'chair-1',
-        position: [0, 0, 0],
-        rotationY: 0,
-      },
-    ]
-
-    registerDefaultSceneServices({ restoreInitialLayout })
-
-    act(() => {
-      sceneCommands.restoreInitialLayout(instances)
-    })
-
-    expect(restoreInitialLayout).toHaveBeenCalledWith(instances)
-  })
-
-  it('delegates clearSelection through registered scene services', () => {
-    const clearSelection = vi.fn()
-
-    registerDefaultSceneServices({ clearSelection })
-
-    act(() => {
-      sceneCommands.clearSelection()
-    })
-
-    expect(clearSelection).toHaveBeenCalledTimes(1)
-  })
-
-  it('delegates deleteSelection through registered scene services', () => {
-    const deleteSelection = vi.fn(() => true)
-
-    registerDefaultSceneServices({ deleteSelection })
-
-    let deleted = false
-
-    act(() => {
-      deleted = sceneCommands.deleteSelection()
-    })
-
-    expect(deleted).toBe(true)
-    expect(deleteSelection).toHaveBeenCalledTimes(1)
-  })
-
-  it('delegates undo and redo through registered scene services', () => {
-    const undo = vi.fn(() => true)
-    const redo = vi.fn(() => false)
-
-    registerDefaultSceneServices({ undo, redo })
-
-    let didUndo = false
-    let didRedo = true
-
-    act(() => {
-      didUndo = sceneCommands.undo()
-      didRedo = sceneCommands.redo()
-    })
-
-    expect(didUndo).toBe(true)
-    expect(didRedo).toBe(false)
-    expect(undo).toHaveBeenCalledTimes(1)
-    expect(redo).toHaveBeenCalledTimes(1)
-  })
-
-  it('delegates selectById through registered scene services', () => {
-    const selectById = vi.fn(() => ({
-      ok: true as const,
-      status: 'selected' as const,
-    }))
-
-    registerDefaultSceneServices({ selectById })
-
-    let result: ReturnType<typeof sceneCommands.selectById> | null = null
-
-    act(() => {
-      result = sceneCommands.selectById('item-1')
-    })
-
-    expect(result).toEqual({ ok: true, status: 'selected' })
-    expect(selectById).toHaveBeenCalledWith('item-1')
-  })
-
-  it('delegates addFurniture through registered scene services', () => {
-    const addFurniture = vi.fn(() => ({ ok: true as const, id: 'item-1' }))
-
-    registerDefaultSceneServices({ addFurniture })
-
-    let result: ReturnType<typeof sceneCommands.addFurniture> | null = null
-
-    act(() => {
-      result = sceneCommands.addFurniture('catalog-chair')
-    })
-
-    expect(result).toEqual({ ok: true, id: 'item-1' })
-    expect(addFurniture).toHaveBeenCalledWith('catalog-chair')
-  })
-
-  it('delegates moveSelection and setSelectionTransform through registered scene services', () => {
-    const moveSelection = vi.fn(() => ({
-      ok: true as const,
-      position: [0.5, 0, 0] as [number, number, number],
-    }))
-    const setSelectionTransform = vi.fn(() => ({
-      ok: true as const,
-      item: {
-        ...FURNITURE_ITEM,
-        position: [1, 0, 0] as [number, number, number],
-      },
-    }))
-
-    registerDefaultSceneServices({ moveSelection, setSelectionTransform })
-
-    let moveResult: ReturnType<typeof sceneCommands.moveSelection> | null = null
-    let transformResult: ReturnType<
-      typeof sceneCommands.setSelectionTransform
-    > | null = null
-
-    act(() => {
-      moveResult = sceneCommands.moveSelection(
-        { x: 0.5, z: 0 },
-        { source: 'keyboard' },
-      )
-      transformResult = sceneCommands.setSelectionTransform({
-        position: [1, 0, 0],
-      })
-    })
-
-    expect(moveResult).toEqual({ ok: true, position: [0.5, 0, 0] })
-    expect(transformResult).toEqual({
-      ok: true,
-      item: {
-        ...FURNITURE_ITEM,
-        position: [1, 0, 0],
-      },
-    })
-    expect(moveSelection).toHaveBeenCalledWith(
-      { x: 0.5, z: 0 },
-      { source: 'keyboard' },
-    )
-    expect(setSelectionTransform).toHaveBeenCalledWith({
-      position: [1, 0, 0],
-    })
-  })
-
-  it('delegates rotateSelection through registered scene services', () => {
-    const rotateSelection = vi.fn()
-
-    registerDefaultSceneServices({ rotateSelection })
-
-    act(() => {
-      sceneCommands.rotateSelection(Math.PI / 4)
-    })
-
-    expect(rotateSelection).toHaveBeenCalledWith(Math.PI / 4)
   })
 
   it('delegates setCameraKeyState through registered scene services', () => {

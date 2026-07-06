@@ -10,9 +10,16 @@ import {
 } from '@/core/stores/scene-document-store'
 import { sceneCommands } from '@/core/scene-commands'
 import { selectionEffects } from '@/core/operations/selection-effects'
+import { restoreInitialLayout } from '@/core/operations/history-mutations'
 import { loadSceneDraft, saveSceneDraft } from '@/core/persistence/scene-draft'
 import { CHAIR } from '@/test/support/furniture'
 import { resetSceneToDefaults } from './scene-reset'
+
+vi.mock('@/core/operations/history-mutations', () => ({
+  redo: vi.fn(),
+  restoreInitialLayout: vi.fn(),
+  undo: vi.fn(),
+}))
 
 const ENVIRONMENT: EnvironmentMaterialConfig = {
   defaultFloorFinishId: 'oak-floor',
@@ -36,9 +43,6 @@ beforeEach(() => {
   resetSceneDocumentStore()
   window.localStorage.clear()
 
-  vi.spyOn(sceneCommands, 'restoreInitialLayout').mockImplementation(
-    () => undefined,
-  )
   vi.spyOn(sceneCommands, 'setCameraPreset').mockImplementation(() => undefined)
   vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
 })
@@ -83,7 +87,7 @@ describe('resetSceneToDefaults', () => {
 
     resetSceneToDefaults()
 
-    expect(sceneCommands.restoreInitialLayout).toHaveBeenCalledWith([])
+    expect(restoreInitialLayout).toHaveBeenCalledWith([])
     expect(loadSceneDraft()).toBeNull()
   })
 

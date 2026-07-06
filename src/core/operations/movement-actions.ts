@@ -6,6 +6,10 @@ import {
 } from '@/core/stores/scene-document-store'
 import { toolbarInteractionActions } from '@/core/stores/toolbar-interaction-store'
 import { sceneCommands } from '@/core/scene-commands'
+import {
+  moveSelection as moveDocumentSelection,
+  rotateSelection as rotateDocumentSelection,
+} from './furniture-mutations'
 import type { MoveSelectionResult, MoveSource } from '@/core/scene.types'
 import { i18n } from '@/shared/i18n/i18n'
 import { formatDistanceMeters } from '@/shared/i18n/formatters'
@@ -38,7 +42,7 @@ export function moveSelection(
   feedbackActions.clearStatusMessage()
 
   const result = sceneCommands.isSceneReady()
-    ? sceneCommands.moveSelection(delta, {
+    ? moveDocumentSelection(delta, {
         source: options?.source ?? 'keyboard',
       })
     : ({ ok: false, reason: 'no-selection' } as const)
@@ -83,7 +87,7 @@ export function rotateSelection(direction: -1 | 1) {
     toolbarInteractionActions.reportRotation()
   }
 
-  sceneCommands.rotateSelection(direction * ROTATION_STEP_RADIANS)
+  rotateDocumentSelection(direction * ROTATION_STEP_RADIANS)
 
   if (rotatingName) {
     feedbackActions.announcePolite(i18n._(msg`${rotatingName} rotated.`))

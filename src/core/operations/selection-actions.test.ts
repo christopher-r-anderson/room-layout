@@ -22,11 +22,20 @@ import { sceneCommands } from '@/core/scene-commands'
 import { selectionEffects } from '@/core/operations/selection-effects'
 import { CHAIR } from '@/test/support/furniture'
 import {
+  clearSelection as clearDocumentSelection,
+  selectById as selectDocumentById,
+} from './selection-mutations'
+import {
   clearCanvasSelection,
   clearSelection,
   selectByCanvasPointer,
   selectById,
 } from './selection-actions'
+
+vi.mock('./selection-mutations', () => ({
+  clearSelection: vi.fn(),
+  selectById: vi.fn(),
+}))
 
 vi.mock('@/core/operations/selection-effects', () => ({
   selectionEffects: {
@@ -53,24 +62,28 @@ describe('selection-actions', () => {
   })
 
   it('clearCanvasSelection clears the selection and the canvas-miss preview together', () => {
-    const clearSelectionSpy = vi
-      .spyOn(sceneCommands, 'clearSelection')
-      .mockReturnValue(undefined)
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
+    const clearStatusMessage = vi.spyOn(feedbackActions, 'clearStatusMessage')
     sceneDocumentActions.setPreviewedId('chair-1')
+    feedbackActions.setStatusMessage('Movement blocked.')
 
     clearCanvasSelection()
 
-    // The scene selection-clear is a boundary delegation; the canvas-miss
-    // preview clear is observable in the document store.
-    expect(clearSelectionSpy).toHaveBeenCalled()
+    // The Escape/canvas-miss path must run the full clearSelection wrapper:
+    // the document selection-clear, the pending-selection note, and the
+    // status-message clear, plus the canvas-miss preview clear.
+    expect(clearDocumentSelection).toHaveBeenCalled()
+    expect(selectionEffects.notePendingSelection).toHaveBeenCalledWith({
+      announceMode: 'default',
+      requestOutlinerFocus: false,
+    })
+    expect(clearStatusMessage).toHaveBeenCalled()
+    expect(feedbackStoreForTests.getState().statusMessage).toBeNull()
     expect(useSceneDocumentStore.getState().previewedIdRaw).toBeNull()
   })
 
-  it('skips scene commands when the scene is not ready', () => {
+  it('skips document mutations when the scene is not ready', () => {
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(false)
-    const selectByIdSpy = vi.spyOn(sceneCommands, 'selectById')
-    const clearSelectionSpy = vi.spyOn(sceneCommands, 'clearSelection')
 
     expect(selectById('chair-1', 'panel-keyboard')).toEqual({
       ok: false,
@@ -78,8 +91,8 @@ describe('selection-actions', () => {
     })
     clearSelection()
 
-    expect(selectByIdSpy).not.toHaveBeenCalled()
-    expect(clearSelectionSpy).not.toHaveBeenCalled()
+    expect(selectDocumentById).not.toHaveBeenCalled()
+    expect(clearDocumentSelection).not.toHaveBeenCalled()
   })
 
   it('reconciles canvas pointer selection through selectionEffects', () => {
@@ -108,7 +121,7 @@ describe('selection-actions', () => {
 
   it('routes selectById announce mode based on the interaction source', () => {
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
-    vi.spyOn(sceneCommands, 'selectById').mockImplementation((id) => {
+    vi.mocked(selectDocumentById).mockImplementation((id) => {
       sceneDocumentActions.setSelectedId(id)
       return { ok: true, status: 'selected' }
     })
@@ -130,13 +143,10 @@ describe('selection-actions', () => {
   it('clears the editor message and pending behavior on clear selection', () => {
     feedbackActions.setStatusMessage('stale')
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
-    const clearSelectionSpy = vi
-      .spyOn(sceneCommands, 'clearSelection')
-      .mockImplementation(() => undefined)
 
     clearSelection()
 
-    expect(clearSelectionSpy).toHaveBeenCalled()
+    expect(clearDocumentSelection).toHaveBeenCalled()
     expect(selectionEffects.notePendingSelection).toHaveBeenCalledWith({
       announceMode: 'default',
       requestOutlinerFocus: false,

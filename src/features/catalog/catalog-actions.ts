@@ -4,6 +4,7 @@ import { selectionFocusActions } from '@/core/stores/selection-focus-store'
 import { selectionEffects } from '@/core/operations/selection-effects'
 import { getSourcePathForCatalogId } from '@/core/stores/assets-store'
 import { sceneCommands } from '@/core/scene-commands'
+import { addFurniture as addFurnitureToDocument } from '@/core/operations/furniture-mutations'
 import { ensureCollectionLoaded } from '@/core/operations/collection-loader'
 import { getCollectionFailureKind } from '@/core/stores/collection-loading-store'
 import { toast } from 'sonner'
@@ -72,7 +73,7 @@ export async function addFurniture(): Promise<boolean> {
     return false
   }
 
-  const result = sceneCommands.addFurniture(catalogIdToAdd)
+  const result = addFurnitureToDocument(catalogIdToAdd)
 
   if (!result.ok) {
     reportAddFailure(

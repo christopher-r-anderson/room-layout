@@ -1,9 +1,17 @@
 // @vitest-environment jsdom
 
 import { act, renderHook } from '@testing-library/react'
-import { describe, expect, it, beforeEach, vi } from 'vitest'
+import { afterEach, describe, expect, it, beforeEach, vi } from 'vitest'
 import { Ray, Vector3 } from 'three'
-import type { HistoryState } from '@/shared/lib/ui/editor-history'
+import {
+  createHistoryState,
+  type HistoryState,
+} from '@/shared/lib/ui/editor-history'
+import {
+  resetSceneDocumentStore,
+  sceneDocumentActions,
+  useSceneDocumentStore,
+} from '@/core/stores/scene-document-store'
 import { useSceneDrag } from './use-scene-drag'
 import type { LayoutBounds } from '@/domain/geometry/furniture-layout'
 import type { FurnitureItem } from '@/domain/furniture'
@@ -76,12 +84,17 @@ function defaultOptions(
 
 describe('useSceneDrag', () => {
   beforeEach(() => {
+    resetSceneDocumentStore()
     mockGetFloorIntersection.mockReset()
     mockGetDraggedFurniturePosition.mockReset()
     mockResolveMovedFurniturePosition.mockReset()
     mockGetFloorIntersection.mockReturnValue({ x: 1, z: 2 })
     mockGetDraggedFurniturePosition.mockReturnValue([2, 0, 3])
     mockResolveMovedFurniturePosition.mockReturnValue([2, 0, 3])
+  })
+
+  afterEach(() => {
+    resetSceneDocumentStore()
   })
 
   it('handleDragStart keeps dragState null when furniture is missing', () => {
@@ -132,6 +145,8 @@ describe('useSceneDrag', () => {
       },
     })
     expect(options.selectFurniture).toHaveBeenCalledWith('item-1')
+    // The document drag flag is written synchronously with the gesture.
+    expect(useSceneDocumentStore.getState().isDragging).toBe(true)
   })
 
   it('handleMove ignores mismatched id', () => {
@@ -260,25 +275,46 @@ describe('useSceneDrag', () => {
     })
 
     expect(result.current.dragState).toBeNull()
+    expect(useSceneDocumentStore.getState().isDragging).toBe(false)
     expect(updateHistory).toHaveBeenCalledTimes(1)
 
     const updateHistoryArg = updateHistory.mock.calls[0]?.[0]
     expect(updateHistoryArg).toEqual(expect.any(Function))
   })
 
-  it('clearDragState resets dragState to null', () => {
+  it('clears the drag flag when the hook unmounts mid-drag', () => {
     const options = defaultOptions()
+    const { result, unmount } = renderHook(() => useSceneDrag(options))
+
+    act(() => {
+      result.current.handleDragStart('item-1', createPointerEvent(1))
+    })
+    expect(useSceneDocumentStore.getState().isDragging).toBe(true)
+
+    unmount()
+
+    expect(useSceneDocumentStore.getState().isDragging).toBe(false)
+  })
+
+  it('clears the gesture when the dragged item leaves the document mid-drag', () => {
+    const options = defaultOptions()
+    // In production the furniture prop is derived from the document store;
+    // seed the store to match so the existence subscription sees the item.
+    sceneDocumentActions.setHistory(createHistoryState(options.furniture))
     const { result } = renderHook(() => useSceneDrag(options))
 
     act(() => {
       result.current.handleDragStart('item-1', createPointerEvent(1))
     })
     expect(result.current.dragState).not.toBeNull()
+    expect(useSceneDocumentStore.getState().isDragging).toBe(true)
 
+    // Simulate a keyboard delete landing while the pointer is still down.
     act(() => {
-      result.current.clearDragState()
+      sceneDocumentActions.setHistory(createHistoryState<FurnitureItem[]>([]))
     })
 
     expect(result.current.dragState).toBeNull()
+    expect(useSceneDocumentStore.getState().isDragging).toBe(false)
   })
 })

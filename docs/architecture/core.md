@@ -90,7 +90,10 @@ at app startup: selection effects, outliner focus, preview hygiene, collection
 loading, and draft persistence.
 
 - `history-actions`, `movement-actions`, `selection-actions` — undo/redo,
-  move/rotate, selection; gated on startup readiness.
+  move/rotate, selection; gated on startup readiness. They call the document
+  mutations in `furniture-mutations`/`history-mutations`/`selection-mutations`,
+  which validate via `@/domain/geometry` and write the store (see
+  [scene-and-core.md](scene-and-core.md)).
 - `preview-actions` + `preview-reconciler` — preview hysteresis as module
   cells plus the reconciler that clears preview state whenever a suppressing
   gate (drag, blocking overlay, not-ready) holds.

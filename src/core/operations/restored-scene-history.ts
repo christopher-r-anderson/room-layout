@@ -1,11 +1,11 @@
-import type { Object3D } from 'three'
 import { createHistoryState } from '@/shared/lib/ui/editor-history'
+import type { CollectionNodeDefaults } from '@/core/stores/collection-scene-registry'
 import type { FurnitureInstance } from '@/domain/furniture'
 import type {
   FurnitureCatalogEntry,
   FurnitureCollection,
 } from '@/domain/catalog'
-import { buildFurnitureItemsFromInstances } from '../furniture/furniture-operations'
+import { buildFurnitureItemsFromInstances } from './furniture-operations'
 
 export function getMaxRestoredInstanceSuffix(instances: FurnitureInstance[]) {
   return instances.reduce((max, item) => {
@@ -22,13 +22,13 @@ export function buildRestoredSceneHistory(options: {
   instances: FurnitureInstance[]
   catalog: FurnitureCatalogEntry[]
   collections: FurnitureCollection[]
-  sourceScenesByPath: Map<string, Object3D>
+  nodeDefaultsByPath: Map<string, Map<string, CollectionNodeDefaults>>
 }) {
   const restoredItems = buildFurnitureItemsFromInstances(
     options.instances,
     options.catalog,
     options.collections,
-    options.sourceScenesByPath,
+    options.nodeDefaultsByPath,
   )
 
   return {

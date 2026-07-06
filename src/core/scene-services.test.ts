@@ -9,9 +9,6 @@ import type { SceneServices } from './scene-services'
 
 function createFakeServices(): SceneServices {
   return {
-    addFurniture: () => ({ ok: true as const, id: 'item-1' }),
-    clearSelection: () => undefined,
-    deleteSelection: () => true,
     focusSelected: () => undefined,
     getCameraPosition: () => [0, 0, 0] as [number, number, number],
     getSnapshot: () => ({
@@ -19,21 +16,8 @@ function createFakeServices(): SceneServices {
       items: [],
     }),
     loadCollectionScene: () => Promise.resolve(),
-    moveSelection: () => ({
-      ok: false as const,
-      reason: 'no-selection' as const,
-    }),
-    redo: () => true,
-    restoreInitialLayout: () => undefined,
-    rotateSelection: () => undefined,
-    selectById: () => ({ ok: true as const, status: 'selected' as const }),
     setCameraKeyState: () => undefined,
     setCameraPreset: () => undefined,
-    setSelectionTransform: () => ({
-      ok: false as const,
-      reason: 'no-selection' as const,
-    }),
-    undo: () => true,
   }
 }
 

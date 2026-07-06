@@ -4,6 +4,10 @@ import { selectionFocusActions } from '@/core/stores/selection-focus-store'
 import { selectionEffects } from '@/core/operations/selection-effects'
 import { clearPreviewOnCanvasMiss } from '@/core/operations/preview-actions'
 import { sceneCommands } from '@/core/scene-commands'
+import {
+  clearSelection as clearDocumentSelection,
+  selectById as selectDocumentById,
+} from './selection-mutations'
 import type { SelectByIdResult } from '@/core/scene.types'
 import type { InteractionSource } from '@/core/types/interaction.types'
 
@@ -37,7 +41,7 @@ export function selectById(
 
   const selectedId = useSceneDocumentStore.getState().selectedId
   const selectionWillChange = selectedId !== id
-  const result = sceneCommands.selectById(id)
+  const result = selectDocumentById(id)
   feedbackActions.clearStatusMessage()
 
   if (result.ok && selectionWillChange) {
@@ -74,7 +78,7 @@ export function clearSelection() {
     return
   }
 
-  sceneCommands.clearSelection()
+  clearDocumentSelection()
   selectionEffects.notePendingSelection({
     announceMode: 'default',
     requestOutlinerFocus: false,

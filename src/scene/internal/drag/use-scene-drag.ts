@@ -1,5 +1,9 @@
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { type ThreeEvent } from '@react-three/fiber'
+import {
+  sceneDocumentActions,
+  useSceneDocumentStore,
+} from '@/core/stores/scene-document-store'
 import {
   getFloorIntersection,
   getDraggedFurniturePosition,
@@ -24,7 +28,6 @@ interface DragState {
 }
 
 interface SceneDragState {
-  clearDragState: () => void
   dragState: DragState | null
   handleDragEnd: (id: string) => void
   handleDragStart: (id: string, event: ThreeEvent<PointerEvent>) => void
@@ -65,9 +68,39 @@ export function useSceneDrag({
   const dragStartStateRef = useRef<FurnitureItem[] | null>(null)
   const [dragState, setDragState] = useState<DragState | null>(null)
 
+  // The document's isDragging flag is written synchronously with the gesture so
+  // core mutations guarding on it never race a pending render.
   const clearDragState = useCallback(() => {
     setDragState(null)
     dragStartStateRef.current = null
+    sceneDocumentActions.setDragging(false)
+  }, [])
+
+  // A dragged item can be deleted out from under the gesture (keyboard delete);
+  // the gesture must not keep the drag flag or stale start state alive. The
+  // boolean existence selector keeps the listener quiet across the drag's own
+  // per-move history writes - it fires only when membership flips.
+  useEffect(() => {
+    if (!dragState) {
+      return
+    }
+
+    return useSceneDocumentStore.subscribe(
+      (state) => state.history.present.some((item) => item.id === dragState.id),
+      (itemExists) => {
+        if (!itemExists) {
+          clearDragState()
+        }
+      },
+    )
+  }, [clearDragState, dragState])
+
+  // The gesture dies with the scene: a mid-drag unmount (retry teardown, error
+  // boundary) must not leave the document flagged as dragging.
+  useEffect(() => {
+    return () => {
+      sceneDocumentActions.setDragging(false)
+    }
   }, [])
 
   const handleDragStart = useCallback(
@@ -86,6 +119,7 @@ export function useSceneDrag({
 
       selectFurniture(id)
       dragStartStateRef.current = furniture
+      sceneDocumentActions.setDragging(true)
       setDragState({
         id,
         pointerId: event.pointerId,
@@ -160,6 +194,7 @@ export function useSceneDrag({
       dragStartStateRef.current = null
 
       if (!dragStartState) {
+        sceneDocumentActions.setDragging(false)
         return
       }
 
@@ -170,12 +205,12 @@ export function useSceneDrag({
           areFurnitureCollectionsEqual,
         ),
       )
+      sceneDocumentActions.setDragging(false)
     },
     [areFurnitureCollectionsEqual, dragState, updateHistory],
   )
 
   return {
-    clearDragState,
     dragState,
     handleDragEnd,
     handleDragStart,

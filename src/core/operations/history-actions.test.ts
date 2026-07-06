@@ -7,7 +7,14 @@ import {
   editorLifecycleActions,
   resetEditorLifecycleStore,
 } from '@/core/stores/editor-lifecycle-store'
+import { redo as redoDocument, undo as undoDocument } from './history-mutations'
 import { redo, undo } from './history-actions'
+
+vi.mock('./history-mutations', () => ({
+  redo: vi.fn(),
+  restoreInitialLayout: vi.fn(),
+  undo: vi.fn(),
+}))
 
 vi.mock('@/core/stores/feedback-store', () => ({
   feedbackActions: {
@@ -42,23 +49,21 @@ afterEach(() => {
 })
 
 describe('history-actions', () => {
-  it('skips scene undo/redo when the scene is not ready', () => {
+  it('skips document undo/redo when the scene is not ready', () => {
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(false)
-    const undoSpy = vi.spyOn(sceneCommands, 'undo')
-    const redoSpy = vi.spyOn(sceneCommands, 'redo')
 
     undo()
     redo()
 
-    expect(undoSpy).not.toHaveBeenCalled()
-    expect(redoSpy).not.toHaveBeenCalled()
+    expect(undoDocument).not.toHaveBeenCalled()
+    expect(redoDocument).not.toHaveBeenCalled()
     expect(selectionEffects.notePendingSelection).toHaveBeenCalledWith(null)
     expect(feedbackActions.announcePolite).not.toHaveBeenCalled()
   })
 
   it('announces and queues outliner focus on a successful undo', () => {
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
-    vi.spyOn(sceneCommands, 'undo').mockReturnValue(true)
+    vi.mocked(undoDocument).mockReturnValue(true)
 
     undo()
 
@@ -73,7 +78,7 @@ describe('history-actions', () => {
 
   it('announces and queues outliner focus on a successful redo', () => {
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
-    vi.spyOn(sceneCommands, 'redo').mockReturnValue(true)
+    vi.mocked(redoDocument).mockReturnValue(true)
 
     redo()
 
@@ -88,7 +93,7 @@ describe('history-actions', () => {
 
   it('does not announce when undo returns false', () => {
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
-    vi.spyOn(sceneCommands, 'undo').mockReturnValue(false)
+    vi.mocked(undoDocument).mockReturnValue(false)
 
     undo()
 

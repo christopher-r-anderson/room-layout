@@ -10,11 +10,11 @@ import {
   replaceHistoryPresent,
   type HistoryState,
 } from '@/shared/lib/ui/editor-history'
-import { type Object3D } from 'three'
 import type {
   FurnitureCatalogEntry,
   FurnitureCollection,
 } from '@/domain/catalog'
+import type { CollectionNodeDefaults } from '@/core/stores/collection-scene-registry'
 import { getCollection } from '@/domain/catalog'
 import type { FurnitureInstance, FurnitureItem } from '@/domain/furniture'
 import type {
@@ -74,7 +74,7 @@ export function areFurnitureCollectionsEqual(
 }
 
 function createFurnitureItem(
-  sourceScenesByPath: Map<string, Object3D>,
+  nodeDefaultsByPath: Map<string, Map<string, CollectionNodeDefaults>>,
   id: string,
   catalogId: string,
   catalog: FurnitureCatalogEntry[],
@@ -93,15 +93,15 @@ function createFurnitureItem(
   const collection = getCollection(entry.collectionId, collections)
 
   const sourcePath = collection.sourcePath
-  const sourceScene = sourceScenesByPath.get(sourcePath)
+  const nodeDefaults = nodeDefaultsByPath.get(sourcePath)
 
-  if (!sourceScene) {
+  if (!nodeDefaults) {
     throw new Error(
       `source scene not loaded for collection: ${entry.collectionId}`,
     )
   }
 
-  const node = sourceScene.getObjectByName(entry.nodeName)
+  const node = nodeDefaults.get(entry.nodeName)
 
   if (!node) {
     throw new Error(`${entry.nodeName} node not found in GLTF scene`)
@@ -117,12 +117,8 @@ function createFurnitureItem(
     uiBoundsNodeName: entry.uiBoundsNodeName,
     sourcePath,
     footprintSize: entry.footprintSize,
-    position: overrides?.position ?? [
-      node.position.x,
-      node.position.y,
-      node.position.z,
-    ],
-    rotationY: overrides?.rotationY ?? normalizeAngleRadians(node.rotation.y),
+    position: overrides?.position ?? node.position,
+    rotationY: overrides?.rotationY ?? normalizeAngleRadians(node.rotationY),
   }
 }
 
@@ -135,11 +131,11 @@ export function buildFurnitureItemsFromInstances(
   instances: FurnitureInstance[],
   catalog: FurnitureCatalogEntry[],
   collections: FurnitureCollection[],
-  sourceScenesByPath: Map<string, Object3D>,
+  nodeDefaultsByPath: Map<string, Map<string, CollectionNodeDefaults>>,
 ): FurnitureItem[] {
   return instances.map((instance) =>
     createFurnitureItem(
-      sourceScenesByPath,
+      nodeDefaultsByPath,
       instance.id,
       instance.catalogId,
       catalog,
@@ -234,7 +230,7 @@ export function rotateSelectedFurnitureInHistory({
 
 export function addFurnitureToHistory({
   history,
-  sourceScenesByPath,
+  nodeDefaultsByPath,
   catalogId,
   nextId,
   catalog,
@@ -244,7 +240,7 @@ export function addFurnitureToHistory({
   snapSize,
 }: {
   history: HistoryState<FurnitureItem[]>
-  sourceScenesByPath: Map<string, Object3D>
+  nodeDefaultsByPath: Map<string, Map<string, CollectionNodeDefaults>>
   catalogId: string
   nextId: string
   catalog: FurnitureCatalogEntry[]
@@ -271,7 +267,7 @@ export function addFurnitureToHistory({
   }
 
   const nextItem = createFurnitureItem(
-    sourceScenesByPath,
+    nodeDefaultsByPath,
     nextId,
     entry.id,
     catalog,

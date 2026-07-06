@@ -1,16 +1,9 @@
 import {
-  canRedoHistory,
-  canUndoHistory,
   redoHistoryState,
   type HistoryState,
   undoHistoryState,
 } from '@/shared/lib/ui/editor-history'
 import type { FurnitureItem } from '@/domain/furniture'
-
-export interface SceneHistoryAvailability {
-  canUndo: boolean
-  canRedo: boolean
-}
 
 export interface SceneHistoryInput {
   history: HistoryState<FurnitureItem[]>
@@ -36,16 +29,6 @@ function reconcileSelectedId(
   selectedId: string | null,
 ) {
   return selectionExists(furniture, selectedId) ? selectedId : null
-}
-
-export function getSceneHistoryAvailability({
-  history,
-  isDragging,
-}: SceneHistoryInput): SceneHistoryAvailability {
-  return {
-    canUndo: !isDragging && canUndoHistory(history),
-    canRedo: !isDragging && canRedoHistory(history),
-  }
 }
 
 export function undoSceneHistory({

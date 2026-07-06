@@ -8,6 +8,7 @@ import {
 } from '@/core/stores/scene-document-store'
 import { selectionFocusActions } from '@/core/stores/selection-focus-store'
 import { sceneCommands } from '@/core/scene-commands'
+import { setSelectionTransform } from '@/core/operations/furniture-mutations'
 import type {
   UpdateSelectedItemDetailsInput,
   UpdateSelectedItemDetailsResult,
@@ -55,7 +56,7 @@ export function updateSelectedItemDetails(
       ? normalizeDegreesRadians(input.value)
       : undefined
 
-  const result = sceneCommands.setSelectionTransform({
+  const result = setSelectionTransform({
     position: nextPosition,
     rotationY: nextRotationY,
   })

@@ -1,19 +1,8 @@
-import type {
-  AddFurnitureResult,
-  CameraKeyState,
-  CameraPreset,
-  MoveSource,
-  MoveSelectionResult,
-  SelectByIdResult,
-  UpdateSelectionTransformResult,
-  SceneSnapshot,
-} from './scene.types'
-import type { FurnitureInstance } from '@/domain/furniture'
+import type { CameraKeyState, CameraPreset, SceneSnapshot } from './scene.types'
 
+// The engine port: the viewport services only the mounted scene can provide.
+// Document mutations are core operations and do not pass through here.
 export interface SceneServices {
-  addFurniture: (catalogId: string) => AddFurnitureResult
-  clearSelection: () => void
-  deleteSelection: () => boolean
   focusSelected: () => void
   getCameraPosition: () => [number, number, number]
   getSnapshot: () => SceneSnapshot
@@ -21,21 +10,8 @@ export interface SceneServices {
   // collection registry (see collection-scene-loader). Core awaits this from
   // its load pipeline before marking the collection loaded.
   loadCollectionScene: (path: string, bytes: ArrayBuffer) => Promise<void>
-  moveSelection: (
-    delta: { x: number; z: number },
-    options?: { source?: MoveSource },
-  ) => MoveSelectionResult
-  restoreInitialLayout: (instances: FurnitureInstance[]) => void
-  rotateSelection: (deltaRadians: number) => void
-  undo: () => boolean
-  redo: () => boolean
-  selectById: (id: string | null) => SelectByIdResult
   setCameraKeyState: (keyState: CameraKeyState) => void
   setCameraPreset: (preset: CameraPreset) => void
-  setSelectionTransform: (input: {
-    position?: [number, number, number]
-    rotationY?: number
-  }) => UpdateSelectionTransformResult
 }
 
 let currentSceneServices: SceneServices | null = null

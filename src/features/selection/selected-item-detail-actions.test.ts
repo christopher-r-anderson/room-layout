@@ -16,8 +16,17 @@ import {
 } from '@/core/stores/selection-focus-store'
 import { sceneCommands } from '@/core/scene-commands'
 import { feedbackActions } from '@/core/stores/feedback-store'
+import { setSelectionTransform } from '@/core/operations/furniture-mutations'
 import { updateSelectedItemDetails } from './selected-item-detail-actions'
 import { CHAIR } from '@/test/support/furniture'
+
+vi.mock('@/core/operations/furniture-mutations', () => ({
+  addFurniture: vi.fn(),
+  deleteSelection: vi.fn(),
+  moveSelection: vi.fn(),
+  rotateSelection: vi.fn(),
+  setSelectionTransform: vi.fn(),
+}))
 
 vi.mock('@/core/stores/feedback-store', () => ({
   feedbackActions: {
@@ -48,10 +57,6 @@ describe('selected-item-detail-actions', () => {
   describe('updateSelectedItemDetails', () => {
     it('returns a no-selection result when the scene is not ready', () => {
       vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(false)
-      const setSelectionTransform = vi.spyOn(
-        sceneCommands,
-        'setSelectionTransform',
-      )
 
       expect(
         updateSelectedItemDetails({
@@ -71,7 +76,7 @@ describe('selected-item-detail-actions', () => {
       editorLifecycleActions.markAssetsReady()
       vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
       const updatedItem = { ...CHAIR, name: 'Chair' }
-      vi.spyOn(sceneCommands, 'setSelectionTransform').mockReturnValue({
+      vi.mocked(setSelectionTransform).mockReturnValue({
         ok: true,
         item: updatedItem,
       })
@@ -94,7 +99,7 @@ describe('selected-item-detail-actions', () => {
     it('returns a bare no-op result without announcing when nothing changed', () => {
       editorLifecycleActions.markAssetsReady()
       vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
-      vi.spyOn(sceneCommands, 'setSelectionTransform').mockReturnValue({
+      vi.mocked(setSelectionTransform).mockReturnValue({
         ok: false,
         reason: 'no-op',
       })
@@ -112,7 +117,7 @@ describe('selected-item-detail-actions', () => {
     it('surfaces a blocked message when the transform is rejected', () => {
       editorLifecycleActions.markAssetsReady()
       vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
-      vi.spyOn(sceneCommands, 'setSelectionTransform').mockReturnValue({
+      vi.mocked(setSelectionTransform).mockReturnValue({
         ok: false,
         reason: 'blocked-bounds',
       })

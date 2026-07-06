@@ -1,5 +1,4 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { Object3D } from 'three'
 import {
   buildRestoredSceneHistory,
   getMaxRestoredInstanceSuffix,
@@ -8,19 +7,23 @@ import type {
   FurnitureCatalogEntry,
   FurnitureCollection,
 } from '@/domain/catalog'
+import type { CollectionNodeDefaults } from '@/core/stores/collection-scene-registry'
 import type { FurnitureInstance, FurnitureItem } from '@/domain/furniture'
 
 const { mockBuildFurnitureItemsFromInstances } = vi.hoisted(() => ({
   mockBuildFurnitureItemsFromInstances: vi.fn(),
 }))
 
-vi.mock('../furniture/furniture-operations', () => ({
+vi.mock('./furniture-operations', () => ({
   buildFurnitureItemsFromInstances: mockBuildFurnitureItemsFromInstances,
 }))
 
 const EMPTY_CATALOG: FurnitureCatalogEntry[] = []
 const EMPTY_COLLECTIONS: FurnitureCollection[] = []
-const EMPTY_SOURCE_SCENES = new Map<string, Object3D>()
+const EMPTY_NODE_DEFAULTS = new Map<
+  string,
+  Map<string, CollectionNodeDefaults>
+>()
 
 function makeInstance(
   id: string,
@@ -67,7 +70,7 @@ describe('buildRestoredSceneHistory', () => {
       ],
       catalog: EMPTY_CATALOG,
       collections: EMPTY_COLLECTIONS,
-      sourceScenesByPath: EMPTY_SOURCE_SCENES,
+      nodeDefaultsByPath: EMPTY_NODE_DEFAULTS,
     })
 
     expect(restoredState.restoredItems).toBe(restoredItems)
