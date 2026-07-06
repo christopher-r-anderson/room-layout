@@ -10,7 +10,7 @@ import { dialogActions } from '../stores/dialog-store'
 import { feedbackActions } from '../stores/feedback-store'
 import { selectionEffects } from './selection-effects'
 import { runStartupRestoreFlow } from '../persistence/restore-flow'
-import { clearCollectionBytes } from './collection-bytes'
+import { resetCollectionPipeline } from './collection-loader'
 import { clearSceneServices } from '@/scene/scene-commands'
 import {
   completeAssetLoad,
@@ -42,8 +42,8 @@ vi.mock('../stores/feedback-store', () => ({
   },
 }))
 
-vi.mock('./collection-bytes', () => ({
-  clearCollectionBytes: vi.fn(),
+vi.mock('./collection-loader', () => ({
+  resetCollectionPipeline: vi.fn(),
 }))
 
 vi.mock('@/scene/scene-commands', () => ({
@@ -51,14 +51,6 @@ vi.mock('@/scene/scene-commands', () => ({
   sceneCommands: {
     restoreInitialLayout: vi.fn(),
   },
-}))
-
-vi.mock('@/scene/collection-registry', () => ({
-  resetCollectionSceneRegistry: vi.fn(),
-}))
-
-vi.mock('@/core/stores/collection-loading-store', () => ({
-  resetCollectionLoadingStore: vi.fn(),
 }))
 
 vi.mock('sonner', () => ({
@@ -115,10 +107,10 @@ describe('startup-coordinator', () => {
     )
   })
 
-  it('clears the buffered assets and bumps the retry token', () => {
+  it('resets the collection pipeline and bumps the retry token', () => {
     requestAssetRetry()
 
-    expect(clearCollectionBytes).toHaveBeenCalledTimes(1)
+    expect(resetCollectionPipeline).toHaveBeenCalledTimes(1)
     expect(useEditorLifecycleStore.getState().retryToken).toBe(1)
     expect(useEditorLifecycleStore.getState().sceneEpoch).toBe(1)
     expect(feedbackActions.clearAssertiveAnnouncement).toHaveBeenCalledTimes(1)

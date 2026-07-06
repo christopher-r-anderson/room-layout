@@ -5,6 +5,7 @@ import {
   getCollectionFailureKind,
   isCollectionLoaded,
   resetCollectionLoadingStore,
+  useCollectionLoadingStore,
 } from '../stores/collection-loading-store'
 import {
   editorLifecycleActions,
@@ -14,6 +15,7 @@ import { resetSceneDocumentStore } from '../stores/scene-document-store'
 import {
   ensureCollectionLoaded,
   loadCollection,
+  resetCollectionPipeline,
   startCollectionLoadReconciler,
 } from './collection-loader'
 
@@ -28,16 +30,28 @@ vi.mock('@/scene/scene-commands', () => ({
   sceneCommands: sceneCommandsMock,
 }))
 
-const { fetchCollectionBytesMock, releaseCollectionBytesMock } = vi.hoisted(
-  () => ({
-    fetchCollectionBytesMock: vi.fn(() => Promise.resolve(new ArrayBuffer(4))),
-    releaseCollectionBytesMock: vi.fn(),
-  }),
-)
+const {
+  clearCollectionBytesMock,
+  fetchCollectionBytesMock,
+  releaseCollectionBytesMock,
+} = vi.hoisted(() => ({
+  clearCollectionBytesMock: vi.fn(),
+  fetchCollectionBytesMock: vi.fn(() => Promise.resolve(new ArrayBuffer(4))),
+  releaseCollectionBytesMock: vi.fn(),
+}))
 
 vi.mock('./collection-bytes', () => ({
+  clearCollectionBytes: clearCollectionBytesMock,
   fetchCollectionBytes: fetchCollectionBytesMock,
   releaseCollectionBytes: releaseCollectionBytesMock,
+}))
+
+const { resetCollectionSceneRegistryMock } = vi.hoisted(() => ({
+  resetCollectionSceneRegistryMock: vi.fn(),
+}))
+
+vi.mock('@/scene/collection-registry', () => ({
+  resetCollectionSceneRegistry: resetCollectionSceneRegistryMock,
 }))
 
 function deferred<T>() {
@@ -188,6 +202,43 @@ describe('ensureCollectionLoaded', () => {
       /failed to load/i,
     )
     expect(fetchCollectionBytesMock).not.toHaveBeenCalled()
+  })
+})
+
+describe('resetCollectionPipeline', () => {
+  it('resets the loading store, scene registry, and buffered bytes together, freeing a fresh cycle', async () => {
+    collectionLoadingActions.setGatedCollectionPaths(['/models/a.glb'])
+    await loadCollection('/models/a.glb')
+    expect(isCollectionLoaded('/models/a.glb')).toBe(true)
+
+    resetCollectionPipeline()
+
+    const state = useCollectionLoadingStore.getState()
+    expect(state.loaded.size).toBe(0)
+    expect(state.gated).toBeNull()
+    expect(resetCollectionSceneRegistryMock).toHaveBeenCalledTimes(1)
+    expect(clearCollectionBytesMock).toHaveBeenCalledTimes(1)
+
+    await loadCollection('/models/a.glb')
+    expect(isCollectionLoaded('/models/a.glb')).toBe(true)
+  })
+
+  it('does not mark a failure into the fresh cycle when the teardown aborts an in-flight load', async () => {
+    const bytes = deferred<ArrayBuffer>()
+    fetchCollectionBytesMock.mockReturnValue(bytes.promise)
+
+    const pending = loadCollection('/models/streaming.glb')
+    expect(fetchCollectionBytesMock).toHaveBeenCalledTimes(1)
+    // requestAssetRetry's sequence: teardown (which aborts the fetch), then the
+    // epoch bump - both synchronous, so they complete before the abort
+    // rejection can deliver on a microtask.
+    resetCollectionPipeline()
+    editorLifecycleActions.requestRetry()
+    bytes.reject(new DOMException('aborted', 'AbortError'))
+    await pending
+
+    expect(getCollectionFailureKind('/models/streaming.glb')).toBeNull()
+    expect(useCollectionLoadingStore.getState().failed.size).toBe(0)
   })
 })
 

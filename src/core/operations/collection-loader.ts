@@ -1,14 +1,17 @@
 import { shallow } from 'zustand/shallow'
 import { sceneCommands } from '@/scene/scene-commands'
+import { resetCollectionSceneRegistry } from '@/scene/collection-registry'
 import {
   collectionLoadingActions,
   useCollectionLoadingStore,
   isCollectionFailed,
   isCollectionLoaded,
+  resetCollectionLoadingStore,
 } from '../stores/collection-loading-store'
 import { useEditorLifecycleStore } from '../stores/editor-lifecycle-store'
 import { useSceneDocumentStore } from '../stores/scene-document-store'
 import {
+  clearCollectionBytes,
   fetchCollectionBytes,
   releaseCollectionBytes,
 } from './collection-bytes'
@@ -136,6 +139,17 @@ export const startCollectionLoadReconciler = createReconciler(() => {
 
   return unsubscribes
 })
+
+/**
+ * Tears down the whole collection pipeline for a fresh load cycle: the core
+ * loading lifecycle, the scene's parsed-collection registry, and the buffered
+ * bytes must reset together or the mirrored loaded state drifts.
+ */
+export function resetCollectionPipeline() {
+  resetCollectionLoadingStore()
+  resetCollectionSceneRegistry()
+  clearCollectionBytes()
+}
 
 /**
  * Requests a collection and resolves once it is loaded, or rejects if it fails -
