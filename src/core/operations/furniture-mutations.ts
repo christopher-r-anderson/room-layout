@@ -27,8 +27,10 @@ import {
 // Furniture document mutations: each reads the authoritative history, runs the
 // pure placement resolution and history transition (collision/bounds math lives
 // in domain/geometry and furniture-operations), then writes the result back.
-// Drag-guarded against the document's isDragging flag, which the scene's drag
-// gesture sets synchronously.
+// moveSelection and setSelectionTransform refuse to run mid-drag (the scene's
+// gesture writes the document's isDragging flag synchronously); deleteSelection
+// can land mid-drag (keyboard), and the drag gesture self-clears when its item
+// disappears.
 
 export function deleteSelection(): boolean {
   const { history, selectedId } = useSceneDocumentStore.getState()

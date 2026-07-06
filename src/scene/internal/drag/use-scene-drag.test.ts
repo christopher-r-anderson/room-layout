@@ -282,8 +282,25 @@ describe('useSceneDrag', () => {
     expect(updateHistoryArg).toEqual(expect.any(Function))
   })
 
+  it('clears the drag flag when the hook unmounts mid-drag', () => {
+    const options = defaultOptions()
+    const { result, unmount } = renderHook(() => useSceneDrag(options))
+
+    act(() => {
+      result.current.handleDragStart('item-1', createPointerEvent(1))
+    })
+    expect(useSceneDocumentStore.getState().isDragging).toBe(true)
+
+    unmount()
+
+    expect(useSceneDocumentStore.getState().isDragging).toBe(false)
+  })
+
   it('clears the gesture when the dragged item leaves the document mid-drag', () => {
     const options = defaultOptions()
+    // In production the furniture prop is derived from the document store;
+    // seed the store to match so the existence subscription sees the item.
+    sceneDocumentActions.setHistory(createHistoryState(options.furniture))
     const { result } = renderHook(() => useSceneDrag(options))
 
     act(() => {
