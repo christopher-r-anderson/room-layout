@@ -2,7 +2,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   resetSelectionFocusStore,
-  selectionFocusStore,
+  selectionFocusActions,
+  useSelectionFocusStore,
 } from '@/core/stores/selection-focus-store'
 import {
   resetSceneDocumentStore,
@@ -71,14 +72,14 @@ describe('startSelectionEffectsReconciler', () => {
     sceneDocumentActions.setHistory(createHistoryState([CHAIR]))
     await flushReconcile()
 
-    expect(selectionFocusStore.getState().outlinerFocusRequest).toEqual(
+    expect(useSelectionFocusStore.getState().outlinerFocusRequest).toEqual(
       expect.objectContaining({ preferredIndex: 2 }),
     )
   })
 
   it('reconciles the next selection source only when selection changes', async () => {
     const setSelectedSourceSpy = vi.spyOn(
-      selectionFocusStore.getState(),
+      selectionFocusActions,
       'setSelectedSource',
     )
 
@@ -87,7 +88,7 @@ describe('startSelectionEffectsReconciler', () => {
     sceneDocumentActions.setSelectedId(CHAIR.id)
     await flushReconcile()
 
-    expect(selectionFocusStore.getState().selectedSource).toBe('panel-pointer')
+    expect(useSelectionFocusStore.getState().selectedSource).toBe('panel-pointer')
     expect(setSelectedSourceSpy).toHaveBeenCalledTimes(1)
 
     sceneDocumentActions.setSelectedId(CHAIR.id)
@@ -153,7 +154,7 @@ describe('startSelectionEffectsReconciler', () => {
     sceneDocumentActions.setSelectedId(null)
     await flushReconcile()
 
-    expect(selectionFocusStore.getState().outlinerFocusRequest).toBeNull()
+    expect(useSelectionFocusStore.getState().outlinerFocusRequest).toBeNull()
   })
 
   it('defers reconciliation until pending intent noted after the mutation lands', async () => {

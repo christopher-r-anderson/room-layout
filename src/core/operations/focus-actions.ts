@@ -4,7 +4,7 @@ import {
 } from '@/core/stores/scene-document-store'
 import {
   selectionFocusActions,
-  selectionFocusStore,
+  useSelectionFocusStore,
 } from '@/core/stores/selection-focus-store'
 import { subscribeToBlockingOverlay } from '@/core/stores/dialog-store'
 
@@ -56,7 +56,7 @@ export function startOutlinerFocusReconciler(): () => void {
       return
     }
 
-    if (selectionFocusStore.getState().outlinerFocusRequest === null) {
+    if (useSelectionFocusStore.getState().outlinerFocusRequest === null) {
       return
     }
 

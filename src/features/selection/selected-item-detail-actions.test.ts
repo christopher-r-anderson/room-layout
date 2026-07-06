@@ -12,7 +12,7 @@ import {
 } from '@/core/stores/editor-lifecycle-store'
 import {
   resetSelectionFocusStore,
-  selectionFocusStore,
+  useSelectionFocusStore,
 } from '@/core/stores/selection-focus-store'
 import { sceneCommands } from '@/scene/scene-commands'
 import { feedbackActions } from '@/core/stores/feedback-store'
@@ -83,7 +83,7 @@ describe('selected-item-detail-actions', () => {
           value: 90,
         }),
       ).toEqual({ ok: true, item: updatedItem })
-      expect(selectionFocusStore.getState().selectedSource).toBe(
+      expect(useSelectionFocusStore.getState().selectedSource).toBe(
         'panel-keyboard',
       )
       expect(feedbackActions.announcePolite).toHaveBeenCalledWith(

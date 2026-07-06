@@ -9,7 +9,7 @@ import {
 import { feedbackActions, feedbackStore } from '@/core/stores/feedback-store'
 import {
   resetSelectionFocusStore,
-  selectionFocusStore,
+  useSelectionFocusStore,
 } from '@/core/stores/selection-focus-store'
 import {
   editorLifecycleActions,
@@ -89,7 +89,7 @@ describe('selection-actions', () => {
     expect(selectionEffects.notePendingSource).toHaveBeenCalledWith(
       'canvas-pointer',
     )
-    expect(selectionFocusStore.getState().selectedSource).toBe('canvas-pointer')
+    expect(useSelectionFocusStore.getState().selectedSource).toBe('canvas-pointer')
   })
 
   it('clears pending source when toggling the same selection off via canvas pointer', () => {
@@ -117,7 +117,7 @@ describe('selection-actions', () => {
     expect(selectionEffects.notePendingSource).toHaveBeenCalledWith(
       'panel-keyboard',
     )
-    expect(selectionFocusStore.getState().selectedSource).toBe('panel-keyboard')
+    expect(useSelectionFocusStore.getState().selectedSource).toBe('panel-keyboard')
   })
 
   it('clears the editor message and pending behavior on clear selection', () => {

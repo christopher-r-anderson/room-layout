@@ -21,7 +21,7 @@ import {
 import {
   resetSelectionFocusStore,
   selectionFocusActions,
-  selectionFocusStore,
+  useSelectionFocusStore,
 } from '@/core/stores/selection-focus-store'
 import type { OutlinerReadModel } from '@/core/types/outliner.types'
 import { selectById } from '@/core/operations/selection-actions'
@@ -187,7 +187,7 @@ describe('SceneOutliner', () => {
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /end table/i })).toHaveFocus()
     })
-    expect(selectionFocusStore.getState().outlinerFocusRequest).toBeNull()
+    expect(useSelectionFocusStore.getState().outlinerFocusRequest).toBeNull()
   })
 
   it('falls back to toggle button when collapsed and focus is requested', async () => {
@@ -203,7 +203,7 @@ describe('SceneOutliner', () => {
         }),
       ).toHaveFocus()
     })
-    expect(selectionFocusStore.getState().outlinerFocusRequest).toBeNull()
+    expect(useSelectionFocusStore.getState().outlinerFocusRequest).toBeNull()
   })
 
   it('focuses the selected item when targetSelectedId is provided', async () => {
@@ -221,7 +221,7 @@ describe('SceneOutliner', () => {
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /end table/i })).toHaveFocus()
     })
-    expect(selectionFocusStore.getState().outlinerFocusRequest).toBeNull()
+    expect(useSelectionFocusStore.getState().outlinerFocusRequest).toBeNull()
   })
 
   it('focuses the outliner container when requested', async () => {
@@ -236,7 +236,7 @@ describe('SceneOutliner', () => {
     await waitFor(() => {
       expect(outlinerRegion).toHaveFocus()
     })
-    expect(selectionFocusStore.getState().outlinerFocusRequest).toBeNull()
+    expect(useSelectionFocusStore.getState().outlinerFocusRequest).toBeNull()
   })
 
   describe('preview callbacks', () => {

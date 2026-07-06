@@ -5,7 +5,7 @@ import { feedbackActions } from '../stores/feedback-store'
 import { isEditorInteractive } from '../stores/editor-lifecycle-store'
 import {
   selectionFocusActions,
-  selectionFocusStore,
+  useSelectionFocusStore,
 } from '../stores/selection-focus-store'
 import { sceneDocumentStore } from '../stores/scene-document-store'
 import type { InteractionSource } from '../types/interaction.types'
@@ -142,7 +142,7 @@ function reconcileSelectionEffects() {
   const selectedId = state.selectedId
   const itemsChanged = items !== previousItems
   const outlinerFocusRequest =
-    selectionFocusStore.getState().outlinerFocusRequest
+    useSelectionFocusStore.getState().outlinerFocusRequest
   const editorInteractionsEnabled = isEditorInteractive()
 
   // Post-delete outliner focus runs without a readiness guard, matching the

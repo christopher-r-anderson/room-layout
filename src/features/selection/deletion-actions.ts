@@ -6,7 +6,7 @@ import { dialogActions } from '@/core/stores/dialog-store'
 import { sceneDocumentStore } from '@/core/stores/scene-document-store'
 import {
   selectionFocusActions,
-  selectionFocusStore,
+  useSelectionFocusStore,
 } from '@/core/stores/selection-focus-store'
 import { selectionEffects } from '@/core/operations/selection-effects'
 import { sceneCommands } from '@/scene/scene-commands'
@@ -17,7 +17,7 @@ export function confirmDeleteSelection(
   pendingDeleteFurniture: FurnitureItem | null,
 ) {
   const items = sceneDocumentStore.getState().history.present
-  const selectedSource = selectionFocusStore.getState().selectedSource
+  const selectedSource = useSelectionFocusStore.getState().selectedSource
 
   const pendingId = pendingDeleteFurniture?.id ?? null
   const deletedIndex = pendingId
