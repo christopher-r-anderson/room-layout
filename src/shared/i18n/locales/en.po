@@ -85,6 +85,14 @@ msgstr "Add Furniture"
 msgid "Add Item"
 msgstr "Add Item"
 
+#: src/features/catalog/catalog-drawer.tsx
+msgid "Adding…"
+msgstr "Adding…"
+
+#: src/features/catalog/catalog-drawer.tsx
+msgid "Adding… {percentLabel}"
+msgstr "Adding… {percentLabel}"
+
 #: src/features/room-surface/room-drawer.tsx
 #: src/features/room-surface/room-sidebar.tsx
 msgid "Adjust wall finishes, flooring, and lighting to match your room."
@@ -95,13 +103,13 @@ msgstr "Adjust wall finishes, flooring, and lighting to match your room."
 msgid "Adjust wall, floor, and lighting"
 msgstr "Adjust wall, floor, and lighting"
 
+#: src/features/startup/initialization-progress.tsx
+msgid "Almost ready"
+msgstr "Almost ready"
+
 #: src/features/keyboard/keyboard-shortcuts.definitions.ts
 msgid "Apply typed detail value"
 msgstr "Apply typed detail value"
-
-#: src/features/startup/initialization-progress.tsx
-msgid "Asset {assetNumber} of {total}"
-msgstr "Asset {assetNumber} of {total}"
 
 #: src/features/startup/initialization-error.tsx
 msgid "Asset loading failed"
@@ -195,9 +203,9 @@ msgstr "Could not copy URL to clipboard."
 msgid "Could not open share options."
 msgstr "Could not open share options."
 
-#: src/features/startup/initialization-progress.tsx
-msgid "Current item: {currentAsset}"
-msgstr "Current item: {currentAsset}"
+#: src/shared/messages/command-messages.ts
+msgid "Couldn't load that item. Check your connection and try again."
+msgstr "Couldn't load that item. Check your connection and try again."
 
 #: src/features/keyboard/keyboard-shortcuts.definitions.ts
 msgid "Details"
@@ -227,13 +235,13 @@ msgstr "Draft failed to restore. Starting with an empty room."
 msgid "Edit the selected item."
 msgstr "Edit the selected item."
 
+#: src/features/startup/initialization-error.tsx
+msgid "Editor failed to load"
+msgstr "Editor failed to load"
+
 #: src/app/chrome/feedback/status-message.tsx
 msgid "Editor status"
 msgstr "Editor status"
-
-#: src/features/startup/initialization-progress.tsx
-msgid "Fetching the furniture catalog"
-msgstr "Fetching the furniture catalog"
 
 #: src/features/selection/selected-item-detail-messages.ts
 msgid "Finish dragging before editing item details."
@@ -242,10 +250,6 @@ msgstr "Finish dragging before editing item details."
 #: src/core/operations/movement-actions.ts
 msgid "Finish dragging before using movement controls."
 msgstr "Finish dragging before using movement controls."
-
-#: src/features/startup/initialization-progress.tsx
-msgid "Finishing up the room view"
-msgstr "Finishing up the room view"
 
 #: src/features/room-surface/room-controls.tsx
 msgid "Floor"
@@ -288,10 +292,6 @@ msgstr "Focus selected item actions"
 msgid "Front"
 msgstr "Front"
 
-#: src/features/startup/initialization-progress.tsx
-msgid "Furniture asset loading progress"
-msgstr "Furniture asset loading progress"
-
 #: src/features/outliner/outliner.tsx
 msgid "Furniture in room"
 msgstr "Furniture in room"
@@ -303,6 +303,10 @@ msgstr "Furniture items"
 #: src/features/catalog/catalog-drawer.tsx
 msgid "Furniture type to add"
 msgstr "Furniture type to add"
+
+#: src/features/startup/initialization-progress.tsx
+msgid "Getting things ready"
+msgstr "Getting things ready"
 
 #: src/app/chrome/top-header/top-header-desktop.tsx
 #: src/app/chrome/top-header/top-header-mobile.tsx
@@ -348,8 +352,12 @@ msgid "Lighting mood"
 msgstr "Lighting mood"
 
 #: src/features/startup/initialization-progress.tsx
-msgid "Loading scene assets"
-msgstr "Loading scene assets"
+msgid "Loading furniture"
+msgstr "Loading furniture"
+
+#: src/features/startup/initialization-progress.tsx
+msgid "Loading the room"
+msgstr "Loading the room"
 
 #: src/features/room-surface/room-controls.tsx
 msgid "Match your home lighting to preview furniture in the right tone."
@@ -452,6 +460,10 @@ msgstr "Pan camera"
 msgid "Pane focus"
 msgstr "Pane focus"
 
+#: src/features/startup/initialization-error.tsx
+msgid "Part of the editor's code did not load. This can happen after an update or a dropped connection."
+msgstr "Part of the editor's code did not load. This can happen after an update or a dropped connection."
+
 #: src/features/project-info/asset-attribution.tsx
 msgid "Photographer"
 msgstr "Photographer"
@@ -467,18 +479,6 @@ msgstr "Pick a wall color for your room."
 #: src/features/selection/selected-details-view.tsx
 msgid "Position (m)"
 msgstr "Position (m)"
-
-#: src/features/startup/initialization-progress.tsx
-msgid "Preparing furniture assets..."
-msgstr "Preparing furniture assets..."
-
-#: src/features/startup/initialization-progress.tsx
-msgid "Preparing the editor"
-msgstr "Preparing the editor"
-
-#: src/features/startup/initialization-progress.tsx
-msgid "Preparing the room editor"
-msgstr "Preparing the room editor"
 
 #: src/features/keyboard/keyboard-shortcuts.definitions.ts
 msgid "Preview first/last"
@@ -557,6 +557,10 @@ msgid "Retry to attempt startup again."
 msgstr "Retry to attempt startup again."
 
 #: src/features/startup/initialization-error.tsx
+msgid "Retry to reload the editor."
+msgstr "Retry to reload the editor."
+
+#: src/features/startup/initialization-error.tsx
 msgid "Retry to request the essential assets again."
 msgstr "Retry to request the essential assets again."
 
@@ -578,6 +582,10 @@ msgstr "Room layout shared."
 #: src/features/project-info/project-info-dialog.tsx
 msgid "Room Layout: an open source 3D furniture layout tool. All 3D assets are CC-licensed and attributed below."
 msgstr "Room Layout: an open source 3D furniture layout tool. All 3D assets are CC-licensed and attributed below."
+
+#: src/features/startup/initialization-progress.tsx
+msgid "Room loading progress"
+msgstr "Room loading progress"
 
 #: src/features/keyboard/keyboard-shortcuts.definitions.ts
 #: src/features/selection/selected-details-view.tsx
@@ -752,10 +760,6 @@ msgstr "Start over?"
 msgid "Started over. Your changes were cleared."
 msgstr "Started over. Your changes were cleared."
 
-#: src/features/startup/initialization-progress.tsx
-msgid "Starting asset requests"
-msgstr "Starting asset requests"
-
 #: src/features/startup/initialization-error.tsx
 msgid "Startup failed"
 msgstr "Startup failed"
@@ -784,13 +788,13 @@ msgstr "Tab / Enter applies offset. Esc cancels."
 msgid "Tab / Enter applies rotation. Esc cancels."
 msgstr "Tab / Enter applies rotation. Esc cancels."
 
+#: src/shared/messages/command-messages.ts
+msgid "That item isn't available right now."
+msgstr "That item isn't available right now."
+
 #: src/features/startup/initialization-error.tsx
 msgid "The editor could not download the furniture catalog required to start."
 msgstr "The editor could not download the furniture catalog required to start."
-
-#: src/features/startup/initialization-progress.tsx
-msgid "The editor will unlock after the required furniture models finish loading."
-msgstr "The editor will unlock after the required furniture models finish loading."
 
 #: src/features/startup/initialization-error.tsx
 msgid "The furniture catalog request timed out before startup completed."
@@ -828,6 +832,10 @@ msgstr "Top"
 #: src/core/operations/startup-coordinator.ts
 msgid "Unable to load room editor assets. Retry available."
 msgstr "Unable to load room editor assets. Retry available."
+
+#: src/features/catalog/catalog-drawer.tsx
+msgid "Unavailable"
+msgstr "Unavailable"
 
 #: src/features/history/history-tools.tsx
 #: src/features/keyboard/keyboard-shortcuts.definitions.ts

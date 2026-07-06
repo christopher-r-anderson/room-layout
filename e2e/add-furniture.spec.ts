@@ -2,7 +2,10 @@ import { expect, test, type Page } from '@playwright/test'
 import {
   addFurniture,
   dragSelectedFurniture,
+  failFurnitureAssetRequestsUntilRetry,
   openEditor,
+  readSceneState,
+  waitForEditorReady,
 } from './support/editor-harness'
 
 function expectUniqueItemIds(itemIds: string[]) {
@@ -46,4 +49,66 @@ test('keeps successful adds free of false no-space errors and duplicate ids', as
   await expectNoSafePlacementError(page)
 
   expect(thirdAddState.selectedName).toBe('Leather Armchair')
+})
+
+test('surfaces an error and recovers when an added item fails to load', async ({
+  page,
+}) => {
+  const assetFailure = await failFurnitureAssetRequestsUntilRetry(page)
+
+  // Empty scene unlocks despite failing furniture requests (environment-first);
+  // the failure only bites when the user adds an item whose model must load.
+  await page.goto('/')
+  await waitForEditorReady(page)
+
+  const picker = page.getByRole('dialog', { name: 'Add furniture' })
+  await page.getByRole('button', { name: 'Add Furniture' }).click()
+  await expect(picker).toBeVisible()
+  await picker.getByText('Leather Couch', { exact: true }).click()
+  await picker.getByRole('button', { name: 'Add Item' }).click()
+
+  // Instead of hanging on "Adding...", the add reports the failure on both
+  // channels - a toast visible over the drawer, and an assertive announcement
+  // (the drawer's aria-hiding exempts live regions) - adds nothing, and the
+  // button recovers.
+  await expect(
+    page.getByLabel(/notifications/i).getByText('Check your connection'),
+  ).toBeVisible()
+  await expect(
+    page.locator('[data-announcer-channel="assertive"]'),
+  ).toContainText('Check your connection')
+  await expect(picker.getByRole('button', { name: 'Add Item' })).toBeEnabled()
+  expect((await readSceneState(page)).itemCount).toBe(0)
+
+  // Retrying after the network recovers succeeds.
+  assetFailure.allowRequests()
+  await picker.getByRole('button', { name: 'Add Item' }).click()
+  await expect(picker).toBeHidden()
+  await expect.poll(async () => (await readSceneState(page)).itemCount).toBe(1)
+})
+
+test('marks a permanently-unavailable item and blocks adding it', async ({
+  page,
+}) => {
+  // A 404 (missing/broken asset) is a permanent failure, unlike a dropped
+  // connection: the item is marked unavailable rather than left retry-able.
+  await page.route(/\/models\/.+\.glb(?:\?.*)?$/, (route) =>
+    route.fulfill({ status: 404 }),
+  )
+  await page.goto('/')
+  await waitForEditorReady(page)
+
+  const picker = page.getByRole('dialog', { name: 'Add furniture' })
+  await page.getByRole('button', { name: 'Add Furniture' }).click()
+  await expect(picker).toBeVisible()
+  await picker.getByText('Leather Couch', { exact: true }).click()
+
+  // Prefetch-on-select loads (and 404s) the model, so the item becomes
+  // unavailable and cannot be added.
+  await expect(picker.getByText('Unavailable').first()).toBeVisible()
+  await expect(
+    picker.getByRole('radio', { name: 'Leather Couch' }),
+  ).toBeDisabled()
+  await expect(picker.getByRole('button', { name: 'Add Item' })).toBeDisabled()
+  expect((await readSceneState(page)).itemCount).toBe(0)
 })

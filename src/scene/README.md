@@ -12,15 +12,21 @@ Structure
   does not hold operation logic.
 - `scene-commands.ts` / `scene.types.ts` — the down-contract (imperative surface
   app/core call) and its types.
+- `collection-registry.ts` — public entry point for the parsed-collection
+  registry reset (the retry teardown calls it). Collection loading itself is
+  driven from core through `scene-commands.loadCollectionScene`. See
+  `docs/architecture/startup-and-asset-loading.md`.
 - `internal/` — scene-private implementation, grouped by concern:
-  - `furniture/` — furniture mutation operations and the interactive mesh.
+  - `furniture/` — furniture mutation operations, the interactive mesh, and the
+    collection parse service/registry.
   - `camera/` — controls, presets, camera operations, held-key motion.
   - `selection/` — selection state/operations and selected-toolbar geometry.
   - `history/` — undo/redo transitions and restore-history building.
   - `drag/` — pointer drag state and drag math.
   - `snapshot/` — scene snapshot capture.
   - `environment/` — room, lighting, floor/wall materials.
-  - `three/` — generic Three.js render helpers (meshes, bounds, textures).
+  - `three/` — generic Three.js render helpers (meshes, bounds, textures) and the
+    shared KTX2/Basis loader.
   - `scene-services.ts`, `validate-catalog-asset-nodes.ts` — cross-concern
     infrastructure (the service registry and asset-node validation).
 

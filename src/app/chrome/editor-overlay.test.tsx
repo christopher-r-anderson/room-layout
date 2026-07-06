@@ -165,14 +165,6 @@ vi.mock('../selection/delete-confirmation-dialog', () => ({
   DeleteConfirmationDialog: () => null,
 }))
 
-vi.mock('../startup/initialization-progress', () => ({
-  InitializationProgress: () => null,
-}))
-
-vi.mock('../startup/initialization-error', () => ({
-  InitializationError: () => null,
-}))
-
 function createSelectedFurniture(): FurnitureItem {
   return {
     id: 'item-1',

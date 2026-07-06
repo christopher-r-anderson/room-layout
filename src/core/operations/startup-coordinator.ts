@@ -4,7 +4,9 @@ import { createDefaultSceneState } from '@/core/model/scene-defaults'
 import { isSceneStateAtDefaults } from '@/core/model/scene-model'
 import { i18n } from '@/shared/i18n/i18n'
 import { sceneCommands, clearSceneServices } from '@/scene/scene-commands'
-import { clearFurnitureAssetPrefetch } from './furniture-asset-prefetch'
+import { resetCollectionSceneRegistry } from '@/scene/collection-registry'
+import { resetCollectionLoading } from '@/core/stores/collection-loading-store'
+import { clearCollectionBytes } from './collection-bytes'
 import { feedbackActions } from '../stores/feedback-store'
 import { dialogActions } from '../stores/dialog-store'
 import {
@@ -21,10 +23,13 @@ import { loadSceneDraft, saveSceneDraft } from '../persistence/scene-draft'
 import {
   parseSceneUrl,
   removeSceneParamFromUrl,
-  validateCatalogReferences,
 } from '../persistence/scene-url'
-import { runStartupRestoreFlow } from '../persistence/restore-flow'
+import {
+  runStartupRestoreFlow,
+  validateDraftState,
+} from '../persistence/restore-flow'
 import type { RestorableState } from '../persistence/restore-flow.types'
+import type { StartupErrorKind } from '../types/startup.types'
 
 // Resets the editor surface back to a clean slate. Used by the asset-error and
 // retry transitions so a failed or restarted load never leaves stale scene or
@@ -140,10 +145,7 @@ function runRestoreOnce() {
     })
   }
 
-  const validDraftState =
-    draftState && validateCatalogReferences(draftState.items, catalog)
-      ? draftState
-      : null
+  const validDraftState = validateDraftState(draftState, catalog)
 
   const defaultSceneState = createDefaultSceneState({
     defaultFloorFinishId,
@@ -181,11 +183,9 @@ function runRestoreOnce() {
   })
 }
 
-// The scene reported its assets are ready. On the first ready notification of a
-// session, run the one-time restore flow (shared link → draft → defaults); on
-// every notification, suppress the pending-selection announcement and mark the
-// editor ready. The restore is guarded by the lifecycle store's attempt count so
-// it does not re-run on a Scene remount or after a retry.
+// Assets are ready. Runs the one-time restore flow (shared link -> draft ->
+// defaults) on the first ready of a session, guarded by the attempt count so a
+// Scene remount or retry does not re-run it.
 export function completeAssetLoad() {
   if (editorLifecycleStore.getState().restoreAttemptCount === 0) {
     editorLifecycleActions.incrementRestoreAttempt()
@@ -200,11 +200,9 @@ export function completeAssetLoad() {
   editorLifecycleActions.markAssetsReady()
 }
 
-// The scene failed to load assets. Record the asset error, dismiss any open
-// dialog, reset the surface, and surface the failure to the user.
-export function notifyAssetError(error: Error) {
+function reportStartupError(kind: StartupErrorKind, error: Error) {
   editorLifecycleActions.setAssetError({
-    kind: 'asset-load',
+    kind,
     message: error.message,
   })
   dialogActions.closeActiveDialog()
@@ -216,14 +214,30 @@ export function notifyAssetError(error: Error) {
   feedbackActions.announceAssertive(assetError)
 }
 
-// The user asked to retry startup. Clear any open dialog and the surface, drop
-// the prefetched asset bytes so the retry re-downloads them, then bump the
-// lifecycle retry token so the bootstrap fetch effect re-runs and the Scene
-// remounts (re-seeding THREE.Cache from the fresh prefetch).
+// A furniture/scene asset failed while loading or rendering.
+export function notifyAssetError(error: Error) {
+  reportStartupError('asset-load', error)
+}
+
+// One of the app's own lazy chunks (engine, chrome) failed to fetch. Kept as a
+// distinct kind because its recovery differs: the retry reloads the page (see
+// startup-chunk-retry) rather than re-requesting assets in place.
+export function notifyChunkLoadError(error: Error) {
+  reportStartupError('app-chunk', error)
+}
+
+// Retry startup: drop the buffered asset bytes so it re-downloads, then bump the
+// retry token so the bootstrap fetch re-runs and the Scene remounts.
 export function requestAssetRetry() {
   dialogActions.closeActiveDialog()
   resetStartupShell()
-  clearFurnitureAssetPrefetch()
+  // Only reset collection state on an explicit retry (which remounts the loader
+  // via the epoch), not on the error path: a gated failure's `failed` mark must
+  // survive so the loader does not immediately re-attempt and loop. Clears the core
+  // loading lifecycle and the scene's parsed-collection registry together.
+  resetCollectionLoading()
+  resetCollectionSceneRegistry()
+  clearCollectionBytes()
 
   editorLifecycleActions.requestRetry()
   feedbackActions.clearAssertiveAnnouncement()

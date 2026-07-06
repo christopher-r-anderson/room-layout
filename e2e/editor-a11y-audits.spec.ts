@@ -32,6 +32,7 @@ test('axe audit passes for baseline and outliner/selected item editor states', a
 
   await page.getByRole('button', { name: 'Add Furniture' }).click()
   await expect(pickerDialog).toBeVisible()
+  await pickerDialog.getByText('Leather Couch', { exact: true }).click()
   await expect(
     pickerDialog.getByRole('radio', { name: 'Leather Couch' }),
   ).toBeChecked()

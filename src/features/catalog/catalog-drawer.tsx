@@ -1,5 +1,6 @@
 import { type ReactElement } from 'react'
 import { Trans, useLingui } from '@lingui/react/macro'
+import { IconLoader } from '@tabler/icons-react'
 import { formatDecimal } from '@/shared/i18n/formatters'
 import { Button } from '@/shared/ui/button'
 import {
@@ -14,13 +15,18 @@ import {
 } from '@/shared/ui/drawer'
 import { cn } from '@/shared/lib/utils'
 import { useDialogOpen } from '@/core/stores/dialog-store'
-import { useCatalogEntries } from '@/core/stores/assets-store'
-import { addFurniture, setCatalogDrawerOpen } from './catalog-actions'
+import {
+  useCatalogEntries,
+  useSourcePathByCatalogId,
+} from '@/core/stores/assets-store'
+import { useFailedCollections } from '@/core/stores/collection-loading-store'
+import { setCatalogDrawerOpen } from './catalog-actions'
 import { CATALOG_DIALOG_ID } from './catalog-dialog-definition'
 import {
   catalogSelectionActions,
   useActiveCatalogId,
 } from './catalog-selection-store'
+import { useAddFurniture } from './use-add-furniture'
 
 export function CatalogDrawer({
   triggerButton,
@@ -29,6 +35,9 @@ export function CatalogDrawer({
 }) {
   const { t } = useLingui()
   const catalog = useCatalogEntries()
+  // Derived once per manifest in the assets store; per-tile availability is one
+  // map lookup.
+  const sourcePathByCatalogId = useSourcePathByCatalogId()
 
   const formatFootprintLabel = (width: number, depth: number) => {
     const widthLabel = formatDecimal(width, 2)
@@ -38,6 +47,18 @@ export function CatalogDrawer({
 
   const catalogIdToAdd = useActiveCatalogId()
   const open = useDialogOpen(CATALOG_DIALOG_ID)
+  const failedCollections = useFailedCollections()
+  const selectedSourcePath = catalogIdToAdd
+    ? (sourcePathByCatalogId.get(catalogIdToAdd) ?? null)
+    : null
+  const { submit, isSubmitting, showPending, percentLabel } = useAddFurniture({
+    catalogIdToAdd,
+    selectedSourcePath,
+    open,
+  })
+  const selectedUnavailable = selectedSourcePath
+    ? failedCollections.get(selectedSourcePath) === 'unavailable'
+    : false
 
   return (
     <Drawer open={open} onOpenChange={setCatalogDrawerOpen} autoFocus>
@@ -59,9 +80,24 @@ export function CatalogDrawer({
             </legend>
             {catalog.map((entry) => {
               const isSelected = catalogIdToAdd === entry.id
+              const entrySourcePath = sourcePathByCatalogId.get(entry.id)
+              const isUnavailable = entrySourcePath
+                ? failedCollections.get(entrySourcePath) === 'unavailable'
+                : false
 
               return (
-                <label key={entry.id} className="block min-w-0 cursor-pointer">
+                <label
+                  key={entry.id}
+                  className={cn(
+                    'block min-w-0',
+                    isUnavailable ? 'cursor-not-allowed' : 'cursor-pointer',
+                  )}
+                >
+                  {/* Locked while an add is submitting: the add captures the
+                      selected id, so switching mid-add would show a different
+                      selection than the item being placed. Only unavailability
+                      dims the tile - a disabled-state treatment would flash
+                      every tile during a fast add. */}
                   <input
                     className="peer sr-only"
                     aria-label={entry.name}
@@ -69,6 +105,7 @@ export function CatalogDrawer({
                     name="furniture-catalog"
                     value={entry.id}
                     checked={isSelected}
+                    disabled={isUnavailable || isSubmitting}
                     onChange={(event) => {
                       catalogSelectionActions.setSelectedCatalogId(
                         event.target.value,
@@ -77,10 +114,12 @@ export function CatalogDrawer({
                   />
                   <span
                     className={cn(
-                      'grid h-full gap-2 rounded-lg border bg-card p-2 transition-all duration-150 peer-focus-visible:ring-2 peer-focus-visible:ring-ring/50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50',
-                      isSelected
-                        ? 'border-primary/60 bg-primary/5'
-                        : 'hover:border-foreground/20 hover:shadow-sm',
+                      'grid h-full gap-2 rounded-lg border bg-card p-2 transition-all duration-150 peer-focus-visible:ring-2 peer-focus-visible:ring-ring/50',
+                      isUnavailable
+                        ? 'cursor-not-allowed opacity-50'
+                        : isSelected
+                          ? 'border-primary/60 bg-primary/5'
+                          : 'hover:border-foreground/20 hover:shadow-sm',
                     )}
                     aria-hidden="true"
                   >
@@ -95,12 +134,18 @@ export function CatalogDrawer({
                       <span className="text-xs/relaxed font-medium text-foreground">
                         {entry.name}
                       </span>
-                      <span className="text-xs/relaxed text-muted-foreground">
-                        {formatFootprintLabel(
-                          entry.footprintSize.width,
-                          entry.footprintSize.depth,
-                        )}
-                      </span>
+                      {isUnavailable ? (
+                        <span className="text-xs/relaxed font-medium text-destructive">
+                          <Trans>Unavailable</Trans>
+                        </span>
+                      ) : (
+                        <span className="text-xs/relaxed text-muted-foreground">
+                          {formatFootprintLabel(
+                            entry.footprintSize.width,
+                            entry.footprintSize.depth,
+                          )}
+                        </span>
+                      )}
                     </span>
                   </span>
                 </label>
@@ -111,16 +156,25 @@ export function CatalogDrawer({
 
         <DrawerFooter>
           <Button
-            disabled={!catalogIdToAdd}
-            onClick={() => {
-              const added = addFurniture()
-
-              if (added) {
-                setCatalogDrawerOpen(false)
-              }
-            }}
+            disabled={!catalogIdToAdd || isSubmitting || selectedUnavailable}
+            onClick={submit}
           >
-            <Trans>Add Item</Trans>
+            {showPending ? (
+              <>
+                <IconLoader
+                  size={16}
+                  className="shrink-0 animate-spin"
+                  aria-hidden="true"
+                />
+                {percentLabel !== null ? (
+                  <Trans>Adding… {percentLabel}</Trans>
+                ) : (
+                  <Trans>Adding…</Trans>
+                )}
+              </>
+            ) : (
+              <Trans>Add Item</Trans>
+            )}
           </Button>
           <DrawerClose asChild>
             <Button variant="outline">

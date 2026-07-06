@@ -1,5 +1,4 @@
 import { useCallback } from 'react'
-import type { Object3D } from 'three'
 import {
   sceneDocumentActions,
   sceneDocumentStore,
@@ -17,6 +16,7 @@ import {
   resolveSetSelectionTransformInHistory,
   rotateSelectedFurnitureInHistory,
 } from './furniture-operations'
+import { getLoadedCollectionScenes } from './collection-scene-registry'
 import type {
   AddFurnitureResult,
   MoveSelectionResult,
@@ -29,7 +29,6 @@ interface UseFurnitureOperationsOptions {
   clearDragState: () => void
   catalog: FurnitureCatalogEntry[]
   collections: FurnitureCollection[]
-  sourceScenesByPath: Map<string, Object3D>
   bounds: LayoutBounds
   edgeSnapThreshold: number
   snapSize: number
@@ -44,7 +43,6 @@ export function useFurnitureOperations({
   clearDragState,
   catalog,
   collections,
-  sourceScenesByPath,
   bounds,
   edgeSnapThreshold,
   snapSize,
@@ -140,7 +138,10 @@ export function useFurnitureOperations({
       const { history, instanceIdCounter } = sceneDocumentStore.getState()
       const operationResult = addFurnitureToHistory({
         history,
-        sourceScenesByPath,
+        // Read the freshly parsed collection scenes at call time: the add flow
+        // awaits ensureCollectionLoaded before dispatching, so the collection is
+        // in the store even if React has not re-rendered Scene yet.
+        sourceScenesByPath: getLoadedCollectionScenes(),
         catalogId,
         nextId: createFurnitureInstanceId(instanceIdCounter + 1),
         catalog,
@@ -161,14 +162,7 @@ export function useFurnitureOperations({
 
       return operationResult.result
     },
-    [
-      catalog,
-      collections,
-      sourceScenesByPath,
-      bounds,
-      edgeSnapThreshold,
-      snapSize,
-    ],
+    [catalog, collections, bounds, edgeSnapThreshold, snapSize],
   )
 
   return {

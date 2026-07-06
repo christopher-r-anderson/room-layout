@@ -1,10 +1,13 @@
 import { useEffect } from 'react'
-import { prefetchFurnitureCollections } from '@/core/operations/furniture-asset-prefetch'
+import { warmCollectionBytes } from '@/core/operations/collection-bytes'
 import {
   editorLifecycleActions,
   useRetryToken,
 } from '@/core/stores/editor-lifecycle-store'
 import { assetsActions } from '@/core/stores/assets-store'
+import { collectionLoadingActions } from '@/core/stores/collection-loading-store'
+import { resolveReferencedCollectionPaths } from '@/core/persistence/referenced-collections'
+import { loadSceneDraft } from '@/core/persistence/scene-draft'
 import type { StartupErrorKind } from '@/core/types/startup.types'
 import {
   fetchCatalogManifest,
@@ -15,7 +18,9 @@ import { createDevPerfLogger } from './perf-log'
 
 const perfLog = createDevPerfLogger('🚀')
 
-const MANIFEST_TIMEOUT_MS = 5000
+// Generous rather than tight: the manifest is a small JSON, but a throttled
+// connection needs headroom for connection setup before the timeout fires.
+const MANIFEST_TIMEOUT_MS = 15000
 
 function classifyManifestError(
   error: unknown,
@@ -56,11 +61,9 @@ function classifyManifestError(
   }
 }
 
-// Bootstraps the editor: fetches the catalog manifest, mirrors it into the
-// scene-assets store, and drives the runtime store's startup phase. The fetch
-// re-runs whenever the runtime store's retry token changes (the retry path),
-// and the editor-lifecycle-store is the single owner of the startup phase — this
-// hook only performs the React-coupled fetch lifecycle.
+// Fetches the catalog manifest into the assets store and computes the gated set,
+// re-running whenever the retry token changes. Only the React-coupled fetch
+// lifecycle lives here; editor-lifecycle-store owns the startup phase.
 export function useStartupBootstrap() {
   const retryToken = useRetryToken()
 
@@ -91,11 +94,20 @@ export function useStartupBootstrap() {
           collections: result.collections,
           environmentConfig: result.environment,
         })
+
+        // The gated set the restored scene references (empty for a fresh scene):
+        // only these are warmed here and gate the unlock; the rest loads on demand.
+        const gatedCollectionPaths = resolveReferencedCollectionPaths({
+          href: window.location.href,
+          draft: loadSceneDraft(),
+          catalog: result.catalog,
+          collections: result.collections,
+        })
+        collectionLoadingActions.setGatedCollectionPaths(gatedCollectionPaths)
+
         editorLifecycleActions.beginAssetLoad()
 
-        prefetchFurnitureCollections(
-          result.collections.map((c) => c.sourcePath),
-        )
+        warmCollectionBytes(gatedCollectionPaths)
       } catch (error) {
         if (cancelled) return
 

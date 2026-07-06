@@ -1,6 +1,4 @@
-import type { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 import { getMeshes } from '@/scene/internal/three/get-meshes'
-import { configureGltfKtx2 } from '@/scene/internal/three/gltf-ktx2'
 import { Room } from './internal/environment/room'
 import { Lighting } from './internal/environment/lighting'
 import { resolveMoodExposure } from './internal/environment/lighting-mood'
@@ -11,11 +9,9 @@ import type {
 } from '@/domain/environment-materials'
 import { CameraControls } from './internal/camera/camera-controls'
 import { InteractiveFurniture } from './internal/furniture/interactive-furniture'
-import { useGLTF } from '@react-three/drei'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import type { CameraControlsImpl } from '@react-three/drei'
 import { useThree } from '@react-three/fiber'
-import { type Object3D } from 'three'
 import { SelectionOutlineEffect } from './internal/selection/selection-outline-effect'
 import { type LayoutBounds } from '@/domain/geometry/furniture-layout'
 import type {
@@ -26,7 +22,6 @@ import {
   areFurnitureCollectionsEqual,
   updateFurniturePositionInHistory,
 } from './internal/furniture/furniture-operations'
-import { validateCatalogAssetNodes } from './internal/validate-catalog-asset-nodes'
 import { useHistoryOperations } from './internal/history/use-history-operations'
 import type { CameraKeyState } from './scene.types'
 import { useSceneDrag } from './internal/drag/use-scene-drag'
@@ -43,11 +38,17 @@ import {
 import { useToolbarGeometryProjection } from './internal/selection/use-toolbar-geometry-projection'
 import { perfCounters } from '@/shared/debug/perf-counters'
 import { IS_E2E_BUILD } from '@/shared/env/e2e'
-import { sceneDocumentActions, useItems } from '@/core/scene-contracts'
+import {
+  sceneDocumentActions,
+  setSceneMounted,
+  useItems,
+} from '@/core/scene-contracts'
 import {
   clearSceneServices,
   registerSceneServices,
 } from './internal/scene-services'
+import { useLoadedCollectionScenes } from './internal/furniture/collection-scene-registry'
+import { createCollectionSceneLoader } from './internal/furniture/collection-scene-loader'
 
 const FLOOR_PLANE_Y = 0
 const SNAP_SIZE = 0.5
@@ -64,7 +65,6 @@ export function Scene({
   catalog,
   collections,
   onCanvasPointerSelection,
-  onAssetsReady,
   previewedId = null,
   onPreviewChange,
   floorOption = null,
@@ -76,7 +76,6 @@ export function Scene({
   catalog: FurnitureCatalogEntry[]
   collections: FurnitureCollection[]
   onCanvasPointerSelection?: (id: string) => void
-  onAssetsReady?: () => void
   previewedId?: string | null
   onPreviewChange?: (id: string | null) => void
   floorOption?: FloorFinishOption | null
@@ -105,52 +104,18 @@ export function Scene({
   // Accessor for fresh r3f state when we need to imperatively touch the renderer
   // (e.g. tone-mapping exposure) without subscribing to or mutating a hook value.
   const getThreeState = useThree((state) => state.get)
-  const collectionPaths = useMemo(
-    () => collections.map((c) => c.sourcePath),
-    [collections],
+  // Parse, validate, and register for collection GLBs, exposed to core through
+  // the services below; created per renderer because the KTX2 transcoder config
+  // needs it.
+  const loadCollectionScene = useMemo(
+    () => createCollectionSceneLoader({ renderer: gl, catalog, collections }),
+    [gl, catalog, collections],
   )
-  // Meshopt geometry is auto-decoded by drei; KTX2 textures need the Basis
-  // transcoder wired onto the loader (Draco is unused — we compress with Meshopt).
-  // drei's loader is built from three-stdlib; cast to the three/addons GLTFLoader
-  // our KTX2 helper uses (identical at runtime, nominally distinct in TS).
-  const gltfResult = useGLTF(collectionPaths, false, true, (loader) => {
-    configureGltfKtx2(loader as unknown as GLTFLoader, gl)
-  }) as { scene: Object3D } | { scene: Object3D }[]
+  // Parsed collection scenes, registered by the loader as they resolve. Partial and
+  // growing, so the room renders before any furniture; each item appears once its
+  // collection is present.
+  const sourceScenesByPath = useLoadedCollectionScenes()
 
-  const sourceScenesByPath = useMemo(() => {
-    const gltfScenes = Array.isArray(gltfResult) ? gltfResult : [gltfResult]
-
-    return new Map<string, Object3D>(
-      collectionPaths.map((sourcePath, index) => [
-        sourcePath,
-        gltfScenes[index].scene,
-      ]),
-    )
-  }, [gltfResult, collectionPaths])
-
-  const sourceScenesByCollectionId = useMemo(() => {
-    const gltfScenes = Array.isArray(gltfResult) ? gltfResult : [gltfResult]
-
-    return new Map<string, Object3D>(
-      collections.map((collection, index) => [
-        collection.id,
-        gltfScenes[index].scene,
-      ]),
-    )
-  }, [collections, gltfResult])
-
-  useMemo(() => {
-    if (collectionPaths.length === 0) {
-      return
-    }
-
-    validateCatalogAssetNodes({
-      catalog,
-      sourceScenesByCollectionId,
-    })
-  }, [catalog, collectionPaths.length, sourceScenesByCollectionId])
-
-  const hasReportedAssetsReadyRef = useRef(false)
   const cameraControlsRef = useRef<CameraControlsImpl | null>(null)
   const cameraKeyStateRef = useRef<CameraKeyState>(new Set())
   const furniture = useItems()
@@ -204,7 +169,6 @@ export function Scene({
     isDragging: Boolean(dragState),
     catalog,
     collections,
-    sourceScenesByPath,
   })
 
   const {
@@ -229,7 +193,6 @@ export function Scene({
     clearDragState,
     catalog,
     collections,
-    sourceScenesByPath,
     bounds: ROOM_BOUNDS,
     edgeSnapThreshold: EDGE_SNAP_THRESHOLD,
     snapSize: SNAP_SIZE,
@@ -265,6 +228,7 @@ export function Scene({
       focusSelected: handleFocusSelected,
       getCameraPosition: handleGetCameraPosition,
       getSnapshot,
+      loadCollectionScene,
       moveSelection: handleMoveSelection,
       redo: handleRedo,
       restoreInitialLayout: handleRestoreInitialLayout,
@@ -286,6 +250,7 @@ export function Scene({
     handleFocusSelected,
     handleGetCameraPosition,
     getSnapshot,
+    loadCollectionScene,
     handleMoveSelection,
     handleRedo,
     handleRestoreInitialLayout,
@@ -296,6 +261,16 @@ export function Scene({
     handleSetSelectionTransform,
     handleUndo,
   ])
+
+  // Report mount/unmount so core can gate startup readiness on the canvas being up.
+  // Its own effect (not the services effect above, which re-runs as handlers change)
+  // so the signal tracks only the actual mount lifecycle.
+  useEffect(() => {
+    setSceneMounted(true)
+    return () => {
+      setSceneMounted(false)
+    }
+  }, [])
 
   const isDragging = Boolean(dragState)
 
@@ -311,21 +286,6 @@ export function Scene({
     getThreeState().gl.toneMappingExposure = moodExposure
     invalidate()
   }, [getThreeState, invalidate, moodExposure])
-
-  useEffect(() => {
-    // Do not report ready if no collections have been passed yet
-    // this happens during the loading-manifest phase when App renders Scene with [] initially.
-    if (collectionPaths.length === 0) {
-      return
-    }
-
-    if (hasReportedAssetsReadyRef.current) {
-      return
-    }
-
-    hasReportedAssetsReadyRef.current = true
-    onAssetsReady?.()
-  }, [onAssetsReady, collectionPaths.length, sourceScenesByPath])
 
   const handlePreviewStart = useCallback(
     (id: string) => {

@@ -83,11 +83,15 @@ Compression recipe (structure-preserving — no flatten/join, so the catalog's
 - geometry: left uncompressed — these meshes are tiny, so Meshopt's lossy
   quantization would risk minor degradation for ~no gain.
 
-The runtime wires the Basis transcoder onto the furniture loader
-(`scene/internal/three/gltf-ktx2.ts`), using the same `KTX2Loader` setup as the
-floor textures. `KTX2Loader` resolves the transcoder from three's own bundled copy
-(via `import.meta.url`), which the bundler emits as a hashed asset. The Blender
-helpers (export / introspect / relink) live in `scripts/blender/`.
+At runtime the furniture loader and the floor textures share one KTX2 loader
+(`scene/internal/three/ktx2-loader.ts`) — a single Basis-transcoder worker pool.
+`KTX2Loader` resolves the transcoder from three's own bundled copy (via
+`import.meta.url`), which the bundler emits as hashed assets. There is **no
+manual transcoder-hosting step** — no `setTranscoderPath`, no copying transcoder
+files into `public/` — which older three versions (and most KTX2 write-ups)
+require; the emitted `basis_transcoder` js/wasm pair is budget-gated like any
+other chunk. The Blender helpers (export / introspect / relink) live in
+`scripts/blender/`.
 
 ## Catalog Preview Thumbnails
 
@@ -127,5 +131,6 @@ Two authoring-pipeline checks that are not field-schema rules:
 
 - `README.md`
 - `docs/reference/catalog-manifest-schema.md`
+- `docs/architecture/startup-and-asset-loading.md` (how the assets built here load at runtime)
 - `docs/architecture/selected-toolbar-placement.md`
 - `docs/guide/url-scene-sharing.md`

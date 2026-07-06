@@ -80,6 +80,7 @@ test('desktop floating toolbar stays off visible chrome and the pointer target a
   await page.getByRole('button', { name: 'Add Furniture' }).click()
   const pickerDialog = page.getByRole('dialog', { name: 'Add furniture' })
   await expect(pickerDialog).toBeVisible()
+  await pickerDialog.getByText('Leather Couch', { exact: true }).click()
   await expect(
     pickerDialog.getByRole('radio', { name: 'Leather Couch' }),
   ).toBeChecked()

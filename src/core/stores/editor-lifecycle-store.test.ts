@@ -33,12 +33,7 @@ describe('editorLifecycleStore', () => {
     expect(state.retryToken).toBe(0)
   })
 
-  it('bumps the scene epoch and clears errors when a manifest begins loading assets', () => {
-    editorLifecycleActions.setAssetError({
-      kind: 'manifest-network',
-      message: 'offline',
-    })
-
+  it('bumps the scene epoch when a manifest begins loading assets', () => {
     editorLifecycleActions.beginAssetLoad()
 
     const state = editorLifecycleStore.getState()
@@ -46,6 +41,30 @@ describe('editorLifecycleStore', () => {
     expect(state.assetError).toBeNull()
     expect(state.sceneEpoch).toBe(1)
     expect(state.retryToken).toBe(0)
+  })
+
+  it('keeps an errored phase sticky against a late manifest success until retry', () => {
+    // A failure (e.g. a failed engine chunk fetch) can land while the manifest
+    // fetch is still in flight; its success must not clear the error and
+    // strand the loader - only an explicit retry leaves 'errored'.
+    editorLifecycleActions.setAssetError({
+      kind: 'asset-load',
+      message: 'chunk failed',
+    })
+
+    editorLifecycleActions.beginAssetLoad()
+
+    let state = editorLifecycleStore.getState()
+    expect(state.startupPhase).toBe('errored')
+    expect(state.assetError).not.toBeNull()
+    expect(state.sceneEpoch).toBe(0)
+
+    editorLifecycleActions.requestRetry()
+    editorLifecycleActions.beginAssetLoad()
+
+    state = editorLifecycleStore.getState()
+    expect(state.startupPhase).toBe('loading')
+    expect(state.assetError).toBeNull()
   })
 
   it('bumps both epoch and retry token on retry while preserving restore tracking', () => {

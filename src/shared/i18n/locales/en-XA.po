@@ -61,17 +61,23 @@ msgstr "[Àďď Ƒũŕńĩţũŕēāēīōūáéíóú]"
 msgid "Add Item"
 msgstr "[Àďď Ĩţēḿāēīōūáéí]"
 
+msgid "Adding…"
+msgstr "[Àďďĩńğ…āēīōūáé]"
+
+msgid "Adding… {percentLabel}"
+msgstr "[Àďďĩńğ… {percentLabel}āēīōūáéíóúāēī]"
+
 msgid "Adjust wall finishes, flooring, and lighting to match your room."
 msgstr "[Àďĵũśţ ŵàĺĺ ƒĩńĩśĥēś, ƒĺōōŕĩńğ, àńď ĺĩğĥţĩńğ ţō ḿàţćĥ ŷōũŕ ŕōōḿ.āēīōūáéíóúāēīōūáéíóúāēīōūá]"
 
 msgid "Adjust wall, floor, and lighting"
 msgstr "[Àďĵũśţ ŵàĺĺ, ƒĺōōŕ, àńď ĺĩğĥţĩńğāēīōūáéíóúāēī]"
 
+msgid "Almost ready"
+msgstr "[Àĺḿōśţ ŕēàďŷāēīōūáéíó]"
+
 msgid "Apply typed detail value"
 msgstr "[Àƥƥĺŷ ţŷƥēď ďēţàĩĺ vàĺũēāēīōūáéíóúāēīō]"
-
-msgid "Asset {assetNumber} of {total}"
-msgstr "[Àśśēţ {assetNumber} ōƒ {total}āēīōūáéíóúāēīōūáé]"
 
 msgid "Asset loading failed"
 msgstr "[Àśśēţ ĺōàďĩńğ ƒàĩĺēďāēīōūáéíóúāēīō]"
@@ -139,8 +145,8 @@ msgstr "[Ćōũĺď ńōţ ćōƥŷ ŨŔĹ ţō ćĺĩƥƀōàŕď.āēīōūá�
 msgid "Could not open share options."
 msgstr "[Ćōũĺď ńōţ ōƥēń śĥàŕē ōƥţĩōńś.āēīōūáéíóúāēīōūá]"
 
-msgid "Current item: {currentAsset}"
-msgstr "[Ćũŕŕēńţ ĩţēḿ: {currentAsset}āēīōūáéíóúāēīōūá]"
+msgid "Couldn't load that item. Check your connection and try again."
+msgstr "[Ćōũĺďń'ţ ĺōàď ţĥàţ ĩţēḿ. Ćĥēćķ ŷōũŕ ćōńńēćţĩōń àńď ţŕŷ àğàĩń.āēīōūáéíóúāēīōūáéíóúāēīōū]"
 
 msgid "Details"
 msgstr "[Ďēţàĩĺśāēīōūáé]"
@@ -163,20 +169,17 @@ msgstr "[Ďŕàƒţ ƒàĩĺēď ţō ŕēśţōŕē. Śţàŕţĩńğ ŵĩţĥ 
 msgid "Edit the selected item."
 msgstr "[Ēďĩţ ţĥē śēĺēćţēď ĩţēḿ.āēīōūáéíóúāēī]"
 
+msgid "Editor failed to load"
+msgstr "[Ēďĩţōŕ ƒàĩĺēď ţō ĺōàďāēīōūáéíóúāē]"
+
 msgid "Editor status"
 msgstr "[Ēďĩţōŕ śţàţũśāēīōūáéíóú]"
-
-msgid "Fetching the furniture catalog"
-msgstr "[Ƒēţćĥĩńğ ţĥē ƒũŕńĩţũŕē ćàţàĺōğāēīōūáéíóúāēīōūáé]"
 
 msgid "Finish dragging before editing item details."
 msgstr "[Ƒĩńĩśĥ ďŕàğğĩńğ ƀēƒōŕē ēďĩţĩńğ ĩţēḿ ďēţàĩĺś.āēīōūáéíóúāēīōūáéí]"
 
 msgid "Finish dragging before using movement controls."
 msgstr "[Ƒĩńĩśĥ ďŕàğğĩńğ ƀēƒōŕē ũśĩńğ ḿōvēḿēńţ ćōńţŕōĺś.āēīōūáéíóúāēīōūáéíó]"
-
-msgid "Finishing up the room view"
-msgstr "[Ƒĩńĩśĥĩńğ ũƥ ţĥē ŕōōḿ vĩēŵāēīōūáéíóúāēīōū]"
 
 msgid "Floor"
 msgstr "[Ƒĺōōŕāēīōū]"
@@ -208,9 +211,6 @@ msgstr "[Ƒōćũś śēĺēćţēď ĩţēḿ àćţĩōńśāēīōūáéíó�
 msgid "Front"
 msgstr "[Ƒŕōńţāēīōū]"
 
-msgid "Furniture asset loading progress"
-msgstr "[Ƒũŕńĩţũŕē àśśēţ ĺōàďĩńğ ƥŕōğŕēśśāēīōūáéíóúāēī]"
-
 msgid "Furniture in room"
 msgstr "[Ƒũŕńĩţũŕē ĩń ŕōōḿāēīōūáéíóúāē]"
 
@@ -219,6 +219,9 @@ msgstr "[Ƒũŕńĩţũŕē ĩţēḿśāēīōūáéíóúā]"
 
 msgid "Furniture type to add"
 msgstr "[Ƒũŕńĩţũŕē ţŷƥē ţō àďďāēīōūáéíóúāē]"
+
+msgid "Getting things ready"
+msgstr "[Ğēţţĩńğ ţĥĩńğś ŕēàďŷāēīōūáéíóúāēīō]"
 
 msgid "Header actions"
 msgstr "[Ĥēàďēŕ àćţĩōńśāēīōūáéíóú]"
@@ -250,8 +253,11 @@ msgstr "[Ĺĩğĥţĩńğāēīōūáéí]"
 msgid "Lighting mood"
 msgstr "[Ĺĩğĥţĩńğ ḿōōďāēīōūáéíóú]"
 
-msgid "Loading scene assets"
-msgstr "[Ĺōàďĩńğ śćēńē àśśēţśāēīōūáéíóúāēīō]"
+msgid "Loading furniture"
+msgstr "[Ĺōàďĩńğ ƒũŕńĩţũŕēāēīōūáéíóúāē]"
+
+msgid "Loading the room"
+msgstr "[Ĺōàďĩńğ ţĥē ŕōōḿāēīōūáéíóúāē]"
 
 msgid "Match your home lighting to preview furniture in the right tone."
 msgstr "[Ḿàţćĥ ŷōũŕ ĥōḿē ĺĩğĥţĩńğ ţō ƥŕēvĩēŵ ƒũŕńĩţũŕē ĩń ţĥē ŕĩğĥţ ţōńē.āēīōūáéíóúāēīōūáéíóúāēīōūá]"
@@ -328,6 +334,9 @@ msgstr "[Ƥàń ćàḿēŕàāēīōūáéíó]"
 msgid "Pane focus"
 msgstr "[Ƥàńē ƒōćũśāēīōūáéíó]"
 
+msgid "Part of the editor's code did not load. This can happen after an update or a dropped connection."
+msgstr "[Ƥàŕţ ōƒ ţĥē ēďĩţōŕ'ś ćōďē ďĩď ńōţ ĺōàď. Ţĥĩś ćàń ĥàƥƥēń àƒţēŕ àń ũƥďàţē ōŕ à ďŕōƥƥēď ćōńńēćţĩōń.āēīōūáéíóúāēīōūáéíóúāēīōūáéíóúāēīōūáéíó]"
+
 msgid "Photographer"
 msgstr "[Ƥĥōţōğŕàƥĥēŕāēīōūáéíó]"
 
@@ -339,15 +348,6 @@ msgstr "[Ƥĩćķ à ŵàĺĺ ćōĺōŕ ƒōŕ ŷōũŕ ŕōōḿ.āēīōūá�
 
 msgid "Position (m)"
 msgstr "[Ƥōśĩţĩōń (ḿ)āēīōūáéíó]"
-
-msgid "Preparing furniture assets..."
-msgstr "[Ƥŕēƥàŕĩńğ ƒũŕńĩţũŕē àśśēţś...āēīōūáéíóúāēīōūá]"
-
-msgid "Preparing the editor"
-msgstr "[Ƥŕēƥàŕĩńğ ţĥē ēďĩţōŕāēīōūáéíóúāēīō]"
-
-msgid "Preparing the room editor"
-msgstr "[Ƥŕēƥàŕĩńğ ţĥē ŕōōḿ ēďĩţōŕāēīōūáéíóúāēīō]"
 
 msgid "Preview first/last"
 msgstr "[Ƥŕēvĩēŵ ƒĩŕśţ/ĺàśţāēīōūáéíóúāēī]"
@@ -404,6 +404,9 @@ msgstr "[Ŕēţŕŷ Ĺōàďĩńğāēīōūáéíóú]"
 msgid "Retry to attempt startup again."
 msgstr "[Ŕēţŕŷ ţō àţţēḿƥţ śţàŕţũƥ àğàĩń.āēīōūáéíóúāēī]"
 
+msgid "Retry to reload the editor."
+msgstr "[Ŕēţŕŷ ţō ŕēĺōàď ţĥē ēďĩţōŕ.āēīōūáéíóúāēīōū]"
+
 msgid "Retry to request the essential assets again."
 msgstr "[Ŕēţŕŷ ţō ŕēqũēśţ ţĥē ēśśēńţĩàĺ àśśēţś àğàĩń.āēīōūáéíóúāēīōūáéí]"
 
@@ -418,6 +421,9 @@ msgstr "[Ŕōōḿ ĺàŷōũţ śĥàŕēď.āēīōūáéíóúāēīō]"
 
 msgid "Room Layout: an open source 3D furniture layout tool. All 3D assets are CC-licensed and attributed below."
 msgstr "[Ŕōōḿ Ĺàŷōũţ: àń ōƥēń śōũŕćē 3Ď ƒũŕńĩţũŕē ĺàŷōũţ ţōōĺ. Àĺĺ 3Ď àśśēţś àŕē ĆĆ-ĺĩćēńśēď àńď àţţŕĩƀũţēď ƀēĺōŵ.āēīōūáéíóúāēīōūáéíóúāēīōūáéíóúāēīōūáéíóúāē]"
+
+msgid "Room loading progress"
+msgstr "[Ŕōōḿ ĺōàďĩńğ ƥŕōğŕēśśāēīōūáéíóúāē]"
 
 msgid "Rotate"
 msgstr "[Ŕōţàţēāēīōūá]"
@@ -542,9 +548,6 @@ msgstr "[Śţàŕţ ōvēŕ?āēīōūáéí]"
 msgid "Started over. Your changes were cleared."
 msgstr "[Śţàŕţēď ōvēŕ. Ŷōũŕ ćĥàńğēś ŵēŕē ćĺēàŕēď.āēīōūáéíóúāēīōūá]"
 
-msgid "Starting asset requests"
-msgstr "[Śţàŕţĩńğ àśśēţ ŕēqũēśţśāēīōūáéíóúāēī]"
-
 msgid "Startup failed"
 msgstr "[Śţàŕţũƥ ƒàĩĺēďāēīōūáéíóú]"
 
@@ -566,11 +569,11 @@ msgstr "[Ţàƀ / Ēńţēŕ àƥƥĺĩēś ōƒƒśēţ. Ēść ćàńćēĺś.
 msgid "Tab / Enter applies rotation. Esc cancels."
 msgstr "[Ţàƀ / Ēńţēŕ àƥƥĺĩēś ŕōţàţĩōń. Ēść ćàńćēĺś.āēīōūáéíóúāēīōūáé]"
 
+msgid "That item isn't available right now."
+msgstr "[Ţĥàţ ĩţēḿ ĩśń'ţ àvàĩĺàƀĺē ŕĩğĥţ ńōŵ.āēīōūáéíóúāēīōū]"
+
 msgid "The editor could not download the furniture catalog required to start."
 msgstr "[Ţĥē ēďĩţōŕ ćōũĺď ńōţ ďōŵńĺōàď ţĥē ƒũŕńĩţũŕē ćàţàĺōğ ŕēqũĩŕēď ţō śţàŕţ.āēīōūáéíóúāēīōūáéíóúāēīōūáéí]"
-
-msgid "The editor will unlock after the required furniture models finish loading."
-msgstr "[Ţĥē ēďĩţōŕ ŵĩĺĺ ũńĺōćķ àƒţēŕ ţĥē ŕēqũĩŕēď ƒũŕńĩţũŕē ḿōďēĺś ƒĩńĩśĥ ĺōàďĩńğ.āēīōūáéíóúāēīōūáéíóúāēīōūáéíóú]"
 
 msgid "The furniture catalog request timed out before startup completed."
 msgstr "[Ţĥē ƒũŕńĩţũŕē ćàţàĺōğ ŕēqũēśţ ţĩḿēď ōũţ ƀēƒōŕē śţàŕţũƥ ćōḿƥĺēţēď.āēīōūáéíóúāēīōūáéíóúāēīōūá]"
@@ -598,6 +601,9 @@ msgstr "[Ţōƥāēī]"
 
 msgid "Unable to load room editor assets. Retry available."
 msgstr "[Ũńàƀĺē ţō ĺōàď ŕōōḿ ēďĩţōŕ àśśēţś. Ŕēţŕŷ àvàĩĺàƀĺē.āēīōūáéíóúāēīōūáéíóúā]"
+
+msgid "Unavailable"
+msgstr "[Ũńàvàĩĺàƀĺēāēīōūáéí]"
 
 msgid "Undo"
 msgstr "[Ũńďōāēīō]"

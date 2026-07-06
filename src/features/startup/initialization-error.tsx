@@ -40,6 +40,11 @@ const ERROR_COPY: Record<StartupErrorKind, ErrorCopy> = {
     description: msg`A required furniture model did not load correctly, so editor interactions are temporarily unavailable.`,
     note: msg`Retry to request the essential assets again.`,
   },
+  'app-chunk': {
+    label: msg`Editor failed to load`,
+    description: msg`Part of the editor's code did not load. This can happen after an update or a dropped connection.`,
+    note: msg`Retry to reload the editor.`,
+  },
 }
 
 // Fallback for an error with no classified kind; a caller-provided message

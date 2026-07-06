@@ -1,5 +1,9 @@
 import { describe, expect, it, vi } from 'vitest'
-import { runStartupRestoreFlow } from './restore-flow'
+import {
+  runStartupRestoreFlow,
+  selectPrimaryRestoreState,
+  validateDraftState,
+} from './restore-flow'
 import type { FurnitureCatalogEntry } from '@/domain/catalog'
 
 function createCatalogEntry(id: string): FurnitureCatalogEntry {
@@ -289,5 +293,52 @@ describe('runStartupRestoreFlow', () => {
     expect(calls.announceAssertive).not.toHaveBeenCalled()
     expect(calls.setStatusMessage).not.toHaveBeenCalled()
     expect(calls.setRestoreOutcome).toHaveBeenLastCalledWith('skipped')
+  })
+})
+
+describe('selectPrimaryRestoreState', () => {
+  const catalog = [createCatalogEntry('chair-1')]
+
+  it('selects a valid shared link over a valid draft', () => {
+    const parsed = createState('chair-1')
+    const selection = selectPrimaryRestoreState({
+      parseResult: { ok: true, ...parsed },
+      validDraftState: createState('chair-1'),
+      catalog,
+    })
+
+    expect(selection.source).toBe('link')
+    expect(selection.state).toMatchObject({ items: parsed.items })
+  })
+
+  it('falls back to the draft when the link references unknown furniture', () => {
+    const selection = selectPrimaryRestoreState({
+      parseResult: { ok: true, ...createState('unknown-id') },
+      validDraftState: createState('chair-1'),
+      catalog,
+    })
+
+    expect(selection.source).toBe('draft')
+  })
+
+  it('selects nothing when there is no link and no draft', () => {
+    const selection = selectPrimaryRestoreState({
+      parseResult: { ok: false, reason: 'no-param' },
+      validDraftState: null,
+      catalog,
+    })
+
+    expect(selection).toEqual({ source: 'none', state: null })
+  })
+})
+
+describe('validateDraftState', () => {
+  it('passes a draft whose references are known and rejects one that is not', () => {
+    const catalog = [createCatalogEntry('chair-1')]
+    const validDraft = createState('chair-1')
+
+    expect(validateDraftState(validDraft, catalog)).toBe(validDraft)
+    expect(validateDraftState(createState('unknown-id'), catalog)).toBeNull()
+    expect(validateDraftState(null, catalog)).toBeNull()
   })
 })

@@ -1,13 +1,7 @@
-import {
-  useStartupOverlayActive,
-  useAssetError,
-} from '@/core/stores/editor-lifecycle-store'
 import { useHasSelection } from '@/core/stores/scene-document-store'
 import { CameraTools } from '@/features/camera/camera-tools'
 import { DeleteConfirmationDialogHost } from '@/features/selection/delete-confirmation-dialog-host'
 import { StatusMessage } from './feedback/status-message'
-import { InitializationError } from '@/features/startup/initialization-error'
-import { InitializationProgress } from '@/features/startup/initialization-progress'
 import { Outliner } from '@/features/outliner/outliner'
 import { SelectedDetailsPanel } from '@/features/selection/selected-details-panel'
 import { FloatingSelectedItemSite } from '@/features/selection/floating-selected-item-site'
@@ -25,18 +19,13 @@ import { cn } from '@/shared/lib/utils'
 export function EditorOverlay() {
   const registerExclusionElement = useExclusionRegistry()
   const hasSelection = useHasSelection()
-  const assetError = useAssetError()
-  const startupOverlayActive = useStartupOverlayActive()
   const isRoomSurfaceOpen = useDialogOpen(ROOM_SURFACE_DIALOG_ID)
   const layoutMode = useHeaderLayoutMode()
   const isDesktop = layoutMode === 'desktop'
 
   return (
     <>
-      <div
-        className="pointer-events-none fixed inset-2 flex flex-col justify-between gap-2"
-        inert={startupOverlayActive}
-      >
+      <div className="pointer-events-none fixed inset-2 flex flex-col justify-between gap-2">
         {isDesktop ? <TopHeaderDesktop /> : <TopHeaderMobile />}
 
         {isDesktop && <FloatingSelectedItemSite />}
@@ -86,13 +75,6 @@ export function EditorOverlay() {
       </div>
       <TopHeaderDialogs />
       <DeleteConfirmationDialogHost />
-      <InitializationProgress />
-      {assetError ? (
-        <InitializationError
-          errorKind={assetError.kind}
-          errorMessage={assetError.message}
-        />
-      ) : null}
     </>
   )
 }

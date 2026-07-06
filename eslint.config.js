@@ -28,7 +28,8 @@ const PARENT_RELATIVE_IMPORT_REGEX = '^\\.\\.'
 const PARENT_RELATIVE_IMPORT_MESSAGE =
   'Prefer @/ alias imports over parent-relative path traversals.'
 
-const SCENE_ALLOWED_RUNTIME_IMPORTS = 'scene-commands$|scene\\.types$'
+const SCENE_ALLOWED_RUNTIME_IMPORTS =
+  'scene-commands$|scene\\.types$|collection-registry$'
 const RESTRICT_SCENE_IMPORTS_FOR_FEATURES_AND_SHARED = `^@/scene/(?!${SCENE_ALLOWED_RUNTIME_IMPORTS}).+`
 const RESTRICT_SCENE_IMPORTS_FOR_APP = `^@/scene/(?!scene$|${SCENE_ALLOWED_RUNTIME_IMPORTS}).+`
 
@@ -231,7 +232,7 @@ export default defineConfig([
             {
               group: ['@/scene/internal', '@/scene/internal/**'],
               message:
-                'src/core must not reach into scene internals; use the scene public surface (scene-commands, scene.types, scene-test-support).',
+                'src/core must not reach into scene internals; use the scene public surface (scene-commands, scene.types, collection-registry, scene-test-support).',
             },
             {
               group: RUNTIME_TEST_IMPORT_GROUP,

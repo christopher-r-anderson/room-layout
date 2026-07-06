@@ -48,11 +48,14 @@ function resolveActiveCatalogId(
     return selectedCatalogId
   }
 
-  return catalog[0]?.id ?? ''
+  // No default: the user must actively pick an item to add. The first catalog
+  // entry is not a recommendation, and pre-selecting it would mis-announce a
+  // choice for screen readers and speculatively prefetch its model on open.
+  return ''
 }
 
 // Active id used by both the drawer (selected radio) and the add action: the
-// stored selection when still valid, otherwise the first catalog entry.
+// stored selection when still valid, otherwise empty (nothing selected).
 export function getActiveCatalogId(): string {
   return resolveActiveCatalogId(
     catalogSelectionStore.getState().selectedCatalogId,

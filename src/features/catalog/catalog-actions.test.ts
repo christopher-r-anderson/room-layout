@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { toast } from 'sonner'
 import { resetSceneDocumentStore } from '@/core/stores/scene-document-store'
 import { feedbackStore, resetFeedbackStore } from '@/core/stores/feedback-store'
 import {
@@ -19,8 +20,15 @@ import {
   ADD_FURNITURE_NO_SPACE_MESSAGE,
   ADD_FURNITURE_UNKNOWN_CATALOG_MESSAGE,
 } from '@/shared/messages/command-messages'
-import { resetCatalogSelectionStore } from './catalog-selection-store'
+import {
+  catalogSelectionActions,
+  resetCatalogSelectionStore,
+} from './catalog-selection-store'
 import { addFurniture } from './catalog-actions'
+
+vi.mock('sonner', () => ({
+  toast: { error: vi.fn(), success: vi.fn(), warning: vi.fn() },
+}))
 
 vi.mock('@/core/operations/selection-effects', () => ({
   selectionEffects: {
@@ -63,44 +71,54 @@ afterEach(() => {
 })
 
 describe('addFurniture', () => {
-  it('clears stale add state without invoking the scene while not ready', () => {
+  it('clears stale add state without invoking the scene while not ready', async () => {
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(false)
     const addFurnitureCommand = vi.spyOn(sceneCommands, 'addFurniture')
 
-    expect(addFurniture()).toBe(false)
+    expect(await addFurniture()).toBe(false)
     expect(addFurnitureCommand).not.toHaveBeenCalled()
     expect(selectionEffects.notePendingSource).toHaveBeenCalledWith(null)
     expect(selectionEffects.notePendingSelection).toHaveBeenCalledWith(null)
   })
 
-  it('maps add-furniture failures through shared messages', () => {
+  it('maps add-furniture failures through shared messages', async () => {
+    catalogSelectionActions.setSelectedCatalogId('chair')
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
     const addFurnitureCommand = vi.spyOn(sceneCommands, 'addFurniture')
 
     addFurnitureCommand.mockReturnValueOnce({ ok: false, reason: 'no-space' })
-    expect(addFurniture()).toBe(false)
-    expect(feedbackStore.getState().statusMessage).toBe(
+    expect(await addFurniture()).toBe(false)
+    expect(toast.error).toHaveBeenLastCalledWith(
       i18n._(ADD_FURNITURE_NO_SPACE_MESSAGE),
     )
+    // Also announced assertively: the drawer aria-hides the toast region but
+    // live regions are exempt, so the announcer reaches assistive tech. The
+    // announcement lands on the store's clear-then-set tick.
+    await vi.waitFor(() => {
+      expect(feedbackStore.getState().assertiveAnnouncement).toBe(
+        i18n._(ADD_FURNITURE_NO_SPACE_MESSAGE),
+      )
+    })
 
     addFurnitureCommand.mockReturnValueOnce({
       ok: false,
       reason: 'unknown-catalog',
     })
-    expect(addFurniture()).toBe(false)
-    expect(feedbackStore.getState().statusMessage).toBe(
+    expect(await addFurniture()).toBe(false)
+    expect(toast.error).toHaveBeenLastCalledWith(
       i18n._(ADD_FURNITURE_UNKNOWN_CATALOG_MESSAGE),
     )
   })
 
-  it('marks toolbar selection effects after a successful add', () => {
+  it('marks toolbar selection effects after a successful add', async () => {
+    catalogSelectionActions.setSelectedCatalogId('chair')
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
     vi.spyOn(sceneCommands, 'addFurniture').mockReturnValue({
       ok: true,
       id: 'item-1',
     })
 
-    expect(addFurniture()).toBe(true)
+    expect(await addFurniture()).toBe(true)
     expect(selectionFocusStore.getState().selectedSource).toBe('toolbar')
     expect(selectionEffects.notePendingSource).toHaveBeenCalledWith('toolbar')
     expect(selectionEffects.notePendingSelection).toHaveBeenCalledWith({

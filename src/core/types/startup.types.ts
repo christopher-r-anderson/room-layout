@@ -3,3 +3,4 @@ export type StartupErrorKind =
   | 'manifest-network'
   | 'manifest-validation'
   | 'asset-load'
+  | 'app-chunk'

@@ -185,7 +185,7 @@ export async function waitForEditorReady(page: Page) {
     { timeout: EDITOR_READY_TIMEOUT_MS },
   )
   await expect(
-    page.getByRole('heading', { name: /preparing the room editor/i }),
+    page.getByRole('status', { name: /loading the room/i }),
   ).toBeHidden()
 
   const sceneState = await readSceneState(page)
@@ -217,6 +217,23 @@ export async function openEditor(page: Page) {
   await page.goto('/')
 
   return waitForEditorReady(page)
+}
+
+// A restore item whose collection is gated on startup, so delaying or failing
+// furniture asset requests actually holds/errors the startup loader (an empty
+// scene gates on no collections and unlocks before any furniture request).
+export const GATED_RESTORE_ITEM = {
+  id: 'furniture-instance-1',
+  catalogId: 'armchair-1',
+  position: [0, 0, 0] as [number, number, number],
+  rotationY: 0,
+}
+
+// Builds a minimal ?scene= route so startup gates on the referenced collections.
+export function makeSceneRoute(items: unknown[]): string {
+  const params = new URLSearchParams()
+  params.set('scene', JSON.stringify({ v: 1, items }))
+  return `/?${params.toString()}`
 }
 
 export async function waitForItemCount(page: Page, expectedCount: number) {
