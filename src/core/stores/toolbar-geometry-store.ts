@@ -65,7 +65,7 @@ export const useToolbarGeometryStore = create<ToolbarGeometryStoreState>()(
 )
 
 export const toolbarGeometryActions = {
-  setToolbarGeometry(geometry: SelectedToolbarGeometry) {
+  setToolbarGeometry: (geometry: SelectedToolbarGeometry) => {
     useToolbarGeometryStore.setState((state) => {
       if (areSelectedToolbarGeometriesEqual(state.toolbarGeometry, geometry)) {
         if (import.meta.env.DEV || IS_E2E_BUILD) {
@@ -81,7 +81,7 @@ export const toolbarGeometryActions = {
       return { toolbarGeometry: geometry }
     })
   },
-  reset() {
+  reset: () => {
     useToolbarGeometryStore.setState(
       useToolbarGeometryStore.getInitialState(),
       true,

@@ -33,13 +33,13 @@ export const useToolbarInteractionStore =
   }))
 
 export const toolbarInteractionActions = {
-  setPointerOver(pointerOver: boolean) {
+  setPointerOver: (pointerOver: boolean) => {
     useToolbarInteractionStore.setState({ pointerOver })
   },
-  setFocusWithin(focusWithin: boolean) {
+  setFocusWithin: (focusWithin: boolean) => {
     useToolbarInteractionStore.setState({ focusWithin })
   },
-  reportRotation() {
+  reportRotation: () => {
     clearRotationGraceTimer()
     rotationGraceTimer = setTimeout(() => {
       rotationGraceTimer = null
@@ -48,7 +48,7 @@ export const toolbarInteractionActions = {
     useToolbarInteractionStore.setState({ rotationGraceActive: true })
   },
   // Clears every engagement flag and cancels the pending grace timer in one call.
-  reset() {
+  reset: () => {
     clearRotationGraceTimer()
     useToolbarInteractionStore.setState(
       useToolbarInteractionStore.getInitialState(),

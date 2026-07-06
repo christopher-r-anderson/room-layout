@@ -14,10 +14,10 @@ const useCatalogSelectionStore = create<CatalogSelectionStoreState>()(() => ({
 }))
 
 export const catalogSelectionActions = {
-  setSelectedCatalogId(catalogId: string) {
+  setSelectedCatalogId: (catalogId: string) => {
     useCatalogSelectionStore.setState({ selectedCatalogId: catalogId })
   },
-  reset() {
+  reset: () => {
     useCatalogSelectionStore.setState(
       useCatalogSelectionStore.getInitialState(),
       true,

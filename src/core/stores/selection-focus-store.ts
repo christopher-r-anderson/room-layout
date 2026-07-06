@@ -22,22 +22,22 @@ export const useSelectionFocusStore = create<SelectionFocusStoreState>()(
 )
 
 export const selectionFocusActions = {
-  setSelectedSource(source: InteractionSource) {
+  setSelectedSource: (source: InteractionSource) => {
     useSelectionFocusStore.setState({ selectedSource: source })
   },
-  requestOutlinerFocus(request: OutlinerFocusRequest) {
+  requestOutlinerFocus: (request: OutlinerFocusRequest) => {
     useSelectionFocusStore.setState({ outlinerFocusRequest: request })
   },
-  clearOutlinerFocusRequest() {
+  clearOutlinerFocusRequest: () => {
     useSelectionFocusStore.setState({ outlinerFocusRequest: null })
   },
-  requestRoomViewFocus() {
+  requestRoomViewFocus: () => {
     useSelectionFocusStore.setState({ roomViewFocusRequest: Date.now() })
   },
-  clearRoomViewFocusRequest() {
+  clearRoomViewFocusRequest: () => {
     useSelectionFocusStore.setState({ roomViewFocusRequest: null })
   },
-  reset() {
+  reset: () => {
     useSelectionFocusStore.setState(
       useSelectionFocusStore.getInitialState(),
       true,

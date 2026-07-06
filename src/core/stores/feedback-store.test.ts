@@ -3,13 +3,13 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   feedbackActions,
-  feedbackStore,
+  useFeedbackStore,
   resetFeedbackStore,
 } from './feedback-store'
 
-const polite = () => feedbackStore.getState().politeAnnouncement
-const assertive = () => feedbackStore.getState().assertiveAnnouncement
-const status = () => feedbackStore.getState().statusMessage
+const polite = () => useFeedbackStore.getState().politeAnnouncement
+const assertive = () => useFeedbackStore.getState().assertiveAnnouncement
+const status = () => useFeedbackStore.getState().statusMessage
 
 describe('feedback store', () => {
   afterEach(() => {

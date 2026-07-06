@@ -49,7 +49,7 @@ export const useAssetsStore = create<AssetsStoreState>()(() => ({
 }))
 
 export const assetsActions = {
-  setAssets(assets: Assets) {
+  setAssets: (assets: Assets) => {
     useAssetsStore.setState({
       ...assets,
       sourcePathByCatalogId: buildSourcePathByCatalogId(
@@ -58,7 +58,7 @@ export const assetsActions = {
       ),
     })
   },
-  reset() {
+  reset: () => {
     useAssetsStore.setState(useAssetsStore.getInitialState(), true)
   },
 }
