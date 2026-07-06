@@ -142,6 +142,13 @@ export function resetCollectionLoading() {
   collectionLoadingActions.reset()
 }
 
+function clampPercent(receivedBytes: number, totalBytes: number): number {
+  if (totalBytes <= 0) {
+    return 0
+  }
+  return Math.max(0, Math.min(100, (receivedBytes / totalBytes) * 100))
+}
+
 export function isCollectionLoaded(path: string): boolean {
   return collectionLoadingStore.getState().loaded.has(path)
 }
@@ -203,12 +210,7 @@ export function useCollectionLoadPercent(path: string | null): number | null {
     if (!progress || progress.totalBytes <= 0) {
       return null
     }
-    return Math.round(
-      Math.max(
-        0,
-        Math.min(100, (progress.receivedBytes / progress.totalBytes) * 100),
-      ),
-    )
+    return Math.round(clampPercent(progress.receivedBytes, progress.totalBytes))
   })
 }
 
@@ -246,10 +248,7 @@ export function useGatedLoadProgress(): GatedLoadProgress {
           loadedCount += 1
         }
       }
-      const percent =
-        totalBytes > 0
-          ? Math.max(0, Math.min(100, (receivedBytes / totalBytes) * 100))
-          : 0
+      const percent = clampPercent(receivedBytes, totalBytes)
       return { total: gatedPaths.length, loadedCount, percent }
     },
     shallow,
