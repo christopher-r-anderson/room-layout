@@ -3,7 +3,7 @@
 import { fireEvent, renderHook } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { useCameraKeyState } from './use-camera-key-state'
-import { sceneCommands } from '@/scene/scene-commands'
+import { sceneCommands } from '@/core/scene-commands'
 
 function createSetCameraKeyStateSpy() {
   return vi

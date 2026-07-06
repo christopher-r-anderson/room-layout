@@ -2,7 +2,7 @@ import {
   clearSceneServices as clearSceneServicesInternal,
   getSceneServices,
   getSceneServicesIfReady,
-} from './internal/scene-services'
+} from './scene-services'
 import type { FurnitureInstance } from '@/domain/furniture'
 import type {
   AddFurnitureResult,

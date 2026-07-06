@@ -7,7 +7,7 @@ import type {
 import {
   sceneDocumentActions,
   useSceneDocumentStore,
-} from '@/core/scene-contracts'
+} from '@/core/stores/scene-document-store'
 import { redoSceneHistory, undoSceneHistory } from './scene-history-state'
 import { buildRestoredSceneHistory } from './restored-scene-history'
 import { getLoadedCollectionScenes } from '../furniture/collection-scene-registry'

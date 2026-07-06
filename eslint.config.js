@@ -28,14 +28,13 @@ const PARENT_RELATIVE_IMPORT_REGEX = '^\\.\\.'
 const PARENT_RELATIVE_IMPORT_MESSAGE =
   'Prefer @/ alias imports over parent-relative path traversals.'
 
-const SCENE_ALLOWED_RUNTIME_IMPORTS =
-  'scene-commands$|scene\\.types$|collection-registry$'
-const RESTRICT_SCENE_IMPORTS_FOR_FEATURES_AND_SHARED = `^@/scene/(?!${SCENE_ALLOWED_RUNTIME_IMPORTS}).+`
-const RESTRICT_SCENE_IMPORTS_FOR_APP = `^@/scene/(?!scene$|${SCENE_ALLOWED_RUNTIME_IMPORTS}).+`
-
-const RESTRICT_EDITOR_STATE_IMPORTS_FOR_SCENE = '^@/core/(?!scene-contracts$).+'
-const RESTRICT_EDITOR_STATE_IMPORTS_FOR_SCENE_TESTS =
-  '^@/core/(?!scene-contracts$|scene-test-support$).+'
+// The scene layer is the renderer adapter: it implements the ports core owns
+// (scene-services) and reads core state directly, so imports of @/scene are
+// banned everywhere except app's single mount point (@/scene/scene).
+const SCENE_IMPORT_GROUP = ['@/scene', '@/scene/**']
+const SCENE_IMPORT_MESSAGE =
+  'The scene layer is the renderer adapter. Drive it through @/core/scene-commands; only app mounts @/scene/scene.'
+const RESTRICT_SCENE_IMPORTS_FOR_APP = '^@/scene/(?!scene$).+'
 
 // Because no-restricted-imports is replaced wholesale by later matching blocks,
 // these paths are spread into every layer block below (and a base block covers
@@ -178,64 +177,20 @@ export default defineConfig([
     },
   },
 
-  // Scene runtime boundaries.
+  // Scene boundaries: the renderer adapter depends downward on core/shared/
+  // domain and is never imported back (see SCENE_IMPORT_GROUP).
   {
     files: ['src/scene/**/*.{ts,tsx}'],
-    ignores: ['src/scene/**/*.test.{ts,tsx}', 'src/scene/**/*.spec.{ts,tsx}'],
     rules: {
       'no-restricted-imports': [
         'error',
         {
-          paths: [
-            ...RESTRICTED_ZUSTAND_IMPORT_PATHS,
-            {
-              name: '@/core',
-              message:
-                'Scene code must import core only via @/core/scene-contracts.',
-            },
-          ],
+          paths: RESTRICTED_ZUSTAND_IMPORT_PATHS,
           patterns: [
             {
               group: ['@/app', '@/app/**', '@/features', '@/features/**'],
               message:
                 'src/scene must not import from src/app or src/features.',
-            },
-            {
-              regex: RESTRICT_EDITOR_STATE_IMPORTS_FOR_SCENE,
-              message:
-                'Scene code must import core only via @/core/scene-contracts.',
-            },
-          ],
-        },
-      ],
-    },
-  },
-
-  // Scene test boundaries.
-  {
-    files: ['src/scene/**/*.test.{ts,tsx}', 'src/scene/**/*.spec.{ts,tsx}'],
-    rules: {
-      'no-restricted-imports': [
-        'error',
-        {
-          paths: [
-            ...RESTRICTED_ZUSTAND_IMPORT_PATHS,
-            {
-              name: '@/core',
-              message:
-                'Scene tests must import core via @/core/scene-contracts or @/core/scene-test-support only.',
-            },
-          ],
-          patterns: [
-            {
-              group: ['@/app', '@/app/**', '@/features', '@/features/**'],
-              message:
-                'src/scene must not import from src/app or src/features.',
-            },
-            {
-              regex: RESTRICT_EDITOR_STATE_IMPORTS_FOR_SCENE_TESTS,
-              message:
-                'Scene tests must import core via @/core/scene-contracts or @/core/scene-test-support only.',
             },
           ],
         },
@@ -262,9 +217,9 @@ export default defineConfig([
               message: 'src/core must not import UI component modules.',
             },
             {
-              group: ['@/scene/internal', '@/scene/internal/**'],
+              group: SCENE_IMPORT_GROUP,
               message:
-                'src/core must not reach into scene internals; use the scene public surface (scene-commands, scene.types, collection-registry, scene-test-support).',
+                'src/core owns the engine ports (scene-commands, scene-services); it must not import the scene adapter.',
             },
             {
               group: RUNTIME_TEST_IMPORT_GROUP,
@@ -330,9 +285,8 @@ export default defineConfig([
                 'src/features must not import from src/app. Move shared seams to src/shared (or another neutral layer) and keep app as composition-only.',
             },
             {
-              regex: RESTRICT_SCENE_IMPORTS_FOR_FEATURES_AND_SHARED,
-              message:
-                'src/features should import scene only via approved scene contract modules.',
+              group: SCENE_IMPORT_GROUP,
+              message: SCENE_IMPORT_MESSAGE,
             },
             {
               regex: PARENT_RELATIVE_IMPORT_REGEX,
@@ -366,7 +320,7 @@ export default defineConfig([
             {
               regex: RESTRICT_SCENE_IMPORTS_FOR_APP,
               message:
-                'src/app should import scene only via approved scene contract modules.',
+                'src/app mounts @/scene/scene and drives everything else through @/core/scene-commands.',
             },
             {
               regex: PARENT_RELATIVE_IMPORT_REGEX,
@@ -393,9 +347,8 @@ export default defineConfig([
               message: 'Runtime code must not import from src/test.',
             },
             {
-              regex: RESTRICT_SCENE_IMPORTS_FOR_FEATURES_AND_SHARED,
-              message:
-                'src/shared should import scene only via approved scene contract modules.',
+              group: SCENE_IMPORT_GROUP,
+              message: SCENE_IMPORT_MESSAGE,
             },
             {
               regex: PARENT_RELATIVE_IMPORT_REGEX,
@@ -525,9 +478,8 @@ export default defineConfig([
                 'src/shared/lib must not import from app, features, or core modules.',
             },
             {
-              regex: RESTRICT_SCENE_IMPORTS_FOR_FEATURES_AND_SHARED,
-              message:
-                'src/shared should import scene only via approved scene contract modules.',
+              group: SCENE_IMPORT_GROUP,
+              message: SCENE_IMPORT_MESSAGE,
             },
             {
               regex: PARENT_RELATIVE_IMPORT_REGEX,
@@ -555,9 +507,8 @@ export default defineConfig([
               message: 'Runtime code must not import from src/test.',
             },
             {
-              regex: RESTRICT_SCENE_IMPORTS_FOR_FEATURES_AND_SHARED,
-              message:
-                'src/shared should import scene only via approved scene contract modules.',
+              group: SCENE_IMPORT_GROUP,
+              message: SCENE_IMPORT_MESSAGE,
             },
             {
               regex: PARENT_RELATIVE_IMPORT_REGEX,

@@ -2,7 +2,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createHistoryState } from '@/shared/lib/ui/editor-history'
 import type { FurnitureItem } from '@/domain/furniture'
-import { sceneCommands } from '@/scene/scene-commands'
+import { sceneCommands } from '@/core/scene-commands'
 import { feedbackActions } from '@/core/stores/feedback-store'
 import { selectById } from '@/core/operations/selection-actions'
 import {

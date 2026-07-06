@@ -23,7 +23,7 @@ import {
   updateFurniturePositionInHistory,
 } from './internal/furniture/furniture-operations'
 import { useHistoryOperations } from './internal/history/use-history-operations'
-import type { CameraKeyState } from './scene.types'
+import type { CameraKeyState } from '@/core/scene.types'
 import { useSceneDrag } from './internal/drag/use-scene-drag'
 import { useSceneSnapshot } from './internal/snapshot/use-scene-snapshot'
 import { useCameraOperations } from './internal/camera/use-camera-operations'
@@ -40,13 +40,13 @@ import { perfCounters } from '@/shared/debug/perf-counters'
 import { IS_E2E_BUILD } from '@/shared/env/e2e'
 import {
   sceneDocumentActions,
-  setSceneMounted,
   useItems,
-} from '@/core/scene-contracts'
+} from '@/core/stores/scene-document-store'
+import { setSceneMounted } from '@/core/stores/editor-lifecycle-store'
 import {
   clearSceneServices,
   registerSceneServices,
-} from './internal/scene-services'
+} from '@/core/scene-services'
 import { useLoadedCollectionScenes } from './internal/furniture/collection-scene-registry'
 import { createCollectionSceneLoader } from './internal/furniture/collection-scene-loader'
 

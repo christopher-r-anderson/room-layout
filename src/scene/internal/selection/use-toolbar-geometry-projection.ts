@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useRef, type RefObject } from 'react'
 import { useFrame } from '@react-three/fiber'
 import type { Camera, Object3D } from 'three'
-import { toolbarGeometryActions } from '@/core/scene-contracts'
+import { toolbarGeometryActions } from '@/core/stores/toolbar-geometry-store'
 import { perfCounters } from '@/shared/debug/perf-counters'
 import { IS_E2E_BUILD } from '@/shared/env/e2e'
 import { computeSelectedToolbarGeometry } from './selected-toolbar-geometry'
-import type { SelectedToolbarGeometry } from '../../scene.types'
+import type { SelectedToolbarGeometry } from '@/core/scene.types'
 
 const TOOLBAR_GEOMETRY_DEADBAND_PX = 0.5
 const TOOLBAR_GEOMETRY_FRAME_INTERVAL_SECONDS = 1 / 24

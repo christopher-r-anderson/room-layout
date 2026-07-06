@@ -3,7 +3,7 @@
 import { act, renderHook } from '@testing-library/react'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { Group } from 'three'
-import { resetSceneDocumentStore } from '@/core/scene-test-support'
+import { resetSceneDocumentStore } from '@/core/stores/scene-document-store'
 import { createDummyMesh } from '@/test/support/three-fixtures'
 import { useSceneSelection } from './use-scene-selection'
 import type { FurnitureItem } from '@/domain/furniture'

@@ -3,8 +3,8 @@ import { Object3D } from 'three'
 import {
   getLoadedCollectionScenes,
   registerCollectionScene,
-  resetCollectionSceneRegistry,
 } from './collection-scene-registry'
+import { resetCollectionSceneRegistry } from '@/core/stores/collection-scene-registry'
 
 afterEach(() => {
   resetCollectionSceneRegistry()

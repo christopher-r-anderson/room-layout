@@ -3,8 +3,8 @@ import { feedbackActions } from '@/core/stores/feedback-store'
 import { selectionFocusActions } from '@/core/stores/selection-focus-store'
 import { selectionEffects } from '@/core/operations/selection-effects'
 import { clearPreviewOnCanvasMiss } from '@/core/operations/preview-actions'
-import { sceneCommands } from '@/scene/scene-commands'
-import type { SelectByIdResult } from '@/scene/scene.types'
+import { sceneCommands } from '@/core/scene-commands'
+import type { SelectByIdResult } from '@/core/scene.types'
 import type { InteractionSource } from '@/core/types/interaction.types'
 
 export function selectByCanvasPointer(id: string) {

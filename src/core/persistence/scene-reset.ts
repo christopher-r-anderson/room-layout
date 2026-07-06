@@ -4,7 +4,7 @@ import { feedbackActions } from '@/core/stores/feedback-store'
 import { selectionEffects } from '@/core/operations/selection-effects'
 import { clearPreviewOnCanvasMiss } from '@/core/operations/preview-actions'
 import { clearSceneDraft } from '@/core/persistence/scene-draft'
-import { sceneCommands } from '@/scene/scene-commands'
+import { sceneCommands } from '@/core/scene-commands'
 
 /**
  * Resets the editor to the loaded environment's defaults: clears the layout,

@@ -1,23 +1,9 @@
 import { type Camera, type Object3D, Vector3 } from 'three'
 import type { FurnitureItem } from '@/domain/furniture'
+import type { SceneSnapshot } from '@/core/scene.types'
 import { getVisualObjectBounds } from '@/scene/internal/three/get-visual-object-bounds'
 
-interface SceneSnapshotItem {
-  id: string
-  catalogId: string
-  name: string
-  position: [number, number, number]
-  rotationY: number
-  pointerTarget: {
-    x: number
-    y: number
-  } | null
-}
-
-export interface SceneSnapshot {
-  cameraPosition: [number, number, number]
-  items: SceneSnapshotItem[]
-}
+export type { SceneSnapshot } from '@/core/scene.types'
 
 interface PointerTargetOptions {
   object: Object3D | null

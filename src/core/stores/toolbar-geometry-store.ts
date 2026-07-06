@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { ScreenPoint, SelectedToolbarGeometry } from '@/scene/scene.types'
+import type { ScreenPoint, SelectedToolbarGeometry } from '@/core/scene.types'
 import { perfCounters } from '@/shared/debug/perf-counters'
 import { IS_E2E_BUILD } from '@/shared/env/e2e'
 

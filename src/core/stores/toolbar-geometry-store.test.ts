@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import { beforeEach, describe, expect, it } from 'vitest'
-import type { SelectedToolbarGeometry } from '@/scene/scene.types'
+import type { SelectedToolbarGeometry } from '@/core/scene.types'
 import {
   resetToolbarGeometryStore,
   toolbarGeometryActions,

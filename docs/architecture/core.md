@@ -19,8 +19,8 @@ Two concepts have their own docs:
 - `persistence/` — scene state ↔ storage/URL.
 - `commands/` — the `EditorCommand` vocabulary and its dispatch binding.
 - `types/` — shared types.
-- Root — the public, cross-layer contracts: `scene-contracts`,
-  `scene-test-support`, `dialog-contract`.
+- Root — the public, cross-layer contracts: the engine port surface
+  (`scene-commands`, `scene-services`, `scene.types`) and `dialog-contract`.
 
 ## Store inventory
 
@@ -35,7 +35,7 @@ a store.
 - **`scene-document-store`** — the app-facing scene **data model**: furniture
   history (the undo/redo timeline), selection id, preview id, drag state,
   finishes, the lighting mood id, and the floor-finish loading flag. Written by
-  scene (publishing committed results up through `scene-contracts`) and by core
+  scene (publishing committed results into the store directly) and by core
   operations.
   Ownership vs. the scene itself is the subject of
   [scene-and-core.md](scene-and-core.md).
@@ -62,7 +62,7 @@ a store.
   startup bootstrap and the collection load pipeline.
 - **`toolbar-geometry-store`** — the selected item's projected toolbar geometry,
   a one-writer (scene raf loop) / one-reader (placement hook) data pipe kept
-  apart from selection focus routing. Written by scene via `scene-contracts`.
+  apart from selection focus routing. Written by the scene's projection loop.
 - **`toolbar-interaction-store`** — whether the user is engaging the selected
   item toolbar (pointer over, focus within, rotation grace window), read by the
   placement engine to pin the toolbar. Written by the selection feature's

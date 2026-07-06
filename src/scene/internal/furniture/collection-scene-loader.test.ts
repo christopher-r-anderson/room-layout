@@ -1,10 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { Object3D, type WebGLRenderer } from 'three'
 import type { FurnitureCatalogEntry } from '@/domain/catalog'
-import {
-  getLoadedCollectionScenes,
-  resetCollectionSceneRegistry,
-} from './collection-scene-registry'
+import { getLoadedCollectionScenes } from './collection-scene-registry'
+import { resetCollectionSceneRegistry } from '@/core/stores/collection-scene-registry'
 import { createCollectionSceneLoader } from './collection-scene-loader'
 
 const { parseAsyncMock } = vi.hoisted(() => ({

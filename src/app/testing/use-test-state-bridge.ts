@@ -7,7 +7,7 @@ import {
 import { useSceneDocumentStore } from '@/core/stores/scene-document-store'
 import { getPreviewedId } from '@/core/operations/previewed-id'
 import { getActiveFinishIds } from '@/core/operations/active-finish-ids'
-import { sceneCommands } from '@/scene/scene-commands'
+import { sceneCommands } from '@/core/scene-commands'
 import {
   type PerfCounterSnapshot,
   perfCounters,

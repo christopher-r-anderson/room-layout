@@ -6,9 +6,9 @@ import type {
   MoveSelectionResult,
   SelectByIdResult,
   UpdateSelectionTransformResult,
-} from '../scene.types'
+  SceneSnapshot,
+} from './scene.types'
 import type { FurnitureInstance } from '@/domain/furniture'
-import type { SceneSnapshot } from './snapshot/scene-snapshot'
 
 export interface SceneServices {
   addFurniture: (catalogId: string) => AddFurnitureResult

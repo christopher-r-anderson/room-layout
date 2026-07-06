@@ -20,7 +20,7 @@ import type { FurnitureInstance, FurnitureItem } from '@/domain/furniture'
 import type {
   MoveSelectionResult,
   UpdateSelectionTransformResult,
-} from '../../scene.types'
+} from '@/core/scene.types'
 
 export type AddFurnitureResult =
   | { ok: true; id: string }

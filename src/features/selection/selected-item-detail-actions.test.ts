@@ -14,7 +14,7 @@ import {
   resetSelectionFocusStore,
   useSelectionFocusStore,
 } from '@/core/stores/selection-focus-store'
-import { sceneCommands } from '@/scene/scene-commands'
+import { sceneCommands } from '@/core/scene-commands'
 import { feedbackActions } from '@/core/stores/feedback-store'
 import { updateSelectedItemDetails } from './selected-item-detail-actions'
 import { CHAIR } from '@/test/support/furniture'

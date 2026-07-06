@@ -1,10 +1,10 @@
 import { useCallback, type RefObject } from 'react'
 import type { Camera, Object3D } from 'three'
 import type { CameraControlsImpl } from '@react-three/drei'
-import { useSceneDocumentStore } from '@/core/scene-contracts'
+import { useSceneDocumentStore } from '@/core/stores/scene-document-store'
 import { getVisualObjectBounds } from '../three/get-visual-object-bounds'
-import { CAMERA_PRESETS, type CameraPreset } from './camera-presets'
-import type { CameraKeyState } from '../../scene.types'
+import { CAMERA_PRESETS } from './camera-presets'
+import type { CameraKeyState, CameraPreset } from '@/core/scene.types'
 
 function roundCameraCoordinate(value: number) {
   return Math.round(value * 1000) / 1000

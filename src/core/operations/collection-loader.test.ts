@@ -26,7 +26,7 @@ const { sceneCommandsMock } = vi.hoisted(() => ({
   },
 }))
 
-vi.mock('@/scene/scene-commands', () => ({
+vi.mock('@/core/scene-commands', () => ({
   sceneCommands: sceneCommandsMock,
 }))
 
@@ -50,7 +50,7 @@ const { resetCollectionSceneRegistryMock } = vi.hoisted(() => ({
   resetCollectionSceneRegistryMock: vi.fn(),
 }))
 
-vi.mock('@/scene/collection-registry', () => ({
+vi.mock('@/core/stores/collection-scene-registry', () => ({
   resetCollectionSceneRegistry: resetCollectionSceneRegistryMock,
 }))
 

@@ -16,7 +16,7 @@ import {
 } from '@/core/stores/editor-lifecycle-store'
 import { resetAssetsStore, assetsActions } from '@/core/stores/assets-store'
 import { selectionEffects } from '@/core/operations/selection-effects'
-import { sceneCommands } from '@/scene/scene-commands'
+import { sceneCommands } from '@/core/scene-commands'
 import type { FurnitureCatalogEntry } from '@/domain/catalog'
 import { i18n } from '@/shared/i18n/i18n'
 import {

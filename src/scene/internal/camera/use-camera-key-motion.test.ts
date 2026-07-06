@@ -4,7 +4,7 @@ import { act, renderHook } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { CameraControlsImpl } from '@react-three/drei'
 import { useCameraKeyMotion } from './use-camera-key-motion'
-import type { CameraKeyName } from '../../scene.types'
+import type { CameraKeyName } from '@/core/scene.types'
 
 const { mockUseFrame } = vi.hoisted(() => ({ mockUseFrame: vi.fn() }))
 

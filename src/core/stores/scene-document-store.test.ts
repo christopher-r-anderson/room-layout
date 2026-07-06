@@ -11,8 +11,8 @@ import { makeFurnitureItem } from '@/test/support/furniture'
 import {
   clearSceneServices,
   registerSceneServices,
-} from '@/scene/scene-test-support'
-import { sceneCommands } from '@/scene/scene-commands'
+} from '@/core/scene-services'
+import { sceneCommands } from '@/core/scene-commands'
 import {
   resetSceneDocumentStore,
   sceneDocumentActions,

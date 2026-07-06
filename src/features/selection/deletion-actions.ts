@@ -9,7 +9,7 @@ import {
   useSelectionFocusStore,
 } from '@/core/stores/selection-focus-store'
 import { selectionEffects } from '@/core/operations/selection-effects'
-import { sceneCommands } from '@/scene/scene-commands'
+import { sceneCommands } from '@/core/scene-commands'
 import { DELETE_SELECTION_MISSING_MESSAGE } from '@/shared/messages/command-messages'
 import { DELETE_DIALOG_ID } from './delete-dialog-definition'
 
