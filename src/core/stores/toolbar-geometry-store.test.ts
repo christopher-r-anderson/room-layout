@@ -3,10 +3,9 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import type { SelectedToolbarGeometry } from '@/scene/scene.types'
 import {
-  INITIAL_SELECTED_TOOLBAR_GEOMETRY,
   resetToolbarGeometryStore,
   toolbarGeometryActions,
-  toolbarGeometryStore,
+  useToolbarGeometryStore,
 } from './toolbar-geometry-store'
 
 const AVAILABLE_GEOMETRY: SelectedToolbarGeometry = {
@@ -28,15 +27,12 @@ beforeEach(() => {
   resetToolbarGeometryStore()
 })
 
-describe('toolbarGeometryStore', () => {
+describe('useToolbarGeometryStore', () => {
   it('short-circuits toolbar geometry updates when the value is equal', () => {
     let notifications = 0
-    const unsubscribe = toolbarGeometryStore.subscribe(
-      (state) => state.toolbarGeometry,
-      () => {
-        notifications += 1
-      },
-    )
+    const unsubscribe = useToolbarGeometryStore.subscribe(() => {
+      notifications += 1
+    })
 
     toolbarGeometryActions.setToolbarGeometry(AVAILABLE_GEOMETRY)
     toolbarGeometryActions.setToolbarGeometry({
@@ -44,7 +40,7 @@ describe('toolbarGeometryStore', () => {
       points: [...AVAILABLE_GEOMETRY.points],
     })
 
-    expect(toolbarGeometryStore.getState().toolbarGeometry).toEqual(
+    expect(useToolbarGeometryStore.getState().toolbarGeometry).toEqual(
       AVAILABLE_GEOMETRY,
     )
     expect(notifications).toBe(1)
@@ -57,8 +53,8 @@ describe('toolbarGeometryStore', () => {
 
     resetToolbarGeometryStore()
 
-    expect(toolbarGeometryStore.getState().toolbarGeometry).toEqual(
-      INITIAL_SELECTED_TOOLBAR_GEOMETRY,
+    expect(useToolbarGeometryStore.getState().toolbarGeometry).toEqual(
+      useToolbarGeometryStore.getInitialState().toolbarGeometry,
     )
   })
 })
