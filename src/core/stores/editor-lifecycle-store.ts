@@ -1,8 +1,6 @@
-import { useStoreWithEqualityFn } from 'zustand/traditional'
+import { create } from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
-import { createStore } from 'zustand/vanilla'
 import type { StartupErrorKind } from '../types/startup.types'
-import type { EqualityChecker } from '../types/store.types'
 
 export type RestoreOutcome = 'restored' | 'invalid' | 'skipped'
 
@@ -24,161 +22,114 @@ interface EditorLifecycleStoreState {
   // Scene's mount/unmount; the startup readiness observer gates on it so the
   // loading overlay never lifts before the scene has mounted.
   sceneMounted: boolean
-  markAssetsReady: () => void
-  beginAssetLoad: () => void
-  requestRetry: () => void
-  setAssetError: (error: EditorAssetError) => void
-  setSceneMounted: (mounted: boolean) => void
-  recordRestoreOutcome: (outcome: RestoreOutcome | null) => void
-  incrementRestoreAttempt: () => void
-  reset: () => void
 }
 
-const INITIAL_EDITOR_LIFECYCLE_STATE = {
-  startupPhase: 'loading' as const,
-  assetError: null,
-  restoreOutcome: null,
-  restoreAttemptCount: 0,
-  sceneEpoch: 0,
-  retryToken: 0,
-  sceneMounted: false,
-}
+export const useEditorLifecycleStore = create<EditorLifecycleStoreState>()(
+  subscribeWithSelector(
+    (): EditorLifecycleStoreState => ({
+      startupPhase: 'loading',
+      assetError: null,
+      restoreOutcome: null,
+      restoreAttemptCount: 0,
+      sceneEpoch: 0,
+      retryToken: 0,
+      sceneMounted: false,
+    }),
+  ),
+)
 
-function getInitialEditorLifecycleState() {
-  return {
-    ...INITIAL_EDITOR_LIFECYCLE_STATE,
-  }
-}
+export const editorLifecycleActions = {
+  markAssetsReady: () => {
+    useEditorLifecycleStore.setState((state) => {
+      if (state.startupPhase === 'ready' && state.assetError === null) {
+        return state
+      }
 
-export const editorLifecycleStore = createStore<EditorLifecycleStoreState>()(
-  subscribeWithSelector((set) => ({
-    ...getInitialEditorLifecycleState(),
-    markAssetsReady: () => {
-      set((state) => {
-        if (state.startupPhase === 'ready' && state.assetError === null) {
-          return state
-        }
-
-        return {
-          ...state,
-          startupPhase: 'ready',
-          assetError: null,
-        }
-      })
-    },
-    beginAssetLoad: () => {
-      set((state) => {
-        // An error that surfaced since this cycle began (e.g. a failed engine
-        // chunk fetch racing the manifest fetch) holds until an explicit
-        // retry; a late manifest success must not clear it and strand the
-        // loader.
-        if (state.startupPhase === 'errored') {
-          return state
-        }
-        // A manifest has arrived; start a fresh asset-load cycle. Bumping the
-        // scene epoch remounts the Scene and the collection loader.
-        return {
-          ...state,
-          startupPhase: 'loading',
-          assetError: null,
-          sceneEpoch: state.sceneEpoch + 1,
-        }
-      })
-    },
-    requestRetry: () => {
-      // Re-run startup from the manifest fetch. The retry token re-triggers the
-      // bootstrap fetch effect; the scene epoch remounts the Scene. Restore
-      // tracking is preserved so the one-time restore flow does not re-run.
-      set((state) => ({
+      return {
+        ...state,
+        startupPhase: 'ready',
+        assetError: null,
+      }
+    })
+  },
+  beginAssetLoad: () => {
+    useEditorLifecycleStore.setState((state) => {
+      // An error that surfaced since this cycle began (e.g. a failed engine
+      // chunk fetch racing the manifest fetch) holds until an explicit
+      // retry; a late manifest success must not clear it and strand the
+      // loader.
+      if (state.startupPhase === 'errored') {
+        return state
+      }
+      // A manifest has arrived; start a fresh asset-load cycle. Bumping the
+      // scene epoch remounts the Scene and the collection loader.
+      return {
         ...state,
         startupPhase: 'loading',
         assetError: null,
         sceneEpoch: state.sceneEpoch + 1,
-        retryToken: state.retryToken + 1,
-      }))
-    },
-    setAssetError: (error) => {
-      set((state) => {
-        if (
-          state.startupPhase === 'errored' &&
-          state.assetError?.kind === error.kind &&
-          state.assetError.message === error.message
-        ) {
-          return state
-        }
-
-        return {
-          ...state,
-          startupPhase: 'errored',
-          assetError: error,
-        }
-      })
-    },
-    setSceneMounted: (mounted) => {
-      set((state) =>
-        state.sceneMounted === mounted
-          ? state
-          : { ...state, sceneMounted: mounted },
-      )
-    },
-    recordRestoreOutcome: (outcome) => {
-      set((state) => {
-        if (state.restoreOutcome === outcome) {
-          return state
-        }
-
-        return {
-          ...state,
-          restoreOutcome: outcome,
-        }
-      })
-    },
-    incrementRestoreAttempt: () => {
-      set((state) => ({
-        ...state,
-        restoreAttemptCount: state.restoreAttemptCount + 1,
-      }))
-    },
-    reset: () => {
-      set((state) => ({
-        ...state,
-        ...getInitialEditorLifecycleState(),
-      }))
-    },
-  })),
-)
-
-function useEditorLifecycleStore<T>(
-  selector: (state: EditorLifecycleStoreState) => T,
-  equalityFn?: EqualityChecker<T>,
-) {
-  return useStoreWithEqualityFn(editorLifecycleStore, selector, equalityFn)
-}
-
-export const editorLifecycleActions = {
-  markAssetsReady: () => {
-    editorLifecycleStore.getState().markAssetsReady()
-  },
-  beginAssetLoad: () => {
-    editorLifecycleStore.getState().beginAssetLoad()
+      }
+    })
   },
   requestRetry: () => {
-    editorLifecycleStore.getState().requestRetry()
+    // Re-run startup from the manifest fetch. The retry token re-triggers the
+    // bootstrap fetch effect; the scene epoch remounts the Scene. Restore
+    // tracking is preserved so the one-time restore flow does not re-run.
+    useEditorLifecycleStore.setState((state) => ({
+      ...state,
+      startupPhase: 'loading',
+      assetError: null,
+      sceneEpoch: state.sceneEpoch + 1,
+      retryToken: state.retryToken + 1,
+    }))
   },
   setAssetError: (error: EditorAssetError) => {
-    editorLifecycleStore.getState().setAssetError(error)
+    useEditorLifecycleStore.setState((state) => {
+      if (
+        state.startupPhase === 'errored' &&
+        state.assetError?.kind === error.kind &&
+        state.assetError.message === error.message
+      ) {
+        return state
+      }
+
+      return {
+        ...state,
+        startupPhase: 'errored',
+        assetError: error,
+      }
+    })
   },
   setSceneMounted: (mounted: boolean) => {
-    editorLifecycleStore.getState().setSceneMounted(mounted)
+    useEditorLifecycleStore.setState((state) =>
+      state.sceneMounted === mounted
+        ? state
+        : { ...state, sceneMounted: mounted },
+    )
   },
   recordRestoreOutcome: (outcome: RestoreOutcome | null) => {
-    editorLifecycleStore.getState().recordRestoreOutcome(outcome)
+    useEditorLifecycleStore.setState((state) => {
+      if (state.restoreOutcome === outcome) {
+        return state
+      }
+
+      return {
+        ...state,
+        restoreOutcome: outcome,
+      }
+    })
   },
   incrementRestoreAttempt: () => {
-    editorLifecycleStore.getState().incrementRestoreAttempt()
+    useEditorLifecycleStore.setState((state) => ({
+      ...state,
+      restoreAttemptCount: state.restoreAttemptCount + 1,
+    }))
   },
   reset: () => {
-    editorLifecycleStore.getState().reset()
+    useEditorLifecycleStore.setState(
+      useEditorLifecycleStore.getInitialState(),
+      true,
+    )
   },
 }
 
@@ -193,7 +144,7 @@ export function setSceneMounted(mounted: boolean) {
 // Imperative (non-React) editor-interactive predicate, so the readiness rule lives
 // in one place. React equivalent: useEditorInteractionsEnabled.
 export function isEditorInteractive() {
-  return editorLifecycleStore.getState().startupPhase === 'ready'
+  return useEditorLifecycleStore.getState().startupPhase === 'ready'
 }
 
 export const useSceneMounted = () =>
@@ -202,10 +153,6 @@ export const useStartupPhase = () =>
   useEditorLifecycleStore((state) => state.startupPhase)
 export const useAssetError = () =>
   useEditorLifecycleStore((state) => state.assetError)
-export const useRestoreOutcome = () =>
-  useEditorLifecycleStore((state) => state.restoreOutcome)
-export const useRestoreAttemptCount = () =>
-  useEditorLifecycleStore((state) => state.restoreAttemptCount)
 export const useSceneEpoch = () =>
   useEditorLifecycleStore((state) => state.sceneEpoch)
 export const useRetryToken = () =>

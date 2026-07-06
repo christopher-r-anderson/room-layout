@@ -2,7 +2,7 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
-  editorLifecycleStore,
+  useEditorLifecycleStore,
   resetEditorLifecycleStore,
 } from '../stores/editor-lifecycle-store'
 import { resetAssetsStore } from '../stores/assets-store'
@@ -84,8 +84,8 @@ describe('startup-coordinator', () => {
     completeAssetLoad()
 
     expect(runStartupRestoreFlow).toHaveBeenCalledTimes(1)
-    expect(editorLifecycleStore.getState().restoreAttemptCount).toBe(1)
-    expect(editorLifecycleStore.getState().startupPhase).toBe('ready')
+    expect(useEditorLifecycleStore.getState().restoreAttemptCount).toBe(1)
+    expect(useEditorLifecycleStore.getState().startupPhase).toBe('ready')
     expect(selectionEffects.notePendingSelection).toHaveBeenCalledWith({
       announceMode: 'suppress',
       requestOutlinerFocus: false,
@@ -105,7 +105,7 @@ describe('startup-coordinator', () => {
 
     notifyAssetError(new Error('boom'))
 
-    const state = editorLifecycleStore.getState()
+    const state = useEditorLifecycleStore.getState()
     expect(state.startupPhase).toBe('errored')
     expect(state.assetError).toEqual({ kind: 'asset-load', message: 'boom' })
     expect(closeActiveDialog).toHaveBeenCalledTimes(1)
@@ -119,8 +119,8 @@ describe('startup-coordinator', () => {
     requestAssetRetry()
 
     expect(clearCollectionBytes).toHaveBeenCalledTimes(1)
-    expect(editorLifecycleStore.getState().retryToken).toBe(1)
-    expect(editorLifecycleStore.getState().sceneEpoch).toBe(1)
+    expect(useEditorLifecycleStore.getState().retryToken).toBe(1)
+    expect(useEditorLifecycleStore.getState().sceneEpoch).toBe(1)
     expect(feedbackActions.clearAssertiveAnnouncement).toHaveBeenCalledTimes(1)
   })
 })

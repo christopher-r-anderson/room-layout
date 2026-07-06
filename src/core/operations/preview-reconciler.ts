@@ -4,7 +4,7 @@ import {
   subscribeToBlockingOverlay,
 } from '@/core/stores/dialog-store'
 import {
-  editorLifecycleStore,
+  useEditorLifecycleStore,
   isEditorInteractive,
 } from '@/core/stores/editor-lifecycle-store'
 import {
@@ -43,7 +43,7 @@ export function startPreviewReconciler(): () => void {
   const unsubscribes = [
     sceneDocumentStore.subscribe((state) => state.isDragging, reconcilePreview),
     subscribeToBlockingOverlay(reconcilePreview),
-    editorLifecycleStore.subscribe(
+    useEditorLifecycleStore.subscribe(
       (state) => state.startupPhase === 'ready',
       reconcilePreview,
     ),

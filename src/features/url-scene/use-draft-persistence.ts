@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import type { EnvironmentMaterialConfig } from '@/domain/environment-materials'
-import { editorLifecycleStore } from '@/core/stores/editor-lifecycle-store'
+import { useEditorLifecycleStore } from '@/core/stores/editor-lifecycle-store'
 import { sceneDocumentStore } from '@/core/stores/scene-document-store'
 import { clearSceneDraft, saveSceneDraft } from '@/core/persistence/scene-draft'
 import { isFreshSceneState } from '@/core/model/scene-defaults'
@@ -73,7 +73,7 @@ function getActiveFinishIds(
 
 function persistDraft(environmentConfig: EnvironmentMaterialConfig) {
   const sceneState = getDraftSceneState()
-  const startupPhase = editorLifecycleStore.getState().startupPhase
+  const startupPhase = useEditorLifecycleStore.getState().startupPhase
 
   if (startupPhase !== 'ready' || sceneState.isDragging) {
     return
@@ -128,7 +128,7 @@ export function useDraftPersistence({
       { equalityFn: areDraftSceneStatesEqual },
     )
 
-    const unsubscribeRuntime = editorLifecycleStore.subscribe(
+    const unsubscribeRuntime = useEditorLifecycleStore.subscribe(
       (state) => state.startupPhase,
       persist,
     )

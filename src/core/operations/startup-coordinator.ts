@@ -11,7 +11,7 @@ import { feedbackActions } from '../stores/feedback-store'
 import { dialogActions } from '../stores/dialog-store'
 import {
   editorLifecycleActions,
-  editorLifecycleStore,
+  useEditorLifecycleStore,
 } from '../stores/editor-lifecycle-store'
 import { useAssetsStore } from '../stores/assets-store'
 import { sceneDocumentActions } from '../stores/scene-document-store'
@@ -187,7 +187,7 @@ function runRestoreOnce() {
 // defaults) on the first ready of a session, guarded by the attempt count so a
 // Scene remount or retry does not re-run it.
 export function completeAssetLoad() {
-  if (editorLifecycleStore.getState().restoreAttemptCount === 0) {
+  if (useEditorLifecycleStore.getState().restoreAttemptCount === 0) {
     editorLifecycleActions.incrementRestoreAttempt()
     runRestoreOnce()
   }

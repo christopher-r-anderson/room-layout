@@ -6,7 +6,7 @@ import {
   isCollectionFailed,
   isCollectionLoaded,
 } from '../stores/collection-loading-store'
-import { editorLifecycleStore } from '../stores/editor-lifecycle-store'
+import { useEditorLifecycleStore } from '../stores/editor-lifecycle-store'
 import { sceneDocumentStore } from '../stores/scene-document-store'
 import {
   fetchCollectionBytes,
@@ -27,7 +27,7 @@ import {
 const inFlight = new Map<string, number>()
 
 function currentSceneEpoch(): number {
-  return editorLifecycleStore.getState().sceneEpoch
+  return useEditorLifecycleStore.getState().sceneEpoch
 }
 
 // Load one collection end-to-end. Idempotent per cycle: already loaded, marked
@@ -94,7 +94,7 @@ function resolvePendingCollectionPaths(): string[] {
 }
 
 function kickPendingCollectionLoads() {
-  if (!editorLifecycleStore.getState().sceneMounted) {
+  if (!useEditorLifecycleStore.getState().sceneMounted) {
     return
   }
   for (const path of resolvePendingCollectionPaths()) {
@@ -110,7 +110,7 @@ function kickPendingCollectionLoads() {
  */
 export function startCollectionLoadReconciler(): () => void {
   const unsubscribes = [
-    editorLifecycleStore.subscribe(
+    useEditorLifecycleStore.subscribe(
       (state) => state.sceneMounted,
       kickPendingCollectionLoads,
     ),

@@ -1,6 +1,6 @@
 import { useEffect, type Dispatch, type SetStateAction } from 'react'
 import {
-  editorLifecycleStore,
+  useEditorLifecycleStore,
   isEditorInteractive,
   type RestoreOutcome,
 } from '@/core/stores/editor-lifecycle-store'
@@ -84,7 +84,7 @@ export function useTestStateBridge({
 
         return {
           assetsReady: isEditorInteractive(),
-          assetError: editorLifecycleStore.getState().assetError !== null,
+          assetError: useEditorLifecycleStore.getState().assetError !== null,
           cameraPosition,
           floorFinishId: activeFloorFinishId,
           wallFinishId: activeWallFinishId,
@@ -101,9 +101,9 @@ export function useTestStateBridge({
             rotationY: item.rotationY,
             pointerTarget: pointerTargetsById.get(item.id) ?? null,
           })),
-          restoreOutcome: editorLifecycleStore.getState().restoreOutcome,
+          restoreOutcome: useEditorLifecycleStore.getState().restoreOutcome,
           restoreAttemptCount:
-            editorLifecycleStore.getState().restoreAttemptCount,
+            useEditorLifecycleStore.getState().restoreAttemptCount,
         }
       },
       setOverlaysHidden: (hidden: boolean) => {
