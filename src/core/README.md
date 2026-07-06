@@ -22,8 +22,8 @@ Layout
   `restore-flow`, `scene-reset`).
 - `commands/` — the `EditorCommand` vocabulary and its dispatch binding.
 - `types/` — shared core types.
-- Root — the public, cross-layer surface: `scene-contracts`,
-  `scene-test-support`, `dialog-contract`.
+- Root — the public, cross-layer surface: the engine port (`scene-commands`,
+  `scene-services`, `scene.types`) and `dialog-contract`.
 
 Dialog-store responsibilities
 

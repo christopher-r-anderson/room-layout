@@ -67,8 +67,8 @@ Two supporting signals:
 
 - `sceneEpoch` / `retryToken` bump on load/retry and re-key the scene subtree, so
   a retry remounts a fresh scene (whose mount re-kicks the collection loads).
-- `sceneMounted` - a reactive flag the `Scene` sets on mount/unmount (through
-  `scene-contracts`). Readiness gates on it so the overlay never lifts before the
+- `sceneMounted` - a reactive flag the `Scene` sets on mount/unmount (via
+  `setSceneMounted`). Readiness gates on it so the overlay never lifts before the
   canvas has mounted (an empty scene has no furniture to wait on, so without this
   the overlay could clear before first paint).
 

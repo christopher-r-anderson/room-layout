@@ -1,5 +1,5 @@
-import { sceneCommands } from '@/scene/scene-commands'
-import type { CameraPreset } from '@/scene/scene.types'
+import { sceneCommands } from '@/core/scene-commands'
+import type { CameraPreset } from '@/core/scene.types'
 
 /**
  * Editor-level wrappers around the scene's imperative view commands. They gate

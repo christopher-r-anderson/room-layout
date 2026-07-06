@@ -9,7 +9,7 @@ import {
   editorLifecycleActions,
   resetEditorLifecycleStore,
 } from '@/core/stores/editor-lifecycle-store'
-import { sceneCommands } from '@/scene/scene-commands'
+import { sceneCommands } from '@/core/scene-commands'
 import { feedbackActions } from '@/core/stores/feedback-store'
 import { toolbarInteractionActions } from '@/core/stores/toolbar-interaction-store'
 import { CHAIR } from '@/test/support/furniture'

@@ -5,8 +5,8 @@ import {
   selectSelectedFurniture,
 } from '@/core/stores/scene-document-store'
 import { toolbarInteractionActions } from '@/core/stores/toolbar-interaction-store'
-import { sceneCommands } from '@/scene/scene-commands'
-import type { MoveSelectionResult, MoveSource } from '@/scene/scene.types'
+import { sceneCommands } from '@/core/scene-commands'
+import type { MoveSelectionResult, MoveSource } from '@/core/scene.types'
 import { i18n } from '@/shared/i18n/i18n'
 import { formatDistanceMeters } from '@/shared/i18n/formatters'
 

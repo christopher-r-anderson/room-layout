@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 import {
   sceneDocumentActions,
   useSceneDocumentStore,
-} from '@/core/scene-contracts'
+} from '@/core/stores/scene-document-store'
 import type {
   FurnitureCatalogEntry,
   FurnitureCollection,
@@ -22,7 +22,7 @@ import type {
   MoveSelectionResult,
   MoveSource,
   UpdateSelectionTransformResult,
-} from '../../scene.types'
+} from '@/core/scene.types'
 
 interface UseFurnitureOperationsOptions {
   dragState: { id: string } | null

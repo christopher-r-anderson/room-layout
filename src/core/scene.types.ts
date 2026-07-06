@@ -1,5 +1,25 @@
 import type { FurnitureItem } from '@/domain/furniture'
-export type { CameraPreset } from '@/scene/internal/camera/camera-presets'
+
+export type CameraPreset = 'corner' | 'front' | 'side' | 'top'
+
+interface SceneSnapshotItem {
+  id: string
+  catalogId: string
+  name: string
+  position: [number, number, number]
+  rotationY: number
+  pointerTarget: {
+    x: number
+    y: number
+  } | null
+}
+
+// Plain-data view of the mounted scene (camera + projected item targets),
+// produced by the engine for tests and serialization.
+export interface SceneSnapshot {
+  cameraPosition: [number, number, number]
+  items: SceneSnapshotItem[]
+}
 
 export type MoveSource = 'keyboard' | 'inspector' | 'toolbar' | 'drag'
 

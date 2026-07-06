@@ -1,5 +1,5 @@
 import { Box3, type Camera, type Object3D, Vector3 } from 'three'
-import type { ScreenPoint, SelectedToolbarGeometry } from '../../scene.types'
+import type { ScreenPoint, SelectedToolbarGeometry } from '@/core/scene.types'
 import { getMeshes } from '@/scene/internal/three/get-meshes'
 import { getVisualObjectBounds } from '@/scene/internal/three/get-visual-object-bounds'
 import { isUiBoundsObject } from '@/scene/internal/three/ui-bounds'

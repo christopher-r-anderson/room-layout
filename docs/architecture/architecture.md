@@ -94,12 +94,11 @@ For local context inside each area, see:
 
 These are temporary or intentionally narrow.
 
-- Scene runtime imports in app/features are allowlisted to a small contract surface (`scene-commands`, `scene.types`, `collection-registry`); `app` may additionally import `scene` itself (lazily, behind the code-split engine chunk). `shared` no longer imports scene at all. The reverse seam (scene reaching core) stays confined to `scene-contracts`.
+- The scene layer is the renderer adapter: core owns the port surface (`core/scene-commands`, `core/scene-services`, `core/scene.types`) and scene implements it, importing core directly. Nothing imports `@/scene` except `app`'s single lazy mount of `@/scene/scene` (the code-split engine chunk).
 
 ## Future Improvements
 
 1. Scene public API surface
-   - Replace temporary scene allowlist exceptions with explicit public scene entrypoints.
 2. Module public entrypoints
    - Introduce `index.ts` entrypoints for cross-layer modules that are imported externally.
    - Keep purely local modules private.

@@ -1,4 +1,4 @@
-export type CameraPreset = 'corner' | 'front' | 'side' | 'top'
+import type { CameraPreset } from '@/core/scene.types'
 
 interface PresetView {
   position: [number, number, number]

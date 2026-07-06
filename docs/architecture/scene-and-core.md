@@ -46,14 +46,16 @@ UI intent ──► sceneCommands.moveSelection()  (down: ask scene to validate+
               scene-document-store  ──►  React selectors  ──►  UI re-renders
 ```
 
-- **Down — commands.** `sceneCommands` (`src/scene/scene-commands.ts`) is the
-  imperative surface, backed by per-component service registration in
-  `src/scene/internal/scene-services.ts`. App/core code calls it to drive
-  mutations that depend on Three.js refs and in-component closures.
-- **Up — the published contract.** Scene writes committed results back into the
-  store through `src/core/scene-contracts.ts` — a deliberately tiny allowlist
-  (e.g. `sceneDocumentActions`, `toolbarGeometryActions`). Scene may import **only**
-  that module from `core`; everything else is banned in `eslint.config.js`.
+- **Down — commands.** `sceneCommands` (`src/core/scene-commands.ts`) is the
+  imperative surface, backed by the port registry in `src/core/scene-services.ts`
+  that the Scene component registers its services into on mount. Core owns the
+  port interfaces; scene implements them. App/core code calls the commands to
+  drive mutations that depend on Three.js refs and in-component closures.
+- **Up — direct store writes.** Scene writes committed results into the core
+  stores directly (`sceneDocumentActions`, `toolbarGeometryActions`) — the
+  source dependency points one way, scene → core, enforced in
+  `eslint.config.js`: nothing outside `src/scene` may import it except app's
+  single mount of `@/scene/scene`.
 
 ## Who owns what
 
@@ -79,15 +81,16 @@ and valid-state in `scene`.
 - A mutation is: call a command → scene validates and applies → scene publishes
   the committed result up. The UI never writes the data model directly for
   scene-owned mutations.
-- Scene reaches `core` only through `scene-contracts`. Widening that surface is a
-  deliberate act (update the module and its ESLint allowlist together).
+- The engine port (`SceneServices`) is deliberately small. Widening it is a
+  deliberate act: a new method means core is delegating another decision to the
+  renderer adapter.
 - On restore/retry, scene is rebuilt from the `core` data model
   (`restoreInitialLayout`) — confirming `core` is the system of record for the
   data, `scene` for the rules and pixels.
 
 ## Pointers
 
-- Command surface: `src/scene/scene-commands.ts`
-- Service registration: `src/scene/internal/scene-services.ts`
-- Published contract: `src/core/scene-contracts.ts`
+- Command surface: `src/core/scene-commands.ts`
+- Port registry: `src/core/scene-services.ts`
+- Registration site: `src/scene/scene.tsx`
 - The data model: `src/core/stores/scene-document-store.ts`

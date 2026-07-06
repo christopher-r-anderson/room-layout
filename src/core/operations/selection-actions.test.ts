@@ -18,7 +18,7 @@ import {
   editorLifecycleActions,
   resetEditorLifecycleStore,
 } from '@/core/stores/editor-lifecycle-store'
-import { sceneCommands } from '@/scene/scene-commands'
+import { sceneCommands } from '@/core/scene-commands'
 import { selectionEffects } from '@/core/operations/selection-effects'
 import { CHAIR } from '@/test/support/furniture'
 import {

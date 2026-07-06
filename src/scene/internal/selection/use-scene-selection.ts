@@ -1,7 +1,10 @@
 import { useCallback, useMemo, useRef, useState, type RefObject } from 'react'
 import { type Object3D } from 'three'
 import { getMeshes } from '@/scene/internal/three/get-meshes'
-import { sceneDocumentActions, useSelectedId } from '@/core/scene-contracts'
+import {
+  sceneDocumentActions,
+  useSelectedId,
+} from '@/core/stores/scene-document-store'
 import type { FurnitureItem } from '@/domain/furniture'
 
 interface SceneSelectionState {

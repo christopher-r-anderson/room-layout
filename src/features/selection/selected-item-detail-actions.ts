@@ -7,7 +7,7 @@ import {
   selectSelectedFurniture,
 } from '@/core/stores/scene-document-store'
 import { selectionFocusActions } from '@/core/stores/selection-focus-store'
-import { sceneCommands } from '@/scene/scene-commands'
+import { sceneCommands } from '@/core/scene-commands'
 import type {
   UpdateSelectedItemDetailsInput,
   UpdateSelectedItemDetailsResult,

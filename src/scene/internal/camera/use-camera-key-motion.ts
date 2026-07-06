@@ -1,7 +1,7 @@
 import { useFrame } from '@react-three/fiber'
 import type { RefObject } from 'react'
 import type { CameraControlsImpl } from '@react-three/drei'
-import type { CameraKeyState } from '../../scene.types'
+import type { CameraKeyState } from '@/core/scene.types'
 
 interface UseCameraKeyMotionOptions {
   cameraControlsRef: RefObject<CameraControlsImpl | null>

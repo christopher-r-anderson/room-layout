@@ -1,6 +1,6 @@
 import { shallow } from 'zustand/shallow'
-import { sceneCommands } from '@/scene/scene-commands'
-import { resetCollectionSceneRegistry } from '@/scene/collection-registry'
+import { sceneCommands } from '@/core/scene-commands'
+import { resetCollectionSceneRegistry } from '@/core/stores/collection-scene-registry'
 import {
   collectionLoadingActions,
   useCollectionLoadingStore,

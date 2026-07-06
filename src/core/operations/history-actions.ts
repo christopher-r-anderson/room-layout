@@ -1,7 +1,7 @@
 import { msg } from '@lingui/core/macro'
 import { feedbackActions } from '@/core/stores/feedback-store'
 import { selectionEffects } from '@/core/operations/selection-effects'
-import { sceneCommands } from '@/scene/scene-commands'
+import { sceneCommands } from '@/core/scene-commands'
 import { i18n } from '@/shared/i18n/i18n'
 
 export function undo() {

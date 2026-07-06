@@ -1,4 +1,4 @@
-import type { CameraPreset } from '@/scene/scene.types'
+import type { CameraPreset } from '@/core/scene.types'
 
 type RotationDirection = -1 | 1
 

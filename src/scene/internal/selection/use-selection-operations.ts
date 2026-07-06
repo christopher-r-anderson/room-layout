@@ -1,5 +1,5 @@
 import { useCallback } from 'react'
-import { useSceneDocumentStore } from '@/core/scene-contracts'
+import { useSceneDocumentStore } from '@/core/stores/scene-document-store'
 
 interface UseSelectionOperationsOptions {
   isDragging: boolean

@@ -11,7 +11,7 @@ import { feedbackActions } from '../stores/feedback-store'
 import { selectionEffects } from './selection-effects'
 import { runStartupRestoreFlow } from '../persistence/restore-flow'
 import { resetCollectionPipeline } from './collection-loader'
-import { clearSceneServices } from '@/scene/scene-commands'
+import { clearSceneServices } from '@/core/scene-commands'
 import {
   completeAssetLoad,
   notifyAssetError,
@@ -46,7 +46,7 @@ vi.mock('./collection-loader', () => ({
   resetCollectionPipeline: vi.fn(),
 }))
 
-vi.mock('@/scene/scene-commands', () => ({
+vi.mock('@/core/scene-commands', () => ({
   clearSceneServices: vi.fn(),
   sceneCommands: {
     restoreInitialLayout: vi.fn(),

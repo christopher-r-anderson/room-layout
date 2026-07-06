@@ -8,7 +8,7 @@ import {
   sceneDocumentActions,
   useSceneDocumentStore,
 } from '@/core/stores/scene-document-store'
-import { sceneCommands } from '@/scene/scene-commands'
+import { sceneCommands } from '@/core/scene-commands'
 import { selectionEffects } from '@/core/operations/selection-effects'
 import { loadSceneDraft, saveSceneDraft } from '@/core/persistence/scene-draft'
 import { CHAIR } from '@/test/support/furniture'
