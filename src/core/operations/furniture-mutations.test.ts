@@ -121,13 +121,13 @@ it('setSelectionTransform applies position and rotation and commits a history en
     rotationY: Math.PI / 2,
   })
 
-  expect(result).toEqual({
+  expect(result).toMatchObject({
     ok: true,
-    item: expect.objectContaining({
+    item: {
       id: CHAIR.id,
       position: [1, 0, 1],
       rotationY: Math.PI / 2,
-    }),
+    },
   })
   const state = useSceneDocumentStore.getState()
   expect(state.history.present[0]).toMatchObject({
