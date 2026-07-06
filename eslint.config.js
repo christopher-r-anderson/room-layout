@@ -37,6 +37,22 @@ const RESTRICT_EDITOR_STATE_IMPORTS_FOR_SCENE = '^@/core/(?!scene-contracts$).+'
 const RESTRICT_EDITOR_STATE_IMPORTS_FOR_SCENE_TESTS =
   '^@/core/(?!scene-contracts$|scene-test-support$).+'
 
+// Because no-restricted-imports is replaced wholesale by later matching blocks,
+// these paths are spread into every layer block below (and a base block covers
+// the files no layer block matches).
+const RESTRICTED_ZUSTAND_IMPORT_PATHS = [
+  {
+    name: 'zustand/traditional',
+    message:
+      'The equality-fn store APIs are retired. Use create() from "zustand"; wrap fresh-object selectors in useShallow from "zustand/react/shallow".',
+  },
+  {
+    name: 'zustand/vanilla',
+    message:
+      'Create stores with create() from "zustand". The bound hook is also the imperative store handle (getState/setState/subscribe).',
+  },
+]
+
 export default defineConfig([
   // Flat config replaces rule values from later matching blocks.
   // Keep overlapping blocks self-contained.
@@ -109,6 +125,18 @@ export default defineConfig([
     },
   },
 
+  // Base zustand-API ban for files no layer block below matches (main.tsx,
+  // src/test, colocated tests); the layer blocks re-state it in their paths.
+  {
+    files: ['src/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        { paths: RESTRICTED_ZUSTAND_IMPORT_PATHS },
+      ],
+    },
+  },
+
   // Domain leaf: the pure model vocabulary. The lowest layer — every other layer
   // may import it; it imports nothing internal.
   {
@@ -118,6 +146,7 @@ export default defineConfig([
       'no-restricted-imports': [
         'error',
         {
+          paths: RESTRICTED_ZUSTAND_IMPORT_PATHS,
           patterns: [
             {
               group: [
@@ -158,6 +187,7 @@ export default defineConfig([
         'error',
         {
           paths: [
+            ...RESTRICTED_ZUSTAND_IMPORT_PATHS,
             {
               name: '@/core',
               message:
@@ -189,6 +219,7 @@ export default defineConfig([
         'error',
         {
           paths: [
+            ...RESTRICTED_ZUSTAND_IMPORT_PATHS,
             {
               name: '@/core',
               message:
@@ -220,6 +251,7 @@ export default defineConfig([
       'no-restricted-imports': [
         'error',
         {
+          paths: RESTRICTED_ZUSTAND_IMPORT_PATHS,
           patterns: [
             {
               group: ['@/app', '@/app/**', '@/features', '@/features/**'],
@@ -252,6 +284,7 @@ export default defineConfig([
       'no-restricted-imports': [
         'error',
         {
+          paths: RESTRICTED_ZUSTAND_IMPORT_PATHS,
           patterns: [
             {
               group: [
@@ -285,6 +318,7 @@ export default defineConfig([
       'no-restricted-imports': [
         'error',
         {
+          paths: RESTRICTED_ZUSTAND_IMPORT_PATHS,
           patterns: [
             {
               group: RUNTIME_TEST_IMPORT_GROUP,
@@ -323,6 +357,7 @@ export default defineConfig([
       'no-restricted-imports': [
         'error',
         {
+          paths: RESTRICTED_ZUSTAND_IMPORT_PATHS,
           patterns: [
             {
               group: RUNTIME_TEST_IMPORT_GROUP,
@@ -351,6 +386,7 @@ export default defineConfig([
       'no-restricted-imports': [
         'error',
         {
+          paths: RESTRICTED_ZUSTAND_IMPORT_PATHS,
           patterns: [
             {
               group: RUNTIME_TEST_IMPORT_GROUP,
@@ -380,6 +416,7 @@ export default defineConfig([
       'no-restricted-imports': [
         'error',
         {
+          paths: RESTRICTED_ZUSTAND_IMPORT_PATHS,
           patterns: [
             {
               group: RUNTIME_TEST_IMPORT_GROUP,
@@ -409,6 +446,7 @@ export default defineConfig([
       'no-restricted-imports': [
         'error',
         {
+          paths: RESTRICTED_ZUSTAND_IMPORT_PATHS,
           patterns: [
             {
               group: RUNTIME_TEST_IMPORT_GROUP,
@@ -438,6 +476,7 @@ export default defineConfig([
       'no-restricted-imports': [
         'error',
         {
+          paths: RESTRICTED_ZUSTAND_IMPORT_PATHS,
           patterns: [
             {
               group: RUNTIME_TEST_IMPORT_GROUP,
@@ -467,6 +506,7 @@ export default defineConfig([
       'no-restricted-imports': [
         'error',
         {
+          paths: RESTRICTED_ZUSTAND_IMPORT_PATHS,
           patterns: [
             {
               group: RUNTIME_TEST_IMPORT_GROUP,
@@ -508,6 +548,7 @@ export default defineConfig([
       'no-restricted-imports': [
         'error',
         {
+          paths: RESTRICTED_ZUSTAND_IMPORT_PATHS,
           patterns: [
             {
               group: RUNTIME_TEST_IMPORT_GROUP,
