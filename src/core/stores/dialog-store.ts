@@ -47,27 +47,15 @@ const useDialogStore = create<DialogStoreState>()(
 export const dialogActions = {
   configureRuntimeContext: (context: DialogRuntimeContext) => {
     useDialogStore.setState((state) =>
-      state.runtimeContext === context
-        ? state
-        : { ...state, runtimeContext: context },
+      state.runtimeContext === context ? state : { runtimeContext: context },
     )
   },
   registerDialogDefinition: (definition: DialogDefinition) => {
-    useDialogStore.setState((state) => {
-      const current = state.registry[definition.id]
-
-      if (current === definition) {
-        return state
-      }
-
-      return {
-        ...state,
-        registry: {
-          ...state.registry,
-          [definition.id]: definition,
-        },
-      }
-    })
+    useDialogStore.setState((state) =>
+      state.registry[definition.id] === definition
+        ? state
+        : { registry: { ...state.registry, [definition.id]: definition } },
+    )
   },
   registerDialogDefinitions: (definitions: DialogDefinition[]) => {
     useDialogStore.setState((state) => {
@@ -83,14 +71,7 @@ export const dialogActions = {
         changed = true
       }
 
-      if (!changed) {
-        return state
-      }
-
-      return {
-        ...state,
-        registry: nextRegistry,
-      }
+      return changed ? { registry: nextRegistry } : state
     })
   },
   openDialog: (id: DialogId): boolean => {
@@ -119,35 +100,18 @@ export const dialogActions = {
   },
   setDialogOpen: (id: DialogId, open: boolean): boolean => {
     if (!open) {
-      useDialogStore.setState((state) => {
-        if (state.activeSurface?.id !== id) {
-          return state
-        }
-
-        return {
-          ...state,
-          activeSurface: null,
-        }
-      })
+      useDialogStore.setState((state) =>
+        state.activeSurface?.id === id ? { activeSurface: null } : state,
+      )
       return true
     }
 
     return dialogActions.openDialog(id)
   },
   closeActiveDialog: () => {
-    useDialogStore.setState((state) => {
-      if (state.activeSurface === null) {
-        return state
-      }
-
-      return {
-        ...state,
-        activeSurface: null,
-      }
-    })
-  },
-  isDialogOpen: (id: DialogId): boolean => {
-    return useDialogStore.getState().activeSurface?.id === id
+    useDialogStore.setState((state) =>
+      state.activeSurface === null ? state : { activeSurface: null },
+    )
   },
   reset: () => {
     useDialogStore.setState(useDialogStore.getInitialState(), true)
@@ -157,9 +121,6 @@ export const dialogActions = {
 export function resetDialogStore() {
   dialogActions.reset()
 }
-
-export const useActiveSurface = () =>
-  useDialogStore((state) => state.activeSurface)
 
 export const useDialogOpen = (id: DialogId) =>
   useDialogStore((state) => state.activeSurface?.id === id)

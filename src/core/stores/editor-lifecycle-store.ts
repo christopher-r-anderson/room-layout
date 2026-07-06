@@ -40,17 +40,11 @@ export const useEditorLifecycleStore = create<EditorLifecycleStoreState>()(
 
 export const editorLifecycleActions = {
   markAssetsReady: () => {
-    useEditorLifecycleStore.setState((state) => {
-      if (state.startupPhase === 'ready' && state.assetError === null) {
-        return state
-      }
-
-      return {
-        ...state,
-        startupPhase: 'ready',
-        assetError: null,
-      }
-    })
+    useEditorLifecycleStore.setState((state) =>
+      state.startupPhase === 'ready' && state.assetError === null
+        ? state
+        : { startupPhase: 'ready', assetError: null },
+    )
   },
   beginAssetLoad: () => {
     useEditorLifecycleStore.setState((state) => {
@@ -64,7 +58,6 @@ export const editorLifecycleActions = {
       // A manifest has arrived; start a fresh asset-load cycle. Bumping the
       // scene epoch remounts the Scene and the collection loader.
       return {
-        ...state,
         startupPhase: 'loading',
         assetError: null,
         sceneEpoch: state.sceneEpoch + 1,
@@ -76,7 +69,6 @@ export const editorLifecycleActions = {
     // bootstrap fetch effect; the scene epoch remounts the Scene. Restore
     // tracking is preserved so the one-time restore flow does not re-run.
     useEditorLifecycleStore.setState((state) => ({
-      ...state,
       startupPhase: 'loading',
       assetError: null,
       sceneEpoch: state.sceneEpoch + 1,
@@ -84,44 +76,26 @@ export const editorLifecycleActions = {
     }))
   },
   setAssetError: (error: EditorAssetError) => {
-    useEditorLifecycleStore.setState((state) => {
-      if (
-        state.startupPhase === 'errored' &&
-        state.assetError?.kind === error.kind &&
-        state.assetError.message === error.message
-      ) {
-        return state
-      }
-
-      return {
-        ...state,
-        startupPhase: 'errored',
-        assetError: error,
-      }
-    })
+    useEditorLifecycleStore.setState((state) =>
+      state.startupPhase === 'errored' &&
+      state.assetError?.kind === error.kind &&
+      state.assetError.message === error.message
+        ? state
+        : { startupPhase: 'errored', assetError: error },
+    )
   },
   setSceneMounted: (mounted: boolean) => {
     useEditorLifecycleStore.setState((state) =>
-      state.sceneMounted === mounted
-        ? state
-        : { ...state, sceneMounted: mounted },
+      state.sceneMounted === mounted ? state : { sceneMounted: mounted },
     )
   },
   recordRestoreOutcome: (outcome: RestoreOutcome | null) => {
-    useEditorLifecycleStore.setState((state) => {
-      if (state.restoreOutcome === outcome) {
-        return state
-      }
-
-      return {
-        ...state,
-        restoreOutcome: outcome,
-      }
-    })
+    useEditorLifecycleStore.setState((state) =>
+      state.restoreOutcome === outcome ? state : { restoreOutcome: outcome },
+    )
   },
   incrementRestoreAttempt: () => {
     useEditorLifecycleStore.setState((state) => ({
-      ...state,
       restoreAttemptCount: state.restoreAttemptCount + 1,
     }))
   },

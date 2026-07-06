@@ -64,7 +64,9 @@ function setPoliteAnnouncementWithReclear(message: string) {
   }, 0)
 }
 
-export const useFeedbackStore = create<FeedbackStoreState>()(() => ({
+// Module-private: mutation goes through feedbackActions and reads through the
+// narrow hooks below.
+const useFeedbackStore = create<FeedbackStoreState>()(() => ({
   politeAnnouncement: '',
   assertiveAnnouncement: '',
   statusMessage: null,
@@ -131,6 +133,10 @@ export const feedbackActions = {
 
 export function resetFeedbackStore() {
   feedbackActions.reset()
+}
+
+export const feedbackStoreForTests = {
+  getState: () => useFeedbackStore.getState(),
 }
 
 export const usePoliteAnnouncement = () =>

@@ -7,12 +7,12 @@ import {
   resetToolbarInteractionStore,
   selectToolbarEngaged,
   toolbarInteractionActions,
-  useToolbarInteractionStore,
+  toolbarInteractionStoreForTests,
 } from '@/core/stores/toolbar-interaction-store'
 import { useReportToolbarEngagement } from './use-report-toolbar-engagement'
 
 const engaged = () =>
-  selectToolbarEngaged(useToolbarInteractionStore.getState())
+  selectToolbarEngaged(toolbarInteractionStoreForTests.getState())
 
 // Builds a blur event out of real DOM nodes so the handler's relatedTarget
 // narrowing and containment check run for real: focus either lands on a control

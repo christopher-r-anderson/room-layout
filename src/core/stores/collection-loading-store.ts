@@ -88,7 +88,7 @@ export const collectionLoadingActions = {
     useCollectionLoadingStore.setState((state) => {
       const progressByPath = new Map(state.progressByPath)
       progressByPath.set(path, progress)
-      return { ...state, progressByPath }
+      return { progressByPath }
     })
   },
   // Reported by the load pipeline once a collection has parsed and registered. A
@@ -102,7 +102,7 @@ export const collectionLoadingActions = {
       loaded.add(path)
       const failed = new Map(state.failed)
       failed.delete(path)
-      return { ...state, loaded, failed }
+      return { loaded, failed }
     })
   },
   // Reported by the load pipeline when a collection fails to load; the raw error
@@ -115,7 +115,7 @@ export const collectionLoadingActions = {
       }
       const failed = new Map(state.failed)
       failed.set(path, kind)
-      return { ...state, failed }
+      return { failed }
     })
   },
   // Request an on-demand collection (or re-request a failed one). Always writes a
@@ -132,7 +132,7 @@ export const collectionLoadingActions = {
       if (failed.get(path) === 'connection') {
         failed.delete(path)
       }
-      return { ...state, wanted, failed }
+      return { wanted, failed }
     })
   },
   reset: () => {

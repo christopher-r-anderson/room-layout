@@ -38,7 +38,8 @@ export function useLoadedCollectionScenes(): Map<string, Object3D> {
 // Drops every parsed scene. Called on the retry teardown (before the scene epoch
 // remounts) so a fresh cycle re-parses from the re-downloaded bytes.
 export function resetCollectionSceneRegistry() {
-  useCollectionSceneRegistryStore.setState({
-    loaded: new Map<string, Object3D>(),
-  })
+  useCollectionSceneRegistryStore.setState(
+    useCollectionSceneRegistryStore.getInitialState(),
+    true,
+  )
 }

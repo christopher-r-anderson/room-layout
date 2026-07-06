@@ -25,12 +25,15 @@ function clearRotationGraceTimer() {
   }
 }
 
-export const useToolbarInteractionStore =
-  create<ToolbarInteractionStoreState>()(() => ({
+// Module-private: mutation goes through toolbarInteractionActions and the
+// placement engine reads through useToolbarEngaged.
+const useToolbarInteractionStore = create<ToolbarInteractionStoreState>()(
+  () => ({
     pointerOver: false,
     focusWithin: false,
     rotationGraceActive: false,
-  }))
+  }),
+)
 
 export const toolbarInteractionActions = {
   setPointerOver: (pointerOver: boolean) => {
@@ -63,6 +66,10 @@ export function resetToolbarInteractionStore() {
 
 export function selectToolbarEngaged(state: ToolbarInteractionStoreState) {
   return state.pointerOver || state.focusWithin || state.rotationGraceActive
+}
+
+export const toolbarInteractionStoreForTests = {
+  getState: () => useToolbarInteractionStore.getState(),
 }
 
 export const useToolbarEngaged = () =>

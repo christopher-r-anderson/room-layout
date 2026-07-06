@@ -58,11 +58,11 @@ function areSelectedToolbarGeometriesEqual(
   )
 }
 
-export const useToolbarGeometryStore = create<ToolbarGeometryStoreState>()(
-  () => ({
-    toolbarGeometry: INITIAL_SELECTED_TOOLBAR_GEOMETRY,
-  }),
-)
+// Module-private: the scene writes through toolbarGeometryActions (the one
+// writer) and the placement hook reads through useToolbarGeometry.
+const useToolbarGeometryStore = create<ToolbarGeometryStoreState>()(() => ({
+  toolbarGeometry: INITIAL_SELECTED_TOOLBAR_GEOMETRY,
+}))
 
 export const toolbarGeometryActions = {
   setToolbarGeometry: (geometry: SelectedToolbarGeometry) => {
@@ -91,6 +91,13 @@ export const toolbarGeometryActions = {
 
 export function resetToolbarGeometryStore() {
   toolbarGeometryActions.reset()
+}
+
+export const toolbarGeometryStoreForTests = {
+  getState: () => useToolbarGeometryStore.getState(),
+  getInitialState: () => useToolbarGeometryStore.getInitialState(),
+  subscribe: (listener: () => void) =>
+    useToolbarGeometryStore.subscribe(listener),
 }
 
 export const useToolbarGeometry = () =>

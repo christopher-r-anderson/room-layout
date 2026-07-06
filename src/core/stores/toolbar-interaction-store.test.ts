@@ -3,11 +3,11 @@ import {
   resetToolbarInteractionStore,
   selectToolbarEngaged,
   toolbarInteractionActions,
-  useToolbarInteractionStore,
+  toolbarInteractionStoreForTests,
 } from './toolbar-interaction-store'
 
 const engaged = () =>
-  selectToolbarEngaged(useToolbarInteractionStore.getState())
+  selectToolbarEngaged(toolbarInteractionStoreForTests.getState())
 
 beforeEach(() => {
   vi.useFakeTimers()

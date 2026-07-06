@@ -183,7 +183,7 @@ function createSelectedFurniture(): FurnitureItem {
 beforeEach(() => {
   resetDialogStore()
   resetEditorLifecycleStore()
-  sceneDocumentActions.resetSceneDocument()
+  sceneDocumentActions.reset()
   dialogActions.configureRuntimeContext({
     isDialogsEnabled: () => true,
     getSelectedFurniture: () => null,

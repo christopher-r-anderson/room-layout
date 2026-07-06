@@ -5,7 +5,7 @@ import type { SelectedToolbarGeometry } from '@/scene/scene.types'
 import {
   resetToolbarGeometryStore,
   toolbarGeometryActions,
-  useToolbarGeometryStore,
+  toolbarGeometryStoreForTests,
 } from './toolbar-geometry-store'
 
 const AVAILABLE_GEOMETRY: SelectedToolbarGeometry = {
@@ -30,7 +30,7 @@ beforeEach(() => {
 describe('useToolbarGeometryStore', () => {
   it('short-circuits toolbar geometry updates when the value is equal', () => {
     let notifications = 0
-    const unsubscribe = useToolbarGeometryStore.subscribe(() => {
+    const unsubscribe = toolbarGeometryStoreForTests.subscribe(() => {
       notifications += 1
     })
 
@@ -40,7 +40,7 @@ describe('useToolbarGeometryStore', () => {
       points: [...AVAILABLE_GEOMETRY.points],
     })
 
-    expect(useToolbarGeometryStore.getState().toolbarGeometry).toEqual(
+    expect(toolbarGeometryStoreForTests.getState().toolbarGeometry).toEqual(
       AVAILABLE_GEOMETRY,
     )
     expect(notifications).toBe(1)
@@ -53,8 +53,8 @@ describe('useToolbarGeometryStore', () => {
 
     resetToolbarGeometryStore()
 
-    expect(useToolbarGeometryStore.getState().toolbarGeometry).toEqual(
-      useToolbarGeometryStore.getInitialState().toolbarGeometry,
+    expect(toolbarGeometryStoreForTests.getState().toolbarGeometry).toEqual(
+      toolbarGeometryStoreForTests.getInitialState().toolbarGeometry,
     )
   })
 })

@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { toast } from 'sonner'
 import { resetSceneDocumentStore } from '@/core/stores/scene-document-store'
 import {
-  useFeedbackStore,
+  feedbackStoreForTests,
   resetFeedbackStore,
 } from '@/core/stores/feedback-store'
 import {
@@ -98,7 +98,7 @@ describe('addFurniture', () => {
     // live regions are exempt, so the announcer reaches assistive tech. The
     // announcement lands on the store's clear-then-set tick.
     await vi.waitFor(() => {
-      expect(useFeedbackStore.getState().assertiveAnnouncement).toBe(
+      expect(feedbackStoreForTests.getState().assertiveAnnouncement).toBe(
         i18n._(ADD_FURNITURE_NO_SPACE_MESSAGE),
       )
     })

@@ -6,7 +6,10 @@ import {
   sceneDocumentActions,
   useSceneDocumentStore,
 } from '@/core/stores/scene-document-store'
-import { feedbackActions, useFeedbackStore } from '@/core/stores/feedback-store'
+import {
+  feedbackActions,
+  feedbackStoreForTests,
+} from '@/core/stores/feedback-store'
 import {
   resetSelectionFocusStore,
   useSelectionFocusStore,
@@ -138,6 +141,6 @@ describe('selection-actions', () => {
       announceMode: 'default',
       requestOutlinerFocus: false,
     })
-    expect(useFeedbackStore.getState().statusMessage).toBeNull()
+    expect(feedbackStoreForTests.getState().statusMessage).toBeNull()
   })
 })

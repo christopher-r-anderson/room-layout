@@ -75,7 +75,6 @@ export const sceneDocumentActions = {
       }
 
       return {
-        ...state,
         history,
         historyAvailability: getDerivedHistoryAvailability(
           history,
@@ -101,7 +100,6 @@ export const sceneDocumentActions = {
       }
 
       return {
-        ...state,
         history: nextHistory,
         historyAvailability: getDerivedHistoryAvailability(
           nextHistory,
@@ -115,107 +113,60 @@ export const sceneDocumentActions = {
     })
   },
   setInstanceIdCounter: (counter: number) => {
-    useSceneDocumentStore.setState((state) => {
-      if (state.instanceIdCounter === counter) {
-        return state
-      }
-
-      return {
-        ...state,
-        instanceIdCounter: counter,
-      }
-    })
+    useSceneDocumentStore.setState((state) =>
+      state.instanceIdCounter === counter
+        ? state
+        : { instanceIdCounter: counter },
+    )
   },
   setSelectedId: (id: string | null) => {
-    useSceneDocumentStore.setState((state) => {
-      if (state.selectedId === id) {
-        return state
-      }
-
-      return {
-        ...state,
-        selectedId: id,
-        previewedIdRaw: null,
-      }
-    })
+    useSceneDocumentStore.setState((state) =>
+      state.selectedId === id
+        ? state
+        : { selectedId: id, previewedIdRaw: null },
+    )
   },
   setPreviewedId: (id: string | null) => {
-    useSceneDocumentStore.setState((state) => {
-      if (state.previewedIdRaw === id) {
-        return state
-      }
-
-      return {
-        ...state,
-        previewedIdRaw: id,
-      }
-    })
+    useSceneDocumentStore.setState((state) =>
+      state.previewedIdRaw === id ? state : { previewedIdRaw: id },
+    )
   },
   setDragging: (dragging: boolean) => {
-    useSceneDocumentStore.setState((state) => {
-      if (state.isDragging === dragging) {
-        return state
-      }
-
-      return {
-        ...state,
-        isDragging: dragging,
-        historyAvailability: getDerivedHistoryAvailability(
-          state.history,
-          dragging,
-        ),
-      }
-    })
+    useSceneDocumentStore.setState((state) =>
+      state.isDragging === dragging
+        ? state
+        : {
+            isDragging: dragging,
+            historyAvailability: getDerivedHistoryAvailability(
+              state.history,
+              dragging,
+            ),
+          },
+    )
   },
   setFloorFinishId: (id: string) => {
-    useSceneDocumentStore.setState((state) => {
-      if (state.floorFinishId === id) {
-        return state
-      }
-
-      return {
-        ...state,
-        floorFinishId: id,
-      }
-    })
+    useSceneDocumentStore.setState((state) =>
+      state.floorFinishId === id ? state : { floorFinishId: id },
+    )
   },
   setWallFinishId: (id: string) => {
-    useSceneDocumentStore.setState((state) => {
-      if (state.wallFinishId === id) {
-        return state
-      }
-
-      return {
-        ...state,
-        wallFinishId: id,
-      }
-    })
+    useSceneDocumentStore.setState((state) =>
+      state.wallFinishId === id ? state : { wallFinishId: id },
+    )
   },
   setLightingMoodId: (id: string) => {
-    useSceneDocumentStore.setState((state) => {
-      if (state.lightingMoodId === id) {
-        return state
-      }
-
-      return {
-        ...state,
-        lightingMoodId: id,
-      }
-    })
+    useSceneDocumentStore.setState((state) =>
+      state.lightingMoodId === id ? state : { lightingMoodId: id },
+    )
   },
   setFloorFinishLoading: (loading: boolean) => {
-    useSceneDocumentStore.setState((state) => {
-      if (state.floorFinishLoading === loading) {
-        return state
-      }
-
-      return {
-        ...state,
-        floorFinishLoading: loading,
-      }
-    })
+    useSceneDocumentStore.setState((state) =>
+      state.floorFinishLoading === loading
+        ? state
+        : { floorFinishLoading: loading },
+    )
   },
-  resetSceneDocument: () => {
+  reset: () => {
     useSceneDocumentStore.setState(
       useSceneDocumentStore.getInitialState(),
       true,
@@ -224,7 +175,7 @@ export const sceneDocumentActions = {
 }
 
 export function resetSceneDocumentStore() {
-  sceneDocumentActions.resetSceneDocument()
+  sceneDocumentActions.reset()
 }
 
 export const useItems = () =>

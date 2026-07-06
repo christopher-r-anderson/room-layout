@@ -145,7 +145,7 @@ describe('startDraftPersistenceReconciler', () => {
     expect(saveSceneDraft).not.toHaveBeenCalled()
     expect(clearSceneDraft).not.toHaveBeenCalled()
 
-    sceneDocumentActions.resetSceneDocument()
+    sceneDocumentActions.reset()
 
     expect(saveSceneDraft).not.toHaveBeenCalled()
     expect(clearSceneDraft).not.toHaveBeenCalled()

@@ -35,7 +35,7 @@ import type { StartupErrorKind } from '../types/startup.types'
 // retry transitions so a failed or restarted load never leaves stale scene or
 // selection state behind.
 function resetStartupShell() {
-  sceneDocumentActions.resetSceneDocument()
+  sceneDocumentActions.reset()
   resetSelectionFocusStore()
   resetToolbarGeometryStore()
   resetToolbarInteractionStore()
