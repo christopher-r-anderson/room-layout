@@ -5,6 +5,7 @@ import {
   type RestoreOutcome,
 } from '@/core/stores/editor-lifecycle-store'
 import { useSceneDocumentStore } from '@/core/stores/scene-document-store'
+import { useSelectionStore } from '@/core/stores/selection-store'
 import { getPreviewedId } from '@/core/operations/previewed-id'
 import { getActiveFinishIds } from '@/core/operations/active-finish-ids'
 import { sceneCommands } from '@/core/scene-commands'
@@ -76,9 +77,10 @@ export function useTestStateBridge({
           activeWallFinishId,
           activeLightingMoodId,
         } = getActiveFinishIds()
-        const selectedItem = storeState.selectedId
+        const selectedId = useSelectionStore.getState().selectedId
+        const selectedItem = selectedId
           ? (storeState.history.present.find(
-              (item) => item.id === storeState.selectedId,
+              (item) => item.id === selectedId,
             ) ?? null)
           : null
 
@@ -89,7 +91,7 @@ export function useTestStateBridge({
           floorFinishId: activeFloorFinishId,
           wallFinishId: activeWallFinishId,
           lightingMoodId: activeLightingMoodId,
-          selectedId: storeState.selectedId,
+          selectedId,
           previewedId: getPreviewedId(),
           selectedName: selectedItem?.name ?? null,
           itemCount: storeState.history.present.length,

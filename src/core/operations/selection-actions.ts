@@ -1,7 +1,9 @@
+import { msg } from '@lingui/core/macro'
+import type { FurnitureItem } from '@/domain/furniture'
+import { i18n } from '@/shared/i18n/i18n'
 import { useSceneDocumentStore } from '@/core/stores/scene-document-store'
+import { useSelectionStore } from '@/core/stores/selection-store'
 import { feedbackActions } from '@/core/stores/feedback-store'
-import { selectionFocusActions } from '@/core/stores/selection-focus-store'
-import { selectionEffects } from '@/core/operations/selection-effects'
 import { clearPreviewOnCanvasMiss } from '@/core/operations/preview-actions'
 import { sceneCommands } from '@/core/scene-commands'
 import {
@@ -11,21 +13,81 @@ import {
 import type { SelectByIdResult } from '@/core/scene.types'
 import type { InteractionSource } from '@/core/types/interaction.types'
 
-export function selectByCanvasPointer(id: string) {
-  const selectedId = useSceneDocumentStore.getState().selectedId
+export type SelectionAnnouncementMode =
+  | 'default'
+  | 'added'
+  | 'canvas-keyboard'
+  | 'panel-keyboard'
 
-  selectionEffects.notePendingSelection(
-    selectedId === id
-      ? null
-      : {
-          announceMode: 'default',
-          requestOutlinerFocus: false,
-        },
-  )
-  selectionEffects.notePendingSource(
-    selectedId === id ? null : 'canvas-pointer',
-  )
-  selectionFocusActions.setSelectedSource('canvas-pointer')
+/**
+ * Announces a selection change on the polite live region. Runs synchronously
+ * with the mutation that caused it, so the caller supplies the mode it knows
+ * (which keyboard surface, an add) and the pre-mutation selection.
+ */
+export function announceSelectionChange(options: {
+  announceMode: SelectionAnnouncementMode
+  items: FurnitureItem[]
+  newId: string | null
+  previousSelectedId: string | null
+}) {
+  const { announceMode, items, newId, previousSelectedId } = options
+
+  const selectedItem = newId
+    ? (items.find((item) => item.id === newId) ?? null)
+    : null
+
+  const selectedName = selectedItem?.name
+
+  if (announceMode === 'added') {
+    if (selectedName) {
+      feedbackActions.announcePolite(
+        i18n._(msg`${selectedName} added to room.`),
+      )
+    }
+    return
+  }
+
+  if (announceMode === 'canvas-keyboard') {
+    if (selectedName) {
+      feedbackActions.announcePolite(
+        i18n._(
+          msg`${selectedName} selected. Press Shift+T to reach its actions.`,
+        ),
+      )
+      return
+    }
+
+    if (previousSelectedId) {
+      feedbackActions.announcePolite(i18n._(msg`Selection cleared.`))
+    }
+    return
+  }
+
+  if (selectedName) {
+    feedbackActions.announcePolite(i18n._(msg`${selectedName} selected.`))
+    return
+  }
+
+  if (previousSelectedId) {
+    feedbackActions.announcePolite(i18n._(msg`Selection cleared.`))
+  }
+}
+
+// The canvas-pointer path (click or drag start on an item). Called by the
+// scene's input mapping; the pointer event implies a mounted scene, so no
+// readiness guard.
+export function selectByCanvasPointer(id: string) {
+  const previousSelectedId = useSelectionStore.getState().selectedId
+  const result = selectDocumentById(id, 'canvas-pointer')
+
+  if (result.ok && previousSelectedId !== id) {
+    announceSelectionChange({
+      announceMode: 'default',
+      items: useSceneDocumentStore.getState().history.present,
+      newId: id,
+      previousSelectedId,
+    })
+  }
 }
 
 export function selectById(
@@ -39,35 +101,22 @@ export function selectById(
     }
   }
 
-  const selectedId = useSceneDocumentStore.getState().selectedId
-  const selectionWillChange = selectedId !== id
-  const result = selectDocumentById(id)
+  const previousSelectedId = useSelectionStore.getState().selectedId
+  const result = selectDocumentById(id, source ?? null)
   feedbackActions.clearStatusMessage()
 
-  if (result.ok && selectionWillChange) {
-    selectionEffects.notePendingSelection({
+  if (result.ok && previousSelectedId !== id) {
+    announceSelectionChange({
       announceMode:
         source === 'panel-keyboard'
           ? 'panel-keyboard'
           : source === 'canvas-keyboard'
             ? 'canvas-keyboard'
             : 'default',
-      requestOutlinerFocus: false,
+      items: useSceneDocumentStore.getState().history.present,
+      newId: id,
+      previousSelectedId,
     })
-  } else {
-    selectionEffects.notePendingSelection(null)
-  }
-
-  if (source) {
-    if (result.ok && selectionWillChange) {
-      selectionEffects.notePendingSource(source)
-      selectionFocusActions.setSelectedSource(source)
-    } else {
-      selectionEffects.notePendingSource(null)
-      if (result.ok) {
-        selectionFocusActions.setSelectedSource(source)
-      }
-    }
   }
 
   return result
@@ -78,12 +127,22 @@ export function clearSelection() {
     return
   }
 
+  const previousSelectedId = useSelectionStore.getState().selectedId
   clearDocumentSelection()
-  selectionEffects.notePendingSelection({
-    announceMode: 'default',
-    requestOutlinerFocus: false,
-  })
   feedbackActions.clearStatusMessage()
+
+  // The mutation no-ops mid-drag; only announce a clear that landed.
+  if (
+    previousSelectedId !== null &&
+    useSelectionStore.getState().selectedId === null
+  ) {
+    announceSelectionChange({
+      announceMode: 'default',
+      items: useSceneDocumentStore.getState().history.present,
+      newId: null,
+      previousSelectedId,
+    })
+  }
 }
 
 /**

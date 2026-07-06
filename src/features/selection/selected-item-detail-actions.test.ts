@@ -11,9 +11,10 @@ import {
   resetEditorLifecycleStore,
 } from '@/core/stores/editor-lifecycle-store'
 import {
-  resetSelectionFocusStore,
-  useSelectionFocusStore,
-} from '@/core/stores/selection-focus-store'
+  resetSelectionStore,
+  selectionActions,
+  useSelectionStore,
+} from '@/core/stores/selection-store'
 import { sceneCommands } from '@/core/scene-commands'
 import { feedbackActions } from '@/core/stores/feedback-store'
 import { setSelectionTransform } from '@/core/operations/furniture-mutations'
@@ -43,10 +44,10 @@ vi.mock('@/core/stores/feedback-store', () => ({
 describe('selected-item-detail-actions', () => {
   beforeEach(() => {
     resetSceneDocumentStore()
-    resetSelectionFocusStore()
+    resetSelectionStore()
     resetEditorLifecycleStore()
     sceneDocumentActions.setHistory(createHistoryState([CHAIR]))
-    sceneDocumentActions.setSelectedId(CHAIR.id)
+    selectionActions.setSelection(CHAIR.id, null)
   })
 
   afterEach(() => {
@@ -88,9 +89,7 @@ describe('selected-item-detail-actions', () => {
           value: 90,
         }),
       ).toEqual({ ok: true, item: updatedItem })
-      expect(useSelectionFocusStore.getState().selectedSource).toBe(
-        'panel-keyboard',
-      )
+      expect(useSelectionStore.getState().selectedSource).toBe('panel-keyboard')
       expect(feedbackActions.announcePolite).toHaveBeenCalledWith(
         'Chair details updated.',
       )

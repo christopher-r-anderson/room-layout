@@ -8,7 +8,11 @@ import {
 import { resetAssetsStore } from '../stores/assets-store'
 import { dialogActions } from '../stores/dialog-store'
 import { feedbackActions } from '../stores/feedback-store'
-import { selectionEffects } from './selection-effects'
+import {
+  resetSelectionStore,
+  selectionActions,
+  useSelectionStore,
+} from '../stores/selection-store'
 import { runStartupRestoreFlow } from '../persistence/restore-flow'
 import { resetCollectionPipeline } from './collection-loader'
 import { clearSceneServices } from '@/core/scene-commands'
@@ -26,12 +30,6 @@ vi.mock('../persistence/restore-flow', () => ({
 vi.mock('../persistence/scene-draft', () => ({
   loadSceneDraft: vi.fn().mockReturnValue(null),
   saveSceneDraft: vi.fn(),
-}))
-
-vi.mock('./selection-effects', () => ({
-  selectionEffects: {
-    notePendingSelection: vi.fn(),
-  },
 }))
 
 vi.mock('../stores/feedback-store', () => ({
@@ -61,6 +59,7 @@ vi.mock('sonner', () => ({
 beforeEach(() => {
   resetEditorLifecycleStore()
   resetAssetsStore()
+  resetSelectionStore()
 })
 
 afterEach(() => {
@@ -75,10 +74,6 @@ describe('startup-coordinator', () => {
     expect(runStartupRestoreFlow).toHaveBeenCalledTimes(1)
     expect(useEditorLifecycleStore.getState().restoreAttemptCount).toBe(1)
     expect(useEditorLifecycleStore.getState().startupPhase).toBe('ready')
-    expect(selectionEffects.notePendingSelection).toHaveBeenCalledWith({
-      announceMode: 'suppress',
-      requestOutlinerFocus: false,
-    })
   })
 
   it('does not re-run restore after a retry preserves the attempt count', () => {
@@ -105,8 +100,12 @@ describe('startup-coordinator', () => {
   })
 
   it('resets the collection pipeline and bumps the retry token', () => {
+    selectionActions.setSelection('chair-1', 'canvas-pointer')
+
     requestAssetRetry()
 
+    // The shell reset drops any stale selection session alongside the scene.
+    expect(useSelectionStore.getState().selectedId).toBeNull()
     expect(resetCollectionPipeline).toHaveBeenCalledTimes(1)
     expect(useEditorLifecycleStore.getState().retryToken).toBe(1)
     expect(useEditorLifecycleStore.getState().sceneEpoch).toBe(1)

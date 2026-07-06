@@ -40,6 +40,7 @@ import {
   sceneDocumentActions,
   useItems,
 } from '@/core/stores/scene-document-store'
+import { selectByCanvasPointer } from '@/core/operations/selection-actions'
 import { setSceneMounted } from '@/core/stores/editor-lifecycle-store'
 import {
   clearSceneServices,
@@ -52,7 +53,6 @@ export function Scene({
   renderQuality = 'default',
   catalog,
   collections,
-  onCanvasPointerSelection,
   previewedId = null,
   onPreviewChange,
   floorOption = null,
@@ -63,7 +63,6 @@ export function Scene({
   renderQuality?: 'default' | 'e2e-low'
   catalog: FurnitureCatalogEntry[]
   collections: FurnitureCollection[]
-  onCanvasPointerSelection?: (id: string) => void
   previewedId?: string | null
   onPreviewChange?: (id: string | null) => void
   floorOption?: FloorFinishOption | null
@@ -107,10 +106,8 @@ export function Scene({
   const cameraControlsRef = useRef<CameraControlsImpl | null>(null)
   const cameraKeyStateRef = useRef<CameraKeyState>(new Set())
   const furniture = useItems()
-  const { objectRefs, registerObject, selectFurniture, selectedId, selection } =
-    useSceneSelection({
-      furniture,
-    })
+  const { objectRefs, registerObject, selectedId, selection } =
+    useSceneSelection()
 
   const updateFurniturePosition = useCallback(
     (id: string, nextPosition: [number, number, number]) => {
@@ -128,7 +125,6 @@ export function Scene({
   const { dragState, handleDragEnd, handleDragStart, handleMove } =
     useSceneDrag({
       furniture,
-      selectFurniture,
       updateFurniturePosition,
       updateHistory: sceneDocumentActions.updateHistory,
       bounds: ROOM_LAYOUT_BOUNDS,
@@ -137,15 +133,6 @@ export function Scene({
       edgeSnapThreshold: FURNITURE_EDGE_SNAP_THRESHOLD_METERS,
       areFurnitureCollectionsEqual,
     })
-
-  // Canvas-pointer selection: notify the app of the input source, then commit.
-  const handleSelect = useCallback(
-    (id: string) => {
-      onCanvasPointerSelection?.(id)
-      selectFurniture(id)
-    },
-    [onCanvasPointerSelection, selectFurniture],
-  )
 
   const {
     setCameraPreset: handleSetCameraPreset,
@@ -296,7 +283,7 @@ export function Scene({
           selected={selectedId === item.id}
           isDragging={isDragging}
           onObjectReady={registerObject}
-          onSelect={handleSelect}
+          onSelect={selectByCanvasPointer}
           onMoveStart={handleDragStart}
           onMove={handleMove}
           onMoveEnd={handleDragEnd}

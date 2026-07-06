@@ -96,7 +96,7 @@ surface that opened a dialog owns restoring focus:
 ## Boundaries
 
 `dialog-store` must not write to `scene-document-store` or
-`selection-focus-store`,
+`selection-store`,
 and must not depend on shell layout context. Cross-store writes belong in
 `core/operations` or feature-internal actions. Layout transition state and DOM
 focus mapping live in the shell, not the store.

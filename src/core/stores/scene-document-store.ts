@@ -13,7 +13,6 @@ import type { FurnitureItem } from '@/domain/furniture'
 interface SceneDocumentStoreState {
   history: HistoryState<FurnitureItem[]>
   instanceIdCounter: number
-  selectedId: string | null
   previewedIdRaw: string | null
   historyAvailability: HistoryAvailability
   isDragging: boolean
@@ -55,7 +54,6 @@ export const useSceneDocumentStore = create<SceneDocumentStoreState>()(
     (): SceneDocumentStoreState => ({
       history: createHistoryState<FurnitureItem[]>([]),
       instanceIdCounter: 0,
-      selectedId: null,
       previewedIdRaw: null,
       historyAvailability: INITIAL_HISTORY_AVAILABILITY,
       isDragging: false,
@@ -119,13 +117,6 @@ export const sceneDocumentActions = {
         : { instanceIdCounter: counter },
     )
   },
-  setSelectedId: (id: string | null) => {
-    useSceneDocumentStore.setState((state) =>
-      state.selectedId === id
-        ? state
-        : { selectedId: id, previewedIdRaw: null },
-    )
-  },
   setPreviewedId: (id: string | null) => {
     useSceneDocumentStore.setState((state) =>
       state.previewedIdRaw === id ? state : { previewedIdRaw: id },
@@ -180,10 +171,6 @@ export function resetSceneDocumentStore() {
 
 export const useItems = () =>
   useSceneDocumentStore((state) => state.history.present)
-export const useSelectedId = () =>
-  useSceneDocumentStore((state) => state.selectedId)
-export const useHasSelection = () =>
-  useSceneDocumentStore((state) => state.selectedId !== null)
 export const useHistoryAvailability = () =>
   useSceneDocumentStore(useShallow((state) => state.historyAvailability))
 export const useFloorFinishId = () =>
@@ -194,17 +181,3 @@ export const useLightingMoodId = () =>
   useSceneDocumentStore((state) => state.lightingMoodId)
 export const useFloorFinishLoading = () =>
   useSceneDocumentStore((state) => state.floorFinishLoading)
-export const useSelectedFurniture = () =>
-  useSceneDocumentStore(selectSelectedFurniture)
-
-export function selectSelectedFurniture(
-  state: Pick<SceneDocumentStoreState, 'selectedId' | 'history'>,
-): FurnitureItem | null {
-  if (state.selectedId === null) {
-    return null
-  }
-
-  return (
-    state.history.present.find((item) => item.id === state.selectedId) ?? null
-  )
-}

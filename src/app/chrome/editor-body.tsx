@@ -2,11 +2,11 @@ import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
 import { Trans, useLingui } from '@lingui/react/macro'
 import { useIsBlockingOverlayOpen } from '@/core/stores/dialog-store'
-import { useSelectedFurniture } from '@/core/stores/scene-document-store'
+import { useSelectedFurniture } from '@/core/operations/selected-furniture'
 import {
-  selectionFocusActions,
+  selectionActions,
   useRoomViewFocusRequest,
-} from '@/core/stores/selection-focus-store'
+} from '@/core/stores/selection-store'
 import { useSceneIsAtDefaults } from '@/core/operations/use-scene-is-at-defaults'
 import {
   useAssetError,
@@ -96,7 +96,7 @@ export function EditorBody({ testOverlaysHidden }: EditorBodyProps) {
     }
 
     focusRoomView()
-    selectionFocusActions.clearRoomViewFocusRequest()
+    selectionActions.clearRoomViewFocusRequest()
   }, [roomViewFocusRequest, focusRoomView])
 
   useKeyboardShortcuts({

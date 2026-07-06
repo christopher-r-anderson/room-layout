@@ -4,7 +4,7 @@ import type {
 } from '@/core/dialog-contract'
 import { dialogActions } from '@/core/stores/dialog-store'
 import { isEditorInteractive } from '@/core/stores/editor-lifecycle-store'
-import { useSceneDocumentStore } from '@/core/stores/scene-document-store'
+import { getSelectedFurniture } from '@/core/operations/selected-furniture'
 import { getSceneIsAtDefaults } from '@/core/operations/use-scene-is-at-defaults'
 import { headerMoreActionsDialogDefinition } from '@/app/chrome/top-header/header-more-actions-dialog-definition'
 import { catalogDialogDefinition } from '@/features/catalog/catalog-dialog-definition'
@@ -27,24 +27,12 @@ export const DIALOG_DEFINITIONS: DialogDefinition[] = [
   startOverDialogDefinition,
 ]
 
-function getSelectedFurnitureFromState() {
-  const state = useSceneDocumentStore.getState()
-
-  if (state.selectedId === null) {
-    return null
-  }
-
-  return (
-    state.history.present.find((item) => item.id === state.selectedId) ?? null
-  )
-}
-
 // The external state the dialog guards read. Every signal comes from a core
 // store or operation; app owns this wiring because it decides which signals
 // feed dialog readiness, while the store only declares the contract.
 export const dialogRuntimeContext: DialogRuntimeContext = {
   isDialogsEnabled: () => isEditorInteractive(),
-  getSelectedFurniture: getSelectedFurnitureFromState,
+  getSelectedFurniture: getSelectedFurniture,
   canStartOver: () => !getSceneIsAtDefaults(),
 }
 

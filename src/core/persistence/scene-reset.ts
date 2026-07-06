@@ -1,7 +1,6 @@
 import { useAssetsStore } from '@/core/stores/assets-store'
 import { sceneDocumentActions } from '@/core/stores/scene-document-store'
 import { feedbackActions } from '@/core/stores/feedback-store'
-import { selectionEffects } from '@/core/operations/selection-effects'
 import { clearPreviewOnCanvasMiss } from '@/core/operations/preview-actions'
 import { clearSceneDraft } from '@/core/persistence/scene-draft'
 import { sceneCommands } from '@/core/scene-commands'
@@ -39,8 +38,4 @@ export function resetSceneToDefaults() {
   }
 
   clearSceneDraft()
-  selectionEffects.notePendingSelection({
-    announceMode: 'suppress',
-    requestOutlinerFocus: false,
-  })
 }

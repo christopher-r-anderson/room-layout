@@ -1,5 +1,5 @@
 import type { KeyboardEvent } from 'react'
-import { useSelectedFurniture } from '@/core/stores/scene-document-store'
+import { useSelectedFurniture } from '@/core/operations/selected-furniture'
 import { useCommandDispatch } from '@/core/commands/command-dispatch-context'
 import { useEditorRefs } from '@/shared/providers/editor-refs-context'
 import { useSelectedItemInteraction } from './selected-item-interaction-context'

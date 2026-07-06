@@ -16,6 +16,10 @@ import {
   resetEditorLifecycleStore,
 } from '@/core/stores/editor-lifecycle-store'
 import { sceneDocumentActions } from '@/core/stores/scene-document-store'
+import {
+  resetSelectionStore,
+  selectionActions,
+} from '@/core/stores/selection-store'
 import { OverlayExclusionProvider } from '../../shared/layout/overlay-exclusion-provider'
 import { EditorRefsProvider } from '../../shared/providers/editor-refs-provider'
 import { CommandDispatchProvider } from '@/core/commands/command-dispatch-provider'
@@ -184,6 +188,7 @@ beforeEach(() => {
   resetDialogStore()
   resetEditorLifecycleStore()
   sceneDocumentActions.reset()
+  resetSelectionStore()
   dialogActions.configureRuntimeContext({
     isDialogsEnabled: () => true,
     getSelectedFurniture: () => null,
@@ -210,7 +215,7 @@ describe('EditorOverlay integration', () => {
     const registerExclusionElement = vi.fn(() => vi.fn())
 
     sceneDocumentActions.setHistory(createHistoryState([selectedFurniture]))
-    sceneDocumentActions.setSelectedId(selectedFurniture.id)
+    selectionActions.setSelection(selectedFurniture.id, null)
     sceneDocumentActions.setFloorFinishId('wood-floor')
     sceneDocumentActions.setWallFinishId('light-gray')
 

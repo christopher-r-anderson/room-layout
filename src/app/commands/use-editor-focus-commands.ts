@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 import { feedbackActions } from '@/core/stores/feedback-store'
-import { useSelectedFurniture } from '@/core/stores/scene-document-store'
-import { selectionFocusActions } from '@/core/stores/selection-focus-store'
+import { useSelectedFurniture } from '@/core/operations/selected-furniture'
+import { selectionActions } from '@/core/stores/selection-store'
 import { previewFromCanvasKeyboard } from '@/core/operations/preview-actions'
 import { requestOutlinerFocus } from '@/core/operations/focus-actions'
 import { useEditorRefs } from '@/shared/providers/editor-refs-context'
@@ -46,7 +46,7 @@ export function useEditorFocusCommands(): EditorFocusCommands {
   }, [detailsPanelRef, selectedFurniture])
 
   const focusRoomView = useCallback(() => {
-    selectionFocusActions.requestRoomViewFocus()
+    selectionActions.requestRoomViewFocus()
 
     if (selectedFurniture !== null) {
       previewFromCanvasKeyboard(selectedFurniture.id)

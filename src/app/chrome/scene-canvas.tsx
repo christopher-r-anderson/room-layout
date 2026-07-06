@@ -2,7 +2,6 @@ import { Canvas } from '@react-three/fiber'
 import { NeutralToneMapping, SRGBColorSpace } from 'three'
 import { Scene } from '@/scene/scene'
 import { notifyAssetError } from '@/core/operations/startup-coordinator'
-import { selectByCanvasPointer } from '@/core/operations/selection-actions'
 import { previewFromScene } from '@/core/operations/preview-actions'
 import { sceneDocumentActions } from '@/core/stores/scene-document-store'
 import { useSceneEpoch } from '@/core/stores/editor-lifecycle-store'
@@ -56,7 +55,6 @@ export default function SceneCanvas({ onPointerMissed }: SceneCanvasProps) {
           renderQuality={renderQuality}
           catalog={catalog}
           collections={collections}
-          onCanvasPointerSelection={selectByCanvasPointer}
           previewedId={previewedId}
           onPreviewChange={previewFromScene}
           floorOption={selectedFloorOption}

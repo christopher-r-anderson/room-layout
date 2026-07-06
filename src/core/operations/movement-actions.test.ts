@@ -6,6 +6,10 @@ import {
   sceneDocumentActions,
 } from '@/core/stores/scene-document-store'
 import {
+  resetSelectionStore,
+  selectionActions,
+} from '@/core/stores/selection-store'
+import {
   editorLifecycleActions,
   resetEditorLifecycleStore,
 } from '@/core/stores/editor-lifecycle-store'
@@ -42,9 +46,10 @@ vi.mock('@/core/stores/feedback-store', () => ({
 describe('movement-actions', () => {
   beforeEach(() => {
     resetSceneDocumentStore()
+    resetSelectionStore()
     resetEditorLifecycleStore()
     sceneDocumentActions.setHistory(createHistoryState([CHAIR]))
-    sceneDocumentActions.setSelectedId(CHAIR.id)
+    selectionActions.setSelection(CHAIR.id, null)
     editorLifecycleActions.markAssetsReady()
   })
 
@@ -153,7 +158,7 @@ describe('movement-actions', () => {
   })
 
   it('does not arm the toolbar pin grace when nothing is selected', () => {
-    sceneDocumentActions.setSelectedId(null)
+    selectionActions.setSelection(null, null)
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
     const reportRotationSpy = vi.spyOn(
       toolbarInteractionActions,

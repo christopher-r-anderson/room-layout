@@ -4,6 +4,7 @@ import {
   sceneDocumentActions,
   useSceneDocumentStore,
 } from '@/core/stores/scene-document-store'
+import { selectByCanvasPointer } from '@/core/operations/selection-actions'
 import {
   getFloorIntersection,
   getDraggedFurniturePosition,
@@ -36,7 +37,6 @@ interface SceneDragState {
 
 export function useSceneDrag({
   furniture,
-  selectFurniture,
   updateFurniturePosition,
   updateHistory,
   bounds,
@@ -46,7 +46,6 @@ export function useSceneDrag({
   areFurnitureCollectionsEqual,
 }: {
   furniture: FurnitureItem[]
-  selectFurniture: (id: string | null) => void
   updateFurniturePosition: (
     id: string,
     nextPosition: [number, number, number],
@@ -117,7 +116,7 @@ export function useSceneDrag({
         return
       }
 
-      selectFurniture(id)
+      selectByCanvasPointer(id)
       dragStartStateRef.current = furniture
       sceneDocumentActions.setDragging(true)
       setDragState({
@@ -129,7 +128,7 @@ export function useSceneDrag({
         },
       })
     },
-    [floorPlaneY, furniture, selectFurniture],
+    [floorPlaneY, furniture],
   )
 
   const handleMove = useCallback(

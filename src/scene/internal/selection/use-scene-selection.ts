@@ -1,35 +1,23 @@
 import { useCallback, useMemo, useRef, useState, type RefObject } from 'react'
 import { type Object3D } from 'three'
 import { getMeshes } from '@/scene/internal/three/get-meshes'
-import {
-  sceneDocumentActions,
-  useSelectedId,
-} from '@/core/stores/scene-document-store'
-import type { FurnitureItem } from '@/domain/furniture'
+import { useSelectedId } from '@/core/stores/selection-store'
 
 interface SceneSelectionState {
   objectRefs: RefObject<Map<string, Object3D>>
   registerObject: (id: string, object: Object3D | null) => void
-  selectFurniture: (id: string | null) => void
-  selectedFurniture: FurnitureItem | null
   selectedId: string | null
   selection: ReturnType<typeof getMeshes>
-  setSelectedIdAndResolveObject: (id: string | null) => void
 }
 
-export function useSceneSelection({
-  furniture,
-}: {
-  furniture: FurnitureItem[]
-}): SceneSelectionState {
+// Selection render state: the Object3D registry the projections/outline read,
+// and the outline mesh set for the current selection. The pointer itself lives
+// in the core selection store; input maps to it through the core actions.
+export function useSceneSelection(): SceneSelectionState {
   const objectRefs = useRef(new Map<string, Object3D>())
   const selectedId = useSelectedId()
   const [registeredObjects, setRegisteredObjects] = useState(
     () => new Map<string, Object3D>(),
-  )
-  const selectedFurniture = useMemo(
-    () => furniture.find((item) => item.id === selectedId) ?? null,
-    [furniture, selectedId],
   )
   const selectedObject = useMemo(
     () => (selectedId ? (registeredObjects.get(selectedId) ?? null) : null),
@@ -38,28 +26,6 @@ export function useSceneSelection({
   const selection = useMemo(
     () => (selectedObject ? getMeshes(selectedObject) : []),
     [selectedObject],
-  )
-
-  const setSelectedIdAndResolveObject = useCallback((id: string | null) => {
-    sceneDocumentActions.setSelectedId(id)
-  }, [])
-
-  const setSelection = useCallback(
-    (item: FurnitureItem | null) => {
-      setSelectedIdAndResolveObject(item?.id ?? null)
-    },
-    [setSelectedIdAndResolveObject],
-  )
-
-  const selectFurniture = useCallback(
-    (id: string | null) => {
-      const nextSelection = id
-        ? (furniture.find((item) => item.id === id) ?? null)
-        : null
-
-      setSelection(nextSelection)
-    },
-    [furniture, setSelection],
   )
 
   const registerObject = useCallback((id: string, object: Object3D | null) => {
@@ -95,10 +61,7 @@ export function useSceneSelection({
   return {
     objectRefs,
     registerObject,
-    selectFurniture,
-    selectedFurniture,
     selectedId,
     selection,
-    setSelectedIdAndResolveObject,
   }
 }

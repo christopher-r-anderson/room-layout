@@ -6,6 +6,11 @@ import {
   sceneDocumentActions,
   useSceneDocumentStore,
 } from '@/core/stores/scene-document-store'
+import {
+  resetSelectionStore,
+  selectionActions,
+  useSelectionStore,
+} from '@/core/stores/selection-store'
 import { assetsActions, resetAssetsStore } from '@/core/stores/assets-store'
 import {
   registerParsedCollectionScene,
@@ -48,11 +53,12 @@ function seedLoadedChairCollection() {
 
 function seedSelectedChair() {
   sceneDocumentActions.setHistory(createHistoryState([CHAIR]))
-  sceneDocumentActions.setSelectedId(CHAIR.id)
+  selectionActions.setSelection(CHAIR.id, null)
 }
 
 function resetAllStores() {
   resetSceneDocumentStore()
+  resetSelectionStore()
   resetAssetsStore()
   resetCollectionSceneRegistry()
 }
@@ -60,10 +66,10 @@ function resetAllStores() {
 beforeEach(resetAllStores)
 afterEach(resetAllStores)
 
-it('addFurniture spawns the catalog item, selects it, and bumps the instance counter', () => {
+it('addFurniture spawns the catalog item, selects it with the given source, and bumps the instance counter', () => {
   seedLoadedChairCollection()
 
-  const result = addFurniture(CATALOG_CHAIR.id)
+  const result = addFurniture(CATALOG_CHAIR.id, { source: 'toolbar' })
 
   expect(result).toEqual({ ok: true, id: 'furniture-instance-1' })
   const state = useSceneDocumentStore.getState()
@@ -74,7 +80,8 @@ it('addFurniture spawns the catalog item, selects it, and bumps the instance cou
     nodeName: CHAIR.nodeName,
     sourcePath: CHAIR.sourcePath,
   })
-  expect(state.selectedId).toBe('furniture-instance-1')
+  expect(useSelectionStore.getState().selectedId).toBe('furniture-instance-1')
+  expect(useSelectionStore.getState().selectedSource).toBe('toolbar')
   expect(state.instanceIdCounter).toBe(1)
 })
 
@@ -86,7 +93,7 @@ it('addFurniture reports unknown-catalog and leaves the document untouched', () 
   expect(result).toEqual({ ok: false, reason: 'unknown-catalog' })
   const state = useSceneDocumentStore.getState()
   expect(state.history.present).toEqual([])
-  expect(state.selectedId).toBeNull()
+  expect(useSelectionStore.getState().selectedId).toBeNull()
   expect(state.instanceIdCounter).toBe(0)
 })
 
@@ -185,9 +192,8 @@ it('deleteSelection removes the selected item and clears the selection', () => {
 
   expect(deleteSelection()).toBe(true)
 
-  const state = useSceneDocumentStore.getState()
-  expect(state.history.present).toEqual([])
-  expect(state.selectedId).toBeNull()
+  expect(useSceneDocumentStore.getState().history.present).toEqual([])
+  expect(useSelectionStore.getState().selectedId).toBeNull()
 })
 
 it('deleteSelection reports false when nothing is selected', () => {

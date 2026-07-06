@@ -6,16 +6,13 @@ import {
   feedbackStoreForTests,
   resetFeedbackStore,
 } from '@/core/stores/feedback-store'
-import {
-  resetSelectionFocusStore,
-  useSelectionFocusStore,
-} from '@/core/stores/selection-focus-store'
+import { resetSelectionStore } from '@/core/stores/selection-store'
 import {
   editorLifecycleActions,
   resetEditorLifecycleStore,
 } from '@/core/stores/editor-lifecycle-store'
 import { resetAssetsStore, assetsActions } from '@/core/stores/assets-store'
-import { selectionEffects } from '@/core/operations/selection-effects'
+import { announceSelectionChange } from '@/core/operations/selection-actions'
 import { sceneCommands } from '@/core/scene-commands'
 import { addFurniture as addFurnitureToDocument } from '@/core/operations/furniture-mutations'
 import type { FurnitureCatalogEntry } from '@/domain/catalog'
@@ -42,14 +39,8 @@ vi.mock('@/core/operations/furniture-mutations', () => ({
   setSelectionTransform: vi.fn(),
 }))
 
-vi.mock('@/core/operations/selection-effects', () => ({
-  selectionEffects: {
-    notePendingSelection: vi.fn(),
-    notePendingSource: vi.fn(),
-    notePostDeleteOutlinerFocusIndex: vi.fn(),
-    notePostDeleteFocusTarget: vi.fn(),
-    consumePostDeleteFocusTarget: vi.fn(),
-  },
+vi.mock('@/core/operations/selection-actions', () => ({
+  announceSelectionChange: vi.fn(),
 }))
 
 const CHAIR: FurnitureCatalogEntry = {
@@ -64,7 +55,7 @@ const CHAIR: FurnitureCatalogEntry = {
 
 beforeEach(() => {
   resetSceneDocumentStore()
-  resetSelectionFocusStore()
+  resetSelectionStore()
   resetEditorLifecycleStore()
   resetAssetsStore()
   resetCatalogSelectionStore()
@@ -83,13 +74,12 @@ afterEach(() => {
 })
 
 describe('addFurniture', () => {
-  it('clears stale add state without invoking the document mutation while not ready', async () => {
+  it('does not invoke the document mutation or announce while not ready', async () => {
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(false)
 
     expect(await addFurniture()).toBe(false)
     expect(addFurnitureToDocument).not.toHaveBeenCalled()
-    expect(selectionEffects.notePendingSource).toHaveBeenCalledWith(null)
-    expect(selectionEffects.notePendingSelection).toHaveBeenCalledWith(null)
+    expect(announceSelectionChange).not.toHaveBeenCalled()
   })
 
   it('maps add-furniture failures through shared messages', async () => {
@@ -121,7 +111,7 @@ describe('addFurniture', () => {
     )
   })
 
-  it('marks toolbar selection effects after a successful add', async () => {
+  it('selects with the toolbar source and announces the add', async () => {
     catalogSelectionActions.setSelectedCatalogId('chair')
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
     vi.mocked(addFurnitureToDocument).mockReturnValue({
@@ -130,11 +120,15 @@ describe('addFurniture', () => {
     })
 
     expect(await addFurniture()).toBe(true)
-    expect(useSelectionFocusStore.getState().selectedSource).toBe('toolbar')
-    expect(selectionEffects.notePendingSource).toHaveBeenCalledWith('toolbar')
-    expect(selectionEffects.notePendingSelection).toHaveBeenCalledWith({
-      announceMode: 'added',
-      requestOutlinerFocus: false,
+    expect(addFurnitureToDocument).toHaveBeenCalledWith('chair', {
+      source: 'toolbar',
     })
+    expect(announceSelectionChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        announceMode: 'added',
+        newId: 'item-1',
+        previousSelectedId: null,
+      }),
+    )
   })
 })

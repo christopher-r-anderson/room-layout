@@ -1,11 +1,9 @@
+import { useSceneDocumentStore } from '@/core/stores/scene-document-store'
+import { getSelectedFurniture } from '@/core/operations/selected-furniture'
 import {
-  useSceneDocumentStore,
-  selectSelectedFurniture,
-} from '@/core/stores/scene-document-store'
-import {
-  selectionFocusActions,
-  useSelectionFocusStore,
-} from '@/core/stores/selection-focus-store'
+  selectionActions,
+  useSelectionStore,
+} from '@/core/stores/selection-store'
 import { subscribeToBlockingOverlay } from '@/core/stores/dialog-store'
 import { createReconciler } from '@/core/operations/reconciler'
 
@@ -16,10 +14,10 @@ import { createReconciler } from '@/core/operations/reconciler'
  */
 export function requestOutlinerFocus() {
   const state = useSceneDocumentStore.getState()
-  const selectedFurniture = selectSelectedFurniture(state)
+  const selectedFurniture = getSelectedFurniture()
 
   if (selectedFurniture !== null) {
-    selectionFocusActions.requestOutlinerFocus({
+    selectionActions.requestOutlinerFocus({
       token: Date.now(),
       targetSelectedId: selectedFurniture.id,
     })
@@ -27,14 +25,14 @@ export function requestOutlinerFocus() {
   }
 
   if (state.history.present.length > 0) {
-    selectionFocusActions.requestOutlinerFocus({
+    selectionActions.requestOutlinerFocus({
       token: Date.now(),
       preferredIndex: 0,
     })
     return
   }
 
-  selectionFocusActions.requestOutlinerFocus({
+  selectionActions.requestOutlinerFocus({
     token: Date.now(),
     focusContainer: true,
   })
@@ -51,10 +49,10 @@ export const startOutlinerFocusReconciler = createReconciler(() => [
       return
     }
 
-    if (useSelectionFocusStore.getState().outlinerFocusRequest === null) {
+    if (useSelectionStore.getState().outlinerFocusRequest === null) {
       return
     }
 
-    selectionFocusActions.clearOutlinerFocusRequest()
+    selectionActions.clearOutlinerFocusRequest()
   }),
 ])

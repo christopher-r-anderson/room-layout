@@ -45,15 +45,15 @@ msgstr "{movedItemName} moved to X {x} and Z {z}."
 msgid "{rotatingName} rotated."
 msgstr "{rotatingName} rotated."
 
-#: src/core/operations/selection-effects.ts
+#: src/core/operations/selection-actions.ts
 msgid "{selectedName} added to room."
 msgstr "{selectedName} added to room."
 
-#: src/core/operations/selection-effects.ts
+#: src/core/operations/selection-actions.ts
 msgid "{selectedName} selected."
 msgstr "{selectedName} selected."
 
-#: src/core/operations/selection-effects.ts
+#: src/core/operations/selection-actions.ts
 msgid "{selectedName} selected. Press Shift+T to reach its actions."
 msgstr "{selectedName} selected. Press Shift+T to reach its actions."
 
@@ -660,7 +660,7 @@ msgstr "Selected item actions"
 msgid "Selection"
 msgstr "Selection"
 
-#: src/core/operations/selection-effects.ts
+#: src/core/operations/selection-actions.ts
 msgid "Selection cleared."
 msgstr "Selection cleared."
 

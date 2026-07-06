@@ -18,6 +18,10 @@ import {
   sceneDocumentActions,
   resetSceneDocumentStore,
 } from '@/core/stores/scene-document-store'
+import {
+  resetSelectionStore,
+  selectionActions,
+} from '@/core/stores/selection-store'
 import { SelectedDetailsPanel } from './selected-details-panel'
 import { FloatingSelectedItemSite } from './floating-selected-item-site'
 import { SelectedItemInteractionProvider } from './selected-item-interaction-provider'
@@ -29,9 +33,10 @@ beforeEach(() => {
   resetDialogStore()
   resetEditorLifecycleStore()
   resetSceneDocumentStore()
+  resetSelectionStore()
   editorLifecycleActions.markAssetsReady()
   sceneDocumentActions.setHistory(createHistoryState([FURNITURE_ITEM]))
-  sceneDocumentActions.setSelectedId(FURNITURE_ITEM.id)
+  selectionActions.setSelection(FURNITURE_ITEM.id, null)
 })
 
 describe('SelectedDetailsPanel', () => {

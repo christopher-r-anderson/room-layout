@@ -33,10 +33,9 @@ the generic bound hook. "Written by" names the only modules that should mutate
 a store.
 
 - **`scene-document-store`** — the app-facing scene **data model**: furniture
-  history (the undo/redo timeline), selection id, preview id, drag state,
-  finishes, the lighting mood id, and the floor-finish loading flag. Written by
-  scene (publishing committed results into the store directly) and by core
-  operations.
+  history (the undo/redo timeline), preview id, drag state, finishes, the
+  lighting mood id, and the floor-finish loading flag. Written by scene (the
+  drag's live-present writes) and by core operations.
   Ownership vs. the scene itself is the subject of
   [scene-and-core.md](scene-and-core.md).
 - **`editor-lifecycle-store`** — the single owner of the startup phase machine
@@ -49,10 +48,14 @@ a store.
 - **`assets-store`** — the startup-loaded catalog manifest (catalog,
   collections, environment config). Lets features read catalog/finishes through
   narrow hooks instead of threaded props. Written by the startup bootstrap.
-- **`selection-focus-store`** — selection provenance (`selectedSource`, read to
-  decide post-delete focus) plus focus-intent tokens (outliner and room-view
-  focus handoff). The selection _pointer_ lives in `scene-document-store`; this
-  is the view-side routing reconciled on top of it. Written by core operations.
+- **`selection-store`** — the selection session: the selected item pointer, its
+  provenance (`selectedSource`, read to decide post-delete focus), and the
+  focus-intent tokens (outliner and room-view focus handoff). The pointer and
+  its source are written atomically through `applySelection`
+  (`operations/selection-mutations`), the one write path every mutation that
+  moves the selection goes through. Session-scoped: never serialized, never in
+  the undo timeline (history mutations reconcile the pointer against restored
+  items). Written by core operations.
 - **`collection-loading-store`** — the three-free collection loading lifecycle,
   keyed by sourcePath: the gated set, download progress, on-demand wants, and
   loaded/failed outcomes with failure classification (`unavailable` vs
@@ -86,8 +89,8 @@ operation, never by importing a sibling feature.
 Standing reconcilers — store subscriptions that coordinate derived writes
 across stores — are built with `createReconciler` (which owns the idempotency
 guard and cleanup fan-in) and started together from `startEditorReconcilers`
-at app startup: selection effects, outliner focus, preview hygiene, collection
-loading, and draft persistence.
+at app startup: outliner focus, preview hygiene, collection loading, and draft
+persistence.
 
 - `history-actions`, `movement-actions`, `selection-actions` — undo/redo,
   move/rotate, selection; gated on startup readiness. They call the document
@@ -104,17 +107,12 @@ loading, and draft persistence.
   `notifyAssetError`, `requestAssetRetry`. Sources catalog/finishes from
   `assets-store`, drives `editor-lifecycle-store`. The React-coupled manifest
   fetch lives in the feature hook `use-startup-bootstrap`, keyed on `retryToken`.
-- `selection-effects` — pending selection/source/focus intent held in module
-  cells and reconciled via a `scene-document-store` subscription started once at
-  startup (`startSelectionEffectsReconciler`). Uses `queueMicrotask` to keep
-  note-before-reconcile ordering against synchronous `sceneCommands` writes.
-  `selectedSource` is written twice on purpose: eagerly by the selection ops for
-  an immediate value, then again by the reconciler once the scene-driven
-  `selectedId` settles. That double write is the deliberate cost of selection
-  identity living in `scene-document-store` while its provenance lives in
-  `selection-focus-store` — the scene drives the id asynchronously, so source can
-  only be applied as pending intent on top. No React surface. (The most intricate
-  operation — read it before changing it.)
+- `selection-actions` + `selection-mutations` — the selection surface. The
+  mutation writes the pointer + provenance atomically (and drops the hover
+  preview on change); the action layers on the readiness guard, the status
+  clear, and the screen-reader announcement (`announceSelectionChange`), all
+  synchronous with the write. `selected-furniture` joins the pointer with the
+  document items for consumers.
 
 Feature-internal orchestration (e.g. `features/selection/deletion-actions`,
 `features/catalog/catalog-actions`) stays in the owning feature and imports core
