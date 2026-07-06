@@ -95,7 +95,7 @@ audit state.
 | features/selection/toolbar-placement/selected-toolbar-placement.test.ts | keep    | Pure geometry with meaningful invariants; `toBeCloseTo` on intended output.                                                                                                         |
 | features/startup/catalog-manifest.test.ts                               | keep    | Well-structured; mocks only true boundaries. Expand: floor diffuse/normal invalid-path branch (source `:329-341`).                                                                  |
 | features/startup/start-over-actions.test.ts                             | keep    | Spies real collaborator boundaries; asserts open-guard + confirm sequence.                                                                                                          |
-| features/url-scene/use-draft-persistence.test.ts                        | keep    | Mocks the persistence boundary; drives real stores to assert save/clear gating.                                                                                                     |
+| core/operations/draft-persistence.test.ts                               | keep    | Mocks the persistence boundary; drives real stores to assert save/clear gating.                                                                                                     |
 
 ## scene
 

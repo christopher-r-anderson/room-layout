@@ -10,10 +10,11 @@ interface CollectionSceneRegistryState {
   loaded: Map<string, Object3D>
 }
 
-const useCollectionSceneRegistryStore =
-  create<CollectionSceneRegistryState>()(() => ({
+const useCollectionSceneRegistryStore = create<CollectionSceneRegistryState>()(
+  () => ({
     loaded: new Map<string, Object3D>(),
-  }))
+  }),
+)
 
 export function registerCollectionScene(path: string, scene: Object3D) {
   useCollectionSceneRegistryStore.setState((state) => {
