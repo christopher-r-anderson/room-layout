@@ -7,7 +7,7 @@
  */
 export {
   sceneDocumentActions,
-  sceneDocumentStore,
+  useSceneDocumentStore,
   useItems,
   useSelectedId,
 } from './stores/scene-document-store'

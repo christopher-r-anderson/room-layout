@@ -1,7 +1,4 @@
-import {
-  sceneDocumentStore,
-  useSceneDocumentStore,
-} from '@/core/stores/scene-document-store'
+import { useSceneDocumentStore } from '@/core/stores/scene-document-store'
 import {
   isBlockingOverlayOpen,
   useIsBlockingOverlayOpen,
@@ -62,7 +59,7 @@ export function usePreviewedId(): string | null {
 
 /** Non-reactive read of {@link usePreviewedId} for use outside React. */
 export function getPreviewedId(): string | null {
-  const state = sceneDocumentStore.getState()
+  const state = useSceneDocumentStore.getState()
 
   return derivePreviewedId(
     state.previewedIdRaw,

@@ -4,7 +4,7 @@ import { createHistoryState } from '@/shared/lib/ui/editor-history'
 import {
   resetSceneDocumentStore,
   sceneDocumentActions,
-  sceneDocumentStore,
+  useSceneDocumentStore,
 } from '@/core/stores/scene-document-store'
 import {
   editorLifecycleActions,
@@ -47,20 +47,20 @@ describe('startPreviewReconciler', () => {
 
   it('does not restore scene preview automatically after drag gate lifts', () => {
     previewFromScene('item-1')
-    expect(sceneDocumentStore.getState().previewedIdRaw).toBe('item-1')
+    expect(useSceneDocumentStore.getState().previewedIdRaw).toBe('item-1')
 
     sceneDocumentActions.setDragging(true)
-    expect(sceneDocumentStore.getState().previewedIdRaw).toBeNull()
+    expect(useSceneDocumentStore.getState().previewedIdRaw).toBeNull()
 
     sceneDocumentActions.setDragging(false)
-    expect(sceneDocumentStore.getState().previewedIdRaw).toBeNull()
+    expect(useSceneDocumentStore.getState().previewedIdRaw).toBeNull()
   })
 
   it('clears the preview when interactions become disabled', () => {
     previewFromScene('item-1')
-    expect(sceneDocumentStore.getState().previewedIdRaw).toBe('item-1')
+    expect(useSceneDocumentStore.getState().previewedIdRaw).toBe('item-1')
 
     editorLifecycleActions.beginAssetLoad()
-    expect(sceneDocumentStore.getState().previewedIdRaw).toBeNull()
+    expect(useSceneDocumentStore.getState().previewedIdRaw).toBeNull()
   })
 })

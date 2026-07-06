@@ -5,7 +5,7 @@ import type { EnvironmentMaterialConfig } from '@/domain/environment-materials'
 import { useAssetsStore, resetAssetsStore } from '@/core/stores/assets-store'
 import {
   resetSceneDocumentStore,
-  sceneDocumentStore,
+  useSceneDocumentStore,
 } from '@/core/stores/scene-document-store'
 import { getActiveFinishIds, useActiveFinishIds } from './active-finish-ids'
 
@@ -75,7 +75,11 @@ function seed(
   lightingMoodId = 'daylight',
 ) {
   useAssetsStore.setState({ environmentConfig: ENVIRONMENT })
-  sceneDocumentStore.setState({ floorFinishId, wallFinishId, lightingMoodId })
+  useSceneDocumentStore.setState({
+    floorFinishId,
+    wallFinishId,
+    lightingMoodId,
+  })
 }
 
 describe('active-finish-ids', () => {

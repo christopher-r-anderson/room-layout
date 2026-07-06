@@ -4,7 +4,7 @@ import type {
 } from '@/core/dialog-contract'
 import { dialogActions } from '@/core/stores/dialog-store'
 import { isEditorInteractive } from '@/core/stores/editor-lifecycle-store'
-import { sceneDocumentStore } from '@/core/stores/scene-document-store'
+import { useSceneDocumentStore } from '@/core/stores/scene-document-store'
 import { getSceneIsAtDefaults } from '@/core/operations/use-scene-is-at-defaults'
 import { headerMoreActionsDialogDefinition } from '@/app/chrome/top-header/header-more-actions-dialog-definition'
 import { catalogDialogDefinition } from '@/features/catalog/catalog-dialog-definition'
@@ -28,7 +28,7 @@ export const DIALOG_DEFINITIONS: DialogDefinition[] = [
 ]
 
 function getSelectedFurnitureFromState() {
-  const state = sceneDocumentStore.getState()
+  const state = useSceneDocumentStore.getState()
 
   if (state.selectedId === null) {
     return null

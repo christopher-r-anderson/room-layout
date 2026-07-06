@@ -1,5 +1,5 @@
 import {
-  sceneDocumentStore,
+  useSceneDocumentStore,
   selectSelectedFurniture,
 } from '@/core/stores/scene-document-store'
 import {
@@ -14,7 +14,7 @@ import { subscribeToBlockingOverlay } from '@/core/stores/dialog-store'
  * current state at call time, so it works as a plain action without a hook.
  */
 export function requestOutlinerFocus() {
-  const state = sceneDocumentStore.getState()
+  const state = useSceneDocumentStore.getState()
   const selectedFurniture = selectSelectedFurniture(state)
 
   if (selectedFurniture !== null) {

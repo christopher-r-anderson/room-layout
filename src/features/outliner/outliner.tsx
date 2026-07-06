@@ -34,10 +34,7 @@ import {
   selectionFocusActions,
   useOutlinerFocusRequest,
 } from '@/core/stores/selection-focus-store'
-import {
-  useItems,
-  useSceneDocumentStore,
-} from '@/core/stores/scene-document-store'
+import { useItems, useSelectedId } from '@/core/stores/scene-document-store'
 import { usePreviewedId } from '@/core/operations/previewed-id'
 import { useIsBlockingOverlayOpen } from '@/core/stores/dialog-store'
 import { Trans, useLingui } from '@lingui/react/macro'
@@ -57,7 +54,7 @@ export function Outliner({
 }) {
   const { t } = useLingui()
   const items = useItems()
-  const selectedId = useSceneDocumentStore((state) => state.selectedId)
+  const selectedId = useSelectedId()
   const isBlockingOverlayOpen = useIsBlockingOverlayOpen()
   const derivedFocusRequest = useOutlinerFocusRequest()
   const previewedId = usePreviewedId()

@@ -4,7 +4,7 @@ import { createHistoryState } from '@/shared/lib/ui/editor-history'
 import {
   resetSceneDocumentStore,
   sceneDocumentActions,
-  sceneDocumentStore,
+  useSceneDocumentStore,
 } from '@/core/stores/scene-document-store'
 import { feedbackActions, useFeedbackStore } from '@/core/stores/feedback-store'
 import {
@@ -61,7 +61,7 @@ describe('selection-actions', () => {
     // The scene selection-clear is a boundary delegation; the canvas-miss
     // preview clear is observable in the document store.
     expect(clearSelectionSpy).toHaveBeenCalled()
-    expect(sceneDocumentStore.getState().previewedIdRaw).toBeNull()
+    expect(useSceneDocumentStore.getState().previewedIdRaw).toBeNull()
   })
 
   it('skips scene commands when the scene is not ready', () => {

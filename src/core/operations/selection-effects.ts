@@ -7,7 +7,7 @@ import {
   selectionFocusActions,
   useSelectionFocusStore,
 } from '../stores/selection-focus-store'
-import { sceneDocumentStore } from '../stores/scene-document-store'
+import { useSceneDocumentStore } from '../stores/scene-document-store'
 import type { InteractionSource } from '../types/interaction.types'
 import type {
   PendingSelectionChangeBehavior,
@@ -27,10 +27,10 @@ let pendingDeleteFocusTarget: 'room-view' | 'outliner' | null = null
 // against. They live at module scope so reconciliation can run fully outside
 // React.
 let previousItems: FurnitureItem[] =
-  sceneDocumentStore.getState().history.present
+  useSceneDocumentStore.getState().history.present
 let previousReconciledSelectedId: string | null = null
 let previousSideEffectSelectedId: string | null =
-  sceneDocumentStore.getState().selectedId
+  useSceneDocumentStore.getState().selectedId
 
 function announceSelectionChange(options: {
   announceMode: SelectionAnnouncementMode
@@ -126,7 +126,7 @@ export function resetSelectionEffects() {
 }
 
 function syncReconcilerTrackers() {
-  const state = sceneDocumentStore.getState()
+  const state = useSceneDocumentStore.getState()
   previousItems = state.history.present
   previousReconciledSelectedId = null
   previousSideEffectSelectedId = state.selectedId
@@ -137,7 +137,7 @@ function syncReconcilerTrackers() {
 // to run; reads pending intent recorded via `selectionEffects` and the live
 // outliner-focus request, then advances the trackers.
 function reconcileSelectionEffects() {
-  const state = sceneDocumentStore.getState()
+  const state = useSceneDocumentStore.getState()
   const items = state.history.present
   const selectedId = state.selectedId
   const itemsChanged = items !== previousItems
@@ -245,7 +245,7 @@ export function startSelectionEffectsReconciler(): () => void {
 
   syncReconcilerTrackers()
 
-  const unsubscribe = sceneDocumentStore.subscribe(
+  const unsubscribe = useSceneDocumentStore.subscribe(
     (state) => ({
       items: state.history.present,
       selectedId: state.selectedId,

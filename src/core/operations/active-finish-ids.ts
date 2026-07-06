@@ -15,7 +15,7 @@ import {
   useEnvironmentConfig,
 } from '@/core/stores/assets-store'
 import {
-  sceneDocumentStore,
+  useSceneDocumentStore,
   useFloorFinishId,
   useLightingMoodId,
   useWallFinishId,
@@ -88,7 +88,7 @@ export function useActiveFinishIds(): ActiveFinishIds {
 /** Non-reactive read of {@link useActiveFinishIds} for use outside React. */
 export function getActiveFinishIds(): ActiveFinishIds {
   const { floorFinishId, wallFinishId, lightingMoodId } =
-    sceneDocumentStore.getState()
+    useSceneDocumentStore.getState()
 
   return deriveActiveFinishIds(
     useAssetsStore.getState().environmentConfig,

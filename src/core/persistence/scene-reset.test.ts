@@ -6,7 +6,7 @@ import { assetsActions, resetAssetsStore } from '@/core/stores/assets-store'
 import {
   resetSceneDocumentStore,
   sceneDocumentActions,
-  sceneDocumentStore,
+  useSceneDocumentStore,
 } from '@/core/stores/scene-document-store'
 import { sceneCommands } from '@/scene/scene-commands'
 import { selectionEffects } from '@/core/operations/selection-effects'
@@ -59,9 +59,9 @@ describe('resetSceneToDefaults', () => {
 
     resetSceneToDefaults()
 
-    expect(sceneDocumentStore.getState().floorFinishId).toBe('oak-floor')
-    expect(sceneDocumentStore.getState().wallFinishId).toBe('white-wall')
-    expect(sceneDocumentStore.getState().lightingMoodId).toBe('daylight')
+    expect(useSceneDocumentStore.getState().floorFinishId).toBe('oak-floor')
+    expect(useSceneDocumentStore.getState().wallFinishId).toBe('white-wall')
+    expect(useSceneDocumentStore.getState().lightingMoodId).toBe('daylight')
   })
 
   it('falls back to empty finish ids when no environment is loaded', () => {
@@ -71,9 +71,9 @@ describe('resetSceneToDefaults', () => {
 
     resetSceneToDefaults()
 
-    expect(sceneDocumentStore.getState().floorFinishId).toBe('')
-    expect(sceneDocumentStore.getState().wallFinishId).toBe('')
-    expect(sceneDocumentStore.getState().lightingMoodId).toBe('')
+    expect(useSceneDocumentStore.getState().floorFinishId).toBe('')
+    expect(useSceneDocumentStore.getState().wallFinishId).toBe('')
+    expect(useSceneDocumentStore.getState().lightingMoodId).toBe('')
   })
 
   it('clears the layout and the persisted draft', () => {

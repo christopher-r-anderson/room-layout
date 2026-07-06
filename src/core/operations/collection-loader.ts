@@ -7,7 +7,7 @@ import {
   isCollectionLoaded,
 } from '../stores/collection-loading-store'
 import { useEditorLifecycleStore } from '../stores/editor-lifecycle-store'
-import { sceneDocumentStore } from '../stores/scene-document-store'
+import { useSceneDocumentStore } from '../stores/scene-document-store'
 import {
   fetchCollectionBytes,
   releaseCollectionBytes,
@@ -84,7 +84,7 @@ export async function loadCollection(path: string): Promise<void> {
 function resolvePendingCollectionPaths(): string[] {
   const { gated, wanted, loaded, failed } = useCollectionLoadingStore.getState()
   const paths = new Set<string>(gated ?? [])
-  for (const item of sceneDocumentStore.getState().history.present) {
+  for (const item of useSceneDocumentStore.getState().history.present) {
     paths.add(item.sourcePath)
   }
   for (const path of wanted) {
@@ -121,7 +121,7 @@ export function startCollectionLoadReconciler(): () => void {
       kickPendingCollectionLoads,
       { equalityFn: shallow },
     ),
-    sceneDocumentStore.subscribe(
+    useSceneDocumentStore.subscribe(
       (state) => state.history.present,
       kickPendingCollectionLoads,
     ),

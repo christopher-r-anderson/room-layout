@@ -3,7 +3,7 @@ import { resolvePositionFromWallClearances } from '@/domain/geometry/wall-cleara
 import { i18n } from '@/shared/i18n/i18n'
 import { feedbackActions } from '@/core/stores/feedback-store'
 import {
-  sceneDocumentStore,
+  useSceneDocumentStore,
   selectSelectedFurniture,
 } from '@/core/stores/scene-document-store'
 import { selectionFocusActions } from '@/core/stores/selection-focus-store'
@@ -26,7 +26,7 @@ export function updateSelectedItemDetails(
   feedbackActions.clearStatusMessage()
 
   const selectedFurniture = selectSelectedFurniture(
-    sceneDocumentStore.getState(),
+    useSceneDocumentStore.getState(),
   )
 
   if (!selectedFurniture || !sceneCommands.isSceneReady()) {

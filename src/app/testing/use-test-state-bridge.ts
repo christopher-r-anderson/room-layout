@@ -4,7 +4,7 @@ import {
   isEditorInteractive,
   type RestoreOutcome,
 } from '@/core/stores/editor-lifecycle-store'
-import { sceneDocumentStore } from '@/core/stores/scene-document-store'
+import { useSceneDocumentStore } from '@/core/stores/scene-document-store'
 import { getPreviewedId } from '@/core/operations/previewed-id'
 import { getActiveFinishIds } from '@/core/operations/active-finish-ids'
 import { sceneCommands } from '@/scene/scene-commands'
@@ -65,7 +65,7 @@ export function useTestStateBridge({
 
     window.__ROOM_LAYOUT_TEST__ = {
       getState: () => {
-        const storeState = sceneDocumentStore.getState()
+        const storeState = useSceneDocumentStore.getState()
         const snapshotItems = sceneCommands.getSnapshot()?.items ?? []
         const pointerTargetsById = new Map(
           snapshotItems.map((item) => [item.id, item.pointerTarget] as const),

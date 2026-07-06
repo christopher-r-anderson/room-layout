@@ -4,7 +4,7 @@ import { createHistoryState } from '@/shared/lib/ui/editor-history'
 import {
   resetSceneDocumentStore,
   sceneDocumentActions,
-  sceneDocumentStore,
+  useSceneDocumentStore,
 } from '@/core/stores/scene-document-store'
 import {
   clearPreviewOnCanvasMiss,
@@ -27,7 +27,7 @@ const makeItem = (id: string) => ({
   rotationY: 0,
 })
 
-const previewedIdRaw = () => sceneDocumentStore.getState().previewedIdRaw
+const previewedIdRaw = () => useSceneDocumentStore.getState().previewedIdRaw
 
 beforeEach(() => {
   resetSceneDocumentStore()

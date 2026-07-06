@@ -10,7 +10,7 @@ import {
   useEnvironmentConfig,
 } from '@/core/stores/assets-store'
 import {
-  sceneDocumentStore,
+  useSceneDocumentStore,
   useFloorFinishId,
   useItems,
   useLightingMoodId,
@@ -76,7 +76,7 @@ export function useSceneIsAtDefaults(): boolean {
 export function getSceneIsAtDefaults(): boolean {
   const { environmentConfig } = useAssetsStore.getState()
   const { history, floorFinishId, wallFinishId, lightingMoodId } =
-    sceneDocumentStore.getState()
+    useSceneDocumentStore.getState()
 
   return computeSceneIsAtDefaults(
     environmentConfig,

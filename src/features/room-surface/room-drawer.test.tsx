@@ -15,7 +15,7 @@ import { assetsActions, resetAssetsStore } from '@/core/stores/assets-store'
 import {
   resetSceneDocumentStore,
   sceneDocumentActions,
-  sceneDocumentStore,
+  useSceneDocumentStore,
 } from '@/core/stores/scene-document-store'
 import { createEnvironmentConfig } from './test-fixtures'
 
@@ -141,7 +141,9 @@ describe('RoomDrawer', () => {
     fireEvent.click(screen.getByRole('tab', { name: 'Walls' }))
     fireEvent.click(screen.getByRole('radio', { name: 'Warm White' }))
 
-    expect(sceneDocumentStore.getState().floorFinishId).toBe('concrete-floor')
-    expect(sceneDocumentStore.getState().wallFinishId).toBe('warm-white')
+    expect(useSceneDocumentStore.getState().floorFinishId).toBe(
+      'concrete-floor',
+    )
+    expect(useSceneDocumentStore.getState().wallFinishId).toBe('warm-white')
   })
 })

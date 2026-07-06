@@ -1,4 +1,4 @@
-import { sceneDocumentStore } from '@/core/stores/scene-document-store'
+import { useSceneDocumentStore } from '@/core/stores/scene-document-store'
 import {
   isBlockingOverlayOpen,
   subscribeToBlockingOverlay,
@@ -19,7 +19,7 @@ import {
  * nothing stale flashes back when the gate lifts.
  */
 function reconcilePreview() {
-  const isDragging = sceneDocumentStore.getState().isDragging
+  const isDragging = useSceneDocumentStore.getState().isDragging
 
   if (!isDragging && !isBlockingOverlayOpen() && isEditorInteractive()) {
     return
@@ -41,7 +41,10 @@ export function startPreviewReconciler(): () => void {
   }
 
   const unsubscribes = [
-    sceneDocumentStore.subscribe((state) => state.isDragging, reconcilePreview),
+    useSceneDocumentStore.subscribe(
+      (state) => state.isDragging,
+      reconcilePreview,
+    ),
     subscribeToBlockingOverlay(reconcilePreview),
     useEditorLifecycleStore.subscribe(
       (state) => state.startupPhase === 'ready',
