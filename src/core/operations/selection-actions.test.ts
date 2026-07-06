@@ -63,13 +63,22 @@ describe('selection-actions', () => {
 
   it('clearCanvasSelection clears the selection and the canvas-miss preview together', () => {
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
+    const clearStatusMessage = vi.spyOn(feedbackActions, 'clearStatusMessage')
     sceneDocumentActions.setPreviewedId('chair-1')
+    feedbackActions.setStatusMessage('Movement blocked.')
 
     clearCanvasSelection()
 
-    // The document selection-clear is a mutation delegation; the canvas-miss
-    // preview clear is observable in the document store.
+    // The Escape/canvas-miss path must run the full clearSelection wrapper:
+    // the document selection-clear, the pending-selection note, and the
+    // status-message clear, plus the canvas-miss preview clear.
     expect(clearDocumentSelection).toHaveBeenCalled()
+    expect(selectionEffects.notePendingSelection).toHaveBeenCalledWith({
+      announceMode: 'default',
+      requestOutlinerFocus: false,
+    })
+    expect(clearStatusMessage).toHaveBeenCalled()
+    expect(feedbackStoreForTests.getState().statusMessage).toBeNull()
     expect(useSceneDocumentStore.getState().previewedIdRaw).toBeNull()
   })
 

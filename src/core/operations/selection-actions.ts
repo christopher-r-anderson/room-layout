@@ -92,6 +92,6 @@ export function clearSelection() {
  * command and a canvas pointer-miss so both paths behave identically.
  */
 export function clearCanvasSelection() {
-  clearDocumentSelection()
+  clearSelection()
   clearPreviewOnCanvasMiss()
 }
