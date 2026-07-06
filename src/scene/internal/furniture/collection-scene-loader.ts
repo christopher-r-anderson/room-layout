@@ -35,19 +35,30 @@ export function createCollectionSceneLoader({
   const loader = new GLTFLoader()
   configureGltfKtx2(loader, renderer)
 
+  // Indexed once per loader: which catalog entries each sourcePath must satisfy.
+  const sourcePathByCollectionId = new Map(
+    collections.map((collection) => [collection.id, collection.sourcePath]),
+  )
+  const entriesBySourcePath = new Map<string, FurnitureCatalogEntry[]>()
+  for (const entry of catalog) {
+    const sourcePath = sourcePathByCollectionId.get(entry.collectionId)
+    if (sourcePath === undefined) {
+      continue
+    }
+    const entries = entriesBySourcePath.get(sourcePath)
+    if (entries) {
+      entries.push(entry)
+    } else {
+      entriesBySourcePath.set(sourcePath, [entry])
+    }
+  }
+
   return async (path: string, bytes: ArrayBuffer) => {
     const gltf = await loader.parseAsync(bytes, resourceBasePath(path))
 
-    const collection = collections.find(
-      (candidate) => candidate.sourcePath === path,
-    )
-    if (collection) {
-      validateCatalogAssetNodes({
-        entries: catalog.filter(
-          (entry) => entry.collectionId === collection.id,
-        ),
-        sourceScene: gltf.scene,
-      })
+    const entries = entriesBySourcePath.get(path)
+    if (entries) {
+      validateCatalogAssetNodes({ entries, sourceScene: gltf.scene })
     }
 
     registerCollectionScene(path, gltf.scene)
