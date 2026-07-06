@@ -86,8 +86,12 @@ Compression recipe (structure-preserving — no flatten/join, so the catalog's
 At runtime the furniture loader and the floor textures share one KTX2 loader
 (`scene/internal/three/ktx2-loader.ts`) — a single Basis-transcoder worker pool.
 `KTX2Loader` resolves the transcoder from three's own bundled copy (via
-`import.meta.url`), which the bundler emits as a hashed asset. The Blender helpers
-(export / introspect / relink) live in `scripts/blender/`.
+`import.meta.url`), which the bundler emits as hashed assets. There is **no
+manual transcoder-hosting step** — no `setTranscoderPath`, no copying transcoder
+files into `public/` — which older three versions (and most KTX2 write-ups)
+require; the emitted `basis_transcoder` js/wasm pair is budget-gated like any
+other chunk. The Blender helpers (export / introspect / relink) live in
+`scripts/blender/`.
 
 ## Catalog Preview Thumbnails
 
