@@ -1,5 +1,4 @@
-import { useStoreWithEqualityFn } from 'zustand/traditional'
-import { createStore } from 'zustand/vanilla'
+import { create } from 'zustand'
 import type { Object3D } from 'three'
 
 // Reactive registry of parsed furniture-collection scene roots, keyed by
@@ -11,13 +10,13 @@ interface CollectionSceneRegistryState {
   loaded: Map<string, Object3D>
 }
 
-const collectionSceneRegistryStore =
-  createStore<CollectionSceneRegistryState>()(() => ({
+const useCollectionSceneRegistryStore =
+  create<CollectionSceneRegistryState>()(() => ({
     loaded: new Map<string, Object3D>(),
   }))
 
 export function registerCollectionScene(path: string, scene: Object3D) {
-  collectionSceneRegistryStore.setState((state) => {
+  useCollectionSceneRegistryStore.setState((state) => {
     if (state.loaded.get(path) === scene) {
       return state
     }
@@ -28,18 +27,17 @@ export function registerCollectionScene(path: string, scene: Object3D) {
 }
 
 export function getLoadedCollectionScenes(): Map<string, Object3D> {
-  return collectionSceneRegistryStore.getState().loaded
+  return useCollectionSceneRegistryStore.getState().loaded
 }
 
 export function useLoadedCollectionScenes(): Map<string, Object3D> {
-  return useStoreWithEqualityFn(
-    collectionSceneRegistryStore,
-    (state) => state.loaded,
-  )
+  return useCollectionSceneRegistryStore((state) => state.loaded)
 }
 
 // Drops every parsed scene. Called on the retry teardown (before the scene epoch
 // remounts) so a fresh cycle re-parses from the re-downloaded bytes.
 export function resetCollectionSceneRegistry() {
-  collectionSceneRegistryStore.setState({ loaded: new Map<string, Object3D>() })
+  useCollectionSceneRegistryStore.setState({
+    loaded: new Map<string, Object3D>(),
+  })
 }
