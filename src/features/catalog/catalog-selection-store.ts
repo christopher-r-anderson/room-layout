@@ -1,6 +1,5 @@
-import { useStoreWithEqualityFn } from 'zustand/traditional'
-import { subscribeWithSelector } from 'zustand/middleware'
-import { createStore } from 'zustand/vanilla'
+import { create } from 'zustand'
+import type { FurnitureCatalogEntry } from '@/domain/catalog'
 import { useAssetsStore, useCatalogEntries } from '@/core/stores/assets-store'
 
 // Catalog-only UI state: which catalog entry the Add Furniture drawer will place.
@@ -8,28 +7,21 @@ import { useAssetsStore, useCatalogEntries } from '@/core/stores/assets-store'
 // can read the active id synchronously.
 interface CatalogSelectionStoreState {
   selectedCatalogId: string
-  setSelectedCatalogId: (catalogId: string) => void
-  reset: () => void
 }
 
-const catalogSelectionStore = createStore<CatalogSelectionStoreState>()(
-  subscribeWithSelector((set) => ({
-    selectedCatalogId: '',
-    setSelectedCatalogId: (catalogId) => {
-      set({ selectedCatalogId: catalogId })
-    },
-    reset: () => {
-      set({ selectedCatalogId: '' })
-    },
-  })),
-)
+const useCatalogSelectionStore = create<CatalogSelectionStoreState>()(() => ({
+  selectedCatalogId: '',
+}))
 
 export const catalogSelectionActions = {
-  setSelectedCatalogId: (catalogId: string) => {
-    catalogSelectionStore.getState().setSelectedCatalogId(catalogId)
+  setSelectedCatalogId(catalogId: string) {
+    useCatalogSelectionStore.setState({ selectedCatalogId: catalogId })
   },
-  reset: () => {
-    catalogSelectionStore.getState().reset()
+  reset() {
+    useCatalogSelectionStore.setState(
+      useCatalogSelectionStore.getInitialState(),
+      true,
+    )
   },
 }
 
@@ -39,7 +31,7 @@ export function resetCatalogSelectionStore() {
 
 function resolveActiveCatalogId(
   selectedCatalogId: string,
-  catalog: ReturnType<typeof useAssetsStore.getState>['catalog'],
+  catalog: FurnitureCatalogEntry[],
 ): string {
   if (
     selectedCatalogId &&
@@ -58,14 +50,13 @@ function resolveActiveCatalogId(
 // stored selection when still valid, otherwise empty (nothing selected).
 export function getActiveCatalogId(): string {
   return resolveActiveCatalogId(
-    catalogSelectionStore.getState().selectedCatalogId,
+    useCatalogSelectionStore.getState().selectedCatalogId,
     useAssetsStore.getState().catalog,
   )
 }
 
 export function useActiveCatalogId(): string {
-  const selectedCatalogId = useStoreWithEqualityFn(
-    catalogSelectionStore,
+  const selectedCatalogId = useCatalogSelectionStore(
     (state) => state.selectedCatalogId,
   )
   const catalog = useCatalogEntries()
