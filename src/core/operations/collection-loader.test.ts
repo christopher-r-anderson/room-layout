@@ -4,7 +4,7 @@ import {
   collectionLoadingActions,
   getCollectionFailureKind,
   isCollectionLoaded,
-  resetCollectionLoading,
+  resetCollectionLoadingStore,
 } from '../stores/collection-loading-store'
 import {
   editorLifecycleActions,
@@ -58,7 +58,7 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.clearAllMocks()
-  resetCollectionLoading()
+  resetCollectionLoadingStore()
   resetEditorLifecycleStore()
   resetSceneDocumentStore()
   vi.restoreAllMocks()
@@ -173,7 +173,7 @@ describe('ensureCollectionLoaded', () => {
     fetchCollectionBytesMock.mockReturnValue(bytes.promise)
 
     const pending = ensureCollectionLoaded('/models/slow.glb')
-    resetCollectionLoading()
+    resetCollectionLoadingStore()
 
     await expect(pending).rejects.toThrow(/load was reset/)
   })

@@ -2,7 +2,7 @@ import { shallow } from 'zustand/shallow'
 import { sceneCommands } from '@/scene/scene-commands'
 import {
   collectionLoadingActions,
-  collectionLoadingStore,
+  useCollectionLoadingStore,
   isCollectionFailed,
   isCollectionLoaded,
 } from '../stores/collection-loading-store'
@@ -82,7 +82,7 @@ export async function loadCollection(path: string): Promise<void> {
 // Every collection that should be loaded now - the gated set plus the ones
 // referenced by current items plus explicit requests - minus settled outcomes.
 function resolvePendingCollectionPaths(): string[] {
-  const { gated, wanted, loaded, failed } = collectionLoadingStore.getState()
+  const { gated, wanted, loaded, failed } = useCollectionLoadingStore.getState()
   const paths = new Set<string>(gated ?? [])
   for (const item of sceneDocumentStore.getState().history.present) {
     paths.add(item.sourcePath)
@@ -116,7 +116,7 @@ export function startCollectionLoadReconciler(): () => void {
     ),
     // Only the fields that decide which paths are pending - not progressByPath,
     // whose per-chunk updates would otherwise kick on every streamed chunk.
-    collectionLoadingStore.subscribe(
+    useCollectionLoadingStore.subscribe(
       (state) => [state.gated, state.wanted, state.loaded, state.failed],
       kickPendingCollectionLoads,
       { equalityFn: shallow },
@@ -168,7 +168,7 @@ export function ensureCollectionLoaded(path: string): Promise<void> {
     const rejectFailed = () => {
       reject(new Error(`furniture collection failed to load: ${path}`))
     }
-    const unsubscribe = collectionLoadingStore.subscribe(
+    const unsubscribe = useCollectionLoadingStore.subscribe(
       (state) => ({
         loaded: state.loaded.has(path),
         failed: state.failed.has(path),

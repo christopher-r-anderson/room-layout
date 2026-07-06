@@ -6,14 +6,14 @@ import {
   collectionLoadingActions,
   getCollectionFailureKind,
   isCollectionLoaded,
-  resetCollectionLoading,
+  resetCollectionLoadingStore,
   useGatedCollectionPaths,
   useGatedCollectionsResolved,
   useGatedLoadProgress,
 } from './collection-loading-store'
 
 afterEach(() => {
-  resetCollectionLoading()
+  resetCollectionLoadingStore()
 })
 
 describe('collection-loading-store', () => {
@@ -125,7 +125,7 @@ describe('collection-loading-store', () => {
   it('reset returns the gated set to unresolved so a retry cannot read a stale gate', () => {
     collectionLoadingActions.setGatedCollectionPaths(['/models/a.glb'])
 
-    resetCollectionLoading()
+    resetCollectionLoadingStore()
 
     expect(renderHook(() => useGatedCollectionsResolved()).result.current).toBe(
       false,
@@ -137,7 +137,7 @@ describe('collection-loading-store', () => {
     collectionLoadingActions.requestCollection('/models/c.glb')
     collectionLoadingActions.markFailed('/models/c.glb', new Error('offline'))
 
-    resetCollectionLoading()
+    resetCollectionLoadingStore()
 
     expect(getCollectionFailureKind('/models/c.glb')).toBeNull()
   })

@@ -7,7 +7,7 @@ import {
 } from '@/core/operations/startup-coordinator'
 import {
   collectionLoadingActions,
-  resetCollectionLoading,
+  resetCollectionLoadingStore,
 } from '@/core/stores/collection-loading-store'
 import {
   editorLifecycleActions,
@@ -23,7 +23,7 @@ vi.mock('@/core/operations/startup-coordinator', () => ({
 
 beforeEach(() => {
   resetEditorLifecycleStore()
-  resetCollectionLoading()
+  resetCollectionLoadingStore()
 })
 
 afterEach(() => {
@@ -131,7 +131,7 @@ describe('useStartupReadiness', () => {
     // re-arms once bootstrap re-resolves it.
     act(() => {
       editorLifecycleActions.requestRetry()
-      resetCollectionLoading()
+      resetCollectionLoadingStore()
     })
     expect(completeAssetLoad).toHaveBeenCalledTimes(1)
 

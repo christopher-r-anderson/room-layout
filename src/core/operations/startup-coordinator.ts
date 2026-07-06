@@ -5,7 +5,7 @@ import { isSceneStateAtDefaults } from '@/core/model/scene-model'
 import { i18n } from '@/shared/i18n/i18n'
 import { sceneCommands, clearSceneServices } from '@/scene/scene-commands'
 import { resetCollectionSceneRegistry } from '@/scene/collection-registry'
-import { resetCollectionLoading } from '@/core/stores/collection-loading-store'
+import { resetCollectionLoadingStore } from '@/core/stores/collection-loading-store'
 import { clearCollectionBytes } from './collection-bytes'
 import { feedbackActions } from '../stores/feedback-store'
 import { dialogActions } from '../stores/dialog-store'
@@ -235,7 +235,7 @@ export function requestAssetRetry() {
   // via the epoch), not on the error path: a gated failure's `failed` mark must
   // survive so the loader does not immediately re-attempt and loop. Clears the core
   // loading lifecycle and the scene's parsed-collection registry together.
-  resetCollectionLoading()
+  resetCollectionLoadingStore()
   resetCollectionSceneRegistry()
   clearCollectionBytes()
 
