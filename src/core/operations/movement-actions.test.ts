@@ -13,7 +13,19 @@ import { sceneCommands } from '@/core/scene-commands'
 import { feedbackActions } from '@/core/stores/feedback-store'
 import { toolbarInteractionActions } from '@/core/stores/toolbar-interaction-store'
 import { CHAIR } from '@/test/support/furniture'
+import {
+  moveSelection as moveDocumentSelection,
+  rotateSelection as rotateDocumentSelection,
+} from './furniture-mutations'
 import { moveSelection, rotateSelection } from './movement-actions'
+
+vi.mock('./furniture-mutations', () => ({
+  addFurniture: vi.fn(),
+  deleteSelection: vi.fn(),
+  moveSelection: vi.fn(),
+  rotateSelection: vi.fn(),
+  setSelectionTransform: vi.fn(),
+}))
 
 vi.mock('@/core/stores/feedback-store', () => ({
   feedbackActions: {
@@ -41,14 +53,12 @@ describe('movement-actions', () => {
     vi.clearAllMocks()
   })
 
-  it('does not invoke scene movement commands while the scene is not ready', () => {
+  it('does not invoke document movement mutations while the scene is not ready', () => {
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(false)
-    const moveSelectionSpy = vi
-      .spyOn(sceneCommands, 'moveSelection')
-      .mockReturnValue({ ok: true, position: [1, 0, 0] })
-    const rotateSelectionSpy = vi
-      .spyOn(sceneCommands, 'rotateSelection')
-      .mockImplementation(() => undefined)
+    vi.mocked(moveDocumentSelection).mockReturnValue({
+      ok: true,
+      position: [1, 0, 0],
+    })
 
     expect(moveSelection({ x: 1, z: 0 })).toEqual({
       ok: false,
@@ -56,18 +66,16 @@ describe('movement-actions', () => {
     })
     rotateSelection(1)
 
-    expect(moveSelectionSpy).not.toHaveBeenCalled()
-    expect(rotateSelectionSpy).not.toHaveBeenCalled()
+    expect(moveDocumentSelection).not.toHaveBeenCalled()
+    expect(rotateDocumentSelection).not.toHaveBeenCalled()
   })
 
-  it('forwards enabled move and rotate commands to the scene', () => {
+  it('forwards enabled move and rotate commands to the document mutations', () => {
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
-    const moveSelectionSpy = vi
-      .spyOn(sceneCommands, 'moveSelection')
-      .mockReturnValue({ ok: true, position: [1, 0, 0] })
-    const rotateSelectionSpy = vi
-      .spyOn(sceneCommands, 'rotateSelection')
-      .mockImplementation(() => undefined)
+    vi.mocked(moveDocumentSelection).mockReturnValue({
+      ok: true,
+      position: [1, 0, 0],
+    })
 
     expect(moveSelection({ x: 1, z: 0 }, { source: 'keyboard' })).toEqual({
       ok: true,
@@ -75,16 +83,16 @@ describe('movement-actions', () => {
     })
     rotateSelection(1)
 
-    expect(moveSelectionSpy).toHaveBeenCalledWith(
+    expect(moveDocumentSelection).toHaveBeenCalledWith(
       { x: 1, z: 0 },
       { source: 'keyboard' },
     )
-    expect(rotateSelectionSpy).toHaveBeenCalledWith(Math.PI / 12)
+    expect(rotateDocumentSelection).toHaveBeenCalledWith(Math.PI / 12)
   })
 
   it('announces the moved item and its new position on success', () => {
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
-    vi.spyOn(sceneCommands, 'moveSelection').mockReturnValue({
+    vi.mocked(moveDocumentSelection).mockReturnValue({
       ok: true,
       position: [1.2, 0, -3.4],
     })
@@ -98,7 +106,7 @@ describe('movement-actions', () => {
 
   it('announces the reason when a move is blocked', () => {
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
-    vi.spyOn(sceneCommands, 'moveSelection').mockReturnValue({
+    vi.mocked(moveDocumentSelection).mockReturnValue({
       ok: false,
       reason: 'blocked-bounds',
     })
@@ -112,7 +120,7 @@ describe('movement-actions', () => {
 
   it('stays silent on a no-op move', () => {
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
-    vi.spyOn(sceneCommands, 'moveSelection').mockReturnValue({
+    vi.mocked(moveDocumentSelection).mockReturnValue({
       ok: false,
       reason: 'no-op',
     })
@@ -124,9 +132,6 @@ describe('movement-actions', () => {
 
   it('announces a successful rotation', () => {
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
-    vi.spyOn(sceneCommands, 'rotateSelection').mockImplementation(
-      () => undefined,
-    )
 
     rotateSelection(1)
 
@@ -137,9 +142,6 @@ describe('movement-actions', () => {
 
   it('arms the toolbar pin grace on a real rotation', () => {
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
-    vi.spyOn(sceneCommands, 'rotateSelection').mockImplementation(
-      () => undefined,
-    )
     const reportRotationSpy = vi.spyOn(
       toolbarInteractionActions,
       'reportRotation',
@@ -153,9 +155,6 @@ describe('movement-actions', () => {
   it('does not arm the toolbar pin grace when nothing is selected', () => {
     sceneDocumentActions.setSelectedId(null)
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
-    vi.spyOn(sceneCommands, 'rotateSelection').mockImplementation(
-      () => undefined,
-    )
     const reportRotationSpy = vi.spyOn(
       toolbarInteractionActions,
       'reportRotation',

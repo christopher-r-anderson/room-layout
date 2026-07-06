@@ -48,9 +48,6 @@ vi.mock('./collection-loader', () => ({
 
 vi.mock('@/core/scene-commands', () => ({
   clearSceneServices: vi.fn(),
-  sceneCommands: {
-    restoreInitialLayout: vi.fn(),
-  },
 }))
 
 vi.mock('sonner', () => ({

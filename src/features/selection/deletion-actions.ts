@@ -10,6 +10,7 @@ import {
 } from '@/core/stores/selection-focus-store'
 import { selectionEffects } from '@/core/operations/selection-effects'
 import { sceneCommands } from '@/core/scene-commands'
+import { deleteSelection } from '@/core/operations/furniture-mutations'
 import { DELETE_SELECTION_MISSING_MESSAGE } from '@/shared/messages/command-messages'
 import { DELETE_DIALOG_ID } from './delete-dialog-definition'
 
@@ -33,7 +34,7 @@ export function confirmDeleteSelection(
     return
   }
 
-  const deleted = sceneCommands.deleteSelection()
+  const deleted = deleteSelection()
 
   if (!deleted) {
     feedbackActions.setStatusMessage(i18n._(DELETE_SELECTION_MISSING_MESSAGE))

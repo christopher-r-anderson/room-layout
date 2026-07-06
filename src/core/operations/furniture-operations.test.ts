@@ -4,6 +4,7 @@ import {
   type HistoryState,
 } from '@/shared/lib/ui/editor-history'
 import type { FurnitureItem } from '@/domain/furniture'
+import type { CollectionNodeDefaults } from '@/core/stores/collection-scene-registry'
 import {
   addFurnitureToHistory,
   areFurnitureCollectionsEqual,
@@ -83,21 +84,6 @@ function createFurnitureItem(
   }
 }
 
-function createSourceScene() {
-  return {
-    getObjectByName: vi.fn(() => ({
-      position: {
-        x: 0,
-        y: 0,
-        z: 0,
-      },
-      rotation: {
-        y: 0,
-      },
-    })),
-  }
-}
-
 function defaultAddOptions(
   overrides?: Partial<{
     history: HistoryState<FurnitureItem[]>
@@ -107,8 +93,15 @@ function defaultAddOptions(
     snapSize: number
   }>,
 ) {
-  const sourceScenesByPath = new Map([
-    [SOURCE_PATH, createSourceScene() as unknown as import('three').Object3D],
+  // Mirrors the node transform the old Object3D fixture encoded: the couch node
+  // sits at the origin with no rotation.
+  const nodeDefaultsByPath = new Map([
+    [
+      SOURCE_PATH,
+      new Map<string, CollectionNodeDefaults>([
+        [CATALOG_ENTRY.nodeName, { position: [0, 0, 0], rotationY: 0 }],
+      ]),
+    ],
   ])
 
   return {
@@ -125,7 +118,7 @@ function defaultAddOptions(
     },
     edgeSnapThreshold: 0.5,
     snapSize: 0.25,
-    sourceScenesByPath,
+    nodeDefaultsByPath,
     ...overrides,
   }
 }

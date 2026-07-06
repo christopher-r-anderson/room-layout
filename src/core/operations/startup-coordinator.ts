@@ -3,8 +3,9 @@ import { toast } from 'sonner'
 import { createDefaultSceneState } from '@/core/model/scene-defaults'
 import { isSceneStateAtDefaults } from '@/core/model/scene-model'
 import { i18n } from '@/shared/i18n/i18n'
-import { sceneCommands, clearSceneServices } from '@/core/scene-commands'
+import { clearSceneServices } from '@/core/scene-commands'
 import { resetCollectionPipeline } from './collection-loader'
+import { restoreInitialLayout } from './history-mutations'
 import { feedbackActions } from '../stores/feedback-store'
 import { dialogActions } from '../stores/dialog-store'
 import {
@@ -130,7 +131,7 @@ function runRestoreOnce() {
   const applyRestoredState = (state: RestorableState) => {
     const normalizedState = normalizeRestoredState(state)
 
-    sceneCommands.restoreInitialLayout(normalizedState.items)
+    restoreInitialLayout(normalizedState.items)
     applyFinishIds(
       normalizedState.floorFinishId,
       normalizedState.wallFinishId,

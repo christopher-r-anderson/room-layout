@@ -2,7 +2,7 @@
 
 Purpose
 
-- Own scene rendering and the scene-domain engine (validity rules, Three.js).
+- Own scene rendering, input mapping, and the viewport services (Three.js).
 
 Structure
 
@@ -11,11 +11,11 @@ Structure
   imperative service surface, and renders the room/furniture/effects tree. It
   does not hold operation logic.
 - `internal/` — scene-private implementation, grouped by concern:
-  - `furniture/` — furniture mutation operations, the interactive mesh, and the
-    collection parse service/registry.
+  - `furniture/` — the interactive mesh and the collection parse
+    service/registry (document mutations live in `core/operations`).
   - `camera/` — controls, presets, camera operations, held-key motion.
-  - `selection/` — selection state/operations and selected-toolbar geometry.
-  - `history/` — undo/redo transitions and restore-history building.
+  - `selection/` — selection render state (outline, object registry) and
+    selected-toolbar geometry.
   - `drag/` — pointer drag state and drag math.
   - `snapshot/` — scene snapshot capture.
   - `environment/` — room, lighting, floor/wall materials.
@@ -25,11 +25,10 @@ Structure
 
 Pattern
 
-- Imperative operations live in `use*Operations` hooks (history, camera,
-  selection, furniture). Each takes the refs/state it needs and returns a stable
-  API; `Scene` composes them and registers the handlers into core's port
-  registry (`@/core/scene-services`). Pure placement/geometry math lives in
-  `@/domain`, not here.
+- Viewport services (camera, snapshot) live in `use*Operations` hooks; `Scene`
+  composes them and registers the handlers into core's port registry
+  (`@/core/scene-services`). Document mutations are core operations; pure
+  placement/geometry math lives in `@/domain`.
 
 Should not contain
 

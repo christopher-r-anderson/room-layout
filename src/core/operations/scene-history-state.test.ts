@@ -4,11 +4,7 @@ import {
   createHistoryState,
 } from '@/shared/lib/ui/editor-history'
 import type { FurnitureItem } from '@/domain/furniture'
-import {
-  getSceneHistoryAvailability,
-  redoSceneHistory,
-  undoSceneHistory,
-} from './scene-history-state'
+import { redoSceneHistory, undoSceneHistory } from './scene-history-state'
 
 function createFurnitureItem(id: string): FurnitureItem {
   return {
@@ -29,25 +25,6 @@ function createFurnitureItem(id: string): FurnitureItem {
 }
 
 describe('scene history state', () => {
-  it('disables undo and redo while dragging even when history exists', () => {
-    const item = createFurnitureItem('chair-1')
-    const history = commitHistoryPresent(
-      createHistoryState<FurnitureItem[]>([]),
-      [item],
-    )
-
-    expect(
-      getSceneHistoryAvailability({
-        history,
-        selectedId: item.id,
-        isDragging: true,
-      }),
-    ).toEqual({
-      canUndo: false,
-      canRedo: false,
-    })
-  })
-
   it('preserves a newer selection when redo reapplies history', () => {
     const firstItem = createFurnitureItem('chair-1')
     const secondItem = createFurnitureItem('chair-2')

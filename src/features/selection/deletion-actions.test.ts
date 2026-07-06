@@ -18,8 +18,17 @@ import { dialogActions } from '@/core/stores/dialog-store'
 import { sceneCommands } from '@/core/scene-commands'
 import { feedbackActions } from '@/core/stores/feedback-store'
 import { selectionEffects } from '@/core/operations/selection-effects'
+import { deleteSelection } from '@/core/operations/furniture-mutations'
 import { confirmDeleteSelection, openDeleteDialog } from './deletion-actions'
 import { CHAIR } from '@/test/support/furniture'
+
+vi.mock('@/core/operations/furniture-mutations', () => ({
+  addFurniture: vi.fn(),
+  deleteSelection: vi.fn(),
+  moveSelection: vi.fn(),
+  rotateSelection: vi.fn(),
+  setSelectionTransform: vi.fn(),
+}))
 
 vi.mock('@/core/stores/feedback-store', () => ({
   feedbackActions: {
@@ -59,7 +68,6 @@ afterEach(() => {
 describe('deletion-actions', () => {
   it('writes the missing-selection message and skips delete when scene is not ready', () => {
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(false)
-    const deleteSelection = vi.spyOn(sceneCommands, 'deleteSelection')
     const closeActiveDialog = vi.spyOn(dialogActions, 'closeActiveDialog')
 
     confirmDeleteSelection(CHAIR)
@@ -74,7 +82,7 @@ describe('deletion-actions', () => {
 
   it('requests room-view focus after delete when canvas was the source', () => {
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
-    vi.spyOn(sceneCommands, 'deleteSelection').mockReturnValue(true)
+    vi.mocked(deleteSelection).mockReturnValue(true)
     vi.spyOn(dialogActions, 'closeActiveDialog')
     selectionFocusActions.setSelectedSource('canvas-keyboard')
 
@@ -93,7 +101,7 @@ describe('deletion-actions', () => {
 
   it('queues outliner focus restore index when not a canvas source', () => {
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
-    vi.spyOn(sceneCommands, 'deleteSelection').mockReturnValue(true)
+    vi.mocked(deleteSelection).mockReturnValue(true)
     vi.spyOn(dialogActions, 'closeActiveDialog')
     selectionFocusActions.setSelectedSource('panel-keyboard')
 

@@ -2,10 +2,11 @@ import { msg } from '@lingui/core/macro'
 import { feedbackActions } from '@/core/stores/feedback-store'
 import { selectionEffects } from '@/core/operations/selection-effects'
 import { sceneCommands } from '@/core/scene-commands'
+import { redo as redoDocument, undo as undoDocument } from './history-mutations'
 import { i18n } from '@/shared/i18n/i18n'
 
 export function undo() {
-  const undid = sceneCommands.isSceneReady() ? sceneCommands.undo() : false
+  const undid = sceneCommands.isSceneReady() ? undoDocument() : false
 
   selectionEffects.notePendingSelection(
     undid
@@ -23,7 +24,7 @@ export function undo() {
 }
 
 export function redo() {
-  const redid = sceneCommands.isSceneReady() ? sceneCommands.redo() : false
+  const redid = sceneCommands.isSceneReady() ? redoDocument() : false
 
   selectionEffects.notePendingSelection(
     redid

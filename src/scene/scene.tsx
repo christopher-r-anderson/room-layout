@@ -13,7 +13,6 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import type { CameraControlsImpl } from '@react-three/drei'
 import { useThree } from '@react-three/fiber'
 import { SelectionOutlineEffect } from './internal/selection/selection-outline-effect'
-import { type LayoutBounds } from '@/domain/geometry/furniture-layout'
 import type {
   FurnitureCatalogEntry,
   FurnitureCollection,
@@ -21,20 +20,19 @@ import type {
 import {
   areFurnitureCollectionsEqual,
   updateFurniturePositionInHistory,
-} from './internal/furniture/furniture-operations'
-import { useHistoryOperations } from './internal/history/use-history-operations'
+} from '@/core/operations/furniture-operations'
 import type { CameraKeyState } from '@/core/scene.types'
 import { useSceneDrag } from './internal/drag/use-scene-drag'
 import { useSceneSnapshot } from './internal/snapshot/use-scene-snapshot'
 import { useCameraOperations } from './internal/camera/use-camera-operations'
 import { useCameraKeyMotion } from './internal/camera/use-camera-key-motion'
-import { useSelectionOperations } from './internal/selection/use-selection-operations'
-import { useFurnitureOperations } from './internal/furniture/use-furniture-operations'
 import { useSceneSelection } from './internal/selection/use-scene-selection'
 import {
-  ROOM_HALF_DEPTH_METERS,
-  ROOM_HALF_WIDTH_METERS,
-} from './internal/environment/room-constants'
+  FLOOR_PLANE_Y,
+  FURNITURE_EDGE_SNAP_THRESHOLD_METERS,
+  FURNITURE_SNAP_SIZE_METERS,
+  ROOM_LAYOUT_BOUNDS,
+} from '@/domain/geometry/room-metrics'
 import { useToolbarGeometryProjection } from './internal/selection/use-toolbar-geometry-projection'
 import { perfCounters } from '@/shared/debug/perf-counters'
 import { IS_E2E_BUILD } from '@/shared/env/e2e'
@@ -49,16 +47,6 @@ import {
 } from '@/core/scene-services'
 import { useLoadedCollectionScenes } from './internal/furniture/collection-scene-registry'
 import { createCollectionSceneLoader } from './internal/furniture/collection-scene-loader'
-
-const FLOOR_PLANE_Y = 0
-const SNAP_SIZE = 0.5
-const EDGE_SNAP_THRESHOLD = 0.12
-const ROOM_BOUNDS: LayoutBounds = {
-  minX: -ROOM_HALF_WIDTH_METERS,
-  maxX: ROOM_HALF_WIDTH_METERS,
-  minZ: -ROOM_HALF_DEPTH_METERS,
-  maxZ: ROOM_HALF_DEPTH_METERS,
-}
 
 export function Scene({
   renderQuality = 'default',
@@ -119,16 +107,10 @@ export function Scene({
   const cameraControlsRef = useRef<CameraControlsImpl | null>(null)
   const cameraKeyStateRef = useRef<CameraKeyState>(new Set())
   const furniture = useItems()
-  const {
-    objectRefs,
-    registerObject,
-    selectFurniture,
-    selectedId,
-    selection,
-    setSelectedIdAndResolveObject,
-  } = useSceneSelection({
-    furniture,
-  })
+  const { objectRefs, registerObject, selectFurniture, selectedId, selection } =
+    useSceneSelection({
+      furniture,
+    })
 
   const updateFurniturePosition = useCallback(
     (id: string, nextPosition: [number, number, number]) => {
@@ -143,60 +125,27 @@ export function Scene({
     [],
   )
 
-  const {
-    clearDragState,
-    dragState,
-    handleDragEnd,
-    handleDragStart,
-    handleMove,
-  } = useSceneDrag({
-    furniture,
-    selectFurniture,
-    updateFurniturePosition,
-    updateHistory: sceneDocumentActions.updateHistory,
-    bounds: ROOM_BOUNDS,
-    floorPlaneY: FLOOR_PLANE_Y,
-    snapSize: SNAP_SIZE,
-    edgeSnapThreshold: EDGE_SNAP_THRESHOLD,
-    areFurnitureCollectionsEqual,
-  })
+  const { dragState, handleDragEnd, handleDragStart, handleMove } =
+    useSceneDrag({
+      furniture,
+      selectFurniture,
+      updateFurniturePosition,
+      updateHistory: sceneDocumentActions.updateHistory,
+      bounds: ROOM_LAYOUT_BOUNDS,
+      floorPlaneY: FLOOR_PLANE_Y,
+      snapSize: FURNITURE_SNAP_SIZE_METERS,
+      edgeSnapThreshold: FURNITURE_EDGE_SNAP_THRESHOLD_METERS,
+      areFurnitureCollectionsEqual,
+    })
 
-  const {
-    undo: handleUndo,
-    redo: handleRedo,
-    restoreInitialLayout: handleRestoreInitialLayout,
-  } = useHistoryOperations({
-    isDragging: Boolean(dragState),
-    catalog,
-    collections,
-  })
-
-  const {
-    select: handleSelect,
-    clearSelection: handleClearSelection,
-    selectById: handleSelectById,
-  } = useSelectionOperations({
-    isDragging: Boolean(dragState),
-    onCanvasPointerSelection,
-    selectFurniture,
-    setSelectedIdAndResolveObject,
-  })
-
-  const {
-    deleteSelection: handleDeleteSelection,
-    moveSelection: handleMoveSelection,
-    setSelectionTransform: handleSetSelectionTransform,
-    rotateSelection: handleRotateSelection,
-    addFurniture: handleAddFurniture,
-  } = useFurnitureOperations({
-    dragState,
-    clearDragState,
-    catalog,
-    collections,
-    bounds: ROOM_BOUNDS,
-    edgeSnapThreshold: EDGE_SNAP_THRESHOLD,
-    snapSize: SNAP_SIZE,
-  })
+  // Canvas-pointer selection: notify the app of the input source, then commit.
+  const handleSelect = useCallback(
+    (id: string) => {
+      onCanvasPointerSelection?.(id)
+      selectFurniture(id)
+    },
+    [onCanvasPointerSelection, selectFurniture],
+  )
 
   const {
     setCameraPreset: handleSetCameraPreset,
@@ -222,44 +171,24 @@ export function Scene({
 
   useLayoutEffect(() => {
     registerSceneServices({
-      addFurniture: handleAddFurniture,
-      clearSelection: handleClearSelection,
-      deleteSelection: handleDeleteSelection,
       focusSelected: handleFocusSelected,
       getCameraPosition: handleGetCameraPosition,
       getSnapshot,
       loadCollectionScene,
-      moveSelection: handleMoveSelection,
-      redo: handleRedo,
-      restoreInitialLayout: handleRestoreInitialLayout,
-      rotateSelection: handleRotateSelection,
       setCameraKeyState: handleSetCameraKeyState,
-      selectById: handleSelectById,
       setCameraPreset: handleSetCameraPreset,
-      setSelectionTransform: handleSetSelectionTransform,
-      undo: handleUndo,
     })
 
     return () => {
       clearSceneServices()
     }
   }, [
-    handleAddFurniture,
-    handleClearSelection,
-    handleDeleteSelection,
     handleFocusSelected,
     handleGetCameraPosition,
     getSnapshot,
     loadCollectionScene,
-    handleMoveSelection,
-    handleRedo,
-    handleRestoreInitialLayout,
-    handleRotateSelection,
     handleSetCameraKeyState,
-    handleSelectById,
     handleSetCameraPreset,
-    handleSetSelectionTransform,
-    handleUndo,
   ])
 
   // Report mount/unmount so core can gate startup readiness on the canvas being up.
@@ -273,10 +202,6 @@ export function Scene({
   }, [])
 
   const isDragging = Boolean(dragState)
-
-  useEffect(() => {
-    sceneDocumentActions.setDragging(isDragging)
-  }, [isDragging])
 
   // The active mood drives renderer exposure. Set here (not in the Canvas's
   // one-shot onCreated) so switching moods re-tunes exposure reactively. The

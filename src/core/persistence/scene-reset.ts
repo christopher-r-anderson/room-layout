@@ -5,6 +5,7 @@ import { selectionEffects } from '@/core/operations/selection-effects'
 import { clearPreviewOnCanvasMiss } from '@/core/operations/preview-actions'
 import { clearSceneDraft } from '@/core/persistence/scene-draft'
 import { sceneCommands } from '@/core/scene-commands'
+import { restoreInitialLayout } from '@/core/operations/history-mutations'
 
 /**
  * Resets the editor to the loaded environment's defaults: clears the layout,
@@ -20,7 +21,7 @@ export function resetSceneToDefaults() {
   // Load-critical: clearing the room must happen. Reset only runs from a mounted
   // editor, so the scene is ready; the unguarded call lets a broken assumption
   // surface rather than silently leaving stale furniture in place.
-  sceneCommands.restoreInitialLayout([])
+  restoreInitialLayout([])
   sceneDocumentActions.setFloorFinishId(
     environmentConfig?.defaultFloorFinishId ?? '',
   )
