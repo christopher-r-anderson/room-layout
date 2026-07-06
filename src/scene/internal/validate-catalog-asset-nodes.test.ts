@@ -30,26 +30,17 @@ describe('validateCatalogAssetNodes', () => {
 
     expect(() => {
       validateCatalogAssetNodes({
-        catalog: [createCatalogEntry({ uiBoundsNodeName: 'Chair_UIBounds' })],
-        sourceScenesByCollectionId: new Map([['collection-1', sourceScene]]),
+        entries: [createCatalogEntry({ uiBoundsNodeName: 'Chair_UIBounds' })],
+        sourceScene,
       })
     }).not.toThrow()
-  })
-
-  it('throws when the collection source scene is not loaded', () => {
-    expect(() => {
-      validateCatalogAssetNodes({
-        catalog: [createCatalogEntry()],
-        sourceScenesByCollectionId: new Map(),
-      })
-    }).toThrow('source scene not loaded for collection: collection-1')
   })
 
   it('throws when the root node is missing', () => {
     expect(() => {
       validateCatalogAssetNodes({
-        catalog: [createCatalogEntry()],
-        sourceScenesByCollectionId: new Map([['collection-1', new Group()]]),
+        entries: [createCatalogEntry()],
+        sourceScene: new Group(),
       })
     }).toThrow('ChairRoot node not found in GLTF scene')
   })
@@ -62,8 +53,8 @@ describe('validateCatalogAssetNodes', () => {
 
     expect(() => {
       validateCatalogAssetNodes({
-        catalog: [createCatalogEntry({ uiBoundsNodeName: 'Chair_UIBounds' })],
-        sourceScenesByCollectionId: new Map([['collection-1', sourceScene]]),
+        entries: [createCatalogEntry({ uiBoundsNodeName: 'Chair_UIBounds' })],
+        sourceScene,
       })
     }).toThrow('Chair_UIBounds ui bounds node not found under ChairRoot')
   })
@@ -78,8 +69,8 @@ describe('validateCatalogAssetNodes', () => {
 
     expect(() => {
       validateCatalogAssetNodes({
-        catalog: [createCatalogEntry({ uiBoundsNodeName: 'Chair_UIBounds' })],
-        sourceScenesByCollectionId: new Map([['collection-1', sourceScene]]),
+        entries: [createCatalogEntry({ uiBoundsNodeName: 'Chair_UIBounds' })],
+        sourceScene,
       })
     }).toThrow('Chair_UIBounds ui bounds node not found under ChairRoot')
   })
@@ -92,8 +83,8 @@ describe('validateCatalogAssetNodes', () => {
 
     expect(() => {
       validateCatalogAssetNodes({
-        catalog: [createCatalogEntry({ uiBoundsNodeName: 'ChairRoot' })],
-        sourceScenesByCollectionId: new Map([['collection-1', sourceScene]]),
+        entries: [createCatalogEntry({ uiBoundsNodeName: 'ChairRoot' })],
+        sourceScene,
       })
     }).toThrow('ChairRoot ui bounds node must be a descendant of ChairRoot')
   })

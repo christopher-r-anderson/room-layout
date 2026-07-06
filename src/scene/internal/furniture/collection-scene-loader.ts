@@ -43,10 +43,10 @@ export function createCollectionSceneLoader({
     )
     if (collection) {
       validateCatalogAssetNodes({
-        catalog: catalog.filter(
+        entries: catalog.filter(
           (entry) => entry.collectionId === collection.id,
         ),
-        sourceScenesByCollectionId: new Map([[collection.id, gltf.scene]]),
+        sourceScene: gltf.scene,
       })
     }
 

@@ -120,7 +120,7 @@ audit state.
 | scene/internal/three/get-visual-object-bounds.test.ts      | fix     | Single test only spies `computeBoundingBox` cache-hit (`:12`) — tests an internal optimization. Expand (main gap): the returned bounds union / ui-bounds exclusion / null-on-empty is untested. |
 | scene/internal/three/is-mesh.test.ts                       | fix     | Near-trivial one-line type-guard test (effectively asserts three.js's `isMesh`); also no top-level `describe` (`:5,9`).                                                                         |
 | scene/internal/three/load-floor-texture.test.ts            | keep    | Heavy three loader mocking justified (no WebGL in jsdom); asserts retry-not-caching + loader-path selection.                                                                                    |
-| scene/internal/validate-catalog-asset-nodes.test.ts        | keep    | Real scenes; accept/missing-root/missing-ui-bounds/stray/self-root throws. Expand: `!sourceScene` branch.                                                                                       |
+| scene/internal/validate-catalog-asset-nodes.test.ts        | keep    | Real scenes; accept/missing-root/missing-ui-bounds/stray/self-root throws.                                                                                                                      |
 
 ## app + shared
 

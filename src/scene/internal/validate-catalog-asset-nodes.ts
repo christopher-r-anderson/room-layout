@@ -1,22 +1,18 @@
 import type { Object3D } from 'three'
 import type { FurnitureCatalogEntry } from '@/domain/catalog'
 
+// Asserts one parsed collection scene satisfies the manifest's node contract:
+// every entry's root node exists, and its optional ui-bounds node is a proper
+// descendant of that root. Run by the collection loader before the scene is
+// registered, so a violating asset fails its load instead of blowing up later.
 export function validateCatalogAssetNodes({
-  catalog,
-  sourceScenesByCollectionId,
+  entries,
+  sourceScene,
 }: {
-  catalog: FurnitureCatalogEntry[]
-  sourceScenesByCollectionId: Map<string, Object3D>
+  entries: FurnitureCatalogEntry[]
+  sourceScene: Object3D
 }) {
-  for (const entry of catalog) {
-    const sourceScene = sourceScenesByCollectionId.get(entry.collectionId)
-
-    if (!sourceScene) {
-      throw new Error(
-        `source scene not loaded for collection: ${entry.collectionId}`,
-      )
-    }
-
+  for (const entry of entries) {
     const rootNode = sourceScene.getObjectByName(entry.nodeName)
     if (!rootNode) {
       throw new Error(`${entry.nodeName} node not found in GLTF scene`)
