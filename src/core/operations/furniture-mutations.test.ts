@@ -17,6 +17,8 @@ import {
   addFurniture,
   deleteSelection,
   moveSelection,
+  rotateSelection,
+  setSelectionTransform,
 } from './furniture-mutations'
 
 const CATALOG_CHAIR: FurnitureCatalogEntry = {
@@ -109,6 +111,73 @@ it('moveSelection moves the selected item and commits a history entry', () => {
   const state = useSceneDocumentStore.getState()
   expect(state.history.present[0]?.position).toEqual([1, 0, 0])
   expect(state.history.past).toHaveLength(1)
+})
+
+it('setSelectionTransform applies position and rotation and commits a history entry', () => {
+  seedSelectedChair()
+
+  const result = setSelectionTransform({
+    position: [1, 0, 1],
+    rotationY: Math.PI / 2,
+  })
+
+  expect(result).toEqual({
+    ok: true,
+    item: expect.objectContaining({
+      id: CHAIR.id,
+      position: [1, 0, 1],
+      rotationY: Math.PI / 2,
+    }),
+  })
+  const state = useSceneDocumentStore.getState()
+  expect(state.history.present[0]).toMatchObject({
+    position: [1, 0, 1],
+    rotationY: Math.PI / 2,
+  })
+  expect(state.history.past).toHaveLength(1)
+})
+
+it('setSelectionTransform refuses to apply while a drag is in progress', () => {
+  seedSelectedChair()
+  sceneDocumentActions.setDragging(true)
+
+  const result = setSelectionTransform({ position: [1, 0, 1] })
+
+  expect(result).toEqual({ ok: false, reason: 'dragging' })
+  expect(useSceneDocumentStore.getState().history.present[0]?.position).toEqual(
+    [0, 0, 0],
+  )
+})
+
+it('setSelectionTransform rejects an out-of-bounds position and leaves the document untouched', () => {
+  seedSelectedChair()
+
+  const result = setSelectionTransform({ position: [100, 0, 0] })
+
+  expect(result).toEqual({ ok: false, reason: 'blocked-bounds' })
+  const state = useSceneDocumentStore.getState()
+  expect(state.history.present[0]?.position).toEqual([0, 0, 0])
+  expect(state.history.past).toHaveLength(0)
+})
+
+it('rotateSelection rotates the selected item and commits a history entry', () => {
+  seedSelectedChair()
+
+  rotateSelection(Math.PI / 2)
+
+  const state = useSceneDocumentStore.getState()
+  expect(state.history.present[0]?.rotationY).toBeCloseTo(Math.PI / 2)
+  expect(state.history.past).toHaveLength(1)
+})
+
+it('rotateSelection is a no-op without a selection', () => {
+  sceneDocumentActions.setHistory(createHistoryState([CHAIR]))
+
+  rotateSelection(Math.PI / 2)
+
+  const state = useSceneDocumentStore.getState()
+  expect(state.history.present[0]?.rotationY).toBe(0)
+  expect(state.history.past).toHaveLength(0)
 })
 
 it('deleteSelection removes the selected item and clears the selection', () => {
