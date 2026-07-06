@@ -168,21 +168,29 @@ export function ensureCollectionLoaded(path: string): Promise<void> {
     const rejectFailed = () => {
       reject(new Error(`furniture collection failed to load: ${path}`))
     }
-    const unsubscribe = collectionLoadingStore.subscribe((state) => {
-      if (state.loaded.has(path)) {
-        finish(resolve)
-      } else if (state.failed.has(path)) {
-        finish(rejectFailed)
-      } else if (!state.wanted.has(path)) {
-        // Only a full reset (the retry teardown) removes a requested path from
-        // `wanted`; the in-flight load discards its result on the epoch guard,
-        // so nothing would ever settle this promise - reject instead of
-        // leaking the subscription and hanging the caller.
-        finish(() => {
-          reject(new Error(`furniture collection load was reset: ${path}`))
-        })
-      }
-    })
+    const unsubscribe = collectionLoadingStore.subscribe(
+      (state) => ({
+        loaded: state.loaded.has(path),
+        failed: state.failed.has(path),
+        wanted: state.wanted.has(path),
+      }),
+      ({ loaded, failed, wanted }) => {
+        if (loaded) {
+          finish(resolve)
+        } else if (failed) {
+          finish(rejectFailed)
+        } else if (!wanted) {
+          // Only a full reset (the retry teardown) removes a requested path
+          // from `wanted`; the in-flight load discards its result on the epoch
+          // guard, so nothing would ever settle this promise - reject instead
+          // of leaking the subscription and hanging the caller.
+          finish(() => {
+            reject(new Error(`furniture collection load was reset: ${path}`))
+          })
+        }
+      },
+      { equalityFn: shallow },
+    )
 
     // Settle states that already hold: a load that won the window between the
     // initial check and subscribing, or a preserved permanent failure (which
