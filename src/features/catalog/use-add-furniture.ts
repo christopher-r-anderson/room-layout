@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { formatPercent } from '@/shared/i18n/formatters'
 import { useCollectionLoadPercent } from '@/core/stores/collection-loading-store'
-import { useSourcePathByCatalogId } from '@/core/stores/assets-store'
 import {
   addFurniture,
   prefetchCatalogItem,
@@ -21,26 +20,23 @@ export interface UseAddFurniture {
   showPending: boolean
   // Localized download percent of the selected collection, or null when unknown.
   percentLabel: string | null
-  // The selected item's collection, for the caller to check availability.
-  selectedSourcePath: string | null
 }
 
 // Encapsulates the Add drawer's submission flow: prefetch-on-select, the async add
 // with a delayed pending indicator, and the selected collection's download percent.
 export function useAddFurniture({
   catalogIdToAdd,
+  selectedSourcePath,
   open,
 }: {
   catalogIdToAdd: string
+  // The selected item's collection (the drawer already derives it per tile).
+  selectedSourcePath: string | null
   open: boolean
 }): UseAddFurniture {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showPending, setShowPending] = useState(false)
 
-  const sourcePathByCatalogId = useSourcePathByCatalogId()
-  const selectedSourcePath = catalogIdToAdd
-    ? (sourcePathByCatalogId.get(catalogIdToAdd) ?? null)
-    : null
   const loadPercent = useCollectionLoadPercent(selectedSourcePath)
   const percentLabel =
     loadPercent !== null ? formatPercent(loadPercent / 100) : null
@@ -76,5 +72,5 @@ export function useAddFurniture({
       })
   }, [isSubmitting])
 
-  return { submit, isSubmitting, showPending, percentLabel, selectedSourcePath }
+  return { submit, isSubmitting, showPending, percentLabel }
 }

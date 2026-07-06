@@ -37,7 +37,11 @@ describe('useAddFurniture', () => {
     addFurnitureMock.mockReturnValueOnce(pending.promise)
 
     const { result } = renderHook(() =>
-      useAddFurniture({ catalogIdToAdd: 'chair', open: true }),
+      useAddFurniture({
+        catalogIdToAdd: 'chair',
+        selectedSourcePath: null,
+        open: true,
+      }),
     )
 
     act(() => {
@@ -60,7 +64,11 @@ describe('useAddFurniture', () => {
     addFurnitureMock.mockReturnValueOnce(deferred<boolean>().promise)
 
     const { result } = renderHook(() =>
-      useAddFurniture({ catalogIdToAdd: 'chair', open: true }),
+      useAddFurniture({
+        catalogIdToAdd: 'chair',
+        selectedSourcePath: null,
+        open: true,
+      }),
     )
 
     act(() => {

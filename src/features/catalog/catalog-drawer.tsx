@@ -48,13 +48,14 @@ export function CatalogDrawer({
   const catalogIdToAdd = useActiveCatalogId()
   const open = useDialogOpen(CATALOG_DIALOG_ID)
   const failedCollections = useFailedCollections()
-  const {
-    submit,
-    isSubmitting,
-    showPending,
-    percentLabel,
+  const selectedSourcePath = catalogIdToAdd
+    ? (sourcePathByCatalogId.get(catalogIdToAdd) ?? null)
+    : null
+  const { submit, isSubmitting, showPending, percentLabel } = useAddFurniture({
+    catalogIdToAdd,
     selectedSourcePath,
-  } = useAddFurniture({ catalogIdToAdd, open })
+    open,
+  })
   const selectedUnavailable = selectedSourcePath
     ? failedCollections.get(selectedSourcePath) === 'unavailable'
     : false
@@ -92,11 +93,11 @@ export function CatalogDrawer({
                     isUnavailable ? 'cursor-not-allowed' : 'cursor-pointer',
                   )}
                 >
-                  {/* Also locked while an add is submitting: the add captured
-                      the selected id, so switching mid-add would show a
-                      different selection than the item being placed. The
-                      dimmed treatment stays tied to isUnavailable so a fast
-                      add does not flash every tile. */}
+                  {/* Locked while an add is submitting: the add captures the
+                      selected id, so switching mid-add would show a different
+                      selection than the item being placed. Only unavailability
+                      dims the tile - a disabled-state treatment would flash
+                      every tile during a fast add. */}
                   <input
                     className="peer sr-only"
                     aria-label={entry.name}
