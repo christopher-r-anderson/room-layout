@@ -243,6 +243,10 @@ msgstr "Editor failed to load"
 msgid "Editor status"
 msgstr "Editor status"
 
+#: src/shared/messages/command-messages.ts
+msgid "Finish dragging before adding furniture."
+msgstr "Finish dragging before adding furniture."
+
 #: src/features/selection/selected-item-detail-messages.ts
 msgid "Finish dragging before editing item details."
 msgstr "Finish dragging before editing item details."

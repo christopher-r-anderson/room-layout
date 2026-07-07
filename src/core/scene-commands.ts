@@ -1,8 +1,4 @@
-import {
-  clearSceneServices as clearSceneServicesInternal,
-  getSceneServices,
-  getSceneServicesIfReady,
-} from './scene-services'
+import { getSceneServices, getSceneServicesIfReady } from './scene-services'
 import type { CameraKeyState, CameraPreset } from './scene.types'
 
 /**
@@ -27,9 +23,6 @@ export const sceneCommands = {
   isSceneReady: () => {
     return getSceneServicesIfReady() !== null
   },
-  getCameraPosition: (): [number, number, number] => {
-    return getSceneServicesIfReady()?.getCameraPosition() ?? [0, 0, 0]
-  },
   getSnapshot: () => {
     return getSceneServicesIfReady()?.getSnapshot() ?? null
   },
@@ -47,8 +40,4 @@ export const sceneCommands = {
   setCameraPreset: (preset: CameraPreset) => {
     getSceneServices().setCameraPreset(preset)
   },
-}
-
-export function clearSceneServices() {
-  clearSceneServicesInternal()
 }

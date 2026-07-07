@@ -25,9 +25,9 @@ Structure
 
 Pattern
 
-- Viewport services (camera, snapshot) live in `use*Operations` hooks; `Scene`
-  composes them and registers the handlers into core's port registry
-  (`@/core/scene-services`). Document mutations are core operations; pure
+- Viewport services live in concern hooks (`use-camera-operations`,
+  `use-scene-snapshot`); `Scene` composes them and registers the handlers into
+  core's port registry (`@/core/scene-services`). Document mutations are core operations; pure
   placement/geometry math lives in `@/domain`.
 
 Should not contain

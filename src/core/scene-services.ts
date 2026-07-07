@@ -4,7 +4,6 @@ import type { CameraKeyState, CameraPreset, SceneSnapshot } from './scene.types'
 // Document mutations are core operations and do not pass through here.
 export interface SceneServices {
   focusSelected: () => void
-  getCameraPosition: () => [number, number, number]
   getSnapshot: () => SceneSnapshot
   // Parse a collection's GLB bytes and register the scene root in the
   // collection registry (see collection-scene-loader). Core awaits this from

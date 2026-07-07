@@ -21,20 +21,12 @@ gap analysis.
 
 | module                                                        | covered by (e2e)                                                                                                 |
 | ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `scene/internal/history/use-history-operations.ts`            | `editor-history`, `editor-hotkeys` (Ctrl+Z/Y), `drag-interaction`, `editor-accessibility-flows` (command+drag)   |
-| `scene/internal/selection/use-selection-operations.ts`        | `drag-collision`, `drag-interaction` (preview vs select), `editor-hotkeys` (Escape clear, canvas select)         |
 | `scene/internal/camera/use-camera-operations.ts`              | `editor-hotkeys` (presets, WASD/pan/zoom, **focus-selected `F`**), `selected-toolbar-placement`                  |
 | `scene/internal/selection/use-toolbar-geometry-projection.ts` | `selected-toolbar-placement` (active projection), `selected-toolbar-idle` (idle no-op short-circuit)             |
-| `scene/internal/furniture/use-furniture-operations.ts`        | `add-furniture`, `drag-interaction`/`drag-bounds`/`drag-collision`, `editor-hotkeys`, `editor-accessibility*`    |
 | `app/commands/use-editor-command-handlers.ts`                 | exercised across the above; `focus-selected` and `focus-toolbar` routing now pressed in e2e                      |
 | `app/commands/use-editor-focus-commands.ts`                   | `focusRoomView` (harness), `focusOutliner`/`focusInspector` (tab-order, post-delete), **`focusToolbar` Shift+T** |
 | `features/keyboard/use-keyboard-shortcuts.ts`                 | `editor-hotkeys`, `editor-accessibility-flows` (dispatch + modal suppression)                                    |
 | `features/startup/use-startup-bootstrap.ts`                   | `startup-loading`, `startup-load-error`, `url-restore` (restore matrix + one-shot guard)                         |
-
-Note: `use-furniture-operations`'s decision logic was extracted to
-`resolveMoveSelectionInHistory`/`resolveSetSelectionTransformInHistory`
-(`furniture-operations.ts`) and is unit-tested there; only the residual hook glue
-is e2e-covered.
 
 ## Presentational / config / trivial — no test needed
 
@@ -45,7 +37,7 @@ is e2e-covered.
   `project-info/asset-attribution.tsx`, `startup/initialization-{error,progress}.tsx`,
   the confirmation-dialog components, `catalog-drawer.tsx`, `room-sidebar.tsx`.
 - Config / registration: `*-dialog-definition.ts`, `camera-presets.ts`.
-- Pure wiring: `core/operations/editor-reconcilers.ts` (composes three
+- Pure wiring: `core/operations/editor-reconcilers.ts` (composes four
   already-tested reconcilers).
 - Debug / test infra: `shared/debug/perf-counters.ts`,
   `app/testing/use-test-state-bridge.ts`.

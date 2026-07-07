@@ -7,7 +7,7 @@ import {
   moveSelection as moveDocumentSelection,
   rotateSelection as rotateDocumentSelection,
 } from './furniture-mutations'
-import type { MoveSelectionResult, MoveSource } from '@/core/scene.types'
+import type { MoveSelectionResult } from '@/core/scene.types'
 import { i18n } from '@/shared/i18n/i18n'
 import { formatDistanceMeters } from '@/shared/i18n/formatters'
 
@@ -30,17 +30,15 @@ function formatMoveBlockedMessage(
   }
 }
 
-export function moveSelection(
-  delta: { x: number; z: number },
-  options?: { source?: MoveSource },
-): MoveSelectionResult {
+export function moveSelection(delta: {
+  x: number
+  z: number
+}): MoveSelectionResult {
   const movedItemName = getSelectedFurniture()?.name ?? null
   feedbackActions.clearStatusMessage()
 
   const result = sceneCommands.isSceneReady()
-    ? moveDocumentSelection(delta, {
-        source: options?.source ?? 'keyboard',
-      })
+    ? moveDocumentSelection(delta)
     : ({ ok: false, reason: 'no-selection' } as const)
 
   if (result.ok) {
@@ -73,6 +71,13 @@ export function rotateSelection(direction: -1 | 1) {
     return
   }
 
+  if (!rotateDocumentSelection(direction * ROTATION_STEP_RADIANS)) {
+    feedbackActions.queueMovementAnnouncement(
+      i18n._(msg`Finish dragging before using movement controls.`),
+    )
+    return
+  }
+
   // Pin the toolbar's position briefly after every rotation (whichever input
   // triggered it) so repeated rotate presses don't walk it out from under the
   // cursor as the object re-projects — but only when something is selected, so a
@@ -80,8 +85,6 @@ export function rotateSelection(direction: -1 | 1) {
   if (rotatingFurniture !== null) {
     toolbarInteractionActions.reportRotation()
   }
-
-  rotateDocumentSelection(direction * ROTATION_STEP_RADIANS)
 
   if (rotatingName) {
     feedbackActions.announcePolite(i18n._(msg`${rotatingName} rotated.`))

@@ -10,7 +10,6 @@ import type { SceneServices } from './scene-services'
 function createFakeServices(): SceneServices {
   return {
     focusSelected: () => undefined,
-    getCameraPosition: () => [0, 0, 0] as [number, number, number],
     getSnapshot: () => ({
       cameraPosition: [0, 0, 0] as [number, number, number],
       items: [],

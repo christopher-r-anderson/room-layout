@@ -51,4 +51,13 @@ it('derives history availability from document history and dragging state', () =
     canUndo: false,
     canRedo: false,
   })
+
+  act(() => {
+    sceneSessionActions.setDragging(false)
+  })
+
+  expect(historyAvailability.current).toEqual({
+    canUndo: true,
+    canRedo: false,
+  })
 })

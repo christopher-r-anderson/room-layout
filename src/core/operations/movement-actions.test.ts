@@ -27,7 +27,7 @@ vi.mock('./furniture-mutations', () => ({
   addFurniture: vi.fn(),
   deleteSelection: vi.fn(),
   moveSelection: vi.fn(),
-  rotateSelection: vi.fn(),
+  rotateSelection: vi.fn(() => true),
   setSelectionTransform: vi.fn(),
 }))
 
@@ -82,16 +82,13 @@ describe('movement-actions', () => {
       position: [1, 0, 0],
     })
 
-    expect(moveSelection({ x: 1, z: 0 }, { source: 'keyboard' })).toEqual({
+    expect(moveSelection({ x: 1, z: 0 })).toEqual({
       ok: true,
       position: [1, 0, 0],
     })
     rotateSelection(1)
 
-    expect(moveDocumentSelection).toHaveBeenCalledWith(
-      { x: 1, z: 0 },
-      { source: 'keyboard' },
-    )
+    expect(moveDocumentSelection).toHaveBeenCalledWith({ x: 1, z: 0 })
     expect(rotateDocumentSelection).toHaveBeenCalledWith(Math.PI / 12)
   })
 
@@ -133,6 +130,23 @@ describe('movement-actions', () => {
     moveSelection({ x: 1, z: 0 })
 
     expect(feedbackActions.queueMovementAnnouncement).not.toHaveBeenCalled()
+  })
+
+  it('announces the blocked reason and skips the pin grace when rotating mid-drag', () => {
+    vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
+    vi.mocked(rotateDocumentSelection).mockReturnValueOnce(false)
+    const reportRotationSpy = vi.spyOn(
+      toolbarInteractionActions,
+      'reportRotation',
+    )
+
+    rotateSelection(1)
+
+    expect(feedbackActions.queueMovementAnnouncement).toHaveBeenCalledWith(
+      'Finish dragging before using movement controls.',
+    )
+    expect(feedbackActions.announcePolite).not.toHaveBeenCalled()
+    expect(reportRotationSpy).not.toHaveBeenCalled()
   })
 
   it('announces a successful rotation', () => {

@@ -73,10 +73,15 @@ export const editorLifecycleActions = {
   requestRetry: () => {
     // Re-run startup from the manifest fetch. The retry token re-triggers the
     // bootstrap fetch effect; the scene epoch remounts the Scene. Restore
-    // tracking is preserved so the one-time restore flow does not re-run.
+    // tracking resets with the cycle: the error path wiped the document, so
+    // the restore flow must re-run at ready to bring the draft back (leaving
+    // it to unlock empty would also make draft persistence clear the saved
+    // draft as an at-defaults scene).
     useEditorLifecycleStore.setState((state) => ({
       startupPhase: 'loading',
       assetError: null,
+      restoreOutcome: null,
+      restoreAttemptCount: 0,
       sceneEpoch: state.sceneEpoch + 1,
       retryToken: state.retryToken + 1,
     }))

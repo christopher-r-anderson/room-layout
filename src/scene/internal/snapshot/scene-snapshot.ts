@@ -3,8 +3,6 @@ import type { FurnitureItem } from '@/domain/furniture'
 import type { SceneSnapshot } from '@/core/scene.types'
 import { getVisualObjectBounds } from '@/scene/internal/three/get-visual-object-bounds'
 
-export type { SceneSnapshot } from '@/core/scene.types'
-
 interface PointerTargetOptions {
   object: Object3D | null
   camera: Camera

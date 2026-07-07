@@ -175,6 +175,9 @@ msgstr "[Ēďĩţōŕ ƒàĩĺēď ţō ĺōàďāēīōūáéíóúāē]"
 msgid "Editor status"
 msgstr "[Ēďĩţōŕ śţàţũśāēīōūáéíóú]"
 
+msgid "Finish dragging before adding furniture."
+msgstr "[Ƒĩńĩśĥ ďŕàğğĩńğ ƀēƒōŕē àďďĩńğ ƒũŕńĩţũŕē.āēīōūáéíóúāēīōūá]"
+
 msgid "Finish dragging before editing item details."
 msgstr "[Ƒĩńĩśĥ ďŕàğğĩńğ ƀēƒōŕē ēďĩţĩńğ ĩţēḿ ďēţàĩĺś.āēīōūáéíóúāēīōūáéí]"
 

@@ -65,7 +65,7 @@ describe('useEditorLifecycleStore', () => {
     expect(state.assetError).toBeNull()
   })
 
-  it('bumps both epoch and retry token on retry while preserving restore tracking', () => {
+  it('bumps both epoch and retry token on retry and resets restore tracking', () => {
     editorLifecycleActions.incrementRestoreAttempt()
     editorLifecycleActions.recordRestoreOutcome('restored')
     editorLifecycleActions.setAssetError({
@@ -80,9 +80,9 @@ describe('useEditorLifecycleStore', () => {
     expect(state.assetError).toBeNull()
     expect(state.sceneEpoch).toBe(1)
     expect(state.retryToken).toBe(1)
-    // Restore tracking is preserved so the one-time restore flow does not re-run.
-    expect(state.restoreAttemptCount).toBe(1)
-    expect(state.restoreOutcome).toBe('restored')
+    // The retry cycle must restore again: the error path wiped the document.
+    expect(state.restoreAttemptCount).toBe(0)
+    expect(state.restoreOutcome).toBeNull()
   })
 
   it('transitions between loading, ready, and errored phases', () => {

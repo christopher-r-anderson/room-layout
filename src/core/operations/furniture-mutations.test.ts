@@ -102,6 +102,26 @@ it('addFurniture reports unknown-catalog and leaves the document untouched', () 
   expect(state.instanceIdCounter).toBe(0)
 })
 
+it('rotateSelection refuses to rotate while a drag is in progress', () => {
+  seedSelectedChair()
+  sceneSessionActions.setDragging(true)
+
+  const rotated = rotateSelection(Math.PI / 2)
+
+  expect(rotated).toBe(false)
+  expect(useSceneDocumentStore.getState().history.present[0]?.rotationY).toBe(0)
+  expect(useSceneDocumentStore.getState().history.past).toEqual([])
+})
+
+it('addFurniture refuses to add while a drag is in progress', () => {
+  sceneSessionActions.setDragging(true)
+
+  const result = addFurniture(CATALOG_CHAIR.id)
+
+  expect(result).toEqual({ ok: false, reason: 'dragging' })
+  expect(useSceneDocumentStore.getState().history.present).toEqual([])
+})
+
 it('moveSelection refuses to move while a drag is in progress', () => {
   seedSelectedChair()
   sceneSessionActions.setDragging(true)

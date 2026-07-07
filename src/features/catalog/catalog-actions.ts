@@ -14,6 +14,7 @@ import {
   ADD_FURNITURE_NO_SPACE_MESSAGE,
   ADD_FURNITURE_UNAVAILABLE_MESSAGE,
   ADD_FURNITURE_UNKNOWN_CATALOG_MESSAGE,
+  ADD_FURNITURE_WHILE_DRAGGING_MESSAGE,
 } from '@/shared/messages/command-messages'
 import { CATALOG_DIALOG_ID } from './catalog-dialog-definition'
 import { getActiveCatalogId } from './catalog-selection-store'
@@ -70,13 +71,13 @@ export async function addFurniture(): Promise<boolean> {
   const result = addFurnitureToDocument(catalogIdToAdd, { source: 'toolbar' })
 
   if (!result.ok) {
-    reportAddFailure(
-      i18n._(
-        result.reason === 'no-space'
-          ? ADD_FURNITURE_NO_SPACE_MESSAGE
-          : ADD_FURNITURE_UNKNOWN_CATALOG_MESSAGE,
-      ),
-    )
+    const failureMessage =
+      result.reason === 'no-space'
+        ? ADD_FURNITURE_NO_SPACE_MESSAGE
+        : result.reason === 'dragging'
+          ? ADD_FURNITURE_WHILE_DRAGGING_MESSAGE
+          : ADD_FURNITURE_UNKNOWN_CATALOG_MESSAGE
+    reportAddFailure(i18n._(failureMessage))
     return false
   }
 

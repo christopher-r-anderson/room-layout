@@ -45,17 +45,19 @@ state.
 
 Each store is a Zustand `create()` bound hook over pure-data state. The bound
 hook doubles as the imperative handle (`getState`/`subscribe`) for operations
-and reconcilers; mutation goes through the store's module-level `xActions`
-object, and narrow selector hooks (with `useShallow` where a selector builds a
-fresh value) are the React read surface. Features read the narrow hooks, not
+and reconcilers; mutation goes through a module-level `xActions` object (the
+default shape - registries and single-purpose wrappers like `setSceneMounted`
+export bare functions instead), and narrow selector hooks (with `useShallow`
+where a selector builds a fresh value) are the React read surface. Features read the narrow hooks, not
 the generic bound hook. "Written by" names the only modules that should mutate
 a store.
 
 - **`scene-document-store`** - the scene **document**: furniture history (the
   undo/redo timeline), the instance-id counter, and the finish/mood ids - the
-  persisted, undoable description of the room. Written by scene (the drag's
-  live-present writes) and by core operations. Ownership vs. the scene itself
-  is the subject of [scene-and-core.md](scene-and-core.md).
+  persisted, undoable description of the room. Written by core operations,
+  by scene (the drag's live-present writes), and by the room-surface feature
+  (finish/mood picks). Ownership vs. the scene itself is the subject of
+  [scene-and-core.md](scene-and-core.md).
 - **`scene-session-store`** - the scene **session**: the raw hover-preview
   pointer (gated for reads by `usePreviewedId`), the live drag flag (written
   synchronously with the gesture; mutations and draft persistence guard on
@@ -67,7 +69,9 @@ a store.
   its source are written atomically through `applySelection`
   (`operations/selection-mutations`), the one write path every mutation that
   moves the selection goes through. History mutations reconcile the pointer
-  against restored items rather than undoing it. Written by core operations.
+  against restored items rather than undoing it. The pointer is written by
+  core operations only; the focus-intent tokens are requested/cleared by the
+  owning surfaces (selection and outliner features, app focus commands).
 - **`editor-lifecycle-store`** - the single owner of the startup phase machine
   (`loading | ready | errored`), asset errors, restore outcome/attempt tracking,
   and the startup-cycle counters `sceneEpoch` (Scene remount key) and

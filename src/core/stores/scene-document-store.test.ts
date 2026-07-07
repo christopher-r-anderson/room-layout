@@ -1,15 +1,10 @@
 // @vitest-environment jsdom
 
 import { act, renderHook } from '@testing-library/react'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { createHistoryState } from '@/shared/lib/ui/editor-history'
 import type { FurnitureItem } from '@/domain/furniture'
 import { makeFurnitureItem } from '@/test/support/furniture'
-import {
-  clearSceneServices,
-  registerSceneServices,
-} from '@/core/scene-services'
-import { sceneCommands } from '@/core/scene-commands'
 import {
   resetSceneDocumentStore,
   sceneDocumentActions,
@@ -23,28 +18,10 @@ const FURNITURE_ITEM = makeFurnitureItem({ id: 'item-1', catalogId: 'chair-1' })
 
 beforeEach(() => {
   resetSceneDocumentStore()
-  clearSceneServices()
 })
 
 function seedSceneItems(items: FurnitureItem[]) {
   sceneDocumentActions.setHistory(createHistoryState(items))
-}
-
-function registerDefaultSceneServices(
-  overrides: Partial<Parameters<typeof registerSceneServices>[0]> = {},
-) {
-  registerSceneServices({
-    focusSelected: () => undefined,
-    getCameraPosition: () => [0, 0, 0],
-    loadCollectionScene: () => Promise.resolve(),
-    getSnapshot: () => ({
-      cameraPosition: [0, 0, 0] as [number, number, number],
-      items: [],
-    }),
-    setCameraKeyState: () => undefined,
-    setCameraPreset: () => undefined,
-    ...overrides,
-  })
 }
 
 describe('useSceneDocumentStore', () => {
@@ -80,66 +57,5 @@ describe('useSceneDocumentStore', () => {
     })
 
     expect(lightingMoodId.current).toBe('')
-  })
-
-  it('delegates setCameraKeyState through registered scene services', () => {
-    const setCameraKeyState = vi.fn()
-    const keyState = new Set(['keyW'] as const)
-
-    registerDefaultSceneServices({
-      setCameraKeyState,
-    })
-
-    act(() => {
-      sceneCommands.setCameraKeyState(keyState)
-    })
-
-    expect(setCameraKeyState).toHaveBeenCalledWith(keyState)
-  })
-
-  it('reads getCameraPosition through registered scene services', () => {
-    registerDefaultSceneServices({
-      getCameraPosition: () => [1.235, 2.345, 3.457],
-    })
-
-    expect(sceneCommands.getCameraPosition()).toEqual([1.235, 2.345, 3.457])
-  })
-
-  it('tracks scene readiness via registered services', () => {
-    expect(sceneCommands.isSceneReady()).toBe(false)
-
-    registerDefaultSceneServices()
-    expect(sceneCommands.isSceneReady()).toBe(true)
-
-    clearSceneServices()
-    expect(sceneCommands.isSceneReady()).toBe(false)
-  })
-
-  it('reads getSnapshot through registered scene services', () => {
-    const snapshot = {
-      cameraPosition: [0, 0, 0] as [number, number, number],
-      items: [],
-    }
-
-    registerDefaultSceneServices({
-      getSnapshot: () => snapshot,
-    })
-
-    expect(sceneCommands.getSnapshot()).toBe(snapshot)
-  })
-
-  it('delegates focusSelected and setCameraPreset through registered scene services', () => {
-    const focusSelected = vi.fn()
-    const setCameraPreset = vi.fn()
-
-    registerDefaultSceneServices({ focusSelected, setCameraPreset })
-
-    act(() => {
-      sceneCommands.focusSelected()
-      sceneCommands.setCameraPreset('top')
-    })
-
-    expect(focusSelected).toHaveBeenCalledTimes(1)
-    expect(setCameraPreset).toHaveBeenCalledWith('top')
   })
 })

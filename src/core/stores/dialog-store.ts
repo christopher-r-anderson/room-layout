@@ -5,7 +5,7 @@ import type {
   DialogId,
   DialogKind,
   DialogRuntimeContext,
-} from '../dialog-contract'
+} from '@/core/dialog-contract'
 
 interface ActiveSurfaceState<TPayload = unknown> {
   id: DialogId

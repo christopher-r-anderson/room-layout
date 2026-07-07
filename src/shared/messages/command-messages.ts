@@ -12,4 +12,6 @@ export const ADD_FURNITURE_LOAD_FAILED_MESSAGE: MessageDescriptor = msg`Couldn't
 
 export const ADD_FURNITURE_UNAVAILABLE_MESSAGE: MessageDescriptor = msg`That item isn't available right now.`
 
+export const ADD_FURNITURE_WHILE_DRAGGING_MESSAGE: MessageDescriptor = msg`Finish dragging before adding furniture.`
+
 export const DELETE_SELECTION_MISSING_MESSAGE: MessageDescriptor = msg`No selected furniture item was available to delete.`

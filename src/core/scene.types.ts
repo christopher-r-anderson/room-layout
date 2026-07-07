@@ -15,13 +15,11 @@ interface SceneSnapshotItem {
 }
 
 // Plain-data view of the mounted scene (camera + projected item targets),
-// produced by the engine for tests and serialization.
+// produced by the engine for canvas keyboard navigation and the e2e bridge.
 export interface SceneSnapshot {
   cameraPosition: [number, number, number]
   items: SceneSnapshotItem[]
 }
-
-export type MoveSource = 'keyboard' | 'inspector' | 'toolbar' | 'drag'
 
 export type MoveSelectionResult =
   | { ok: true; position: [number, number, number] }
@@ -49,7 +47,7 @@ export type UpdateSelectionTransformResult =
 
 export type AddFurnitureResult =
   | { ok: true; id: string }
-  | { ok: false; reason: 'unknown-catalog' | 'no-space' }
+  | { ok: false; reason: 'unknown-catalog' | 'no-space' | 'dragging' }
 
 export type SelectByIdResult =
   | { ok: true; status: 'selected' | 'cleared' }

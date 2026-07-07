@@ -1,28 +1,22 @@
 import { useCallback, type RefObject } from 'react'
-import type { Camera, Object3D } from 'three'
+import type { Object3D } from 'three'
 import type { CameraControlsImpl } from '@react-three/drei'
 import { useSelectionStore } from '@/core/stores/selection-store'
-import { getVisualObjectBounds } from '../three/get-visual-object-bounds'
+import { getVisualObjectBounds } from '@/scene/internal/three/get-visual-object-bounds'
 import { CAMERA_PRESETS } from './camera-presets'
 import type { CameraKeyState, CameraPreset } from '@/core/scene.types'
 
-function roundCameraCoordinate(value: number) {
-  return Math.round(value * 1000) / 1000
-}
-
 interface UseCameraOperationsOptions {
-  camera: Camera
   cameraControlsRef: RefObject<CameraControlsImpl | null>
   cameraKeyStateRef: RefObject<CameraKeyState>
   objectRefs: RefObject<Map<string, Object3D>>
   invalidate: () => void
 }
 
-// Camera service handlers: jump to a named preset, read the rounded camera
-// position, record held-key state for continuous motion, and frame the selected
-// object. Extracted from the Scene component to give camera control one home.
+// Camera service handlers: jump to a named preset, record held-key state for
+// continuous motion, and frame the selected object. Extracted from the Scene
+// component to give camera control one home.
 export function useCameraOperations({
-  camera,
   cameraControlsRef,
   cameraKeyStateRef,
   objectRefs,
@@ -39,12 +33,6 @@ export function useCameraOperations({
     },
     [cameraControlsRef],
   )
-
-  const getCameraPosition = useCallback(() => {
-    return camera.position.toArray().map((coordinate) => {
-      return roundCameraCoordinate(coordinate)
-    }) as [number, number, number]
-  }, [camera])
 
   const setCameraKeyState = useCallback(
     (keyState: CameraKeyState) => {
@@ -87,7 +75,6 @@ export function useCameraOperations({
 
   return {
     setCameraPreset,
-    getCameraPosition,
     setCameraKeyState,
     focusSelected,
   }
