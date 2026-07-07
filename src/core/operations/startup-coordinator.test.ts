@@ -76,12 +76,16 @@ describe('startup-coordinator', () => {
     expect(useEditorLifecycleStore.getState().startupPhase).toBe('ready')
   })
 
-  it('does not re-run restore after a retry preserves the attempt count', () => {
+  it('re-runs the restore flow when a retry completes', () => {
     completeAssetLoad()
     requestAssetRetry()
     completeAssetLoad()
 
-    expect(runStartupRestoreFlow).toHaveBeenCalledTimes(1)
+    // The error path wiped the document, so the retry cycle must restore the
+    // draft again; skipping it would unlock an empty room and let draft
+    // persistence clear the saved draft as an at-defaults scene.
+    expect(runStartupRestoreFlow).toHaveBeenCalledTimes(2)
+    expect(useEditorLifecycleStore.getState().restoreAttemptCount).toBe(1)
   })
 
   it('records the asset error, resets the shell, and announces on asset error', () => {

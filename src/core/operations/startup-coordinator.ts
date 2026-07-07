@@ -180,9 +180,10 @@ function runRestoreOnce() {
   })
 }
 
-// Assets are ready. Runs the one-time restore flow (shared link -> draft ->
-// defaults) on the first ready of a session, guarded by the attempt count so a
-// Scene remount or retry does not re-run it.
+// Assets are ready. Runs the restore flow (shared link -> draft -> defaults)
+// once per startup cycle, guarded by the attempt count so a Scene remount does
+// not re-run it. A retry resets the count (requestRetry): the error path wiped
+// the document, so the fresh cycle must restore the draft again.
 export function completeAssetLoad() {
   if (useEditorLifecycleStore.getState().restoreAttemptCount === 0) {
     editorLifecycleActions.incrementRestoreAttempt()
