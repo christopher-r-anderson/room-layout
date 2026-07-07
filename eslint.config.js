@@ -63,11 +63,15 @@ const FEATURE_RESTRICTED_BOUND_HOOK_PATHS = [
   ['editor-lifecycle-store', 'useEditorLifecycleStore'],
   ['assets-store', 'useAssetsStore'],
   ['collection-loading-store', 'useCollectionLoadingStore'],
-].map(([storeModule, boundHook]) => ({
-  name: `@/core/stores/${storeModule}`,
-  importNames: [boundHook],
-  message: `Import narrow selector hooks or sanctioned getters from ${storeModule}; the generic bound hook (getState/subscribe) belongs to core operations.`,
-}))
+].flatMap(([storeModule, boundHook]) =>
+  // Cover extension-suffixed specifiers too (allowImportingTsExtensions):
+  // paths entries match module names exactly.
+  ['', '.ts', '.js'].map((extension) => ({
+    name: `@/core/stores/${storeModule}${extension}`,
+    importNames: [boundHook],
+    message: `Import narrow selector hooks or sanctioned getters from ${storeModule}; the generic bound hook (getState/subscribe) belongs to core operations.`,
+  })),
+)
 
 export default defineConfig([
   // Flat config replaces rule values from later matching blocks.
