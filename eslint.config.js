@@ -52,6 +52,23 @@ const RESTRICTED_ZUSTAND_IMPORT_PATHS = [
   },
 ]
 
+// Features read narrow selector hooks and sanctioned imperative getters; the
+// generic bound store hook (whose getState/subscribe surface belongs to core
+// operations and reconcilers) stays out of feature code. Only stores that
+// export their bound hook are listed; the rest are module-private already.
+const FEATURE_RESTRICTED_BOUND_HOOK_PATHS = [
+  ['scene-document-store', 'useSceneDocumentStore'],
+  ['scene-session-store', 'useSceneSessionStore'],
+  ['selection-store', 'useSelectionStore'],
+  ['editor-lifecycle-store', 'useEditorLifecycleStore'],
+  ['assets-store', 'useAssetsStore'],
+  ['collection-loading-store', 'useCollectionLoadingStore'],
+].map(([storeModule, boundHook]) => ({
+  name: `@/core/stores/${storeModule}`,
+  importNames: [boundHook],
+  message: `Import narrow selector hooks or sanctioned getters from ${storeModule}; the generic bound hook (getState/subscribe) belongs to core operations.`,
+}))
+
 export default defineConfig([
   // Flat config replaces rule values from later matching blocks.
   // Keep overlapping blocks self-contained.
@@ -252,7 +269,10 @@ export default defineConfig([
       'no-restricted-imports': [
         'error',
         {
-          paths: RESTRICTED_ZUSTAND_IMPORT_PATHS,
+          paths: [
+            ...RESTRICTED_ZUSTAND_IMPORT_PATHS,
+            ...FEATURE_RESTRICTED_BOUND_HOOK_PATHS,
+          ],
           patterns: [
             {
               group: RUNTIME_TEST_IMPORT_GROUP,

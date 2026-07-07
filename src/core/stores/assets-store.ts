@@ -74,6 +74,11 @@ export function getSourcePathForCatalogId(catalogId: string): string | null {
 }
 
 export const useCatalogEntries = () => useAssetsStore((state) => state.catalog)
+
+/** Non-reactive peer of {@link useCatalogEntries} for use outside React. */
+export function getCatalogEntries() {
+  return useAssetsStore.getState().catalog
+}
 export const useCollections = () => useAssetsStore((state) => state.collections)
 export const useEnvironmentConfig = () =>
   useAssetsStore((state) => state.environmentConfig)

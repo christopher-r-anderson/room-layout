@@ -83,6 +83,11 @@ export function resetSceneDocumentStore() {
 
 export const useItems = () =>
   useSceneDocumentStore((state) => state.history.present)
+
+/** Non-reactive peer of {@link useItems} for use outside React. */
+export function getItems() {
+  return useSceneDocumentStore.getState().history.present
+}
 export const useFloorFinishId = () =>
   useSceneDocumentStore((state) => state.floorFinishId)
 export const useWallFinishId = () =>

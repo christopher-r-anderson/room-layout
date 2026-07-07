@@ -3,10 +3,10 @@ import type { FurnitureItem } from '@/domain/furniture'
 import { i18n } from '@/shared/i18n/i18n'
 import { feedbackActions } from '@/core/stores/feedback-store'
 import { dialogActions } from '@/core/stores/dialog-store'
-import { useSceneDocumentStore } from '@/core/stores/scene-document-store'
+import { getItems } from '@/core/stores/scene-document-store'
 import {
+  getSelectedSource,
   selectionActions,
-  useSelectionStore,
 } from '@/core/stores/selection-store'
 import { sceneCommands } from '@/core/scene-commands'
 import { deleteSelection } from '@/core/operations/furniture-mutations'
@@ -21,8 +21,8 @@ let pendingDeleteFocusTarget: 'room-view' | 'outliner' | null = null
 export function confirmDeleteSelection(
   pendingDeleteFurniture: FurnitureItem | null,
 ) {
-  const items = useSceneDocumentStore.getState().history.present
-  const selectedSource = useSelectionStore.getState().selectedSource
+  const items = getItems()
+  const selectedSource = getSelectedSource()
 
   const pendingId = pendingDeleteFurniture?.id ?? null
   const deletedIndex = pendingId

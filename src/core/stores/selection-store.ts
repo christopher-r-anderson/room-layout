@@ -77,6 +77,11 @@ export function resetSelectionStore() {
   selectionActions.reset()
 }
 
+/** Non-reactive read of the selection provenance for use outside React. */
+export function getSelectedSource() {
+  return useSelectionStore.getState().selectedSource
+}
+
 export const useSelectedId = () =>
   useSelectionStore((state) => state.selectedId)
 export const useHasSelection = () =>
