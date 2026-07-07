@@ -223,7 +223,7 @@ test('outliner collapse toggle is keyboard operable and manages focus correctly'
   await expect(couchButton).toBeVisible()
 })
 
-test('Tab from the room view reaches header controls and Tab from the outliner reaches inspector controls', async ({
+test('header controls precede the room view in tab order and Tab from the outliner reaches inspector controls', async ({
   page,
 }) => {
   await openEditor(page)
@@ -233,11 +233,16 @@ test('Tab from the room view reaches header controls and Tab from the outliner r
     page.getByText('Select an item to fine-tune placement.'),
   ).toBeHidden()
 
+  // Banner-first: the header toolbar is the Tab stop just before the room
+  // view. Entering the roving toolbar backwards lands on whichever control is
+  // its current roving stop, so pin the toolbar, not a specific button.
   await focusRoomView(page)
-  await page.keyboard.press('Tab')
+  await page.keyboard.press('Shift+Tab')
   await expect(
-    page.getByRole('button', { name: 'Add Furniture' }),
-  ).toBeFocused()
+    page
+      .getByRole('toolbar', { name: 'Editor actions' })
+      .locator('button:focus'),
+  ).toHaveCount(1)
 
   const outlinerButton = page.getByRole('button', { name: /^Leather Couch/i })
   await outlinerButton.focus()
@@ -386,12 +391,16 @@ test.describe('narrow viewport overlay order', () => {
     const redoButton = page.getByRole('button', { name: 'Redo' })
     const moreButton = page.getByRole('button', { name: 'More actions' })
 
+    // Banner-first: the header is a single roving toolbar and the page's first
+    // Tab stop; it lands on the entry control (Add Furniture), then arrow keys
+    // move between the controls within it. The room view follows.
+    await page.keyboard.press('Tab')
+    await expect(addFurnitureButton).toBeFocused()
+
     await page.keyboard.press('Tab')
     await expect(roomView).toBeFocused()
 
-    // The header is a single roving toolbar: Tab lands on its entry control
-    // (Add Furniture), then arrow keys move between the controls within it.
-    await page.keyboard.press('Tab')
+    await page.keyboard.press('Shift+Tab')
     await expect(addFurnitureButton).toBeFocused()
 
     await page.keyboard.press('ArrowRight')

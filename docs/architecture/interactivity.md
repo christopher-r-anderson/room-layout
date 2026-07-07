@@ -62,20 +62,24 @@ chrome carries no `inert` of its own.
   `autoFocus` the standard modal mechanism covers everything; no manual `inert`.
 - **Non-blocking surfaces** (the Room panel) deliberately leave the chrome live.
 
-During startup the editor chrome is **not mounted at all**: `EditorOverlay` is
-code-split and rendered only once the editor is ready (`editor-body.tsx`), so
-there is no chrome to neutralize while assets load. What _is_ mounted during
-loading is the canvas — it drives the asset load — so it carries the one
-hand-rolled `inert` seam in the app, where there is no modal to own it:
+During startup the editor chrome is **not mounted at all**: `EditorHeader` and
+`EditorPanels` are code-split and rendered only once the editor is ready
+(`editor-body.tsx`), so there is no chrome to neutralize while assets load.
+What _is_ mounted during loading is the canvas — it drives the asset load — so
+it carries the one hand-rolled `inert` seam in the app, where there is no modal
+to own it:
 
 ```text
-<main>
-  <section "Interactive 3D room editor" inert={startupOverlayActive}>  ← canvas, the only seam
-    <SceneCanvas>
-  {editorReady && <EditorOverlay>}     ← TopHeader · CameraTools · Outliner ·
+<div>                                  ← shell column: header and panels share one flow
+  <header>                             ← banner landmark, first in tab order
+    {editorReady && <EditorHeader>}    ← TopHeader toolbar, mounted only when ready
+  <main>
+    <section "Interactive 3D room editor" inert={startupOverlayActive}>  ← canvas, the only seam
+      <SceneCanvas>
+    {editorReady && <EditorPanels>}    ← RoomSidebar · CameraTools · Outliner ·
                                           panels · toolbars, mounted only when ready
-  <InitializationProgress> / <InitializationError>   ← shell-level loading UI
-    dialogs / drawers render in portals
+    <InitializationProgress> / <InitializationError>   ← shell-level loading UI
+      dialogs / drawers render in portals
 ```
 
 `inert` covers pointer events, focus, and the accessibility tree — but not

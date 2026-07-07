@@ -25,7 +25,7 @@ import { EditorRefsProvider } from '../../shared/providers/editor-refs-provider'
 import { CommandDispatchProvider } from '@/core/commands/command-dispatch-provider'
 import { SelectedItemInteractionProvider } from '@/features/selection/selected-item-interaction-provider'
 import { SelectedItemPlacementProvider } from '@/features/selection/selected-item-placement-provider'
-import { EditorOverlay } from './editor-overlay'
+import { EditorHeader, EditorPanels } from './editor-overlay'
 
 vi.mock('@/shared/layout/use-header-layout-mode', () => ({
   useHeaderLayoutMode: () => 'desktop' as const,
@@ -208,7 +208,7 @@ beforeEach(() => {
   editorLifecycleActions.markAssetsReady()
 })
 
-describe('EditorOverlay integration', () => {
+describe('editor chrome integration', () => {
   it('wires outliner reverse-tab handoff and room focus return across the shell', async () => {
     const user = userEvent.setup()
     const selectedFurniture = createSelectedFurniture()
@@ -246,8 +246,15 @@ describe('EditorOverlay integration', () => {
               <SelectedItemInteractionProvider>
                 <SelectedItemPlacementProvider value={placementValue}>
                   <CommandDispatchProvider value={vi.fn()}>
+                    {/* Mirrors the EditorBody shell: header chrome precedes
+                        the panels inside main. */}
                     <div className="relative min-h-192">
-                      <EditorOverlay />
+                      <header>
+                        <EditorHeader />
+                      </header>
+                      <main>
+                        <EditorPanels />
+                      </main>
                     </div>
                   </CommandDispatchProvider>
                 </SelectedItemPlacementProvider>

@@ -38,7 +38,7 @@ export function TopHeaderMobile() {
       className="pointer-events-auto"
     >
       <Toolbar.Root
-        aria-label={t`Header actions`}
+        aria-label={t`Editor actions`}
         render={<TopHeaderSurface className="w-full" />}
       >
         <CatalogDrawer

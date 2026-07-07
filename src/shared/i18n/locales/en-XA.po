@@ -169,6 +169,9 @@ msgstr "[Ďŕàƒţ ƒàĩĺēď ţō ŕēśţōŕē. Śţàŕţĩńğ ŵĩţĥ 
 msgid "Edit the selected item."
 msgstr "[Ēďĩţ ţĥē śēĺēćţēď ĩţēḿ.āēīōūáéíóúāēī]"
 
+msgid "Editor actions"
+msgstr "[Ēďĩţōŕ àćţĩōńśāēīōūáéíóú]"
+
 msgid "Editor failed to load"
 msgstr "[Ēďĩţōŕ ƒàĩĺēď ţō ĺōàďāēīōūáéíóúāē]"
 
@@ -225,9 +228,6 @@ msgstr "[Ƒũŕńĩţũŕē ţŷƥē ţō àďďāēīōūáéíóúāē]"
 
 msgid "Getting things ready"
 msgstr "[Ğēţţĩńğ ţĥĩńğś ŕēàďŷāēīōūáéíóúāēīō]"
-
-msgid "Header actions"
-msgstr "[Ĥēàďēŕ àćţĩōńśāēīōūáéíóú]"
 
 msgid "History"
 msgstr "[Ĥĩśţōŕŷāēīōūáé]"

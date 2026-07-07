@@ -152,6 +152,6 @@ Unlike discrete shortcuts, this path does not use `suppressionMode`.
 
 `ToolButton` can attach keyboard metadata to controls using `shortcuts` (ARIA keyshortcuts format), and the shared UI renders consistent key hints via `KbdShortcutDisplay`.
 
-Non-shortcut toolbar actions such as `Add Furniture` and `Room` remain normal focusable buttons in the overlay. They are intentionally discovered through tab order rather than global key bindings.
+Non-shortcut toolbar actions such as `Add Furniture` and `Room` remain normal focusable buttons in the header toolbar, the first tab stop on the page. They are intentionally discovered through tab order rather than global key bindings.
 
 Selected-item detail inputs commit their local draft on `Enter` or blur, and `Escape` restores the last committed value. Those fields rely on the shared editing-target checks so room-view shortcuts do not fire while focus is inside a detail input.

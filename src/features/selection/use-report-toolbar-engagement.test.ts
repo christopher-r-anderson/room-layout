@@ -18,7 +18,7 @@ const engaged = () =>
 // narrowing and containment check run for real: focus either lands on a control
 // inside the wrapper or leaves it entirely.
 function blurEvent(focusStaysInside: boolean): FocusEvent<HTMLElement> {
-  const wrapper = document.createElement('section')
+  const wrapper = document.createElement('div')
   const insideControl = document.createElement('button')
   wrapper.appendChild(insideControl)
   const outsideControl = document.createElement('button')

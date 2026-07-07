@@ -36,7 +36,7 @@ export function InitializationProgress() {
 
   return (
     <div
-      className="absolute inset-0 grid place-items-center bg-background p-6"
+      className="pointer-events-auto fixed inset-0 z-30 grid place-items-center bg-background p-6"
       role="status"
       aria-live="polite"
       aria-label={t`Loading the room`}
