@@ -2,7 +2,10 @@ import { msg } from '@lingui/core/macro'
 import type { FurnitureItem } from '@/domain/furniture'
 import { i18n } from '@/shared/i18n/i18n'
 import { useSceneDocumentStore } from '@/core/stores/scene-document-store'
-import { useSelectionStore } from '@/core/stores/selection-store'
+import {
+  useSelectionStore,
+  type InteractionSource,
+} from '@/core/stores/selection-store'
 import { feedbackActions } from '@/core/stores/feedback-store'
 import { clearPreviewOnCanvasMiss } from '@/core/operations/preview-actions'
 import { sceneCommands } from '@/core/scene-commands'
@@ -11,7 +14,6 @@ import {
   selectById as selectDocumentById,
 } from './selection-mutations'
 import type { SelectByIdResult } from '@/core/scene.types'
-import type { InteractionSource } from '@/core/types/interaction.types'
 
 export type SelectionAnnouncementMode =
   | 'default'

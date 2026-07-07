@@ -6,7 +6,7 @@ import { Button } from '@/shared/ui/button'
 import { Caption } from '@/shared/ui/caption'
 import { Card, CardContent } from '@/shared/ui/card'
 import { requestAssetRetry } from '@/core/operations/startup-coordinator'
-import type { StartupErrorKind } from './startup.types'
+import type { StartupErrorKind } from '@/core/stores/editor-lifecycle-store'
 
 interface InitializationErrorProps {
   errorKind: StartupErrorKind | null

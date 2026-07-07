@@ -11,6 +11,7 @@ import { dialogActions } from '../stores/dialog-store'
 import {
   editorLifecycleActions,
   useEditorLifecycleStore,
+  type StartupErrorKind,
 } from '../stores/editor-lifecycle-store'
 import { useAssetsStore } from '../stores/assets-store'
 import { sceneDocumentActions } from '../stores/scene-document-store'
@@ -28,7 +29,6 @@ import {
   validateDraftState,
 } from './restore-flow'
 import type { RestorableState } from './restore-flow.types'
-import type { StartupErrorKind } from '../types/startup.types'
 
 // Resets the editor surface back to a clean slate. Used by the asset-error and
 // retry transitions so a failed or restarted load never leaves stale scene or

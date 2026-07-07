@@ -4,7 +4,7 @@ import type {
   SelectedItemDetailField,
   UpdateSelectedItemDetailsInput,
   UpdateSelectedItemDetailsResult,
-} from '@/core/types/selected-item.types'
+} from './selected-item.types'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import type { FurnitureItem } from '@/domain/furniture'
 import { cn } from '@/shared/lib/utils'

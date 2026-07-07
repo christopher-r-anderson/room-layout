@@ -1,6 +1,22 @@
 import { create } from 'zustand'
-import type { InteractionSource } from '../types/interaction.types'
-import type { OutlinerFocusRequest } from '../types/outliner.types'
+
+/** How a selection was made; the provenance behind `selectedSource`. */
+export type InteractionSource =
+  | 'canvas-keyboard'
+  | 'canvas-pointer'
+  | 'panel-keyboard'
+  | 'panel-pointer'
+  | 'toolbar'
+  | null
+
+export type PanelInteractionSource = 'panel-keyboard' | 'panel-pointer'
+
+export interface OutlinerFocusRequest {
+  token: number
+  preferredIndex?: number
+  targetSelectedId?: string | null
+  focusContainer?: boolean
+}
 
 // The selection session: the selected item pointer, how it was selected
 // (`selectedSource`, read to decide where focus lands after a delete), and the

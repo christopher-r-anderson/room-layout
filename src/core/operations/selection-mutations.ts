@@ -6,9 +6,9 @@ import {
 import {
   selectionActions,
   useSelectionStore,
+  type InteractionSource,
 } from '@/core/stores/selection-store'
 import type { SelectByIdResult } from '@/core/scene.types'
-import type { InteractionSource } from '@/core/types/interaction.types'
 
 // Selection session mutations, blocked mid-drag. The pointer and its
 // provenance are written atomically; a selection change also drops any hover

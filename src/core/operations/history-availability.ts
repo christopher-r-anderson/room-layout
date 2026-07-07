@@ -1,7 +1,11 @@
 import { canRedoHistory, canUndoHistory } from '@/shared/lib/ui/editor-history'
 import { useSceneDocumentStore } from '@/core/stores/scene-document-store'
 import { useIsDragging } from '@/core/stores/scene-session-store'
-import type { HistoryAvailability } from '@/core/types/history.types'
+
+export interface HistoryAvailability {
+  canUndo: boolean
+  canRedo: boolean
+}
 
 /**
  * Undo/redo availability for the header controls. Cross-store derived state:

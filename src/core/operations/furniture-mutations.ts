@@ -8,8 +8,10 @@ import {
   useSceneDocumentStore,
 } from '@/core/stores/scene-document-store'
 import { useSceneSessionStore } from '@/core/stores/scene-session-store'
-import { useSelectionStore } from '@/core/stores/selection-store'
-import type { InteractionSource } from '@/core/types/interaction.types'
+import {
+  useSelectionStore,
+  type InteractionSource,
+} from '@/core/stores/selection-store'
 import { applySelection } from './selection-mutations'
 import { useAssetsStore } from '@/core/stores/assets-store'
 import { getCollectionNodeDefaults } from '@/core/stores/collection-scene-registry'

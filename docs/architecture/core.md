@@ -17,7 +17,6 @@ Two concepts have their own docs:
 - `operations/` — cross-cutting operations over the stores.
 - `persistence/` — scene state ↔ storage/URL.
 - `commands/` — the `EditorCommand` vocabulary and its dispatch binding.
-- `types/` — shared types.
 - Root — the public, cross-layer contracts: the engine port surface
   (`scene-commands`, `scene-services`, `scene.types`) and `dialog-contract`.
 

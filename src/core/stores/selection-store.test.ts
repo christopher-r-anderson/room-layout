@@ -1,11 +1,11 @@
 // @vitest-environment jsdom
 
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { OutlinerFocusRequest } from '../types/outliner.types'
 import {
   resetSelectionStore,
   selectionActions,
   useSelectionStore,
+  type OutlinerFocusRequest,
 } from './selection-store'
 
 beforeEach(() => {

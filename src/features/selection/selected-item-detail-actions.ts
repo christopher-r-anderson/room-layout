@@ -9,7 +9,7 @@ import { setSelectionTransform } from '@/core/operations/furniture-mutations'
 import type {
   UpdateSelectedItemDetailsInput,
   UpdateSelectedItemDetailsResult,
-} from '@/core/types/selected-item.types'
+} from './selected-item.types'
 import { formatSelectedItemDetailsBlockedMessage } from './selected-item-detail-messages'
 
 function normalizeDegreesRadians(valueDegrees: number) {
