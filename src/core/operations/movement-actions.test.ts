@@ -82,16 +82,13 @@ describe('movement-actions', () => {
       position: [1, 0, 0],
     })
 
-    expect(moveSelection({ x: 1, z: 0 }, { source: 'keyboard' })).toEqual({
+    expect(moveSelection({ x: 1, z: 0 })).toEqual({
       ok: true,
       position: [1, 0, 0],
     })
     rotateSelection(1)
 
-    expect(moveDocumentSelection).toHaveBeenCalledWith(
-      { x: 1, z: 0 },
-      { source: 'keyboard' },
-    )
+    expect(moveDocumentSelection).toHaveBeenCalledWith({ x: 1, z: 0 })
     expect(rotateDocumentSelection).toHaveBeenCalledWith(Math.PI / 12)
   })
 

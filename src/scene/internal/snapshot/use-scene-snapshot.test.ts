@@ -5,7 +5,7 @@ import { act, renderHook } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { Object3D, PerspectiveCamera } from 'three'
 import { useSceneSnapshot } from './use-scene-snapshot'
-import type { SceneSnapshot } from './scene-snapshot'
+import type { SceneSnapshot } from '@/core/scene.types'
 import type { FurnitureItem } from '@/domain/furniture'
 
 const { mockCreateSceneSnapshot } = vi.hoisted(() => ({

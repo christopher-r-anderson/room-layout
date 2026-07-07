@@ -15,7 +15,7 @@ import {
 } from '../stores/selection-store'
 import { runStartupRestoreFlow } from './restore-flow'
 import { resetCollectionPipeline } from './collection-loader'
-import { clearSceneServices } from '@/core/scene-commands'
+import { clearSceneServices } from '@/core/scene-services'
 import {
   completeAssetLoad,
   notifyAssetError,
@@ -44,7 +44,8 @@ vi.mock('./collection-loader', () => ({
   resetCollectionPipeline: vi.fn(),
 }))
 
-vi.mock('@/core/scene-commands', () => ({
+vi.mock('@/core/scene-services', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/core/scene-services')>()),
   clearSceneServices: vi.fn(),
 }))
 

@@ -35,7 +35,6 @@ function registerDefaultSceneServices(
 ) {
   registerSceneServices({
     focusSelected: () => undefined,
-    getCameraPosition: () => [0, 0, 0],
     loadCollectionScene: () => Promise.resolve(),
     getSnapshot: () => ({
       cameraPosition: [0, 0, 0] as [number, number, number],
@@ -95,14 +94,6 @@ describe('useSceneDocumentStore', () => {
     })
 
     expect(setCameraKeyState).toHaveBeenCalledWith(keyState)
-  })
-
-  it('reads getCameraPosition through registered scene services', () => {
-    registerDefaultSceneServices({
-      getCameraPosition: () => [1.235, 2.345, 3.457],
-    })
-
-    expect(sceneCommands.getCameraPosition()).toEqual([1.235, 2.345, 3.457])
   })
 
   it('tracks scene readiness via registered services', () => {

@@ -3,27 +3,28 @@ import { toast } from 'sonner'
 import { createDefaultSceneState } from '@/domain/scene-defaults'
 import { isSceneStateAtDefaults } from '@/domain/scene-model'
 import { i18n } from '@/shared/i18n/i18n'
-import { clearSceneServices } from '@/core/scene-commands'
+import { clearSceneServices } from '@/core/scene-services'
 import { resetCollectionPipeline } from './collection-loader'
+import { resetPreviewState } from './preview-actions'
 import { restoreInitialLayout } from './history-mutations'
-import { feedbackActions } from '../stores/feedback-store'
-import { dialogActions } from '../stores/dialog-store'
+import { feedbackActions } from '@/core/stores/feedback-store'
+import { dialogActions } from '@/core/stores/dialog-store'
 import {
   editorLifecycleActions,
   useEditorLifecycleStore,
   type StartupErrorKind,
-} from '../stores/editor-lifecycle-store'
-import { useAssetsStore } from '../stores/assets-store'
-import { sceneDocumentActions } from '../stores/scene-document-store'
-import { resetSceneSessionStore } from '../stores/scene-session-store'
-import { resetSelectionStore } from '../stores/selection-store'
-import { resetToolbarGeometryStore } from '../stores/toolbar-geometry-store'
-import { resetToolbarInteractionStore } from '../stores/toolbar-interaction-store'
-import { loadSceneDraft, saveSceneDraft } from '../persistence/scene-draft'
+} from '@/core/stores/editor-lifecycle-store'
+import { useAssetsStore } from '@/core/stores/assets-store'
+import { sceneDocumentActions } from '@/core/stores/scene-document-store'
+import { resetSceneSessionStore } from '@/core/stores/scene-session-store'
+import { resetSelectionStore } from '@/core/stores/selection-store'
+import { resetToolbarGeometryStore } from '@/core/stores/toolbar-geometry-store'
+import { resetToolbarInteractionStore } from '@/core/stores/toolbar-interaction-store'
+import { loadSceneDraft, saveSceneDraft } from '@/core/persistence/scene-draft'
 import {
   parseSceneUrl,
   removeSceneParamFromUrl,
-} from '../persistence/scene-url'
+} from '@/core/persistence/scene-url'
 import { runStartupRestoreFlow, validateDraftState } from './restore-flow'
 import type { RestorableState } from './restore-flow.types'
 
@@ -33,6 +34,9 @@ import type { RestorableState } from './restore-flow.types'
 function resetStartupShell() {
   sceneDocumentActions.reset()
   resetSceneSessionStore()
+  // The session reset clears the raw preview pointer; this clears the preview
+  // module scratch (hysteresis timer, active source) alongside it.
+  resetPreviewState()
   resetSelectionStore()
   resetToolbarGeometryStore()
   resetToolbarInteractionStore()

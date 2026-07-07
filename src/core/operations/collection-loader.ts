@@ -7,9 +7,9 @@ import {
   isCollectionFailed,
   isCollectionLoaded,
   resetCollectionLoadingStore,
-} from '../stores/collection-loading-store'
-import { useEditorLifecycleStore } from '../stores/editor-lifecycle-store'
-import { useSceneDocumentStore } from '../stores/scene-document-store'
+} from '@/core/stores/collection-loading-store'
+import { useEditorLifecycleStore } from '@/core/stores/editor-lifecycle-store'
+import { useSceneDocumentStore } from '@/core/stores/scene-document-store'
 import {
   clearCollectionBytes,
   fetchCollectionBytes,

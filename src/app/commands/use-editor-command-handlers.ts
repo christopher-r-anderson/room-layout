@@ -44,7 +44,7 @@ export function useEditorCommandHandlers(): EditorCommandHandlers {
     },
     'focus-selected': focusSelectedInView,
     'move-selection': (command) => {
-      moveSelection(command.delta, { source: 'keyboard' })
+      moveSelection(command.delta)
     },
     'clear-selection': clearCanvasSelection,
     'rotate-selection': (command) => {

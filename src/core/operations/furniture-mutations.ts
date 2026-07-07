@@ -18,7 +18,6 @@ import { getCollectionNodeDefaults } from '@/core/stores/collection-scene-regist
 import type {
   AddFurnitureResult,
   MoveSelectionResult,
-  MoveSource,
   UpdateSelectionTransformResult,
 } from '@/core/scene.types'
 import {
@@ -53,11 +52,10 @@ export function deleteSelection(): boolean {
   return true
 }
 
-export function moveSelection(
-  delta: { x: number; z: number },
-  _options?: { source?: MoveSource },
-): MoveSelectionResult {
-  void _options
+export function moveSelection(delta: {
+  x: number
+  z: number
+}): MoveSelectionResult {
   const { history } = useSceneDocumentStore.getState()
   const { isDragging } = useSceneSessionStore.getState()
   const { selectedId } = useSelectionStore.getState()

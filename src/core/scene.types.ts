@@ -21,8 +21,6 @@ export interface SceneSnapshot {
   items: SceneSnapshotItem[]
 }
 
-export type MoveSource = 'keyboard' | 'inspector' | 'toolbar' | 'drag'
-
 export type MoveSelectionResult =
   | { ok: true; position: [number, number, number] }
   | {

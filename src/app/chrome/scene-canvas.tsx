@@ -3,7 +3,6 @@ import { NeutralToneMapping, SRGBColorSpace } from 'three'
 import { Scene } from '@/scene/scene'
 import { notifyAssetError } from '@/core/operations/startup-coordinator'
 import { previewFromScene } from '@/core/operations/preview-actions'
-import { sceneSessionActions } from '@/core/stores/scene-session-store'
 import { useSceneEpoch } from '@/core/stores/editor-lifecycle-store'
 import { useCatalogEntries, useCollections } from '@/core/stores/assets-store'
 import { usePreviewedId } from '@/core/operations/previewed-id'
@@ -60,7 +59,6 @@ export default function SceneCanvas({ onPointerMissed }: SceneCanvasProps) {
           floorOption={selectedFloorOption}
           wallOption={selectedWallOption}
           lightingMoodOption={selectedLightingMoodOption}
-          onFloorLoadingChange={sceneSessionActions.setFloorFinishLoading}
         />
       </SceneAssetErrorBoundary>
     </Canvas>

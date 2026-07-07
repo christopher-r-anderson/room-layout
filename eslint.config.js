@@ -181,6 +181,7 @@ export default defineConfig([
   // domain and is never imported back (see SCENE_IMPORT_GROUP).
   {
     files: ['src/scene/**/*.{ts,tsx}'],
+    ignores: RUNTIME_NON_TEST_IGNORES,
     rules: {
       'no-restricted-imports': [
         'error',
@@ -191,6 +192,14 @@ export default defineConfig([
               group: ['@/app', '@/app/**', '@/features', '@/features/**'],
               message:
                 'src/scene must not import from src/app or src/features.',
+            },
+            {
+              group: RUNTIME_TEST_IMPORT_GROUP,
+              message: 'Runtime code must not import from src/test.',
+            },
+            {
+              regex: PARENT_RELATIVE_IMPORT_REGEX,
+              message: PARENT_RELATIVE_IMPORT_MESSAGE,
             },
           ],
         },
@@ -224,6 +233,10 @@ export default defineConfig([
             {
               group: RUNTIME_TEST_IMPORT_GROUP,
               message: 'Runtime code must not import from src/test.',
+            },
+            {
+              regex: PARENT_RELATIVE_IMPORT_REGEX,
+              message: PARENT_RELATIVE_IMPORT_MESSAGE,
             },
           ],
         },

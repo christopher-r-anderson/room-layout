@@ -41,6 +41,7 @@ import {
   useItems,
 } from '@/core/stores/scene-document-store'
 import { selectByCanvasPointer } from '@/core/operations/selection-actions'
+import { sceneSessionActions } from '@/core/stores/scene-session-store'
 import { setSceneMounted } from '@/core/stores/editor-lifecycle-store'
 import {
   clearSceneServices,
@@ -58,7 +59,6 @@ export function Scene({
   floorOption = null,
   wallOption = null,
   lightingMoodOption = null,
-  onFloorLoadingChange,
 }: {
   renderQuality?: 'default' | 'e2e-low'
   catalog: FurnitureCatalogEntry[]
@@ -68,7 +68,6 @@ export function Scene({
   floorOption?: FloorFinishOption | null
   wallOption?: WallFinishOption | null
   lightingMoodOption?: LightingMoodOption | null
-  onFloorLoadingChange?: (isLoading: boolean) => void
 }) {
   const isE2ELowQuality = renderQuality === 'e2e-low'
   if (import.meta.env.DEV || IS_E2E_BUILD) {
@@ -136,11 +135,9 @@ export function Scene({
 
   const {
     setCameraPreset: handleSetCameraPreset,
-    getCameraPosition: handleGetCameraPosition,
     setCameraKeyState: handleSetCameraKeyState,
     focusSelected: handleFocusSelected,
   } = useCameraOperations({
-    camera,
     cameraControlsRef,
     cameraKeyStateRef,
     objectRefs,
@@ -159,7 +156,6 @@ export function Scene({
   useLayoutEffect(() => {
     registerSceneServices({
       focusSelected: handleFocusSelected,
-      getCameraPosition: handleGetCameraPosition,
       getSnapshot,
       loadCollectionScene,
       setCameraKeyState: handleSetCameraKeyState,
@@ -171,7 +167,6 @@ export function Scene({
     }
   }, [
     handleFocusSelected,
-    handleGetCameraPosition,
     getSnapshot,
     loadCollectionScene,
     handleSetCameraKeyState,
@@ -269,7 +264,7 @@ export function Scene({
         receiveShadows={!isE2ELowQuality}
         floorOption={floorOption}
         wallOption={wallOption}
-        onFloorLoadingChange={onFloorLoadingChange}
+        onFloorLoadingChange={sceneSessionActions.setFloorFinishLoading}
       />
       {sceneFurniture.map(({ item, sourceScene }) => (
         <InteractiveFurniture

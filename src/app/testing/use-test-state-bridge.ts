@@ -67,11 +67,12 @@ export function useTestStateBridge({
     window.__ROOM_LAYOUT_TEST__ = {
       getState: () => {
         const storeState = useSceneDocumentStore.getState()
-        const snapshotItems = sceneCommands.getSnapshot()?.items ?? []
+        const snapshot = sceneCommands.getSnapshot()
+        const snapshotItems = snapshot?.items ?? []
         const pointerTargetsById = new Map(
           snapshotItems.map((item) => [item.id, item.pointerTarget] as const),
         )
-        const cameraPosition = sceneCommands.getCameraPosition()
+        const cameraPosition = snapshot?.cameraPosition ?? [0, 0, 0]
         const {
           activeFloorFinishId,
           activeWallFinishId,

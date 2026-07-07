@@ -4,7 +4,7 @@ import { useShallow } from 'zustand/react/shallow'
 import {
   AssetHttpError,
   type StreamFetchProgress,
-} from '../operations/stream-fetch'
+} from '@/core/operations/stream-fetch'
 
 // The three-free loading lifecycle for furniture collections, keyed by sourcePath:
 // the gated set, download progress, which are wanted on demand, and which have
