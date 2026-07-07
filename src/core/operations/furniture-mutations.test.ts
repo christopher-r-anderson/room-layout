@@ -7,6 +7,10 @@ import {
   useSceneDocumentStore,
 } from '@/core/stores/scene-document-store'
 import {
+  resetSceneSessionStore,
+  sceneSessionActions,
+} from '@/core/stores/scene-session-store'
+import {
   resetSelectionStore,
   selectionActions,
   useSelectionStore,
@@ -58,6 +62,7 @@ function seedSelectedChair() {
 
 function resetAllStores() {
   resetSceneDocumentStore()
+  resetSceneSessionStore()
   resetSelectionStore()
   resetAssetsStore()
   resetCollectionSceneRegistry()
@@ -99,7 +104,7 @@ it('addFurniture reports unknown-catalog and leaves the document untouched', () 
 
 it('moveSelection refuses to move while a drag is in progress', () => {
   seedSelectedChair()
-  sceneDocumentActions.setDragging(true)
+  sceneSessionActions.setDragging(true)
 
   const result = moveSelection({ x: 1, z: 0 })
 
@@ -146,7 +151,7 @@ it('setSelectionTransform applies position and rotation and commits a history en
 
 it('setSelectionTransform refuses to apply while a drag is in progress', () => {
   seedSelectedChair()
-  sceneDocumentActions.setDragging(true)
+  sceneSessionActions.setDragging(true)
 
   const result = setSelectionTransform({ position: [1, 0, 1] })
 

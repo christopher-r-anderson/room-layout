@@ -11,6 +11,10 @@ import {
   useSceneDocumentStore,
 } from '@/core/stores/scene-document-store'
 import {
+  resetSceneSessionStore,
+  sceneSessionActions,
+} from '@/core/stores/scene-session-store'
+import {
   resetSelectionStore,
   selectionActions,
   useSelectionStore,
@@ -58,6 +62,7 @@ function seedLoadedChairCollection() {
 
 function resetAllStores() {
   resetSceneDocumentStore()
+  resetSceneSessionStore()
   resetSelectionStore()
   resetAssetsStore()
   resetCollectionSceneRegistry()
@@ -88,7 +93,7 @@ it('undo and redo report false when there is nothing to step to', () => {
 
 it('undo and redo are blocked while a drag is in progress', () => {
   seedCommittedChairHistory()
-  sceneDocumentActions.setDragging(true)
+  sceneSessionActions.setDragging(true)
 
   expect(undo()).toBe(false)
 

@@ -9,6 +9,10 @@ import {
   resetSceneDocumentStore,
   sceneDocumentActions,
 } from '@/core/stores/scene-document-store'
+import {
+  resetSceneSessionStore,
+  sceneSessionActions,
+} from '@/core/stores/scene-session-store'
 import { assetsActions, resetAssetsStore } from '@/core/stores/assets-store'
 import { startDraftPersistenceReconciler } from './draft-persistence'
 
@@ -105,6 +109,7 @@ describe('startDraftPersistenceReconciler', () => {
 
   beforeEach(() => {
     resetSceneDocumentStore()
+    resetSceneSessionStore()
     resetEditorLifecycleStore()
     resetAssetsStore()
     assetsActions.setAssets({
@@ -120,6 +125,7 @@ describe('startDraftPersistenceReconciler', () => {
   afterEach(() => {
     stopReconciler()
     resetSceneDocumentStore()
+    resetSceneSessionStore()
     resetEditorLifecycleStore()
     resetAssetsStore()
   })
@@ -182,7 +188,7 @@ describe('startDraftPersistenceReconciler', () => {
     saveSceneDraft.mockClear()
     clearSceneDraft.mockClear()
 
-    sceneDocumentActions.setDragging(true)
+    sceneSessionActions.setDragging(true)
     sceneDocumentActions.setHistory(
       createHistoryState([createFurnitureItem('item-1')]),
     )
@@ -190,7 +196,7 @@ describe('startDraftPersistenceReconciler', () => {
     expect(saveSceneDraft).not.toHaveBeenCalled()
     expect(clearSceneDraft).not.toHaveBeenCalled()
 
-    sceneDocumentActions.setDragging(false)
+    sceneSessionActions.setDragging(false)
 
     expect(saveSceneDraft).toHaveBeenLastCalledWith(
       [createFurnitureItem('item-1')],

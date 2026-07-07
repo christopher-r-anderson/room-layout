@@ -19,13 +19,17 @@ import {
   sceneDocumentActions,
 } from '@/core/stores/scene-document-store'
 import {
+  resetSceneSessionStore,
+  sceneSessionActions,
+} from '@/core/stores/scene-session-store'
+import {
   resetSelectionStore,
   selectionActions,
   useSelectionStore,
 } from '@/core/stores/selection-store'
-import type { OutlinerReadModel } from '@/core/types/outliner.types'
 import { selectById } from '@/core/operations/selection-actions'
 import { previewFromOutliner } from '@/core/operations/preview-actions'
+import type { FurnitureItem } from '@/domain/furniture'
 import { Outliner } from './outliner'
 
 vi.mock('@/core/operations/selection-actions', () => ({
@@ -37,6 +41,11 @@ vi.mock('@/core/operations/selection-actions', () => ({
 vi.mock('@/core/operations/preview-actions', () => ({
   previewFromOutliner: vi.fn(),
 }))
+
+interface OutlinerReadModel {
+  selectedId: string | null
+  items: FurnitureItem[]
+}
 
 const OUTLINER_EXPANDED_PREFERENCE_KEY = 'outliner-expanded'
 
@@ -86,6 +95,7 @@ describe('SceneOutliner', () => {
     resetDialogStore()
     resetEditorLifecycleStore()
     resetSceneDocumentStore()
+    resetSceneSessionStore()
     resetSelectionStore()
     dialogActions.configureRuntimeContext({
       isDialogsEnabled: () => true,
@@ -156,7 +166,7 @@ describe('SceneOutliner', () => {
   })
 
   it('marks the previewed non-selected item with a preview state attribute', async () => {
-    sceneDocumentActions.setPreviewedId('item-2')
+    sceneSessionActions.setPreviewedId('item-2')
 
     renderOutliner()
 
@@ -167,7 +177,7 @@ describe('SceneOutliner', () => {
   })
 
   it('does not mark the selected item as previewed even if it matches previewedId', async () => {
-    sceneDocumentActions.setPreviewedId('item-1')
+    sceneSessionActions.setPreviewedId('item-1')
 
     renderOutliner()
 

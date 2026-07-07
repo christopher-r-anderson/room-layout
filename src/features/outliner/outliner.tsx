@@ -27,12 +27,12 @@ import {
   loadBooleanPreference,
   saveBooleanPreference,
 } from '@/shared/lib/ui/storage'
-import type { PanelInteractionSource } from '@/core/types/interaction.types'
 import { selectById } from '@/core/operations/selection-actions'
 import { previewFromOutliner } from '@/core/operations/preview-actions'
 import {
   selectionActions,
   useOutlinerFocusRequest,
+  type PanelInteractionSource,
 } from '@/core/stores/selection-store'
 import { useItems } from '@/core/stores/scene-document-store'
 import { useSelectedId } from '@/core/stores/selection-store'

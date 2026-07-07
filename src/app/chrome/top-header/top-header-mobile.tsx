@@ -18,7 +18,7 @@ import {
 } from '@/core/stores/dialog-store'
 import { ROOM_SURFACE_DIALOG_ID } from '@/features/room-surface/room-surface-dialog-definition'
 import { HEADER_MORE_ACTIONS_DIALOG_ID } from './header-more-actions-dialog-definition'
-import { useHistoryAvailability } from '@/core/stores/scene-document-store'
+import { useHistoryAvailability } from '@/core/operations/history-availability'
 import { topHeaderFocusRegistry } from './top-header-focus'
 import { TopHeaderSurface } from './top-header-surface'
 import { useExclusionRegistry } from '@/shared/layout/overlay-exclusion-context'

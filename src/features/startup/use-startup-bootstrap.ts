@@ -3,12 +3,12 @@ import { warmCollectionBytes } from '@/core/operations/collection-bytes'
 import {
   editorLifecycleActions,
   useRetryToken,
+  type StartupErrorKind,
 } from '@/core/stores/editor-lifecycle-store'
 import { assetsActions } from '@/core/stores/assets-store'
 import { collectionLoadingActions } from '@/core/stores/collection-loading-store'
-import { resolveReferencedCollectionPaths } from '@/core/persistence/referenced-collections'
+import { resolveReferencedCollectionPaths } from '@/core/operations/referenced-collections'
 import { loadSceneDraft } from '@/core/persistence/scene-draft'
-import type { StartupErrorKind } from '@/core/types/startup.types'
 import {
   fetchCatalogManifest,
   ManifestNetworkError,

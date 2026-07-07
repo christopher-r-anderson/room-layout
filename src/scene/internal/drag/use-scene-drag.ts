@@ -1,9 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { type ThreeEvent } from '@react-three/fiber'
-import {
-  sceneDocumentActions,
-  useSceneDocumentStore,
-} from '@/core/stores/scene-document-store'
+import { useSceneDocumentStore } from '@/core/stores/scene-document-store'
+import { sceneSessionActions } from '@/core/stores/scene-session-store'
 import { selectByCanvasPointer } from '@/core/operations/selection-actions'
 import {
   getFloorIntersection,
@@ -67,12 +65,12 @@ export function useSceneDrag({
   const dragStartStateRef = useRef<FurnitureItem[] | null>(null)
   const [dragState, setDragState] = useState<DragState | null>(null)
 
-  // The document's isDragging flag is written synchronously with the gesture so
+  // The session's isDragging flag is written synchronously with the gesture so
   // core mutations guarding on it never race a pending render.
   const clearDragState = useCallback(() => {
     setDragState(null)
     dragStartStateRef.current = null
-    sceneDocumentActions.setDragging(false)
+    sceneSessionActions.setDragging(false)
   }, [])
 
   // A dragged item can be deleted out from under the gesture (keyboard delete);
@@ -95,10 +93,10 @@ export function useSceneDrag({
   }, [clearDragState, dragState])
 
   // The gesture dies with the scene: a mid-drag unmount (retry teardown, error
-  // boundary) must not leave the document flagged as dragging.
+  // boundary) must not leave the session flagged as dragging.
   useEffect(() => {
     return () => {
-      sceneDocumentActions.setDragging(false)
+      sceneSessionActions.setDragging(false)
     }
   }, [])
 
@@ -118,7 +116,7 @@ export function useSceneDrag({
 
       selectByCanvasPointer(id)
       dragStartStateRef.current = furniture
-      sceneDocumentActions.setDragging(true)
+      sceneSessionActions.setDragging(true)
       setDragState({
         id,
         pointerId: event.pointerId,
@@ -193,7 +191,7 @@ export function useSceneDrag({
       dragStartStateRef.current = null
 
       if (!dragStartState) {
-        sceneDocumentActions.setDragging(false)
+        sceneSessionActions.setDragging(false)
         return
       }
 
@@ -204,7 +202,7 @@ export function useSceneDrag({
           areFurnitureCollectionsEqual,
         ),
       )
-      sceneDocumentActions.setDragging(false)
+      sceneSessionActions.setDragging(false)
     },
     [areFurnitureCollectionsEqual, dragState, updateHistory],
   )

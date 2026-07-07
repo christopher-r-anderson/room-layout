@@ -1,6 +1,12 @@
 import { create } from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
-import type { StartupErrorKind } from '../types/startup.types'
+
+export type StartupErrorKind =
+  | 'manifest-timeout'
+  | 'manifest-network'
+  | 'manifest-validation'
+  | 'asset-load'
+  | 'app-chunk'
 
 export type RestoreOutcome = 'restored' | 'invalid' | 'skipped'
 

@@ -3,8 +3,8 @@ import type {
   FurnitureCollection,
 } from '@/domain/catalog'
 import { buildSourcePathByCatalogId } from '@/core/stores/assets-store'
-import { parseSceneUrl } from './scene-url'
-import type { SceneDraftState } from './scene-draft'
+import { parseSceneUrl } from '../persistence/scene-url'
+import type { SceneDraftState } from '../persistence/scene-draft'
 import { selectPrimaryRestoreState, validateDraftState } from './restore-flow'
 
 // Resolves the gated set at bootstrap: which collections the scene about to be

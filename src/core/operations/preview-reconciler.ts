@@ -1,4 +1,5 @@
 import { useSceneDocumentStore } from '@/core/stores/scene-document-store'
+import { useSceneSessionStore } from '@/core/stores/scene-session-store'
 import {
   isBlockingOverlayOpen,
   subscribeToBlockingOverlay,
@@ -20,13 +21,30 @@ import { createReconciler } from '@/core/operations/reconciler'
  * nothing stale flashes back when the gate lifts.
  */
 function reconcilePreview() {
-  const isDragging = useSceneDocumentStore.getState().isDragging
+  const isDragging = useSceneSessionStore.getState().isDragging
 
   if (!isDragging && !isBlockingOverlayOpen() && isEditorInteractive()) {
     return
   }
 
   forceClearPreview()
+}
+
+// A previewed item that leaves the item list (delete, undo of an add) must not
+// keep a dangling preview pointer; clearing the raw id keeps it from reapplying
+// if a redo brings the same id back.
+function reconcileDanglingPreview() {
+  const previewedId = useSceneSessionStore.getState().previewedIdRaw
+
+  if (previewedId === null) {
+    return
+  }
+
+  const items = useSceneDocumentStore.getState().history.present
+
+  if (!items.some((item) => item.id === previewedId)) {
+    forceClearPreview()
+  }
 }
 
 /**
@@ -36,7 +54,7 @@ function reconcilePreview() {
  */
 export const startPreviewReconciler = createReconciler(() => {
   const unsubscribes = [
-    useSceneDocumentStore.subscribe(
+    useSceneSessionStore.subscribe(
       (state) => state.isDragging,
       reconcilePreview,
     ),
@@ -45,9 +63,14 @@ export const startPreviewReconciler = createReconciler(() => {
       (state) => state.startupPhase === 'ready',
       reconcilePreview,
     ),
+    useSceneDocumentStore.subscribe(
+      (state) => state.history.present,
+      reconcileDanglingPreview,
+    ),
   ]
 
   reconcilePreview()
+  reconcileDanglingPreview()
 
   return [...unsubscribes, cancelScenePreviewClear]
 })

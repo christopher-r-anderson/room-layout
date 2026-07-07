@@ -231,40 +231,6 @@ export default defineConfig([
     },
   },
 
-  // Shared UI primitives are fully decoupled from runtime layers.
-  {
-    files: ['src/shared/ui/**/*.{ts,tsx}'],
-    ignores: RUNTIME_NON_TEST_IGNORES,
-    rules: {
-      'no-restricted-imports': [
-        'error',
-        {
-          paths: RESTRICTED_ZUSTAND_IMPORT_PATHS,
-          patterns: [
-            {
-              group: [
-                '@/app',
-                '@/app/**',
-                '@/features',
-                '@/features/**',
-                '@/core',
-                '@/core/**',
-                '@/scene',
-                '@/scene/**',
-              ],
-              message:
-                'Shared UI primitives must not import app, features, core, or scene modules.',
-            },
-            {
-              group: RUNTIME_TEST_IMPORT_GROUP,
-              message: 'Runtime code must not import from src/test.',
-            },
-          ],
-        },
-      ],
-    },
-  },
-
   // Feature runtime boundaries.
   {
     files: ['src/features/**/*.{ts,tsx}'],
@@ -332,38 +298,11 @@ export default defineConfig([
     },
   },
 
-  // Shared runtime boundaries (excluding shared/ui, which has stricter rules).
+  // Shared is the reusable kit/infra tier: fully decoupled from the runtime
+  // layers and from the model (architecture.md: shared carries no model
+  // knowledge). One uniform block — no shared subdirectory gets a looser rule.
   {
     files: ['src/shared/**/*.{ts,tsx}'],
-    ignores: ['src/shared/ui/**', ...RUNTIME_NON_TEST_IGNORES],
-    rules: {
-      'no-restricted-imports': [
-        'error',
-        {
-          paths: RESTRICTED_ZUSTAND_IMPORT_PATHS,
-          patterns: [
-            {
-              group: RUNTIME_TEST_IMPORT_GROUP,
-              message: 'Runtime code must not import from src/test.',
-            },
-            {
-              group: SCENE_IMPORT_GROUP,
-              message: SCENE_IMPORT_MESSAGE,
-            },
-            {
-              regex: PARENT_RELATIVE_IMPORT_REGEX,
-              message: PARENT_RELATIVE_IMPORT_MESSAGE,
-            },
-          ],
-        },
-      ],
-    },
-  },
-
-  // shared/hooks boundaries. This remains self-contained because it overlaps the
-  // broader shared runtime block.
-  {
-    files: ['src/shared/hooks/**/*.{ts,tsx}'],
     ignores: RUNTIME_NON_TEST_IGNORES,
     rules: {
       'no-restricted-imports': [
@@ -371,153 +310,22 @@ export default defineConfig([
         {
           paths: RESTRICTED_ZUSTAND_IMPORT_PATHS,
           patterns: [
-            {
-              group: RUNTIME_TEST_IMPORT_GROUP,
-              message: 'Runtime code must not import from src/test.',
-            },
-            {
-              group: RUNTIME_APP_FEATURE_EDITOR_SCENE_IMPORT_GROUP,
-              message:
-                'src/shared/hooks is a low-level shared layer and must not import from app, features, core, or scene modules.',
-            },
-            {
-              regex: PARENT_RELATIVE_IMPORT_REGEX,
-              message: PARENT_RELATIVE_IMPORT_MESSAGE,
-            },
-          ],
-        },
-      ],
-    },
-  },
-
-  // shared/providers boundaries. This remains self-contained because it overlaps
-  // the broader shared runtime block.
-  {
-    files: ['src/shared/providers/**/*.{ts,tsx}'],
-    ignores: RUNTIME_NON_TEST_IGNORES,
-    rules: {
-      'no-restricted-imports': [
-        'error',
-        {
-          paths: RESTRICTED_ZUSTAND_IMPORT_PATHS,
-          patterns: [
-            {
-              group: RUNTIME_TEST_IMPORT_GROUP,
-              message: 'Runtime code must not import from src/test.',
-            },
-            {
-              group: RUNTIME_APP_FEATURE_EDITOR_SCENE_IMPORT_GROUP,
-              message:
-                'src/shared/providers is a low-level shared layer and must not import from app, features, core, or scene modules.',
-            },
-            {
-              regex: PARENT_RELATIVE_IMPORT_REGEX,
-              message: PARENT_RELATIVE_IMPORT_MESSAGE,
-            },
-          ],
-        },
-      ],
-    },
-  },
-
-  // shared/messages boundaries. This remains self-contained because it overlaps
-  // the broader shared runtime block.
-  {
-    files: ['src/shared/messages/**/*.{ts,tsx}'],
-    ignores: RUNTIME_NON_TEST_IGNORES,
-    rules: {
-      'no-restricted-imports': [
-        'error',
-        {
-          paths: RESTRICTED_ZUSTAND_IMPORT_PATHS,
-          patterns: [
-            {
-              group: RUNTIME_TEST_IMPORT_GROUP,
-              message: 'Runtime code must not import from src/test.',
-            },
-            {
-              group: RUNTIME_APP_FEATURE_EDITOR_SCENE_IMPORT_GROUP,
-              message:
-                'src/shared/messages is a low-level shared layer and must not import from app, features, core, or scene modules.',
-            },
-            {
-              regex: PARENT_RELATIVE_IMPORT_REGEX,
-              message: PARENT_RELATIVE_IMPORT_MESSAGE,
-            },
-          ],
-        },
-      ],
-    },
-  },
-
-  // shared/lib boundaries. This remains self-contained because it overlaps the
-  // broader shared runtime block.
-  {
-    files: ['src/shared/lib/**/*.{ts,tsx}'],
-    ignores: RUNTIME_NON_TEST_IGNORES,
-    rules: {
-      'no-restricted-imports': [
-        'error',
-        {
-          paths: RESTRICTED_ZUSTAND_IMPORT_PATHS,
-          patterns: [
-            {
-              group: RUNTIME_TEST_IMPORT_GROUP,
-              message: 'Runtime code must not import from src/test.',
-            },
             {
               group: [
-                '@/app',
-                '@/app/**',
-                '@/features',
-                '@/features/**',
-                '@/core',
-                '@/core/**',
+                ...RUNTIME_APP_FEATURE_EDITOR_SCENE_IMPORT_GROUP,
+                '@/domain',
+                '@/domain/**',
               ],
               message:
-                'src/shared/lib must not import from app, features, or core modules.',
+                'src/shared must not import from app, features, core, scene, or domain (shared carries no model knowledge).',
             },
-            {
-              group: SCENE_IMPORT_GROUP,
-              message: SCENE_IMPORT_MESSAGE,
-            },
-            {
-              regex: PARENT_RELATIVE_IMPORT_REGEX,
-              message: PARENT_RELATIVE_IMPORT_MESSAGE,
-            },
-          ],
-        },
-      ],
-    },
-  },
-
-  // shared/layout boundaries. This remains self-contained because it overlaps
-  // the broader shared runtime block.
-  {
-    files: ['src/shared/layout/**/*.{ts,tsx}'],
-    ignores: RUNTIME_NON_TEST_IGNORES,
-    rules: {
-      'no-restricted-imports': [
-        'error',
-        {
-          paths: RESTRICTED_ZUSTAND_IMPORT_PATHS,
-          patterns: [
             {
               group: RUNTIME_TEST_IMPORT_GROUP,
               message: 'Runtime code must not import from src/test.',
             },
             {
-              group: SCENE_IMPORT_GROUP,
-              message: SCENE_IMPORT_MESSAGE,
-            },
-            {
               regex: PARENT_RELATIVE_IMPORT_REGEX,
               message: PARENT_RELATIVE_IMPORT_MESSAGE,
-            },
-            {
-              group: ['@/app/chrome', '@/app/chrome/**'],
-              message:
-                'src/shared/layout is lower-level layout infrastructure and must not import from src/app/chrome.',
             },
           ],
         },

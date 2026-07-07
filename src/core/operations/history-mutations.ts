@@ -3,6 +3,7 @@ import {
   sceneDocumentActions,
   useSceneDocumentStore,
 } from '@/core/stores/scene-document-store'
+import { useSceneSessionStore } from '@/core/stores/scene-session-store'
 import { useSelectionStore } from '@/core/stores/selection-store'
 import { applySelection } from './selection-mutations'
 import { useAssetsStore } from '@/core/stores/assets-store'
@@ -13,7 +14,8 @@ import { buildRestoredSceneHistory } from './restored-scene-history'
 // Undo/redo/restore document mutations.
 
 export function undo(): boolean {
-  const { history, isDragging } = useSceneDocumentStore.getState()
+  const { history } = useSceneDocumentStore.getState()
+  const { isDragging } = useSceneSessionStore.getState()
   const { selectedId } = useSelectionStore.getState()
   const undoResult = undoSceneHistory({ history, selectedId, isDragging })
 
@@ -28,7 +30,8 @@ export function undo(): boolean {
 }
 
 export function redo(): boolean {
-  const { history, isDragging } = useSceneDocumentStore.getState()
+  const { history } = useSceneDocumentStore.getState()
+  const { isDragging } = useSceneSessionStore.getState()
   const { selectedId } = useSelectionStore.getState()
   const redoResult = redoSceneHistory({ history, selectedId, isDragging })
 

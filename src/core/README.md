@@ -8,9 +8,10 @@ Layout
 
 - `stores/` — the zustand stores: `create()` bound hooks over pure-data state,
   each with a module-level `xActions` mutation surface and narrow selector
-  hooks. Covers the scene data model (`scene-document-store`), the
-  catalog/environment manifest (`assets-store`), and the startup/asset-loading
-  state (`editor-lifecycle-store`, `collection-loading-store`).
+  hooks. Covers the scene document and session (`scene-document-store`,
+  `scene-session-store`), the catalog/environment manifest (`assets-store`),
+  and the startup/asset-loading state (`editor-lifecycle-store`,
+  `collection-loading-store`).
 - `operations/` — cross-cutting operations over the stores (history/movement/
   selection actions, `startup-coordinator`, the collection load pipeline
   (`collection-loader`, `collection-bytes`), preview actions + reconciler,
@@ -19,10 +20,11 @@ Layout
   stores and scene commands for behavior that spans features; standing
   reconcilers are built with `createReconciler` and started from
   `startEditorReconcilers`.
-- `persistence/` — scene state ↔ storage/URL (`scene-draft`, `scene-url`,
-  `restore-flow`, `scene-reset`).
+- `persistence/` — the scene state ↔ storage/URL codecs (`scene-draft`,
+  `scene-url`, `furniture-serialization`). Orchestration flows over them
+  (`restore-flow`, `scene-reset`, `referenced-collections`) live in
+  `operations/`.
 - `commands/` — the `EditorCommand` vocabulary and its dispatch binding.
-- `types/` — shared core types.
 - Root — the public, cross-layer surface: the engine port (`scene-commands`,
   `scene-services`, `scene.types`) and `dialog-contract`.
 

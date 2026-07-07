@@ -2,7 +2,7 @@ import { msg } from '@lingui/core/macro'
 import { toast } from 'sonner'
 import { dialogActions } from '@/core/stores/dialog-store'
 import { feedbackActions } from '@/core/stores/feedback-store'
-import { resetSceneToDefaults } from '@/core/persistence/scene-reset'
+import { resetSceneToDefaults } from '@/core/operations/scene-reset'
 import { i18n } from '@/shared/i18n/i18n'
 import { START_OVER_DIALOG_ID } from './start-over-dialog-definition'
 

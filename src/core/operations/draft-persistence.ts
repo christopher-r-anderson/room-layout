@@ -7,13 +7,13 @@ import type { FurnitureItem } from '@/domain/furniture'
 import { useAssetsStore } from '@/core/stores/assets-store'
 import { useEditorLifecycleStore } from '@/core/stores/editor-lifecycle-store'
 import { useSceneDocumentStore } from '@/core/stores/scene-document-store'
+import { useSceneSessionStore } from '@/core/stores/scene-session-store'
 import { clearSceneDraft, saveSceneDraft } from '@/core/persistence/scene-draft'
 import { getSceneIsAtDefaults } from './use-scene-is-at-defaults'
 import { createReconciler } from './reconciler'
 
 interface DraftSceneState {
   items: FurnitureItem[]
-  isDragging: boolean
   floorFinishId: string
   wallFinishId: string
   lightingMoodId: string
@@ -24,7 +24,6 @@ function selectDraftSceneState(
 ): DraftSceneState {
   return {
     items: state.history.present,
-    isDragging: state.isDragging,
     floorFinishId: state.floorFinishId,
     wallFinishId: state.wallFinishId,
     lightingMoodId: state.lightingMoodId,
@@ -35,8 +34,9 @@ function persistDraft() {
   const environmentConfig = useAssetsStore.getState().environmentConfig
   const sceneState = selectDraftSceneState(useSceneDocumentStore.getState())
   const startupPhase = useEditorLifecycleStore.getState().startupPhase
+  const isDragging = useSceneSessionStore.getState().isDragging
 
-  if (!environmentConfig || startupPhase !== 'ready' || sceneState.isDragging) {
+  if (!environmentConfig || startupPhase !== 'ready' || isDragging) {
     return
   }
 
@@ -71,6 +71,9 @@ export const startDraftPersistenceReconciler = createReconciler(() => {
     useSceneDocumentStore.subscribe(selectDraftSceneState, persistDraft, {
       equalityFn: shallow,
     }),
+    // Dragging suppresses persistence while the document coalesces per-move
+    // writes; the drag-end flip persists the final position.
+    useSceneSessionStore.subscribe((state) => state.isDragging, persistDraft),
     useEditorLifecycleStore.subscribe(
       (state) => state.startupPhase,
       persistDraft,

@@ -13,7 +13,7 @@ import {
   selectionActions,
   useSelectionStore,
 } from '../stores/selection-store'
-import { runStartupRestoreFlow } from '../persistence/restore-flow'
+import { runStartupRestoreFlow } from './restore-flow'
 import { resetCollectionPipeline } from './collection-loader'
 import { clearSceneServices } from '@/core/scene-commands'
 import {
@@ -22,7 +22,7 @@ import {
   requestAssetRetry,
 } from './startup-coordinator'
 
-vi.mock('../persistence/restore-flow', () => ({
+vi.mock('./restore-flow', () => ({
   runStartupRestoreFlow: vi.fn(),
   validateDraftState: vi.fn(() => null),
 }))

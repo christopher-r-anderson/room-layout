@@ -1,11 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { dialogActions } from '@/core/stores/dialog-store'
 import { feedbackActions } from '@/core/stores/feedback-store'
-import { resetSceneToDefaults } from '@/core/persistence/scene-reset'
+import { resetSceneToDefaults } from '@/core/operations/scene-reset'
 import { toast } from 'sonner'
 import { confirmStartOver, startOverIntent } from './start-over-actions'
 
-vi.mock('@/core/persistence/scene-reset', () => ({
+vi.mock('@/core/operations/scene-reset', () => ({
   resetSceneToDefaults: vi.fn(),
 }))
 

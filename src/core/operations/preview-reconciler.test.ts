@@ -4,8 +4,12 @@ import { createHistoryState } from '@/shared/lib/ui/editor-history'
 import {
   resetSceneDocumentStore,
   sceneDocumentActions,
-  useSceneDocumentStore,
 } from '@/core/stores/scene-document-store'
+import {
+  resetSceneSessionStore,
+  sceneSessionActions,
+  useSceneSessionStore,
+} from '@/core/stores/scene-session-store'
 import {
   editorLifecycleActions,
   resetEditorLifecycleStore,
@@ -31,6 +35,7 @@ describe('startPreviewReconciler', () => {
 
   beforeEach(() => {
     resetSceneDocumentStore()
+    resetSceneSessionStore()
     resetEditorLifecycleStore()
     resetPreviewState()
     sceneDocumentActions.setHistory(createHistoryState([CHAIR]))
@@ -42,25 +47,35 @@ describe('startPreviewReconciler', () => {
     stop()
     resetPreviewState()
     resetSceneDocumentStore()
+    resetSceneSessionStore()
     resetEditorLifecycleStore()
   })
 
   it('does not restore scene preview automatically after drag gate lifts', () => {
     previewFromScene('item-1')
-    expect(useSceneDocumentStore.getState().previewedIdRaw).toBe('item-1')
+    expect(useSceneSessionStore.getState().previewedIdRaw).toBe('item-1')
 
-    sceneDocumentActions.setDragging(true)
-    expect(useSceneDocumentStore.getState().previewedIdRaw).toBeNull()
+    sceneSessionActions.setDragging(true)
+    expect(useSceneSessionStore.getState().previewedIdRaw).toBeNull()
 
-    sceneDocumentActions.setDragging(false)
-    expect(useSceneDocumentStore.getState().previewedIdRaw).toBeNull()
+    sceneSessionActions.setDragging(false)
+    expect(useSceneSessionStore.getState().previewedIdRaw).toBeNull()
   })
 
   it('clears the preview when interactions become disabled', () => {
     previewFromScene('item-1')
-    expect(useSceneDocumentStore.getState().previewedIdRaw).toBe('item-1')
+    expect(useSceneSessionStore.getState().previewedIdRaw).toBe('item-1')
 
     editorLifecycleActions.beginAssetLoad()
-    expect(useSceneDocumentStore.getState().previewedIdRaw).toBeNull()
+    expect(useSceneSessionStore.getState().previewedIdRaw).toBeNull()
+  })
+
+  it('clears the preview when the previewed item leaves the document', () => {
+    previewFromScene('item-1')
+    expect(useSceneSessionStore.getState().previewedIdRaw).toBe('item-1')
+
+    sceneDocumentActions.setHistory(createHistoryState([]))
+
+    expect(useSceneSessionStore.getState().previewedIdRaw).toBeNull()
   })
 })

@@ -1,7 +1,7 @@
 import { msg } from '@lingui/core/macro'
 import { toast } from 'sonner'
-import { createDefaultSceneState } from '@/core/model/scene-defaults'
-import { isSceneStateAtDefaults } from '@/core/model/scene-model'
+import { createDefaultSceneState } from '@/domain/scene-defaults'
+import { isSceneStateAtDefaults } from '@/domain/scene-model'
 import { i18n } from '@/shared/i18n/i18n'
 import { clearSceneServices } from '@/core/scene-commands'
 import { resetCollectionPipeline } from './collection-loader'
@@ -11,9 +11,11 @@ import { dialogActions } from '../stores/dialog-store'
 import {
   editorLifecycleActions,
   useEditorLifecycleStore,
+  type StartupErrorKind,
 } from '../stores/editor-lifecycle-store'
 import { useAssetsStore } from '../stores/assets-store'
 import { sceneDocumentActions } from '../stores/scene-document-store'
+import { resetSceneSessionStore } from '../stores/scene-session-store'
 import { resetSelectionStore } from '../stores/selection-store'
 import { resetToolbarGeometryStore } from '../stores/toolbar-geometry-store'
 import { resetToolbarInteractionStore } from '../stores/toolbar-interaction-store'
@@ -22,18 +24,15 @@ import {
   parseSceneUrl,
   removeSceneParamFromUrl,
 } from '../persistence/scene-url'
-import {
-  runStartupRestoreFlow,
-  validateDraftState,
-} from '../persistence/restore-flow'
-import type { RestorableState } from '../persistence/restore-flow.types'
-import type { StartupErrorKind } from '../types/startup.types'
+import { runStartupRestoreFlow, validateDraftState } from './restore-flow'
+import type { RestorableState } from './restore-flow.types'
 
 // Resets the editor surface back to a clean slate. Used by the asset-error and
 // retry transitions so a failed or restarted load never leaves stale scene or
 // selection state behind.
 function resetStartupShell() {
   sceneDocumentActions.reset()
+  resetSceneSessionStore()
   resetSelectionStore()
   resetToolbarGeometryStore()
   resetToolbarInteractionStore()

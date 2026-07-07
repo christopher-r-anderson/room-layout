@@ -44,14 +44,15 @@ Notes:
 - `domain` is the lowest leaf: the furniture/room model types plus pure logic over
   them (catalog lookup, geometry/placement). Every layer may import it; it imports
   nothing internal. `shared` no longer depends on the model at all.
-- `shared/ui` is stricter than other `shared` folders.
+- All of `shared` is uniformly decoupled: it must not import app, features,
+  core, scene, or domain (one lint block, no per-subfolder exceptions).
 - `test` is test-only support and not a runtime dependency target.
 
 ## Layer Intent
 
 - `src/app`: composition root, app shell wiring, runtime harness wiring.
 - `src/features`: user-facing editor capabilities and feature-local behavior.
-- `src/core`: shared stores, actions, selectors, contracts, scene-model helpers, and shared state types.
+- `src/core`: shared stores, actions, selectors, contracts, and shared state types.
 - `src/shared`: reusable runtime primitives and infra used by app/features/core/scene; carries no model knowledge.
 - `src/scene`: scene rendering engine, three helpers, and scene internals.
 - `src/domain`: the furniture/room model vocabulary and pure logic over it (catalog, geometry/placement). The lowest leaf; imports nothing internal.
@@ -76,7 +77,7 @@ For local context inside each area, see:
 3. Put cross-feature state (`core/stores`) **and** cross-cutting operations (`core/operations`) in `core`, not feature-local modules.
 4. Features must not import other features. `@/features/*` imports from within a feature are hard-banned in `eslint.config.js`. De-thread instead by reading a store, dispatching an `EditorCommand`, or importing a `core` operation.
 5. Keep `app` composition-only: shell wiring, providers, and registry bootstrap. App does not own cross-cutting runtime operations — those live in `core/operations`.
-6. Keep `shared/ui` dependency-free from app/features/core/scene runtime code.
+6. Keep all of `shared` dependency-free from app/features/core/scene/domain runtime code.
 7. Keep `shared/layout` lower-level than `app/chrome`.
 8. Keep scene internals in `scene/internal` (including `scene/internal/three` render helpers) and avoid importing them outside scene.
 9. Use approved scene contract imports outside scene, not arbitrary `@/scene/**` paths.

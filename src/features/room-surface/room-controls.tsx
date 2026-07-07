@@ -8,10 +8,8 @@ import type {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs'
 import { useActiveFinishIds } from '@/core/operations/active-finish-ids'
 import { useEnvironmentConfig } from '@/core/stores/assets-store'
-import {
-  sceneDocumentActions,
-  useFloorFinishLoading,
-} from '@/core/stores/scene-document-store'
+import { sceneDocumentActions } from '@/core/stores/scene-document-store'
+import { useFloorFinishLoading } from '@/core/stores/scene-session-store'
 import { FinishPicker } from './finish-picker'
 import { Trans, useLingui } from '@lingui/react/macro'
 
