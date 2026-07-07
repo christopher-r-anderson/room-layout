@@ -43,8 +43,8 @@ Notes:
   services on mount and reading/writing core stores directly. At runtime the
   viewport is driven through core's `sceneCommands` port - by core operations
   and feature actions alike - without any source dependency on scene. Nothing
-  imports `@/scene` except `app`'s single lazy mount of
-  `@/scene/scene` (the code-split engine chunk).
+  outside `src/scene` imports `@/scene`; `app`'s single lazy mount of
+  `@/scene/scene` is the code-split engine chunk.
 - `domain` is the lowest leaf: the furniture/room model types plus pure logic over
   them (catalog lookup, geometry/placement, the scene model). It imports nothing
   internal.
