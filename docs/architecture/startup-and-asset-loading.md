@@ -129,9 +129,9 @@ flowchart LR
   the phase off `loading`.
 
 The split of state is intentional: the parsed scene roots live in
-`core/stores/collection-scene-registry.ts` held opaquely (`unknown`, so core
-stays three-free), with typed `Object3D` access scene-internal
-(`scene/internal/furniture/collection-scene-registry.ts`), while the loading
+`core/stores/collection-scene-registry.ts`, held opaquely (`unknown`, so core
+stays three-free); typed `Object3D` access lives scene-internal in
+`scene/internal/furniture/collection-scene-registry.ts`, while the loading
 lifecycle - the gate, progress, which collections are wanted, loaded, or
 failed - lives in `core/stores/collection-loading-store.ts` next to the byte
 source and gating it coordinates with. Registration happens inside the parse
