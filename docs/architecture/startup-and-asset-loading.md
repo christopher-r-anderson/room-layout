@@ -67,10 +67,14 @@ Two supporting signals:
 
 - `sceneEpoch` / `retryToken` bump on load/retry and re-key the scene subtree, so
   a retry remounts a fresh scene (whose mount re-kicks the collection loads).
-- `sceneMounted` - a reactive flag the `Scene` sets on mount/unmount (via
-  `setSceneMounted`). Readiness gates on it so the overlay never lifts before the
-  canvas has mounted (an empty scene has no furniture to wait on, so without this
-  the overlay could clear before first paint).
+- `sceneReady` - a reactive flag with a single producer:
+  `registerSceneServices`/`clearSceneServices` (`core/scene-services.ts`) flip it
+  as the `Scene` registers on mount and clears on unmount (the startup-shell
+  reset also clears it), so the flag and the imperative
+  `sceneCommands.isSceneReady()` answer from the same oracle. Readiness gates on
+  it so the overlay never lifts before the canvas has mounted (an empty scene
+  has no furniture to wait on, so without this the overlay could clear before
+  first paint).
 
 ## The collection load pipeline
 
@@ -118,12 +122,12 @@ flowchart LR
   and register them (`sceneCommands.loadCollectionScene`, backed by
   `scene/internal/furniture/collection-scene-loader.ts`), then mark the outcome
   in the loading store. A standing reconciler kicks pending loads whenever their
-  inputs change (scene mounts, gate resolves, an item appears, an on-demand
-  request arrives), so the chain never depends on React render timing. Loads are
+  inputs change (scene becomes ready, gate resolves, an item appears, an
+  on-demand request arrives), so the chain never depends on React render timing. Loads are
   keyed to the scene epoch; a stale cycle's result is discarded rather than
   written into a fresh one.
 - **Readiness** (`features/startup/use-startup-readiness.ts`, run from `App`): once
-  startup is loading, the scene has mounted, and the gated set is resolved, it
+  startup is loading, the scene is ready, and the gated set is resolved, it
   resolves the gated collections - every one loaded -> `completeAssetLoad`; any
   one failed -> `notifyAssetError`. It fires once per cycle because firing flips
   the phase off `loading`.
@@ -141,7 +145,7 @@ registry on the strength of the core flag.
 ## Gated vs on-demand
 
 - **Gated** collections gate the unlock. A fresh or empty scene references none,
-  so it becomes interactive as soon as the scene mounts and the gate resolves -
+  so it becomes interactive as soon as the scene is ready and the gate resolves -
   it never waits on furniture.
 - **On-demand** collections are catalog adds. Selecting an item warms it
   (prefetch-on-select) and the add awaits its parse (`ensureCollectionLoaded`), so a

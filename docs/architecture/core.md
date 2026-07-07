@@ -46,8 +46,9 @@ state.
 Each store is a Zustand `create()` bound hook over pure-data state. The bound
 hook doubles as the imperative handle (`getState`/`subscribe`) for operations
 and reconcilers; mutation goes through a module-level `xActions` object (the
-default shape - registries and single-purpose wrappers like `setSceneMounted`
-export bare functions instead), and narrow selector hooks (with `useShallow`
+default shape - registries and single-purpose wrappers like
+`resetEditorLifecycleStore` export bare functions instead), and narrow selector
+hooks (with `useShallow`
 where a selector builds a fresh value) are the React read surface. Features
 read the narrow hooks (or their non-reactive getter peers, e.g. `getItems`);
 importing the generic bound hook from a feature is an ESLint error - its
@@ -76,11 +77,13 @@ importing the generic bound hook from a feature is an ESLint error - its
   owning surfaces (selection and outliner features, app focus commands).
 - **`editor-lifecycle-store`** - the single owner of the startup phase machine
   (`loading | ready | errored`), asset errors, restore outcome/attempt tracking,
-  and the startup-cycle counters `sceneEpoch` (Scene remount key) and
-  `retryToken` (re-triggers the manifest fetch). `isEditorInteractive()` is the
-  non-React readiness predicate the preview gating/reconciler and the
-  dialog-enablement gate read; scene-mutating operations gate on the scene's own
-  `isSceneReady()`. Written by the startup bootstrap and `startup-coordinator`.
+  the startup-cycle counters `sceneEpoch` (Scene remount key) and `retryToken`
+  (re-triggers the manifest fetch), and the reactive `sceneReady` flag (single
+  producer: `scene-services` register/clear, so it always agrees with the
+  imperative `isSceneReady()`). `isEditorInteractive()` is the non-React
+  readiness predicate the preview gating/reconciler and the dialog-enablement
+  gate read; scene-mutating operations gate on `isSceneReady()`. Written by the
+  startup bootstrap, `startup-coordinator`, and `scene-services`.
 - **`assets-store`** - the startup-loaded catalog manifest (catalog,
   collections, environment config). Lets features read catalog/finishes through
   narrow hooks instead of threaded props. Written by the startup bootstrap.

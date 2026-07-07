@@ -76,8 +76,8 @@ render. Object3D transforms are never read back as a source of truth.
   live-present path writes the document, canvas-pointer selection calls the
   core selection action, the gesture writes the session drag flag and
   floor-loading indicator, the projection raf loop writes toolbar geometry,
-  the mount lifecycle sets `sceneMounted`, and the parse service registers
-  parsed collections. Each is named in core.md's store inventory; anything
+  the mount lifecycle registers the scene services (which raises `sceneReady`),
+  and the parse service registers parsed collections. Each is named in core.md's store inventory; anything
   else is a core operation.
 - The engine port (`SceneServices`) is deliberately small. Widening it is a
   deliberate act: a new method means core is delegating another decision to the
