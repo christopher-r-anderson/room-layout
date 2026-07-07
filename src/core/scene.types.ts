@@ -49,7 +49,7 @@ export type UpdateSelectionTransformResult =
 
 export type AddFurnitureResult =
   | { ok: true; id: string }
-  | { ok: false; reason: 'unknown-catalog' | 'no-space' }
+  | { ok: false; reason: 'unknown-catalog' | 'no-space' | 'dragging' }
 
 export type SelectByIdResult =
   | { ok: true; status: 'selected' | 'cleared' }

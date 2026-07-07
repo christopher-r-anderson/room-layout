@@ -33,10 +33,10 @@ import {
 // Furniture document mutations: each reads the authoritative history, runs the
 // pure placement resolution and history transition (collision/bounds math lives
 // in domain/geometry and furniture-operations), then writes the result back.
-// moveSelection and setSelectionTransform refuse to run mid-drag (the scene's
-// gesture writes the session's isDragging flag synchronously); deleteSelection
-// can land mid-drag (keyboard), and the drag gesture self-clears when its item
-// disappears.
+// moveSelection, setSelectionTransform, and rotateSelection refuse to run
+// mid-drag (the scene's gesture writes the session's isDragging flag
+// synchronously); deleteSelection can land mid-drag (keyboard), and the drag
+// gesture self-clears when its item disappears.
 
 export function deleteSelection(): boolean {
   const { history } = useSceneDocumentStore.getState()
@@ -100,7 +100,13 @@ export function setSelectionTransform(input: {
   return result
 }
 
-export function rotateSelection(deltaRadians: number) {
+/** Returns false when blocked mid-drag (a commit would push the transient
+ * drag position into the undo timeline); true otherwise. */
+export function rotateSelection(deltaRadians: number): boolean {
+  if (useSceneSessionStore.getState().isDragging) {
+    return false
+  }
+
   const { history } = useSceneDocumentStore.getState()
   const { selectedId } = useSelectionStore.getState()
   const nextHistory = rotateSelectedFurnitureInHistory({
@@ -111,12 +117,20 @@ export function rotateSelection(deltaRadians: number) {
   })
 
   sceneDocumentActions.setHistory(nextHistory)
+
+  return true
 }
 
 export function addFurniture(
   catalogId: string,
   options?: { source?: InteractionSource },
 ): AddFurnitureResult {
+  // An add mid-drag would interleave history commits with the drag's coalesced
+  // writes (ghost undo state) and retarget the selection mid-gesture.
+  if (useSceneSessionStore.getState().isDragging) {
+    return { ok: false, reason: 'dragging' }
+  }
+
   const { history, instanceIdCounter } = useSceneDocumentStore.getState()
   const { catalog, collections } = useAssetsStore.getState()
   const operationResult = addFurnitureToHistory({
