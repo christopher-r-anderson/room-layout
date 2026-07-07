@@ -7,6 +7,7 @@ import {
   sceneDocumentActions,
   useSceneDocumentStore,
 } from '@/core/stores/scene-document-store'
+import { useSceneSessionStore } from '@/core/stores/scene-session-store'
 import { useSelectionStore } from '@/core/stores/selection-store'
 import type { InteractionSource } from '@/core/types/interaction.types'
 import { applySelection } from './selection-mutations'
@@ -31,7 +32,7 @@ import {
 // pure placement resolution and history transition (collision/bounds math lives
 // in domain/geometry and furniture-operations), then writes the result back.
 // moveSelection and setSelectionTransform refuse to run mid-drag (the scene's
-// gesture writes the document's isDragging flag synchronously); deleteSelection
+// gesture writes the session's isDragging flag synchronously); deleteSelection
 // can land mid-drag (keyboard), and the drag gesture self-clears when its item
 // disappears.
 
@@ -55,7 +56,8 @@ export function moveSelection(
   _options?: { source?: MoveSource },
 ): MoveSelectionResult {
   void _options
-  const { history, isDragging } = useSceneDocumentStore.getState()
+  const { history } = useSceneDocumentStore.getState()
+  const { isDragging } = useSceneSessionStore.getState()
   const { selectedId } = useSelectionStore.getState()
   const { history: nextHistory, result } = resolveMoveSelectionInHistory({
     history,
@@ -77,7 +79,8 @@ export function setSelectionTransform(input: {
   position?: [number, number, number]
   rotationY?: number
 }): UpdateSelectionTransformResult {
-  const { history, isDragging } = useSceneDocumentStore.getState()
+  const { history } = useSceneDocumentStore.getState()
+  const { isDragging } = useSceneSessionStore.getState()
   const { selectedId } = useSelectionStore.getState()
   const { history: nextHistory, result } =
     resolveSetSelectionTransformInHistory({

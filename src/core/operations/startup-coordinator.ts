@@ -14,6 +14,7 @@ import {
 } from '../stores/editor-lifecycle-store'
 import { useAssetsStore } from '../stores/assets-store'
 import { sceneDocumentActions } from '../stores/scene-document-store'
+import { resetSceneSessionStore } from '../stores/scene-session-store'
 import { resetSelectionStore } from '../stores/selection-store'
 import { resetToolbarGeometryStore } from '../stores/toolbar-geometry-store'
 import { resetToolbarInteractionStore } from '../stores/toolbar-interaction-store'
@@ -34,6 +35,7 @@ import type { StartupErrorKind } from '../types/startup.types'
 // selection state behind.
 function resetStartupShell() {
   sceneDocumentActions.reset()
+  resetSceneSessionStore()
   resetSelectionStore()
   resetToolbarGeometryStore()
   resetToolbarInteractionStore()

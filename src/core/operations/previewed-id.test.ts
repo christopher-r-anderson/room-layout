@@ -8,6 +8,10 @@ import {
   sceneDocumentActions,
 } from '@/core/stores/scene-document-store'
 import {
+  resetSceneSessionStore,
+  sceneSessionActions,
+} from '@/core/stores/scene-session-store'
+import {
   editorLifecycleActions,
   resetEditorLifecycleStore,
 } from '@/core/stores/editor-lifecycle-store'
@@ -58,11 +62,12 @@ describe('derivePreviewedId', () => {
 describe('usePreviewedId / getPreviewedId', () => {
   beforeEach(() => {
     resetSceneDocumentStore()
+    resetSceneSessionStore()
     resetEditorLifecycleStore()
     resetDialogStore()
     editorLifecycleActions.markAssetsReady()
     sceneDocumentActions.setHistory(createHistoryState([item('a')]))
-    sceneDocumentActions.setPreviewedId('a')
+    sceneSessionActions.setPreviewedId('a')
   })
 
   it('reads the gated previewed id from the stores', () => {
@@ -72,8 +77,8 @@ describe('usePreviewedId / getPreviewedId', () => {
     expect(getPreviewedId()).toBe('a')
   })
 
-  it('gates on dragging from the scene-document store', () => {
-    sceneDocumentActions.setDragging(true)
+  it('gates on dragging from the scene-session store', () => {
+    sceneSessionActions.setDragging(true)
 
     expect(getPreviewedId()).toBeNull()
 

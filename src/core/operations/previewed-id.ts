@@ -1,4 +1,5 @@
 import { useSceneDocumentStore } from '@/core/stores/scene-document-store'
+import { useSceneSessionStore } from '@/core/stores/scene-session-store'
 import {
   isBlockingOverlayOpen,
   useIsBlockingOverlayOpen,
@@ -38,18 +39,20 @@ export function derivePreviewedId(
 }
 
 /**
- * The visible previewed id, derived from the scene-document, dialog, and
- * editor-lifecycle stores. Cross-store derived state, so it lives here as a
- * value module rather than in any single store.
+ * The visible previewed id, derived from the scene-session, scene-document,
+ * dialog, and editor-lifecycle stores. Cross-store derived state, so it lives
+ * here as a value module rather than in any single store.
  */
 export function usePreviewedId(): string | null {
+  const previewedIdRaw = useSceneSessionStore((state) => state.previewedIdRaw)
+  const isDragging = useSceneSessionStore((state) => state.isDragging)
   const blockingOverlayOpen = useIsBlockingOverlayOpen()
   const editorInteractionsEnabled = useEditorInteractionsEnabled()
 
   return useSceneDocumentStore((state) =>
     derivePreviewedId(
-      state.previewedIdRaw,
-      state.isDragging,
+      previewedIdRaw,
+      isDragging,
       blockingOverlayOpen,
       editorInteractionsEnabled,
       state.history.present,
@@ -59,13 +62,13 @@ export function usePreviewedId(): string | null {
 
 /** Non-reactive read of {@link usePreviewedId} for use outside React. */
 export function getPreviewedId(): string | null {
-  const state = useSceneDocumentStore.getState()
+  const { previewedIdRaw, isDragging } = useSceneSessionStore.getState()
 
   return derivePreviewedId(
-    state.previewedIdRaw,
-    state.isDragging,
+    previewedIdRaw,
+    isDragging,
     isBlockingOverlayOpen(),
     isEditorInteractive(),
-    state.history.present,
+    useSceneDocumentStore.getState().history.present,
   )
 }

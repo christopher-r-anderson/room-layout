@@ -10,8 +10,11 @@ import {
 import {
   resetSceneDocumentStore,
   sceneDocumentActions,
-  useSceneDocumentStore,
 } from '@/core/stores/scene-document-store'
+import {
+  resetSceneSessionStore,
+  useSceneSessionStore,
+} from '@/core/stores/scene-session-store'
 import { selectByCanvasPointer } from '@/core/operations/selection-actions'
 import { useSceneDrag } from './use-scene-drag'
 import type { LayoutBounds } from '@/domain/geometry/furniture-layout'
@@ -89,6 +92,7 @@ function defaultOptions(
 describe('useSceneDrag', () => {
   beforeEach(() => {
     resetSceneDocumentStore()
+    resetSceneSessionStore()
     mockGetFloorIntersection.mockReset()
     mockGetDraggedFurniturePosition.mockReset()
     mockResolveMovedFurniturePosition.mockReset()
@@ -99,6 +103,7 @@ describe('useSceneDrag', () => {
 
   afterEach(() => {
     resetSceneDocumentStore()
+    resetSceneSessionStore()
   })
 
   it('handleDragStart keeps dragState null when furniture is missing', () => {
@@ -149,8 +154,8 @@ describe('useSceneDrag', () => {
       },
     })
     expect(selectByCanvasPointer).toHaveBeenCalledWith('item-1')
-    // The document drag flag is written synchronously with the gesture.
-    expect(useSceneDocumentStore.getState().isDragging).toBe(true)
+    // The session drag flag is written synchronously with the gesture.
+    expect(useSceneSessionStore.getState().isDragging).toBe(true)
   })
 
   it('handleMove ignores mismatched id', () => {
@@ -279,7 +284,7 @@ describe('useSceneDrag', () => {
     })
 
     expect(result.current.dragState).toBeNull()
-    expect(useSceneDocumentStore.getState().isDragging).toBe(false)
+    expect(useSceneSessionStore.getState().isDragging).toBe(false)
     expect(updateHistory).toHaveBeenCalledTimes(1)
 
     const updateHistoryArg = updateHistory.mock.calls[0]?.[0]
@@ -293,11 +298,11 @@ describe('useSceneDrag', () => {
     act(() => {
       result.current.handleDragStart('item-1', createPointerEvent(1))
     })
-    expect(useSceneDocumentStore.getState().isDragging).toBe(true)
+    expect(useSceneSessionStore.getState().isDragging).toBe(true)
 
     unmount()
 
-    expect(useSceneDocumentStore.getState().isDragging).toBe(false)
+    expect(useSceneSessionStore.getState().isDragging).toBe(false)
   })
 
   it('clears the gesture when the dragged item leaves the document mid-drag', () => {
@@ -311,7 +316,7 @@ describe('useSceneDrag', () => {
       result.current.handleDragStart('item-1', createPointerEvent(1))
     })
     expect(result.current.dragState).not.toBeNull()
-    expect(useSceneDocumentStore.getState().isDragging).toBe(true)
+    expect(useSceneSessionStore.getState().isDragging).toBe(true)
 
     // Simulate a keyboard delete landing while the pointer is still down.
     act(() => {
@@ -319,6 +324,6 @@ describe('useSceneDrag', () => {
     })
 
     expect(result.current.dragState).toBeNull()
-    expect(useSceneDocumentStore.getState().isDragging).toBe(false)
+    expect(useSceneSessionStore.getState().isDragging).toBe(false)
   })
 })

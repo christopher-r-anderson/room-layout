@@ -4,8 +4,12 @@ import { createHistoryState } from '@/shared/lib/ui/editor-history'
 import {
   resetSceneDocumentStore,
   sceneDocumentActions,
-  useSceneDocumentStore,
 } from '@/core/stores/scene-document-store'
+import {
+  resetSceneSessionStore,
+  sceneSessionActions,
+  useSceneSessionStore,
+} from '@/core/stores/scene-session-store'
 import { feedbackActions } from '@/core/stores/feedback-store'
 import {
   resetSelectionStore,
@@ -64,6 +68,7 @@ function mockSelectionMutationsToLand() {
 describe('selection-actions', () => {
   beforeEach(() => {
     resetSceneDocumentStore()
+    resetSceneSessionStore()
     resetSelectionStore()
     resetEditorLifecycleStore()
     sceneDocumentActions.setHistory(createHistoryState([CHAIR]))
@@ -78,7 +83,7 @@ describe('selection-actions', () => {
   it('clearCanvasSelection clears the selection and the canvas-miss preview together', () => {
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
     mockSelectionMutationsToLand()
-    sceneDocumentActions.setPreviewedId('chair-1')
+    sceneSessionActions.setPreviewedId('chair-1')
 
     clearCanvasSelection()
 
@@ -87,7 +92,7 @@ describe('selection-actions', () => {
     // canvas-miss preview clear.
     expect(clearDocumentSelection).toHaveBeenCalled()
     expect(feedbackActions.clearStatusMessage).toHaveBeenCalled()
-    expect(useSceneDocumentStore.getState().previewedIdRaw).toBeNull()
+    expect(useSceneSessionStore.getState().previewedIdRaw).toBeNull()
   })
 
   it('skips document mutations when the scene is not ready', () => {

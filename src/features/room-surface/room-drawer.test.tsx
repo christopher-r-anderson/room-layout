@@ -17,11 +17,16 @@ import {
   sceneDocumentActions,
   useSceneDocumentStore,
 } from '@/core/stores/scene-document-store'
+import {
+  resetSceneSessionStore,
+  sceneSessionActions,
+} from '@/core/stores/scene-session-store'
 import { createEnvironmentConfig } from './test-fixtures'
 
 beforeEach(() => {
   resetAssetsStore()
   resetSceneDocumentStore()
+  resetSceneSessionStore()
 })
 
 describe('RoomDrawer', () => {
@@ -123,7 +128,7 @@ describe('RoomDrawer', () => {
     })
     sceneDocumentActions.setFloorFinishId('wood-floor')
     sceneDocumentActions.setWallFinishId('light-gray')
-    sceneDocumentActions.setFloorFinishLoading(true)
+    sceneSessionActions.setFloorFinishLoading(true)
 
     render(<RoomDrawer open={true} onOpenChange={vi.fn()} />)
     // Flush the scroll area's deferred mount measurement so its state update

@@ -3,8 +3,12 @@ import { createHistoryState } from '@/shared/lib/ui/editor-history'
 import {
   resetSceneDocumentStore,
   sceneDocumentActions,
-  useSceneDocumentStore,
 } from '@/core/stores/scene-document-store'
+import {
+  resetSceneSessionStore,
+  sceneSessionActions,
+  useSceneSessionStore,
+} from '@/core/stores/scene-session-store'
 import {
   resetSelectionStore,
   selectionActions,
@@ -19,6 +23,7 @@ import {
 
 function resetStores() {
   resetSceneDocumentStore()
+  resetSceneSessionStore()
   resetSelectionStore()
 }
 
@@ -54,7 +59,7 @@ it('selectById reports not-found and keeps the current selection', () => {
 })
 
 it('selectById is blocked while a drag is in progress', () => {
-  sceneDocumentActions.setDragging(true)
+  sceneSessionActions.setDragging(true)
 
   expect(selectById(CHAIR.id)).toEqual({
     ok: false,
@@ -65,7 +70,7 @@ it('selectById is blocked while a drag is in progress', () => {
 
 it('clearSelection is a no-op while a drag is in progress', () => {
   selectionActions.setSelection(CHAIR.id, 'canvas-pointer')
-  sceneDocumentActions.setDragging(true)
+  sceneSessionActions.setDragging(true)
 
   clearSelection()
 
@@ -82,25 +87,25 @@ it('clearSelection clears the selection outside a drag', () => {
 })
 
 it('applySelection clears the hover preview whenever the pointer changes', () => {
-  sceneDocumentActions.setPreviewedId(CHAIR.id)
+  sceneSessionActions.setPreviewedId(CHAIR.id)
 
   applySelection(CHAIR.id, 'canvas-pointer')
 
   expect(useSelectionStore.getState().selectedId).toBe(CHAIR.id)
-  expect(useSceneDocumentStore.getState().previewedIdRaw).toBeNull()
+  expect(useSceneSessionStore.getState().previewedIdRaw).toBeNull()
 
-  sceneDocumentActions.setPreviewedId(CHAIR.id)
+  sceneSessionActions.setPreviewedId(CHAIR.id)
   applySelection(null, null)
 
   expect(useSelectionStore.getState().selectedId).toBeNull()
-  expect(useSceneDocumentStore.getState().previewedIdRaw).toBeNull()
+  expect(useSceneSessionStore.getState().previewedIdRaw).toBeNull()
 })
 
 it('applySelection keeps the hover preview when the pointer does not move', () => {
   applySelection(CHAIR.id, 'canvas-pointer')
-  sceneDocumentActions.setPreviewedId(CHAIR.id)
+  sceneSessionActions.setPreviewedId(CHAIR.id)
 
   applySelection(CHAIR.id, 'canvas-pointer')
 
-  expect(useSceneDocumentStore.getState().previewedIdRaw).toBe(CHAIR.id)
+  expect(useSceneSessionStore.getState().previewedIdRaw).toBe(CHAIR.id)
 })

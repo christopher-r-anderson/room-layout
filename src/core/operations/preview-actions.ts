@@ -1,4 +1,4 @@
-import { sceneDocumentActions } from '@/core/stores/scene-document-store'
+import { sceneSessionActions } from '@/core/stores/scene-session-store'
 
 const SCENE_PREVIEW_CLEAR_DELAY_MS = 50
 
@@ -12,16 +12,16 @@ type OutlinerPreviewSource = 'outliner-hover' | 'outliner-focus'
 // Imperative preview scratch lives at module scope rather than in store state:
 // the hysteresis timer and the active preview source are scheduling details, not
 // reactive values. Consumers drive these through the exported actions; the raw
-// previewed id is held in scene-document-store and gated for reads by usePreviewedId.
+// previewed id is held in scene-session-store and gated for reads by usePreviewedId.
 let scenePreviewClearTimeout: number | null = null
 let previewSource: PreviewSource | null = null
 
 function setPreview(id: string) {
-  sceneDocumentActions.setPreviewedId(id)
+  sceneSessionActions.setPreviewedId(id)
 }
 
 function clearPreview() {
-  sceneDocumentActions.setPreviewedId(null)
+  sceneSessionActions.setPreviewedId(null)
 }
 
 export function cancelScenePreviewClear() {

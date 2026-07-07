@@ -10,6 +10,10 @@ import {
   sceneDocumentActions,
 } from '@/core/stores/scene-document-store'
 import {
+  resetSceneSessionStore,
+  sceneSessionActions,
+} from '@/core/stores/scene-session-store'
+import {
   editorLifecycleActions,
   resetEditorLifecycleStore,
 } from '@/core/stores/editor-lifecycle-store'
@@ -54,6 +58,7 @@ const SNAPSHOT = {
 describe('canvas-keyboard-actions', () => {
   beforeEach(() => {
     resetSceneDocumentStore()
+    resetSceneSessionStore()
     resetEditorLifecycleStore()
     resetDialogStore()
     editorLifecycleActions.markAssetsReady()
@@ -95,7 +100,7 @@ describe('canvas-keyboard-actions', () => {
   })
 
   it('selects the current preview and clears it', () => {
-    sceneDocumentActions.setPreviewedId('right')
+    sceneSessionActions.setPreviewedId('right')
 
     selectCanvasPreviewed()
 

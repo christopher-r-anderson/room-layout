@@ -8,11 +8,16 @@ import {
   sceneDocumentActions,
   useSceneDocumentStore,
 } from '@/core/stores/scene-document-store'
+import {
+  resetSceneSessionStore,
+  sceneSessionActions,
+} from '@/core/stores/scene-session-store'
 import { createEnvironmentConfig } from './test-fixtures'
 
 beforeEach(() => {
   resetAssetsStore()
   resetSceneDocumentStore()
+  resetSceneSessionStore()
   assetsActions.setAssets({
     catalog: [],
     collections: [],
@@ -25,7 +30,7 @@ beforeEach(() => {
 
 describe('RoomControls', () => {
   it('marks the floor finish control as busy while floor textures are loading', () => {
-    sceneDocumentActions.setFloorFinishLoading(true)
+    sceneSessionActions.setFloorFinishLoading(true)
 
     render(<RoomControls />)
 

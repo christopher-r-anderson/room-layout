@@ -53,7 +53,7 @@ UI intent ──► core operation (validates via @/domain/geometry rules)
 The drag gesture is scene-owned (it needs the pointer ray each move), but the
 document stays authoritative throughout: each move writes the validated position
 into the history's live present (coalesced, no undo entry per move), and the
-drop finalizes one undo step. The store's `isDragging` flag is written
+drop finalizes one undo step. The session store's `isDragging` flag is written
 synchronously with the gesture, so core mutations that guard on it never race a
 render. Object3D transforms are never read back as a source of truth.
 
@@ -89,4 +89,5 @@ render. Object3D transforms are never read back as a source of truth.
 - Command surface: `src/core/scene-commands.ts`
 - Port registry: `src/core/scene-services.ts`
 - Registration site: `src/scene/scene.tsx`
-- The data model: `src/core/stores/scene-document-store.ts`
+- The document: `src/core/stores/scene-document-store.ts`; the session:
+  `src/core/stores/scene-session-store.ts`

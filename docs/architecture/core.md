@@ -32,12 +32,17 @@ fresh value) are the React read surface. Features read the narrow hooks, not
 the generic bound hook. "Written by" names the only modules that should mutate
 a store.
 
-- **`scene-document-store`** — the app-facing scene **data model**: furniture
-  history (the undo/redo timeline), preview id, drag state, finishes, the
-  lighting mood id, and the floor-finish loading flag. Written by scene (the
-  drag's live-present writes) and by core operations.
-  Ownership vs. the scene itself is the subject of
-  [scene-and-core.md](scene-and-core.md).
+- **`scene-document-store`** — the scene **document**: furniture history (the
+  undo/redo timeline), the instance-id counter, and the finish/mood ids — the
+  persisted, undoable description of the room. Written by scene (the drag's
+  live-present writes) and by core operations. Ownership vs. the scene itself
+  is the subject of [scene-and-core.md](scene-and-core.md).
+- **`scene-session-store`** — the scene **session**: the raw hover-preview
+  pointer (gated for reads by `usePreviewedId`), the live drag flag (written
+  synchronously with the gesture; mutations and draft persistence guard on
+  it), and the floor-finish loading indicator. Session-scoped: never
+  serialized, never in the undo timeline. Written by scene gestures and core
+  preview actions.
 - **`editor-lifecycle-store`** — the single owner of the startup phase machine
   (`loading | ready | errored`), asset errors, restore outcome/attempt tracking,
   and the startup-cycle counters `sceneEpoch` (Scene remount key) and
@@ -99,7 +104,8 @@ persistence.
   [scene-and-core.md](scene-and-core.md)).
 - `preview-actions` + `preview-reconciler` — preview hysteresis as module
   cells plus the reconciler that clears preview state whenever a suppressing
-  gate (drag, blocking overlay, not-ready) holds.
+  gate (drag, blocking overlay, not-ready) holds or the previewed item leaves
+  the document.
 - `draft-persistence` — mirrors the scene document into the localStorage draft
   while the editor is ready and not dragging, reading the environment config
   from `assets-store` at persist time.

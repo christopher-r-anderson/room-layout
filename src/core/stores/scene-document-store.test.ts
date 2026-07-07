@@ -2,10 +2,7 @@
 
 import { act, renderHook } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import {
-  commitHistoryPresent,
-  createHistoryState,
-} from '@/shared/lib/ui/editor-history'
+import { createHistoryState } from '@/shared/lib/ui/editor-history'
 import type { FurnitureItem } from '@/domain/furniture'
 import { makeFurnitureItem } from '@/test/support/furniture'
 import {
@@ -16,10 +13,7 @@ import { sceneCommands } from '@/core/scene-commands'
 import {
   resetSceneDocumentStore,
   sceneDocumentActions,
-  useSceneDocumentStore,
   useFloorFinishId,
-  useFloorFinishLoading,
-  useHistoryAvailability,
   useItems,
   useLightingMoodId,
   useWallFinishId,
@@ -66,34 +60,6 @@ describe('useSceneDocumentStore', () => {
     expect(items.current).toEqual([FURNITURE_ITEM])
   })
 
-  it('derives history availability from store-owned history and dragging state', () => {
-    const { result: historyAvailability } = renderHook(() =>
-      useHistoryAvailability(),
-    )
-
-    act(() => {
-      sceneDocumentActions.setHistory(
-        commitHistoryPresent(createHistoryState<FurnitureItem[]>([]), [
-          FURNITURE_ITEM,
-        ]),
-      )
-    })
-
-    expect(historyAvailability.current).toEqual({
-      canUndo: true,
-      canRedo: false,
-    })
-
-    act(() => {
-      sceneDocumentActions.setDragging(true)
-    })
-
-    expect(historyAvailability.current).toEqual({
-      canUndo: false,
-      canRedo: false,
-    })
-  })
-
   it('tracks finish ids and the lighting mood', () => {
     const { result: floorFinishId } = renderHook(() => useFloorFinishId())
     const { result: wallFinishId } = renderHook(() => useWallFinishId())
@@ -114,50 +80,6 @@ describe('useSceneDocumentStore', () => {
     })
 
     expect(lightingMoodId.current).toBe('')
-  })
-
-  it('tracks the floor finish loading flag', () => {
-    const { result: floorFinishLoading } = renderHook(() =>
-      useFloorFinishLoading(),
-    )
-
-    expect(floorFinishLoading.current).toBe(false)
-
-    act(() => {
-      sceneDocumentActions.setFloorFinishLoading(true)
-    })
-
-    expect(floorFinishLoading.current).toBe(true)
-
-    act(() => {
-      resetSceneDocumentStore()
-    })
-
-    expect(floorFinishLoading.current).toBe(false)
-  })
-
-  it('reconciles removed preview ids from the backing scene items', () => {
-    const consoleErrorSpy = vi
-      .spyOn(console, 'error')
-      .mockImplementation(() => undefined)
-
-    act(() => {
-      seedSceneItems([FURNITURE_ITEM])
-      sceneDocumentActions.setPreviewedId(FURNITURE_ITEM.id)
-    })
-
-    expect(useSceneDocumentStore.getState().previewedIdRaw).toBe(
-      FURNITURE_ITEM.id,
-    )
-
-    act(() => {
-      seedSceneItems([])
-    })
-
-    expect(useSceneDocumentStore.getState().previewedIdRaw).toBeNull()
-    expect(consoleErrorSpy).not.toHaveBeenCalled()
-
-    consoleErrorSpy.mockRestore()
   })
 
   it('delegates setCameraKeyState through registered scene services', () => {

@@ -1,52 +1,21 @@
 import { create } from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
-import { useShallow } from 'zustand/react/shallow'
 import {
-  canRedoHistory,
-  canUndoHistory,
   createHistoryState,
   type HistoryState,
 } from '@/shared/lib/ui/editor-history'
-import type { HistoryAvailability } from '../types/history.types'
 import type { FurnitureItem } from '@/domain/furniture'
 
+// The scene document: the persisted, undoable description of the room - the
+// furniture history, the id counter behind stable instance ids, and the active
+// finish/mood ids. Session state (preview, drag, transient loading) lives in
+// scene-session-store.
 interface SceneDocumentStoreState {
   history: HistoryState<FurnitureItem[]>
   instanceIdCounter: number
-  previewedIdRaw: string | null
-  historyAvailability: HistoryAvailability
-  isDragging: boolean
   floorFinishId: string
   wallFinishId: string
   lightingMoodId: string
-  floorFinishLoading: boolean
-}
-
-const INITIAL_HISTORY_AVAILABILITY: HistoryAvailability = {
-  canUndo: false,
-  canRedo: false,
-}
-
-function getDerivedHistoryAvailability(
-  history: HistoryState<unknown>,
-  isDragging: boolean,
-) {
-  return {
-    canUndo: !isDragging && canUndoHistory(history),
-    canRedo: !isDragging && canRedoHistory(history),
-  }
-}
-
-// A previewed item that leaves the item list (delete, undo of an add) must not
-// keep a dangling preview pointer.
-function reconcilePreviewedId(
-  previewedId: string | null,
-  items: FurnitureItem[],
-): string | null {
-  if (previewedId !== null && !items.some((item) => item.id === previewedId)) {
-    return null
-  }
-  return previewedId
 }
 
 export const useSceneDocumentStore = create<SceneDocumentStoreState>()(
@@ -54,36 +23,18 @@ export const useSceneDocumentStore = create<SceneDocumentStoreState>()(
     (): SceneDocumentStoreState => ({
       history: createHistoryState<FurnitureItem[]>([]),
       instanceIdCounter: 0,
-      previewedIdRaw: null,
-      historyAvailability: INITIAL_HISTORY_AVAILABILITY,
-      isDragging: false,
       floorFinishId: '',
       wallFinishId: '',
       lightingMoodId: '',
-      floorFinishLoading: false,
     }),
   ),
 )
 
 export const sceneDocumentActions = {
   setHistory: (history: HistoryState<FurnitureItem[]>) => {
-    useSceneDocumentStore.setState((state) => {
-      if (state.history === history) {
-        return state
-      }
-
-      return {
-        history,
-        historyAvailability: getDerivedHistoryAvailability(
-          history,
-          state.isDragging,
-        ),
-        previewedIdRaw: reconcilePreviewedId(
-          state.previewedIdRaw,
-          history.present,
-        ),
-      }
-    })
+    useSceneDocumentStore.setState((state) =>
+      state.history === history ? state : { history },
+    )
   },
   updateHistory: (
     updater: (
@@ -93,21 +44,7 @@ export const sceneDocumentActions = {
     useSceneDocumentStore.setState((state) => {
       const nextHistory = updater(state.history)
 
-      if (nextHistory === state.history) {
-        return state
-      }
-
-      return {
-        history: nextHistory,
-        historyAvailability: getDerivedHistoryAvailability(
-          nextHistory,
-          state.isDragging,
-        ),
-        previewedIdRaw: reconcilePreviewedId(
-          state.previewedIdRaw,
-          nextHistory.present,
-        ),
-      }
+      return nextHistory === state.history ? state : { history: nextHistory }
     })
   },
   setInstanceIdCounter: (counter: number) => {
@@ -115,24 +52,6 @@ export const sceneDocumentActions = {
       state.instanceIdCounter === counter
         ? state
         : { instanceIdCounter: counter },
-    )
-  },
-  setPreviewedId: (id: string | null) => {
-    useSceneDocumentStore.setState((state) =>
-      state.previewedIdRaw === id ? state : { previewedIdRaw: id },
-    )
-  },
-  setDragging: (dragging: boolean) => {
-    useSceneDocumentStore.setState((state) =>
-      state.isDragging === dragging
-        ? state
-        : {
-            isDragging: dragging,
-            historyAvailability: getDerivedHistoryAvailability(
-              state.history,
-              dragging,
-            ),
-          },
     )
   },
   setFloorFinishId: (id: string) => {
@@ -150,13 +69,6 @@ export const sceneDocumentActions = {
       state.lightingMoodId === id ? state : { lightingMoodId: id },
     )
   },
-  setFloorFinishLoading: (loading: boolean) => {
-    useSceneDocumentStore.setState((state) =>
-      state.floorFinishLoading === loading
-        ? state
-        : { floorFinishLoading: loading },
-    )
-  },
   reset: () => {
     useSceneDocumentStore.setState(
       useSceneDocumentStore.getInitialState(),
@@ -171,13 +83,9 @@ export function resetSceneDocumentStore() {
 
 export const useItems = () =>
   useSceneDocumentStore((state) => state.history.present)
-export const useHistoryAvailability = () =>
-  useSceneDocumentStore(useShallow((state) => state.historyAvailability))
 export const useFloorFinishId = () =>
   useSceneDocumentStore((state) => state.floorFinishId)
 export const useWallFinishId = () =>
   useSceneDocumentStore((state) => state.wallFinishId)
 export const useLightingMoodId = () =>
   useSceneDocumentStore((state) => state.lightingMoodId)
-export const useFloorFinishLoading = () =>
-  useSceneDocumentStore((state) => state.floorFinishLoading)

@@ -8,9 +8,10 @@ Layout
 
 - `stores/` — the zustand stores: `create()` bound hooks over pure-data state,
   each with a module-level `xActions` mutation surface and narrow selector
-  hooks. Covers the scene data model (`scene-document-store`), the
-  catalog/environment manifest (`assets-store`), and the startup/asset-loading
-  state (`editor-lifecycle-store`, `collection-loading-store`).
+  hooks. Covers the scene document and session (`scene-document-store`,
+  `scene-session-store`), the catalog/environment manifest (`assets-store`),
+  and the startup/asset-loading state (`editor-lifecycle-store`,
+  `collection-loading-store`).
 - `operations/` — cross-cutting operations over the stores (history/movement/
   selection actions, `startup-coordinator`, the collection load pipeline
   (`collection-loader`, `collection-bytes`), preview actions + reconciler,

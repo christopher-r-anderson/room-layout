@@ -1,7 +1,8 @@
+import { useSceneDocumentStore } from '@/core/stores/scene-document-store'
 import {
-  sceneDocumentActions,
-  useSceneDocumentStore,
-} from '@/core/stores/scene-document-store'
+  sceneSessionActions,
+  useSceneSessionStore,
+} from '@/core/stores/scene-session-store'
 import {
   selectionActions,
   useSelectionStore,
@@ -21,13 +22,13 @@ import type { InteractionSource } from '@/core/types/interaction.types'
  */
 export function applySelection(id: string | null, source: InteractionSource) {
   if (useSelectionStore.getState().selectedId !== id) {
-    sceneDocumentActions.setPreviewedId(null)
+    sceneSessionActions.setPreviewedId(null)
   }
   selectionActions.setSelection(id, source)
 }
 
 export function clearSelection() {
-  if (useSceneDocumentStore.getState().isDragging) {
+  if (useSceneSessionStore.getState().isDragging) {
     return
   }
 
@@ -38,7 +39,8 @@ export function selectById(
   id: string | null,
   source: InteractionSource = null,
 ): SelectByIdResult {
-  const { history, isDragging } = useSceneDocumentStore.getState()
+  const { history } = useSceneDocumentStore.getState()
+  const { isDragging } = useSceneSessionStore.getState()
 
   if (isDragging) {
     return {

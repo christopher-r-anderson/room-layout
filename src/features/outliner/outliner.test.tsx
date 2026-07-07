@@ -19,6 +19,10 @@ import {
   sceneDocumentActions,
 } from '@/core/stores/scene-document-store'
 import {
+  resetSceneSessionStore,
+  sceneSessionActions,
+} from '@/core/stores/scene-session-store'
+import {
   resetSelectionStore,
   selectionActions,
   useSelectionStore,
@@ -86,6 +90,7 @@ describe('SceneOutliner', () => {
     resetDialogStore()
     resetEditorLifecycleStore()
     resetSceneDocumentStore()
+    resetSceneSessionStore()
     resetSelectionStore()
     dialogActions.configureRuntimeContext({
       isDialogsEnabled: () => true,
@@ -156,7 +161,7 @@ describe('SceneOutliner', () => {
   })
 
   it('marks the previewed non-selected item with a preview state attribute', async () => {
-    sceneDocumentActions.setPreviewedId('item-2')
+    sceneSessionActions.setPreviewedId('item-2')
 
     renderOutliner()
 
@@ -167,7 +172,7 @@ describe('SceneOutliner', () => {
   })
 
   it('does not mark the selected item as previewed even if it matches previewedId', async () => {
-    sceneDocumentActions.setPreviewedId('item-1')
+    sceneSessionActions.setPreviewedId('item-1')
 
     renderOutliner()
 

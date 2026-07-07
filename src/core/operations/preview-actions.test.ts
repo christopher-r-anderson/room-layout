@@ -4,8 +4,11 @@ import { createHistoryState } from '@/shared/lib/ui/editor-history'
 import {
   resetSceneDocumentStore,
   sceneDocumentActions,
-  useSceneDocumentStore,
 } from '@/core/stores/scene-document-store'
+import {
+  resetSceneSessionStore,
+  useSceneSessionStore,
+} from '@/core/stores/scene-session-store'
 import {
   clearPreviewOnCanvasMiss,
   previewFromCanvasKeyboard,
@@ -27,10 +30,11 @@ const makeItem = (id: string) => ({
   rotationY: 0,
 })
 
-const previewedIdRaw = () => useSceneDocumentStore.getState().previewedIdRaw
+const previewedIdRaw = () => useSceneSessionStore.getState().previewedIdRaw
 
 beforeEach(() => {
   resetSceneDocumentStore()
+  resetSceneSessionStore()
   resetPreviewState()
   sceneDocumentActions.setHistory(
     createHistoryState([makeItem('item-1'), makeItem('item-2')]),
@@ -41,6 +45,7 @@ afterEach(() => {
   vi.useRealTimers()
   resetPreviewState()
   resetSceneDocumentStore()
+  resetSceneSessionStore()
 })
 
 describe('preview-actions', () => {
