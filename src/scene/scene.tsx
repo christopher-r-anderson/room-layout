@@ -177,6 +177,9 @@ export function Scene({
   })
 
   useEffect(() => {
+    if (import.meta.env.DEV || IS_E2E_BUILD) {
+      perfCounters.incrSceneMount()
+    }
     registerSceneServices({
       focusSelected: () => {
         servicesRef.current.focusSelected()

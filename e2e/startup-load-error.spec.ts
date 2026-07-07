@@ -5,6 +5,7 @@ import {
   expectSceneFlags,
   failFurnitureAssetRequestsUntilRetry,
   makeSceneRoute,
+  readPerfCounters,
   waitForEditorReady,
 } from './support/editor-harness'
 
@@ -38,6 +39,11 @@ test("shows a retry path when a restored scene's furniture assets fail to load",
   expect(recoveredState.assetsReady).toBe(true)
   expect(recoveredState.assetError).toBe(false)
   expect(recoveredState.itemCount).toBe(1)
+
+  // Exactly one remount per retry: the initial mount plus the retry's cycle
+  // bump - the manifest re-arriving must not remount the Scene again.
+  const counters = await readPerfCounters(page)
+  expect(counters.sceneMounts).toBe(2)
 })
 
 test('does not error an empty scene when a background furniture request fails', async ({
