@@ -15,6 +15,7 @@ import {
   resetEditorLifecycleStore,
 } from '@/core/stores/editor-lifecycle-store'
 import { previewFromScene, resetPreviewState } from './preview-actions'
+import { getPreviewedId } from './previewed-id'
 import { startPreviewReconciler } from './preview-reconciler'
 
 const CHAIR = {
@@ -77,5 +78,18 @@ describe('startPreviewReconciler', () => {
     sceneDocumentActions.setHistory(createHistoryState([]))
 
     expect(useSceneSessionStore.getState().previewedIdRaw).toBeNull()
+  })
+
+  it('keeps the raw pointer for a departed item when the reconciler is not running', () => {
+    stop()
+
+    previewFromScene('item-1')
+    sceneDocumentActions.setHistory(createHistoryState([]))
+
+    // The session store carries no hidden coupling to the document: without
+    // the reconciler the raw pointer survives the item leaving, and only the
+    // read gating hides the dangling id.
+    expect(useSceneSessionStore.getState().previewedIdRaw).toBe('item-1')
+    expect(getPreviewedId()).toBeNull()
   })
 })

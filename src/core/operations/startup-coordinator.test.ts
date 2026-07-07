@@ -13,6 +13,11 @@ import {
   selectionActions,
   useSelectionStore,
 } from '../stores/selection-store'
+import {
+  resetSceneSessionStore,
+  sceneSessionActions,
+  useSceneSessionStore,
+} from '../stores/scene-session-store'
 import { runStartupRestoreFlow } from './restore-flow'
 import { resetCollectionPipeline } from './collection-loader'
 import { clearSceneServices } from '@/core/scene-services'
@@ -61,7 +66,14 @@ beforeEach(() => {
   resetEditorLifecycleStore()
   resetAssetsStore()
   resetSelectionStore()
+  resetSceneSessionStore()
 })
+
+function seedSceneSessionState() {
+  sceneSessionActions.setPreviewedId('item-1')
+  sceneSessionActions.setDragging(true)
+  sceneSessionActions.setFloorFinishLoading(true)
+}
 
 afterEach(() => {
   vi.clearAllMocks()
@@ -91,6 +103,7 @@ describe('startup-coordinator', () => {
 
   it('records the asset error, resets the shell, and announces on asset error', () => {
     const closeActiveDialog = vi.spyOn(dialogActions, 'closeActiveDialog')
+    seedSceneSessionState()
 
     notifyAssetError(new Error('boom'))
 
@@ -99,6 +112,12 @@ describe('startup-coordinator', () => {
     expect(state.assetError).toEqual({ kind: 'asset-load', message: 'boom' })
     expect(closeActiveDialog).toHaveBeenCalledTimes(1)
     expect(clearSceneServices).toHaveBeenCalledTimes(1)
+    // The shell reset clears the scene session alongside the document.
+    expect(useSceneSessionStore.getState()).toEqual({
+      previewedIdRaw: null,
+      isDragging: false,
+      floorFinishLoading: false,
+    })
     expect(feedbackActions.announceAssertive).toHaveBeenCalledWith(
       'Unable to load room editor assets. Retry available.',
     )
@@ -115,5 +134,17 @@ describe('startup-coordinator', () => {
     expect(useEditorLifecycleStore.getState().retryToken).toBe(1)
     expect(useEditorLifecycleStore.getState().sceneEpoch).toBe(1)
     expect(feedbackActions.clearAssertiveAnnouncement).toHaveBeenCalledTimes(1)
+  })
+
+  it('clears the scene session on retry', () => {
+    seedSceneSessionState()
+
+    requestAssetRetry()
+
+    expect(useSceneSessionStore.getState()).toEqual({
+      previewedIdRaw: null,
+      isDragging: false,
+      floorFinishLoading: false,
+    })
   })
 })
