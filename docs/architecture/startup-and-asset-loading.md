@@ -96,7 +96,7 @@ flowchart LR
 - **Bootstrap** (`features/startup/use-startup-bootstrap.ts`): fetches and validates
   the catalog manifest into `assets-store`, resolves the **gated set** - the
   collections the restored URL/draft may reference
-  (`core/persistence/referenced-collections.ts`, read-only over the restore
+  (`core/operations/referenced-collections.ts`, read-only over the restore
   flow's own `selectPrimaryRestoreState`, so gate and restore share one
   precedence rule; a valid draft stays gated alongside a valid link because it
   remains the apply-failure fallback) - into the loading store, and warms the
@@ -200,7 +200,7 @@ Two special cases:
 ## Pointers
 
 - Phases / signals: `core/stores/editor-lifecycle-store.ts`
-- Gating: `core/persistence/referenced-collections.ts`
+- Gating: `core/operations/referenced-collections.ts`
 - Fetch: `core/operations/stream-fetch.ts`, `core/operations/collection-bytes.ts`
 - Loading state: `core/stores/collection-loading-store.ts`
 - Load pipeline: `core/operations/collection-loader.ts`

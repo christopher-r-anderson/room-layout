@@ -26,8 +26,8 @@ import {
 import {
   runStartupRestoreFlow,
   validateDraftState,
-} from '../persistence/restore-flow'
-import type { RestorableState } from '../persistence/restore-flow.types'
+} from './restore-flow'
+import type { RestorableState } from './restore-flow.types'
 import type { StartupErrorKind } from '../types/startup.types'
 
 // Resets the editor surface back to a clean slate. Used by the asset-error and

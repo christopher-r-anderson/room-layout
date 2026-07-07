@@ -4,7 +4,7 @@ import type {
   FurnitureCollection,
 } from '@/domain/catalog'
 import type { FurnitureInstance } from '@/domain/furniture'
-import type { SceneDraftState } from './scene-draft'
+import type { SceneDraftState } from '../persistence/scene-draft'
 import { resolveReferencedCollectionPaths } from './referenced-collections'
 
 const catalog: FurnitureCatalogEntry[] = [

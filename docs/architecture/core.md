@@ -146,10 +146,12 @@ boundary rules forbid features importing `app` and forbid `shared` importing
 
 ## Persistence
 
-`core/persistence` serializes the `scene-document-store` data model: `scene-draft`
-(localStorage autosave), `scene-url` (shareable URL codec), `scene-reset`, and
-`restore-flow` (startup restore orchestration). Consumed by operations — the
-draft-persistence reconciler and `startup-coordinator` chiefly.
+`core/persistence` holds the codecs that serialize the `scene-document-store`
+data model: `scene-draft` (localStorage autosave), `scene-url` (shareable URL
+codec), and `furniture-serialization`. The flows that orchestrate them —
+`restore-flow` (startup restore), `scene-reset`, and `referenced-collections`
+(the bootstrap's gated-set resolution) — are operations and live in
+`core/operations`, consumed by `startup-coordinator` and the startup feature.
 
 ## Boundaries
 
