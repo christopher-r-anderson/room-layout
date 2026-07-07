@@ -10,7 +10,7 @@ import type {
   FurnitureCollection,
 } from '@/domain/catalog'
 import type { FurnitureKind } from '@/domain/furniture'
-import { createDevPerfLogger } from './perf-log'
+import { createDevPerfLogger } from '@/shared/debug/perf-log'
 
 const perfLog = createDevPerfLogger('📦')
 

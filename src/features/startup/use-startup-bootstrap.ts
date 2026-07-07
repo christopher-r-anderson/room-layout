@@ -13,8 +13,8 @@ import {
   fetchCatalogManifest,
   ManifestNetworkError,
   ManifestValidationError,
-} from './catalog-manifest'
-import { createDevPerfLogger } from './perf-log'
+} from '@/core/operations/catalog-manifest'
+import { createDevPerfLogger } from '@/shared/debug/perf-log'
 
 const perfLog = createDevPerfLogger('🚀')
 
