@@ -219,15 +219,15 @@ msgstr "Distance from back wall (m)"
 msgid "Distance from left wall (m)"
 msgstr "Distance from left wall (m)"
 
-#: src/core/persistence/restore-flow.ts
+#: src/core/operations/restore-flow.ts
 msgid "Draft could not be restored."
 msgstr "Draft could not be restored."
 
-#: src/core/persistence/restore-flow.ts
+#: src/core/operations/restore-flow.ts
 msgid "Draft could not be restored. Starting with an empty room."
 msgstr "Draft could not be restored. Starting with an empty room."
 
-#: src/core/persistence/restore-flow.ts
+#: src/core/operations/restore-flow.ts
 msgid "Draft failed to restore. Starting with an empty room."
 msgstr "Draft failed to restore. Starting with an empty room."
 
@@ -544,7 +544,7 @@ msgstr "Remove the selected item from your room layout?"
 msgid "Repository"
 msgstr "Repository"
 
-#: src/core/persistence/restore-flow.ts
+#: src/core/operations/restore-flow.ts
 msgid "Restored your saved draft."
 msgstr "Restored your saved draft."
 
@@ -571,7 +571,7 @@ msgstr "Retry to request the essential assets again."
 msgid "Room"
 msgstr "Room"
 
-#: src/core/persistence/restore-flow.ts
+#: src/core/operations/restore-flow.ts
 msgid "Room layout restored from shared link."
 msgstr "Room layout restored from shared link."
 
@@ -680,51 +680,51 @@ msgstr "Share, start over, or reference help."
 msgid "Shared"
 msgstr "Shared"
 
-#: src/core/persistence/restore-flow.ts
+#: src/core/operations/restore-flow.ts
 msgid "Shared link and draft could not be restored."
 msgstr "Shared link and draft could not be restored."
 
-#: src/core/persistence/restore-flow.ts
+#: src/core/operations/restore-flow.ts
 msgid "Shared link and draft could not be restored. Starting with an empty room."
 msgstr "Shared link and draft could not be restored. Starting with an empty room."
 
-#: src/core/persistence/restore-flow.ts
+#: src/core/operations/restore-flow.ts
 msgid "Shared link contained unknown furniture. Draft restored."
 msgstr "Shared link contained unknown furniture. Draft restored."
 
-#: src/core/persistence/restore-flow.ts
+#: src/core/operations/restore-flow.ts
 msgid "Shared link contained unrecognized furniture."
 msgstr "Shared link contained unrecognized furniture."
 
-#: src/core/persistence/restore-flow.ts
+#: src/core/operations/restore-flow.ts
 msgid "Shared link contained unrecognized furniture. Starting with an empty room."
 msgstr "Shared link contained unrecognized furniture. Starting with an empty room."
 
-#: src/core/persistence/restore-flow.ts
+#: src/core/operations/restore-flow.ts
 msgid "Shared link could not be restored."
 msgstr "Shared link could not be restored."
 
-#: src/core/persistence/restore-flow.ts
+#: src/core/operations/restore-flow.ts
 msgid "Shared link could not be restored. Draft also failed to restore. Starting with an empty room."
 msgstr "Shared link could not be restored. Draft also failed to restore. Starting with an empty room."
 
-#: src/core/persistence/restore-flow.ts
+#: src/core/operations/restore-flow.ts
 msgid "Shared link could not be restored. Recovered your local draft."
 msgstr "Shared link could not be restored. Recovered your local draft."
 
-#: src/core/persistence/restore-flow.ts
+#: src/core/operations/restore-flow.ts
 msgid "Shared link could not be restored. Starting with an empty room."
 msgstr "Shared link could not be restored. Starting with an empty room."
 
-#: src/core/persistence/restore-flow.ts
+#: src/core/operations/restore-flow.ts
 msgid "Shared link had unknown furniture. Draft also failed to restore. Starting with an empty room."
 msgstr "Shared link had unknown furniture. Draft also failed to restore. Starting with an empty room."
 
-#: src/core/persistence/restore-flow.ts
+#: src/core/operations/restore-flow.ts
 msgid "Shared link was invalid. Draft also failed to restore. Starting with an empty room."
 msgstr "Shared link was invalid. Draft also failed to restore. Starting with an empty room."
 
-#: src/core/persistence/restore-flow.ts
+#: src/core/operations/restore-flow.ts
 msgid "Shared link was invalid. Recovered your local draft."
 msgstr "Shared link was invalid. Recovered your local draft."
 

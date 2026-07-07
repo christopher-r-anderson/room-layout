@@ -24,10 +24,7 @@ import {
   parseSceneUrl,
   removeSceneParamFromUrl,
 } from '../persistence/scene-url'
-import {
-  runStartupRestoreFlow,
-  validateDraftState,
-} from './restore-flow'
+import { runStartupRestoreFlow, validateDraftState } from './restore-flow'
 import type { RestorableState } from './restore-flow.types'
 
 // Resets the editor surface back to a clean slate. Used by the asset-error and
