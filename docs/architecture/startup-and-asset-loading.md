@@ -65,8 +65,12 @@ instead of waiting for it.
 
 Two supporting signals:
 
-- `sceneEpoch` / `retryToken` bump on load/retry and re-key the scene subtree, so
-  a retry remounts a fresh scene (whose mount re-kicks the collection loads).
+- `startupCycle` bumps **only** in `requestRetry` - only on an explicit user
+  retry - and its three consumers rely on exactly that invariant: the
+  scene-canvas key (one Scene remount per retry), the collection loader's
+  stale-cycle guard, and `startup-chunk-retry` (a bump is "the next explicit
+  retry"). The manifest arriving does not bump it: the mounted Scene picks the
+  manifest up through props.
 - `sceneReady` - a reactive flag with a single producer:
   `registerSceneServices`/`clearSceneServices` (`core/scene-services.ts`) flip it
   as the `Scene` registers on mount and clears on unmount (the startup-shell
@@ -97,7 +101,10 @@ flowchart LR
   pipeline --> parse
 ```
 
-- **Bootstrap** (`features/startup/use-startup-bootstrap.ts`): fetches and validates
+- **Bootstrap** (`core/operations/startup-bootstrap.ts`, invoked at app mount
+  by the thin `features/startup/use-startup-bootstrap.ts` hook and directly by
+  `requestAssetRetry`; latest wins, a superseded or cancelled run writes
+  nothing): fetches and validates
   the catalog manifest into `assets-store`, resolves the **gated set** - the
   collections the restored URL/draft may reference
   (`core/operations/referenced-collections.ts`, read-only over the restore
@@ -124,7 +131,7 @@ flowchart LR
   in the loading store. A standing reconciler kicks pending loads whenever their
   inputs change (scene becomes ready, gate resolves, an item appears, an
   on-demand request arrives), so the chain never depends on React render timing. Loads are
-  keyed to the scene epoch; a stale cycle's result is discarded rather than
+  keyed to the startup cycle; a stale cycle's result is discarded rather than
   written into a fresh one.
 - **Readiness** (`features/startup/use-startup-readiness.ts`, run from `App`): once
   startup is loading, the scene is ready, and the gated set is resolved, it
@@ -183,11 +190,12 @@ can message by cause instead of waiting forever.
 ## Retry
 
 `requestAssetRetry` (`core/operations/startup-coordinator.ts`) resets the core
-loading lifecycle and the scene registry, clears the byte source, and bumps the
-epoch so the remounting Scene re-kicks the loads and re-downloads; a load still
-in flight from the stale epoch discards its result. Reset happens **only** on an
-explicit retry - on the error path a gated failure's mark survives, so the
-pipeline does not immediately re-attempt and loop.
+loading lifecycle and the scene registry, clears the byte source, bumps the
+startup cycle so the remounting Scene re-kicks the loads and re-downloads, and
+re-runs the bootstrap fetch; a load still in flight from the stale cycle
+discards its result. Reset happens **only** on an explicit retry - on the error
+path a gated failure's mark survives, so the pipeline does not immediately
+re-attempt and loop.
 
 Two special cases:
 
@@ -211,7 +219,7 @@ Two special cases:
 - Loading state: `core/stores/collection-loading-store.ts`
 - Load pipeline: `core/operations/collection-loader.ts`
 - Parse / registry: `scene/internal/furniture/collection-scene-loader.ts`; state in `core/stores/collection-scene-registry.ts` (typed scene access in `scene/internal/furniture/collection-scene-registry.ts`)
-- Orchestration: `features/startup/use-startup-bootstrap.ts`, `use-startup-readiness.ts`, `core/operations/startup-coordinator.ts`
+- Orchestration: `core/operations/startup-bootstrap.ts`, `core/operations/startup-coordinator.ts`, `features/startup/use-startup-readiness.ts`
 - Chunk-failure recovery: `app/chrome/startup-chunk-retry.ts`
 - Bundle budgets: `scripts/check-bundle-budget.mjs`
 

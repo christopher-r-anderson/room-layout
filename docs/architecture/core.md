@@ -77,8 +77,9 @@ importing the generic bound hook from a feature is an ESLint error - its
   owning surfaces (selection and outliner features, app focus commands).
 - **`editor-lifecycle-store`** - the single owner of the startup phase machine
   (`loading | ready | errored`), asset errors, restore outcome/attempt tracking,
-  the startup-cycle counters `sceneEpoch` (Scene remount key) and `retryToken`
-  (re-triggers the manifest fetch), and the reactive `sceneReady` flag (single
+  the `startupCycle` counter (bumped only on an explicit retry: the Scene
+  remount key, the loader's stale-cycle guard, and the chunk-retry reload
+  signal), and the reactive `sceneReady` flag (single
   producer: `scene-services` register/clear, so it always agrees with the
   imperative `isSceneReady()`). `isEditorInteractive()` is the non-React
   readiness predicate the preview gating/reconciler and the dialog-enablement
@@ -150,8 +151,12 @@ persistence.
   from `assets-store` at persist time.
 - `startup-coordinator` - `completeAssetLoad` (one-time restore + mark ready),
   `notifyAssetError`, `requestAssetRetry`. Sources catalog/finishes from
-  `assets-store`, drives `editor-lifecycle-store`. The React-coupled manifest
-  fetch lives in the feature hook `use-startup-bootstrap`, keyed on `retryToken`.
+  `assets-store`, drives `editor-lifecycle-store`.
+- `startup-bootstrap` - the manifest fetch pipeline (`runStartupBootstrap`):
+  fetch and validate into `assets-store`, resolve the gated set, begin the
+  asset load. Invoked at app mount (via the thin `use-startup-bootstrap` hook)
+  and by `requestAssetRetry`; latest wins, a superseded or cancelled run
+  writes nothing.
 - `restore-flow`, `scene-reset`, `referenced-collections` - the flows that
   orchestrate the persistence codecs: startup restore source selection and
   application, reset-to-defaults, and the bootstrap's gated-set resolution.

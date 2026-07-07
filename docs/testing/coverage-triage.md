@@ -94,7 +94,7 @@ Ranked by payload:
 | `scene/internal/camera/use-camera-operations.ts`              | 24 lines | Thin preset/key-state forwarding.                                  |
 | `scene/internal/selection/use-selection-operations.ts`        | 20 lines | Thin.                                                              |
 | `app/commands/use-editor-command-handlers.ts`                 | 10 lines | Command→handler map.                                               |
-| `features/startup/use-startup-bootstrap.ts`                   | 34 lines | Startup effects; hardest, most e2e-overlapped.                     |
+| `features/startup/use-startup-bootstrap.ts`                   | 6 lines  | Thin mount trigger for `core/operations/startup-bootstrap`.        |
 
 Recommendation: if we touch this tier at all, do **only** `use-furniture-operations`
 as a real-store integration test and leave the thin wrappers to e2e.
