@@ -30,8 +30,9 @@ flowchart TD
   runtime --> foundations
 ```
 
-Every source dependency converges on `core`; nothing depends on `scene` or on a
-sibling feature. The foundations are import targets only.
+Every source dependency converges on `core`; nothing depends on `scene` beyond
+app's single lazy mount, and nothing depends on a sibling feature. The
+foundations are import targets only.
 
 Notes:
 
@@ -39,9 +40,10 @@ Notes:
 - **The scene arrow points at core, not the other way.** `core` owns the engine
   port surface (`core/scene-commands`, `core/scene-services`, `core/scene.types`);
   `scene` is the renderer adapter that implements it, registering its viewport
-  services on mount and reading/writing core stores directly. At runtime core
-  drives the viewport through `sceneCommands` without any source dependency on
-  scene. Nothing imports `@/scene` except `app`'s single lazy mount of
+  services on mount and reading/writing core stores directly. At runtime the
+  viewport is driven through core's `sceneCommands` port - by core operations
+  and feature actions alike - without any source dependency on scene. Nothing
+  imports `@/scene` except `app`'s single lazy mount of
   `@/scene/scene` (the code-split engine chunk).
 - `domain` is the lowest leaf: the furniture/room model types plus pure logic over
   them (catalog lookup, geometry/placement, the scene model). It imports nothing

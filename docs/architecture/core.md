@@ -28,9 +28,11 @@ Editor state is scoped by lifetime, and store names say which scope they hold:
   the share URL and the local draft serialize, and what undo/redo operates on.
   It lives in `scene-document-store`.
 - **Session** state belongs to the current sitting: never serialized, never in
-  the undo timeline, reset wholesale on retry. The scene session
-  (`scene-session-store`) and the selection session (`selection-store`) are the
-  session stores; the startup/asset stores are session-scoped machinery.
+  the undo timeline. The scene session (`scene-session-store`) and the
+  selection session (`selection-store`) are the session stores, reset wholesale
+  on retry. The startup/asset stores are session-scoped machinery with their
+  own retry semantics - a retry deliberately preserves e.g.
+  `restoreAttemptCount`, which guards the one-time restore.
 - **Ephemeral** values that nothing renders from stay out of stores entirely -
   module-level cells (the preview hysteresis timer, pending focus targets) or
   refs.
@@ -79,8 +81,8 @@ a store.
 - **`collection-loading-store`** - the three-free collection loading lifecycle,
   keyed by sourcePath: the gated set, download progress, on-demand wants, and
   loaded/failed outcomes with failure classification (`unavailable` vs
-  `connection`). The parsed three.js objects live in the scene layer's
-  collection-scene-registry; see
+  `connection`). The parsed scene roots live in `collection-scene-registry`
+  (below); see
   [startup-and-asset-loading.md](startup-and-asset-loading.md). Written by the
   startup bootstrap and the collection load pipeline.
 - **`toolbar-geometry-store`** - the selected item's projected toolbar geometry,
@@ -102,7 +104,9 @@ a store.
   (position/rotation defaults that let add/restore seed items without touching
   the scene graph). The scene layer registers and reads the parsed objects
   through its typed wrapper (`scene/internal/furniture/collection-scene-registry`).
-  Written by the scene's parse service.
+  Written by the scene's parse service; reset by the core pipeline teardown
+  (`resetCollectionPipeline`) so the loading lifecycle, registry, and byte
+  cache reset together.
 
 ## Operations
 
