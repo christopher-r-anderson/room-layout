@@ -35,7 +35,7 @@ export function InitializationProgress() {
   }
 
   return (
-    <section
+    <div
       className="absolute inset-0 grid place-items-center bg-background p-6"
       role="status"
       aria-live="polite"
@@ -66,6 +66,6 @@ export function InitializationProgress() {
           <span>{statusText}</span>
         </p>
       </div>
-    </section>
+    </div>
   )
 }

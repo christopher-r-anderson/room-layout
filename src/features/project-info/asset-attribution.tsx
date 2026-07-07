@@ -6,7 +6,7 @@ import {
 import type { MessageDescriptor } from '@lingui/core'
 import { msg } from '@lingui/core/macro'
 import { Trans, useLingui } from '@lingui/react/macro'
-import { Fragment, useId } from 'react'
+import { Fragment } from 'react'
 import attributions from './asset-attributions.json'
 
 interface AttributionContributor {
@@ -63,18 +63,11 @@ function AssetAttribution({
   localSourcePath,
 }: AssetAttributionProps) {
   const { i18n } = useLingui()
-  const id = useId()
   // No bg tint on the card: DescriptionTerm's muted text needs the dialog
   // background to keep WCAG AA contrast (the border alone delineates it).
   return (
-    <section
-      className="grid gap-2 rounded-lg border border-border/90 p-3"
-      aria-labelledby={id}
-    >
-      <h4
-        className="m-0 text-sm font-bold leading-tight text-foreground"
-        id={id}
-      >
+    <li className="grid gap-2 rounded-lg border border-border/90 p-3">
+      <h4 className="m-0 text-sm font-bold leading-tight text-foreground">
         {assetName}
       </h4>
       <DescriptionList>
@@ -115,16 +108,17 @@ function AssetAttribution({
           </ExternalLink>
         </DescriptionDetail>
       </DescriptionList>
-    </section>
+    </li>
   )
 }
 
 export function AssetAttributionList() {
   return (
-    <div className="grid gap-3">
+    // Explicit role: `list-none` styling strips list semantics in Safari/VoiceOver.
+    <ul role="list" className="grid list-none gap-3 p-0">
       {attributions.map((entry) => (
         <AssetAttribution key={entry.assetName} {...entry} />
       ))}
-    </div>
+    </ul>
   )
 }

@@ -42,14 +42,8 @@ export function ProjectInfoDialog({
         </DialogHeader>
         <ScrollArea className="max-h-[75vh]">
           <div className="grid gap-4 pb-2">
-            <section
-              className="grid gap-2 rounded-lg border p-3"
-              aria-labelledby="project-links-heading"
-            >
-              <h3
-                id="project-links-heading"
-                className="text-sm font-semibold text-foreground"
-              >
+            <div className="grid gap-2 rounded-lg border p-3">
+              <h3 className="text-sm font-semibold text-foreground">
                 <Trans>Repository</Trans>
               </h3>
               <DescriptionList>
@@ -93,7 +87,7 @@ export function ProjectInfoDialog({
                   </a>
                 </DescriptionDetail>
               </DescriptionList>
-            </section>
+            </div>
 
             <AssetAttributionList />
           </div>

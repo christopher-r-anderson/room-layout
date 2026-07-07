@@ -74,7 +74,7 @@ export function InitializationError({
   }, [])
 
   return (
-    <section className="absolute inset-0 grid place-items-center bg-background/75 p-6 max-[720px]:p-4">
+    <div className="absolute inset-0 grid place-items-center bg-background/75 p-6 max-[720px]:p-4">
       <Card
         className="w-[min(26.25rem,calc(100vw-2rem))] gap-3 border-destructive/25"
         role="alert"
@@ -113,6 +113,6 @@ export function InitializationError({
           </div>
         </CardContent>
       </Card>
-    </section>
+    </div>
   )
 }

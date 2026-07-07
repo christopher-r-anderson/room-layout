@@ -50,7 +50,7 @@ describe('SelectedDetailsPanel', () => {
       screen.getByRole('region', { name: /Placement$/i }),
     ).toBeInTheDocument()
     expect(
-      screen.queryByRole('region', { name: 'Selected item actions' }),
+      screen.queryByRole('toolbar', { name: 'Selected item actions' }),
     ).not.toBeInTheDocument()
     expect(detailsPanelRef.current).toContainElement(
       screen.getByLabelText('Distance from left wall (m)'),
@@ -77,7 +77,7 @@ describe('SelectedDetailsPanel', () => {
       screen.getByRole('region', { name: /Placement$/i }),
     ).toBeInTheDocument()
     expect(
-      screen.getAllByRole('region', { name: 'Selected item actions' }),
+      screen.getAllByRole('toolbar', { name: 'Selected item actions' }),
     ).toHaveLength(1)
     expect(detailsPanelRef.current).toContainElement(
       screen.getByLabelText('Distance from left wall (m)'),
@@ -96,7 +96,7 @@ describe('SelectedDetailsPanel', () => {
     })
 
     expect(
-      screen.queryAllByRole('region', { name: 'Selected item actions' }),
+      screen.queryAllByRole('toolbar', { name: 'Selected item actions' }),
     ).toHaveLength(0)
     expect(detailsPanelRef.current).toContainElement(
       screen.getByLabelText('Distance from left wall (m)'),

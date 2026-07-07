@@ -25,7 +25,7 @@ test('the editor stays quiescent while the camera is idle', async ({
   await addFurniture(page, 'Leather Couch')
 
   await selectOutlinerItemByKeyboard(page, /^Leather Couch/i)
-  const toolbar = page.locator('section[aria-label="Selected item actions"]')
+  const toolbar = page.locator('[data-selected-toolbar-mode]')
   await expect(toolbar).toHaveAttribute(
     'data-selected-toolbar-mode',
     'floating',
