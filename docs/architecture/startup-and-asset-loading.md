@@ -128,9 +128,11 @@ flowchart LR
   one failed -> `notifyAssetError`. It fires once per cycle because firing flips
   the phase off `loading`.
 
-The split of state is intentional: the parsed `Object3D`s are a scene render
-artifact (`collection-scene-registry`, scene-internal), while the three-free
-loading lifecycle - the gate, progress, which collections are wanted, loaded, or
+The split of state is intentional: the parsed scene roots live in
+`core/stores/collection-scene-registry.ts`, held opaquely (`unknown`, so core
+stays three-free); typed `Object3D` access lives scene-internal in
+`scene/internal/furniture/collection-scene-registry.ts`, while the loading
+lifecycle - the gate, progress, which collections are wanted, loaded, or
 failed - lives in `core/stores/collection-loading-store.ts` next to the byte
 source and gating it coordinates with. Registration happens inside the parse
 service, before core marks the collection loaded, so consumers may read the
@@ -204,7 +206,7 @@ Two special cases:
 - Fetch: `core/operations/stream-fetch.ts`, `core/operations/collection-bytes.ts`
 - Loading state: `core/stores/collection-loading-store.ts`
 - Load pipeline: `core/operations/collection-loader.ts`
-- Parse / registry: `scene/internal/furniture/collection-scene-loader.ts`, `collection-scene-registry.ts`
+- Parse / registry: `scene/internal/furniture/collection-scene-loader.ts`; state in `core/stores/collection-scene-registry.ts` (typed scene access in `scene/internal/furniture/collection-scene-registry.ts`)
 - Orchestration: `features/startup/use-startup-bootstrap.ts`, `use-startup-readiness.ts`, `core/operations/startup-coordinator.ts`
 - Chunk-failure recovery: `app/chrome/startup-chunk-retry.ts`
 - Bundle budgets: `scripts/check-bundle-budget.mjs`
