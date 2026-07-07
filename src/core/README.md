@@ -7,7 +7,8 @@ Purpose
 Layout
 
 - `stores/` - the zustand stores: `create()` bound hooks over pure-data state,
-  each with a module-level `xActions` mutation surface and narrow selector
+  mutated through a module-level `xActions` surface (or bare functions for
+  registries/single-purpose wrappers) and read through narrow selector
   hooks. Covers the scene document and session (`scene-document-store`,
   `scene-session-store`), the catalog/environment manifest (`assets-store`),
   and the startup/asset-loading state (`editor-lifecycle-store`,
