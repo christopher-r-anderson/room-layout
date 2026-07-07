@@ -32,11 +32,17 @@ const SceneCanvas = lazy(withStartupChunkRetry(() => import('./scene-canvas')))
 
 // The editor chrome is code-split into its own chunk and mounts only once the
 // editor is ready, so it stays out of the initial shell (which keeps just the
-// loading/error UI and the canvas boundary).
+// loading/error UI and the canvas boundary). Header chrome and editor panels
+// mount separately (banner vs main landmark) but share the one chunk.
 const importEditorChrome = () => import('./editor-overlay')
-const EditorOverlay = lazy(
+const EditorHeader = lazy(
   withStartupChunkRetry(() =>
-    importEditorChrome().then((module) => ({ default: module.EditorOverlay })),
+    importEditorChrome().then((module) => ({ default: module.EditorHeader })),
+  ),
+)
+const EditorPanels = lazy(
+  withStartupChunkRetry(() =>
+    importEditorChrome().then((module) => ({ default: module.EditorPanels })),
   ),
 )
 
@@ -119,58 +125,76 @@ export function EditorBody({ testOverlaysHidden }: EditorBodyProps) {
     clearCanvasSelection()
   }, [focusRoomView])
 
-  return (
-    <main
-      className="relative size-full"
-      aria-busy={startupLoadingActive}
-      data-test-overlays-hidden={testOverlaysHidden ? 'true' : 'false'}
-    >
-      <h1 className="sr-only">{APP_NAME}</h1>
-      <section
-        aria-describedby="scene-instructions"
-        aria-label={t`Interactive 3D room editor`}
-        ref={roomViewRef}
-        tabIndex={0}
-        inert={startupOverlayActive}
-        className="absolute inset-0 z-0 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
-        onFocus={() => {
-          flushSync(() => {
-            setRoomViewHasFocus(true)
-          })
-        }}
-        onBlur={() => {
-          flushSync(() => {
-            setRoomViewHasFocus(false)
-          })
-        }}
-        onPointerDownCapture={focusRoomView}
-      >
-        <p id="scene-instructions" className="sr-only">
-          <Trans>
-            Use the arrow keys to browse items in the room, then press Enter or
-            Space to select one.
-          </Trans>
-        </p>
-        <Suspense fallback={null}>
-          <SceneCanvas onPointerMissed={handleCanvasPointerMissed} />
-        </Suspense>
-      </section>
+  const chromeMounted = editorInteractionsEnabled && !testOverlaysHidden
 
-      {editorInteractionsEnabled && !testOverlaysHidden ? (
-        <Suspense fallback={null}>
-          <EditorOverlay />
-        </Suspense>
-      ) : null}
-      <InitializationProgress />
-      {assetError ? (
-        <InitializationError
-          errorKind={assetError.kind}
-          errorMessage={assetError.message}
-        />
-      ) : null}
-      <Announcer />
-      {/* Sonner's toast region label defaults to hardcoded English. */}
-      <Toaster containerAriaLabel={t`Notifications`} />
-    </main>
+  // The shell column owns the chrome flow: the header and the panels inside
+  // <main> are flex siblings, so a header that wraps (narrow viewports, longer
+  // locales) pushes the panel column down naturally. The canvas and startup
+  // overlays are position:fixed, so they stay viewport-filling from inside
+  // <main>. <main> itself must stay unpositioned: the floating selected-item
+  // toolbar resolves its absolute position against this fixed column.
+  return (
+    <div className="pointer-events-none fixed inset-2 flex flex-col gap-2">
+      {/* z-10: the header precedes the z-0 canvas in DOM paint order. */}
+      <header className="z-10">
+        <h1 className="sr-only">{APP_NAME}</h1>
+        {chromeMounted ? (
+          <Suspense fallback={null}>
+            <EditorHeader />
+          </Suspense>
+        ) : null}
+      </header>
+      <main
+        className="flex min-h-0 flex-1 flex-col justify-between gap-2"
+        aria-busy={startupLoadingActive}
+        data-test-overlays-hidden={testOverlaysHidden ? 'true' : 'false'}
+      >
+        <section
+          aria-describedby="scene-instructions"
+          aria-label={t`Interactive 3D room editor`}
+          ref={roomViewRef}
+          tabIndex={0}
+          inert={startupOverlayActive}
+          className="pointer-events-auto fixed inset-0 z-0 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+          onFocus={() => {
+            flushSync(() => {
+              setRoomViewHasFocus(true)
+            })
+          }}
+          onBlur={() => {
+            flushSync(() => {
+              setRoomViewHasFocus(false)
+            })
+          }}
+          onPointerDownCapture={focusRoomView}
+        >
+          <p id="scene-instructions" className="sr-only">
+            <Trans>
+              Use the arrow keys to browse items in the room, then press Enter
+              or Space to select one.
+            </Trans>
+          </p>
+          <Suspense fallback={null}>
+            <SceneCanvas onPointerMissed={handleCanvasPointerMissed} />
+          </Suspense>
+        </section>
+
+        {chromeMounted ? (
+          <Suspense fallback={null}>
+            <EditorPanels />
+          </Suspense>
+        ) : null}
+        <InitializationProgress />
+        {assetError ? (
+          <InitializationError
+            errorKind={assetError.kind}
+            errorMessage={assetError.message}
+          />
+        ) : null}
+        <Announcer />
+        {/* Sonner's toast region label defaults to hardcoded English. */}
+        <Toaster containerAriaLabel={t`Notifications`} />
+      </main>
+    </div>
   )
 }

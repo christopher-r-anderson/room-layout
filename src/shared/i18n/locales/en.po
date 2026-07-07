@@ -235,6 +235,11 @@ msgstr "Draft failed to restore. Starting with an empty room."
 msgid "Edit the selected item."
 msgstr "Edit the selected item."
 
+#: src/app/chrome/top-header/top-header-desktop.tsx
+#: src/app/chrome/top-header/top-header-mobile.tsx
+msgid "Editor actions"
+msgstr "Editor actions"
+
 #: src/features/startup/initialization-error.tsx
 msgid "Editor failed to load"
 msgstr "Editor failed to load"
@@ -311,11 +316,6 @@ msgstr "Furniture type to add"
 #: src/features/startup/initialization-progress.tsx
 msgid "Getting things ready"
 msgstr "Getting things ready"
-
-#: src/app/chrome/top-header/top-header-desktop.tsx
-#: src/app/chrome/top-header/top-header-mobile.tsx
-msgid "Header actions"
-msgstr "Header actions"
 
 #: src/features/keyboard/keyboard-shortcuts.definitions.ts
 msgid "History"
