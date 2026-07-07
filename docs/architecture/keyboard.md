@@ -23,7 +23,7 @@ Each shortcut runs through three phases:
 2. **Suppress:** Browser default is prevented based on `suppressionMode`.
 3. **Execute:** Action runs only if execution gates pass.
 
-This model also supports suppressing browser-native combos when needed while keeping app execution blocked in contexts like text input.
+Shortcuts never match while focus is in an editing target (input/textarea/select/contenteditable), so native text-editing behavior is preserved there.
 
 ### Room-View Focus Scoping
 
@@ -58,9 +58,10 @@ Home, End, Enter, and Space are canvas-browse-only (no selection) shortcuts.
 
 - **id:** Identifier for the shortcut definition.
 - **match:** Single `KeyCombo` or array of `KeyCombo` alternatives.
-- **allowMatchInEditingTarget:** (optional) Allows matching in input/textarea/select/contenteditable.
+- **requiresRoomViewFocus:** (optional) Blocks matching when the room view lacks DOM focus.
 - **requiresSelection:** (optional) Blocks execution when `hasSelection` is false.
-- **canExecute:** (optional) Extra execution gate for rules not covered by built-in flags.
+- **requiresNoSelection:** (optional) Blocks execution when `hasSelection` is true.
+- **requiresStartOverCapability:** (optional) Blocks execution when `canStartOver` is false.
 - **suppressionMode:** (optional) `'always-on-match' | 'on-execute'` (default `'on-execute'`).
 
 ### KeyCombo Fields
@@ -96,26 +97,10 @@ Camera preset shortcuts intentionally keep strict modifier matching. To support 
 - `hasSelection`
 - `canStartOver`
 
-Use built-in flags first:
+Gate shortcuts with the built-in flags:
 
-- Use `requiresSelection` for selection-gated actions.
-- Use `allowMatchInEditingTarget` only when browser suppression is needed even in inputs.
-- Use `canExecute` only for non-standard conditions.
-
-### Browser-Native Combo Pattern
-
-Use this pattern only when a shortcut intentionally overrides a browser-native combo and app execution should remain blocked in editing targets:
-
-```typescript
-{
-  id: 'example-browser-native',
-  match: { key: 'p', ctrlOrMeta: true },
-  allowMatchInEditingTarget: true,
-  suppressionMode: 'always-on-match',
-  canExecute: (context) =>
-    context.someCapability && !context.targetIsEditingTarget,
-}
-```
+- Use `requiresSelection` / `requiresNoSelection` for selection-gated actions.
+- Use `requiresRoomViewFocus` for shortcuts scoped to the focused room view.
 
 ### Blocking Overlay and Dialog Rules
 

@@ -44,7 +44,6 @@ export interface KeyboardShortcutDefinition {
   handler: KeyboardShortcutHandler
   command?: EditorCommand
   helpEntries: ShortcutHelpEntry[]
-  allowMatchInEditingTarget?: boolean
   requiresRoomViewFocus?: boolean
   requiresSelection?: boolean
   requiresNoSelection?: boolean
