@@ -7,7 +7,7 @@ import {
 } from './support/editor-harness'
 
 async function getFloatingToolbarBox(page: Page) {
-  const toolbar = page.locator('section[aria-label="Selected item actions"]')
+  const toolbar = page.locator('[data-selected-toolbar-mode]')
   await expect(toolbar).toHaveAttribute(
     'data-selected-toolbar-mode',
     'floating',

@@ -655,7 +655,6 @@ msgstr "Selected"
 msgid "Selected Item"
 msgstr "Selected Item"
 
-#: src/features/selection/floating-selected-item-site.tsx
 #: src/features/selection/selected-item-tools.tsx
 msgid "Selected item actions"
 msgstr "Selected item actions"

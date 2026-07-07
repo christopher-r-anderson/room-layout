@@ -40,7 +40,7 @@ function boxContainsPoint(
 const NUDGE_HOLD_MS = 150
 
 async function getToolbarBox(page: Page) {
-  const toolbar = page.locator('section[aria-label="Selected item actions"]')
+  const toolbar = page.locator('[data-selected-toolbar-mode]')
   await expect(toolbar).toHaveAttribute(
     'data-selected-toolbar-mode',
     'floating',
