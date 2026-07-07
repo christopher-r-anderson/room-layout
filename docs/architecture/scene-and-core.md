@@ -7,7 +7,7 @@ the declarative React UI share furniture state.
 ## The split
 
 - **`core` owns the document and its mutations.** `scene-document-store.history`
-  holds the authoritative `FurnitureItem[]` — positions, rotations, ids. That is
+  holds the authoritative `FurnitureItem[]` - positions, rotations, ids. That is
   what the undo/redo timeline operates on and what gets serialized to the share
   URL and the local draft. Every mutation (add, move, rotate, transform, delete,
   undo/redo, restore, select) is a core operation
@@ -17,7 +17,7 @@ the declarative React UI share furniture state.
   and the room's layout constants are pure geometry in `@/domain/geometry`,
   called synchronously by the core mutations. No renderer, no store, no React.
 - **`scene` renders and maps input.** The r3f component tree is a projection of
-  the document; pointer gestures are mapped to world-space intents (rays →
+  the document; pointer gestures are mapped to world-space intents (rays ->
   positions) and fed to the same rules and store; the camera, screen-space
   projections, and GLB parsing are the viewport services core reaches through
   the engine port.
@@ -36,7 +36,7 @@ UI intent ──► core operation (validates via @/domain/geometry rules)
   operation reads the store, runs the pure resolution, writes the store. The
   scene re-renders from the result.
 - **Input maps down to the same path.** A pointer drag uses the viewport for
-  exactly one thing — turning the pointer ray into a floor position — then runs
+  exactly one thing - turning the pointer ray into a floor position - then runs
   the same domain rules and writes the same store (see Drag below).
 - **The engine port is viewport-only.** `sceneCommands`
   (`src/core/scene-commands.ts`, backed by the `SceneServices` registry in
@@ -79,7 +79,7 @@ render. Object3D transforms are never read back as a source of truth.
   deliberate act: a new method means core is delegating another decision to the
   renderer adapter.
 - On restore/retry, the scene is rebuilt from the `core` data model
-  (`restoreInitialLayout`) — the document is the system of record; the scene is
+  (`restoreInitialLayout`) - the document is the system of record; the scene is
   pixels.
 
 ## Pointers

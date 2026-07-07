@@ -8,7 +8,7 @@ Purpose
 
 Contains
 
-- `App.tsx`: bootstrap and render — perf gate, startup bootstrap + the core
+- `App.tsx`: bootstrap and render - perf gate, startup bootstrap + the core
   readiness observer, dialog registry bootstrap, reconcilers, and the test bridge,
   composing the provider tree.
 - `chrome/`: app-shell composition (editor body/overlay, top header, feedback)
@@ -27,7 +27,7 @@ Should not contain
 
 Dialog architecture notes
 
-- App triggers the dialog bootstrap once — composing `DialogRuntimeContext` and registering dialog definitions — before dialog consumers render.
+- App triggers the dialog bootstrap once - composing `DialogRuntimeContext` and registering dialog definitions - before dialog consumers render.
 - App may coordinate multi-domain dialog behavior, but feature-specific guards and payload derivation stay with owning features.
 
 See also

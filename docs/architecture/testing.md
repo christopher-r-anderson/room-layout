@@ -20,32 +20,32 @@ Add `pnpm test:e2e` when changing browser-facing behavior, including:
 
 ## Performance
 
-Performance is checked by lane, not by measuring frame time in CI — headless
+Performance is checked by lane, not by measuring frame time in CI - headless
 Chromium renders WebGL via SwiftShader (software), so its frame times are not
 representative of a real GPU.
 
 - **Work-churn regressions** (a lost memo, unstable dependency, or render loop that
-  re-runs while idle) → deterministic behavioral gates in the e2e lane. Example:
+  re-runs while idle) -> deterministic behavioral gates in the e2e lane. Example:
   `e2e/selected-toolbar-idle.spec.ts` asserts that with a selection on screen and
-  the camera at rest, no work happens — zero toolbar-store writes and zero App/Scene
+  the camera at rest, no work happens - zero toolbar-store writes and zero App/Scene
   re-renders. These counts are structurally zero regardless of frame rate, so the
   gate is reliable in CI and catches a render loop anywhere in the tree.
-- **Real frame-time / interaction latency** → not a CI gate. Profile interactively
+- **Real frame-time / interaction latency** -> not a CI gate. Profile interactively
   on the running app (real GPU) when investigating, and rely on production RUM
   (web-vitals INP, custom marks) for fleet-wide regressions. _(RUM is a future
   workstream.)_
-- **Bundle size** → per-chunk gzip budgets enforced in CI (`pnpm bundle-budget`,
+- **Bundle size** -> per-chunk gzip budgets enforced in CI (`pnpm bundle-budget`,
   run in preflight after the build) via `scripts/check-bundle-budget.mjs`: a tight
   budget on the first-paint shell chunk and a looser one on the lazy engine chunk
   (three/r3f/drei). These are regression gates set at current size plus headroom,
-  not targets — lower them when the bundle shrinks.
+  not targets - lower them when the bundle shrinks.
 
 ## Coverage
 
 Coverage percentage is a prompt, not a goal. Some code is intentionally not
 unit-tested: thin hook glue covered by e2e, presentational/config modules, and a
-short list of accepted gaps. These are recorded — with their verified e2e
-cross-references — in
+short list of accepted gaps. These are recorded - with their verified e2e
+cross-references - in
 [../testing/intentional-unit-exclusions.md](../testing/intentional-unit-exclusions.md)
 so a `0%` reading is not mistaken for a hole. Update it when a module joins or
 leaves that set.
@@ -77,7 +77,7 @@ focus/activation paths to keep tests less brittle.
 ## Determinism
 
 Browser tests run in parallel against one shared server, so timing-coupled tests
-flake intermittently — usually only in full runs, not when run alone. Two rules
+flake intermittently - usually only in full runs, not when run alone. Two rules
 keep them stable:
 
 - e2e runs against a production `vite preview` build, never the dev server. The
@@ -89,7 +89,7 @@ keep them stable:
   "until a polled condition is observed" (e.g. holding a key until the camera
   has moved): release/poll latency makes the real magnitude unbounded under
   load. Use a fixed, small input and assert the durable invariant, not an exact
-  value that only a precisely-bounded input would guarantee — push exact-value
+  value that only a precisely-bounded input would guarantee - push exact-value
   checks down to deterministic unit tests.
 
 ## Accessibility Test Coverage
