@@ -132,13 +132,13 @@ describe('loadCollection', () => {
     expect(sceneCommandsMock.loadCollectionScene).toHaveBeenCalledTimes(1)
   })
 
-  it('discards a result from a stale epoch instead of writing into the fresh cycle', async () => {
+  it('discards a result from a stale cycle instead of writing into the fresh one', async () => {
     const bytes = deferred<ArrayBuffer>()
     fetchCollectionBytesMock.mockReturnValue(bytes.promise)
 
     const pending = loadCollection('/models/a.glb')
-    // The retry teardown bumps the epoch while the bytes are still streaming.
-    editorLifecycleActions.beginAssetLoad()
+    // The retry teardown bumps the cycle while the bytes are still streaming.
+    editorLifecycleActions.requestRetry()
     bytes.resolve(new ArrayBuffer(4))
     await pending
 

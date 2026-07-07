@@ -24,18 +24,18 @@ import { createReconciler } from './reconciler'
 // change, so the chain never depends on React render timing. See
 // docs/architecture/startup-and-asset-loading.md.
 
-// In-flight paths, keyed to the scene epoch their load started in. A load whose
-// epoch has passed (the retry teardown bumped it) discards its result instead of
-// writing into the fresh cycle's stores, and does not block the fresh cycle from
-// re-loading the same path.
+// In-flight paths, keyed to the startup cycle their load started in. A load
+// whose cycle has passed (the retry teardown bumped it) discards its result
+// instead of writing into the fresh cycle's stores, and does not block the
+// fresh cycle from re-loading the same path.
 const inFlight = new Map<string, number>()
 
-function currentSceneEpoch(): number {
-  return useEditorLifecycleStore.getState().sceneEpoch
+function currentStartupCycle(): number {
+  return useEditorLifecycleStore.getState().startupCycle
 }
 
 // Load one collection end-to-end. Idempotent per cycle: already loaded, marked
-// failed, or in flight for the current epoch is a no-op, and a not-ready scene
+// failed, or in flight for the current cycle is a no-op, and a not-ready scene
 // defers to the reconciler (which re-kicks once the scene mounts).
 export async function loadCollection(path: string): Promise<void> {
   if (
@@ -45,21 +45,21 @@ export async function loadCollection(path: string): Promise<void> {
   ) {
     return
   }
-  const epoch = currentSceneEpoch()
-  if (inFlight.get(path) === epoch) {
+  const cycle = currentStartupCycle()
+  if (inFlight.get(path) === cycle) {
     return
   }
-  inFlight.set(path, epoch)
+  inFlight.set(path, cycle)
 
   try {
     const bytes = await fetchCollectionBytes(path)
-    // The retry teardown may have passed (epoch bump) or torn the scene down
+    // The retry teardown may have passed (cycle bump) or torn the scene down
     // while the bytes streamed; a stale cycle must not touch the fresh one.
-    if (currentSceneEpoch() !== epoch || !sceneCommands.isSceneReady()) {
+    if (currentStartupCycle() !== cycle || !sceneCommands.isSceneReady()) {
       return
     }
     await sceneCommands.loadCollectionScene(path, bytes)
-    if (currentSceneEpoch() !== epoch) {
+    if (currentStartupCycle() !== cycle) {
       // The parse itself cannot be cancelled, so the registry may briefly hold
       // an entry from a stale cycle; the fresh cycle re-parses and overwrites
       // it, and nothing consumes it before then because loaded is not marked.
@@ -67,17 +67,17 @@ export async function loadCollection(path: string): Promise<void> {
     }
     collectionLoadingActions.markLoaded(path)
   } catch (error) {
-    if (currentSceneEpoch() !== epoch) {
+    if (currentStartupCycle() !== cycle) {
       return
     }
     collectionLoadingActions.markFailed(path, error)
     console.warn(`Failed to load furniture collection: ${path}`, error)
   } finally {
-    if (currentSceneEpoch() === epoch) {
+    if (currentStartupCycle() === cycle) {
       // The parsed scene (or the failure mark) supersedes the raw bytes.
       releaseCollectionBytes(path)
     }
-    if (inFlight.get(path) === epoch) {
+    if (inFlight.get(path) === cycle) {
       inFlight.delete(path)
     }
   }
@@ -192,7 +192,7 @@ export function ensureCollectionLoaded(path: string): Promise<void> {
           finish(rejectFailed)
         } else if (!wanted) {
           // Only a full reset (the retry teardown) removes a requested path
-          // from `wanted`; the in-flight load discards its result on the epoch
+          // from `wanted`; the in-flight load discards its result on the cycle
           // guard, so nothing would ever settle this promise - reject instead
           // of leaking the subscription and hanging the caller.
           finish(() => {

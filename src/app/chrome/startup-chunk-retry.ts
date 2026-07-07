@@ -10,11 +10,11 @@ import { notifyChunkLoadError } from '@/core/operations/startup-coordinator'
 // stale deploy the old hashed URL is gone regardless - only re-reading
 // index.html picks up the fresh chunk graph.
 
-// Resolves on the next explicit startup retry (the token bumps only then).
+// Resolves on the next explicit startup retry (the cycle bumps only then).
 function nextRetryRequest(): Promise<void> {
   return new Promise((resolve) => {
     const unsubscribe = useEditorLifecycleStore.subscribe(
-      (state) => state.retryToken,
+      (state) => state.startupCycle,
       () => {
         unsubscribe()
         resolve()

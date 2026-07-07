@@ -3,6 +3,7 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import type { EnvironmentMaterialConfig } from '@/domain/environment-materials'
 import {
+  editorLifecycleActions,
   resetEditorLifecycleStore,
   useEditorLifecycleStore,
 } from '../stores/editor-lifecycle-store'
@@ -79,8 +80,10 @@ afterEach(() => {
   vi.useRealTimers()
 })
 
-it('loads the manifest into the assets store, resolves the gate, and starts the cycle', async () => {
+it('loads the manifest into the assets store, resolves the gate, and begins the load', async () => {
   fetchCatalogManifestMock.mockResolvedValue(manifestResult)
+  // Park the phase off 'loading' so beginAssetLoad's flip is observable.
+  editorLifecycleActions.markAssetsReady()
 
   runStartupBootstrap()
   await flushMicrotasks()
@@ -94,7 +97,8 @@ it('loads the manifest into the assets store, resolves the gate, and starts the 
     '/models/gated.glb',
   ])
   expect(useEditorLifecycleStore.getState().startupPhase).toBe('loading')
-  expect(useEditorLifecycleStore.getState().sceneEpoch).toBe(1)
+  // The manifest arriving never starts a new cycle; only an explicit retry does.
+  expect(useEditorLifecycleStore.getState().startupCycle).toBe(0)
   expect(warmCollectionBytes).toHaveBeenCalledWith(['/models/gated.glb'])
 })
 
@@ -148,7 +152,9 @@ it('a superseded run writes nothing; the latest run wins', async () => {
   // second run's success lands exactly once.
   expect(useEditorLifecycleStore.getState().assetError).toBeNull()
   expect(useEditorLifecycleStore.getState().startupPhase).toBe('loading')
-  expect(useEditorLifecycleStore.getState().sceneEpoch).toBe(1)
+  expect(useCollectionLoadingStore.getState().gated).toEqual([
+    '/models/gated.glb',
+  ])
   expect(fetchCatalogManifestMock).toHaveBeenCalledTimes(2)
 })
 
@@ -162,7 +168,7 @@ it('cancelStartupBootstrap aborts the run without recording an outcome', async (
   const state = useEditorLifecycleStore.getState()
   expect(state.assetError).toBeNull()
   expect(state.startupPhase).toBe('loading')
-  expect(state.sceneEpoch).toBe(0)
+  expect(useCollectionLoadingStore.getState().gated).toBeNull()
   expect(useAssetsStore.getState().catalog).toEqual([])
 })
 
@@ -183,5 +189,5 @@ it('a late success from an aborted run does not write into the fresh cycle', asy
   await flushMicrotasks()
 
   expect(useAssetsStore.getState().catalog).toEqual([])
-  expect(useEditorLifecycleStore.getState().sceneEpoch).toBe(0)
+  expect(useCollectionLoadingStore.getState().gated).toBeNull()
 })

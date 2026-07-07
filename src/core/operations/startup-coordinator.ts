@@ -230,7 +230,7 @@ export function requestAssetRetry() {
   dialogActions.closeActiveDialog()
   resetStartupShell()
   // Only reset the collection pipeline on an explicit retry (which remounts the
-  // loader via the epoch), not on the error path: a gated failure's `failed`
+  // loader via the cycle), not on the error path: a gated failure's `failed`
   // mark must survive so the loader does not immediately re-attempt and loop.
   resetCollectionPipeline()
 

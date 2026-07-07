@@ -58,7 +58,7 @@ export function getCollectionNodeDefaults(): Map<
   return useCollectionSceneRegistryStore.getState().nodeDefaultsByPath
 }
 
-// Drops every parsed scene. Called on the retry teardown (before the scene epoch
+// Drops every parsed scene. Called on the retry teardown (before the startup cycle
 // remounts) so a fresh cycle re-parses from the re-downloaded bytes.
 export function resetCollectionSceneRegistry() {
   useCollectionSceneRegistryStore.setState(

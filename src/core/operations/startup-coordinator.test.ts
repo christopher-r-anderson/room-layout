@@ -136,8 +136,7 @@ describe('startup-coordinator', () => {
     // The shell reset drops any stale selection session alongside the scene.
     expect(useSelectionStore.getState().selectedId).toBeNull()
     expect(resetCollectionPipeline).toHaveBeenCalledTimes(1)
-    expect(useEditorLifecycleStore.getState().retryToken).toBe(1)
-    expect(useEditorLifecycleStore.getState().sceneEpoch).toBe(1)
+    expect(useEditorLifecycleStore.getState().startupCycle).toBe(1)
     expect(runStartupBootstrap).toHaveBeenCalledTimes(1)
     expect(feedbackActions.clearAssertiveAnnouncement).toHaveBeenCalledTimes(1)
   })

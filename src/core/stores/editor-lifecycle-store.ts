@@ -22,8 +22,12 @@ interface EditorLifecycleStoreState {
   assetError: EditorAssetError | null
   restoreOutcome: RestoreOutcome | null
   restoreAttemptCount: number
-  sceneEpoch: number
-  retryToken: number
+  // Which startup cycle this is. Bumps ONLY in requestRetry - i.e. only on an
+  // explicit user retry - and three consumers rely on exactly that invariant:
+  // the scene-canvas key (one Scene remount per retry), the collection
+  // loader's stale-cycle guard, and startup-chunk-retry (a bump IS "the next
+  // explicit retry", when it reloads the page).
+  startupCycle: number
   // Whether the scene services are live. Single producer: registerSceneServices/
   // clearSceneServices (core/scene-services), so this flag and isSceneReady()
   // answer from the same oracle. The startup readiness observer gates on it so
@@ -38,8 +42,7 @@ export const useEditorLifecycleStore = create<EditorLifecycleStoreState>()(
       assetError: null,
       restoreOutcome: null,
       restoreAttemptCount: 0,
-      sceneEpoch: 0,
-      retryToken: 0,
+      startupCycle: 0,
       sceneReady: false,
     }),
   ),
@@ -62,29 +65,28 @@ export const editorLifecycleActions = {
       if (state.startupPhase === 'errored') {
         return state
       }
-      // A manifest has arrived; start a fresh asset-load cycle. Bumping the
-      // scene epoch remounts the Scene and the collection loader.
+      // A manifest has arrived; the asset-load half of the cycle begins. The
+      // mounted Scene picks the manifest up through props, so this does not
+      // bump the cycle (only an explicit retry remounts).
       return {
         startupPhase: 'loading',
         assetError: null,
-        sceneEpoch: state.sceneEpoch + 1,
       }
     })
   },
   requestRetry: () => {
-    // Re-run startup from the manifest fetch. The retry token re-triggers the
-    // bootstrap fetch effect; the scene epoch remounts the Scene. Restore
-    // tracking resets with the cycle: the error path wiped the document, so
-    // the restore flow must re-run at ready to bring the draft back (leaving
-    // it to unlock empty would also make draft persistence clear the saved
-    // draft as an at-defaults scene).
+    // Start a fresh startup cycle: the bump remounts the Scene and
+    // invalidates in-flight collection loads. Restore tracking resets with
+    // the cycle: the error path wiped the document, so the restore flow must
+    // re-run at ready to bring the draft back (leaving it to unlock empty
+    // would also make draft persistence clear the saved draft as an
+    // at-defaults scene).
     useEditorLifecycleStore.setState((state) => ({
       startupPhase: 'loading',
       assetError: null,
       restoreOutcome: null,
       restoreAttemptCount: 0,
-      sceneEpoch: state.sceneEpoch + 1,
-      retryToken: state.retryToken + 1,
+      startupCycle: state.startupCycle + 1,
     }))
   },
   setAssetError: (error: EditorAssetError) => {
@@ -141,10 +143,8 @@ export const useStartupPhase = () =>
   useEditorLifecycleStore((state) => state.startupPhase)
 export const useAssetError = () =>
   useEditorLifecycleStore((state) => state.assetError)
-export const useSceneEpoch = () =>
-  useEditorLifecycleStore((state) => state.sceneEpoch)
-export const useRetryToken = () =>
-  useEditorLifecycleStore((state) => state.retryToken)
+export const useStartupCycle = () =>
+  useEditorLifecycleStore((state) => state.startupCycle)
 export const useEditorInteractionsEnabled = () =>
   useEditorLifecycleStore((state) => state.startupPhase === 'ready')
 export const useStartupOverlayActive = () =>
