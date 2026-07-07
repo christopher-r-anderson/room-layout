@@ -1,6 +1,6 @@
 # Dialogs and Overlays
 
-Top-level overlays — drawers, confirmations, the room panel — are all driven by
+Top-level overlays - drawers, confirmations, the room panel - are all driven by
 one generic `dialog-store` active-surface model. Dialogs _are_ the primary
 overlays, so this is one concept with one home. This doc is the model and its
 invariants; for the store API and field shapes, read
@@ -13,7 +13,7 @@ invariants; for the store API and field shapes, read
 - `activeSurface = null`, or
 - one surface `{ id, kind, payload }`.
 
-`kind` drives blocking policy — there are no per-dialog boolean flags:
+`kind` drives blocking policy - there are no per-dialog boolean flags:
 
 - `blocking` contributes to `useIsBlockingOverlayOpen()`.
 - `non-blocking` stays open without asserting blocking-overlay behavior.
@@ -27,8 +27,8 @@ imports:
 
 - **`dialog-store` (core)** owns only the generic active-surface state, the
   open/close operations, and the dialog-open selectors.
-- **Features** own each dialog's `DialogDefinition` — its `kind`, `canOpen`
-  guard, and payload derivation — in the owning feature folder.
+- **Features** own each dialog's `DialogDefinition` - its `kind`, `canOpen`
+  guard, and payload derivation - in the owning feature folder.
 - **App** bootstraps: `src/app/dialogs/bootstrap-dialog-registry.ts` holds the
   definition membership list, composes the runtime context, and registers the
   definitions once before any dialog consumer renders.
@@ -64,7 +64,7 @@ usual room-view focus rules.
   top-level overlay: opening a blocking overlay while the room is open closes the
   room first. This is the one-active-surface invariant, not bespoke logic.
 - **Breakpoint persistence.** The room stays open across desktop/mobile layout
-  transitions — the sidebar swaps to the mobile sheet and back — and its
+  transitions - the sidebar swaps to the mobile sheet and back - and its
   return-focus target stays the Room trigger across the swap.
 
 ## Gating
@@ -77,12 +77,12 @@ Two layers, in order:
    start-over eligibility, etc.).
 
 `dialog-store` reads the external state those guards need through a
-`DialogRuntimeContext` that app composition configures — currently dialog
+`DialogRuntimeContext` that app composition configures - currently dialog
 readiness, selected-furniture lookup, and the start-over eligibility seam.
 
 ## Focus return
 
-`dialog-store` is **focus-agnostic** — it stores no return-focus token. The
+`dialog-store` is **focus-agnostic** - it stores no return-focus token. The
 surface that opened a dialog owns restoring focus:
 
 - Blocking dialogs rely on Base UI restoring focus to their opener on close.

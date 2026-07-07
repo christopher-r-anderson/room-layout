@@ -8,54 +8,58 @@ Architecture boundaries are enforced by ESLint. This document is the policy. `es
 
 ```mermaid
 flowchart TD
-  app["app\ncomposition and shell wiring"]
-  features["features\neditor capabilities"]
-  core["core\nstores, operations, contracts"]
-  shared["shared\nreusable infra and primitives"]
-  scene["scene\nrendering engine and scene internals"]
-  domain["domain\nmodel vocabulary and pure model logic"]
-  test["test\n test-only support"]
+  subgraph runtime["runtime layers"]
+    app["app\ncomposition and shell wiring"]
+    features["features\neditor capabilities"]
+    scene["scene\nrenderer adapter (three/r3f)"]
+    core["core\nheadless editor:\nstores, operations, engine ports"]
 
-  app --> features
-  app --> core
-  app --> shared
-  app --> scene
+    app --> features
+    app --> core
+    app -. lazy mount of scene/scene only .-> scene
+    features --> core
+    scene --> core
+  end
 
-  features --> core
-  features --> shared
-  features -. approved scene contracts .-> scene
+  subgraph foundations["foundations - every runtime layer imports these"]
+    direction LR
+    domain["domain\nmodel vocabulary and\npure model logic"]
+    shared["shared\nreusable infra and\nprimitives"]
+  end
 
-  core --> shared
-  core -. scene contracts only .-> scene
-
-  scene --> shared
-
-  app --> domain
-  features --> domain
-  core --> domain
-  scene --> domain
-
-  scene -. core contracts only .-> core
+  runtime --> foundations
 ```
+
+Every source dependency converges on `core`; nothing depends on `scene` or on a
+sibling feature. The foundations are import targets only.
 
 Notes:
 
 - `app` is the composition root and may read across layers.
+- **The scene arrow points at core, not the other way.** `core` owns the engine
+  port surface (`core/scene-commands`, `core/scene-services`, `core/scene.types`);
+  `scene` is the renderer adapter that implements it, registering its viewport
+  services on mount and reading/writing core stores directly. At runtime core
+  drives the viewport through `sceneCommands` without any source dependency on
+  scene. Nothing imports `@/scene` except `app`'s single lazy mount of
+  `@/scene/scene` (the code-split engine chunk).
 - `domain` is the lowest leaf: the furniture/room model types plus pure logic over
-  them (catalog lookup, geometry/placement). Every layer may import it; it imports
-  nothing internal. `shared` no longer depends on the model at all.
+  them (catalog lookup, geometry/placement, the scene model). It imports nothing
+  internal.
 - All of `shared` is uniformly decoupled: it must not import app, features,
-  core, scene, or domain (one lint block, no per-subfolder exceptions).
-- `test` is test-only support and not a runtime dependency target.
+  core, scene, or domain (one lint block, no per-subfolder exceptions). The two
+  foundations do not import each other.
+- `src/test` is test-only support, omitted from the map: runtime code must not
+  import it.
 
 ## Layer Intent
 
 - `src/app`: composition root, app shell wiring, runtime harness wiring.
 - `src/features`: user-facing editor capabilities and feature-local behavior.
-- `src/core`: shared stores, actions, selectors, contracts, and shared state types.
+- `src/core`: the headless editor - stores, operations, the engine ports, and cross-layer contracts.
 - `src/shared`: reusable runtime primitives and infra used by app/features/core/scene; carries no model knowledge.
-- `src/scene`: scene rendering engine, three helpers, and scene internals.
-- `src/domain`: the furniture/room model vocabulary and pure logic over it (catalog, geometry/placement). The lowest leaf; imports nothing internal.
+- `src/scene`: the renderer adapter - scene rendering, input mapping, three helpers, and scene internals.
+- `src/domain`: the furniture/room model vocabulary and pure logic over it (catalog, geometry/placement, scene model). The lowest leaf; imports nothing internal.
 - `src/test`: test-only infrastructure.
 
 Keep this document concise and move layer-local detail to the matching
@@ -76,14 +80,14 @@ For local context inside each area, see:
 2. Put feature-internal orchestration in the owning feature folder. If logic coordinates multiple features, it lives in `core/operations`.
 3. Put cross-feature state (`core/stores`) **and** cross-cutting operations (`core/operations`) in `core`, not feature-local modules.
 4. Features must not import other features. `@/features/*` imports from within a feature are hard-banned in `eslint.config.js`. De-thread instead by reading a store, dispatching an `EditorCommand`, or importing a `core` operation.
-5. Keep `app` composition-only: shell wiring, providers, and registry bootstrap. App does not own cross-cutting runtime operations — those live in `core/operations`.
+5. Keep `app` composition-only: shell wiring, providers, and registry bootstrap. App does not own cross-cutting runtime operations - those live in `core/operations`.
 6. Keep all of `shared` dependency-free from app/features/core/scene/domain runtime code.
 7. Keep `shared/layout` lower-level than `app/chrome`.
-8. Keep scene internals in `scene/internal` (including `scene/internal/three` render helpers) and avoid importing them outside scene.
-9. Use approved scene contract imports outside scene, not arbitrary `@/scene/**` paths.
+8. Keep scene internals in `scene/internal` (including `scene/internal/three` render helpers); nothing outside scene may import them.
+9. Never import `@/scene` outside app's lazy mount of `@/scene/scene`. Drive the engine through `@/core/scene-commands`; widen the `SceneServices` port deliberately when core needs a new viewport capability.
 10. Do not import `src/test` from runtime code.
 11. Keep dialog definition ownership in features (or shell-only app chrome when shell-specific), with app responsible for registry bootstrap composition and core responsible for generic dialog orchestration only.
-12. Put the model vocabulary and pure logic over it (types, catalog, geometry/placement) in `src/domain`. Never reach up into `scene` for model types; `domain` is the shared, dependency-free home every layer imports downward.
+12. Put the model vocabulary and pure logic over it (types, catalog, geometry/placement, the scene model) in `src/domain`. Never reach up into `scene` for model types; `domain` is the shared, dependency-free home every layer imports downward.
 
 > The cross-feature ban (rule 4) is the strict end of a deliberate dial, not a
 > law. If a feature ever grows a real public API that a sibling should build on,
@@ -91,19 +95,12 @@ For local context inside each area, see:
 > importing a sibling's entrypoint, not its internals). It's set strict because a
 > ban is cheap to loosen later and costly to impose once sideways imports spread.
 
-## Current Exceptions
-
-These are temporary or intentionally narrow.
-
-- The scene layer is the renderer adapter: core owns the port surface (`core/scene-commands`, `core/scene-services`, `core/scene.types`) and scene implements it, importing core directly. Nothing imports `@/scene` except `app`'s single lazy mount of `@/scene/scene` (the code-split engine chunk).
-
 ## Future Improvements
 
-1. Scene public API surface
-2. Module public entrypoints
+1. Module public entrypoints
    - Introduce `index.ts` entrypoints for cross-layer modules that are imported externally.
    - Keep purely local modules private.
-3. Feature internal structure
+2. Feature internal structure
    - Add internal subfolders only where feature size and churn justify it.
 
 ## Related Docs
@@ -111,7 +108,7 @@ These are temporary or intentionally narrow.
 - Root overview and scripts: `README.md`
 - Agent operating contract and policy routing: `AGENTS.md`, `.agents/README.md`
 - Core layer reference: `docs/architecture/core.md`
-- Scene⇄core data-model/engine seam: `docs/architecture/scene-and-core.md`
+- The scene/core seam (document ownership and the engine port): `docs/architecture/scene-and-core.md`
 - Startup, asset loading, and the bundle split: `docs/architecture/startup-and-asset-loading.md`
 - Dialog and overlay model: `docs/architecture/dialogs-and-overlays.md`
 - Interactivity (toolbars, disabled state, inert seam): `docs/architecture/interactivity.md`
