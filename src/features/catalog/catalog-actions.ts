@@ -1,7 +1,7 @@
 import { dialogActions } from '@/core/stores/dialog-store'
 import { feedbackActions } from '@/core/stores/feedback-store'
 import { getSourcePathForCatalogId } from '@/core/stores/assets-store'
-import { useSceneDocumentStore } from '@/core/stores/scene-document-store'
+import { getItems } from '@/core/stores/scene-document-store'
 import { announceSelectionChange } from '@/core/operations/selection-actions'
 import { sceneCommands } from '@/core/scene-commands'
 import { addFurniture as addFurnitureToDocument } from '@/core/operations/furniture-mutations'
@@ -83,7 +83,7 @@ export async function addFurniture(): Promise<boolean> {
 
   announceSelectionChange({
     announceMode: 'added',
-    items: useSceneDocumentStore.getState().history.present,
+    items: getItems(),
     newId: result.id,
     previousSelectedId: null,
   })

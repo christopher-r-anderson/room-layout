@@ -48,9 +48,11 @@ hook doubles as the imperative handle (`getState`/`subscribe`) for operations
 and reconcilers; mutation goes through a module-level `xActions` object (the
 default shape - registries and single-purpose wrappers like `setSceneMounted`
 export bare functions instead), and narrow selector hooks (with `useShallow`
-where a selector builds a fresh value) are the React read surface. Features read the narrow hooks, not
-the generic bound hook. "Written by" names the only modules that should mutate
-a store.
+where a selector builds a fresh value) are the React read surface. Features
+read the narrow hooks (or their non-reactive getter peers, e.g. `getItems`);
+importing the generic bound hook from a feature is an ESLint error - its
+`getState`/`subscribe` surface belongs to core operations and reconcilers.
+"Written by" names the only modules that should mutate a store.
 
 - **`scene-document-store`** - the scene **document**: furniture history (the
   undo/redo timeline), the instance-id counter, and the finish/mood ids - the

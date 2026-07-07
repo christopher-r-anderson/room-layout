@@ -1,6 +1,9 @@
 import { create } from 'zustand'
 import type { FurnitureCatalogEntry } from '@/domain/catalog'
-import { useAssetsStore, useCatalogEntries } from '@/core/stores/assets-store'
+import {
+  getCatalogEntries,
+  useCatalogEntries,
+} from '@/core/stores/assets-store'
 
 // Catalog-only UI state: which catalog entry the Add Furniture drawer will place.
 // Feature-local (not cross-cutting), but store-backed so the non-React add action
@@ -51,7 +54,7 @@ function resolveActiveCatalogId(
 export function getActiveCatalogId(): string {
   return resolveActiveCatalogId(
     useCatalogSelectionStore.getState().selectedCatalogId,
-    useAssetsStore.getState().catalog,
+    getCatalogEntries(),
   )
 }
 
