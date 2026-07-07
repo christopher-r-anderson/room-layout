@@ -19,6 +19,7 @@ import {
   useSceneSessionStore,
 } from '../stores/scene-session-store'
 import { runStartupRestoreFlow } from './restore-flow'
+import { runStartupBootstrap } from './startup-bootstrap'
 import { resetCollectionPipeline } from './collection-loader'
 import { clearSceneServices } from '@/core/scene-services'
 import {
@@ -47,6 +48,10 @@ vi.mock('../stores/feedback-store', () => ({
 
 vi.mock('./collection-loader', () => ({
   resetCollectionPipeline: vi.fn(),
+}))
+
+vi.mock('./startup-bootstrap', () => ({
+  runStartupBootstrap: vi.fn(),
 }))
 
 vi.mock('@/core/scene-services', async (importOriginal) => ({
@@ -123,7 +128,7 @@ describe('startup-coordinator', () => {
     )
   })
 
-  it('resets the collection pipeline and bumps the retry token', () => {
+  it('resets the collection pipeline, starts a fresh cycle, and re-runs the bootstrap', () => {
     selectionActions.setSelection('chair-1', 'canvas-pointer')
 
     requestAssetRetry()
@@ -133,6 +138,7 @@ describe('startup-coordinator', () => {
     expect(resetCollectionPipeline).toHaveBeenCalledTimes(1)
     expect(useEditorLifecycleStore.getState().retryToken).toBe(1)
     expect(useEditorLifecycleStore.getState().sceneEpoch).toBe(1)
+    expect(runStartupBootstrap).toHaveBeenCalledTimes(1)
     expect(feedbackActions.clearAssertiveAnnouncement).toHaveBeenCalledTimes(1)
   })
 
