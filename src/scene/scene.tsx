@@ -153,29 +153,51 @@ export function Scene({
     objectRefs,
   })
 
+  // The handlers close over fresh component state, so keep them in a ref synced
+  // each render and register stable wrappers that read the latest at call time
+  // (same shape as useCommandDispatchValue). Registration then lasts exactly one
+  // mount: a passive effect so services come up in the same timing slot as the
+  // mount signal below, and handler churn never re-registers.
+  const servicesRef = useRef({
+    focusSelected: handleFocusSelected,
+    getSnapshot,
+    loadCollectionScene,
+    setCameraKeyState: handleSetCameraKeyState,
+    setCameraPreset: handleSetCameraPreset,
+  })
+
   useLayoutEffect(() => {
-    registerSceneServices({
+    servicesRef.current = {
       focusSelected: handleFocusSelected,
       getSnapshot,
       loadCollectionScene,
       setCameraKeyState: handleSetCameraKeyState,
       setCameraPreset: handleSetCameraPreset,
+    }
+  })
+
+  useEffect(() => {
+    registerSceneServices({
+      focusSelected: () => {
+        servicesRef.current.focusSelected()
+      },
+      getSnapshot: () => servicesRef.current.getSnapshot(),
+      loadCollectionScene: (path, bytes) =>
+        servicesRef.current.loadCollectionScene(path, bytes),
+      setCameraKeyState: (keyState) => {
+        servicesRef.current.setCameraKeyState(keyState)
+      },
+      setCameraPreset: (preset) => {
+        servicesRef.current.setCameraPreset(preset)
+      },
     })
 
     return () => {
       clearSceneServices()
     }
-  }, [
-    handleFocusSelected,
-    getSnapshot,
-    loadCollectionScene,
-    handleSetCameraKeyState,
-    handleSetCameraPreset,
-  ])
+  }, [])
 
   // Report mount/unmount so core can gate startup readiness on the canvas being up.
-  // Its own effect (not the services effect above, which re-runs as handlers change)
-  // so the signal tracks only the actual mount lifecycle.
   useEffect(() => {
     setSceneMounted(true)
     return () => {
