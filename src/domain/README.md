@@ -10,6 +10,8 @@ like `three` for math types).
   `FurnitureCollection`) and the pure `getCollection` lookup.
 - `environment-materials.ts` — room finish vocabulary (`FloorFinishOption`,
   `WallFinishOption`, `EnvironmentMaterialConfig`) and pure finish lookups.
+- `scene-model.ts` / `scene-defaults.ts` — the comparable scene-state shape,
+  default-scene construction, and the at-defaults comparison.
 - `geometry/` — pure placement/geometry functions over the model (footprint,
   layout, spawn, wall clearance, room metrics), shared by scene and features.
 

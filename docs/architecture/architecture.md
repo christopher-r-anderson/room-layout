@@ -51,7 +51,7 @@ Notes:
 
 - `src/app`: composition root, app shell wiring, runtime harness wiring.
 - `src/features`: user-facing editor capabilities and feature-local behavior.
-- `src/core`: shared stores, actions, selectors, contracts, scene-model helpers, and shared state types.
+- `src/core`: shared stores, actions, selectors, contracts, and shared state types.
 - `src/shared`: reusable runtime primitives and infra used by app/features/core/scene; carries no model knowledge.
 - `src/scene`: scene rendering engine, three helpers, and scene internals.
 - `src/domain`: the furniture/room model vocabulary and pure logic over it (catalog, geometry/placement). The lowest leaf; imports nothing internal.

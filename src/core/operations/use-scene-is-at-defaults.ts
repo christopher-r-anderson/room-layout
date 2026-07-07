@@ -3,7 +3,7 @@ import {
   resolveActiveLightingMoodId,
   type EnvironmentMaterialConfig,
 } from '@/domain/environment-materials'
-import { isFreshSceneState } from '@/core/model/scene-defaults'
+import { isFreshSceneState } from '@/domain/scene-defaults'
 import type { FurnitureItem } from '@/domain/furniture'
 import {
   useAssetsStore,
