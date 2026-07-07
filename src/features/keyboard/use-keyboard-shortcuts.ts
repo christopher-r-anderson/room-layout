@@ -24,7 +24,6 @@ interface ShortcutContext {
 interface ShortcutDefinition {
   id: string
   match: KeyCombo | KeyCombo[]
-  allowMatchInEditingTarget?: boolean
   requiresRoomViewFocus?: boolean
   requiresSelection?: boolean
   requiresNoSelection?: boolean
@@ -55,8 +54,8 @@ function canMatchShortcut(
   shortcut: ShortcutDefinition,
   context: ShortcutContext,
 ): boolean {
-  // Don't match in text inputs unless the shortcut explicitly needs browser suppression.
-  if (context.targetIsEditingTarget && !shortcut.allowMatchInEditingTarget) {
+  // Shortcuts never match while focus is in a text-editing target.
+  if (context.targetIsEditingTarget) {
     return false
   }
 
@@ -115,7 +114,6 @@ export function useKeyboardShortcuts({
       return {
         id: shortcut.id,
         match: shortcut.match,
-        allowMatchInEditingTarget: shortcut.allowMatchInEditingTarget,
         requiresRoomViewFocus: shortcut.requiresRoomViewFocus,
         requiresSelection: shortcut.requiresSelection,
         requiresNoSelection: shortcut.requiresNoSelection,
