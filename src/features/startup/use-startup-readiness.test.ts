@@ -12,8 +12,12 @@ import {
 import {
   editorLifecycleActions,
   resetEditorLifecycleStore,
-  setSceneMounted,
 } from '@/core/stores/editor-lifecycle-store'
+import {
+  clearSceneServices,
+  registerSceneServices,
+  type SceneServices,
+} from '@/core/scene-services'
 import { useStartupReadiness } from './use-startup-readiness'
 
 vi.mock('@/core/operations/startup-coordinator', () => ({
@@ -21,17 +25,33 @@ vi.mock('@/core/operations/startup-coordinator', () => ({
   notifyAssetError: vi.fn(),
 }))
 
+// Drive sceneReady through its real producer, the scene-services registration.
+function createStubSceneServices(): SceneServices {
+  return {
+    focusSelected: () => undefined,
+    getSnapshot: () => ({
+      cameraPosition: [0, 0, 0] as [number, number, number],
+      items: [],
+    }),
+    loadCollectionScene: () => Promise.resolve(),
+    setCameraKeyState: () => undefined,
+    setCameraPreset: () => undefined,
+  }
+}
+
 beforeEach(() => {
+  clearSceneServices()
   resetEditorLifecycleStore()
   resetCollectionLoadingStore()
 })
 
 afterEach(() => {
+  clearSceneServices()
   vi.clearAllMocks()
 })
 
 describe('useStartupReadiness', () => {
-  it('does not resolve before the scene has mounted', () => {
+  it('does not resolve before the scene services are registered', () => {
     renderHook(() => {
       useStartupReadiness()
     })
@@ -49,7 +69,7 @@ describe('useStartupReadiness', () => {
     })
 
     act(() => {
-      setSceneMounted(true)
+      registerSceneServices(createStubSceneServices())
     })
 
     expect(completeAssetLoad).not.toHaveBeenCalled()
@@ -61,7 +81,7 @@ describe('useStartupReadiness', () => {
     })
 
     act(() => {
-      setSceneMounted(true)
+      registerSceneServices(createStubSceneServices())
       collectionLoadingActions.setGatedCollectionPaths([])
     })
 
@@ -75,7 +95,7 @@ describe('useStartupReadiness', () => {
     })
 
     act(() => {
-      setSceneMounted(true)
+      registerSceneServices(createStubSceneServices())
       collectionLoadingActions.setGatedCollectionPaths([
         '/models/a.glb',
         '/models/b.glb',
@@ -96,7 +116,7 @@ describe('useStartupReadiness', () => {
     })
 
     act(() => {
-      setSceneMounted(true)
+      registerSceneServices(createStubSceneServices())
       collectionLoadingActions.setGatedCollectionPaths(['/models/a.glb'])
       collectionLoadingActions.markFailed(
         '/models/a.glb',
@@ -114,7 +134,7 @@ describe('useStartupReadiness', () => {
     })
 
     act(() => {
-      setSceneMounted(true)
+      registerSceneServices(createStubSceneServices())
       collectionLoadingActions.setGatedCollectionPaths([])
     })
     expect(completeAssetLoad).toHaveBeenCalledTimes(1)

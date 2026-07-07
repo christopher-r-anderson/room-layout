@@ -74,6 +74,11 @@ afterEach(() => {
   vi.clearAllMocks()
   resetCollectionLoadingStore()
   resetEditorLifecycleStore()
+  // The reconciler tests raise sceneReady directly (sceneCommands is mocked
+  // here, so the real registry producer is out of the picture); the store
+  // reset deliberately leaves the flag to its producer, so lower it the same
+  // way it was raised.
+  editorLifecycleActions.setSceneReady(false)
   resetSceneDocumentStore()
   vi.restoreAllMocks()
 })
@@ -244,9 +249,9 @@ describe('resetCollectionPipeline', () => {
 
 describe('startCollectionLoadReconciler', () => {
   it('kicks loads for state that was already in place when it started', async () => {
-    // Gate resolved and scene mounted before the reconciler exists - it must
+    // Gate resolved and scene ready before the reconciler exists - it must
     // reconcile on start, not wait for the next store update.
-    editorLifecycleActions.setSceneMounted(true)
+    editorLifecycleActions.setSceneReady(true)
     collectionLoadingActions.setGatedCollectionPaths(['/models/pre.glb'])
 
     const stop = startCollectionLoadReconciler()
@@ -259,13 +264,13 @@ describe('startCollectionLoadReconciler', () => {
     }
   })
 
-  it('loads the gated set once the scene mounts, and newly wanted paths as they arrive', async () => {
+  it('loads the gated set once the scene is ready, and newly wanted paths as they arrive', async () => {
     const stop = startCollectionLoadReconciler()
     try {
       collectionLoadingActions.setGatedCollectionPaths(['/models/gated.glb'])
       expect(fetchCollectionBytesMock).not.toHaveBeenCalled()
 
-      editorLifecycleActions.setSceneMounted(true)
+      editorLifecycleActions.setSceneReady(true)
       await vi.waitFor(() => {
         expect(isCollectionLoaded('/models/gated.glb')).toBe(true)
       })
@@ -285,7 +290,7 @@ describe('startCollectionLoadReconciler', () => {
     )
     const stop = startCollectionLoadReconciler()
     try {
-      editorLifecycleActions.setSceneMounted(true)
+      editorLifecycleActions.setSceneReady(true)
       collectionLoadingActions.requestCollection('/models/flaky.glb')
       await vi.waitFor(() => {
         expect(getCollectionFailureKind('/models/flaky.glb')).toBe('connection')

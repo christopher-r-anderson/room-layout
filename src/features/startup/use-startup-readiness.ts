@@ -10,19 +10,19 @@ import {
   useLoadedCollections,
 } from '@/core/stores/collection-loading-store'
 import {
-  useSceneMounted,
+  useSceneReady,
   useStartupLoadingActive,
 } from '@/core/stores/editor-lifecycle-store'
 
 // Resolves the startup outcome in core (not in the Scene): gated on the scene
-// having mounted so the overlay never lifts before first paint, any gated
+// services being live so the overlay never lifts before first paint, any gated
 // collection failing is a startup error, and all gated collections parsed
 // completes it. Firing flips the phase off 'loading', which is the fire-once guard
 // - a retry returns to 'loading' and re-arms it. See
 // docs/architecture/startup-and-asset-loading.md.
 export function useStartupReadiness() {
   const loadingActive = useStartupLoadingActive()
-  const sceneMounted = useSceneMounted()
+  const sceneReady = useSceneReady()
   const gatedCollectionsResolved = useGatedCollectionsResolved()
   const gatedCollectionPaths = useGatedCollectionPaths()
   const failedCollections = useFailedCollections()
@@ -31,7 +31,7 @@ export function useStartupReadiness() {
   useEffect(() => {
     // An unresolved gate (bootstrap has not computed it yet, or a retry reset it)
     // means the outcome is not knowable - a fresh scene resolves to [], not null.
-    if (!loadingActive || !sceneMounted || !gatedCollectionsResolved) {
+    if (!loadingActive || !sceneReady || !gatedCollectionsResolved) {
       return
     }
 
@@ -55,7 +55,7 @@ export function useStartupReadiness() {
     }
   }, [
     loadingActive,
-    sceneMounted,
+    sceneReady,
     gatedCollectionsResolved,
     gatedCollectionPaths,
     failedCollections,
