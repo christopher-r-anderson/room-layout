@@ -113,7 +113,13 @@ export const editorLifecycleActions = {
   },
   reset: () => {
     useEditorLifecycleStore.setState(
-      useEditorLifecycleStore.getInitialState(),
+      {
+        ...useEditorLifecycleStore.getInitialState(),
+        // sceneReady mirrors the scene-services registry, which this store
+        // does not own; resetting it here would detach the flag from the
+        // registry it reflects. It only moves via register/clear.
+        sceneReady: useEditorLifecycleStore.getState().sceneReady,
+      },
       true,
     )
   },

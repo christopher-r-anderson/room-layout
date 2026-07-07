@@ -70,6 +70,20 @@ describe('scene-services', () => {
     expect(useEditorLifecycleStore.getState().sceneReady).toBe(false)
   })
 
+  it('keeps the flag mirroring the registry across a lifecycle-store reset', () => {
+    registerSceneServices(createFakeServices())
+
+    resetEditorLifecycleStore()
+
+    // The store reset leaves sceneReady to its producer: with the services
+    // still registered, the flag must keep agreeing with isSceneReady().
+    expect(useEditorLifecycleStore.getState().sceneReady).toBe(true)
+    expect(getSceneServicesIfReady()).not.toBeNull()
+
+    clearSceneServices()
+    expect(useEditorLifecycleStore.getState().sceneReady).toBe(false)
+  })
+
   it('has the services in place before a sceneReady subscriber is notified', () => {
     const observedRegistries: (SceneServices | null)[] = []
     const unsubscribe = useEditorLifecycleStore.subscribe(

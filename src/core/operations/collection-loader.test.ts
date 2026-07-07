@@ -74,6 +74,11 @@ afterEach(() => {
   vi.clearAllMocks()
   resetCollectionLoadingStore()
   resetEditorLifecycleStore()
+  // The reconciler tests raise sceneReady directly (sceneCommands is mocked
+  // here, so the real registry producer is out of the picture); the store
+  // reset deliberately leaves the flag to its producer, so lower it the same
+  // way it was raised.
+  editorLifecycleActions.setSceneReady(false)
   resetSceneDocumentStore()
   vi.restoreAllMocks()
 })
