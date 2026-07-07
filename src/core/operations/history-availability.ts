@@ -1,3 +1,4 @@
+import { useShallow } from 'zustand/react/shallow'
 import { canRedoHistory, canUndoHistory } from '@/shared/lib/ui/editor-history'
 import { useSceneDocumentStore } from '@/core/stores/scene-document-store'
 import { useIsDragging } from '@/core/stores/scene-session-store'
@@ -14,11 +15,13 @@ export interface HistoryAvailability {
  */
 export function useHistoryAvailability(): HistoryAvailability {
   const isDragging = useIsDragging()
-  const canUndo = useSceneDocumentStore((state) =>
-    canUndoHistory(state.history),
-  )
-  const canRedo = useSceneDocumentStore((state) =>
-    canRedoHistory(state.history),
+  // The selector derives booleans (not the history reference) so the drag's
+  // per-move history writes do not re-render the headers.
+  const { canUndo, canRedo } = useSceneDocumentStore(
+    useShallow((state) => ({
+      canUndo: canUndoHistory(state.history),
+      canRedo: canRedoHistory(state.history),
+    })),
   )
 
   return {

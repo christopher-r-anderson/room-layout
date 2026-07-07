@@ -1,3 +1,4 @@
+import { useShallow } from 'zustand/react/shallow'
 import { useSceneDocumentStore } from '@/core/stores/scene-document-store'
 import { useSceneSessionStore } from '@/core/stores/scene-session-store'
 import {
@@ -44,8 +45,12 @@ export function derivePreviewedId(
  * here as a value module rather than in any single store.
  */
 export function usePreviewedId(): string | null {
-  const previewedIdRaw = useSceneSessionStore((state) => state.previewedIdRaw)
-  const isDragging = useSceneSessionStore((state) => state.isDragging)
+  const { previewedIdRaw, isDragging } = useSceneSessionStore(
+    useShallow((state) => ({
+      previewedIdRaw: state.previewedIdRaw,
+      isDragging: state.isDragging,
+    })),
+  )
   const blockingOverlayOpen = useIsBlockingOverlayOpen()
   const editorInteractionsEnabled = useEditorInteractionsEnabled()
 
