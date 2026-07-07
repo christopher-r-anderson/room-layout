@@ -5,6 +5,7 @@ export interface PerfCounterSnapshot {
   toolbarSinkWrites: number
   toolbarSinkNoOps: number
   sceneRenders: number
+  sceneMounts: number
   appRenders: number
   lastResetAt: number
 }
@@ -15,6 +16,7 @@ let toolbarEmissionsFromEffect = 0
 let toolbarSinkWrites = 0
 let toolbarSinkNoOps = 0
 let sceneRenders = 0
+let sceneMounts = 0
 let appRenders = 0
 let lastResetAt = 0
 
@@ -37,6 +39,9 @@ export const perfCounters = {
   incrSceneRender() {
     sceneRenders += 1
   },
+  incrSceneMount() {
+    sceneMounts += 1
+  },
   incrAppRender() {
     appRenders += 1
   },
@@ -48,6 +53,7 @@ export const perfCounters = {
       toolbarSinkWrites,
       toolbarSinkNoOps,
       sceneRenders,
+      sceneMounts,
       appRenders,
       lastResetAt,
     }
@@ -59,6 +65,7 @@ export const perfCounters = {
     toolbarSinkWrites = 0
     toolbarSinkNoOps = 0
     sceneRenders = 0
+    sceneMounts = 0
     appRenders = 0
     lastResetAt = Date.now()
   },

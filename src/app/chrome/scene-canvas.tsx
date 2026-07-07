@@ -3,7 +3,7 @@ import { NeutralToneMapping, SRGBColorSpace } from 'three'
 import { Scene } from '@/scene/scene'
 import { notifyAssetError } from '@/core/operations/startup-coordinator'
 import { previewFromScene } from '@/core/operations/preview-actions'
-import { useSceneEpoch } from '@/core/stores/editor-lifecycle-store'
+import { useStartupCycle } from '@/core/stores/editor-lifecycle-store'
 import { useCatalogEntries, useCollections } from '@/core/stores/assets-store'
 import { usePreviewedId } from '@/core/operations/previewed-id'
 import { useActiveFinishIds } from '@/core/operations/active-finish-ids'
@@ -20,7 +20,7 @@ export interface SceneCanvasProps {
 // the Scene mounts and registers its parse service. See
 // docs/architecture/startup-and-asset-loading.md.
 export default function SceneCanvas({ onPointerMissed }: SceneCanvasProps) {
-  const sceneEpoch = useSceneEpoch()
+  const startupCycle = useStartupCycle()
   const catalog = useCatalogEntries()
   const collections = useCollections()
   const previewedId = usePreviewedId()
@@ -46,10 +46,10 @@ export default function SceneCanvas({ onPointerMissed }: SceneCanvasProps) {
       onPointerMissed={onPointerMissed}
       shadows={shadowMode}
     >
-      {/* Render failures surface via the error boundary. Keyed by
-          epoch so a retry remounts a fresh Scene, whose remount re-kicks the
-          collection loads through the cleared byte source. */}
-      <SceneAssetErrorBoundary key={sceneEpoch} onError={notifyAssetError}>
+      {/* Render failures surface via the error boundary. Keyed by the
+          startup cycle so a retry remounts a fresh Scene, whose remount
+          re-kicks the collection loads through the cleared byte source. */}
+      <SceneAssetErrorBoundary key={startupCycle} onError={notifyAssetError}>
         <Scene
           renderQuality={renderQuality}
           catalog={catalog}

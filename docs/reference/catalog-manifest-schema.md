@@ -191,7 +191,7 @@ default mood (parallel to floor/wall finishes).
 ## Validation Rules
 
 These are enforced at load by the validator in
-`src/features/startup/catalog-manifest.ts`, which is the exact contract; the list
+`src/core/operations/catalog-manifest.ts`, which is the exact contract; the list
 below is the human-readable summary.
 
 - All path fields (`modelPath`, catalog/floor `previewPath`, `diffusePath`,

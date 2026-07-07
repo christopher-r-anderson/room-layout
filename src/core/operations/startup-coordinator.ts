@@ -25,6 +25,7 @@ import {
   parseSceneUrl,
   removeSceneParamFromUrl,
 } from '@/core/persistence/scene-url'
+import { runStartupBootstrap } from './startup-bootstrap'
 import { runStartupRestoreFlow, validateDraftState } from './restore-flow'
 import type { RestorableState } from './restore-flow.types'
 
@@ -223,16 +224,17 @@ export function notifyChunkLoadError(error: Error) {
   reportStartupError('app-chunk', error)
 }
 
-// Retry startup: drop the buffered asset bytes so it re-downloads, then bump the
-// retry token so the bootstrap fetch re-runs and the Scene remounts.
+// Retry startup: drop the buffered asset bytes so it re-downloads, start a
+// fresh cycle (which remounts the Scene), and re-run the bootstrap fetch.
 export function requestAssetRetry() {
   dialogActions.closeActiveDialog()
   resetStartupShell()
   // Only reset the collection pipeline on an explicit retry (which remounts the
-  // loader via the epoch), not on the error path: a gated failure's `failed`
+  // loader via the cycle), not on the error path: a gated failure's `failed`
   // mark must survive so the loader does not immediately re-attempt and loop.
   resetCollectionPipeline()
 
   editorLifecycleActions.requestRetry()
   feedbackActions.clearAssertiveAnnouncement()
+  runStartupBootstrap()
 }

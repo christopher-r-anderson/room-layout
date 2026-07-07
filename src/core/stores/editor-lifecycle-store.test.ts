@@ -8,8 +8,7 @@ import {
   resetEditorLifecycleStore,
   useAssetError,
   useEditorInteractionsEnabled,
-  useRetryToken,
-  useSceneEpoch,
+  useStartupCycle,
   useStartupLoadingActive,
   useStartupOverlayActive,
   useStartupPhase,
@@ -27,18 +26,20 @@ describe('useEditorLifecycleStore', () => {
     expect(state.assetError).toBeNull()
     expect(state.restoreOutcome).toBeNull()
     expect(state.restoreAttemptCount).toBe(0)
-    expect(state.sceneEpoch).toBe(0)
-    expect(state.retryToken).toBe(0)
+    expect(state.startupCycle).toBe(0)
   })
 
-  it('bumps the scene epoch when a manifest begins loading assets', () => {
+  it('starts the asset-load phase without bumping the cycle', () => {
+    editorLifecycleActions.markAssetsReady()
+
     editorLifecycleActions.beginAssetLoad()
 
+    // Only an explicit retry starts a new cycle (and remounts the Scene); the
+    // manifest arriving flips the phase back to loading in place.
     const state = useEditorLifecycleStore.getState()
     expect(state.startupPhase).toBe('loading')
     expect(state.assetError).toBeNull()
-    expect(state.sceneEpoch).toBe(1)
-    expect(state.retryToken).toBe(0)
+    expect(state.startupCycle).toBe(0)
   })
 
   it('keeps an errored phase sticky against a late manifest success until retry', () => {
@@ -55,7 +56,7 @@ describe('useEditorLifecycleStore', () => {
     let state = useEditorLifecycleStore.getState()
     expect(state.startupPhase).toBe('errored')
     expect(state.assetError).not.toBeNull()
-    expect(state.sceneEpoch).toBe(0)
+    expect(state.startupCycle).toBe(0)
 
     editorLifecycleActions.requestRetry()
     editorLifecycleActions.beginAssetLoad()
@@ -65,7 +66,7 @@ describe('useEditorLifecycleStore', () => {
     expect(state.assetError).toBeNull()
   })
 
-  it('bumps both epoch and retry token on retry and resets restore tracking', () => {
+  it('bumps the startup cycle on retry and resets restore tracking', () => {
     editorLifecycleActions.incrementRestoreAttempt()
     editorLifecycleActions.recordRestoreOutcome('restored')
     editorLifecycleActions.setAssetError({
@@ -78,8 +79,7 @@ describe('useEditorLifecycleStore', () => {
     const state = useEditorLifecycleStore.getState()
     expect(state.startupPhase).toBe('loading')
     expect(state.assetError).toBeNull()
-    expect(state.sceneEpoch).toBe(1)
-    expect(state.retryToken).toBe(1)
+    expect(state.startupCycle).toBe(1)
     // The retry cycle must restore again: the error path wiped the document.
     expect(state.restoreAttemptCount).toBe(0)
     expect(state.restoreOutcome).toBeNull()
@@ -111,16 +111,14 @@ describe('useEditorLifecycleStore', () => {
     const { result: overlay } = renderHook(() => useStartupOverlayActive())
     const { result: enabled } = renderHook(() => useEditorInteractionsEnabled())
     const { result: assetError } = renderHook(() => useAssetError())
-    const { result: sceneEpoch } = renderHook(() => useSceneEpoch())
-    const { result: retryToken } = renderHook(() => useRetryToken())
+    const { result: startupCycle } = renderHook(() => useStartupCycle())
 
     expect(phase.current).toBe('loading')
     expect(loading.current).toBe(true)
     expect(overlay.current).toBe(true)
     expect(enabled.current).toBe(false)
     expect(assetError.current).toBeNull()
-    expect(sceneEpoch.current).toBe(0)
-    expect(retryToken.current).toBe(0)
+    expect(startupCycle.current).toBe(0)
 
     act(() => {
       editorLifecycleActions.markAssetsReady()
@@ -135,8 +133,7 @@ describe('useEditorLifecycleStore', () => {
       editorLifecycleActions.requestRetry()
     })
 
-    expect(sceneEpoch.current).toBe(1)
-    expect(retryToken.current).toBe(1)
+    expect(startupCycle.current).toBe(1)
     expect(phase.current).toBe('loading')
   })
 })
