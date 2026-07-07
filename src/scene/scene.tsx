@@ -42,7 +42,6 @@ import {
 } from '@/core/stores/scene-document-store'
 import { selectByCanvasPointer } from '@/core/operations/selection-actions'
 import { sceneSessionActions } from '@/core/stores/scene-session-store'
-import { setSceneMounted } from '@/core/stores/editor-lifecycle-store'
 import {
   clearSceneServices,
   registerSceneServices,
@@ -156,8 +155,9 @@ export function Scene({
   // The handlers close over fresh component state, so keep them in a ref synced
   // each render and register stable wrappers that read the latest at call time
   // (same shape as useCommandDispatchValue). Registration then lasts exactly one
-  // mount: a passive effect so services come up in the same timing slot as the
-  // mount signal below, and handler churn never re-registers.
+  // mount and drives the lifecycle store's sceneReady flag: a passive effect so
+  // readiness never fires before the canvas has painted, and handler churn
+  // never re-registers.
   const servicesRef = useRef({
     focusSelected: handleFocusSelected,
     getSnapshot,
@@ -194,14 +194,6 @@ export function Scene({
 
     return () => {
       clearSceneServices()
-    }
-  }, [])
-
-  // Report mount/unmount so core can gate startup readiness on the canvas being up.
-  useEffect(() => {
-    setSceneMounted(true)
-    return () => {
-      setSceneMounted(false)
     }
   }, [])
 

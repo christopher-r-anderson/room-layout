@@ -6,6 +6,10 @@ import {
   registerSceneServices,
 } from './scene-services'
 import type { SceneServices } from './scene-services'
+import {
+  resetEditorLifecycleStore,
+  useEditorLifecycleStore,
+} from './stores/editor-lifecycle-store'
 
 function createFakeServices(): SceneServices {
   return {
@@ -23,6 +27,7 @@ function createFakeServices(): SceneServices {
 describe('scene-services', () => {
   beforeEach(() => {
     clearSceneServices()
+    resetEditorLifecycleStore()
   })
 
   it('throws when services are requested before registration', () => {
@@ -53,5 +58,37 @@ describe('scene-services', () => {
 
     expect(getSceneServicesIfReady()).toBeNull()
     expect(() => getSceneServices()).toThrow('scene services not registered')
+  })
+
+  it('drives the reactive sceneReady flag through register and clear', () => {
+    expect(useEditorLifecycleStore.getState().sceneReady).toBe(false)
+
+    registerSceneServices(createFakeServices())
+    expect(useEditorLifecycleStore.getState().sceneReady).toBe(true)
+
+    clearSceneServices()
+    expect(useEditorLifecycleStore.getState().sceneReady).toBe(false)
+  })
+
+  it('has the services in place before a sceneReady subscriber is notified', () => {
+    const observedRegistries: (SceneServices | null)[] = []
+    const unsubscribe = useEditorLifecycleStore.subscribe(
+      (state) => state.sceneReady,
+      () => {
+        observedRegistries.push(getSceneServicesIfReady())
+      },
+    )
+
+    try {
+      const services = createFakeServices()
+      registerSceneServices(services)
+      clearSceneServices()
+
+      // Register notified with the registry populated; clear with it emptied -
+      // a subscriber woken by the flag never observes a half-applied oracle.
+      expect(observedRegistries).toEqual([services, null])
+    } finally {
+      unsubscribe()
+    }
   })
 })

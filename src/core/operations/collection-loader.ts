@@ -98,7 +98,7 @@ function resolvePendingCollectionPaths(): string[] {
 }
 
 function kickPendingCollectionLoads() {
-  if (!useEditorLifecycleStore.getState().sceneMounted) {
+  if (!useEditorLifecycleStore.getState().sceneReady) {
     return
   }
   for (const path of resolvePendingCollectionPaths()) {
@@ -115,7 +115,7 @@ function kickPendingCollectionLoads() {
 export const startCollectionLoadReconciler = createReconciler(() => {
   const unsubscribes = [
     useEditorLifecycleStore.subscribe(
-      (state) => state.sceneMounted,
+      (state) => state.sceneReady,
       kickPendingCollectionLoads,
     ),
     // Only the fields that decide which paths are pending - not progressByPath,

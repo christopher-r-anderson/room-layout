@@ -24,10 +24,11 @@ interface EditorLifecycleStoreState {
   restoreAttemptCount: number
   sceneEpoch: number
   retryToken: number
-  // Whether the Scene is currently mounted (the r3f canvas is up). Driven by the
-  // Scene's mount/unmount; the startup readiness observer gates on it so the
-  // loading overlay never lifts before the scene has mounted.
-  sceneMounted: boolean
+  // Whether the scene services are live. Single producer: registerSceneServices/
+  // clearSceneServices (core/scene-services), so this flag and isSceneReady()
+  // answer from the same oracle. The startup readiness observer gates on it so
+  // the loading overlay never lifts before the scene is up.
+  sceneReady: boolean
 }
 
 export const useEditorLifecycleStore = create<EditorLifecycleStoreState>()(
@@ -39,7 +40,7 @@ export const useEditorLifecycleStore = create<EditorLifecycleStoreState>()(
       restoreAttemptCount: 0,
       sceneEpoch: 0,
       retryToken: 0,
-      sceneMounted: false,
+      sceneReady: false,
     }),
   ),
 )
@@ -95,9 +96,9 @@ export const editorLifecycleActions = {
         : { startupPhase: 'errored', assetError: error },
     )
   },
-  setSceneMounted: (mounted: boolean) => {
+  setSceneReady: (ready: boolean) => {
     useEditorLifecycleStore.setState((state) =>
-      state.sceneMounted === mounted ? state : { sceneMounted: mounted },
+      state.sceneReady === ready ? state : { sceneReady: ready },
     )
   },
   recordRestoreOutcome: (outcome: RestoreOutcome | null) => {
@@ -122,18 +123,14 @@ export function resetEditorLifecycleStore() {
   editorLifecycleActions.reset()
 }
 
-export function setSceneMounted(mounted: boolean) {
-  editorLifecycleActions.setSceneMounted(mounted)
-}
-
 // Imperative (non-React) editor-interactive predicate, so the readiness rule lives
 // in one place. React equivalent: useEditorInteractionsEnabled.
 export function isEditorInteractive() {
   return useEditorLifecycleStore.getState().startupPhase === 'ready'
 }
 
-export const useSceneMounted = () =>
-  useEditorLifecycleStore((state) => state.sceneMounted)
+export const useSceneReady = () =>
+  useEditorLifecycleStore((state) => state.sceneReady)
 export const useStartupPhase = () =>
   useEditorLifecycleStore((state) => state.startupPhase)
 export const useAssetError = () =>
