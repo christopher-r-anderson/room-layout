@@ -11,9 +11,9 @@ import {
   useSceneSessionStore,
 } from '@/core/stores/scene-session-store'
 import {
-  announcementStoreForTests,
-  resetAnnouncements,
-} from '@/core/feedback/announcement-store'
+  feedbackStoreForTests,
+  resetFeedbackStore,
+} from '@/core/stores/feedback-store'
 import {
   resetSelectionStore,
   selectionActions,
@@ -33,14 +33,14 @@ import {
   selectById,
 } from './selection-actions'
 
-const politeText = () => announcementStoreForTests.getState().polite.text
+const politeText = () => feedbackStoreForTests.getState().polite.text
 
 function resetStores() {
   resetSceneDocumentStore()
   resetSceneSessionStore()
   resetSelectionStore()
   resetEditorLifecycleStore()
-  resetAnnouncements()
+  resetFeedbackStore()
 }
 
 describe('selection-actions', () => {

@@ -1,6 +1,6 @@
 import { msg } from '@lingui/core/macro'
 import { dialogActions } from '@/core/stores/dialog-store'
-import { feedback } from '@/core/feedback/feedback'
+import { feedback } from '@/core/stores/feedback-store'
 import { resetSceneToDefaults } from '@/core/operations/scene-reset'
 import { i18n } from '@/shared/i18n/i18n'
 import { START_OVER_DIALOG_ID } from './start-over-dialog-definition'

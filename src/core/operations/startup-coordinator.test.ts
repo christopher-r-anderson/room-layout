@@ -1,5 +1,11 @@
 // @vitest-environment jsdom
 
+import {
+  appToastManager,
+  feedback,
+  feedbackStoreForTests,
+  resetFeedbackStore,
+} from '@/core/stores/feedback-store'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   useEditorLifecycleStore,
@@ -7,12 +13,6 @@ import {
 } from '../stores/editor-lifecycle-store'
 import { resetAssetsStore } from '../stores/assets-store'
 import { dialogActions } from '../stores/dialog-store'
-import { feedback } from '@/core/feedback/feedback'
-import {
-  announcementStoreForTests,
-  resetAnnouncements,
-} from '@/core/feedback/announcement-store'
-import { appToastManager } from '@/core/feedback/toast-manager'
 import {
   resetSelectionStore,
   selectionActions,
@@ -61,7 +61,7 @@ beforeEach(() => {
   resetAssetsStore()
   resetSelectionStore()
   resetSceneSessionStore()
-  resetAnnouncements()
+  resetFeedbackStore()
 })
 
 function seedSceneSessionState() {
@@ -117,8 +117,8 @@ describe('startup-coordinator', () => {
     // The InitializationError overlay (role=alert) is the only feedback
     // surface for a startup-fatal error: no toast, no announcement.
     expect(addToast).not.toHaveBeenCalled()
-    expect(announcementStoreForTests.getState().polite.text).toBe('')
-    expect(announcementStoreForTests.getState().assertive.text).toBe('')
+    expect(feedbackStoreForTests.getState().polite.text).toBe('')
+    expect(feedbackStoreForTests.getState().assertive.text).toBe('')
   })
 
   it('resets the collection pipeline, starts a fresh cycle, and re-runs the bootstrap', () => {
@@ -134,8 +134,8 @@ describe('startup-coordinator', () => {
     expect(useEditorLifecycleStore.getState().startupCycle).toBe(1)
     expect(runStartupBootstrap).toHaveBeenCalledTimes(1)
     // The retry clears stale announcements alongside the shell.
-    expect(announcementStoreForTests.getState().polite.text).toBe('')
-    expect(announcementStoreForTests.getState().assertive.text).toBe('')
+    expect(feedbackStoreForTests.getState().polite.text).toBe('')
+    expect(feedbackStoreForTests.getState().assertive.text).toBe('')
   })
 
   it('clears the scene session on retry', () => {

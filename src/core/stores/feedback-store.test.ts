@@ -7,30 +7,35 @@ import {
   vi,
   type MockInstance,
 } from 'vitest'
-import { appToastManager } from './toast-manager'
-import { feedback } from './feedback'
 import {
-  announcementStoreForTests,
-  resetAnnouncements,
-} from './announcement-store'
+  appToastManager,
+  feedback,
+  feedbackStoreForTests,
+  resetFeedbackStore,
+} from './feedback-store'
 
 // The routing contract: each entry point fires exactly one surface set. The
 // negative assertions are the point - they are what keeps a second channel
 // from quietly creeping back in. Normative table in
 // docs/architecture/feedback.md; browser twin in e2e/feedback-routing.spec.ts.
 
-const channels = () => announcementStoreForTests.getState()
+const channels = () => feedbackStoreForTests.getState()
 
 let addToast: MockInstance<typeof appToastManager.add>
 
 beforeEach(() => {
-  resetAnnouncements()
+  resetFeedbackStore()
   addToast = vi.spyOn(appToastManager, 'add').mockReturnValue('toast-1')
 })
 
 afterEach(() => {
   vi.restoreAllMocks()
   vi.useRealTimers()
+})
+
+it('starts with empty polite and assertive channels', () => {
+  expect(channels().polite.text).toBe('')
+  expect(channels().assertive.text).toBe('')
 })
 
 it.each([
@@ -74,13 +79,26 @@ it('movementUpdate debounces onto the polite channel', () => {
   vi.useFakeTimers()
 
   feedback.movementUpdate('Chair moved to X 1 and Z 2.')
-  feedback.movementUpdate('Chair moved to X 1 and Z 3.')
   expect(channels().polite.text).toBe('')
+
+  vi.advanceTimersByTime(179)
+  expect(channels().polite.text).toBe('')
+
+  vi.advanceTimersByTime(1)
+  expect(channels().polite.text).toBe('Chair moved to X 1 and Z 2.')
+  expect(addToast).not.toHaveBeenCalled()
+})
+
+it('announces only the last movement message queued inside the debounce window', () => {
+  vi.useFakeTimers()
+
+  feedback.movementUpdate('Chair moved to X 1 and Z 2.')
+  vi.advanceTimersByTime(100)
+  feedback.movementUpdate('Chair moved to X 2 and Z 2.')
 
   vi.runAllTimers()
 
-  expect(channels().polite.text).toBe('Chair moved to X 1 and Z 3.')
-  expect(addToast).not.toHaveBeenCalled()
+  expect(channels().polite.text).toBe('Chair moved to X 2 and Z 2.')
 })
 
 it.each([
@@ -112,19 +130,32 @@ it.each([
   expect(channels().polite.text).not.toBe('Stale position.')
 })
 
-it('repeating a message re-announces through a fresh nonce', () => {
-  feedback.interactionUpdate('Undo complete.')
-  const first = channels().polite
+it.each(['polite', 'assertive'] as const)(
+  'repeating a message re-announces through a fresh %s nonce',
+  (channel) => {
+    const fire =
+      channel === 'polite'
+        ? () => {
+            feedback.interactionUpdate('Undo complete.')
+          }
+        : () => {
+            feedback.formError('Invalid value.')
+          }
 
-  feedback.interactionUpdate('Undo complete.')
-  const second = channels().polite
+    fire()
+    const first = channels()[channel]
 
-  expect(second.text).toBe(first.text)
-  expect(second.nonce).toBeGreaterThan(first.nonce)
-})
+    fire()
+    const second = channels()[channel]
 
-it('reset clears both channels and the pending debounce', () => {
+    expect(second.text).toBe(first.text)
+    expect(second.nonce).toBeGreaterThan(first.nonce)
+  },
+)
+
+it('reset clears both channels, the pending debounce, and all toasts', () => {
   vi.useFakeTimers()
+  const closeToasts = vi.spyOn(appToastManager, 'close')
 
   feedback.interactionUpdate('Chair selected.')
   feedback.formError('Invalid.')
@@ -133,6 +164,8 @@ it('reset clears both channels and the pending debounce', () => {
   feedback.reset()
   vi.runAllTimers()
 
+  // The debounce scheduled before the reset must not repopulate the channels.
   expect(channels().polite.text).toBe('')
   expect(channels().assertive.text).toBe('')
+  expect(closeToasts).toHaveBeenCalledTimes(1)
 })

@@ -1,10 +1,10 @@
 // @vitest-environment jsdom
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { appToastManager } from '@/core/feedback/toast-manager'
 import {
-  announcementStoreForTests,
-  resetAnnouncements,
-} from '@/core/feedback/announcement-store'
+  appToastManager,
+  feedbackStoreForTests,
+  resetFeedbackStore,
+} from '@/core/stores/feedback-store'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { resetSceneDocumentStore } from '@/core/stores/scene-document-store'
 import { resetSelectionStore } from '@/core/stores/selection-store'
 import {
@@ -55,7 +55,7 @@ beforeEach(() => {
   resetEditorLifecycleStore()
   resetAssetsStore()
   resetCatalogSelectionStore()
-  resetAnnouncements()
+  resetFeedbackStore()
   assetsActions.setAssets({
     catalog: [CHAIR],
     collections: [],
@@ -96,7 +96,7 @@ describe('addFurniture', () => {
     // Toast only: the viewport portals to body above the drawer and announces
     // through its own live regions, so the old paired assertive announcement
     // is gone - the global assertive channel must stay empty.
-    expect(announcementStoreForTests.getState().assertive.text).toBe('')
+    expect(feedbackStoreForTests.getState().assertive.text).toBe('')
 
     addFurnitureMutation.mockReturnValueOnce({
       ok: false,

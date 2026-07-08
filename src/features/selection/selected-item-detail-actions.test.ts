@@ -17,9 +17,9 @@ import {
 } from '@/core/stores/selection-store'
 import { sceneCommands } from '@/core/scene-commands'
 import {
-  announcementStoreForTests,
-  resetAnnouncements,
-} from '@/core/feedback/announcement-store'
+  feedbackStoreForTests,
+  resetFeedbackStore,
+} from '@/core/stores/feedback-store'
 import { setSelectionTransform } from '@/core/operations/furniture-mutations'
 import { updateSelectedItemDetails } from './selected-item-detail-actions'
 import { CHAIR } from '@/test/support/furniture'
@@ -32,14 +32,14 @@ vi.mock('@/core/operations/furniture-mutations', () => ({
   setSelectionTransform: vi.fn(),
 }))
 
-const politeText = () => announcementStoreForTests.getState().polite.text
+const politeText = () => feedbackStoreForTests.getState().polite.text
 
 describe('selected-item-detail-actions', () => {
   beforeEach(() => {
     resetSceneDocumentStore()
     resetSelectionStore()
     resetEditorLifecycleStore()
-    resetAnnouncements()
+    resetFeedbackStore()
     sceneDocumentActions.setHistory(createHistoryState([CHAIR]))
     selectionActions.setSelection(CHAIR.id, null)
   })

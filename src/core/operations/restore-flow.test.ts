@@ -93,8 +93,10 @@ describe('runStartupRestoreFlow', () => {
     expect(applyState).toHaveBeenNthCalledWith(2, draft)
     expect(calls.setRestoreOutcome).toHaveBeenCalledWith('invalid')
     expect(calls.actionWarning).toHaveBeenCalledTimes(1)
+    // The link parsed and validated but failed to apply, so the wording must
+    // not claim the link "was invalid".
     expect(calls.actionWarning).toHaveBeenCalledWith({
-      title: 'Shared link was invalid. Recovered your local draft.',
+      title: 'Shared link could not be restored. Recovered your local draft.',
     })
     expect(calls.actionSuccess).not.toHaveBeenCalled()
     expect(calls.actionError).not.toHaveBeenCalled()

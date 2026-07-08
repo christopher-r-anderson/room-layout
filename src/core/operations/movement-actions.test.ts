@@ -15,9 +15,9 @@ import {
 } from '@/core/stores/editor-lifecycle-store'
 import { sceneCommands } from '@/core/scene-commands'
 import {
-  announcementStoreForTests,
-  resetAnnouncements,
-} from '@/core/feedback/announcement-store'
+  feedbackStoreForTests,
+  resetFeedbackStore,
+} from '@/core/stores/feedback-store'
 import { toolbarInteractionActions } from '@/core/stores/toolbar-interaction-store'
 import { CHAIR } from '@/test/support/furniture'
 import {
@@ -34,21 +34,21 @@ vi.mock('./furniture-mutations', () => ({
   setSelectionTransform: vi.fn(),
 }))
 
-const politeText = () => announcementStoreForTests.getState().polite.text
+const politeText = () => feedbackStoreForTests.getState().polite.text
 
 describe('movement-actions', () => {
   beforeEach(() => {
     resetSceneDocumentStore()
     resetSelectionStore()
     resetEditorLifecycleStore()
-    resetAnnouncements()
+    resetFeedbackStore()
     sceneDocumentActions.setHistory(createHistoryState([CHAIR]))
     selectionActions.setSelection(CHAIR.id, null)
     editorLifecycleActions.markAssetsReady()
   })
 
   afterEach(() => {
-    resetAnnouncements()
+    resetFeedbackStore()
     vi.useRealTimers()
     vi.restoreAllMocks()
     vi.clearAllMocks()

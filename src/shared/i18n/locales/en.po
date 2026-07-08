@@ -700,6 +700,10 @@ msgid "Shared link could not be restored."
 msgstr "Shared link could not be restored."
 
 #: src/core/operations/restore-flow.ts
+msgid "Shared link could not be restored. Recovered your local draft."
+msgstr "Shared link could not be restored. Recovered your local draft."
+
+#: src/core/operations/restore-flow.ts
 msgid "Shared link was invalid. Recovered your local draft."
 msgstr "Shared link was invalid. Recovered your local draft."
 

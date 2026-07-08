@@ -1,7 +1,7 @@
 import { msg } from '@lingui/core/macro'
 import type { FurnitureItem } from '@/domain/furniture'
 import { i18n } from '@/shared/i18n/i18n'
-import { feedback } from '@/core/feedback/feedback'
+import { feedback } from '@/core/stores/feedback-store'
 import { dialogActions } from '@/core/stores/dialog-store'
 import { getItems } from '@/core/stores/scene-document-store'
 import {

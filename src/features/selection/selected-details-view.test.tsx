@@ -4,15 +4,15 @@ import { render, screen } from '@/test/render'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
-  announcementStoreForTests,
-  resetAnnouncements,
-} from '@/core/feedback/announcement-store'
+  feedbackStoreForTests,
+  resetFeedbackStore,
+} from '@/core/stores/feedback-store'
 import { SelectedDetailsView } from './selected-details-view'
 import { FURNITURE_ITEM } from '@/test/support/furniture'
 
 describe('SelectedDetailsView', () => {
   beforeEach(() => {
-    resetAnnouncements()
+    resetFeedbackStore()
   })
 
   it('tabs through the position fields, then the rotation input', async () => {
@@ -191,7 +191,7 @@ describe('SelectedDetailsView', () => {
     ).toBeVisible()
     // The panel has no local live region; the failure announces on the app's
     // global assertive channel.
-    expect(announcementStoreForTests.getState().assertive.text).toBe(
+    expect(feedbackStoreForTests.getState().assertive.text).toBe(
       'Distance from left wall (m) must be a valid number.',
     )
   })

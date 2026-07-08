@@ -1,6 +1,6 @@
 import { msg } from '@lingui/core/macro'
 import { useSceneDocumentStore } from '@/core/stores/scene-document-store'
-import { feedback } from '@/core/feedback/feedback'
+import { feedback } from '@/core/stores/feedback-store'
 import { serializeSceneToUrl } from '@/core/persistence/scene-url'
 import { getActiveFinishIds } from '@/core/operations/active-finish-ids'
 import { i18n } from '@/shared/i18n/i18n'

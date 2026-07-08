@@ -1,4 +1,9 @@
 // @vitest-environment jsdom
+import {
+  appToastManager,
+  feedbackStoreForTests,
+  resetFeedbackStore,
+} from '@/core/stores/feedback-store'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createHistoryState } from '@/shared/lib/ui/editor-history'
 import {
@@ -16,11 +21,6 @@ import {
 } from '@/core/stores/editor-lifecycle-store'
 import { dialogActions } from '@/core/stores/dialog-store'
 import { sceneCommands } from '@/core/scene-commands'
-import { appToastManager } from '@/core/feedback/toast-manager'
-import {
-  announcementStoreForTests,
-  resetAnnouncements,
-} from '@/core/feedback/announcement-store'
 import { deleteSelection } from '@/core/operations/furniture-mutations'
 import { confirmDeleteSelection, openDeleteDialog } from './deletion-actions'
 import { CHAIR } from '@/test/support/furniture'
@@ -37,7 +37,7 @@ beforeEach(() => {
   resetSceneDocumentStore()
   resetSelectionStore()
   resetEditorLifecycleStore()
-  resetAnnouncements()
+  resetFeedbackStore()
   sceneDocumentActions.setHistory(createHistoryState([CHAIR]))
   editorLifecycleActions.markAssetsReady()
 })
@@ -79,7 +79,7 @@ describe('deletion-actions', () => {
       expect.any(Number),
     )
     expect(useSelectionStore.getState().outlinerFocusRequest).toBeNull()
-    expect(announcementStoreForTests.getState().polite.text).toBe(
+    expect(feedbackStoreForTests.getState().polite.text).toBe(
       `${CHAIR.name} removed from room.`,
     )
   })

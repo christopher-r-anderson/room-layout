@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 import { msg } from '@lingui/core/macro'
-import { feedback } from '@/core/feedback/feedback'
+import { feedback } from '@/core/stores/feedback-store'
 import { useSelectedFurniture } from '@/core/operations/selected-furniture'
 import { selectionActions } from '@/core/stores/selection-store'
 import { previewFromCanvasKeyboard } from '@/core/operations/preview-actions'

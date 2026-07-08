@@ -25,7 +25,7 @@ import { useEditorRefs } from '@/shared/providers/editor-refs-context'
 import { Announcer } from './feedback/announcer'
 import { withStartupChunkRetry } from './startup-chunk-retry'
 import { AppToaster } from '@/shared/ui/toast'
-import { appToastManager } from '@/core/feedback/toast-manager'
+import { appToastManager } from '@/core/stores/feedback-store'
 
 // The 3D engine (three/r3f/drei) lives in this lazily-imported chunk so it
 // downloads in parallel with — and never blocks — the initial shell paint.

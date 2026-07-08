@@ -2,9 +2,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { sceneCommands } from '@/core/scene-commands'
 import {
-  announcementStoreForTests,
-  resetAnnouncements,
-} from '@/core/feedback/announcement-store'
+  feedbackStoreForTests,
+  resetFeedbackStore,
+} from '@/core/stores/feedback-store'
 import {
   resetSelectionStore,
   selectionActions,
@@ -23,7 +23,7 @@ vi.mock('./history-mutations', () => ({
   undo: vi.fn(),
 }))
 
-const politeText = () => announcementStoreForTests.getState().polite.text
+const politeText = () => feedbackStoreForTests.getState().polite.text
 
 // The document mutation is mocked, so it will not reconcile the selection
 // pointer itself; these helpers simulate that reconcile inside the mock so the
@@ -38,7 +38,7 @@ function mockUndoReconcilingSelectionTo(selectedId: string | null) {
 beforeEach(() => {
   resetSelectionStore()
   resetEditorLifecycleStore()
-  resetAnnouncements()
+  resetFeedbackStore()
   editorLifecycleActions.markAssetsReady()
 })
 

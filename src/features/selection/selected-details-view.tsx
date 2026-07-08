@@ -6,7 +6,7 @@ import type {
   UpdateSelectedItemDetailsResult,
 } from './selected-item.types'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
-import { feedback } from '@/core/feedback/feedback'
+import { feedback } from '@/core/stores/feedback-store'
 import type { FurnitureItem } from '@/domain/furniture'
 import { cn } from '@/shared/lib/utils'
 import { getWallClearances } from '@/domain/geometry/wall-clearance'

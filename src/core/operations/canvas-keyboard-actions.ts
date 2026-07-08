@@ -1,5 +1,5 @@
 import { sceneCommands } from '@/core/scene-commands'
-import { feedback } from '@/core/feedback/feedback'
+import { feedback } from '@/core/stores/feedback-store'
 import { selectById } from '@/core/operations/selection-actions'
 import { previewFromCanvasKeyboard } from '@/core/operations/preview-actions'
 import { getPreviewedId } from '@/core/operations/previewed-id'

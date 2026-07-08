@@ -1,6 +1,6 @@
 import type { MessageDescriptor } from '@lingui/core'
 import type { RestoreOutcome } from '@/core/stores/editor-lifecycle-store'
-import type { FeedbackMessage } from '@/core/feedback/feedback'
+import type { FeedbackMessage } from '@/core/stores/feedback-store'
 import type { FurnitureInstance } from '@/domain/furniture'
 
 export interface RestorableState {

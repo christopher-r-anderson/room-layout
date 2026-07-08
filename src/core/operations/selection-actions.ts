@@ -6,7 +6,7 @@ import {
   useSelectionStore,
   type InteractionSource,
 } from '@/core/stores/selection-store'
-import { feedback } from '@/core/feedback/feedback'
+import { feedback } from '@/core/stores/feedback-store'
 import { clearPreviewOnCanvasMiss } from '@/core/operations/preview-actions'
 import { sceneCommands } from '@/core/scene-commands'
 import {

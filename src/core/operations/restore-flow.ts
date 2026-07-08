@@ -34,6 +34,14 @@ const INVALID_LINK_CASES = {
   whenDraftFailed: LINK_AND_DRAFT_NOT_RESTORED,
 }
 
+// The link parsed and validated but failed to APPLY - an internal failure, not
+// a malformed link - so the recovered-draft wording stays neutral instead of
+// claiming the link "was invalid".
+const APPLY_FAILED_LINK_CASES = {
+  ...INVALID_LINK_CASES,
+  recoveredMessage: msg`Shared link could not be restored. Recovered your local draft.`,
+}
+
 const UNKNOWN_FURNITURE_LINK_CASES = {
   recoveredMessage: msg`Shared link contained unknown furniture. Draft restored.`,
   whenDraftMissing: {
@@ -177,7 +185,7 @@ export function runStartupRestoreFlow(options: {
         notifications,
         applyState,
         validDraftState,
-        INVALID_LINK_CASES,
+        APPLY_FAILED_LINK_CASES,
       )
     }
     return

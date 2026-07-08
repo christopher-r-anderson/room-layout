@@ -1,7 +1,7 @@
 import {
   useAssertiveAnnouncement,
   usePoliteAnnouncement,
-} from '@/core/feedback/announcement-store'
+} from '@/core/stores/feedback-store'
 
 // Each message renders as a fresh node keyed by its nonce, so repeating the
 // same text is still an "additions" mutation and screen readers re-announce

@@ -1,7 +1,9 @@
+import {
+  appToastManager,
+  feedbackStoreForTests,
+} from '@/core/stores/feedback-store'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { dialogActions } from '@/core/stores/dialog-store'
-import { announcementStoreForTests } from '@/core/feedback/announcement-store'
-import { appToastManager } from '@/core/feedback/toast-manager'
 import { resetSceneToDefaults } from '@/core/operations/scene-reset'
 import { confirmStartOver, startOverIntent } from './start-over-actions'
 
@@ -37,6 +39,6 @@ describe('start-over-actions', () => {
       expect.objectContaining({ title: STARTED_OVER_MESSAGE, type: 'success' }),
     )
     // The toast is the single surface: the old polite announcement is gone.
-    expect(announcementStoreForTests.getState().polite.text).toBe('')
+    expect(feedbackStoreForTests.getState().polite.text).toBe('')
   })
 })

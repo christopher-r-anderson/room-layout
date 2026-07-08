@@ -506,6 +506,9 @@ msgstr "[Śĥàŕēď ĺĩńķ ćōńţàĩńēď ũńŕēćōğńĩźēď ƒũ�
 msgid "Shared link could not be restored."
 msgstr "[Śĥàŕēď ĺĩńķ ćōũĺď ńōţ ƀē ŕēśţōŕēď.āēīōūáéíóúāēīō]"
 
+msgid "Shared link could not be restored. Recovered your local draft."
+msgstr "[Śĥàŕēď ĺĩńķ ćōũĺď ńōţ ƀē ŕēśţōŕēď. Ŕēćōvēŕēď ŷōũŕ ĺōćàĺ ďŕàƒţ.āēīōūáéíóúāēīōūáéíóúāēīōū]"
+
 msgid "Shared link was invalid. Recovered your local draft."
 msgstr "[Śĥàŕēď ĺĩńķ ŵàś ĩńvàĺĩď. Ŕēćōvēŕēď ŷōũŕ ĺōćàĺ ďŕàƒţ.āēīōūáéíóúāēīōūáéíóúā]"
 

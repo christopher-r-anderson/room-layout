@@ -1,5 +1,5 @@
 import { msg } from '@lingui/core/macro'
-import { feedback } from '@/core/feedback/feedback'
+import { feedback } from '@/core/stores/feedback-store'
 import { getSelectedFurniture } from '@/core/operations/selected-furniture'
 import { toolbarInteractionActions } from '@/core/stores/toolbar-interaction-store'
 import { sceneCommands } from '@/core/scene-commands'

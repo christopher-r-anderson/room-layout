@@ -105,12 +105,13 @@ importing the generic bound hook from a feature is an ESLint error - its
 - **`dialog-store`** - generic active-surface dialog state, open/close
   operations, and dialog-open selectors. Model and invariants live in
   [dialogs-and-overlays.md](dialogs-and-overlays.md). Written by dialog actions.
-- **`feedback` (`core/feedback/`)** - the user-feedback API and its surfaces:
-  domain-typed entry points (`feedback.ts`) route each event class to toasts
-  (module-singleton manager) or the SR-only announcement store (polite/
-  assertive channels with a debounced movement variant). Call sites state the
-  event class and never pick surfaces; the routing policy lives in
-  [feedback.md](feedback.md). Written by operations and features.
+- **`feedback-store`** - the user-feedback surface: the `feedback` API's
+  domain-typed entry points route each event class to toasts (the module owns
+  the toast-manager singleton the app shell mounts) or the SR-only
+  announcement channels (polite/assertive with a debounced movement variant).
+  Call sites state the event class and never pick surfaces; the routing
+  policy lives in [feedback.md](feedback.md). Written by operations and
+  features.
 - **`collection-scene-registry`** - the reactive registry of parsed
   furniture-collection scene roots, held opaquely (`unknown`) so core stays
   three-free, plus each node's authored transform as plain data

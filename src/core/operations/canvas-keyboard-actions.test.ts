@@ -4,9 +4,9 @@ import { createHistoryState } from '@/shared/lib/ui/editor-history'
 import type { FurnitureItem } from '@/domain/furniture'
 import { sceneCommands } from '@/core/scene-commands'
 import {
-  announcementStoreForTests,
-  resetAnnouncements,
-} from '@/core/feedback/announcement-store'
+  feedbackStoreForTests,
+  resetFeedbackStore,
+} from '@/core/stores/feedback-store'
 import { selectById } from '@/core/operations/selection-actions'
 import {
   resetSceneDocumentStore,
@@ -46,7 +46,7 @@ function item(id: string): FurnitureItem {
   }
 }
 
-const politeText = () => announcementStoreForTests.getState().polite.text
+const politeText = () => feedbackStoreForTests.getState().polite.text
 
 const SNAPSHOT = {
   items: [
@@ -62,7 +62,7 @@ describe('canvas-keyboard-actions', () => {
     resetSceneSessionStore()
     resetEditorLifecycleStore()
     resetDialogStore()
-    resetAnnouncements()
+    resetFeedbackStore()
     editorLifecycleActions.markAssetsReady()
     sceneDocumentActions.setHistory(
       createHistoryState([item('left'), item('right')]),

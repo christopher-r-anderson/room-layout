@@ -2,14 +2,33 @@
 
 How the editor tells the user something happened: which surfaces exist, which
 event class routes to which surface, and the rules that keep screen-reader
-output trustworthy. The API and routing live in `core/feedback/`; this document
-is normative — the routing table below, `core/feedback/feedback.test.ts`, and
+output trustworthy. The API, routing, and both surface backends live in
+`core/stores/feedback-store.ts`; this document is normative — the routing
+table below, `core/stores/feedback-store.test.ts`, and
 `e2e/feedback-routing.spec.ts` must change together.
+
+The one rule behind every surface: reliable announcement needs an
+always-present live region, so each feedback class uses the nearest one it
+has. Toasts announce through their own always-mounted viewport; SR-only
+feedback shares the Announcer pair; startup overlays self-announce via
+`role="alert"` insertion; inline field errors render their visible text
+conditionally, so their SR interruption borrows the always-mounted assertive
+channel.
+
+```mermaid
+flowchart LR
+  CS["call site<br/>(states the event class)"] --> API["feedback<br/>core/stores/feedback-store.ts"]
+  API -->|"actionSuccess ·<br/>actionWarning · actionError"| TOAST["toast viewport<br/>visual + own live regions"]
+  API -->|"interactionUpdate ·<br/>movementUpdate (180 ms) · formError"| ANN["Announcer<br/>SR-only polite/assertive"]
+  SELF["startup overlays ·<br/>colocated labels (share button, room chip)"] -. "self-announcing, no API call" .-> SR["screen reader"]
+  TOAST --> SR
+  ANN --> SR
+```
 
 ## Surfaces
 
-**Toasts** (`shared/ui/toast.tsx`, Base UI Toast; manager singleton in
-`core/feedback/toast-manager.ts`). The one home for global transient notices:
+**Toasts** (`shared/ui/toast.tsx`, Base UI Toast; the manager singleton lives
+in the feedback store). The one home for global transient notices:
 visual and screen-reader in a single surface. The viewport is a `role="region"`
 landmark labeled "Notifications" with `aria-live="polite"`; high-priority
 toasts additionally render into an always-present visually-hidden `role="alert"`
@@ -32,8 +51,8 @@ node, which is the assertive path. Key mechanics:
 - The viewport label and close label are Lingui strings (Base UI's defaults
   are hardcoded English).
 
-**Announcer** (`app/chrome/feedback/announcer.tsx`, fed by
-`core/feedback/announcement-store.ts`). SR-only live regions for feedback whose
+**Announcer** (`app/chrome/feedback/announcer.tsx`, fed by the feedback
+store's announcement channels). SR-only live regions for feedback whose
 visual outcome is already on screen. One polite and one assertive `aria-live`
 region, both mounted for the app's lifetime (live regions only announce
 reliably when they exist before their first message). Each message renders as
@@ -67,18 +86,19 @@ is either the control's own status semantics or an `interactionUpdate`.
 
 ## The API
 
-`core/feedback/feedback.ts` is the only sanctioned entry point; call sites
-state the domain class of the event and never pick surfaces:
+`feedback` (`core/stores/feedback-store.ts`) is the only sanctioned entry
+point; call sites state the domain class of the event and never pick
+surfaces:
 
-| Entry               | Surfaces                                                         |
-| ------------------- | ---------------------------------------------------------------- |
-| `actionSuccess`     | success toast, priority low (viewport announces politely)        |
-| `actionWarning`     | warning toast, priority low, 8s                                  |
-| `actionError`       | error toast, priority high (assertive), persists until dismissed |
-| `interactionUpdate` | announcer polite, SR-only                                        |
-| `movementUpdate`    | announcer polite, 180 ms debounce, SR-only                       |
-| `formError`         | announcer assertive, SR-only (visible text is caller-owned)      |
-| `reset`             | clears announcer channels + pending debounce (startup retry)     |
+| Entry               | Surfaces                                                                |
+| ------------------- | ----------------------------------------------------------------------- |
+| `actionSuccess`     | success toast, priority low (viewport announces politely)               |
+| `actionWarning`     | warning toast, priority low, 8s                                         |
+| `actionError`       | error toast, priority high (assertive), persists until dismissed        |
+| `interactionUpdate` | announcer polite, SR-only                                               |
+| `movementUpdate`    | announcer polite, 180 ms debounce, SR-only                              |
+| `formError`         | announcer assertive, SR-only (visible text is caller-owned)             |
+| `reset`             | clears announcer channels + debounce, closes all toasts (startup retry) |
 
 Messages arrive already translated (`i18n._(msg\`...\`)`at the call site).
 Toast messages are`{ title, description? }`: the title names the outcome, the
@@ -141,9 +161,8 @@ descending into an exempt element. Rules that follow:
 
 ## Testing
 
-- `core/feedback/announcement-store.test.ts` pins the announcer mechanics
-  (nonce re-announce, movement debounce, reset).
-- `core/feedback/feedback.test.ts` pins the entry → surface routing.
+- `core/stores/feedback-store.test.ts` pins the entry → surface routing and
+  the announcer mechanics (nonce re-announce, movement debounce, reset).
 - `e2e/feedback-routing.spec.ts` pins the table above in the browser, fired
   surface and silent surfaces both.
 - Toast assertions use `e2e/support/toasts.ts` (region landmark + `data-type`);

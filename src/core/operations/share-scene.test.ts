@@ -1,5 +1,10 @@
 // @vitest-environment jsdom
 
+import {
+  appToastManager,
+  feedbackStoreForTests,
+  resetFeedbackStore,
+} from '@/core/stores/feedback-store'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createHistoryState } from '@/shared/lib/ui/editor-history'
 import {
@@ -7,11 +12,6 @@ import {
   sceneDocumentActions,
 } from '@/core/stores/scene-document-store'
 import { serializeSceneToUrl } from '@/core/persistence/scene-url'
-import { appToastManager } from '@/core/feedback/toast-manager'
-import {
-  announcementStoreForTests,
-  resetAnnouncements,
-} from '@/core/feedback/announcement-store'
 import { CHAIR } from '@/test/support/furniture'
 import { shareScene } from './share-scene'
 
@@ -30,8 +30,8 @@ vi.mock('@/core/operations/active-finish-ids', () => ({
 
 const SHARE_URL = 'https://example.com/shared'
 
-const politeText = () => announcementStoreForTests.getState().polite.text
-const assertiveText = () => announcementStoreForTests.getState().assertive.text
+const politeText = () => feedbackStoreForTests.getState().polite.text
+const assertiveText = () => feedbackStoreForTests.getState().assertive.text
 
 function defineNavigator(prop: 'share' | 'canShare', value: unknown) {
   Object.defineProperty(window.navigator, prop, {
@@ -48,7 +48,7 @@ describe('shareScene', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     resetSceneDocumentStore()
-    resetAnnouncements()
+    resetFeedbackStore()
     vi.spyOn(appToastManager, 'add').mockReturnValue('toast-1')
     sceneDocumentActions.setHistory(createHistoryState([CHAIR]))
     serializeSceneToUrlMock.mockReturnValue(SHARE_URL)

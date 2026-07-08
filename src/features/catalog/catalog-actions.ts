@@ -6,7 +6,7 @@ import { sceneCommands } from '@/core/scene-commands'
 import { addFurniture as addFurnitureToDocument } from '@/core/operations/furniture-mutations'
 import { ensureCollectionLoaded } from '@/core/operations/collection-loader'
 import { getCollectionFailureKind } from '@/core/stores/collection-loading-store'
-import { feedback } from '@/core/feedback/feedback'
+import { feedback } from '@/core/stores/feedback-store'
 import { i18n } from '@/shared/i18n/i18n'
 import {
   ADD_FURNITURE_LOAD_FAILED_MESSAGE,

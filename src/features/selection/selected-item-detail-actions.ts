@@ -1,7 +1,7 @@
 import { msg } from '@lingui/core/macro'
 import { resolvePositionFromWallClearances } from '@/domain/geometry/wall-clearance'
 import { i18n } from '@/shared/i18n/i18n'
-import { feedback } from '@/core/feedback/feedback'
+import { feedback } from '@/core/stores/feedback-store'
 import { getSelectedFurniture } from '@/core/operations/selected-furniture'
 import { applySelection } from '@/core/operations/selection-mutations'
 import { sceneCommands } from '@/core/scene-commands'

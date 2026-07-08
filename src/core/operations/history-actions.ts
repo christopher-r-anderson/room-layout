@@ -1,5 +1,5 @@
 import { msg } from '@lingui/core/macro'
-import { feedback } from '@/core/feedback/feedback'
+import { feedback } from '@/core/stores/feedback-store'
 import {
   selectionActions,
   useSelectionStore,
