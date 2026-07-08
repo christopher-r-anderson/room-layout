@@ -188,7 +188,11 @@ Safari) whenever feedback surfaces change:
    repeat on later actions.
 6. Type `1.2x` into a placement field and press Enter: the error announces,
    focus stays in the field, the error text is discoverable through the
-   field's description.
+   field's description. Then fix the value and browse the live regions with
+   the virtual cursor: the announcer keeps the last message's text (it is a
+   transcript of the last announcement, not a state mirror) — judge whether
+   stale browse-mode text confuses; if it does, the fix is a clear-after-
+   announce timer in `announcement-store`, not per-consumer clearing.
 7. Undo, then Start over: polite/success announcements once each; the success
    toast auto-dismisses without a second announcement.
 8. Confirm the announced toast text matches the visible toast text.
