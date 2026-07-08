@@ -178,6 +178,10 @@ msgstr "Clear selection"
 msgid "Close"
 msgstr "Close"
 
+#: src/shared/ui/toast.tsx
+msgid "Close notification"
+msgstr "Close notification"
+
 #: src/features/room-surface/room-sidebar.tsx
 msgid "Close room panel"
 msgstr "Close room panel"
@@ -432,7 +436,7 @@ msgstr "No selected furniture item was available to delete."
 msgid "Notes/Modifications"
 msgstr "Notes/Modifications"
 
-#: src/app/chrome/editor-body.tsx
+#: src/shared/ui/toast.tsx
 msgid "Notifications"
 msgstr "Notifications"
 

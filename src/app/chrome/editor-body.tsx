@@ -24,7 +24,8 @@ import { APP_NAME } from '@/shared/messages/app-identity'
 import { useEditorRefs } from '@/shared/providers/editor-refs-context'
 import { Announcer } from './feedback/announcer'
 import { withStartupChunkRetry } from './startup-chunk-retry'
-import { Toaster } from '@/shared/ui/sonner'
+import { AppToaster } from '@/shared/ui/toast'
+import { appToastManager } from '@/core/feedback/toast-manager'
 
 // The 3D engine (three/r3f/drei) lives in this lazily-imported chunk so it
 // downloads in parallel with — and never blocks — the initial shell paint.
@@ -192,8 +193,7 @@ export function EditorBody({ testOverlaysHidden }: EditorBodyProps) {
           />
         ) : null}
         <Announcer />
-        {/* Sonner's toast region label defaults to hardcoded English. */}
-        <Toaster containerAriaLabel={t`Notifications`} />
+        <AppToaster toastManager={appToastManager} />
       </main>
     </div>
   )

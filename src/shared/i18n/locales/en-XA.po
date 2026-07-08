@@ -127,6 +127,9 @@ msgstr "[Ćĺēàŕ śēĺēćţĩōńāēīōūáéíóúā]"
 msgid "Close"
 msgstr "[Ćĺōśēāēīōū]"
 
+msgid "Close notification"
+msgstr "[Ćĺōśē ńōţĩƒĩćàţĩōńāēīōūáéíóúāēī]"
+
 msgid "Close room panel"
 msgstr "[Ćĺōśē ŕōōḿ ƥàńēĺāēīōūáéíóúāē]"
 

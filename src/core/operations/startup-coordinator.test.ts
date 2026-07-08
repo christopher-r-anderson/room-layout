@@ -8,6 +8,7 @@ import {
 import { resetAssetsStore } from '../stores/assets-store'
 import { dialogActions } from '../stores/dialog-store'
 import { feedbackActions } from '../stores/feedback-store'
+import { appToastManager } from '@/core/feedback/toast-manager'
 import {
   resetSelectionStore,
   selectionActions,
@@ -59,14 +60,6 @@ vi.mock('@/core/scene-services', async (importOriginal) => ({
   clearSceneServices: vi.fn(),
 }))
 
-vi.mock('sonner', () => ({
-  toast: {
-    success: vi.fn(),
-    warning: vi.fn(),
-    error: vi.fn(),
-  },
-}))
-
 beforeEach(() => {
   resetEditorLifecycleStore()
   resetAssetsStore()
@@ -108,6 +101,7 @@ describe('startup-coordinator', () => {
 
   it('records the asset error, resets the shell, and announces on asset error', () => {
     const closeActiveDialog = vi.spyOn(dialogActions, 'closeActiveDialog')
+    const addToast = vi.spyOn(appToastManager, 'add').mockReturnValue('toast-1')
     seedSceneSessionState()
 
     notifyAssetError(new Error('boom'))
@@ -125,6 +119,12 @@ describe('startup-coordinator', () => {
     })
     expect(feedbackActions.announceAssertive).toHaveBeenCalledWith(
       'Unable to load room editor assets. Retry available.',
+    )
+    expect(addToast).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: 'Unable to load room editor assets. Retry available.',
+        type: 'error',
+      }),
     )
   })
 

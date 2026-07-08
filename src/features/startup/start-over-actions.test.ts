@@ -1,16 +1,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { dialogActions } from '@/core/stores/dialog-store'
 import { feedbackActions } from '@/core/stores/feedback-store'
+import { appToastManager } from '@/core/feedback/toast-manager'
 import { resetSceneToDefaults } from '@/core/operations/scene-reset'
-import { toast } from 'sonner'
 import { confirmStartOver, startOverIntent } from './start-over-actions'
 
 vi.mock('@/core/operations/scene-reset', () => ({
   resetSceneToDefaults: vi.fn(),
-}))
-
-vi.mock('sonner', () => ({
-  toast: { success: vi.fn() },
 }))
 
 const STARTED_OVER_MESSAGE = 'Started over. Your changes were cleared.'
@@ -44,12 +40,15 @@ describe('start-over-actions', () => {
     const announce = vi
       .spyOn(feedbackActions, 'announcePolite')
       .mockReturnValue(undefined)
+    const addToast = vi.spyOn(appToastManager, 'add').mockReturnValue('toast-1')
 
     confirmStartOver()
 
     expect(close).toHaveBeenCalledTimes(1)
     expect(resetSceneToDefaults).toHaveBeenCalledTimes(1)
     expect(announce).toHaveBeenCalledWith(STARTED_OVER_MESSAGE)
-    expect(toast.success).toHaveBeenCalledWith(STARTED_OVER_MESSAGE)
+    expect(addToast).toHaveBeenCalledWith(
+      expect.objectContaining({ title: STARTED_OVER_MESSAGE, type: 'success' }),
+    )
   })
 })

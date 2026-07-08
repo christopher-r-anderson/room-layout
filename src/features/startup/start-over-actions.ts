@@ -1,6 +1,6 @@
 import { msg } from '@lingui/core/macro'
-import { toast } from 'sonner'
 import { dialogActions } from '@/core/stores/dialog-store'
+import { feedback } from '@/core/feedback/feedback'
 import { feedbackActions } from '@/core/stores/feedback-store'
 import { resetSceneToDefaults } from '@/core/operations/scene-reset'
 import { i18n } from '@/shared/i18n/i18n'
@@ -29,5 +29,5 @@ export function confirmStartOver() {
   resetSceneToDefaults()
   const startedOver = i18n._(msg`Started over. Your changes were cleared.`)
   feedbackActions.announcePolite(startedOver)
-  toast.success(startedOver)
+  feedback.actionSuccess({ title: startedOver })
 }
