@@ -35,6 +35,10 @@ function ToastList() {
           'transition-[translate,opacity] duration-100 data-[swiping]:transition-none motion-reduce:transition-none',
           'data-starting-style:translate-y-2 data-starting-style:opacity-0 data-ending-style:opacity-0',
           'data-[type=error]:not-focus-visible:ring-destructive/40',
+          // Over-limit toasts stay in Base UI's list as inert placeholders
+          // (data-limited) until slots free up; hide them so the stack never
+          // shows a notification that cannot be focused or dismissed.
+          'data-limited:hidden',
         )}
       >
         <Icon

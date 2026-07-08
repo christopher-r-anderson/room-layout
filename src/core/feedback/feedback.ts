@@ -10,8 +10,8 @@ const WARNING_TIMEOUT_MS = 8_000
 
 /**
  * The sanctioned entry points for user feedback. Call sites state the domain
- * class of the event; the surface routing lives here, per the policy in
- * docs/architecture/feedback.md. Messages arrive already translated.
+ * class of the event; the surface routing lives here. Messages arrive already
+ * translated.
  */
 export const feedback = {
   /** Outcome notice for a completed global action. Auto-dismisses. */
