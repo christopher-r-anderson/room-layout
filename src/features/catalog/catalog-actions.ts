@@ -1,5 +1,4 @@
 import { dialogActions } from '@/core/stores/dialog-store'
-import { feedbackActions } from '@/core/stores/feedback-store'
 import { getSourcePathForCatalogId } from '@/core/stores/assets-store'
 import { getItems } from '@/core/stores/scene-document-store'
 import { announceSelectionChange } from '@/core/operations/selection-actions'
@@ -90,18 +89,13 @@ export async function addFurniture(): Promise<boolean> {
   return true
 }
 
-// Add failures surface as an error toast plus an assertive announcement while
-// the drawer is open (the status region sits under the drawer overlay); both
-// survive the drawer's aria-hiding, which exempts aria-live regions.
+// An error toast reaches users even while the drawer is open: the toast
+// viewport portals to body above the drawer, and its live regions survive the
+// drawer's aria-hiding.
 function reportAddFailure(message: string) {
   feedback.actionError({ title: message })
-  feedbackActions.announceAssertive(message)
 }
 
 export function setCatalogDrawerOpen(open: boolean) {
-  const changed = dialogActions.setDialogOpen(CATALOG_DIALOG_ID, open)
-
-  if (open && changed) {
-    feedbackActions.clearStatusMessage()
-  }
+  dialogActions.setDialogOpen(CATALOG_DIALOG_ID, open)
 }

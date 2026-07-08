@@ -307,10 +307,6 @@ test('malformed selected item detail edits announce failure and keep the draft v
     name: 'Placement',
   })
   const visualSupportMessage = detailsPanel.locator('p[aria-hidden="true"]')
-  const localAssertiveAnnouncement = detailsPanel.locator(
-    '[aria-live="assertive"]',
-  )
-  const globalAssertiveBefore = await readAssertiveAnnouncement(page)
 
   await xInput.fill('1.2x')
   await xInput.press('Enter')
@@ -321,12 +317,11 @@ test('malformed selected item detail edits announce failure and keep the draft v
       hasText: 'Distance from left wall (m) must be a valid number.',
     }),
   ).toBeVisible()
-  await expect(localAssertiveAnnouncement).toHaveText(
-    'Distance from left wall (m) must be a valid number.',
-  )
+  // The panel has no local live region; the failure announces on the app's
+  // global assertive channel.
   await expect
     .poll(async () => readAssertiveAnnouncement(page))
-    .toBe(globalAssertiveBefore)
+    .toBe('Distance from left wall (m) must be a valid number.')
 })
 
 test('selected item controls are suppressed from tab order while the catalog drawer is open', async ({

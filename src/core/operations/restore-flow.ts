@@ -16,54 +16,31 @@ import type {
 
 // Copy tables for the invalid-link fallback branches. Descriptors resolve in
 // the report helpers at fire-time, so only the branch actually taken is
-// translated. The wording differences between tables are deliberate: the toast
-// names the specific failure (invalid vs unknown furniture) while the
-// status/announcement wording stays uniform.
-const LINK_NOT_RESTORED_EMPTY_ROOM = msg`Shared link could not be restored. Starting with an empty room.`
+// translated. Titles name the specific failure (invalid vs unknown furniture);
+// the shared description states the consequence.
+const STARTING_WITH_EMPTY_ROOM = msg`Starting with an empty room.`
 
-const LINK_AND_DRAFT_NOT_RESTORED_EMPTY_ROOM = msg`Shared link and draft could not be restored. Starting with an empty room.`
-
-const LINK_AND_DRAFT_NOT_RESTORED = msg`Shared link and draft could not be restored.`
-
-const WHEN_DRAFT_MISSING: InvalidRestoreCase = {
-  statusMessage: LINK_NOT_RESTORED_EMPTY_ROOM,
-  assertiveMessage: LINK_NOT_RESTORED_EMPTY_ROOM,
-  toastMessage: msg`Shared link could not be restored.`,
+const LINK_AND_DRAFT_NOT_RESTORED: InvalidRestoreCase = {
+  title: msg`Shared link and draft could not be restored.`,
+  description: STARTING_WITH_EMPTY_ROOM,
 }
 
 const INVALID_LINK_CASES = {
-  recoveredToastMessage: msg`Shared link was invalid. Recovered your local draft.`,
-  whenDraftMissing: WHEN_DRAFT_MISSING,
-  whenDraftFailed: {
-    statusMessage: msg`Shared link was invalid. Draft also failed to restore. Starting with an empty room.`,
-    assertiveMessage: LINK_AND_DRAFT_NOT_RESTORED_EMPTY_ROOM,
-    toastMessage: LINK_AND_DRAFT_NOT_RESTORED,
+  recoveredMessage: msg`Shared link was invalid. Recovered your local draft.`,
+  whenDraftMissing: {
+    title: msg`Shared link could not be restored.`,
+    description: STARTING_WITH_EMPTY_ROOM,
   },
-}
-
-// Same shape as INVALID_LINK_CASES, but the link parsed and then failed to
-// apply, so the draft-failed status says "could not be restored" rather than
-// "was invalid".
-const APPLY_FAILED_LINK_CASES = {
-  ...INVALID_LINK_CASES,
-  whenDraftFailed: {
-    ...INVALID_LINK_CASES.whenDraftFailed,
-    statusMessage: msg`Shared link could not be restored. Draft also failed to restore. Starting with an empty room.`,
-  },
+  whenDraftFailed: LINK_AND_DRAFT_NOT_RESTORED,
 }
 
 const UNKNOWN_FURNITURE_LINK_CASES = {
-  recoveredToastMessage: msg`Shared link contained unknown furniture. Draft restored.`,
+  recoveredMessage: msg`Shared link contained unknown furniture. Draft restored.`,
   whenDraftMissing: {
-    statusMessage: msg`Shared link contained unrecognized furniture. Starting with an empty room.`,
-    assertiveMessage: LINK_NOT_RESTORED_EMPTY_ROOM,
-    toastMessage: msg`Shared link contained unrecognized furniture.`,
+    title: msg`Shared link contained unrecognized furniture.`,
+    description: STARTING_WITH_EMPTY_ROOM,
   },
-  whenDraftFailed: {
-    statusMessage: msg`Shared link had unknown furniture. Draft also failed to restore. Starting with an empty room.`,
-    assertiveMessage: LINK_AND_DRAFT_NOT_RESTORED_EMPTY_ROOM,
-    toastMessage: LINK_AND_DRAFT_NOT_RESTORED,
-  },
+  whenDraftFailed: LINK_AND_DRAFT_NOT_RESTORED,
 }
 
 function tryRestoreDraft(
@@ -87,22 +64,18 @@ function reportInvalidRestore(
   invalidCase: InvalidRestoreCase,
 ) {
   notifications.setRestoreOutcome('invalid')
-  notifications.setStatusMessage(i18n._(invalidCase.statusMessage))
-  notifications.announceAssertive(i18n._(invalidCase.assertiveMessage))
-  notifications.toastError(i18n._(invalidCase.toastMessage))
+  notifications.actionError({
+    title: i18n._(invalidCase.title),
+    description: i18n._(invalidCase.description),
+  })
 }
 
 function reportRecoveredDraftAfterInvalidLink(
   notifications: RestoreFlowNotifications,
-  toastMessage: MessageDescriptor,
+  recoveredMessage: MessageDescriptor,
 ) {
-  const recoveredMessage = i18n._(
-    msg`Shared link could not be restored. Recovered your local draft.`,
-  )
   notifications.setRestoreOutcome('invalid')
-  notifications.setStatusMessage(recoveredMessage)
-  notifications.announceAssertive(recoveredMessage)
-  notifications.toastWarning(i18n._(toastMessage))
+  notifications.actionWarning({ title: i18n._(recoveredMessage) })
 }
 
 function restoreFromInvalidLinkWithDraftFallback(
@@ -110,7 +83,7 @@ function restoreFromInvalidLinkWithDraftFallback(
   applyState: (state: RestorableState) => void,
   draftState: RestorableState | null,
   options: {
-    recoveredToastMessage: MessageDescriptor
+    recoveredMessage: MessageDescriptor
     whenDraftMissing: InvalidRestoreCase
     whenDraftFailed: InvalidRestoreCase
   },
@@ -120,7 +93,7 @@ function restoreFromInvalidLinkWithDraftFallback(
   if (draftRestore === 'restored') {
     reportRecoveredDraftAfterInvalidLink(
       notifications,
-      options.recoveredToastMessage,
+      options.recoveredMessage,
     )
     return
   }
@@ -196,17 +169,15 @@ export function runStartupRestoreFlow(options: {
     try {
       applyState(primary.state)
       notifications.setRestoreOutcome('restored')
-      const restoredFromLink = i18n._(
-        msg`Room layout restored from shared link.`,
-      )
-      notifications.announcePolite(restoredFromLink)
-      notifications.toastSuccess(restoredFromLink)
+      notifications.actionSuccess({
+        title: i18n._(msg`Room layout restored from shared link.`),
+      })
     } catch {
       restoreFromInvalidLinkWithDraftFallback(
         notifications,
         applyState,
         validDraftState,
-        APPLY_FAILED_LINK_CASES,
+        INVALID_LINK_CASES,
       )
     }
     return
@@ -237,15 +208,14 @@ export function runStartupRestoreFlow(options: {
     try {
       applyState(validDraftState)
       if (!isFreshState(validDraftState)) {
-        const restoredDraft = i18n._(msg`Restored your saved draft.`)
-        notifications.announcePolite(restoredDraft)
-        notifications.toastSuccess(restoredDraft)
+        notifications.actionSuccess({
+          title: i18n._(msg`Restored your saved draft.`),
+        })
       }
     } catch {
       reportInvalidRestore(notifications, {
-        statusMessage: msg`Draft failed to restore. Starting with an empty room.`,
-        assertiveMessage: msg`Draft could not be restored. Starting with an empty room.`,
-        toastMessage: msg`Draft could not be restored.`,
+        title: msg`Draft could not be restored.`,
+        description: STARTING_WITH_EMPTY_ROOM,
       })
       return
     }

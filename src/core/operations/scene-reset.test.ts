@@ -9,7 +9,10 @@ import {
   useSceneDocumentStore,
 } from '@/core/stores/scene-document-store'
 import { sceneCommands } from '@/core/scene-commands'
-import { feedbackActions } from '@/core/stores/feedback-store'
+import {
+  announcementStoreForTests,
+  resetAnnouncements,
+} from '@/core/feedback/announcement-store'
 import { restoreInitialLayout } from '@/core/operations/history-mutations'
 import { loadSceneDraft, saveSceneDraft } from '@/core/persistence/scene-draft'
 import { CHAIR } from '@/test/support/furniture'
@@ -41,6 +44,7 @@ function loadEnvironment() {
 beforeEach(() => {
   resetAssetsStore()
   resetSceneDocumentStore()
+  resetAnnouncements()
   window.localStorage.clear()
 
   vi.spyOn(sceneCommands, 'setCameraPreset').mockImplementation(() => undefined)
@@ -111,13 +115,12 @@ describe('resetSceneToDefaults', () => {
 
   it('clears the layout silently, without a selection announcement', () => {
     loadEnvironment()
-    const announcePolite = vi.spyOn(feedbackActions, 'announcePolite')
 
     resetSceneToDefaults()
 
     // restoreInitialLayout clears the selection pointer itself; the reset must
     // not announce that clear.
     expect(restoreInitialLayout).toHaveBeenCalledWith([])
-    expect(announcePolite).not.toHaveBeenCalled()
+    expect(announcementStoreForTests.getState().polite.text).toBe('')
   })
 })

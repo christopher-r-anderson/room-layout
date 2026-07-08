@@ -227,14 +227,6 @@ msgstr "Distance from left wall (m)"
 msgid "Draft could not be restored."
 msgstr "Draft could not be restored."
 
-#: src/core/operations/restore-flow.ts
-msgid "Draft could not be restored. Starting with an empty room."
-msgstr "Draft could not be restored. Starting with an empty room."
-
-#: src/core/operations/restore-flow.ts
-msgid "Draft failed to restore. Starting with an empty room."
-msgstr "Draft failed to restore. Starting with an empty room."
-
 #: src/features/selection/selected-details-view.tsx
 msgid "Edit the selected item."
 msgstr "Edit the selected item."
@@ -247,10 +239,6 @@ msgstr "Editor actions"
 #: src/features/startup/initialization-error.tsx
 msgid "Editor failed to load"
 msgstr "Editor failed to load"
-
-#: src/app/chrome/feedback/status-message.tsx
-msgid "Editor status"
-msgstr "Editor status"
 
 #: src/shared/messages/command-messages.ts
 msgid "Finish dragging before adding furniture."
@@ -283,6 +271,10 @@ msgstr "Focus Furniture in room"
 #: src/features/keyboard/keyboard-shortcuts.definitions.ts
 msgid "Focus inspector"
 msgstr "Focus inspector"
+
+#: src/features/keyboard/keyboard-shortcuts.definitions.ts
+msgid "Focus notifications"
+msgstr "Focus notifications"
 
 #: src/features/keyboard/keyboard-shortcuts.definitions.ts
 msgid "Focus room view"
@@ -415,6 +407,10 @@ msgstr "No furniture in the room."
 #: src/features/camera/camera-tools.tsx
 msgid "No item selected"
 msgstr "No item selected"
+
+#: src/app/commands/use-editor-focus-commands.ts
+msgid "No item selected. Focus moved to Furniture in room."
+msgstr "No item selected. Focus moved to Furniture in room."
 
 #: src/features/history/history-tools.tsx
 msgid "No next history"
@@ -692,10 +688,6 @@ msgid "Shared link and draft could not be restored."
 msgstr "Shared link and draft could not be restored."
 
 #: src/core/operations/restore-flow.ts
-msgid "Shared link and draft could not be restored. Starting with an empty room."
-msgstr "Shared link and draft could not be restored. Starting with an empty room."
-
-#: src/core/operations/restore-flow.ts
 msgid "Shared link contained unknown furniture. Draft restored."
 msgstr "Shared link contained unknown furniture. Draft restored."
 
@@ -704,32 +696,8 @@ msgid "Shared link contained unrecognized furniture."
 msgstr "Shared link contained unrecognized furniture."
 
 #: src/core/operations/restore-flow.ts
-msgid "Shared link contained unrecognized furniture. Starting with an empty room."
-msgstr "Shared link contained unrecognized furniture. Starting with an empty room."
-
-#: src/core/operations/restore-flow.ts
 msgid "Shared link could not be restored."
 msgstr "Shared link could not be restored."
-
-#: src/core/operations/restore-flow.ts
-msgid "Shared link could not be restored. Draft also failed to restore. Starting with an empty room."
-msgstr "Shared link could not be restored. Draft also failed to restore. Starting with an empty room."
-
-#: src/core/operations/restore-flow.ts
-msgid "Shared link could not be restored. Recovered your local draft."
-msgstr "Shared link could not be restored. Recovered your local draft."
-
-#: src/core/operations/restore-flow.ts
-msgid "Shared link could not be restored. Starting with an empty room."
-msgstr "Shared link could not be restored. Starting with an empty room."
-
-#: src/core/operations/restore-flow.ts
-msgid "Shared link had unknown furniture. Draft also failed to restore. Starting with an empty room."
-msgstr "Shared link had unknown furniture. Draft also failed to restore. Starting with an empty room."
-
-#: src/core/operations/restore-flow.ts
-msgid "Shared link was invalid. Draft also failed to restore. Starting with an empty room."
-msgstr "Shared link was invalid. Draft also failed to restore. Starting with an empty room."
 
 #: src/core/operations/restore-flow.ts
 msgid "Shared link was invalid. Recovered your local draft."
@@ -766,6 +734,10 @@ msgstr "Start over?"
 #: src/features/startup/start-over-actions.ts
 msgid "Started over. Your changes were cleared."
 msgstr "Started over. Your changes were cleared."
+
+#: src/core/operations/restore-flow.ts
+msgid "Starting with an empty room."
+msgstr "Starting with an empty room."
 
 #: src/features/startup/initialization-error.tsx
 msgid "Startup failed"
@@ -835,10 +807,6 @@ msgstr "Toggle furniture list visibility"
 #: src/features/keyboard/keyboard-shortcuts.definitions.ts
 msgid "Top"
 msgstr "Top"
-
-#: src/core/operations/startup-coordinator.ts
-msgid "Unable to load room editor assets. Retry available."
-msgstr "Unable to load room editor assets. Retry available."
 
 #: src/features/catalog/catalog-drawer.tsx
 msgid "Unavailable"

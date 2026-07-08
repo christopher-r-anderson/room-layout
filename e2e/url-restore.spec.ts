@@ -3,14 +3,14 @@
  *
  * Covers:
  *  - Successful restore from a valid `?scene=` param
- *  - Invalid payload shows error message and leaves scene empty
+ *  - Invalid payload raises an error toast and leaves scene empty
  *  - One-shot guard: restore only fires once across asset retry
  *  - Share button falls back to clipboard copy and announces success
  *  - Selection is cleared after restore
  *  - Full round-trip: copy URL in app → navigate to it → scene restored
  *  - Draft auto-save to localStorage on furniture changes
  *  - Draft persistence across page reloads
- *  - Error scenarios: scene too large, clipboard failures, invalid scenes
+ *  - Error scenarios: clipboard failures, invalid scenes
  */
 import { expect, test, type Page } from '@playwright/test'
 import type { FurnitureInstance } from '../src/domain/furniture'
@@ -24,6 +24,7 @@ import {
   waitForPoliteAnnouncement,
   failFurnitureAssetRequestsUntilRetry,
 } from './support/editor-harness'
+import { expectNoToasts, readToastTexts, waitForToast } from './support/toasts'
 
 // ---------------------------------------------------------------------------
 // Type definitions
@@ -262,12 +263,11 @@ test('normalizes unknown finish IDs from ?scene= so a reloaded empty room stays 
 
   expect(reloadedState.itemCount).toBe(0)
   expect(reloadedState.restoreOutcome).toBe('skipped')
-  await expect
-    .poll(async () => readPoliteAnnouncement(page))
-    .not.toBe('Restored your saved draft.')
+  // A fresh reloaded room restores silently - no draft-restored success toast.
+  await expectNoToasts(page)
 })
 
-test('shows error message and marks outcome invalid for a malformed ?scene= param', async ({
+test('shows an error toast and marks outcome invalid for a malformed ?scene= param', async ({
   page,
 }) => {
   await page.goto('/?scene=notjson!!!')
@@ -276,12 +276,12 @@ test('shows error message and marks outcome invalid for a malformed ?scene= para
   expect(state.itemCount).toBe(0)
   expect(state.restoreOutcome).toBe('invalid')
 
-  // An error message should be visible to the user
-  await expect(
-    page
-      .getByRole('status')
-      .filter({ hasText: 'Shared link could not be restored' }),
-  ).toBeVisible()
+  // The failure surfaces as a persistent error toast stating the consequence.
+  const toast = await waitForToast(page, {
+    text: 'Shared link could not be restored.',
+    type: 'error',
+  })
+  await expect(toast).toContainText('Starting with an empty room.')
 })
 
 test('one-shot guard: restore only fires once across asset-error retry', async ({
@@ -388,53 +388,6 @@ test('invalid shared link falls back to local draft when available', async ({
   expect(state.items[0].catalogId).toBe('armchair-1')
   expect(state.floorFinishId).toBe('granite-tile')
   expect(state.wallFinishId).toBe('sage-green')
-})
-
-test('error message clears on undo after restore-invalid', async ({ page }) => {
-  // Start with invalid scene URL so an error message appears
-  await page.goto('/?scene=notjson!!!')
-  await waitForEditorReady(page)
-
-  const statusRegion = page.getByRole('status', { name: 'Editor status' })
-  await expect(statusRegion).toContainText('Shared link could not be restored')
-
-  // Undo should clear the message (even though there's nothing to undo)
-  await page.keyboard.press('Control+z')
-
-  // The status element should be empty or gone
-  await expect
-    .poll(async () => {
-      return statusRegion.textContent()
-    })
-    .toBe('')
-})
-
-test('error message clears on add furniture after restore-invalid', async ({
-  page,
-}) => {
-  await page.goto('/?scene=notjson!!!')
-  await waitForEditorReady(page)
-  const restoreStatus = page
-    .getByRole('status', { name: 'Editor status' })
-    .filter({ hasText: 'Shared link could not be restored' })
-  await expect(restoreStatus).toBeVisible()
-
-  const addBtn = page.getByRole('button', { name: 'Add Furniture' })
-  await addBtn.click()
-
-  // Clicking a catalog item from the drawer should clear the message
-  const drawerItem = page
-    .getByRole('button', { name: /leather armchair/i })
-    .first()
-  if (await drawerItem.isVisible()) {
-    await drawerItem.click()
-    await expect
-      .poll(async () => {
-        const text = await restoreStatus.textContent().catch(() => null)
-        return text === null || text.trim() === '' ? 'cleared' : 'set'
-      })
-      .toBe('cleared')
-  }
 })
 
 // ---------------------------------------------------------------------------
@@ -595,9 +548,8 @@ test('start over clears the saved draft so reload stays fresh', async ({
 
   expect(reloadedState.itemCount).toBe(0)
   expect(reloadedState.restoreOutcome).toBe('skipped')
-  await expect
-    .poll(async () => readPoliteAnnouncement(page))
-    .not.toBe('Restored your saved draft.')
+  // The cleared draft restores silently - no draft-restored success toast.
+  await expectNoToasts(page)
 })
 
 // ---------------------------------------------------------------------------
@@ -617,28 +569,11 @@ test('handles clipboard API failure gracefully when permission denied', async ({
   })
   await copyBtn.click()
 
-  // Should show an error message about clipboard failure
-  const statusRegion = page.getByRole('status', { name: 'Editor status' })
-  await expect(statusRegion).toContainText('Could not copy URL to clipboard', {
-    timeout: 5_000,
+  // The clipboard failure surfaces as a persistent error toast.
+  await waitForToast(page, {
+    text: 'Could not copy URL to clipboard.',
+    type: 'error',
   })
-})
-
-test('clears error message when furniture is added after failed restore', async ({
-  page,
-}) => {
-  // Start with invalid scene URL
-  await page.goto('/?scene=invalid!!!')
-  await waitForEditorReady(page)
-
-  const statusRegion = page.getByRole('status', { name: 'Editor status' })
-  await expect(statusRegion).toContainText('Shared link could not be restored')
-
-  // Add furniture via UI
-  await addFurniture(page, 'Leather Armchair')
-
-  // Error message should clear
-  await expect(statusRegion).toBeEmpty({ timeout: 5_000 })
 })
 
 test('handles draft with valid catalog reference but non-finite position gracefully', async ({
@@ -693,9 +628,9 @@ test('empty draft restores silently without showing success toast on reload', as
   const stateInitial = await readSceneState(page)
   expect(stateInitial.itemCount).toBe(0)
 
-  // Let any startup status message clear before reloading, so the post-reload
-  // silence check is not polluted by a leftover message.
-  await expect(page.getByRole('status', { name: 'Editor status' })).toBeEmpty()
+  // A fresh empty startup raises no feedback that could pollute the
+  // post-reload silence check.
+  await expectNoToasts(page)
 
   // Reload the page - this will trigger draft restoration from localStorage
   await page.reload()
@@ -705,28 +640,25 @@ test('empty draft restores silently without showing success toast on reload', as
   expect(stateAfter.itemCount).toBe(0)
   expect(stateAfter.restoreOutcome).toBe('skipped')
 
-  // Verify startup restore remains silent for empty drafts by checking only
-  // restore-specific messaging channels/text, not unrelated status/alerts.
+  // Verify startup restore remains silent for empty drafts: no toast at all,
+  // and no restore messaging on either announcer channel.
   await expect
     .poll(
       async () => {
         const polite = await readPoliteAnnouncement(page)
         const assertive = await readAssertiveAnnouncement(page)
-        const editorStatusText =
-          (await page
-            .getByRole('status', { name: 'Editor status' })
-            .textContent()
-            .catch(() => null)) ?? ''
+        const toastTexts = await readToastTexts(page)
 
         const restoreStrings = [
+          'Restored your saved draft.',
           'Recovered your local draft.',
           'Shared link could not be restored',
         ]
 
         const hasRestoreMessage =
+          toastTexts.length > 0 ||
           restoreStrings.some((text) => polite.includes(text)) ||
-          restoreStrings.some((text) => assertive.includes(text)) ||
-          restoreStrings.some((text) => editorStatusText.includes(text))
+          restoreStrings.some((text) => assertive.includes(text))
 
         return hasRestoreMessage
       },

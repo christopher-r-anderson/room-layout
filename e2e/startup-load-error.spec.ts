@@ -8,6 +8,7 @@ import {
   readPerfCounters,
   waitForEditorReady,
 } from './support/editor-harness'
+import { expectNoToasts } from './support/toasts'
 
 test("shows a retry path when a restored scene's furniture assets fail to load", async ({
   page,
@@ -28,6 +29,10 @@ test("shows a retry path when a restored scene's furniture assets fail to load",
     assetsReady: false,
     assetError: true,
   })
+
+  // The overlay (role=alert, autofocused Retry) is the only feedback surface
+  // for a startup-fatal error - no toast doubles it.
+  await expectNoToasts(page)
 
   const retryButton = page.getByRole('button', { name: 'Retry Loading' })
   await expect(retryButton).toBeVisible()

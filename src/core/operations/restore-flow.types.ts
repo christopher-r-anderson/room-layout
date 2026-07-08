@@ -1,5 +1,6 @@
 import type { MessageDescriptor } from '@lingui/core'
 import type { RestoreOutcome } from '@/core/stores/editor-lifecycle-store'
+import type { FeedbackMessage } from '@/core/feedback/feedback'
 import type { FurnitureInstance } from '@/domain/furniture'
 
 export interface RestorableState {
@@ -11,20 +12,19 @@ export interface RestorableState {
 
 export type DraftRestoreAttempt = 'restored' | 'failed' | 'missing'
 
+// Injected feedback seam, speaking the feedback API's vocabulary so the flow
+// states outcomes and cannot pick surfaces ad hoc.
 export interface RestoreFlowNotifications {
-  announcePolite: (message: string) => void
-  announceAssertive: (message: string) => void
-  setStatusMessage: (message: string) => void
   setRestoreOutcome: (outcome: RestoreOutcome) => void
-  toastSuccess: (message: string) => void
-  toastWarning: (message: string) => void
-  toastError: (message: string) => void
+  actionSuccess: (message: FeedbackMessage) => void
+  actionWarning: (message: FeedbackMessage) => void
+  actionError: (message: FeedbackMessage) => void
 }
 
 // Message descriptors, not resolved strings: the report helpers translate them
 // with `i18n._()` at fire-time, so only the branch actually taken resolves.
+// `title` names the specific failure; `description` states the consequence.
 export interface InvalidRestoreCase {
-  statusMessage: MessageDescriptor
-  assertiveMessage: MessageDescriptor
-  toastMessage: MessageDescriptor
+  title: MessageDescriptor
+  description: MessageDescriptor
 }

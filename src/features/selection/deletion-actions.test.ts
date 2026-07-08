@@ -16,7 +16,11 @@ import {
 } from '@/core/stores/editor-lifecycle-store'
 import { dialogActions } from '@/core/stores/dialog-store'
 import { sceneCommands } from '@/core/scene-commands'
-import { feedbackActions } from '@/core/stores/feedback-store'
+import { appToastManager } from '@/core/feedback/toast-manager'
+import {
+  announcementStoreForTests,
+  resetAnnouncements,
+} from '@/core/feedback/announcement-store'
 import { deleteSelection } from '@/core/operations/furniture-mutations'
 import { confirmDeleteSelection, openDeleteDialog } from './deletion-actions'
 import { CHAIR } from '@/test/support/furniture'
@@ -29,22 +33,11 @@ vi.mock('@/core/operations/furniture-mutations', () => ({
   setSelectionTransform: vi.fn(),
 }))
 
-vi.mock('@/core/stores/feedback-store', () => ({
-  feedbackActions: {
-    announcePolite: vi.fn(),
-    announceAssertive: vi.fn(),
-    clearAssertiveAnnouncement: vi.fn(),
-    queueMovementAnnouncement: vi.fn(),
-    clearQueuedMovementAnnouncement: vi.fn(),
-    setStatusMessage: vi.fn(),
-    clearStatusMessage: vi.fn(),
-  },
-}))
-
 beforeEach(() => {
   resetSceneDocumentStore()
   resetSelectionStore()
   resetEditorLifecycleStore()
+  resetAnnouncements()
   sceneDocumentActions.setHistory(createHistoryState([CHAIR]))
   editorLifecycleActions.markAssetsReady()
 })
@@ -55,16 +48,20 @@ afterEach(() => {
 })
 
 describe('deletion-actions', () => {
-  it('writes the missing-selection message and skips delete when scene is not ready', () => {
+  it('raises the missing-selection error toast and skips delete when scene is not ready', () => {
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(false)
     const closeActiveDialog = vi.spyOn(dialogActions, 'closeActiveDialog')
+    const addToast = vi.spyOn(appToastManager, 'add').mockReturnValue('toast-1')
 
     confirmDeleteSelection(CHAIR)
 
     expect(closeActiveDialog).toHaveBeenCalled()
     expect(deleteSelection).not.toHaveBeenCalled()
-    expect(feedbackActions.setStatusMessage).toHaveBeenCalledWith(
-      'No selected furniture item was available to delete.',
+    expect(addToast).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: 'No selected furniture item was available to delete.',
+        type: 'error',
+      }),
     )
     expect(useSelectionStore.getState().roomViewFocusRequest).toBeNull()
     expect(useSelectionStore.getState().outlinerFocusRequest).toBeNull()
@@ -82,7 +79,7 @@ describe('deletion-actions', () => {
       expect.any(Number),
     )
     expect(useSelectionStore.getState().outlinerFocusRequest).toBeNull()
-    expect(feedbackActions.announcePolite).toHaveBeenCalledWith(
+    expect(announcementStoreForTests.getState().polite.text).toBe(
       `${CHAIR.name} removed from room.`,
     )
   })

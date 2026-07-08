@@ -6,6 +6,7 @@ import type {
   UpdateSelectedItemDetailsResult,
 } from './selected-item.types'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
+import { feedback } from '@/core/feedback/feedback'
 import type { FurnitureItem } from '@/domain/furniture'
 import { cn } from '@/shared/lib/utils'
 import { getWallClearances } from '@/domain/geometry/wall-clearance'
@@ -215,6 +216,7 @@ export function SelectedDetailsView({
         ...currentErrors,
         [field]: message,
       }))
+      feedback.formError(message)
       return
     }
 
@@ -251,6 +253,7 @@ export function SelectedDetailsView({
       ...currentErrors,
       [field]: result.message,
     }))
+    feedback.formError(result.message)
   }
 
   const firstErrorField =
@@ -261,7 +264,6 @@ export function SelectedDetailsView({
       fieldConfig.find((field) => field.key === supportField)?.helpText ??
       null)
     : null
-  const supportErrorMessage = firstErrorField ? errors[firstErrorField] : null
   const supportIsError = Boolean(supportField && errors[supportField])
 
   const renderField = ({
@@ -386,11 +388,6 @@ export function SelectedDetailsView({
           >
             {visualSupportMessage ?? t`Edit the selected item.`}
           </p>
-          {supportErrorMessage ? (
-            <p aria-atomic="true" aria-live="assertive" className="sr-only">
-              {supportErrorMessage}
-            </p>
-          ) : null}
         </CardContent>
       </Card>
     </section>

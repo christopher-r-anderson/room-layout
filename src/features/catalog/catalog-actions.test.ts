@@ -1,11 +1,11 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { appToastManager } from '@/core/feedback/toast-manager'
-import { resetSceneDocumentStore } from '@/core/stores/scene-document-store'
 import {
-  feedbackStoreForTests,
-  resetFeedbackStore,
-} from '@/core/stores/feedback-store'
+  announcementStoreForTests,
+  resetAnnouncements,
+} from '@/core/feedback/announcement-store'
+import { resetSceneDocumentStore } from '@/core/stores/scene-document-store'
 import { resetSelectionStore } from '@/core/stores/selection-store'
 import {
   editorLifecycleActions,
@@ -55,7 +55,7 @@ beforeEach(() => {
   resetEditorLifecycleStore()
   resetAssetsStore()
   resetCatalogSelectionStore()
-  resetFeedbackStore()
+  resetAnnouncements()
   assetsActions.setAssets({
     catalog: [CHAIR],
     collections: [],
@@ -93,14 +93,10 @@ describe('addFurniture', () => {
         priority: 'high',
       }),
     )
-    // Also announced assertively: the drawer aria-hides the toast region but
-    // live regions are exempt, so the announcer reaches assistive tech. The
-    // announcement lands on the store's clear-then-set tick.
-    await vi.waitFor(() => {
-      expect(feedbackStoreForTests.getState().assertiveAnnouncement).toBe(
-        i18n._(ADD_FURNITURE_NO_SPACE_MESSAGE),
-      )
-    })
+    // Toast only: the viewport portals to body above the drawer and announces
+    // through its own live regions, so the old paired assertive announcement
+    // is gone - the global assertive channel must stay empty.
+    expect(announcementStoreForTests.getState().assertive.text).toBe('')
 
     addFurnitureMutation.mockReturnValueOnce({
       ok: false,

@@ -10,7 +10,10 @@ import {
   sceneSessionActions,
   useSceneSessionStore,
 } from '@/core/stores/scene-session-store'
-import { feedbackActions } from '@/core/stores/feedback-store'
+import {
+  announcementStoreForTests,
+  resetAnnouncements,
+} from '@/core/feedback/announcement-store'
 import {
   resetSelectionStore,
   selectionActions,
@@ -30,23 +33,14 @@ import {
   selectById,
 } from './selection-actions'
 
-vi.mock('@/core/stores/feedback-store', () => ({
-  feedbackActions: {
-    announcePolite: vi.fn(),
-    announceAssertive: vi.fn(),
-    clearAssertiveAnnouncement: vi.fn(),
-    queueMovementAnnouncement: vi.fn(),
-    clearQueuedMovementAnnouncement: vi.fn(),
-    setStatusMessage: vi.fn(),
-    clearStatusMessage: vi.fn(),
-  },
-}))
+const politeText = () => announcementStoreForTests.getState().polite.text
 
 function resetStores() {
   resetSceneDocumentStore()
   resetSceneSessionStore()
   resetSelectionStore()
   resetEditorLifecycleStore()
+  resetAnnouncements()
 }
 
 describe('selection-actions', () => {
@@ -70,10 +64,8 @@ describe('selection-actions', () => {
     clearCanvasSelection()
 
     // The Escape/canvas-miss path must run the full clearSelection wrapper:
-    // the selection-clear mutation and the status-message clear, plus the
-    // canvas-miss preview clear.
+    // the selection-clear mutation plus the canvas-miss preview clear.
     expect(useSelectionStore.getState().selectedId).toBeNull()
-    expect(feedbackActions.clearStatusMessage).toHaveBeenCalled()
     expect(useSceneSessionStore.getState().previewedIdRaw).toBeNull()
   })
 
@@ -88,10 +80,10 @@ describe('selection-actions', () => {
     clearSelection()
 
     // Neither action reached the document mutations: the selection pointer and
-    // its provenance are untouched, and no status clear ran.
+    // its provenance are untouched, and nothing announced.
     expect(useSelectionStore.getState().selectedId).toBe('chair-1')
     expect(useSelectionStore.getState().selectedSource).toBe('canvas-pointer')
-    expect(feedbackActions.clearStatusMessage).not.toHaveBeenCalled()
+    expect(politeText()).toBe('')
   })
 
   it('selects and announces a canvas pointer selection', () => {
@@ -99,9 +91,7 @@ describe('selection-actions', () => {
 
     expect(useSelectionStore.getState().selectedId).toBe('chair-1')
     expect(useSelectionStore.getState().selectedSource).toBe('canvas-pointer')
-    expect(feedbackActions.announcePolite).toHaveBeenCalledWith(
-      'Chair selected.',
-    )
+    expect(politeText()).toBe('Chair selected.')
   })
 
   it('does not announce a canvas pointer reselect of the same item', () => {
@@ -109,7 +99,7 @@ describe('selection-actions', () => {
 
     selectByCanvasPointer('chair-1')
 
-    expect(feedbackActions.announcePolite).not.toHaveBeenCalled()
+    expect(politeText()).toBe('')
   })
 
   it('routes selectById announcements by the interaction source', () => {
@@ -117,15 +107,13 @@ describe('selection-actions', () => {
 
     selectById('chair-1', 'panel-keyboard')
 
-    expect(feedbackActions.announcePolite).toHaveBeenLastCalledWith(
-      'Chair selected.',
-    )
+    expect(politeText()).toBe('Chair selected.')
     expect(useSelectionStore.getState().selectedSource).toBe('panel-keyboard')
 
     selectionActions.setSelection(null, null)
     selectById('chair-1', 'canvas-keyboard')
 
-    expect(feedbackActions.announcePolite).toHaveBeenLastCalledWith(
+    expect(politeText()).toBe(
       'Chair selected. Press Shift+T to reach its actions.',
     )
     expect(useSelectionStore.getState().selectedSource).toBe('canvas-keyboard')
@@ -137,8 +125,7 @@ describe('selection-actions', () => {
 
     selectById('chair-1', 'panel-keyboard')
 
-    expect(feedbackActions.announcePolite).not.toHaveBeenCalled()
-    expect(feedbackActions.clearStatusMessage).toHaveBeenCalled()
+    expect(politeText()).toBe('')
   })
 
   it('announces an added item through the added mode', () => {
@@ -149,22 +136,17 @@ describe('selection-actions', () => {
       previousSelectedId: null,
     })
 
-    expect(feedbackActions.announcePolite).toHaveBeenCalledWith(
-      'Chair added to room.',
-    )
+    expect(politeText()).toBe('Chair added to room.')
   })
 
-  it('clears the editor message and announces a landed clear', () => {
+  it('announces a landed clear', () => {
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
     selectionActions.setSelection('chair-1', 'canvas-pointer')
 
     clearSelection()
 
     expect(useSelectionStore.getState().selectedId).toBeNull()
-    expect(feedbackActions.clearStatusMessage).toHaveBeenCalled()
-    expect(feedbackActions.announcePolite).toHaveBeenCalledWith(
-      'Selection cleared.',
-    )
+    expect(politeText()).toBe('Selection cleared.')
   })
 
   it('does not announce a clear that was blocked by the mutation', () => {
@@ -176,6 +158,6 @@ describe('selection-actions', () => {
     clearSelection()
 
     expect(useSelectionStore.getState().selectedId).toBe('chair-1')
-    expect(feedbackActions.announcePolite).not.toHaveBeenCalled()
+    expect(politeText()).toBe('')
   })
 })

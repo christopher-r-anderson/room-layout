@@ -35,27 +35,13 @@ function createState(id: string) {
 
 function createNotificationsSpies() {
   const calls = {
-    announcePolite: vi.fn(),
-    announceAssertive: vi.fn(),
-    setStatusMessage: vi.fn(),
     setRestoreOutcome: vi.fn(),
-    toastSuccess: vi.fn(),
-    toastWarning: vi.fn(),
-    toastError: vi.fn(),
+    actionSuccess: vi.fn(),
+    actionWarning: vi.fn(),
+    actionError: vi.fn(),
   }
 
-  return {
-    calls,
-    notifications: {
-      announcePolite: calls.announcePolite,
-      announceAssertive: calls.announceAssertive,
-      setStatusMessage: calls.setStatusMessage,
-      setRestoreOutcome: calls.setRestoreOutcome,
-      toastSuccess: calls.toastSuccess,
-      toastWarning: calls.toastWarning,
-      toastError: calls.toastError,
-    },
-  }
+  return { calls, notifications: calls }
 }
 
 describe('runStartupRestoreFlow', () => {
@@ -75,14 +61,12 @@ describe('runStartupRestoreFlow', () => {
 
     expect(applyState).toHaveBeenCalledWith({ ok: true, ...parsed })
     expect(calls.setRestoreOutcome).toHaveBeenCalledWith('restored')
-    expect(calls.announcePolite).toHaveBeenCalledWith(
-      'Room layout restored from shared link.',
-    )
-    expect(calls.toastSuccess).toHaveBeenCalledWith(
-      'Room layout restored from shared link.',
-    )
-    expect(calls.announceAssertive).not.toHaveBeenCalled()
-    expect(calls.setStatusMessage).not.toHaveBeenCalled()
+    expect(calls.actionSuccess).toHaveBeenCalledTimes(1)
+    expect(calls.actionSuccess).toHaveBeenCalledWith({
+      title: 'Room layout restored from shared link.',
+    })
+    expect(calls.actionWarning).not.toHaveBeenCalled()
+    expect(calls.actionError).not.toHaveBeenCalled()
   })
 
   it('falls back to valid draft when parsed scene restore throws', () => {
@@ -108,15 +92,39 @@ describe('runStartupRestoreFlow', () => {
     expect(applyState).toHaveBeenCalledTimes(2)
     expect(applyState).toHaveBeenNthCalledWith(2, draft)
     expect(calls.setRestoreOutcome).toHaveBeenCalledWith('invalid')
-    expect(calls.setStatusMessage).toHaveBeenCalledWith(
-      'Shared link could not be restored. Recovered your local draft.',
-    )
-    expect(calls.announceAssertive).toHaveBeenCalledWith(
-      'Shared link could not be restored. Recovered your local draft.',
-    )
-    expect(calls.toastWarning).toHaveBeenCalledWith(
-      'Shared link was invalid. Recovered your local draft.',
-    )
+    expect(calls.actionWarning).toHaveBeenCalledTimes(1)
+    expect(calls.actionWarning).toHaveBeenCalledWith({
+      title: 'Shared link was invalid. Recovered your local draft.',
+    })
+    expect(calls.actionSuccess).not.toHaveBeenCalled()
+    expect(calls.actionError).not.toHaveBeenCalled()
+  })
+
+  it('reports one blocking error when both the shared link and the draft fail to apply', () => {
+    const parsed = createState('chair-1')
+    const draft = createState('chair-1')
+    const catalog = [createCatalogEntry('chair-1')]
+    const applyState = vi.fn(() => {
+      throw new Error('restore failed')
+    })
+    const { calls, notifications } = createNotificationsSpies()
+
+    runStartupRestoreFlow({
+      parseResult: { ok: true, ...parsed },
+      catalog,
+      validDraftState: draft,
+      applyState,
+      notifications,
+    })
+
+    expect(calls.setRestoreOutcome).toHaveBeenCalledWith('invalid')
+    expect(calls.actionError).toHaveBeenCalledTimes(1)
+    expect(calls.actionError).toHaveBeenCalledWith({
+      title: 'Shared link and draft could not be restored.',
+      description: 'Starting with an empty room.',
+    })
+    expect(calls.actionSuccess).not.toHaveBeenCalled()
+    expect(calls.actionWarning).not.toHaveBeenCalled()
   })
 
   it('reports blocking error when scene param is malformed and no draft exists', () => {
@@ -134,15 +142,13 @@ describe('runStartupRestoreFlow', () => {
 
     expect(applyState).not.toHaveBeenCalled()
     expect(calls.setRestoreOutcome).toHaveBeenCalledWith('invalid')
-    expect(calls.setStatusMessage).toHaveBeenCalledWith(
-      'Shared link could not be restored. Starting with an empty room.',
-    )
-    expect(calls.announceAssertive).toHaveBeenCalledWith(
-      'Shared link could not be restored. Starting with an empty room.',
-    )
-    expect(calls.toastError).toHaveBeenCalledWith(
-      'Shared link could not be restored.',
-    )
+    expect(calls.actionError).toHaveBeenCalledTimes(1)
+    expect(calls.actionError).toHaveBeenCalledWith({
+      title: 'Shared link could not be restored.',
+      description: 'Starting with an empty room.',
+    })
+    expect(calls.actionSuccess).not.toHaveBeenCalled()
+    expect(calls.actionWarning).not.toHaveBeenCalled()
   })
 
   it('falls back to draft when parsed scene has unknown catalog IDs', () => {
@@ -163,18 +169,15 @@ describe('runStartupRestoreFlow', () => {
     expect(applyState).toHaveBeenCalledTimes(1)
     expect(applyState).toHaveBeenCalledWith(draft)
     expect(calls.setRestoreOutcome).toHaveBeenCalledWith('invalid')
-    expect(calls.setStatusMessage).toHaveBeenCalledWith(
-      'Shared link could not be restored. Recovered your local draft.',
-    )
-    expect(calls.announceAssertive).toHaveBeenCalledWith(
-      'Shared link could not be restored. Recovered your local draft.',
-    )
-    expect(calls.toastWarning).toHaveBeenCalledWith(
-      'Shared link contained unknown furniture. Draft restored.',
-    )
+    expect(calls.actionWarning).toHaveBeenCalledTimes(1)
+    expect(calls.actionWarning).toHaveBeenCalledWith({
+      title: 'Shared link contained unknown furniture. Draft restored.',
+    })
+    expect(calls.actionSuccess).not.toHaveBeenCalled()
+    expect(calls.actionError).not.toHaveBeenCalled()
   })
 
-  it('restores no-param non-empty draft and reports skipped outcome with polite info', () => {
+  it('restores no-param non-empty draft and reports skipped outcome with a success notice', () => {
     const draft = createState('chair-1')
     const catalog = [createCatalogEntry('chair-1')]
     const applyState = vi.fn()
@@ -190,12 +193,10 @@ describe('runStartupRestoreFlow', () => {
     })
 
     expect(applyState).toHaveBeenCalledWith(draft)
-    expect(calls.announcePolite).toHaveBeenCalledWith(
-      'Restored your saved draft.',
-    )
-    expect(calls.toastSuccess).toHaveBeenCalledWith(
-      'Restored your saved draft.',
-    )
+    expect(calls.actionSuccess).toHaveBeenCalledTimes(1)
+    expect(calls.actionSuccess).toHaveBeenCalledWith({
+      title: 'Restored your saved draft.',
+    })
     expect(calls.setRestoreOutcome).toHaveBeenLastCalledWith('skipped')
   })
 
@@ -224,10 +225,9 @@ describe('runStartupRestoreFlow', () => {
     })
 
     expect(applyState).toHaveBeenCalledWith(emptyDraft)
-    expect(calls.announcePolite).not.toHaveBeenCalled()
-    expect(calls.toastSuccess).not.toHaveBeenCalled()
-    expect(calls.announceAssertive).not.toHaveBeenCalled()
-    expect(calls.setStatusMessage).not.toHaveBeenCalled()
+    expect(calls.actionSuccess).not.toHaveBeenCalled()
+    expect(calls.actionWarning).not.toHaveBeenCalled()
+    expect(calls.actionError).not.toHaveBeenCalled()
     expect(calls.setRestoreOutcome).toHaveBeenLastCalledWith('skipped')
   })
 
@@ -250,15 +250,13 @@ describe('runStartupRestoreFlow', () => {
 
     expect(calls.setRestoreOutcome).toHaveBeenCalledWith('invalid')
     expect(calls.setRestoreOutcome).not.toHaveBeenCalledWith('skipped')
-    expect(calls.setStatusMessage).toHaveBeenCalledWith(
-      'Draft failed to restore. Starting with an empty room.',
-    )
-    expect(calls.announceAssertive).toHaveBeenCalledWith(
-      'Draft could not be restored. Starting with an empty room.',
-    )
-    expect(calls.toastError).toHaveBeenCalledWith(
-      'Draft could not be restored.',
-    )
+    expect(calls.actionError).toHaveBeenCalledTimes(1)
+    expect(calls.actionError).toHaveBeenCalledWith({
+      title: 'Draft could not be restored.',
+      description: 'Starting with an empty room.',
+    })
+    expect(calls.actionSuccess).not.toHaveBeenCalled()
+    expect(calls.actionWarning).not.toHaveBeenCalled()
   })
 
   it('keeps no-param draft restore silent when finishes match defaults even without furniture check', () => {
@@ -288,10 +286,9 @@ describe('runStartupRestoreFlow', () => {
     })
 
     expect(applyState).toHaveBeenCalledWith(draft)
-    expect(calls.announcePolite).not.toHaveBeenCalled()
-    expect(calls.toastSuccess).not.toHaveBeenCalled()
-    expect(calls.announceAssertive).not.toHaveBeenCalled()
-    expect(calls.setStatusMessage).not.toHaveBeenCalled()
+    expect(calls.actionSuccess).not.toHaveBeenCalled()
+    expect(calls.actionWarning).not.toHaveBeenCalled()
+    expect(calls.actionError).not.toHaveBeenCalled()
     expect(calls.setRestoreOutcome).toHaveBeenLastCalledWith('skipped')
   })
 })

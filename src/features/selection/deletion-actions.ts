@@ -1,7 +1,7 @@
 import { msg } from '@lingui/core/macro'
 import type { FurnitureItem } from '@/domain/furniture'
 import { i18n } from '@/shared/i18n/i18n'
-import { feedbackActions } from '@/core/stores/feedback-store'
+import { feedback } from '@/core/feedback/feedback'
 import { dialogActions } from '@/core/stores/dialog-store'
 import { getItems } from '@/core/stores/scene-document-store'
 import {
@@ -33,7 +33,7 @@ export function confirmDeleteSelection(
   dialogActions.closeActiveDialog()
 
   if (!sceneCommands.isSceneReady()) {
-    feedbackActions.setStatusMessage(i18n._(DELETE_SELECTION_MISSING_MESSAGE))
+    feedback.actionError({ title: i18n._(DELETE_SELECTION_MISSING_MESSAGE) })
     pendingDeleteFocusTarget = null
     return
   }
@@ -41,12 +41,10 @@ export function confirmDeleteSelection(
   const deleted = deleteSelection()
 
   if (!deleted) {
-    feedbackActions.setStatusMessage(i18n._(DELETE_SELECTION_MISSING_MESSAGE))
+    feedback.actionError({ title: i18n._(DELETE_SELECTION_MISSING_MESSAGE) })
     pendingDeleteFocusTarget = null
     return
   }
-
-  feedbackActions.clearStatusMessage()
 
   const pendingFocusTarget = pendingDeleteFocusTarget
   pendingDeleteFocusTarget = null
@@ -66,9 +64,7 @@ export function confirmDeleteSelection(
   }
 
   if (deletedName) {
-    feedbackActions.announcePolite(
-      i18n._(msg`${deletedName} removed from room.`),
-    )
+    feedback.interactionUpdate(i18n._(msg`${deletedName} removed from room.`))
   }
 }
 
@@ -77,7 +73,6 @@ export function openDeleteDialog(returnFocusTo: 'room-view' | 'outliner') {
 
   if (opened) {
     pendingDeleteFocusTarget = returnFocusTo
-    feedbackActions.clearStatusMessage()
   } else {
     pendingDeleteFocusTarget = null
   }

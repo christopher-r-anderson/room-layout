@@ -1,5 +1,5 @@
 import { msg } from '@lingui/core/macro'
-import { feedbackActions } from '@/core/stores/feedback-store'
+import { feedback } from '@/core/feedback/feedback'
 import {
   selectionActions,
   useSelectionStore,
@@ -35,10 +35,8 @@ export function undo() {
   const previousSelectedId = useSelectionStore.getState().selectedId
   const undid = sceneCommands.isSceneReady() ? undoDocument() : false
 
-  feedbackActions.clearStatusMessage()
-
   if (undid) {
-    feedbackActions.announcePolite(i18n._(msg`Undo complete.`))
+    feedback.interactionUpdate(i18n._(msg`Undo complete.`))
     focusReconciledSelection(previousSelectedId)
   }
 }
@@ -47,10 +45,8 @@ export function redo() {
   const previousSelectedId = useSelectionStore.getState().selectedId
   const redid = sceneCommands.isSceneReady() ? redoDocument() : false
 
-  feedbackActions.clearStatusMessage()
-
   if (redid) {
-    feedbackActions.announcePolite(i18n._(msg`Redo complete.`))
+    feedback.interactionUpdate(i18n._(msg`Redo complete.`))
     focusReconciledSelection(previousSelectedId)
   }
 }

@@ -1,5 +1,5 @@
 import { msg } from '@lingui/core/macro'
-import { feedbackActions } from '@/core/stores/feedback-store'
+import { feedback } from '@/core/feedback/feedback'
 import { getSelectedFurniture } from '@/core/operations/selected-furniture'
 import { toolbarInteractionActions } from '@/core/stores/toolbar-interaction-store'
 import { sceneCommands } from '@/core/scene-commands'
@@ -35,7 +35,6 @@ export function moveSelection(delta: {
   z: number
 }): MoveSelectionResult {
   const movedItemName = getSelectedFurniture()?.name ?? null
-  feedbackActions.clearStatusMessage()
 
   const result = sceneCommands.isSceneReady()
     ? moveDocumentSelection(delta)
@@ -45,7 +44,7 @@ export function moveSelection(delta: {
     if (movedItemName) {
       const x = formatDistanceMeters(result.position[0])
       const z = formatDistanceMeters(result.position[2])
-      feedbackActions.queueMovementAnnouncement(
+      feedback.movementUpdate(
         i18n._(msg`${movedItemName} moved to X ${x} and Z ${z}.`),
       )
     }
@@ -56,7 +55,7 @@ export function moveSelection(delta: {
   const blockedMessage = formatMoveBlockedMessage(result.reason)
 
   if (blockedMessage) {
-    feedbackActions.queueMovementAnnouncement(blockedMessage)
+    feedback.movementUpdate(blockedMessage)
   }
 
   return result
@@ -65,14 +64,13 @@ export function moveSelection(delta: {
 export function rotateSelection(direction: -1 | 1) {
   const rotatingFurniture = getSelectedFurniture()
   const rotatingName = rotatingFurniture?.name ?? null
-  feedbackActions.clearStatusMessage()
 
   if (!sceneCommands.isSceneReady()) {
     return
   }
 
   if (!rotateDocumentSelection(direction * ROTATION_STEP_RADIANS)) {
-    feedbackActions.queueMovementAnnouncement(
+    feedback.movementUpdate(
       i18n._(msg`Finish dragging before using movement controls.`),
     )
     return
@@ -87,6 +85,6 @@ export function rotateSelection(direction: -1 | 1) {
   }
 
   if (rotatingName) {
-    feedbackActions.announcePolite(i18n._(msg`${rotatingName} rotated.`))
+    feedback.interactionUpdate(i18n._(msg`${rotatingName} rotated.`))
   }
 }

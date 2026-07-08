@@ -105,9 +105,12 @@ importing the generic bound hook from a feature is an ESLint error - its
 - **`dialog-store`** - generic active-surface dialog state, open/close
   operations, and dialog-open selectors. Model and invariants live in
   [dialogs-and-overlays.md](dialogs-and-overlays.md). Written by dialog actions.
-- **`feedback-store`** - transient user-facing feedback channels: polite/
-  assertive a11y announcements (plus the movement-announcement queue) and the
-  visible `statusMessage` status line. Written by operations and features.
+- **`feedback` (`core/feedback/`)** - the user-feedback API and its surfaces:
+  domain-typed entry points (`feedback.ts`) route each event class to toasts
+  (module-singleton manager) or the SR-only announcement store (polite/
+  assertive channels with a debounced movement variant). Call sites state the
+  event class and never pick surfaces; the routing policy lives in
+  [feedback.md](feedback.md). Written by operations and features.
 - **`collection-scene-registry`** - the reactive registry of parsed
   furniture-collection scene roots, held opaquely (`unknown`) so core stays
   three-free, plus each node's authored transform as plain data
@@ -162,9 +165,9 @@ persistence.
   application, reset-to-defaults, and the bootstrap's gated-set resolution.
 - `selection-actions` + `selection-mutations` - the selection surface. The
   mutation writes the pointer + provenance atomically (and drops the hover
-  preview on change); the action layers on the readiness guard, the status
-  clear, and the screen-reader announcement (`announceSelectionChange`), all
-  synchronous with the write.
+  preview on change); the action layers on the readiness guard and the
+  screen-reader announcement (`announceSelectionChange`), synchronous with the
+  write.
 
 Feature-internal orchestration (e.g. `features/selection/deletion-actions`,
 `features/catalog/catalog-actions`) stays in the owning feature and imports core

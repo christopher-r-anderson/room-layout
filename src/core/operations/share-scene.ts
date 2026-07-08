@@ -1,6 +1,6 @@
 import { msg } from '@lingui/core/macro'
 import { useSceneDocumentStore } from '@/core/stores/scene-document-store'
-import { feedbackActions } from '@/core/stores/feedback-store'
+import { feedback } from '@/core/feedback/feedback'
 import { serializeSceneToUrl } from '@/core/persistence/scene-url'
 import { getActiveFinishIds } from '@/core/operations/active-finish-ids'
 import { i18n } from '@/shared/i18n/i18n'
@@ -14,7 +14,9 @@ import { LANG_QUERY_PARAM } from '@/shared/i18n/locales'
  * fires it and forgets; the share button awaits the result for its label.
  *
  * Returns `'shared'`/`'copied'` on success, or `null` when the user cancels or
- * the scene is too large; user-facing status/announcements are emitted here.
+ * the scene is too large; user-facing feedback is emitted here (SR-only polite
+ * notes on success — the share button's own label is the visual surface — and
+ * error toasts on failure).
  */
 export async function shareScene(): Promise<'shared' | 'copied' | null> {
   const items = useSceneDocumentStore.getState().history.present
@@ -33,9 +35,9 @@ export async function shareScene(): Promise<'shared' | 'copied' | null> {
   })
 
   if (!url) {
-    const tooLarge = i18n._(msg`Scene is too large to share as a URL.`)
-    feedbackActions.setStatusMessage(tooLarge)
-    feedbackActions.announceAssertive(tooLarge)
+    feedback.actionError({
+      title: i18n._(msg`Scene is too large to share as a URL.`),
+    })
     return null
   }
 
@@ -57,30 +59,28 @@ export async function shareScene(): Promise<'shared' | 'copied' | null> {
   if (canUseNativeShare) {
     try {
       await navigator.share(shareData)
-      feedbackActions.clearStatusMessage()
-      feedbackActions.announcePolite(i18n._(msg`Room layout shared.`))
+      feedback.interactionUpdate(i18n._(msg`Room layout shared.`))
       return 'shared'
     } catch (error) {
       if (error instanceof DOMException && error.name === 'AbortError') {
         return null
       }
 
-      const shareFailed = i18n._(msg`Could not open share options.`)
-      feedbackActions.setStatusMessage(shareFailed)
-      feedbackActions.announceAssertive(shareFailed)
+      feedback.actionError({
+        title: i18n._(msg`Could not open share options.`),
+      })
       return null
     }
   }
 
   try {
     await navigator.clipboard.writeText(url)
-    feedbackActions.clearStatusMessage()
-    feedbackActions.announcePolite(i18n._(msg`Scene URL copied to clipboard.`))
+    feedback.interactionUpdate(i18n._(msg`Scene URL copied to clipboard.`))
     return 'copied'
   } catch {
-    const copyFailed = i18n._(msg`Could not copy URL to clipboard.`)
-    feedbackActions.setStatusMessage(copyFailed)
-    feedbackActions.announceAssertive(copyFailed)
+    feedback.actionError({
+      title: i18n._(msg`Could not copy URL to clipboard.`),
+    })
     return null
   }
 }
