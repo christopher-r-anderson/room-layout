@@ -1,12 +1,8 @@
 /**
- * Browser twin of the feedback routing policy: one test per representative
- * event class, asserting both the surface that fires and the surfaces that
- * stay silent (the negative assertions are what keep a second channel from
- * creeping back in). This file, `core/stores/feedback-store.test.ts`, and the
- * routing table in `docs/architecture/feedback.md` change together.
- *
- * Deep toast lifecycle (persistence, stacking, dismissal) lives in
- * `e2e/feedback-toasts.spec.ts`; this file only pins routing.
+ * Browser twin of the feedback routing in `core/stores/feedback-store.ts`:
+ * one test per representative event class, asserting both the surface that
+ * fires and the surfaces that stay silent. Toast lifecycle lives in
+ * `e2e/feedback-toasts.spec.ts`.
  */
 import { expect, test } from '@playwright/test'
 import {

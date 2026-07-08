@@ -1,9 +1,11 @@
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   runStartupRestoreFlow,
   selectPrimaryRestoreState,
   validateDraftState,
 } from './restore-flow'
+import { feedback } from '@/core/stores/feedback-store'
+import { editorLifecycleActions } from '@/core/stores/editor-lifecycle-store'
 import type { FurnitureCatalogEntry } from '@/domain/catalog'
 
 function createCatalogEntry(id: string): FurnitureCatalogEntry {
@@ -33,15 +35,22 @@ function createState(id: string) {
   }
 }
 
-function createNotificationsSpies() {
-  const calls = {
-    setRestoreOutcome: vi.fn(),
-    actionSuccess: vi.fn(),
-    actionWarning: vi.fn(),
-    actionError: vi.fn(),
-  }
+afterEach(() => {
+  vi.restoreAllMocks()
+})
 
-  return { calls, notifications: calls }
+// The flow reports through the real modules; spies keep the tests pure.
+function createFeedbackSpies() {
+  const noop = () => undefined
+
+  return {
+    setRestoreOutcome: vi
+      .spyOn(editorLifecycleActions, 'recordRestoreOutcome')
+      .mockImplementation(noop),
+    actionSuccess: vi.spyOn(feedback, 'actionSuccess').mockImplementation(noop),
+    actionWarning: vi.spyOn(feedback, 'actionWarning').mockImplementation(noop),
+    actionError: vi.spyOn(feedback, 'actionError').mockImplementation(noop),
+  }
 }
 
 describe('runStartupRestoreFlow', () => {
@@ -49,14 +58,13 @@ describe('runStartupRestoreFlow', () => {
     const parsed = createState('chair-1')
     const catalog = [createCatalogEntry('chair-1')]
     const applyState = vi.fn()
-    const { calls, notifications } = createNotificationsSpies()
+    const calls = createFeedbackSpies()
 
     runStartupRestoreFlow({
       parseResult: { ok: true, ...parsed },
       catalog,
       validDraftState: null,
       applyState,
-      notifications,
     })
 
     expect(applyState).toHaveBeenCalledWith({ ok: true, ...parsed })
@@ -79,14 +87,13 @@ describe('runStartupRestoreFlow', () => {
         throw new Error('parsed restore failed')
       })
       .mockImplementationOnce(() => undefined)
-    const { calls, notifications } = createNotificationsSpies()
+    const calls = createFeedbackSpies()
 
     runStartupRestoreFlow({
       parseResult: { ok: true, ...parsed },
       catalog,
       validDraftState: draft,
       applyState,
-      notifications,
     })
 
     expect(applyState).toHaveBeenCalledTimes(2)
@@ -109,14 +116,13 @@ describe('runStartupRestoreFlow', () => {
     const applyState = vi.fn(() => {
       throw new Error('restore failed')
     })
-    const { calls, notifications } = createNotificationsSpies()
+    const calls = createFeedbackSpies()
 
     runStartupRestoreFlow({
       parseResult: { ok: true, ...parsed },
       catalog,
       validDraftState: draft,
       applyState,
-      notifications,
     })
 
     expect(calls.setRestoreOutcome).toHaveBeenCalledWith('invalid')
@@ -132,14 +138,13 @@ describe('runStartupRestoreFlow', () => {
   it('reports blocking error when scene param is malformed and no draft exists', () => {
     const catalog = [createCatalogEntry('chair-1')]
     const applyState = vi.fn()
-    const { calls, notifications } = createNotificationsSpies()
+    const calls = createFeedbackSpies()
 
     runStartupRestoreFlow({
       parseResult: { ok: false, reason: 'decode-error' },
       catalog,
       validDraftState: null,
       applyState,
-      notifications,
     })
 
     expect(applyState).not.toHaveBeenCalled()
@@ -158,14 +163,13 @@ describe('runStartupRestoreFlow', () => {
     const draft = createState('chair-1')
     const catalog = [createCatalogEntry('chair-1')]
     const applyState = vi.fn()
-    const { calls, notifications } = createNotificationsSpies()
+    const calls = createFeedbackSpies()
 
     runStartupRestoreFlow({
       parseResult: { ok: true, ...parsed },
       catalog,
       validDraftState: draft,
       applyState,
-      notifications,
     })
 
     expect(applyState).toHaveBeenCalledTimes(1)
@@ -183,7 +187,7 @@ describe('runStartupRestoreFlow', () => {
     const draft = createState('chair-1')
     const catalog = [createCatalogEntry('chair-1')]
     const applyState = vi.fn()
-    const { calls, notifications } = createNotificationsSpies()
+    const calls = createFeedbackSpies()
 
     runStartupRestoreFlow({
       parseResult: { ok: false, reason: 'no-param' },
@@ -191,7 +195,6 @@ describe('runStartupRestoreFlow', () => {
       validDraftState: draft,
       applyState,
       isFreshState: () => false,
-      notifications,
     })
 
     expect(applyState).toHaveBeenCalledWith(draft)
@@ -215,7 +218,7 @@ describe('runStartupRestoreFlow', () => {
     }
     const catalog = [createCatalogEntry('chair-1')]
     const applyState = vi.fn()
-    const { calls, notifications } = createNotificationsSpies()
+    const calls = createFeedbackSpies()
 
     runStartupRestoreFlow({
       parseResult: { ok: false, reason: 'no-param' },
@@ -223,7 +226,6 @@ describe('runStartupRestoreFlow', () => {
       validDraftState: emptyDraft,
       applyState,
       isFreshState: () => true,
-      notifications,
     })
 
     expect(applyState).toHaveBeenCalledWith(emptyDraft)
@@ -239,7 +241,7 @@ describe('runStartupRestoreFlow', () => {
     const applyState = vi.fn(() => {
       throw new Error('draft restore failed')
     })
-    const { calls, notifications } = createNotificationsSpies()
+    const calls = createFeedbackSpies()
 
     runStartupRestoreFlow({
       parseResult: { ok: false, reason: 'no-param' },
@@ -247,7 +249,6 @@ describe('runStartupRestoreFlow', () => {
       validDraftState: draft,
       applyState,
       isFreshState: () => false,
-      notifications,
     })
 
     expect(calls.setRestoreOutcome).toHaveBeenCalledWith('invalid')
@@ -276,14 +277,13 @@ describe('runStartupRestoreFlow', () => {
     }
     const catalog = [createCatalogEntry('chair-1')]
     const applyState = vi.fn()
-    const { calls, notifications } = createNotificationsSpies()
+    const calls = createFeedbackSpies()
 
     runStartupRestoreFlow({
       parseResult: { ok: false, reason: 'no-param' },
       catalog,
       validDraftState: draft,
       isFreshState: () => true,
-      notifications,
       applyState,
     })
 

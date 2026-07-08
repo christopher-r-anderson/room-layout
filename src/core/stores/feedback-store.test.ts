@@ -14,10 +14,9 @@ import {
   resetFeedbackStore,
 } from './feedback-store'
 
-// The routing contract: each entry point fires exactly one surface set. The
-// negative assertions are the point - they are what keeps a second channel
-// from quietly creeping back in. Normative table in
-// docs/architecture/feedback.md; browser twin in e2e/feedback-routing.spec.ts.
+// The routing contract: each entry point fires exactly one surface set (the
+// negative assertions keep a second channel from creeping back in). Browser
+// twin: e2e/feedback-routing.spec.ts; guidance: docs/architecture/feedback.md.
 
 const channels = () => feedbackStoreForTests.getState()
 

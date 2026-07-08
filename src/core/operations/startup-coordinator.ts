@@ -170,18 +170,6 @@ function runRestoreOnce() {
         defaultSceneState,
       )
     },
-    notifications: {
-      setRestoreOutcome: editorLifecycleActions.recordRestoreOutcome,
-      actionSuccess: (message) => {
-        feedback.actionSuccess(message)
-      },
-      actionWarning: (message) => {
-        feedback.actionWarning(message)
-      },
-      actionError: (message) => {
-        feedback.actionError(message)
-      },
-    },
   })
 }
 
@@ -205,9 +193,7 @@ function reportStartupError(kind: StartupErrorKind, error: Error) {
   })
   dialogActions.closeActiveDialog()
   resetStartupShell()
-  // No toast or announcement: the InitializationError overlay is the feedback
-  // surface for a startup-fatal error (role=alert announces it, and the
-  // autofocused Retry button is the recovery affordance).
+  // The InitializationError overlay is the only feedback surface here.
 }
 
 // A furniture/scene asset failed while loading or rendering.

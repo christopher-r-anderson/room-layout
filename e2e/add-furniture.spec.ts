@@ -69,10 +69,8 @@ test('surfaces an error and recovers when an added item fails to load', async ({
   await picker.getByText('Leather Couch', { exact: true }).click()
   await picker.getByRole('button', { name: 'Add Item' }).click()
 
-  // Instead of hanging on "Adding...", the add reports the failure as a single
-  // error toast (the viewport portals to body above the drawer and announces
-  // through its own live regions), adds nothing, and the button recovers. The
-  // announcer's assertive channel stays empty - no double announcement.
+  // The failed add reports one error toast (visible over the drawer), adds
+  // nothing, and the button recovers; the assertive channel stays empty.
   await waitForToast(page, { text: 'Check your connection', type: 'error' })
   await expectAssertiveAnnouncementUnchanged(page, '')
   await expect(picker.getByRole('button', { name: 'Add Item' })).toBeEnabled()

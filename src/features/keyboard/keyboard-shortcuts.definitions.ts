@@ -6,9 +6,13 @@ import type { KeyCombo } from './keyboard-shortcut-matcher'
 export type SuppressionMode = 'always-on-match' | 'on-execute'
 
 type KeyboardShortcutHandler =
+  // Dispatched by useKeyboardShortcuts (command shortcuts).
   | 'use-keyboard-shortcuts'
+  // Polled by useCameraKeyState (held camera-motion keys).
   | 'use-camera-key-state'
+  // Native element behavior (inputs); listed for the help dialog only.
   | 'native-input'
+  // A library's own global listener; listed for the help dialog only.
   | 'library-global'
 
 interface ShortcutPlatformLabel {
@@ -777,8 +781,7 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     ],
   },
   {
-    // Handled by the toast viewport's own global F6 listener (Base UI);
-    // listed here so the help dialog documents it.
+    // Handled by Base UI's toast viewport.
     id: 'focus-notifications',
     match: { key: 'F6' },
     handler: 'library-global',

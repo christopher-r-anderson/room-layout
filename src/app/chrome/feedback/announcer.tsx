@@ -3,10 +3,9 @@ import {
   usePoliteAnnouncement,
 } from '@/core/stores/feedback-store'
 
-// Each message renders as a fresh node keyed by its nonce, so repeating the
-// same text is still an "additions" mutation and screen readers re-announce
-// it. The regions themselves stay mounted for the app's lifetime — live
-// regions only announce reliably when they exist before their first message.
+// The regions stay mounted for the app's lifetime (live regions only announce
+// reliably when they exist before their first message); the nonce-keyed spans
+// make repeated messages re-announce.
 export function Announcer() {
   const polite = usePoliteAnnouncement()
   const assertive = useAssertiveAnnouncement()

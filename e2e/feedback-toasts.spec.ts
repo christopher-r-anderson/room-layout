@@ -195,18 +195,11 @@ test('F6 focuses the notifications region and is a no-op with no toasts', async 
   ).toBeFocused()
 })
 
-// Deterministic render-cost gate (mirrors selected-toolbar-idle.spec.ts):
-// raising a toast must stay inside the toast provider's own subtree. A
-// regression that routes toast state through the app shell (a context at the
-// root, a store the App subscribes to) re-renders App or Scene and pushes a
-// counter above zero.
-//
-// The trigger is the clipboard-failure error toast, not an add failure: a
-// failing add runs a collection-load lifecycle whose store transitions
-// legitimately re-render the Scene (measured sceneRenders=2), which would
-// drown the signal this test exists for. The share flow only reads scene
-// state; on clipboard failure its sole side effects are the error toast and
-// the share button's local pending state.
+// Render-cost gate (mirrors selected-toolbar-idle.spec.ts): toast state must
+// stay inside the toast provider's subtree, never re-rendering App or Scene.
+// The trigger is a clipboard-failure toast rather than a failed add, whose
+// collection-load lifecycle legitimately re-renders the Scene and would drown
+// the signal.
 test('raising a toast keeps the app shell quiescent', async ({ page }) => {
   // No granted clipboard permission, and native share forced off, so the
   // share click deterministically fails into feedback.actionError.

@@ -35,9 +35,8 @@ function ToastList() {
           'transition-[translate,opacity] duration-100 data-[swiping]:transition-none motion-reduce:transition-none',
           'data-starting-style:translate-y-2 data-starting-style:opacity-0 data-ending-style:opacity-0',
           'data-[type=error]:not-focus-visible:ring-destructive/40',
-          // Over-limit toasts stay in Base UI's list as inert placeholders
-          // (data-limited) until slots free up; hide them so the stack never
-          // shows a notification that cannot be focused or dismissed.
+          // Base UI keeps over-limit roots as inert data-limited
+          // placeholders; hide them.
           'data-limited:hidden',
         )}
       >
@@ -73,11 +72,7 @@ function ToastList() {
 }
 
 export interface AppToasterProps {
-  /**
-   * The module-level manager plain functions raise toasts through; the
-   * provider subscribes to it. Passed in because this layer cannot import the
-   * core module that owns it.
-   */
+  /** The core-owned manager to subscribe to (shared/ui cannot import core). */
   toastManager: ReturnType<typeof Toast.createToastManager>
 }
 
@@ -86,22 +81,11 @@ export function AppToaster({ toastManager }: AppToasterProps) {
 
   return (
     <Toast.Provider toastManager={toastManager}>
-      {/*
-        The portal matters: the app shell is position:fixed, which in Chromium
-        establishes a stacking context, so a viewport rendered inside it would
-        paint under the body-portaled drawers/dialogs (z-50) no matter its own
-        z-index. At body level, z-60 wins.
-      */}
+      {/* Portal to body: inside the fixed app shell the viewport would paint
+          under the body-portaled drawers/dialogs regardless of z-index. */}
       <Toast.Portal>
-        {/*
-          Modal dialogs/drawers aria-hide background content but exempt
-          elements matching the literal [aria-live] selector without
-          descending into them. The viewport carries aria-live itself, but
-          Base UI renders the hidden role=alert mirror for high-priority
-          toasts as a plain sibling, so this wrapper is what keeps assertive
-          announcements reachable while a drawer is open. aria-live="off"
-          does not mute descendants that set their own live semantics.
-        */}
+        {/* Modal aria-hiding spares only [aria-live] elements; this wrapper
+            keeps Base UI's role=alert mirror (which has none) reachable. */}
         <div aria-live="off">
           <Toast.Viewport
             aria-label={t`Notifications`}

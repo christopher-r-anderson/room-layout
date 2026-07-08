@@ -51,13 +51,13 @@ export async function addFurniture(): Promise<boolean> {
       // asset) says it is unavailable and will not invite a futile retry; a
       // transient one (connection/stall) invites a re-add.
       const failureKind = getCollectionFailureKind(sourcePath)
-      reportAddFailure(
-        i18n._(
+      feedback.actionError({
+        title: i18n._(
           failureKind === 'unavailable'
             ? ADD_FURNITURE_UNAVAILABLE_MESSAGE
             : ADD_FURNITURE_LOAD_FAILED_MESSAGE,
         ),
-      )
+      })
       return false
     }
   }
@@ -76,7 +76,7 @@ export async function addFurniture(): Promise<boolean> {
         : result.reason === 'dragging'
           ? ADD_FURNITURE_WHILE_DRAGGING_MESSAGE
           : ADD_FURNITURE_UNKNOWN_CATALOG_MESSAGE
-    reportAddFailure(i18n._(failureMessage))
+    feedback.actionError({ title: i18n._(failureMessage) })
     return false
   }
 
@@ -87,13 +87,6 @@ export async function addFurniture(): Promise<boolean> {
     previousSelectedId: null,
   })
   return true
-}
-
-// An error toast reaches users even while the drawer is open: the toast
-// viewport portals to body above the drawer, and its live regions survive the
-// drawer's aria-hiding.
-function reportAddFailure(message: string) {
-  feedback.actionError({ title: message })
 }
 
 export function setCatalogDrawerOpen(open: boolean) {
