@@ -185,8 +185,9 @@ test('F6 focuses the notifications region and is a no-op with no toasts', async 
   await dismissToast(page, toast)
   await expectNoToasts(page)
 
-  // With no toasts the viewport is unmounted, so F6 has nothing to focus:
-  // focus stays where it was.
+  // With no toasts, F6 is a no-op: the viewport element stays mounted (the
+  // always-present live region), but Base UI's F6 handler ignores an empty
+  // viewport, so focus stays where it was.
   await focusRoomView(page)
   await page.keyboard.press('F6')
   await expect(

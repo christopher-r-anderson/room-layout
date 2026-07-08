@@ -2,7 +2,7 @@
  * Browser twin of the feedback routing policy: one test per representative
  * event class, asserting both the surface that fires and the surfaces that
  * stay silent (the negative assertions are what keep a second channel from
- * creeping back in). This file, `core/feedback/feedback.test.ts`, and the
+ * creeping back in). This file, `core/stores/feedback-store.test.ts`, and the
  * routing table in `docs/architecture/feedback.md` change together.
  *
  * Deep toast lifecycle (persistence, stacking, dismissal) lives in
@@ -57,7 +57,7 @@ test('keyboard move announces debounced on the polite channel with no toast', as
   await page.keyboard.press('ArrowRight')
 
   // The 180 ms debounce window itself is unit-owned (feedback.test.ts /
-  // announcement-store.test.ts): asserting "nothing announced yet" here would
+  // feedback-store.test.ts): asserting "nothing announced yet" here would
   // race the timer under CI load. This test pins the settled outcome.
 
   // Compute the settled announcement from the scene's own resolved position

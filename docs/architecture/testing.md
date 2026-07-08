@@ -104,7 +104,7 @@ Run the a11y lanes when semantics, focus management, or announcements change:
   overlays, field errors, the F6-focused notifications region.
 - `e2e/feedback-routing.spec.ts` - pins the event-class → surface routing
   policy (see [feedback.md](feedback.md)); its unit twin is
-  `core/feedback/feedback.test.ts`. The three change together.
+  `core/stores/feedback-store.test.ts`. The three change together.
 - `e2e/feedback-toasts.spec.ts` - toast lifecycle: persistence, auto-dismiss,
   stacking/limit, F6 focus, shell quiescence.
 - Toast locators live in `e2e/support/toasts.ts`; announcer channel readers in

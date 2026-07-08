@@ -1,8 +1,7 @@
 // @vitest-environment jsdom
 import { beforeEach, expect, it } from 'vitest'
 import { act, render } from '@/test/render'
-import { feedback } from '@/core/feedback/feedback'
-import { resetAnnouncements } from '@/core/feedback/announcement-store'
+import { feedback, resetFeedbackStore } from '@/core/stores/feedback-store'
 import { Announcer } from './announcer'
 
 // The DOM contract screen readers depend on: both channels exist (empty)
@@ -11,7 +10,7 @@ import { Announcer } from './announcer'
 // nodes so they count as "additions" mutations and re-announce.
 
 beforeEach(() => {
-  resetAnnouncements()
+  resetFeedbackStore()
 })
 
 function renderAnnouncer() {
