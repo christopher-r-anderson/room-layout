@@ -160,7 +160,7 @@ test('stack cap hides over-limit toasts', async ({ page }) => {
   // placeholders (display:none via the toast styles) rather than dropping
   // them: four roots exist, at most three are visible.
   await expect(toastRoots(page)).toHaveCount(4)
-  await expect(toastRoots(page).locator('visible=true')).toHaveCount(3)
+  await expect(toastRoots(page).filter({ visible: true })).toHaveCount(3)
   await expect(
     toastRoots(page).and(page.locator('[data-limited]')),
   ).toHaveCount(1)

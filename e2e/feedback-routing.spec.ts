@@ -52,14 +52,13 @@ test('keyboard move announces debounced on the polite channel with no toast', as
   const initialX = addedState.items[0].position[0]
 
   await waitForPoliteAnnouncement(page, 'Leather Couch added to room.')
-  const politeBefore = await readPoliteAnnouncement(page)
 
   await focusRoomView(page)
   await page.keyboard.press('ArrowRight')
 
-  // Debounce (180 ms): immediately after the keypress nothing has announced -
-  // the polite channel still holds the pre-move message.
-  expect(await readPoliteAnnouncement(page)).toBe(politeBefore)
+  // The 180 ms debounce window itself is unit-owned (feedback.test.ts /
+  // announcement-store.test.ts): asserting "nothing announced yet" here would
+  // race the timer under CI load. This test pins the settled outcome.
 
   // Compute the settled announcement from the scene's own resolved position
   // (formatDistanceMeters: long-form meters, max one fraction digit).
