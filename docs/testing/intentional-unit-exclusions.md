@@ -33,9 +33,11 @@ gap analysis.
 - Canvas composition: `scene/scene.tsx`, `app/App.tsx`, `main.tsx`,
   `app/chrome/editor-body.tsx`, `app/chrome/top-header/top-header-dialogs.tsx`.
 - r3f environment / presentational: `environment/{lighting,room,wall-material}.tsx`,
-  `camera/camera-controls.tsx`, `feedback/announcer.tsx`,
+  `camera/camera-controls.tsx`,
   `project-info/asset-attribution.tsx`, `startup/initialization-{error,progress}.tsx`,
   the confirmation-dialog components, `catalog-drawer.tsx`, `room-sidebar.tsx`.
+  (`feedback/announcer.tsx` is unit-tested: its always-mounted live-region DOM
+  contract is load-bearing for screen readers.)
 - Config / registration: `*-dialog-definition.ts`, `camera-presets.ts`.
 - Pure wiring: `core/operations/editor-reconcilers.ts` (composes four
   already-tested reconcilers).
@@ -43,7 +45,7 @@ gap analysis.
   `app/testing/use-test-state-bridge.ts`.
 - `shared/ui/*` thin wrappers: styling wrappers over Base UI primitives
   (`tooltip`, `tabs`, `drawer`, `collapsible`, `scroll-area`, `progress`,
-  `sonner`, `button`, `card`) and purely presentational bespoke pieces
+  `toast`, `button`, `card`) and purely presentational bespoke pieces
   (`surface`, `caption`, `kbd`, `description-list`, the `*-variants` modules).
   These components are project-owned (see
   [ui-components.md](../architecture/ui-components.md)), but their interaction
