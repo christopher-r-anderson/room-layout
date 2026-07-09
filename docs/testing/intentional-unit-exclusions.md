@@ -36,7 +36,7 @@ gap analysis.
   `camera/camera-controls.tsx`,
   `project-info/asset-attribution.tsx`, `startup/initialization-{error,progress}.tsx`,
   the confirmation-dialog components, `catalog-drawer.tsx`, `room-sidebar.tsx`.
-  (`feedback/announcer.tsx` is unit-tested: its always-mounted live-region DOM
+  (`app/chrome/announcer.tsx` is unit-tested: its always-mounted live-region DOM
   contract is load-bearing for screen readers.)
 - Config / registration: `*-dialog-definition.ts`, `camera-presets.ts`.
 - Pure wiring: `core/operations/editor-reconcilers.ts` (composes four

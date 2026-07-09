@@ -501,6 +501,26 @@ export async function holdKey(page: Page, key: string, durationMs = 150) {
   }
 }
 
+/**
+ * With furniture requests blocked, attempts an add from the catalog drawer
+ * (opening it if needed) and returns the picker locator. Items from different
+ * collections load separately, so each raises its own error toast.
+ */
+export async function attemptFailingAdd(page: Page, itemName: string) {
+  const picker = page.getByRole('dialog', { name: 'Add furniture' })
+
+  if (!(await picker.isVisible())) {
+    await page.getByRole('button', { name: 'Add Furniture' }).click()
+    await expect(picker).toBeVisible()
+  }
+
+  await picker.getByText(itemName, { exact: true }).click()
+  await expect(picker.getByRole('radio', { name: itemName })).toBeChecked()
+  await picker.getByRole('button', { name: 'Add Item' }).click()
+
+  return picker
+}
+
 export async function delayFurnitureAssetRequests(page: Page) {
   let releaseRequests: (() => void) | null = null
   let isReleased = false

@@ -75,7 +75,7 @@ export function EditorPanels() {
 
       {/* z-10: keeps the panels above the z-0 canvas, which is a later,
           positioned sibling inside <main>. */}
-      <div className="z-10 grid gap-2 md:justify-items-start md:items-end md:grid-cols-2 md:grid-rows-[1fr_auto]">
+      <div className="z-10 grid gap-2 md:justify-items-start md:items-end md:grid-cols-2">
         {isDesktop && (
           <Outliner
             ref={registerExclusionElement('outliner')}
@@ -83,7 +83,7 @@ export function EditorPanels() {
           />
         )}
 
-        <div className="flex flex-col gap-2 pointer-events-auto md:col-start-2 md:row-start-1 md:row-span-2 md:justify-self-end">
+        <div className="flex flex-col gap-2 pointer-events-auto md:col-start-2 md:justify-self-end">
           {!isDesktop && hasSelection ? (
             <SelectedItemToolbar className="w-fit" />
           ) : null}

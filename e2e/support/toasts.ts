@@ -1,6 +1,6 @@
 import { expect, type Locator, type Page } from '@playwright/test'
 
-export type ToastIntent = 'success' | 'info' | 'warning' | 'error'
+export type ToastIntent = 'success' | 'warning' | 'error'
 
 /** The toast viewport: a region landmark labeled "Notifications". */
 export function toastViewport(page: Page): Locator {
@@ -30,17 +30,17 @@ export async function waitForToast(
   return toast
 }
 
-/**
- * Asserts no toast is showing: the viewport either is not mounted or has no
- * toast children.
- */
+/** Asserts the viewport holds no toasts. */
 export async function expectNoToasts(page: Page): Promise<void> {
-  await expect(toastViewport(page).locator('> [data-type]')).toHaveCount(0)
+  await expect(toastRoots(page)).toHaveCount(0)
 }
 
-/** Reads the visible toasts' full text (title plus description per toast). */
+/**
+ * Reads every toast root's full text (title plus description), including
+ * hidden over-limit data-limited placeholders.
+ */
 export async function readToastTexts(page: Page): Promise<string[]> {
-  return toastViewport(page).locator('> [data-type]').allTextContents()
+  return toastRoots(page).allTextContents()
 }
 
 /**

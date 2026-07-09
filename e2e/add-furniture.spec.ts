@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test'
 import {
   addFurniture,
+  attemptFailingAdd,
   dragSelectedFurniture,
   expectAssertiveAnnouncementUnchanged,
   failFurnitureAssetRequestsUntilRetry,
@@ -63,11 +64,7 @@ test('surfaces an error and recovers when an added item fails to load', async ({
   await page.goto('/')
   await waitForEditorReady(page)
 
-  const picker = page.getByRole('dialog', { name: 'Add furniture' })
-  await page.getByRole('button', { name: 'Add Furniture' }).click()
-  await expect(picker).toBeVisible()
-  await picker.getByText('Leather Couch', { exact: true }).click()
-  await picker.getByRole('button', { name: 'Add Item' }).click()
+  const picker = await attemptFailingAdd(page, 'Leather Couch')
 
   // The failed add reports one error toast (visible over the drawer), adds
   // nothing, and the button recovers; the assertive channel stays empty.

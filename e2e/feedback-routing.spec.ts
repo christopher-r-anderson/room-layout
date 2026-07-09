@@ -9,6 +9,7 @@ import {
   addFurniture,
   expectAssertiveAnnouncementUnchanged,
   expectPoliteAnnouncementUnchanged,
+  attemptFailingAdd,
   failFurnitureAssetRequestsUntilRetry,
   focusRoomView,
   openEditor,
@@ -52,8 +53,8 @@ test('keyboard move announces debounced on the polite channel with no toast', as
   await focusRoomView(page)
   await page.keyboard.press('ArrowRight')
 
-  // The 180 ms debounce window itself is unit-owned (feedback.test.ts /
-  // feedback-store.test.ts): asserting "nothing announced yet" here would
+  // The 180 ms debounce window itself is unit-owned
+  // (feedback-store.test.ts): asserting "nothing announced yet" here would
   // race the timer under CI load. This test pins the settled outcome.
 
   // Compute the settled announcement from the scene's own resolved position
@@ -101,11 +102,7 @@ test('add failure raises an error toast only; both announcer channels stay silen
   const politeBefore = await readPoliteAnnouncement(page)
   const assertiveBefore = await readAssertiveAnnouncement(page)
 
-  const picker = page.getByRole('dialog', { name: 'Add furniture' })
-  await page.getByRole('button', { name: 'Add Furniture' }).click()
-  await expect(picker).toBeVisible()
-  await picker.getByText('Leather Couch', { exact: true }).click()
-  await picker.getByRole('button', { name: 'Add Item' }).click()
+  await attemptFailingAdd(page, 'Leather Couch')
 
   await waitForToast(page, {
     text: "Couldn't load that item. Check your connection and try again.",

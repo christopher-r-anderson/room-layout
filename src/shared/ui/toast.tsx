@@ -13,7 +13,6 @@ import { Button } from '@/shared/ui/button'
 
 const INTENT_ICONS: Record<string, typeof IconInfoCircle> = {
   success: IconCircleCheck,
-  info: IconInfoCircle,
   warning: IconAlertTriangle,
   error: IconAlertOctagon,
 }
@@ -22,13 +21,12 @@ function ToastList() {
   const { toasts } = Toast.useToastManager()
 
   return toasts.map((toast) => {
-    const Icon = INTENT_ICONS[toast.type ?? 'info'] ?? IconInfoCircle
+    const Icon = INTENT_ICONS[toast.type ?? ''] ?? IconInfoCircle
 
     return (
       <Toast.Root
         key={toast.id}
         toast={toast}
-        data-priority={toast.priority ?? 'low'}
         className={cn(
           'pointer-events-auto relative flex w-full items-start gap-2 rounded-xl bg-popover p-3 pe-10 text-xs/relaxed text-popover-foreground ring-1 ring-foreground/10 shadow-lg outline-none focus-visible:ring-2 focus-visible:ring-ring/50',
           '[translate:var(--toast-swipe-movement-x,0px)_var(--toast-swipe-movement-y,0px)]',
@@ -80,7 +78,7 @@ export function AppToaster({ toastManager }: AppToasterProps) {
   const { t } = useLingui()
 
   return (
-    <Toast.Provider toastManager={toastManager}>
+    <Toast.Provider toastManager={toastManager} limit={3}>
       {/* Portal to body: inside the fixed app shell the viewport would paint
           under the body-portaled drawers/dialogs regardless of z-index. */}
       <Toast.Portal>

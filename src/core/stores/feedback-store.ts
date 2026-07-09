@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { Toast } from '@base-ui/react/toast'
 
 const MOVEMENT_ANNOUNCEMENT_DELAY_MS = 180
+const SUCCESS_TIMEOUT_MS = 5_000
 const WARNING_TIMEOUT_MS = 8_000
 
 /** A user-facing notice; `title` leads, `description` adds consequence/detail. */
@@ -23,8 +24,9 @@ interface FeedbackStoreState {
 }
 
 /**
- * The toast half of the feedback surface. Exported only so the app shell can
- * hand it to `AppToaster`; everything else goes through `feedback`.
+ * The toast half of the feedback surface. Exported for the app shell to hand
+ * to `AppToaster` and for tests to spy on; everything else goes through
+ * `feedback`.
  */
 export const appToastManager = Toast.createToastManager()
 
@@ -72,13 +74,17 @@ function raiseToast(
  * class, the surface routing lives here. When to use which entry is covered
  * in docs/architecture/feedback.md. Messages arrive already translated.
  *
- * Every entry cancels a pending debounced movement announcement, so a stale
- * position never announces after the outcome that superseded it.
+ * Raising feedback cancels a pending debounced movement announcement, so a
+ * stale position never announces after the outcome that superseded it.
  */
 export const feedback = {
   /** Outcome notice for a completed global action. Toast, auto-dismisses. */
   actionSuccess: (message: FeedbackMessage): void => {
-    raiseToast(message, { type: 'success', priority: 'low' })
+    raiseToast(message, {
+      type: 'success',
+      priority: 'low',
+      timeout: SUCCESS_TIMEOUT_MS,
+    })
   },
 
   /** Degraded-outcome notice. Toast, lingers longer than a success. */
