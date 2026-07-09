@@ -63,6 +63,29 @@ describe('ShareSceneButton', () => {
     expect(await screen.findByText('Shared')).toBeInTheDocument()
   })
 
+  it('forwards injected toolbar props to the underlying button', () => {
+    // A Toolbar.Button injects roving tabindex and data attributes through its
+    // render prop; the button must carry them so it registers as a toolbar item.
+    render(<ShareSceneButton tabIndex={-1} data-testid="share-item" />)
+
+    const button = screen.getByRole('button', { name: 'Share room layout' })
+    expect(button).toHaveAttribute('tabindex', '-1')
+    expect(button).toHaveAttribute('data-testid', 'share-item')
+  })
+
+  it('runs an injected click handler alongside the share', async () => {
+    const user = userEvent.setup()
+    shareSceneMock.mockResolvedValue('shared')
+    const onClick = vi.fn()
+
+    render(<ShareSceneButton onClick={onClick} />)
+
+    await user.click(screen.getByRole('button', { name: 'Share room layout' }))
+
+    expect(onClick).toHaveBeenCalledOnce()
+    expect(shareSceneMock).toHaveBeenCalledOnce()
+  })
+
   it('re-enables the button if the share attempt rejects', async () => {
     const user = userEvent.setup()
     shareSceneMock.mockRejectedValue(new Error('share failed'))

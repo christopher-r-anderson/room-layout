@@ -5,18 +5,20 @@ import { IconCheck, IconShare3 } from '@tabler/icons-react'
 import type { ComponentProps } from 'react'
 import { shareScene } from '@/core/operations/share-scene'
 
-interface ShareSceneButtonProps {
-  disabled?: boolean
-  className?: string
-  size?: ComponentProps<typeof Button>['size']
-  variant?: ComponentProps<typeof Button>['variant']
-}
+// Accepts the full Button surface (including the ref, roving tabindex, and data
+// attributes a Toolbar.Button injects through its `render` prop) and forwards it
+// to the underlying button. Forwarding is what registers this control as a real
+// toolbar item; without it the button stays a stray tab stop outside the header
+// toolbar's arrow navigation.
+type ShareSceneButtonProps = ComponentProps<typeof Button>
 
 export function ShareSceneButton({
-  disabled = false,
-  className,
   size = 'default',
   variant = 'default',
+  disabled = false,
+  className,
+  onClick,
+  ...props
 }: ShareSceneButtonProps) {
   const { t } = useLingui()
   const [shareResult, setShareResult] = useState<'shared' | 'copied' | null>(
@@ -38,7 +40,7 @@ export function ShareSceneButton({
     }
   }, [shareResult])
 
-  const handleClick = useCallback(async () => {
+  const runShare = useCallback(async () => {
     if (isPending) {
       return
     }
@@ -58,6 +60,18 @@ export function ShareSceneButton({
     }
   }, [isPending])
 
+  const handleClick = useCallback<
+    NonNullable<ShareSceneButtonProps['onClick']>
+  >(
+    (event) => {
+      // Run any handler the toolbar injected (roving-focus bookkeeping) before
+      // starting the share.
+      onClick?.(event)
+      void runShare()
+    },
+    [onClick, runShare],
+  )
+
   const label =
     shareResult === 'shared'
       ? t`Shared`
@@ -70,11 +84,10 @@ export function ShareSceneButton({
       variant={variant}
       size={size}
       disabled={disabled || isPending}
-      onClick={() => {
-        void handleClick()
-      }}
       aria-label={t`Share room layout`}
       className={className}
+      onClick={handleClick}
+      {...props}
     >
       {shareResult === null ? (
         <IconShare3 aria-hidden="true" size={16} />
