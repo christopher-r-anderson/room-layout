@@ -11,6 +11,7 @@ import {
   EDITOR_READY_TIMEOUT_MS,
   GATED_RESTORE_ITEM,
   addFurniture,
+  attemptFailingAdd,
   delayFurnitureAssetRequests,
   failFurnitureAssetRequestsUntilRetry,
   makeSceneRoute,
@@ -35,11 +36,7 @@ test('error toast over the open catalog drawer', async ({ page }) => {
   await page.goto('/')
   await waitForEditorReady(page)
 
-  const picker = page.getByRole('dialog', { name: 'Add furniture' })
-  await page.getByRole('button', { name: 'Add Furniture' }).click()
-  await expect(picker).toBeVisible()
-  await picker.getByText('Leather Couch', { exact: true }).click()
-  await picker.getByRole('button', { name: 'Add Item' }).click()
+  const picker = await attemptFailingAdd(page, 'Leather Couch')
   await waitForToast(page, { text: "Couldn't load that item", type: 'error' })
   await expect(picker).toBeVisible()
 

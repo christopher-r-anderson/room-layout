@@ -8,6 +8,8 @@ import { requestOutlinerFocus } from '@/core/operations/focus-actions'
 import { useEditorRefs } from '@/shared/providers/editor-refs-context'
 import { i18n } from '@/shared/i18n/i18n'
 
+const NO_SELECTION_FOCUS_FALLBACK = msg`No item selected. Focus moved to Furniture in room.`
+
 const FOCUSABLE_CONTROL_SELECTOR =
   'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
 
@@ -34,9 +36,7 @@ export function useEditorFocusCommands(): EditorFocusCommands {
   const focusInspector = useCallback(() => {
     if (selectedFurniture === null) {
       requestOutlinerFocus()
-      feedback.interactionUpdate(
-        i18n._(msg`No item selected. Focus moved to Furniture in room.`),
-      )
+      feedback.interactionUpdate(i18n._(NO_SELECTION_FOCUS_FALLBACK))
       return
     }
 
@@ -62,9 +62,7 @@ export function useEditorFocusCommands(): EditorFocusCommands {
   const focusToolbar = useCallback(() => {
     if (selectedFurniture === null) {
       requestOutlinerFocus()
-      feedback.interactionUpdate(
-        i18n._(msg`No item selected. Focus moved to Furniture in room.`),
-      )
+      feedback.interactionUpdate(i18n._(NO_SELECTION_FOCUS_FALLBACK))
       return
     }
 

@@ -23,8 +23,11 @@ import {
   removeSceneParamFromUrl,
 } from '@/core/persistence/scene-url'
 import { runStartupBootstrap } from './startup-bootstrap'
-import { runStartupRestoreFlow, validateDraftState } from './restore-flow'
-import type { RestorableState } from './restore-flow.types'
+import {
+  runStartupRestoreFlow,
+  validateDraftState,
+  type RestorableState,
+} from './restore-flow'
 
 // Resets the editor surface back to a clean slate. Used by the asset-error and
 // retry transitions so a failed or restarted load never leaves stale scene or
@@ -39,6 +42,9 @@ function resetStartupShell() {
   resetToolbarGeometryStore()
   resetToolbarInteractionStore()
   clearSceneServices()
+  // Pending feedback is stale scene state too: clear announcements and close
+  // toasts so nothing describes the pre-reset world.
+  feedback.reset()
 }
 
 function resolveFinishContext() {
@@ -192,10 +198,8 @@ function reportStartupError(kind: StartupErrorKind, error: Error) {
     message: error.message,
   })
   dialogActions.closeActiveDialog()
+  // The InitializationError overlay is the only feedback surface here.
   resetStartupShell()
-  // The InitializationError overlay is the only feedback surface here; reset
-  // clears pending announcements and open toasts so nothing speaks over it.
-  feedback.reset()
 }
 
 // A furniture/scene asset failed while loading or rendering.
@@ -221,6 +225,5 @@ export function requestAssetRetry() {
   resetCollectionPipeline()
 
   editorLifecycleActions.requestRetry()
-  feedback.reset()
   runStartupBootstrap()
 }

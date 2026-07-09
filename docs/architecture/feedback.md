@@ -47,7 +47,7 @@ region, so each class uses the nearest one it has. Toasts
 (`shared/ui/toast.tsx`) are visual + SR in one surface - Base UI's
 always-mounted viewport announces them itself (priority high = assertive), so
 toast entries never also call the announcer. The Announcer
-(`app/chrome/feedback/announcer.tsx`) is the SR-only polite/assertive pair
+(`app/chrome/announcer.tsx`) is the SR-only polite/assertive pair
 everything else shares. Startup overlays self-announce on insertion; inline
 field errors render their visible text conditionally, so their announcement
 borrows the always-mounted assertive channel.

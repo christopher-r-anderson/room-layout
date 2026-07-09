@@ -48,7 +48,6 @@ describe('movement-actions', () => {
   })
 
   afterEach(() => {
-    resetFeedbackStore()
     vi.useRealTimers()
     vi.restoreAllMocks()
     vi.clearAllMocks()

@@ -1,14 +1,12 @@
 import { readFileSync } from 'node:fs'
 import path from 'node:path'
-import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page } from '@playwright/test'
 import { formatter } from '@lingui/format-po'
 import {
   readPoliteAnnouncement,
   waitForEditorReadyAnyLocale,
 } from './support/editor-harness'
-
-const WCAG_AA_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']
+import { expectNoA11yViolations } from './support/axe'
 
 // Loading the editor under the `en-XA` pseudo-locale exercises the i18n pipeline:
 // per-locale catalog code-splitting and dynamic activation, that every visible
@@ -94,16 +92,6 @@ async function expectNoHorizontalOverflow(page: Page) {
   expect(horizontalOverflow).toBeLessThanOrEqual(1)
 }
 
-async function expectAxeConformance(page: Page, context: string) {
-  const axeResult = await new AxeBuilder({ page })
-    .withTags(WCAG_AA_TAGS)
-    .analyze()
-  expect(
-    axeResult.violations,
-    `Expected no axe violations under the en-XA pseudo-locale (${context})`,
-  ).toEqual([])
-}
-
 test.describe('pseudo-locale', () => {
   test('activates the split en-XA catalog and survives length expansion', async ({
     page,
@@ -129,7 +117,7 @@ test.describe('pseudo-locale', () => {
 
     await expectAriaLabelsLocalized(page)
     await expectNoHorizontalOverflow(page)
-    await expectAxeConformance(page, 'editor')
+    await expectNoA11yViolations(page, 'en-XA pseudo-locale: editor')
 
     // The catalog drawer: exercises drawer copy plus the per-entry footprint
     // labels, and the aria sweep now covers the manifest-name exemption.
@@ -140,7 +128,7 @@ test.describe('pseudo-locale', () => {
     await expect(catalogDrawer).toBeVisible()
     await expectAriaLabelsLocalized(page)
     await expectNoHorizontalOverflow(page)
-    await expectAxeConformance(page, 'catalog drawer')
+    await expectNoA11yViolations(page, 'en-XA pseudo-locale: catalog drawer')
     await page.keyboard.press('Escape')
     await expect(catalogDrawer).toBeHidden()
 
@@ -156,7 +144,7 @@ test.describe('pseudo-locale', () => {
     ).toBeVisible()
     await expectAriaLabelsLocalized(page)
     await expectNoHorizontalOverflow(page)
-    await expectAxeConformance(page, 'room panel')
+    await expectNoA11yViolations(page, 'en-XA pseudo-locale: room panel')
     await page.keyboard.press('Escape')
     await expect(roomSurface).toBeHidden()
 
@@ -172,7 +160,10 @@ test.describe('pseudo-locale', () => {
     await expect(infoDialog.getByText(pseudo('Author')).first()).toBeVisible()
     expect(await infoDialog.innerText()).not.toContain('Author')
     await expectAriaLabelsLocalized(page)
-    await expectAxeConformance(page, 'project info dialog')
+    await expectNoA11yViolations(
+      page,
+      'en-XA pseudo-locale: project info dialog',
+    )
   })
 
   test('feedback surfaces resolve their strings from the active catalog', async ({

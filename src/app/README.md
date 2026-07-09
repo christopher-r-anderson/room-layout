@@ -11,7 +11,7 @@ Contains
 - `App.tsx`: bootstrap and render - perf gate, startup bootstrap + the core
   readiness observer, dialog registry bootstrap, reconcilers, and the test bridge,
   composing the provider tree.
-- `chrome/`: app-shell composition (editor body/overlay, top header, feedback)
+- `chrome/`: app-shell composition (editor body/overlay, top header, announcer)
   and the provider-composition root in `chrome/providers`.
 - `commands/`: assembles the editor command map and the view-bound focus command
   impls. Command semantics live in `core`/features; this only wires them.

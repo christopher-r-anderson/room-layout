@@ -7,9 +7,10 @@
  * timers, so every timeout assertion first parks the mouse away from the
  * bottom-right toast corner.
  */
-import { expect, test, type Page } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 import {
   addFurniture,
+  attemptFailingAdd,
   failFurnitureAssetRequestsUntilRetry,
   focusRoomView,
   openEditor,
@@ -32,24 +33,6 @@ const ADD_FAILURE_TEXT =
 // Success toasts auto-dismiss in 5s; waiting a bounded 6s and still seeing the
 // error pins its `timeout: 0` (a regression to any auto-dismiss timeout fails).
 const ERROR_PERSISTENCE_PROBE_MS = 6_000
-
-/**
- * With furniture requests blocked, attempts an add from the open catalog
- * drawer. Each distinct collection loads separately, so items from different
- * collections raise distinct error toasts.
- */
-async function attemptFailingAdd(page: Page, itemName: string) {
-  const picker = page.getByRole('dialog', { name: 'Add furniture' })
-
-  if (!(await picker.isVisible())) {
-    await page.getByRole('button', { name: 'Add Furniture' }).click()
-    await expect(picker).toBeVisible()
-  }
-
-  await picker.getByText(itemName, { exact: true }).click()
-  await expect(picker.getByRole('radio', { name: itemName })).toBeChecked()
-  await picker.getByRole('button', { name: 'Add Item' }).click()
-}
 
 test('error toast over the open catalog drawer persists and is dismissible', async ({
   page,
