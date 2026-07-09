@@ -1,4 +1,4 @@
-import { type ReactElement, useRef } from 'react'
+import { type ReactElement, useEffect, useRef } from 'react'
 import { Trans, useLingui } from '@lingui/react/macro'
 import { IconLoader } from '@tabler/icons-react'
 import { formatDecimal } from '@/shared/i18n/formatters'
@@ -63,6 +63,14 @@ export function CatalogDrawer({
       focusRoomViewOnCloseRef.current = true
     },
   })
+  // An add that resolves after the drawer was already dismissed leaves the flag
+  // set with no close event to consume it; clear it on open so a later cancel
+  // still restores focus to the trigger.
+  useEffect(() => {
+    if (open) {
+      focusRoomViewOnCloseRef.current = false
+    }
+  }, [open])
   const selectedUnavailable = selectedSourcePath
     ? failedCollections.get(selectedSourcePath) === 'unavailable'
     : false

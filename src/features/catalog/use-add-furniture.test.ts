@@ -83,6 +83,11 @@ describe('useAddFurniture', () => {
     })
     expect(onAdded).toHaveBeenCalledOnce()
     expect(setCatalogDrawerOpenMock).toHaveBeenCalledWith(false)
+    // onAdded must run before the close so the drawer captures its focus intent
+    // before the close-auto-focus fires.
+    expect(onAdded.mock.invocationCallOrder[0]).toBeLessThan(
+      setCatalogDrawerOpenMock.mock.invocationCallOrder[0],
+    )
   })
 
   it('does not run onAdded when the add does not succeed', async () => {
