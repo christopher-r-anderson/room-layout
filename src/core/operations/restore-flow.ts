@@ -7,11 +7,12 @@ import {
 } from '@/core/persistence/scene-url'
 import type { SceneDraftState } from '@/core/persistence/scene-draft'
 import { i18n } from '@/shared/i18n/i18n'
+import { feedback } from '@/core/stores/feedback-store'
+import { editorLifecycleActions } from '@/core/stores/editor-lifecycle-store'
 import type {
   DraftRestoreAttempt,
   InvalidRestoreCase,
   RestorableState,
-  RestoreFlowNotifications,
 } from './restore-flow.types'
 
 // Copy tables for the invalid-link fallback branches. Descriptors resolve in
@@ -67,27 +68,22 @@ function tryRestoreDraft(
   }
 }
 
-function reportInvalidRestore(
-  notifications: RestoreFlowNotifications,
-  invalidCase: InvalidRestoreCase,
-) {
-  notifications.setRestoreOutcome('invalid')
-  notifications.actionError({
+function reportInvalidRestore(invalidCase: InvalidRestoreCase) {
+  editorLifecycleActions.recordRestoreOutcome('invalid')
+  feedback.actionError({
     title: i18n._(invalidCase.title),
     description: i18n._(invalidCase.description),
   })
 }
 
 function reportRecoveredDraftAfterInvalidLink(
-  notifications: RestoreFlowNotifications,
   recoveredMessage: MessageDescriptor,
 ) {
-  notifications.setRestoreOutcome('invalid')
-  notifications.actionWarning({ title: i18n._(recoveredMessage) })
+  editorLifecycleActions.recordRestoreOutcome('invalid')
+  feedback.actionWarning({ title: i18n._(recoveredMessage) })
 }
 
 function restoreFromInvalidLinkWithDraftFallback(
-  notifications: RestoreFlowNotifications,
   applyState: (state: RestorableState) => void,
   draftState: RestorableState | null,
   options: {
@@ -99,15 +95,11 @@ function restoreFromInvalidLinkWithDraftFallback(
   const draftRestore = tryRestoreDraft(draftState, applyState)
 
   if (draftRestore === 'restored') {
-    reportRecoveredDraftAfterInvalidLink(
-      notifications,
-      options.recoveredMessage,
-    )
+    reportRecoveredDraftAfterInvalidLink(options.recoveredMessage)
     return
   }
 
   reportInvalidRestore(
-    notifications,
     draftRestore === 'failed'
       ? options.whenDraftFailed
       : options.whenDraftMissing,
@@ -156,7 +148,6 @@ export function runStartupRestoreFlow(options: {
   validDraftState: SceneDraftState | null
   applyState: (state: RestorableState) => void
   isFreshState?: (state: RestorableState) => boolean
-  notifications: RestoreFlowNotifications
 }) {
   const {
     parseResult,
@@ -164,7 +155,6 @@ export function runStartupRestoreFlow(options: {
     validDraftState,
     applyState,
     isFreshState = () => false,
-    notifications,
   } = options
 
   const primary = selectPrimaryRestoreState({
@@ -176,13 +166,12 @@ export function runStartupRestoreFlow(options: {
   if (primary.source === 'link') {
     try {
       applyState(primary.state)
-      notifications.setRestoreOutcome('restored')
-      notifications.actionSuccess({
+      editorLifecycleActions.recordRestoreOutcome('restored')
+      feedback.actionSuccess({
         title: i18n._(msg`Room layout restored from shared link.`),
       })
     } catch {
       restoreFromInvalidLinkWithDraftFallback(
-        notifications,
         applyState,
         validDraftState,
         APPLY_FAILED_LINK_CASES,
@@ -194,7 +183,6 @@ export function runStartupRestoreFlow(options: {
   if (parseResult.ok) {
     // The link parsed but references furniture the catalog does not know.
     restoreFromInvalidLinkWithDraftFallback(
-      notifications,
       applyState,
       validDraftState,
       UNKNOWN_FURNITURE_LINK_CASES,
@@ -204,7 +192,6 @@ export function runStartupRestoreFlow(options: {
 
   if (parseResult.reason !== 'no-param') {
     restoreFromInvalidLinkWithDraftFallback(
-      notifications,
       applyState,
       validDraftState,
       INVALID_LINK_CASES,
@@ -216,12 +203,12 @@ export function runStartupRestoreFlow(options: {
     try {
       applyState(validDraftState)
       if (!isFreshState(validDraftState)) {
-        notifications.actionSuccess({
+        feedback.actionSuccess({
           title: i18n._(msg`Restored your saved draft.`),
         })
       }
     } catch {
-      reportInvalidRestore(notifications, {
+      reportInvalidRestore({
         title: msg`Draft could not be restored.`,
         description: STARTING_WITH_EMPTY_ROOM,
       })
@@ -229,5 +216,5 @@ export function runStartupRestoreFlow(options: {
     }
   }
 
-  notifications.setRestoreOutcome('skipped')
+  editorLifecycleActions.recordRestoreOutcome('skipped')
 }

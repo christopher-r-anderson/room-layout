@@ -38,7 +38,7 @@ describe('start-over-actions', () => {
     expect(addToast).toHaveBeenCalledWith(
       expect.objectContaining({ title: STARTED_OVER_MESSAGE, type: 'success' }),
     )
-    // The toast is the single surface: the old polite announcement is gone.
+    // The toast is the single surface; the polite channel stays silent.
     expect(feedbackStoreForTests.getState().polite.text).toBe('')
   })
 })

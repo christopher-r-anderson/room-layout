@@ -5,14 +5,13 @@ const MOVEMENT_ANNOUNCEMENT_DELAY_MS = 180
 const WARNING_TIMEOUT_MS = 8_000
 
 /** A user-facing notice; `title` leads, `description` adds consequence/detail. */
-export interface FeedbackMessage {
+interface FeedbackMessage {
   title: string
   description?: string
 }
 
-// An announcement channel's message plus a monotonic nonce. The Announcer keys
-// a fresh DOM node off the nonce, so repeating the same text is still a new
-// "addition" for screen readers and re-announces.
+// A channel's message plus a monotonic nonce: the Announcer keys a fresh DOM
+// node off the nonce, so a repeated message still re-announces.
 interface Announcement {
   text: string
   nonce: number
@@ -24,16 +23,11 @@ interface FeedbackStoreState {
 }
 
 /**
- * The toast half of the feedback surface. Module-level so plain functions
- * (operations, feature actions) can raise toasts without React; exported only
- * so the app shell can hand it to `AppToaster`, whose provider subscribes to
- * it - everything else goes through `feedback`.
+ * The toast half of the feedback surface. Exported only so the app shell can
+ * hand it to `AppToaster`; everything else goes through `feedback`.
  */
 export const appToastManager = Toast.createToastManager()
 
-// The debounce timer lives at module scope rather than in store state: it is
-// an imperative scheduling detail, not a reactive value, and there is a single
-// announcement region for the app.
 let movementAnnouncementTimeout: number | null = null
 let nonceCounter = 0
 
@@ -74,23 +68,21 @@ function raiseToast(
 }
 
 /**
- * The sanctioned entry points for user feedback. Call sites state the domain
- * class of the event; the surface routing lives here, per the policy in
- * docs/architecture/feedback.md. Messages arrive already translated.
+ * The sanctioned entry points for user feedback: call sites state the event
+ * class, the surface routing lives here. When to use which entry is covered
+ * in docs/architecture/feedback.md. Messages arrive already translated.
  *
- * Every entry is one surface set: toasts announce through the viewport's own
- * live regions (priority high = assertive), announcer entries are SR-only.
- * Explicit feedback cancels a pending debounced movement announcement so a
- * stale position never announces after the outcome that superseded it.
+ * Every entry cancels a pending debounced movement announcement, so a stale
+ * position never announces after the outcome that superseded it.
  */
 export const feedback = {
-  /** Outcome notice for a completed global action. Auto-dismisses. */
-  actionSuccess(message: FeedbackMessage): void {
+  /** Outcome notice for a completed global action. Toast, auto-dismisses. */
+  actionSuccess: (message: FeedbackMessage): void => {
     raiseToast(message, { type: 'success', priority: 'low' })
   },
 
-  /** Degraded-outcome notice. Lingers longer than a success. */
-  actionWarning(message: FeedbackMessage): void {
+  /** Degraded-outcome notice. Toast, lingers longer than a success. */
+  actionWarning: (message: FeedbackMessage): void => {
     raiseToast(message, {
       type: 'warning',
       priority: 'low',
@@ -99,27 +91,23 @@ export const feedback = {
   },
 
   /**
-   * A failed user action. Announced assertively and kept on screen until
-   * dismissed: errors are rare and actionable, and an auto-dismissing error
-   * can vanish before a screen-reader or sighted user reaches it.
+   * A failed user action. Toast, announced assertively and kept on screen
+   * until dismissed (an auto-dismissing error can vanish before it is read).
    */
-  actionError(message: FeedbackMessage): void {
+  actionError: (message: FeedbackMessage): void => {
     raiseToast(message, { type: 'error', priority: 'high', timeout: 0 })
   },
 
-  /**
-   * SR-only polite note for an interaction whose visual outcome is already
-   * on screen (selection, add/delete, undo/redo, committed edits).
-   */
-  interactionUpdate(text: string): void {
+  /** SR-only polite note for an outcome that is already visible on screen. */
+  interactionUpdate: (text: string): void => {
     announce('polite', text)
   },
 
   /**
-   * SR-only polite note for continuous movement (keyboard move/rotate),
-   * debounced so rapid keypresses announce only the settled state.
+   * SR-only polite note for continuous movement, debounced so rapid
+   * keypresses announce only the settled state.
    */
-  movementUpdate(text: string): void {
+  movementUpdate: (text: string): void => {
     if (!text) {
       return
     }
@@ -133,20 +121,18 @@ export const feedback = {
   },
 
   /**
-   * SR-only assertive note for a rejected form input. The visible error text
-   * is the caller's: rendered inline next to the field with aria-invalid and
-   * aria-describedby.
+   * SR-only assertive note for a rejected form input; the visible error text
+   * stays with the field (aria-invalid + aria-describedby).
    */
-  formError(text: string): void {
+  formError: (text: string): void => {
     announce('assertive', text)
   },
 
   /**
-   * Resets the whole feedback surface: clears both announcement channels and
-   * any pending debounce, and closes all toasts - a fresh startup cycle must
-   * not carry notices that describe the pre-reset world.
+   * Clears both announcement channels, the pending debounce, and all toasts -
+   * a fresh startup cycle must not carry pre-reset notices.
    */
-  reset(): void {
+  reset: (): void => {
     clearQueuedMovementAnnouncement()
     useFeedbackStore.setState(useFeedbackStore.getInitialState(), true)
     appToastManager.close()

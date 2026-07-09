@@ -93,9 +93,7 @@ describe('addFurniture', () => {
         priority: 'high',
       }),
     )
-    // Toast only: the viewport portals to body above the drawer and announces
-    // through its own live regions, so the old paired assertive announcement
-    // is gone - the global assertive channel must stay empty.
+    // The toast is the single surface; the assertive channel stays empty.
     expect(feedbackStoreForTests.getState().assertive.text).toBe('')
 
     addFurnitureMutation.mockReturnValueOnce({

@@ -104,7 +104,7 @@ as a real-store integration test and leave the thin wrappers to e2e.
 Intentionally e2e-tested, presentational, trivial, or config:
 
 - Canvas composition: `scene/scene.tsx`, `app/App.tsx`, `main.tsx`, `app/chrome/editor-body.tsx`, `top-header-dialogs.tsx`.
-- r3f environment/presentational: `environment/{lighting,room,wall-material}.tsx`, `camera/camera-controls.tsx`, `feedback/announcer.tsx`, `project-info/asset-attribution.tsx`, `startup/initialization-{error,progress}.tsx`, the confirmation-dialog components, `catalog-drawer.tsx`, `room-sidebar.tsx`.
+- r3f environment/presentational: `environment/{lighting,room,wall-material}.tsx`, `camera/camera-controls.tsx`, `project-info/asset-attribution.tsx`, `startup/initialization-{error,progress}.tsx`, the confirmation-dialog components, `catalog-drawer.tsx`, `room-sidebar.tsx`.
 - Config/registration: `*-dialog-definition.ts`, `camera-presets.ts`.
 - Pure wiring: `core/operations/editor-reconcilers.ts` (composes three already-tested reconcilers).
 - Debug/test infra: `shared/debug/perf-counters.ts`, `app/testing/use-test-state-bridge.ts`.

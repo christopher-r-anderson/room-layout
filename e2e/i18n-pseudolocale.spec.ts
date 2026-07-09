@@ -3,7 +3,10 @@ import path from 'node:path'
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page } from '@playwright/test'
 import { formatter } from '@lingui/format-po'
-import { waitForEditorReadyAnyLocale } from './support/editor-harness'
+import {
+  readPoliteAnnouncement,
+  waitForEditorReadyAnyLocale,
+} from './support/editor-harness'
 
 const WCAG_AA_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']
 
@@ -170,5 +173,28 @@ test.describe('pseudo-locale', () => {
     expect(await infoDialog.innerText()).not.toContain('Author')
     await expectAriaLabelsLocalized(page)
     await expectAxeConformance(page, 'project info dialog')
+  })
+
+  test('feedback surfaces resolve their strings from the active catalog', async ({
+    page,
+  }) => {
+    await page.goto('/?lang=en-XA')
+    await waitForEditorReadyAnyLocale(page)
+
+    // The toast viewport's accessible name is a Lingui string: Base UI's own
+    // default is hardcoded English, so a plain "Notifications" here means the
+    // label prop regressed off the catalog. The viewport is always mounted
+    // (toasts or not), so assert attachment, not visibility.
+    await expect(
+      page.getByRole('region', { name: pseudo('Notifications') }),
+    ).toBeAttached()
+
+    // A focus command with no selection announces through the global polite
+    // channel; the message must come from the catalog, not hardcoded English.
+    // This is the only automated gate on that string staying localized.
+    await page.keyboard.press('Shift+I')
+    await expect
+      .poll(async () => readPoliteAnnouncement(page))
+      .toBe(pseudo('No item selected. Focus moved to Furniture in room.'))
   })
 })

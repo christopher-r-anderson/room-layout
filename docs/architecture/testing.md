@@ -94,11 +94,32 @@ keep them stable:
 
 ## Accessibility Test Coverage
 
-Run `e2e/editor-a11y-audits.spec.ts` when semantics, focus management, or
-announcements change.
+Run the a11y lanes when semantics, focus management, or announcements change:
 
-Automated checks are required but not sufficient. Plan manual assistive-tech
-verification for high-impact accessibility changes.
+- `e2e/editor-a11y-audits.spec.ts` - whole-page axe scans (WCAG 2.2 A/AA tags,
+  zero rule disables; helper in `e2e/support/axe.ts`) over the happy-path
+  editor states.
+- `e2e/feedback-a11y-audits.spec.ts` - the same scans over feedback states:
+  toasts visible (including over an open drawer), startup loading and error
+  overlays, field errors, the F6-focused notifications region.
+- `e2e/feedback-routing.spec.ts` - pins the event-class → surface routing
+  (unit twin: `core/stores/feedback-store.test.ts`; guidance:
+  [feedback.md](feedback.md)).
+- `e2e/feedback-toasts.spec.ts` - toast lifecycle: persistence, auto-dismiss,
+  stacking/limit, F6 focus, shell quiescence.
+- Toast locators live in `e2e/support/toasts.ts`; announcer channel readers in
+  `e2e/support/editor-harness.ts`.
+
+`eslint-plugin-jsx-a11y` is deliberately not part of the lint gate: a spike of
+its recommended config produced only false positives against deliberate,
+commented patterns (the explicit `role="list"` Safari fix, escape-to-close key
+handling on the room panel, the focusable room-view region, modal autofocus) -
+noise, not a regression fence. The axe e2e lane is the automated a11y gate.
+
+Automated checks are required but not sufficient. For feedback-surface changes
+run the manual assistive-technology script in
+[feedback.md](feedback.md#manual-assistive-technology-pass); plan manual AT
+verification for any other high-impact accessibility change.
 
 ## Artifacts
 

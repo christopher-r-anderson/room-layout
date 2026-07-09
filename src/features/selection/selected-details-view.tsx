@@ -188,6 +188,25 @@ export function SelectedDetailsView({
     }))
   }
 
+  // An explicit Enter always announces; a blur re-announces only a NEW error,
+  // so Enter-then-tab-away on the same invalid value speaks once.
+  const reportFieldError = (
+    field: SelectedItemDetailField,
+    message: string,
+    trigger: 'enter' | 'blur',
+  ) => {
+    const alreadyReported = errors[field] === message
+
+    setErrors((currentErrors) => ({
+      ...currentErrors,
+      [field]: message,
+    }))
+
+    if (trigger === 'enter' || !alreadyReported) {
+      feedback.formError(message)
+    }
+  }
+
   const commitField = (
     field: SelectedItemDetailField,
     fieldLabel: string,
@@ -212,11 +231,7 @@ export function SelectedDetailsView({
     if (rawValue.length === 0 || !Number.isFinite(parsedValue)) {
       const message = onInvalidSelectedItemDetailValue(fieldLabel)
 
-      setErrors((currentErrors) => ({
-        ...currentErrors,
-        [field]: message,
-      }))
-      feedback.formError(message)
+      reportFieldError(field, message, trigger)
       return
     }
 
@@ -249,11 +264,7 @@ export function SelectedDetailsView({
       return
     }
 
-    setErrors((currentErrors) => ({
-      ...currentErrors,
-      [field]: result.message,
-    }))
-    feedback.formError(result.message)
+    reportFieldError(field, result.message, trigger)
   }
 
   const firstErrorField =

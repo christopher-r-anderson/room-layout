@@ -14,9 +14,8 @@ import { LANG_QUERY_PARAM } from '@/shared/i18n/locales'
  * fires it and forgets; the share button awaits the result for its label.
  *
  * Returns `'shared'`/`'copied'` on success, or `null` when the user cancels or
- * the scene is too large; user-facing feedback is emitted here (SR-only polite
- * notes on success — the share button's own label is the visual surface — and
- * error toasts on failure).
+ * the scene is too large; user-facing feedback is emitted here (the share
+ * button's own label is the visual success surface).
  */
 export async function shareScene(): Promise<'shared' | 'copied' | null> {
   const items = useSceneDocumentStore.getState().history.present
