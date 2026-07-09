@@ -16,7 +16,10 @@ import {
   ADD_FURNITURE_WHILE_DRAGGING_MESSAGE,
 } from '@/shared/messages/command-messages'
 import { CATALOG_DIALOG_ID } from './catalog-dialog-definition'
-import { getActiveCatalogId } from './catalog-selection-store'
+import {
+  catalogSelectionActions,
+  getActiveCatalogId,
+} from './catalog-selection-store'
 
 // Prefetch-on-intent: start loading a catalog item's model when it is selected,
 // so a subsequent Add is usually instant. Fire-and-forget - the actual Add
@@ -90,5 +93,13 @@ export async function addFurniture(): Promise<boolean> {
 }
 
 export function setCatalogDrawerOpen(open: boolean) {
+  // Add Furniture is an action form, not a data-entry form: every open starts
+  // from a blank selection. The first catalog entry is not a default, and an
+  // item added (or merely considered) last time is not more likely to be wanted
+  // next. Resetting on open - rather than close - keeps that invariant however
+  // the drawer last closed: add, cancel, or outside dismissal.
+  if (open) {
+    catalogSelectionActions.reset()
+  }
   dialogActions.setDialogOpen(CATALOG_DIALOG_ID, open)
 }
