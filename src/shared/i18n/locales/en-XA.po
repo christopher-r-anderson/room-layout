@@ -602,6 +602,9 @@ msgstr "[Ũƥďàţĩńğāēīōūáéí]"
 msgid "Use the arrow keys to browse items in the room, then press Enter or Space to select one."
 msgstr "[Ũśē ţĥē àŕŕōŵ ķēŷś ţō ƀŕōŵśē ĩţēḿś ĩń ţĥē ŕōōḿ, ţĥēń ƥŕēśś Ēńţēŕ ōŕ Śƥàćē ţō śēĺēćţ ōńē.āēīōūáéíóúāēīōūáéíóúāēīōūáéíóúāēīōūá]"
 
+msgid "Use the arrow keys to move the selected item, or press comma or period to rotate it."
+msgstr "[Ũśē ţĥē àŕŕōŵ ķēŷś ţō ḿōvē ţĥē śēĺēćţēď ĩţēḿ, ōŕ ƥŕēśś ćōḿḿà ōŕ ƥēŕĩōď ţō ŕōţàţē ĩţ.āēīōūáéíóúāēīōūáéíóúāēīōūáéíóúāēīō]"
+
 msgid "View Presets"
 msgstr "[Vĩēŵ Ƥŕēśēţśāēīōūáéíó]"
 

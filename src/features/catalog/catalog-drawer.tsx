@@ -1,4 +1,4 @@
-import { type ReactElement } from 'react'
+import { type ReactElement, useRef } from 'react'
 import { Trans, useLingui } from '@lingui/react/macro'
 import { IconLoader } from '@tabler/icons-react'
 import { formatDecimal } from '@/shared/i18n/formatters'
@@ -15,6 +15,7 @@ import {
 } from '@/shared/ui/drawer'
 import { cn } from '@/shared/lib/utils'
 import { useDialogOpen } from '@/core/stores/dialog-store'
+import { selectionActions } from '@/core/stores/selection-store'
 import {
   useCatalogEntries,
   useSourcePathByCatalogId,
@@ -51,10 +52,16 @@ export function CatalogDrawer({
   const selectedSourcePath = catalogIdToAdd
     ? (sourcePathByCatalogId.get(catalogIdToAdd) ?? null)
     : null
+  // Set on a successful add so the close handler sends focus to the room view
+  // (where the new item is now selected) instead of restoring it to the trigger.
+  const focusRoomViewOnCloseRef = useRef(false)
   const { submit, isSubmitting, showPending, percentLabel } = useAddFurniture({
     catalogIdToAdd,
     selectedSourcePath,
     open,
+    onAdded: () => {
+      focusRoomViewOnCloseRef.current = true
+    },
   })
   const selectedUnavailable = selectedSourcePath
     ? failedCollections.get(selectedSourcePath) === 'unavailable'
@@ -63,7 +70,20 @@ export function CatalogDrawer({
   return (
     <Drawer open={open} onOpenChange={setCatalogDrawerOpen} autoFocus>
       <DrawerTrigger asChild>{triggerButton}</DrawerTrigger>
-      <DrawerContent>
+      <DrawerContent
+        onCloseAutoFocus={(event) => {
+          if (!focusRoomViewOnCloseRef.current) {
+            return
+          }
+
+          // The likely next action after adding is to place the item, so route
+          // focus to the room view where the arrow keys move the now-selected
+          // item. On every other close the drawer restores focus to its trigger.
+          focusRoomViewOnCloseRef.current = false
+          event.preventDefault()
+          selectionActions.requestRoomViewFocus()
+        }}
+      >
         <DrawerHeader>
           <DrawerTitle>
             <Trans>Add furniture</Trans>

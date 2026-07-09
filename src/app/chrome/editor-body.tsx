@@ -170,10 +170,17 @@ export function EditorBody({ testOverlaysHidden }: EditorBodyProps) {
           onPointerDownCapture={focusRoomView}
         >
           <p id="scene-instructions" className="sr-only">
-            <Trans>
-              Use the arrow keys to browse items in the room, then press Enter
-              or Space to select one.
-            </Trans>
+            {selectedFurniture ? (
+              <Trans>
+                Use the arrow keys to move the selected item, or press comma or
+                period to rotate it.
+              </Trans>
+            ) : (
+              <Trans>
+                Use the arrow keys to browse items in the room, then press Enter
+                or Space to select one.
+              </Trans>
+            )}
           </p>
           <Suspense fallback={null}>
             <SceneCanvas onPointerMissed={handleCanvasPointerMissed} />
