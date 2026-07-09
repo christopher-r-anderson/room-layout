@@ -301,7 +301,7 @@ test('catalog, room, delete, and info surfaces stay mutually exclusive', async (
   await closeWithEscapeAndRestoreFocus(page, infoDialog, infoButton)
 })
 
-test('confirming desktop start over moves focus to the next enabled header control', async ({
+test('confirming desktop start over restores focus to the Start Over trigger', async ({
   page,
 }) => {
   await openEditor(page)
@@ -322,10 +322,11 @@ test('confirming desktop start over moves focus to the next enabled header contr
 
   await expect(startOverDialog).toBeHidden()
   await waitForItemCount(page, 0)
+  // The reset disables Start Over, but it stays focusable, so focus returns to
+  // the trigger (which now surfaces why it is unavailable) rather than jumping
+  // to an unrelated control.
   await expect(startOverButton).toHaveAttribute('aria-disabled', 'true')
-  await expect(
-    page.getByRole('button', { name: 'Keyboard shortcuts' }),
-  ).toBeFocused()
+  await expect(startOverButton).toBeFocused()
 })
 
 test.describe('narrow viewport more actions', () => {

@@ -2,16 +2,14 @@ import { IconRotate2 } from '@tabler/icons-react'
 import { useLingui } from '@lingui/react/macro'
 import { ToolButton } from '@/shared/ui/tool-button'
 import { useCommandDispatch } from '@/core/commands/command-dispatch-context'
-import type { ComponentProps, Ref } from 'react'
+import type { ComponentProps } from 'react'
 
 export function StartOverButton({
-  buttonRef,
   disabled,
   disabledMessage,
   className,
   size,
 }: {
-  buttonRef?: Ref<HTMLButtonElement>
   disabled: boolean
   disabledMessage: string
   className?: string
@@ -22,7 +20,6 @@ export function StartOverButton({
 
   return (
     <ToolButton
-      buttonRef={buttonRef}
       action={() => {
         dispatch({ kind: 'start-over' })
       }}

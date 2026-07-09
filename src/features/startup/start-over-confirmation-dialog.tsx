@@ -15,10 +15,17 @@ export function StartOverConfirmationDialog({
   onClose,
   onConfirm,
   open,
+  suppressTriggerRefocusOnConfirm,
 }: {
   onClose: () => void
   onConfirm: () => void
   open: boolean
+  // On mobile the dialog is opened from the More actions drawer, whose trigger
+  // has unmounted by the time it closes, so the confirm handler places focus
+  // itself and the library's restore is suppressed. On desktop the library
+  // restores focus to the Start Over trigger - now disabled but still focusable,
+  // which surfaces why - so no suppression is needed.
+  suppressTriggerRefocusOnConfirm: boolean
 }) {
   const suppressCloseAutoFocusRef = useRef(false)
 
@@ -64,7 +71,8 @@ export function StartOverConfirmationDialog({
           </AlertDialogCancel>
           <AlertDialogAction
             onClick={() => {
-              suppressCloseAutoFocusRef.current = true
+              suppressCloseAutoFocusRef.current =
+                suppressTriggerRefocusOnConfirm
               onConfirm()
             }}
           >

@@ -65,6 +65,7 @@ export function TopHeaderDialogs() {
 
       <StartOverConfirmationDialog
         open={isStartOverOpen}
+        suppressTriggerRefocusOnConfirm={layoutMode === 'mobile'}
         onClose={() => {
           dialogActions.closeActiveDialog()
           returnFocusToMoreActionsOnMobile()
@@ -72,14 +73,9 @@ export function TopHeaderDialogs() {
         onConfirm={() => {
           confirmStartOver()
 
-          // The Start Over button becomes disabled after the reset, so on
-          // desktop move focus to the next enabled header control. On mobile the
-          // dialog was opened from More actions, so return focus there.
-          if (layoutMode === 'desktop') {
-            topHeaderFocusRegistry.focusNextEnabled('top-header-start-over')
-            return
-          }
-
+          // Desktop lets the library restore focus to the Start Over trigger,
+          // which stays focusable while disabled. On mobile the dialog was
+          // opened from More actions, so return focus there.
           returnFocusToMoreActionsOnMobile()
         }}
       />
