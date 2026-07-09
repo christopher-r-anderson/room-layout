@@ -15,17 +15,14 @@ export function StartOverConfirmationDialog({
   onClose,
   onConfirm,
   open,
-  suppressTriggerRefocusOnConfirm,
+  suppressTriggerRefocusOnConfirm = false,
 }: {
   onClose: () => void
   onConfirm: () => void
   open: boolean
-  // On mobile the dialog is opened from the More actions drawer, whose trigger
-  // has unmounted by the time it closes, so the confirm handler places focus
-  // itself and the library's restore is suppressed. On desktop the library
-  // restores focus to the Start Over trigger - now disabled but still focusable,
-  // which surfaces why - so no suppression is needed.
-  suppressTriggerRefocusOnConfirm: boolean
+  // When true, the confirm path leaves focus for the caller to place instead of
+  // restoring it to the trigger.
+  suppressTriggerRefocusOnConfirm?: boolean
 }) {
   const suppressCloseAutoFocusRef = useRef(false)
 

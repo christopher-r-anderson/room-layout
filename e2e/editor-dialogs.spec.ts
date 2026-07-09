@@ -322,9 +322,7 @@ test('confirming desktop start over restores focus to the Start Over trigger', a
 
   await expect(startOverDialog).toBeHidden()
   await waitForItemCount(page, 0)
-  // The reset disables Start Over, but it stays focusable, so focus returns to
-  // the trigger (which now surfaces why it is unavailable) rather than jumping
-  // to an unrelated control.
+  // Start Over disables on reset but stays focusable, so focus returns to it.
   await expect(startOverButton).toHaveAttribute('aria-disabled', 'true')
   await expect(startOverButton).toBeFocused()
 })

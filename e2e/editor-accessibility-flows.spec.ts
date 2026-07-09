@@ -381,17 +381,14 @@ test('includes the Share button in the header toolbar roving sequence', async ({
     name: 'Interactive 3D room editor',
   })
 
-  // Tab enters the single header toolbar at its entry control; the next Tab
-  // leaves the whole toolbar for the room view. Share is a roving item, not a
-  // stray second tab stop the way it was before it forwarded its toolbar props.
+  // The header is one roving toolbar: Tab enters at the entry control, the next
+  // Tab leaves the whole toolbar for the room view (Share is not its own stop).
   await page.keyboard.press('Tab')
   await expect(addFurnitureButton).toBeFocused()
   await page.keyboard.press('Tab')
   await expect(roomView).toBeFocused()
 
-  // Share participates in arrow navigation as the toolbar's last item: reached
-  // from its neighbor and stepping back to that same neighbor, never crossing
-  // into a separate group.
+  // Share is the toolbar's last arrow-navigable item.
   await projectInfoButton.focus()
   await page.keyboard.press('ArrowRight')
   await expect(shareButton).toBeFocused()
