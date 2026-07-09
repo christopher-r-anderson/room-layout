@@ -115,12 +115,12 @@ describe('history-actions', () => {
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
     mockUndoReconcilingSelectionTo('chair-2')
     selectionActions.setSelection('chair-1', 'canvas-pointer')
-    selectionActions.requestOutlinerFocus({ token: 7, preferredIndex: 1 })
+    selectionActions.requestOutlinerFocus({ preferredIndex: 1 })
 
     undo()
 
     expect(useSelectionStore.getState().outlinerFocusRequest).toEqual(
-      expect.objectContaining({ token: 7, preferredIndex: 1 }),
+      expect.objectContaining({ preferredIndex: 1 }),
     )
   })
 

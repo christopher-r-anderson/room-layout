@@ -30,7 +30,6 @@ export function TopHeaderDesktop() {
   return (
     <Toolbar.Root
       ref={registerExclusionElement('top-header')}
-      data-top-header-root
       aria-label={t`Editor actions`}
       className="pointer-events-auto flex flex-wrap items-center justify-between gap-x-0 gap-y-2"
     >

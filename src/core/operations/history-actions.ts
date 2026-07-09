@@ -20,12 +20,10 @@ function focusReconciledSelection(previousSelectedId: string | null) {
 
   if (selectedId) {
     selectionActions.requestOutlinerFocus({
-      token: Date.now(),
       targetSelectedId: selectedId,
     })
   } else if (previousSelectedId) {
     selectionActions.requestOutlinerFocus({
-      token: Date.now(),
       focusContainer: true,
     })
   }

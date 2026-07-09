@@ -190,7 +190,7 @@ describe('SceneOutliner', () => {
   })
 
   it('focuses the preferred item when expanded', async () => {
-    selectionActions.requestOutlinerFocus({ token: 1, preferredIndex: 1 })
+    selectionActions.requestOutlinerFocus({ preferredIndex: 1 })
 
     renderOutliner()
 
@@ -202,7 +202,7 @@ describe('SceneOutliner', () => {
 
   it('falls back to toggle button when collapsed and focus is requested', async () => {
     saveBooleanPreference(OUTLINER_EXPANDED_PREFERENCE_KEY, false)
-    selectionActions.requestOutlinerFocus({ token: 2, preferredIndex: 1 })
+    selectionActions.requestOutlinerFocus({ preferredIndex: 1 })
 
     renderOutliner()
 
@@ -222,7 +222,6 @@ describe('SceneOutliner', () => {
       selectedId: 'item-2',
     })
     selectionActions.requestOutlinerFocus({
-      token: 2,
       targetSelectedId: 'item-2',
     })
 
@@ -236,7 +235,6 @@ describe('SceneOutliner', () => {
 
   it('focuses the outliner container when requested', async () => {
     selectionActions.requestOutlinerFocus({
-      token: 3,
       focusContainer: true,
     })
 

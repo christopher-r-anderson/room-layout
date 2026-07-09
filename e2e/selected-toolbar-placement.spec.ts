@@ -93,7 +93,9 @@ test('desktop floating toolbar stays off visible chrome and the pointer target a
     .poll(async () => (await readSceneState(page)).selectedId)
     .toBe(addedState.items[0]?.id ?? null)
 
-  const headerBox = await page.locator('[data-top-header-root]').boundingBox()
+  const headerBox = await page
+    .getByRole('toolbar', { name: 'Editor actions' })
+    .boundingBox()
   if (!headerBox) {
     throw new Error('Top header bounding box was not available')
   }

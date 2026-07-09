@@ -5,7 +5,7 @@ import { topHeaderFocusRegistry } from './top-header-focus'
 const KEYS = ['top-header-room', 'top-header-more-actions'] as const
 
 function setupHeader(innerHtml: string) {
-  document.body.innerHTML = `<div data-top-header-root>${innerHtml}</div>`
+  document.body.innerHTML = `<div>${innerHtml}</div>`
 }
 
 beforeEach(() => {

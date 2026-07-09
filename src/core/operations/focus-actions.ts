@@ -18,7 +18,6 @@ export function requestOutlinerFocus() {
 
   if (selectedFurniture !== null) {
     selectionActions.requestOutlinerFocus({
-      token: Date.now(),
       targetSelectedId: selectedFurniture.id,
     })
     return
@@ -26,14 +25,12 @@ export function requestOutlinerFocus() {
 
   if (state.history.present.length > 0) {
     selectionActions.requestOutlinerFocus({
-      token: Date.now(),
       preferredIndex: 0,
     })
     return
   }
 
   selectionActions.requestOutlinerFocus({
-    token: Date.now(),
     focusContainer: true,
   })
 }

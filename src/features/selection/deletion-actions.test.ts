@@ -63,7 +63,7 @@ describe('deletion-actions', () => {
         type: 'error',
       }),
     )
-    expect(useSelectionStore.getState().roomViewFocusRequest).toBeNull()
+    expect(useSelectionStore.getState().roomViewFocusRequest).toBe(false)
     expect(useSelectionStore.getState().outlinerFocusRequest).toBeNull()
   })
 
@@ -75,9 +75,7 @@ describe('deletion-actions', () => {
 
     confirmDeleteSelection(CHAIR)
 
-    expect(useSelectionStore.getState().roomViewFocusRequest).toEqual(
-      expect.any(Number),
-    )
+    expect(useSelectionStore.getState().roomViewFocusRequest).toBe(true)
     expect(useSelectionStore.getState().outlinerFocusRequest).toBeNull()
     expect(feedbackStoreForTests.getState().polite.text).toBe(
       `${CHAIR.name} removed from room.`,
@@ -92,7 +90,7 @@ describe('deletion-actions', () => {
 
     confirmDeleteSelection(CHAIR)
 
-    expect(useSelectionStore.getState().roomViewFocusRequest).toBeNull()
+    expect(useSelectionStore.getState().roomViewFocusRequest).toBe(false)
     expect(useSelectionStore.getState().outlinerFocusRequest).toEqual(
       expect.objectContaining({ preferredIndex: 0 }),
     )
@@ -110,7 +108,7 @@ describe('deletion-actions', () => {
     openDeleteDialog('outliner')
     confirmDeleteSelection(CHAIR)
 
-    expect(useSelectionStore.getState().roomViewFocusRequest).toBeNull()
+    expect(useSelectionStore.getState().roomViewFocusRequest).toBe(false)
     expect(useSelectionStore.getState().outlinerFocusRequest).toEqual(
       expect.objectContaining({ preferredIndex: 0 }),
     )
@@ -126,9 +124,7 @@ describe('deletion-actions', () => {
     openDeleteDialog('room-view')
     confirmDeleteSelection(CHAIR)
 
-    expect(useSelectionStore.getState().roomViewFocusRequest).toEqual(
-      expect.any(Number),
-    )
+    expect(useSelectionStore.getState().roomViewFocusRequest).toBe(true)
     expect(useSelectionStore.getState().outlinerFocusRequest).toBeNull()
   })
 
@@ -143,9 +139,7 @@ describe('deletion-actions', () => {
     confirmDeleteSelection(CHAIR)
 
     // With no recorded target, the canvas source decides: room view.
-    expect(useSelectionStore.getState().roomViewFocusRequest).toEqual(
-      expect.any(Number),
-    )
+    expect(useSelectionStore.getState().roomViewFocusRequest).toBe(true)
     expect(useSelectionStore.getState().outlinerFocusRequest).toBeNull()
   })
 })
