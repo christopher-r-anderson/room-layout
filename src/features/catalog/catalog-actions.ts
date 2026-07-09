@@ -7,7 +7,7 @@ import { sceneCommands } from '@/core/scene-commands'
 import { addFurniture as addFurnitureToDocument } from '@/core/operations/furniture-mutations'
 import { ensureCollectionLoaded } from '@/core/operations/collection-loader'
 import { getCollectionFailureKind } from '@/core/stores/collection-loading-store'
-import { toast } from 'sonner'
+import { feedback } from '@/core/feedback/feedback'
 import { i18n } from '@/shared/i18n/i18n'
 import {
   ADD_FURNITURE_LOAD_FAILED_MESSAGE,
@@ -90,13 +90,11 @@ export async function addFurniture(): Promise<boolean> {
   return true
 }
 
-// Add failures surface on two channels while the drawer is open: a toast for
-// visual users (the status region sits under the drawer overlay), and an
-// assertive announcement - the toast region is a polite live region only, and
-// an error in response to a user action should interrupt. Both survive the
-// drawer's aria-hiding, which exempts aria-live regions.
+// Add failures surface as an error toast plus an assertive announcement while
+// the drawer is open (the status region sits under the drawer overlay); both
+// survive the drawer's aria-hiding, which exempts aria-live regions.
 function reportAddFailure(message: string) {
-  toast.error(message)
+  feedback.actionError({ title: message })
   feedbackActions.announceAssertive(message)
 }
 

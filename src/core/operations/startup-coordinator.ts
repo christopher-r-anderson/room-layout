@@ -1,5 +1,4 @@
 import { msg } from '@lingui/core/macro'
-import { toast } from 'sonner'
 import { createDefaultSceneState } from '@/domain/scene-defaults'
 import { isSceneStateAtDefaults } from '@/domain/scene-model'
 import { i18n } from '@/shared/i18n/i18n'
@@ -8,6 +7,7 @@ import { resetCollectionPipeline } from './collection-loader'
 import { resetPreviewState } from './preview-actions'
 import { restoreInitialLayout } from './history-mutations'
 import { feedbackActions } from '@/core/stores/feedback-store'
+import { feedback } from '@/core/feedback/feedback'
 import { dialogActions } from '@/core/stores/dialog-store'
 import {
   editorLifecycleActions,
@@ -178,9 +178,15 @@ function runRestoreOnce() {
       announceAssertive: feedbackActions.announceAssertive,
       setStatusMessage: feedbackActions.setStatusMessage,
       setRestoreOutcome: editorLifecycleActions.recordRestoreOutcome,
-      toastSuccess: (message) => toast.success(message),
-      toastWarning: (message) => toast.warning(message),
-      toastError: (message) => toast.error(message),
+      toastSuccess: (message) => {
+        feedback.actionSuccess({ title: message })
+      },
+      toastWarning: (message) => {
+        feedback.actionWarning({ title: message })
+      },
+      toastError: (message) => {
+        feedback.actionError({ title: message })
+      },
     },
   })
 }
@@ -208,7 +214,7 @@ function reportStartupError(kind: StartupErrorKind, error: Error) {
   const assetError = i18n._(
     msg`Unable to load room editor assets. Retry available.`,
   )
-  toast.error(assetError)
+  feedback.actionError({ title: assetError })
   feedbackActions.announceAssertive(assetError)
 }
 

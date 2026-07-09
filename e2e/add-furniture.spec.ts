@@ -7,6 +7,7 @@ import {
   readSceneState,
   waitForEditorReady,
 } from './support/editor-harness'
+import { waitForToast } from './support/toasts'
 
 function expectUniqueItemIds(itemIds: string[]) {
   expect(new Set(itemIds).size).toBe(itemIds.length)
@@ -71,9 +72,7 @@ test('surfaces an error and recovers when an added item fails to load', async ({
   // channels - a toast visible over the drawer, and an assertive announcement
   // (the drawer's aria-hiding exempts live regions) - adds nothing, and the
   // button recovers.
-  await expect(
-    page.getByLabel(/notifications/i).getByText('Check your connection'),
-  ).toBeVisible()
+  await waitForToast(page, { text: 'Check your connection', type: 'error' })
   await expect(
     page.locator('[data-announcer-channel="assertive"]'),
   ).toContainText('Check your connection')

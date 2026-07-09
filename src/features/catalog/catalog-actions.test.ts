@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { toast } from 'sonner'
+import { appToastManager } from '@/core/feedback/toast-manager'
 import { resetSceneDocumentStore } from '@/core/stores/scene-document-store'
 import {
   feedbackStoreForTests,
@@ -26,10 +26,6 @@ import {
   resetCatalogSelectionStore,
 } from './catalog-selection-store'
 import { addFurniture } from './catalog-actions'
-
-vi.mock('sonner', () => ({
-  toast: { error: vi.fn(), success: vi.fn(), warning: vi.fn() },
-}))
 
 vi.mock('@/core/operations/furniture-mutations', () => ({
   addFurniture: vi.fn(),
@@ -85,12 +81,17 @@ describe('addFurniture', () => {
   it('maps add-furniture failures through shared messages', async () => {
     catalogSelectionActions.setSelectedCatalogId('chair')
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
+    const addToast = vi.spyOn(appToastManager, 'add').mockReturnValue('toast-1')
     const addFurnitureMutation = vi.mocked(addFurnitureToDocument)
 
     addFurnitureMutation.mockReturnValueOnce({ ok: false, reason: 'no-space' })
     expect(await addFurniture()).toBe(false)
-    expect(toast.error).toHaveBeenLastCalledWith(
-      i18n._(ADD_FURNITURE_NO_SPACE_MESSAGE),
+    expect(addToast).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        title: i18n._(ADD_FURNITURE_NO_SPACE_MESSAGE),
+        type: 'error',
+        priority: 'high',
+      }),
     )
     // Also announced assertively: the drawer aria-hides the toast region but
     // live regions are exempt, so the announcer reaches assistive tech. The
@@ -106,8 +107,11 @@ describe('addFurniture', () => {
       reason: 'unknown-catalog',
     })
     expect(await addFurniture()).toBe(false)
-    expect(toast.error).toHaveBeenLastCalledWith(
-      i18n._(ADD_FURNITURE_UNKNOWN_CATALOG_MESSAGE),
+    expect(addToast).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        title: i18n._(ADD_FURNITURE_UNKNOWN_CATALOG_MESSAGE),
+        type: 'error',
+      }),
     )
   })
 
