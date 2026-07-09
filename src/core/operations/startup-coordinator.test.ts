@@ -97,11 +97,16 @@ describe('startup-coordinator', () => {
   })
 
   it('records the asset error and resets the shell without raising a toast', () => {
+    vi.useFakeTimers()
     const closeActiveDialog = vi.spyOn(dialogActions, 'closeActiveDialog')
     const addToast = vi.spyOn(appToastManager, 'add').mockReturnValue('toast-1')
+    const closeToasts = vi.spyOn(appToastManager, 'close')
     seedSceneSessionState()
+    feedback.interactionUpdate('Chair selected.')
+    feedback.movementUpdate('Chair moved to X 1 and Z 2.')
 
     notifyAssetError(new Error('boom'))
+    vi.runAllTimers()
 
     const state = useEditorLifecycleStore.getState()
     expect(state.startupPhase).toBe('errored')
@@ -115,10 +120,14 @@ describe('startup-coordinator', () => {
       floorFinishLoading: false,
     })
     // The InitializationError overlay (role=alert) is the only feedback
-    // surface for a startup-fatal error: no toast, no announcement.
+    // surface for a startup-fatal error: no toast, no announcement - and any
+    // pending feedback (open toasts, the movement debounce) is cleared so
+    // nothing speaks over the overlay.
     expect(addToast).not.toHaveBeenCalled()
+    expect(closeToasts).toHaveBeenCalledTimes(1)
     expect(feedbackStoreForTests.getState().polite.text).toBe('')
     expect(feedbackStoreForTests.getState().assertive.text).toBe('')
+    vi.useRealTimers()
   })
 
   it('resets the collection pipeline, starts a fresh cycle, and re-runs the bootstrap', () => {

@@ -1,8 +1,8 @@
 # User Feedback
 
-All user feedback goes through the `feedback` API in
-`core/stores/feedback-store.ts`: call sites state the event class, the API
-owns which surface fires. Never write to a surface directly.
+Outside the owned surfaces listed below, user feedback goes through the
+`feedback` API in `core/stores/feedback-store.ts`: call sites state the event
+class, the API owns which surface fires.
 
 ## Choosing an entry
 
@@ -22,7 +22,7 @@ owns which surface fires. Never write to a surface directly.
 - **`formError`** - a rejected field input. Assertive announcement; the
   visible error stays with the field (`aria-invalid` + `aria-describedby`).
 
-Not routed through the API:
+The owned surfaces (no API call):
 
 - Startup loading/error overlays own their phases (`role="status"` /
   `role="alert"`).

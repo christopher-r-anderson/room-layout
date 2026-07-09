@@ -193,7 +193,9 @@ function reportStartupError(kind: StartupErrorKind, error: Error) {
   })
   dialogActions.closeActiveDialog()
   resetStartupShell()
-  // The InitializationError overlay is the only feedback surface here.
+  // The InitializationError overlay is the only feedback surface here; reset
+  // clears pending announcements and open toasts so nothing speaks over it.
+  feedback.reset()
 }
 
 // A furniture/scene asset failed while loading or rendering.

@@ -194,6 +194,21 @@ describe('SelectedDetailsView', () => {
     expect(feedbackStoreForTests.getState().assertive.text).toBe(
       'Distance from left wall (m) must be a valid number.',
     )
+
+    // Blurring away from the same unchanged invalid value must not announce
+    // the identical error a second time.
+    const nonceAfterEnter = feedbackStoreForTests.getState().assertive.nonce
+    await user.tab()
+    expect(feedbackStoreForTests.getState().assertive.nonce).toBe(
+      nonceAfterEnter,
+    )
+
+    // A repeated explicit Enter on the unchanged value re-announces.
+    xInput.focus()
+    await user.keyboard('{Enter}')
+    expect(feedbackStoreForTests.getState().assertive.nonce).toBeGreaterThan(
+      nonceAfterEnter,
+    )
   })
 
   it('rejects malformed numeric strings instead of truncating them', async () => {
