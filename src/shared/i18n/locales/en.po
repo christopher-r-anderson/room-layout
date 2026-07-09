@@ -833,6 +833,10 @@ msgstr "Updating"
 msgid "Use the arrow keys to browse items in the room, then press Enter or Space to select one."
 msgstr "Use the arrow keys to browse items in the room, then press Enter or Space to select one."
 
+#: src/app/chrome/editor-body.tsx
+msgid "Use the arrow keys to move the selected item, or press comma or period to rotate it."
+msgstr "Use the arrow keys to move the selected item, or press comma or period to rotate it."
+
 #: src/features/keyboard/keyboard-shortcuts.definitions.ts
 msgid "View Presets"
 msgstr "View Presets"

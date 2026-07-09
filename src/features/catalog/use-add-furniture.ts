@@ -28,11 +28,15 @@ export function useAddFurniture({
   catalogIdToAdd,
   selectedSourcePath,
   open,
+  onAdded,
 }: {
   catalogIdToAdd: string
   // The selected item's collection (the drawer already derives it per tile).
   selectedSourcePath: string | null
   open: boolean
+  // Runs on a successful add, before the drawer closes, so the drawer can route
+  // close focus to the just-added item instead of restoring it to the trigger.
+  onAdded?: () => void
 }): UseAddFurniture {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showPending, setShowPending] = useState(false)
@@ -62,6 +66,7 @@ export function useAddFurniture({
     void addFurniture()
       .then((added) => {
         if (added) {
+          onAdded?.()
           setCatalogDrawerOpen(false)
         }
       })
@@ -70,7 +75,7 @@ export function useAddFurniture({
         setIsSubmitting(false)
         setShowPending(false)
       })
-  }, [isSubmitting])
+  }, [isSubmitting, onAdded])
 
   return { submit, isSubmitting, showPending, percentLabel }
 }

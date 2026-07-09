@@ -7,6 +7,7 @@ import {
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { resetSceneDocumentStore } from '@/core/stores/scene-document-store'
 import { resetSelectionStore } from '@/core/stores/selection-store'
+import { resetDialogStore } from '@/core/stores/dialog-store'
 import {
   editorLifecycleActions,
   resetEditorLifecycleStore,
@@ -23,9 +24,10 @@ import {
 } from '@/shared/messages/command-messages'
 import {
   catalogSelectionActions,
+  getActiveCatalogId,
   resetCatalogSelectionStore,
 } from './catalog-selection-store'
-import { addFurniture } from './catalog-actions'
+import { addFurniture, setCatalogDrawerOpen } from './catalog-actions'
 
 vi.mock('@/core/operations/furniture-mutations', () => ({
   addFurniture: vi.fn(),
@@ -55,6 +57,7 @@ beforeEach(() => {
   resetEditorLifecycleStore()
   resetAssetsStore()
   resetCatalogSelectionStore()
+  resetDialogStore()
   resetFeedbackStore()
   assetsActions.setAssets({
     catalog: [CHAIR],
@@ -128,5 +131,26 @@ describe('addFurniture', () => {
         previousSelectedId: null,
       }),
     )
+  })
+})
+
+describe('setCatalogDrawerOpen', () => {
+  it('clears the previous selection each time the drawer opens', () => {
+    catalogSelectionActions.setSelectedCatalogId('chair')
+    expect(getActiveCatalogId()).toBe('chair')
+
+    setCatalogDrawerOpen(true)
+
+    // A blank slate on every open: the last-added (or considered) item does not
+    // stay pre-selected.
+    expect(getActiveCatalogId()).toBe('')
+  })
+
+  it('leaves the selection untouched when the drawer closes', () => {
+    catalogSelectionActions.setSelectedCatalogId('chair')
+
+    setCatalogDrawerOpen(false)
+
+    expect(getActiveCatalogId()).toBe('chair')
   })
 })

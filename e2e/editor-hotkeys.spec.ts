@@ -273,8 +273,22 @@ test('supports keyboard-driven furniture picker flow', async ({ page }) => {
   const addedState = await readSceneState(page)
   expect(addedState.selectedName).toBe('Leather Armchair')
 
-  await expect(pickerTrigger).toBeFocused()
+  // Adding routes focus to the room view so the just-added, now-selected item
+  // can be moved with the arrow keys straight away.
+  const roomView = page.getByRole('region', {
+    name: 'Interactive 3D room editor',
+  })
+  await expect(roomView).toBeFocused()
 
+  // With an item selected, the room-view instructions describe moving/rotating
+  // rather than browsing, so the shortcuts are discoverable on focus.
+  await expect(page.locator('#scene-instructions')).toContainText(
+    'move the selected item',
+  )
+
+  // Reopening from the trigger and cancelling without adding restores focus to
+  // the trigger.
+  await pickerTrigger.focus()
   await page.keyboard.press('Enter')
   await expect(pickerSheet).toBeVisible()
   await page.keyboard.press('Escape')

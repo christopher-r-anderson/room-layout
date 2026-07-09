@@ -59,6 +59,63 @@ describe('useAddFurniture', () => {
     expect(setCatalogDrawerOpenMock).toHaveBeenCalledWith(false)
   })
 
+  it('runs onAdded before closing the drawer on a successful add', async () => {
+    const pending = deferred<boolean>()
+    addFurnitureMock.mockReturnValueOnce(pending.promise)
+    const onAdded = vi.fn()
+
+    const { result } = renderHook(() =>
+      useAddFurniture({
+        catalogIdToAdd: 'chair',
+        selectedSourcePath: null,
+        open: true,
+        onAdded,
+      }),
+    )
+
+    act(() => {
+      result.current.submit()
+    })
+    pending.resolve(true)
+
+    await waitFor(() => {
+      expect(result.current.isSubmitting).toBe(false)
+    })
+    expect(onAdded).toHaveBeenCalledOnce()
+    expect(setCatalogDrawerOpenMock).toHaveBeenCalledWith(false)
+    // onAdded must run before the close so the drawer captures its focus intent
+    // before the close-auto-focus fires.
+    expect(onAdded.mock.invocationCallOrder[0]).toBeLessThan(
+      setCatalogDrawerOpenMock.mock.invocationCallOrder[0],
+    )
+  })
+
+  it('does not run onAdded when the add does not succeed', async () => {
+    const pending = deferred<boolean>()
+    addFurnitureMock.mockReturnValueOnce(pending.promise)
+    const onAdded = vi.fn()
+
+    const { result } = renderHook(() =>
+      useAddFurniture({
+        catalogIdToAdd: 'chair',
+        selectedSourcePath: null,
+        open: true,
+        onAdded,
+      }),
+    )
+
+    act(() => {
+      result.current.submit()
+    })
+    pending.resolve(false)
+
+    await waitFor(() => {
+      expect(result.current.isSubmitting).toBe(false)
+    })
+    expect(onAdded).not.toHaveBeenCalled()
+    expect(setCatalogDrawerOpenMock).not.toHaveBeenCalled()
+  })
+
   it('shows pending once the delay elapses for a slow add', () => {
     vi.useFakeTimers()
     addFurnitureMock.mockReturnValueOnce(deferred<boolean>().promise)
