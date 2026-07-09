@@ -1,6 +1,5 @@
 import { useAssetsStore } from '@/core/stores/assets-store'
 import { sceneDocumentActions } from '@/core/stores/scene-document-store'
-import { feedbackActions } from '@/core/stores/feedback-store'
 import { clearPreviewOnCanvasMiss } from '@/core/operations/preview-actions'
 import { clearSceneDraft } from '@/core/persistence/scene-draft'
 import { sceneCommands } from '@/core/scene-commands'
@@ -16,7 +15,6 @@ export function resetSceneToDefaults() {
   const { environmentConfig } = useAssetsStore.getState()
 
   clearPreviewOnCanvasMiss()
-  feedbackActions.clearStatusMessage()
   // Load-critical: clearing the room must happen. Reset only runs from a mounted
   // editor, so the scene is ready; the unguarded call lets a broken assumption
   // surface rather than silently leaving stale furniture in place.

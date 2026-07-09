@@ -1,7 +1,6 @@
 import { useHasSelection } from '@/core/stores/selection-store'
 import { CameraTools } from '@/features/camera/camera-tools'
 import { DeleteConfirmationDialogHost } from '@/features/selection/delete-confirmation-dialog-host'
-import { StatusMessage } from './feedback/status-message'
 import { Outliner } from '@/features/outliner/outliner'
 import { SelectedDetailsPanel } from '@/features/selection/selected-details-panel'
 import { FloatingSelectedItemSite } from '@/features/selection/floating-selected-item-site'
@@ -77,11 +76,6 @@ export function EditorPanels() {
       {/* z-10: keeps the panels above the z-0 canvas, which is a later,
           positioned sibling inside <main>. */}
       <div className="z-10 grid gap-2 md:justify-items-start md:items-end md:grid-cols-2 md:grid-rows-[1fr_auto]">
-        <StatusMessage
-          ref={registerExclusionElement('status')}
-          className="pointer-events-auto"
-        />
-
         {isDesktop && (
           <Outliner
             ref={registerExclusionElement('outliner')}

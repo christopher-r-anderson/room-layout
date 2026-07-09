@@ -14,7 +14,10 @@ import {
   resetEditorLifecycleStore,
 } from '@/core/stores/editor-lifecycle-store'
 import { sceneCommands } from '@/core/scene-commands'
-import { feedbackActions } from '@/core/stores/feedback-store'
+import {
+  feedbackStoreForTests,
+  resetFeedbackStore,
+} from '@/core/stores/feedback-store'
 import { toolbarInteractionActions } from '@/core/stores/toolbar-interaction-store'
 import { CHAIR } from '@/test/support/furniture'
 import {
@@ -31,29 +34,22 @@ vi.mock('./furniture-mutations', () => ({
   setSelectionTransform: vi.fn(),
 }))
 
-vi.mock('@/core/stores/feedback-store', () => ({
-  feedbackActions: {
-    announcePolite: vi.fn(),
-    announceAssertive: vi.fn(),
-    clearAssertiveAnnouncement: vi.fn(),
-    queueMovementAnnouncement: vi.fn(),
-    clearQueuedMovementAnnouncement: vi.fn(),
-    setStatusMessage: vi.fn(),
-    clearStatusMessage: vi.fn(),
-  },
-}))
+const politeText = () => feedbackStoreForTests.getState().polite.text
 
 describe('movement-actions', () => {
   beforeEach(() => {
     resetSceneDocumentStore()
     resetSelectionStore()
     resetEditorLifecycleStore()
+    resetFeedbackStore()
     sceneDocumentActions.setHistory(createHistoryState([CHAIR]))
     selectionActions.setSelection(CHAIR.id, null)
     editorLifecycleActions.markAssetsReady()
   })
 
   afterEach(() => {
+    resetFeedbackStore()
+    vi.useRealTimers()
     vi.restoreAllMocks()
     vi.clearAllMocks()
   })
@@ -92,7 +88,8 @@ describe('movement-actions', () => {
     expect(rotateDocumentSelection).toHaveBeenCalledWith(Math.PI / 12)
   })
 
-  it('announces the moved item and its new position on success', () => {
+  it('announces the moved item and its new position after the movement debounce', () => {
+    vi.useFakeTimers()
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
     vi.mocked(moveDocumentSelection).mockReturnValue({
       ok: true,
@@ -101,12 +98,14 @@ describe('movement-actions', () => {
 
     moveSelection({ x: 1, z: 0 })
 
-    expect(feedbackActions.queueMovementAnnouncement).toHaveBeenCalledWith(
-      'Chair moved to X 1.2 meters and Z -3.4 meters.',
-    )
+    // Movement feedback is debounced; nothing announces until it settles.
+    expect(politeText()).toBe('')
+    vi.runAllTimers()
+    expect(politeText()).toBe('Chair moved to X 1.2 meters and Z -3.4 meters.')
   })
 
   it('announces the reason when a move is blocked', () => {
+    vi.useFakeTimers()
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
     vi.mocked(moveDocumentSelection).mockReturnValue({
       ok: false,
@@ -114,13 +113,13 @@ describe('movement-actions', () => {
     })
 
     moveSelection({ x: 1, z: 0 })
+    vi.runAllTimers()
 
-    expect(feedbackActions.queueMovementAnnouncement).toHaveBeenCalledWith(
-      'Movement blocked by room bounds.',
-    )
+    expect(politeText()).toBe('Movement blocked by room bounds.')
   })
 
   it('stays silent on a no-op move', () => {
+    vi.useFakeTimers()
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
     vi.mocked(moveDocumentSelection).mockReturnValue({
       ok: false,
@@ -128,11 +127,13 @@ describe('movement-actions', () => {
     })
 
     moveSelection({ x: 1, z: 0 })
+    vi.runAllTimers()
 
-    expect(feedbackActions.queueMovementAnnouncement).not.toHaveBeenCalled()
+    expect(politeText()).toBe('')
   })
 
   it('announces the blocked reason and skips the pin grace when rotating mid-drag', () => {
+    vi.useFakeTimers()
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
     vi.mocked(rotateDocumentSelection).mockReturnValueOnce(false)
     const reportRotationSpy = vi.spyOn(
@@ -141,22 +142,19 @@ describe('movement-actions', () => {
     )
 
     rotateSelection(1)
+    vi.runAllTimers()
 
-    expect(feedbackActions.queueMovementAnnouncement).toHaveBeenCalledWith(
-      'Finish dragging before using movement controls.',
-    )
-    expect(feedbackActions.announcePolite).not.toHaveBeenCalled()
+    // Only the debounced blocked message announces - never the success text.
+    expect(politeText()).toBe('Finish dragging before using movement controls.')
     expect(reportRotationSpy).not.toHaveBeenCalled()
   })
 
-  it('announces a successful rotation', () => {
+  it('announces a successful rotation immediately', () => {
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
 
     rotateSelection(1)
 
-    expect(feedbackActions.announcePolite).toHaveBeenCalledWith(
-      'Chair rotated.',
-    )
+    expect(politeText()).toBe('Chair rotated.')
   })
 
   it('arms the toolbar pin grace on a real rotation', () => {

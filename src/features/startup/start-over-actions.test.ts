@@ -1,7 +1,9 @@
+import {
+  appToastManager,
+  feedbackStoreForTests,
+} from '@/core/stores/feedback-store'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { dialogActions } from '@/core/stores/dialog-store'
-import { feedbackActions } from '@/core/stores/feedback-store'
-import { appToastManager } from '@/core/feedback/toast-manager'
 import { resetSceneToDefaults } from '@/core/operations/scene-reset'
 import { confirmStartOver, startOverIntent } from './start-over-actions'
 
@@ -16,39 +18,27 @@ describe('start-over-actions', () => {
     vi.restoreAllMocks()
   })
 
-  it('opens the start-over dialog and clears the status message when it opens', () => {
+  it('opens the start-over dialog', () => {
     vi.spyOn(dialogActions, 'openDialog').mockReturnValue(true)
-    const clearStatus = vi.spyOn(feedbackActions, 'clearStatusMessage')
 
     startOverIntent()
 
     expect(dialogActions.openDialog).toHaveBeenCalledWith('start-over')
-    expect(clearStatus).toHaveBeenCalledTimes(1)
   })
 
-  it('leaves the status message untouched when the dialog refuses to open', () => {
-    vi.spyOn(dialogActions, 'openDialog').mockReturnValue(false)
-    const clearStatus = vi.spyOn(feedbackActions, 'clearStatusMessage')
-
-    startOverIntent()
-
-    expect(clearStatus).not.toHaveBeenCalled()
-  })
-
-  it('confirms a start-over: closes the dialog, resets, and announces', () => {
+  it('confirms a start-over: closes the dialog, resets, and raises the success toast', () => {
     const close = vi.spyOn(dialogActions, 'closeActiveDialog')
-    const announce = vi
-      .spyOn(feedbackActions, 'announcePolite')
-      .mockReturnValue(undefined)
     const addToast = vi.spyOn(appToastManager, 'add').mockReturnValue('toast-1')
 
     confirmStartOver()
 
     expect(close).toHaveBeenCalledTimes(1)
     expect(resetSceneToDefaults).toHaveBeenCalledTimes(1)
-    expect(announce).toHaveBeenCalledWith(STARTED_OVER_MESSAGE)
+    expect(addToast).toHaveBeenCalledTimes(1)
     expect(addToast).toHaveBeenCalledWith(
       expect.objectContaining({ title: STARTED_OVER_MESSAGE, type: 'success' }),
     )
+    // The toast is the single surface: the old polite announcement is gone.
+    expect(feedbackStoreForTests.getState().polite.text).toBe('')
   })
 })

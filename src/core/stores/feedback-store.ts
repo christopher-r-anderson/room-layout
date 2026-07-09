@@ -1,108 +1,126 @@
 import { create } from 'zustand'
+import { Toast } from '@base-ui/react/toast'
 
 const MOVEMENT_ANNOUNCEMENT_DELAY_MS = 180
+const WARNING_TIMEOUT_MS = 8_000
 
-// Transient user-facing feedback channels. `politeAnnouncement` /
-// `assertiveAnnouncement` are the a11y live regions; `statusMessage` is the
-// visible status line. They share nothing but their nature — ephemeral messages
-// surfaced to the user — which is exactly why they live together here.
+/** A user-facing notice; `title` leads, `description` adds consequence/detail. */
+export interface FeedbackMessage {
+  title: string
+  description?: string
+}
+
+// An announcement channel's message plus a monotonic nonce. The Announcer keys
+// a fresh DOM node off the nonce, so repeating the same text is still a new
+// "addition" for screen readers and re-announces.
+interface Announcement {
+  text: string
+  nonce: number
+}
+
 interface FeedbackStoreState {
-  politeAnnouncement: string
-  assertiveAnnouncement: string
-  statusMessage: string | null
+  polite: Announcement
+  assertive: Announcement
 }
 
-// Timers live at module scope rather than in store state: they are imperative
-// scheduling details, not reactive values, and there is a single announcement
-// region for the app.
+/**
+ * The toast half of the feedback surface. Module-level so plain functions
+ * (operations, feature actions) can raise toasts without React; exported only
+ * so the app shell can hand it to `AppToaster`, whose provider subscribes to
+ * it - everything else goes through `feedback`.
+ */
+export const appToastManager = Toast.createToastManager()
+
+// The debounce timer lives at module scope rather than in store state: it is
+// an imperative scheduling detail, not a reactive value, and there is a single
+// announcement region for the app.
 let movementAnnouncementTimeout: number | null = null
-let pendingPoliteSet: number | null = null
-let pendingAssertiveSet: number | null = null
-
-function clearPendingAnnouncementTimers() {
-  if (movementAnnouncementTimeout !== null) {
-    window.clearTimeout(movementAnnouncementTimeout)
-    movementAnnouncementTimeout = null
-  }
-
-  if (pendingPoliteSet !== null) {
-    window.clearTimeout(pendingPoliteSet)
-    pendingPoliteSet = null
-  }
-
-  if (pendingAssertiveSet !== null) {
-    window.clearTimeout(pendingAssertiveSet)
-    pendingAssertiveSet = null
-  }
-}
+let nonceCounter = 0
 
 function clearQueuedMovementAnnouncement() {
   if (movementAnnouncementTimeout !== null) {
     window.clearTimeout(movementAnnouncementTimeout)
     movementAnnouncementTimeout = null
   }
-
-  // Also cancel the inner 0 ms set-timer that the movement callback may have
-  // already scheduled before this cancel arrived.
-  if (pendingPoliteSet !== null) {
-    window.clearTimeout(pendingPoliteSet)
-    pendingPoliteSet = null
-  }
 }
 
-// Clear first so screen readers re-announce when the same message repeats. The
-// '' update commits in the current task; the deferred callback runs in a
-// separate task, guaranteeing two distinct DOM mutations.
-function setPoliteAnnouncementWithReclear(message: string) {
-  if (pendingPoliteSet !== null) {
-    window.clearTimeout(pendingPoliteSet)
-  }
-  useFeedbackStore.setState({ politeAnnouncement: '' })
-  pendingPoliteSet = window.setTimeout(() => {
-    pendingPoliteSet = null
-    useFeedbackStore.setState({ politeAnnouncement: message })
-  }, 0)
-}
-
-// Module-private: mutation goes through feedbackActions and reads through the
+// Module-private: mutation goes through `feedback` and reads through the
 // narrow hooks below.
 const useFeedbackStore = create<FeedbackStoreState>()(() => ({
-  politeAnnouncement: '',
-  assertiveAnnouncement: '',
-  statusMessage: null,
+  polite: { text: '', nonce: 0 },
+  assertive: { text: '', nonce: 0 },
 }))
 
-export const feedbackActions = {
-  announcePolite: (message: string) => {
-    if (!message) {
-      return
-    }
+function announce(channel: 'polite' | 'assertive', text: string) {
+  if (!text) {
+    return
+  }
 
-    clearQueuedMovementAnnouncement()
-    setPoliteAnnouncementWithReclear(message)
+  clearQueuedMovementAnnouncement()
+  nonceCounter += 1
+  useFeedbackStore.setState({ [channel]: { text, nonce: nonceCounter } })
+}
+
+function raiseToast(
+  message: FeedbackMessage,
+  options: {
+    type: 'success' | 'warning' | 'error'
+    priority: 'low' | 'high'
+    timeout?: number
   },
-  announceAssertive: (message: string) => {
-    clearQueuedMovementAnnouncement()
-    // Clear first so screen readers re-announce when the same message repeats.
-    if (pendingAssertiveSet !== null) {
-      window.clearTimeout(pendingAssertiveSet)
-    }
-    useFeedbackStore.setState({ assertiveAnnouncement: '' })
-    pendingAssertiveSet = window.setTimeout(() => {
-      pendingAssertiveSet = null
-      useFeedbackStore.setState({ assertiveAnnouncement: message })
-    }, 0)
+) {
+  clearQueuedMovementAnnouncement()
+  appToastManager.add({ ...message, ...options })
+}
+
+/**
+ * The sanctioned entry points for user feedback. Call sites state the domain
+ * class of the event; the surface routing lives here, per the policy in
+ * docs/architecture/feedback.md. Messages arrive already translated.
+ *
+ * Every entry is one surface set: toasts announce through the viewport's own
+ * live regions (priority high = assertive), announcer entries are SR-only.
+ * Explicit feedback cancels a pending debounced movement announcement so a
+ * stale position never announces after the outcome that superseded it.
+ */
+export const feedback = {
+  /** Outcome notice for a completed global action. Auto-dismisses. */
+  actionSuccess(message: FeedbackMessage): void {
+    raiseToast(message, { type: 'success', priority: 'low' })
   },
-  clearAssertiveAnnouncement: () => {
-    clearQueuedMovementAnnouncement()
-    if (pendingAssertiveSet !== null) {
-      window.clearTimeout(pendingAssertiveSet)
-      pendingAssertiveSet = null
-    }
-    useFeedbackStore.setState({ assertiveAnnouncement: '' })
+
+  /** Degraded-outcome notice. Lingers longer than a success. */
+  actionWarning(message: FeedbackMessage): void {
+    raiseToast(message, {
+      type: 'warning',
+      priority: 'low',
+      timeout: WARNING_TIMEOUT_MS,
+    })
   },
-  queueMovementAnnouncement: (message: string) => {
-    if (!message) {
+
+  /**
+   * A failed user action. Announced assertively and kept on screen until
+   * dismissed: errors are rare and actionable, and an auto-dismissing error
+   * can vanish before a screen-reader or sighted user reaches it.
+   */
+  actionError(message: FeedbackMessage): void {
+    raiseToast(message, { type: 'error', priority: 'high', timeout: 0 })
+  },
+
+  /**
+   * SR-only polite note for an interaction whose visual outcome is already
+   * on screen (selection, add/delete, undo/redo, committed edits).
+   */
+  interactionUpdate(text: string): void {
+    announce('polite', text)
+  },
+
+  /**
+   * SR-only polite note for continuous movement (keyboard move/rotate),
+   * debounced so rapid keypresses announce only the settled state.
+   */
+  movementUpdate(text: string): void {
+    if (!text) {
       return
     }
 
@@ -110,29 +128,33 @@ export const feedbackActions = {
 
     movementAnnouncementTimeout = window.setTimeout(() => {
       movementAnnouncementTimeout = null
-      setPoliteAnnouncementWithReclear(message)
+      announce('polite', text)
     }, MOVEMENT_ANNOUNCEMENT_DELAY_MS)
   },
-  clearQueuedMovementAnnouncement,
-  setStatusMessage: (message: string | null) => {
-    useFeedbackStore.setState((state) =>
-      state.statusMessage === message ? state : { statusMessage: message },
-    )
+
+  /**
+   * SR-only assertive note for a rejected form input. The visible error text
+   * is the caller's: rendered inline next to the field with aria-invalid and
+   * aria-describedby.
+   */
+  formError(text: string): void {
+    announce('assertive', text)
   },
-  clearStatusMessage: () => {
-    useFeedbackStore.setState((state) =>
-      state.statusMessage === null ? state : { statusMessage: null },
-    )
-  },
-  // Clears every pending announcement timer along with the messages.
-  reset: () => {
-    clearPendingAnnouncementTimers()
+
+  /**
+   * Resets the whole feedback surface: clears both announcement channels and
+   * any pending debounce, and closes all toasts - a fresh startup cycle must
+   * not carry notices that describe the pre-reset world.
+   */
+  reset(): void {
+    clearQueuedMovementAnnouncement()
     useFeedbackStore.setState(useFeedbackStore.getInitialState(), true)
+    appToastManager.close()
   },
 }
 
 export function resetFeedbackStore() {
-  feedbackActions.reset()
+  feedback.reset()
 }
 
 export const feedbackStoreForTests = {
@@ -140,8 +162,6 @@ export const feedbackStoreForTests = {
 }
 
 export const usePoliteAnnouncement = () =>
-  useFeedbackStore((state) => state.politeAnnouncement)
+  useFeedbackStore((state) => state.polite)
 export const useAssertiveAnnouncement = () =>
-  useFeedbackStore((state) => state.assertiveAnnouncement)
-export const useStatusMessage = () =>
-  useFeedbackStore((state) => state.statusMessage)
+  useFeedbackStore((state) => state.assertive)

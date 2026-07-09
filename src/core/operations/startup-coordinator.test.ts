@@ -1,5 +1,11 @@
 // @vitest-environment jsdom
 
+import {
+  appToastManager,
+  feedback,
+  feedbackStoreForTests,
+  resetFeedbackStore,
+} from '@/core/stores/feedback-store'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   useEditorLifecycleStore,
@@ -7,8 +13,6 @@ import {
 } from '../stores/editor-lifecycle-store'
 import { resetAssetsStore } from '../stores/assets-store'
 import { dialogActions } from '../stores/dialog-store'
-import { feedbackActions } from '../stores/feedback-store'
-import { appToastManager } from '@/core/feedback/toast-manager'
 import {
   resetSelectionStore,
   selectionActions,
@@ -39,14 +43,6 @@ vi.mock('../persistence/scene-draft', () => ({
   saveSceneDraft: vi.fn(),
 }))
 
-vi.mock('../stores/feedback-store', () => ({
-  feedbackActions: {
-    announcePolite: vi.fn(),
-    announceAssertive: vi.fn(),
-    clearAssertiveAnnouncement: vi.fn(),
-  },
-}))
-
 vi.mock('./collection-loader', () => ({
   resetCollectionPipeline: vi.fn(),
 }))
@@ -65,6 +61,7 @@ beforeEach(() => {
   resetAssetsStore()
   resetSelectionStore()
   resetSceneSessionStore()
+  resetFeedbackStore()
 })
 
 function seedSceneSessionState() {
@@ -99,7 +96,7 @@ describe('startup-coordinator', () => {
     expect(useEditorLifecycleStore.getState().restoreAttemptCount).toBe(1)
   })
 
-  it('records the asset error, resets the shell, and announces on asset error', () => {
+  it('records the asset error and resets the shell without raising a toast', () => {
     const closeActiveDialog = vi.spyOn(dialogActions, 'closeActiveDialog')
     const addToast = vi.spyOn(appToastManager, 'add').mockReturnValue('toast-1')
     seedSceneSessionState()
@@ -117,19 +114,17 @@ describe('startup-coordinator', () => {
       isDragging: false,
       floorFinishLoading: false,
     })
-    expect(feedbackActions.announceAssertive).toHaveBeenCalledWith(
-      'Unable to load room editor assets. Retry available.',
-    )
-    expect(addToast).toHaveBeenCalledWith(
-      expect.objectContaining({
-        title: 'Unable to load room editor assets. Retry available.',
-        type: 'error',
-      }),
-    )
+    // The InitializationError overlay (role=alert) is the only feedback
+    // surface for a startup-fatal error: no toast, no announcement.
+    expect(addToast).not.toHaveBeenCalled()
+    expect(feedbackStoreForTests.getState().polite.text).toBe('')
+    expect(feedbackStoreForTests.getState().assertive.text).toBe('')
   })
 
   it('resets the collection pipeline, starts a fresh cycle, and re-runs the bootstrap', () => {
     selectionActions.setSelection('chair-1', 'canvas-pointer')
+    feedback.interactionUpdate('Chair selected.')
+    feedback.formError('Stale error')
 
     requestAssetRetry()
 
@@ -138,7 +133,9 @@ describe('startup-coordinator', () => {
     expect(resetCollectionPipeline).toHaveBeenCalledTimes(1)
     expect(useEditorLifecycleStore.getState().startupCycle).toBe(1)
     expect(runStartupBootstrap).toHaveBeenCalledTimes(1)
-    expect(feedbackActions.clearAssertiveAnnouncement).toHaveBeenCalledTimes(1)
+    // The retry clears stale announcements alongside the shell.
+    expect(feedbackStoreForTests.getState().polite.text).toBe('')
+    expect(feedbackStoreForTests.getState().assertive.text).toBe('')
   })
 
   it('clears the scene session on retry', () => {

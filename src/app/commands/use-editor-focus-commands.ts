@@ -1,10 +1,12 @@
 import { useCallback } from 'react'
-import { feedbackActions } from '@/core/stores/feedback-store'
+import { msg } from '@lingui/core/macro'
+import { feedback } from '@/core/stores/feedback-store'
 import { useSelectedFurniture } from '@/core/operations/selected-furniture'
 import { selectionActions } from '@/core/stores/selection-store'
 import { previewFromCanvasKeyboard } from '@/core/operations/preview-actions'
 import { requestOutlinerFocus } from '@/core/operations/focus-actions'
 import { useEditorRefs } from '@/shared/providers/editor-refs-context'
+import { i18n } from '@/shared/i18n/i18n'
 
 const FOCUSABLE_CONTROL_SELECTOR =
   'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
@@ -32,8 +34,8 @@ export function useEditorFocusCommands(): EditorFocusCommands {
   const focusInspector = useCallback(() => {
     if (selectedFurniture === null) {
       requestOutlinerFocus()
-      feedbackActions.announcePolite(
-        'No item selected. Focus moved to Furniture in room.',
+      feedback.interactionUpdate(
+        i18n._(msg`No item selected. Focus moved to Furniture in room.`),
       )
       return
     }
@@ -60,8 +62,8 @@ export function useEditorFocusCommands(): EditorFocusCommands {
   const focusToolbar = useCallback(() => {
     if (selectedFurniture === null) {
       requestOutlinerFocus()
-      feedbackActions.announcePolite(
-        'No item selected. Focus moved to Furniture in room.',
+      feedback.interactionUpdate(
+        i18n._(msg`No item selected. Focus moved to Furniture in room.`),
       )
       return
     }

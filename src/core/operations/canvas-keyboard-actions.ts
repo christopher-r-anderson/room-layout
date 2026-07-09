@@ -1,5 +1,5 @@
 import { sceneCommands } from '@/core/scene-commands'
-import { feedbackActions } from '@/core/stores/feedback-store'
+import { feedback } from '@/core/stores/feedback-store'
 import { selectById } from '@/core/operations/selection-actions'
 import { previewFromCanvasKeyboard } from '@/core/operations/preview-actions'
 import { getPreviewedId } from '@/core/operations/previewed-id'
@@ -33,7 +33,7 @@ export function browseCanvasPreview(direction: BrowseDirection) {
 
   const item = snapshot.items.find((sceneItem) => sceneItem.id === nextId)
   if (item) {
-    feedbackActions.announcePolite(item.name)
+    feedback.interactionUpdate(item.name)
   }
 }
 

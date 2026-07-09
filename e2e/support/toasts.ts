@@ -24,3 +24,16 @@ export async function waitForToast(
   await expect(toast).toBeVisible()
   return toast
 }
+
+/**
+ * Asserts no toast is showing: the viewport either is not mounted or has no
+ * toast children.
+ */
+export async function expectNoToasts(page: Page): Promise<void> {
+  await expect(toastViewport(page).locator('> [data-type]')).toHaveCount(0)
+}
+
+/** Reads the visible toasts' full text (title plus description per toast). */
+export async function readToastTexts(page: Page): Promise<string[]> {
+  return toastViewport(page).locator('> [data-type]').allTextContents()
+}

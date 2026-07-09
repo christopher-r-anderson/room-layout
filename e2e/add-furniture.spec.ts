@@ -2,6 +2,7 @@ import { expect, test, type Page } from '@playwright/test'
 import {
   addFurniture,
   dragSelectedFurniture,
+  expectAssertiveAnnouncementUnchanged,
   failFurnitureAssetRequestsUntilRetry,
   openEditor,
   readSceneState,
@@ -68,14 +69,12 @@ test('surfaces an error and recovers when an added item fails to load', async ({
   await picker.getByText('Leather Couch', { exact: true }).click()
   await picker.getByRole('button', { name: 'Add Item' }).click()
 
-  // Instead of hanging on "Adding...", the add reports the failure on both
-  // channels - a toast visible over the drawer, and an assertive announcement
-  // (the drawer's aria-hiding exempts live regions) - adds nothing, and the
-  // button recovers.
+  // Instead of hanging on "Adding...", the add reports the failure as a single
+  // error toast (the viewport portals to body above the drawer and announces
+  // through its own live regions), adds nothing, and the button recovers. The
+  // announcer's assertive channel stays empty - no double announcement.
   await waitForToast(page, { text: 'Check your connection', type: 'error' })
-  await expect(
-    page.locator('[data-announcer-channel="assertive"]'),
-  ).toContainText('Check your connection')
+  await expectAssertiveAnnouncementUnchanged(page, '')
   await expect(picker.getByRole('button', { name: 'Add Item' })).toBeEnabled()
   expect((await readSceneState(page)).itemCount).toBe(0)
 

@@ -4,6 +4,16 @@ This is the end-user shortcut reference for room editor interactions.
 
 For implementation details and architecture, see [Keyboard Shortcuts](../architecture/keyboard.md).
 
+## Pane Focus
+
+| Action                      | Shortcut | Mode  |
+| --------------------------- | -------- | ----- |
+| Focus inspector             | Shift+I  | Press |
+| Focus room view             | Shift+R  | Press |
+| Focus Furniture in room     | Shift+O  | Press |
+| Focus selected item actions | Shift+T  | Press |
+| Focus notifications         | F6       | Press |
+
 ## Camera
 
 | Action      | Shortcut      | Mode  |

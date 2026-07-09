@@ -163,12 +163,6 @@ msgstr "[Ďĩśţàńćē ƒŕōḿ ĺēƒţ ŵàĺĺ (ḿ)āēīōūáéíóú�
 msgid "Draft could not be restored."
 msgstr "[Ďŕàƒţ ćōũĺď ńōţ ƀē ŕēśţōŕēď.āēīōūáéíóúāēīōūá]"
 
-msgid "Draft could not be restored. Starting with an empty room."
-msgstr "[Ďŕàƒţ ćōũĺď ńōţ ƀē ŕēśţōŕēď. Śţàŕţĩńğ ŵĩţĥ àń ēḿƥţŷ ŕōōḿ.āēīōūáéíóúāēīōūáéíóúāēī]"
-
-msgid "Draft failed to restore. Starting with an empty room."
-msgstr "[Ďŕàƒţ ƒàĩĺēď ţō ŕēśţōŕē. Śţàŕţĩńğ ŵĩţĥ àń ēḿƥţŷ ŕōōḿ.āēīōūáéíóúāēīōūáéíóúāē]"
-
 msgid "Edit the selected item."
 msgstr "[Ēďĩţ ţĥē śēĺēćţēď ĩţēḿ.āēīōūáéíóúāēī]"
 
@@ -177,9 +171,6 @@ msgstr "[Ēďĩţōŕ àćţĩōńśāēīōūáéíóú]"
 
 msgid "Editor failed to load"
 msgstr "[Ēďĩţōŕ ƒàĩĺēď ţō ĺōàďāēīōūáéíóúāē]"
-
-msgid "Editor status"
-msgstr "[Ēďĩţōŕ śţàţũśāēīōūáéíóú]"
 
 msgid "Finish dragging before adding furniture."
 msgstr "[Ƒĩńĩśĥ ďŕàğğĩńğ ƀēƒōŕē àďďĩńğ ƒũŕńĩţũŕē.āēīōūáéíóúāēīōūá]"
@@ -204,6 +195,9 @@ msgstr "[Ƒōćũś Ƒũŕńĩţũŕē ĩń ŕōōḿāēīōūáéíóúāēī]
 
 msgid "Focus inspector"
 msgstr "[Ƒōćũś ĩńśƥēćţōŕāēīōūáéíóúā]"
+
+msgid "Focus notifications"
+msgstr "[Ƒōćũś ńōţĩƒĩćàţĩōńśāēīōūáéíóúāēīō]"
 
 msgid "Focus room view"
 msgstr "[Ƒōćũś ŕōōḿ vĩēŵāēīōūáéíóúā]"
@@ -300,6 +294,9 @@ msgstr "[Ńō ƒũŕńĩţũŕē ĩń ţĥē ŕōōḿ.āēīōūáéíóúāē�
 
 msgid "No item selected"
 msgstr "[Ńō ĩţēḿ śēĺēćţēďāēīōūáéíóúāē]"
+
+msgid "No item selected. Focus moved to Furniture in room."
+msgstr "[Ńō ĩţēḿ śēĺēćţēď. Ƒōćũś ḿōvēď ţō Ƒũŕńĩţũŕē ĩń ŕōōḿ.āēīōūáéíóúāēīōūáéíóúā]"
 
 msgid "No next history"
 msgstr "[Ńō ńēxţ ĥĩśţōŕŷāēīōūáéíóúā]"
@@ -500,35 +497,17 @@ msgstr "[Śĥàŕēďāēīōūá]"
 msgid "Shared link and draft could not be restored."
 msgstr "[Śĥàŕēď ĺĩńķ àńď ďŕàƒţ ćōũĺď ńōţ ƀē ŕēśţōŕēď.āēīōūáéíóúāēīōūáéí]"
 
-msgid "Shared link and draft could not be restored. Starting with an empty room."
-msgstr "[Śĥàŕēď ĺĩńķ àńď ďŕàƒţ ćōũĺď ńōţ ƀē ŕēśţōŕēď. Śţàŕţĩńğ ŵĩţĥ àń ēḿƥţŷ ŕōōḿ.āēīōūáéíóúāēīōūáéíóúāēīōūáéíóú]"
-
 msgid "Shared link contained unknown furniture. Draft restored."
 msgstr "[Śĥàŕēď ĺĩńķ ćōńţàĩńēď ũńķńōŵń ƒũŕńĩţũŕē. Ďŕàƒţ ŕēśţōŕēď.āēīōūáéíóúāēīōūáéíóúāēī]"
 
 msgid "Shared link contained unrecognized furniture."
 msgstr "[Śĥàŕēď ĺĩńķ ćōńţàĩńēď ũńŕēćōğńĩźēď ƒũŕńĩţũŕē.āēīōūáéíóúāēīōūáéí]"
 
-msgid "Shared link contained unrecognized furniture. Starting with an empty room."
-msgstr "[Śĥàŕēď ĺĩńķ ćōńţàĩńēď ũńŕēćōğńĩźēď ƒũŕńĩţũŕē. Śţàŕţĩńğ ŵĩţĥ àń ēḿƥţŷ ŕōōḿ.āēīōūáéíóúāēīōūáéíóúāēīōūáéíóú]"
-
 msgid "Shared link could not be restored."
 msgstr "[Śĥàŕēď ĺĩńķ ćōũĺď ńōţ ƀē ŕēśţōŕēď.āēīōūáéíóúāēīō]"
 
-msgid "Shared link could not be restored. Draft also failed to restore. Starting with an empty room."
-msgstr "[Śĥàŕēď ĺĩńķ ćōũĺď ńōţ ƀē ŕēśţōŕēď. Ďŕàƒţ àĺśō ƒàĩĺēď ţō ŕēśţōŕē. Śţàŕţĩńğ ŵĩţĥ àń ēḿƥţŷ ŕōōḿ.āēīōūáéíóúāēīōūáéíóúāēīōūáéíóúāēīōūáéí]"
-
 msgid "Shared link could not be restored. Recovered your local draft."
 msgstr "[Śĥàŕēď ĺĩńķ ćōũĺď ńōţ ƀē ŕēśţōŕēď. Ŕēćōvēŕēď ŷōũŕ ĺōćàĺ ďŕàƒţ.āēīōūáéíóúāēīōūáéíóúāēīōū]"
-
-msgid "Shared link could not be restored. Starting with an empty room."
-msgstr "[Śĥàŕēď ĺĩńķ ćōũĺď ńōţ ƀē ŕēśţōŕēď. Śţàŕţĩńğ ŵĩţĥ àń ēḿƥţŷ ŕōōḿ.āēīōūáéíóúāēīōūáéíóúāēīōūá]"
-
-msgid "Shared link had unknown furniture. Draft also failed to restore. Starting with an empty room."
-msgstr "[Śĥàŕēď ĺĩńķ ĥàď ũńķńōŵń ƒũŕńĩţũŕē. Ďŕàƒţ àĺśō ƒàĩĺēď ţō ŕēśţōŕē. Śţàŕţĩńğ ŵĩţĥ àń ēḿƥţŷ ŕōōḿ.āēīōūáéíóúāēīōūáéíóúāēīōūáéíóúāēīōūáéí]"
-
-msgid "Shared link was invalid. Draft also failed to restore. Starting with an empty room."
-msgstr "[Śĥàŕēď ĺĩńķ ŵàś ĩńvàĺĩď. Ďŕàƒţ àĺśō ƒàĩĺēď ţō ŕēśţōŕē. Śţàŕţĩńğ ŵĩţĥ àń ēḿƥţŷ ŕōōḿ.āēīōūáéíóúāēīōūáéíóúāēīōūáéíóúāēīō]"
 
 msgid "Shared link was invalid. Recovered your local draft."
 msgstr "[Śĥàŕēď ĺĩńķ ŵàś ĩńvàĺĩď. Ŕēćōvēŕēď ŷōũŕ ĺōćàĺ ďŕàƒţ.āēīōūáéíóúāēīōūáéíóúā]"
@@ -553,6 +532,9 @@ msgstr "[Śţàŕţ ōvēŕ?āēīōūáéí]"
 
 msgid "Started over. Your changes were cleared."
 msgstr "[Śţàŕţēď ōvēŕ. Ŷōũŕ ćĥàńğēś ŵēŕē ćĺēàŕēď.āēīōūáéíóúāēīōūá]"
+
+msgid "Starting with an empty room."
+msgstr "[Śţàŕţĩńğ ŵĩţĥ àń ēḿƥţŷ ŕōōḿ.āēīōūáéíóúāēīōūá]"
 
 msgid "Startup failed"
 msgstr "[Śţàŕţũƥ ƒàĩĺēďāēīōūáéíóú]"
@@ -604,9 +586,6 @@ msgstr "[Ţōğğĺē ƒũŕńĩţũŕē ĺĩśţ vĩśĩƀĩĺĩţŷāēīōū�
 
 msgid "Top"
 msgstr "[Ţōƥāēī]"
-
-msgid "Unable to load room editor assets. Retry available."
-msgstr "[Ũńàƀĺē ţō ĺōàď ŕōōḿ ēďĩţōŕ àśśēţś. Ŕēţŕŷ àvàĩĺàƀĺē.āēīōūáéíóúāēīōūáéíóúā]"
 
 msgid "Unavailable"
 msgstr "[Ũńàvàĩĺàƀĺēāēīōūáéí]"

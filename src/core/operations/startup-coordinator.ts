@@ -1,13 +1,10 @@
-import { msg } from '@lingui/core/macro'
 import { createDefaultSceneState } from '@/domain/scene-defaults'
 import { isSceneStateAtDefaults } from '@/domain/scene-model'
-import { i18n } from '@/shared/i18n/i18n'
 import { clearSceneServices } from '@/core/scene-services'
 import { resetCollectionPipeline } from './collection-loader'
 import { resetPreviewState } from './preview-actions'
 import { restoreInitialLayout } from './history-mutations'
-import { feedbackActions } from '@/core/stores/feedback-store'
-import { feedback } from '@/core/feedback/feedback'
+import { feedback } from '@/core/stores/feedback-store'
 import { dialogActions } from '@/core/stores/dialog-store'
 import {
   editorLifecycleActions,
@@ -174,18 +171,15 @@ function runRestoreOnce() {
       )
     },
     notifications: {
-      announcePolite: feedbackActions.announcePolite,
-      announceAssertive: feedbackActions.announceAssertive,
-      setStatusMessage: feedbackActions.setStatusMessage,
       setRestoreOutcome: editorLifecycleActions.recordRestoreOutcome,
-      toastSuccess: (message) => {
-        feedback.actionSuccess({ title: message })
+      actionSuccess: (message) => {
+        feedback.actionSuccess(message)
       },
-      toastWarning: (message) => {
-        feedback.actionWarning({ title: message })
+      actionWarning: (message) => {
+        feedback.actionWarning(message)
       },
-      toastError: (message) => {
-        feedback.actionError({ title: message })
+      actionError: (message) => {
+        feedback.actionError(message)
       },
     },
   })
@@ -211,11 +205,9 @@ function reportStartupError(kind: StartupErrorKind, error: Error) {
   })
   dialogActions.closeActiveDialog()
   resetStartupShell()
-  const assetError = i18n._(
-    msg`Unable to load room editor assets. Retry available.`,
-  )
-  feedback.actionError({ title: assetError })
-  feedbackActions.announceAssertive(assetError)
+  // No toast or announcement: the InitializationError overlay is the feedback
+  // surface for a startup-fatal error (role=alert announces it, and the
+  // autofocused Retry button is the recovery affordance).
 }
 
 // A furniture/scene asset failed while loading or rendering.
@@ -241,6 +233,6 @@ export function requestAssetRetry() {
   resetCollectionPipeline()
 
   editorLifecycleActions.requestRetry()
-  feedbackActions.clearAssertiveAnnouncement()
+  feedback.reset()
   runStartupBootstrap()
 }

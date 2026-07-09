@@ -9,6 +9,7 @@ type KeyboardShortcutHandler =
   | 'use-keyboard-shortcuts'
   | 'use-camera-key-state'
   | 'native-input'
+  | 'library-global'
 
 interface ShortcutPlatformLabel {
   kind: 'platform'
@@ -772,6 +773,24 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
         rowLabel: msg`Zoom in/out`,
         rowOrder: 3,
         comboLabels: [['='], ['-']],
+      },
+    ],
+  },
+  {
+    // Handled by the toast viewport's own global F6 listener (Base UI);
+    // listed here so the help dialog documents it.
+    id: 'focus-notifications',
+    match: { key: 'F6' },
+    handler: 'library-global',
+    helpEntries: [
+      {
+        sectionTitle: msg`Navigation`,
+        sectionOrder: 1,
+        groupLabel: msg`Pane focus`,
+        groupOrder: 1,
+        rowLabel: msg`Focus notifications`,
+        rowOrder: 5,
+        comboLabels: [['F6']],
       },
     ],
   },

@@ -1,168 +1,171 @@
 // @vitest-environment jsdom
-
-import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
-  feedbackActions,
+  afterEach,
+  beforeEach,
+  expect,
+  it,
+  vi,
+  type MockInstance,
+} from 'vitest'
+import {
+  appToastManager,
+  feedback,
   feedbackStoreForTests,
   resetFeedbackStore,
 } from './feedback-store'
 
-const polite = () => feedbackStoreForTests.getState().politeAnnouncement
-const assertive = () => feedbackStoreForTests.getState().assertiveAnnouncement
-const status = () => feedbackStoreForTests.getState().statusMessage
+// The routing contract: each entry point fires exactly one surface set. The
+// negative assertions are the point - they are what keeps a second channel
+// from quietly creeping back in. Normative table in
+// docs/architecture/feedback.md; browser twin in e2e/feedback-routing.spec.ts.
 
-describe('feedback store', () => {
-  afterEach(() => {
-    resetFeedbackStore()
-    vi.useRealTimers()
-  })
+const channels = () => feedbackStoreForTests.getState()
 
-  it('starts with empty polite and assertive announcements and no status message', () => {
-    expect(polite()).toBe('')
-    expect(assertive()).toBe('')
-    expect(status()).toBeNull()
-  })
+let addToast: MockInstance<typeof appToastManager.add>
 
-  it('sets and clears the visible status message', () => {
-    feedbackActions.setStatusMessage('Unable to place furniture')
-    expect(status()).toBe('Unable to place furniture')
+beforeEach(() => {
+  resetFeedbackStore()
+  addToast = vi.spyOn(appToastManager, 'add').mockReturnValue('toast-1')
+})
 
-    feedbackActions.clearStatusMessage()
-    expect(status()).toBeNull()
-  })
+afterEach(() => {
+  vi.restoreAllMocks()
+  vi.useRealTimers()
+})
 
-  it('clears the status message on reset', () => {
-    feedbackActions.setStatusMessage('Could not copy URL')
+it('starts with empty polite and assertive channels', () => {
+  expect(channels().polite.text).toBe('')
+  expect(channels().assertive.text).toBe('')
+})
 
-    resetFeedbackStore()
+it.each([
+  ['actionSuccess', { type: 'success', priority: 'low' }],
+  ['actionWarning', { type: 'warning', priority: 'low', timeout: 8_000 }],
+  ['actionError', { type: 'error', priority: 'high', timeout: 0 }],
+] as const)(
+  '%s raises one toast and leaves both SR channels silent',
+  (entry, expected) => {
+    feedback[entry]({ title: 'Outcome', description: 'Detail' })
 
-    expect(status()).toBeNull()
-  })
-
-  it('queues movement announcements with a delay', () => {
-    vi.useFakeTimers()
-
-    feedbackActions.queueMovementAnnouncement('Moved to x 1.0, z 2.0.')
-    expect(polite()).toBe('')
-
-    vi.advanceTimersByTime(179)
-    expect(polite()).toBe('')
-
-    vi.advanceTimersByTime(1)
-    // After 180ms the outer timer fires and clears the region, then schedules a
-    // 0ms timer to set the message. Flush it so the announcement is visible.
-    vi.runAllTimers()
-    expect(polite()).toBe('Moved to x 1.0, z 2.0.')
-  })
-
-  it('re-announces when the same polite message is repeated', () => {
-    vi.useFakeTimers()
-
-    feedbackActions.announcePolite('Coffee Table rotated.')
-    vi.runAllTimers()
-    expect(polite()).toBe('Coffee Table rotated.')
-
-    // Announcing the same message again must produce a DOM mutation so screen
-    // readers re-announce it. The intermediate '' clear ensures this.
-    feedbackActions.announcePolite('Coffee Table rotated.')
-    expect(polite()).toBe('')
-
-    vi.runAllTimers()
-    expect(polite()).toBe('Coffee Table rotated.')
-  })
-
-  it('cancels queued movement announcements when announcePolite is called', () => {
-    vi.useFakeTimers()
-
-    feedbackActions.queueMovementAnnouncement('Queued movement')
-    feedbackActions.announcePolite('Immediate selection')
-    vi.runAllTimers()
-
-    expect(polite()).toBe('Immediate selection')
-  })
-
-  it('clears queued movement announcements when assertive message updates', () => {
-    vi.useFakeTimers()
-
-    feedbackActions.queueMovementAnnouncement('Queued movement')
-    feedbackActions.announceAssertive('Asset load error')
-    vi.runAllTimers()
-
-    expect(assertive()).toBe('Asset load error')
-    expect(polite()).toBe('')
-
-    feedbackActions.clearAssertiveAnnouncement()
-    expect(assertive()).toBe('')
-  })
-
-  it('re-announces when the same assertive message is repeated', () => {
-    vi.useFakeTimers()
-
-    feedbackActions.announceAssertive(
-      'Unable to load room editor assets. Retry available.',
+    expect(addToast).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({
+        title: 'Outcome',
+        description: 'Detail',
+        ...expected,
+      }),
     )
-    vi.runAllTimers()
-    expect(assertive()).toBe(
-      'Unable to load room editor assets. Retry available.',
-    )
+    expect(channels().polite.text).toBe('')
+    expect(channels().assertive.text).toBe('')
+  },
+)
 
-    feedbackActions.announceAssertive(
-      'Unable to load room editor assets. Retry available.',
-    )
-    expect(assertive()).toBe('')
+it('interactionUpdate announces politely only', () => {
+  feedback.interactionUpdate('Chair selected.')
 
-    vi.runAllTimers()
-    expect(assertive()).toBe(
-      'Unable to load room editor assets. Retry available.',
-    )
-  })
+  expect(channels().polite.text).toBe('Chair selected.')
+  expect(channels().assertive.text).toBe('')
+  expect(addToast).not.toHaveBeenCalled()
+})
 
-  it('cancels the pending inner set-timer when clearQueuedMovementAnnouncement fires after the 180ms outer timer', () => {
-    vi.useFakeTimers()
+it('formError announces assertively only', () => {
+  feedback.formError('Distance must be a number.')
 
-    feedbackActions.queueMovementAnnouncement('Moved to x 1.0, z 2.0.')
+  expect(channels().assertive.text).toBe('Distance must be a number.')
+  expect(channels().polite.text).toBe('')
+  expect(addToast).not.toHaveBeenCalled()
+})
 
-    // Advance past the 180ms outer timer so it fires and schedules the 0ms inner timer.
-    vi.advanceTimersByTime(180)
-    // Live region is cleared; inner timer is now pending.
-    expect(polite()).toBe('')
+it('movementUpdate debounces onto the polite channel', () => {
+  vi.useFakeTimers()
 
-    // Cancel arrives in the ~0ms window before the inner timer drains.
-    feedbackActions.clearQueuedMovementAnnouncement()
-    vi.runAllTimers()
+  feedback.movementUpdate('Chair moved to X 1 and Z 2.')
+  expect(channels().polite.text).toBe('')
 
-    // Inner timer was cancelled — live region must stay empty.
-    expect(polite()).toBe('')
-  })
+  vi.advanceTimersByTime(179)
+  expect(channels().polite.text).toBe('')
 
-  it('cancels the pending assertive set-timer when clearAssertiveAnnouncement fires before it drains', () => {
-    vi.useFakeTimers()
+  vi.advanceTimersByTime(1)
+  expect(channels().polite.text).toBe('Chair moved to X 1 and Z 2.')
+  expect(addToast).not.toHaveBeenCalled()
+})
 
-    feedbackActions.announceAssertive('Asset load error')
-    // '' clear has committed; inner timer is pending.
-    expect(assertive()).toBe('')
+it('announces only the last movement message queued inside the debounce window', () => {
+  vi.useFakeTimers()
 
-    feedbackActions.clearAssertiveAnnouncement()
-    vi.runAllTimers()
+  feedback.movementUpdate('Chair moved to X 1 and Z 2.')
+  vi.advanceTimersByTime(100)
+  feedback.movementUpdate('Chair moved to X 2 and Z 2.')
 
-    // Inner timer was cancelled — live region stays empty.
-    expect(assertive()).toBe('')
-  })
+  vi.runAllTimers()
 
-  it('cancels pending timers on reset', () => {
-    vi.useFakeTimers()
+  expect(channels().polite.text).toBe('Chair moved to X 2 and Z 2.')
+})
 
-    feedbackActions.queueMovementAnnouncement('Queued movement')
-    feedbackActions.announceAssertive('Assertive message')
+it.each([
+  [
+    'actionError',
+    () => {
+      feedback.actionError({ title: 'Failed.' })
+    },
+  ],
+  [
+    'interactionUpdate',
+    () => {
+      feedback.interactionUpdate('Chair rotated.')
+    },
+  ],
+  [
+    'formError',
+    () => {
+      feedback.formError('Invalid.')
+    },
+  ],
+] as const)('%s cancels a queued movement announcement', (_entry, fire) => {
+  vi.useFakeTimers()
 
-    resetFeedbackStore()
-    expect(polite()).toBe('')
-    expect(assertive()).toBe('')
+  feedback.movementUpdate('Stale position.')
+  fire()
+  vi.runAllTimers()
 
-    vi.runAllTimers()
+  expect(channels().polite.text).not.toBe('Stale position.')
+})
 
-    // Timers scheduled before the reset must not repopulate the live regions.
-    expect(polite()).toBe('')
-    expect(assertive()).toBe('')
-  })
+it.each(['polite', 'assertive'] as const)(
+  'repeating a message re-announces through a fresh %s nonce',
+  (channel) => {
+    const fire =
+      channel === 'polite'
+        ? () => {
+            feedback.interactionUpdate('Undo complete.')
+          }
+        : () => {
+            feedback.formError('Invalid value.')
+          }
+
+    fire()
+    const first = channels()[channel]
+
+    fire()
+    const second = channels()[channel]
+
+    expect(second.text).toBe(first.text)
+    expect(second.nonce).toBeGreaterThan(first.nonce)
+  },
+)
+
+it('reset clears both channels, the pending debounce, and all toasts', () => {
+  vi.useFakeTimers()
+  const closeToasts = vi.spyOn(appToastManager, 'close')
+
+  feedback.interactionUpdate('Chair selected.')
+  feedback.formError('Invalid.')
+  feedback.movementUpdate('Pending move.')
+
+  feedback.reset()
+  vi.runAllTimers()
+
+  // The debounce scheduled before the reset must not repopulate the channels.
+  expect(channels().polite.text).toBe('')
+  expect(channels().assertive.text).toBe('')
+  expect(closeToasts).toHaveBeenCalledTimes(1)
 })

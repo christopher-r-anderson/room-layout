@@ -1,7 +1,10 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { sceneCommands } from '@/core/scene-commands'
-import { feedbackActions } from '@/core/stores/feedback-store'
+import {
+  feedbackStoreForTests,
+  resetFeedbackStore,
+} from '@/core/stores/feedback-store'
 import {
   resetSelectionStore,
   selectionActions,
@@ -20,17 +23,7 @@ vi.mock('./history-mutations', () => ({
   undo: vi.fn(),
 }))
 
-vi.mock('@/core/stores/feedback-store', () => ({
-  feedbackActions: {
-    announcePolite: vi.fn(),
-    announceAssertive: vi.fn(),
-    clearAssertiveAnnouncement: vi.fn(),
-    queueMovementAnnouncement: vi.fn(),
-    clearQueuedMovementAnnouncement: vi.fn(),
-    setStatusMessage: vi.fn(),
-    clearStatusMessage: vi.fn(),
-  },
-}))
+const politeText = () => feedbackStoreForTests.getState().polite.text
 
 // The document mutation is mocked, so it will not reconcile the selection
 // pointer itself; these helpers simulate that reconcile inside the mock so the
@@ -45,6 +38,7 @@ function mockUndoReconcilingSelectionTo(selectedId: string | null) {
 beforeEach(() => {
   resetSelectionStore()
   resetEditorLifecycleStore()
+  resetFeedbackStore()
   editorLifecycleActions.markAssetsReady()
 })
 
@@ -62,7 +56,7 @@ describe('history-actions', () => {
 
     expect(undoDocument).not.toHaveBeenCalled()
     expect(redoDocument).not.toHaveBeenCalled()
-    expect(feedbackActions.announcePolite).not.toHaveBeenCalled()
+    expect(politeText()).toBe('')
     expect(useSelectionStore.getState().outlinerFocusRequest).toBeNull()
   })
 
@@ -73,9 +67,7 @@ describe('history-actions', () => {
 
     undo()
 
-    expect(feedbackActions.announcePolite).toHaveBeenCalledWith(
-      'Undo complete.',
-    )
+    expect(politeText()).toBe('Undo complete.')
     expect(useSelectionStore.getState().outlinerFocusRequest).toEqual(
       expect.objectContaining({ targetSelectedId: 'chair-2' }),
     )
@@ -102,9 +94,7 @@ describe('history-actions', () => {
 
     redo()
 
-    expect(feedbackActions.announcePolite).toHaveBeenCalledWith(
-      'Redo complete.',
-    )
+    expect(politeText()).toBe('Redo complete.')
     expect(useSelectionStore.getState().outlinerFocusRequest).toEqual(
       expect.objectContaining({ targetSelectedId: 'chair-1' }),
     )
@@ -117,9 +107,7 @@ describe('history-actions', () => {
 
     undo()
 
-    expect(feedbackActions.announcePolite).toHaveBeenCalledWith(
-      'Undo complete.',
-    )
+    expect(politeText()).toBe('Undo complete.')
     expect(useSelectionStore.getState().outlinerFocusRequest).toBeNull()
   })
 
@@ -142,7 +130,7 @@ describe('history-actions', () => {
 
     undo()
 
-    expect(feedbackActions.announcePolite).not.toHaveBeenCalled()
+    expect(politeText()).toBe('')
     expect(useSelectionStore.getState().outlinerFocusRequest).toBeNull()
   })
 })

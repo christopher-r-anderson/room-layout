@@ -3,7 +3,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createHistoryState } from '@/shared/lib/ui/editor-history'
 import type { FurnitureItem } from '@/domain/furniture'
 import { sceneCommands } from '@/core/scene-commands'
-import { feedbackActions } from '@/core/stores/feedback-store'
+import {
+  feedbackStoreForTests,
+  resetFeedbackStore,
+} from '@/core/stores/feedback-store'
 import { selectById } from '@/core/operations/selection-actions'
 import {
   resetSceneDocumentStore,
@@ -24,10 +27,6 @@ import {
   selectCanvasPreviewed,
 } from './canvas-keyboard-actions'
 
-vi.mock('@/core/stores/feedback-store', () => ({
-  feedbackActions: { announcePolite: vi.fn() },
-}))
-
 vi.mock('@/core/operations/selection-actions', () => ({
   selectById: vi.fn(() => ({ ok: true, status: 'selected' }) as const),
 }))
@@ -47,6 +46,8 @@ function item(id: string): FurnitureItem {
   }
 }
 
+const politeText = () => feedbackStoreForTests.getState().polite.text
+
 const SNAPSHOT = {
   items: [
     { id: 'left', name: 'Left Chair', pointerTarget: { x: 10, y: 10 } },
@@ -61,6 +62,7 @@ describe('canvas-keyboard-actions', () => {
     resetSceneSessionStore()
     resetEditorLifecycleStore()
     resetDialogStore()
+    resetFeedbackStore()
     editorLifecycleActions.markAssetsReady()
     sceneDocumentActions.setHistory(
       createHistoryState([item('left'), item('right')]),
@@ -77,15 +79,11 @@ describe('canvas-keyboard-actions', () => {
 
     browseCanvasPreview('next')
     expect(getPreviewedId()).toBe('left')
-    expect(feedbackActions.announcePolite).toHaveBeenLastCalledWith(
-      'Left Chair',
-    )
+    expect(politeText()).toBe('Left Chair')
 
     browseCanvasPreview('next')
     expect(getPreviewedId()).toBe('right')
-    expect(feedbackActions.announcePolite).toHaveBeenLastCalledWith(
-      'Right Chair',
-    )
+    expect(politeText()).toBe('Right Chair')
   })
 
   it('does nothing when no visible scene items are available', () => {
@@ -96,7 +94,7 @@ describe('canvas-keyboard-actions', () => {
     browseCanvasPreview('next')
 
     expect(getPreviewedId()).toBeNull()
-    expect(feedbackActions.announcePolite).not.toHaveBeenCalled()
+    expect(politeText()).toBe('')
   })
 
   it('selects the current preview and clears it', () => {

@@ -6,7 +6,7 @@ import {
   useSelectionStore,
   type InteractionSource,
 } from '@/core/stores/selection-store'
-import { feedbackActions } from '@/core/stores/feedback-store'
+import { feedback } from '@/core/stores/feedback-store'
 import { clearPreviewOnCanvasMiss } from '@/core/operations/preview-actions'
 import { sceneCommands } from '@/core/scene-commands'
 import {
@@ -42,16 +42,14 @@ export function announceSelectionChange(options: {
 
   if (announceMode === 'added') {
     if (selectedName) {
-      feedbackActions.announcePolite(
-        i18n._(msg`${selectedName} added to room.`),
-      )
+      feedback.interactionUpdate(i18n._(msg`${selectedName} added to room.`))
     }
     return
   }
 
   if (announceMode === 'canvas-keyboard') {
     if (selectedName) {
-      feedbackActions.announcePolite(
+      feedback.interactionUpdate(
         i18n._(
           msg`${selectedName} selected. Press Shift+T to reach its actions.`,
         ),
@@ -60,18 +58,18 @@ export function announceSelectionChange(options: {
     }
 
     if (previousSelectedId) {
-      feedbackActions.announcePolite(i18n._(msg`Selection cleared.`))
+      feedback.interactionUpdate(i18n._(msg`Selection cleared.`))
     }
     return
   }
 
   if (selectedName) {
-    feedbackActions.announcePolite(i18n._(msg`${selectedName} selected.`))
+    feedback.interactionUpdate(i18n._(msg`${selectedName} selected.`))
     return
   }
 
   if (previousSelectedId) {
-    feedbackActions.announcePolite(i18n._(msg`Selection cleared.`))
+    feedback.interactionUpdate(i18n._(msg`Selection cleared.`))
   }
 }
 
@@ -105,7 +103,6 @@ export function selectById(
 
   const previousSelectedId = useSelectionStore.getState().selectedId
   const result = selectDocumentById(id, source ?? null)
-  feedbackActions.clearStatusMessage()
 
   if (result.ok && previousSelectedId !== id) {
     announceSelectionChange({
@@ -131,7 +128,6 @@ export function clearSelection() {
 
   const previousSelectedId = useSelectionStore.getState().selectedId
   clearDocumentSelection()
-  feedbackActions.clearStatusMessage()
 
   // The mutation no-ops mid-drag; only announce a clear that landed.
   if (

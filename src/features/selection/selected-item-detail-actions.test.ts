@@ -16,7 +16,10 @@ import {
   useSelectionStore,
 } from '@/core/stores/selection-store'
 import { sceneCommands } from '@/core/scene-commands'
-import { feedbackActions } from '@/core/stores/feedback-store'
+import {
+  feedbackStoreForTests,
+  resetFeedbackStore,
+} from '@/core/stores/feedback-store'
 import { setSelectionTransform } from '@/core/operations/furniture-mutations'
 import { updateSelectedItemDetails } from './selected-item-detail-actions'
 import { CHAIR } from '@/test/support/furniture'
@@ -29,23 +32,14 @@ vi.mock('@/core/operations/furniture-mutations', () => ({
   setSelectionTransform: vi.fn(),
 }))
 
-vi.mock('@/core/stores/feedback-store', () => ({
-  feedbackActions: {
-    announcePolite: vi.fn(),
-    announceAssertive: vi.fn(),
-    clearAssertiveAnnouncement: vi.fn(),
-    queueMovementAnnouncement: vi.fn(),
-    clearQueuedMovementAnnouncement: vi.fn(),
-    setStatusMessage: vi.fn(),
-    clearStatusMessage: vi.fn(),
-  },
-}))
+const politeText = () => feedbackStoreForTests.getState().polite.text
 
 describe('selected-item-detail-actions', () => {
   beforeEach(() => {
     resetSceneDocumentStore()
     resetSelectionStore()
     resetEditorLifecycleStore()
+    resetFeedbackStore()
     sceneDocumentActions.setHistory(createHistoryState([CHAIR]))
     selectionActions.setSelection(CHAIR.id, null)
   })
@@ -90,9 +84,7 @@ describe('selected-item-detail-actions', () => {
         }),
       ).toEqual({ ok: true, item: updatedItem })
       expect(useSelectionStore.getState().selectedSource).toBe('panel-keyboard')
-      expect(feedbackActions.announcePolite).toHaveBeenCalledWith(
-        'Chair details updated.',
-      )
+      expect(politeText()).toBe('Chair details updated.')
     })
 
     it('returns a bare no-op result without announcing when nothing changed', () => {
@@ -110,7 +102,7 @@ describe('selected-item-detail-actions', () => {
           value: 1,
         }),
       ).toEqual({ ok: false, reason: 'no-op' })
-      expect(feedbackActions.announcePolite).not.toHaveBeenCalled()
+      expect(politeText()).toBe('')
     })
 
     it('surfaces a blocked message when the transform is rejected', () => {

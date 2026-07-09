@@ -2,11 +2,19 @@
 
 import { render, screen } from '@/test/render'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import {
+  feedbackStoreForTests,
+  resetFeedbackStore,
+} from '@/core/stores/feedback-store'
 import { SelectedDetailsView } from './selected-details-view'
 import { FURNITURE_ITEM } from '@/test/support/furniture'
 
 describe('SelectedDetailsView', () => {
+  beforeEach(() => {
+    resetFeedbackStore()
+  })
+
   it('tabs through the position fields, then the rotation input', async () => {
     const user = userEvent.setup()
 
@@ -156,7 +164,7 @@ describe('SelectedDetailsView', () => {
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
   })
 
-  it('announces validation failures as an alert separate from the visual support row', async () => {
+  it('announces validation failures on the global assertive channel separate from the visual support row', async () => {
     const user = userEvent.setup()
     const onInvalidSelectedItemDetailValue = vi.fn(
       (fieldLabel: string) => `${fieldLabel} must be a valid number.`,
@@ -176,14 +184,14 @@ describe('SelectedDetailsView', () => {
     await user.clear(xInput)
     await user.keyboard('{Enter}')
 
-    const liveErrorMessage = document.querySelector('[aria-live="assertive"]')
-
     expect(
       screen.getAllByText(
         'Distance from left wall (m) must be a valid number.',
       )[0],
     ).toBeVisible()
-    expect(liveErrorMessage).toHaveTextContent(
+    // The panel has no local live region; the failure announces on the app's
+    // global assertive channel.
+    expect(feedbackStoreForTests.getState().assertive.text).toBe(
       'Distance from left wall (m) must be a valid number.',
     )
   })

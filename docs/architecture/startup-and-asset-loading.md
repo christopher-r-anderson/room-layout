@@ -180,7 +180,7 @@ How each surfaces:
 | Manifest fetch fails                     | startup error overlay                             | retry                              |
 | An engine/chrome chunk fails to load     | startup error overlay                             | retry (reloads for a fresh graph)  |
 | A **gated** collection fails             | startup error overlay                             | retry (re-downloads)               |
-| An **on-demand** add fails               | toast + assertive announcement                    | re-add retries a transient failure |
+| An **on-demand** add fails               | high-priority error toast                         | re-add retries a transient failure |
 | A permanently `unavailable` catalog item | shown non-selectable in the catalog               | -                                  |
 | A GLB missing a manifest-referenced node | gated: startup error; on-demand: unavailable tile | fix the asset/manifest             |
 
@@ -205,11 +205,10 @@ Two special cases:
   chunk graph. An errored phase is sticky against a late manifest success
   (`beginAssetLoad` no-ops on `errored`), so a chunk failure that races the
   manifest fetch keeps the error overlay up until that retry.
-- An add failure while the drawer is open reports on two channels: a toast for
-  visual users, and an assertive announcement - the toast region is a polite
-  live region only, and an error in response to a user action should
-  interrupt. Both survive the drawer's aria-hiding, which exempts `aria-live`
-  regions.
+- An add failure while the drawer is open still reaches the user: the toast
+  viewport portals to body above the drawer, and its live regions carry the
+  `aria-live` attribute the drawer's aria-hiding exempts. See
+  [feedback.md](feedback.md).
 
 ## Pointers
 
