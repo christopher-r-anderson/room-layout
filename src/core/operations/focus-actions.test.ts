@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { createHistoryState } from '@/shared/lib/ui/editor-history'
 import type { FurnitureItem } from '@/domain/furniture'
 import {
@@ -11,11 +11,7 @@ import {
   selectionActions,
   useSelectionStore,
 } from '@/core/stores/selection-store'
-import { dialogActions, resetDialogStore } from '@/core/stores/dialog-store'
-import {
-  requestOutlinerFocus,
-  startOutlinerFocusReconciler,
-} from './focus-actions'
+import { requestOutlinerFocus } from './focus-actions'
 
 function item(id: string): FurnitureItem {
   return {
@@ -67,51 +63,5 @@ describe('requestOutlinerFocus', () => {
     expect(useSelectionStore.getState().outlinerFocusRequest).toEqual(
       expect.objectContaining({ focusContainer: true }),
     )
-  })
-})
-
-describe('startOutlinerFocusReconciler', () => {
-  let stop: () => void
-
-  beforeEach(() => {
-    resetDialogStore()
-    resetSelectionStore()
-    dialogActions.configureRuntimeContext({
-      isDialogsEnabled: () => true,
-      getSelectedFurniture: () => null,
-      canStartOver: () => true,
-    })
-    dialogActions.registerDialogDefinitions([
-      { id: 'delete', kind: 'blocking' },
-      { id: 'room-surface', kind: 'non-blocking' },
-    ])
-    stop = startOutlinerFocusReconciler()
-  })
-
-  afterEach(() => {
-    stop()
-    resetDialogStore()
-    resetSelectionStore()
-  })
-
-  it('clears a pending outliner-focus request when a blocking overlay opens', () => {
-    selectionActions.requestOutlinerFocus({
-      focusContainer: true,
-    })
-    expect(useSelectionStore.getState().outlinerFocusRequest).not.toBeNull()
-
-    dialogActions.openDialog('delete')
-
-    expect(useSelectionStore.getState().outlinerFocusRequest).toBeNull()
-  })
-
-  it('leaves the request when a non-blocking overlay opens', () => {
-    selectionActions.requestOutlinerFocus({
-      focusContainer: true,
-    })
-
-    dialogActions.openDialog('room-surface')
-
-    expect(useSelectionStore.getState().outlinerFocusRequest).not.toBeNull()
   })
 })

@@ -1,11 +1,6 @@
 import { useSceneDocumentStore } from '@/core/stores/scene-document-store'
 import { getSelectedFurniture } from '@/core/operations/selected-furniture'
-import {
-  selectionActions,
-  useSelectionStore,
-} from '@/core/stores/selection-store'
-import { subscribeToBlockingOverlay } from '@/core/stores/dialog-store'
-import { createReconciler } from '@/core/operations/reconciler'
+import { selectionActions } from '@/core/stores/selection-store'
 
 /**
  * Routes focus into the outliner with intelligent fallback: the selected item if
@@ -34,22 +29,3 @@ export function requestOutlinerFocus() {
     focusContainer: true,
   })
 }
-
-/**
- * When a blocking overlay opens, cancel any pending outliner-focus request — the
- * outliner is behind the overlay, so the queued focus must not fire. Idempotent;
- * returns an unsubscribe.
- */
-export const startOutlinerFocusReconciler = createReconciler(() => [
-  subscribeToBlockingOverlay((isOpen, wasOpen) => {
-    if (!isOpen || wasOpen) {
-      return
-    }
-
-    if (useSelectionStore.getState().outlinerFocusRequest === null) {
-      return
-    }
-
-    selectionActions.clearOutlinerFocusRequest()
-  }),
-])
