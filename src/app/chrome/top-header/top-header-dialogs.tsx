@@ -11,12 +11,6 @@ import { HEADER_MORE_ACTIONS_DIALOG_ID } from './header-more-actions-dialog-defi
 import { useHeaderLayoutMode } from '@/shared/layout/use-header-layout-mode'
 import { topHeaderFocusRegistry } from './top-header-focus'
 
-/**
- * Hosts the header-triggered dialogs and the focus return that pairs with them.
- * Desktop relies on Base UI restoring focus to each trigger; on mobile these
- * dialogs are opened from the More actions drawer, whose trigger is gone by the
- * time they close, so focus is sent back to it explicitly.
- */
 export function TopHeaderDialogs() {
   const layoutMode = useHeaderLayoutMode()
   const isKeyboardShortcutsOpen = useDialogOpen(KEYBOARD_SHORTCUTS_DIALOG_ID)
@@ -33,6 +27,9 @@ export function TopHeaderDialogs() {
     }
   }, [layoutMode, isHeaderMoreActionsOpen])
 
+  // These surfaces open from dialog state, not a trigger element, so the library
+  // has no trigger to restore focus to on close; mobile returns it to the More
+  // actions button explicitly.
   const returnFocusToMoreActionsOnMobile = () => {
     if (layoutMode === 'mobile') {
       topHeaderFocusRegistry.focus('top-header-more-actions')
@@ -65,21 +62,13 @@ export function TopHeaderDialogs() {
 
       <StartOverConfirmationDialog
         open={isStartOverOpen}
+        suppressTriggerRefocusOnConfirm={layoutMode === 'mobile'}
         onClose={() => {
           dialogActions.closeActiveDialog()
           returnFocusToMoreActionsOnMobile()
         }}
         onConfirm={() => {
           confirmStartOver()
-
-          // The Start Over button becomes disabled after the reset, so on
-          // desktop move focus to the next enabled header control. On mobile the
-          // dialog was opened from More actions, so return focus there.
-          if (layoutMode === 'desktop') {
-            topHeaderFocusRegistry.focusNextEnabled('top-header-start-over')
-            return
-          }
-
           returnFocusToMoreActionsOnMobile()
         }}
       />

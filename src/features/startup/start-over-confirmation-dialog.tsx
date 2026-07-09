@@ -15,10 +15,14 @@ export function StartOverConfirmationDialog({
   onClose,
   onConfirm,
   open,
+  suppressTriggerRefocusOnConfirm = false,
 }: {
   onClose: () => void
   onConfirm: () => void
   open: boolean
+  // When true, the confirm path leaves focus for the caller to place instead of
+  // restoring it to the trigger.
+  suppressTriggerRefocusOnConfirm?: boolean
 }) {
   const suppressCloseAutoFocusRef = useRef(false)
 
@@ -64,7 +68,8 @@ export function StartOverConfirmationDialog({
           </AlertDialogCancel>
           <AlertDialogAction
             onClick={() => {
-              suppressCloseAutoFocusRef.current = true
+              suppressCloseAutoFocusRef.current =
+                suppressTriggerRefocusOnConfirm
               onConfirm()
             }}
           >

@@ -56,14 +56,55 @@ describe('ShareSceneButton', () => {
     await user.click(button)
 
     expect(shareSceneMock).toHaveBeenCalledOnce()
-    expect(button).toBeDisabled()
+    // Stays focusable while pending so it keeps its place in the toolbar's
+    // roving sequence instead of blurring.
+    expect(button).toHaveAttribute('aria-disabled', 'true')
+    expect(button).not.toBeDisabled()
 
     resolveShare('shared')
 
     expect(await screen.findByText('Shared')).toBeInTheDocument()
   })
 
-  it('re-enables the button if the share attempt rejects', async () => {
+  it('forwards injected toolbar props to the underlying button', () => {
+    render(<ShareSceneButton tabIndex={-1} data-testid="share-item" />)
+
+    const button = screen.getByRole('button', { name: 'Share room layout' })
+    expect(button).toHaveAttribute('tabindex', '-1')
+    expect(button).toHaveAttribute('data-testid', 'share-item')
+  })
+
+  it('runs an injected click handler and still shares', async () => {
+    const user = userEvent.setup()
+    shareSceneMock.mockResolvedValue('shared')
+    const onClick = vi.fn()
+
+    render(<ShareSceneButton onClick={onClick} />)
+
+    await user.click(screen.getByRole('button', { name: 'Share room layout' }))
+
+    expect(onClick).toHaveBeenCalledOnce()
+    expect(shareSceneMock).toHaveBeenCalledOnce()
+  })
+
+  it('does not share when an injected handler cancels the click', async () => {
+    const user = userEvent.setup()
+    shareSceneMock.mockResolvedValue('shared')
+
+    render(
+      <ShareSceneButton
+        onClick={(event) => {
+          event.preventDefault()
+        }}
+      />,
+    )
+
+    await user.click(screen.getByRole('button', { name: 'Share room layout' }))
+
+    expect(shareSceneMock).not.toHaveBeenCalled()
+  })
+
+  it('recovers if the share attempt rejects', async () => {
     const user = userEvent.setup()
     shareSceneMock.mockRejectedValue(new Error('share failed'))
 
@@ -73,7 +114,7 @@ describe('ShareSceneButton', () => {
     await user.click(button)
 
     await waitFor(() => {
-      expect(button).toBeEnabled()
+      expect(button).not.toHaveAttribute('aria-disabled', 'true')
     })
     expect(screen.queryByText('Shared')).not.toBeInTheDocument()
     expect(screen.queryByText('Copied')).not.toBeInTheDocument()

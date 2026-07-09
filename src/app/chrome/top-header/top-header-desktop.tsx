@@ -86,7 +86,6 @@ export function TopHeaderDesktop() {
           buttonSize="toolbar"
         />
         <StartOverButton
-          buttonRef={topHeaderFocusRegistry.register('top-header-start-over')}
           disabled={startOverDisabled}
           disabledMessage={t`Scene already matches defaults`}
           size="toolbar"

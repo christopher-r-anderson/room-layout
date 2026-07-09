@@ -5,19 +5,13 @@ import { IconCheck, IconShare3 } from '@tabler/icons-react'
 import type { ComponentProps } from 'react'
 import { shareScene } from '@/core/operations/share-scene'
 
-interface ShareSceneButtonProps {
-  disabled?: boolean
-  className?: string
-  size?: ComponentProps<typeof Button>['size']
-  variant?: ComponentProps<typeof Button>['variant']
-}
-
 export function ShareSceneButton({
-  disabled = false,
-  className,
   size = 'default',
   variant = 'default',
-}: ShareSceneButtonProps) {
+  disabled = false,
+  onClick,
+  ...props
+}: Omit<ComponentProps<typeof Button>, 'children' | 'aria-label'>) {
   const { t } = useLingui()
   const [shareResult, setShareResult] = useState<'shared' | 'copied' | null>(
     null,
@@ -38,7 +32,7 @@ export function ShareSceneButton({
     }
   }, [shareResult])
 
-  const handleClick = useCallback(async () => {
+  const runShare = useCallback(async () => {
     if (isPending) {
       return
     }
@@ -52,7 +46,7 @@ export function ShareSceneButton({
         setShareResult(result)
       }
     } catch {
-      // shareScene owns user-facing error reporting; always recover button state.
+      // shareScene reports its own errors; always recover the button state.
     } finally {
       setIsPending(false)
     }
@@ -67,14 +61,21 @@ export function ShareSceneButton({
 
   return (
     <Button
+      {...props}
       variant={variant}
       size={size}
       disabled={disabled || isPending}
-      onClick={() => {
-        void handleClick()
-      }}
+      focusableWhenDisabled
       aria-label={t`Share room layout`}
-      className={className}
+      onClick={(event) => {
+        // Run a parent-injected click handler first and let it veto the share:
+        // a disabled wrapper cancels the click via preventDefault.
+        onClick?.(event)
+        if (event.defaultPrevented) {
+          return
+        }
+        void runShare()
+      }}
     >
       {shareResult === null ? (
         <IconShare3 aria-hidden="true" size={16} />

@@ -367,6 +367,35 @@ test('Shift+T moves focus to the selected item actions toolbar', async ({
   await expect(selectedItemActions.locator('button:focus')).toHaveCount(1)
 })
 
+test('includes the Share button in the header toolbar roving sequence', async ({
+  page,
+}) => {
+  await openEditor(page)
+
+  const addFurnitureButton = page.getByRole('button', { name: 'Add Furniture' })
+  const projectInfoButton = page.getByRole('button', {
+    name: 'Open project and asset info',
+  })
+  const shareButton = page.getByRole('button', { name: 'Share room layout' })
+  const roomView = page.getByRole('region', {
+    name: 'Interactive 3D room editor',
+  })
+
+  // The header is one roving toolbar: Tab enters at the entry control, the next
+  // Tab leaves the whole toolbar for the room view (Share is not its own stop).
+  await page.keyboard.press('Tab')
+  await expect(addFurnitureButton).toBeFocused()
+  await page.keyboard.press('Tab')
+  await expect(roomView).toBeFocused()
+
+  // Share is the toolbar's last arrow-navigable item.
+  await projectInfoButton.focus()
+  await page.keyboard.press('ArrowRight')
+  await expect(shareButton).toBeFocused()
+  await page.keyboard.press('ArrowLeft')
+  await expect(projectInfoButton).toBeFocused()
+})
+
 test.describe('narrow viewport overlay order', () => {
   test.use({ viewport: { width: 390, height: 844 } })
 
