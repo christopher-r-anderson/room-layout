@@ -27,8 +27,9 @@ export function TopHeaderDialogs() {
     }
   }, [layoutMode, isHeaderMoreActionsOpen])
 
-  // The More actions drawer unmounts its own trigger, so mobile must restore
-  // focus to it explicitly rather than relying on the library.
+  // These surfaces open from dialog state, not a trigger element, so the library
+  // has no trigger to restore focus to on close; mobile returns it to the More
+  // actions button explicitly.
   const returnFocusToMoreActionsOnMobile = () => {
     if (layoutMode === 'mobile') {
       topHeaderFocusRegistry.focus('top-header-more-actions')
