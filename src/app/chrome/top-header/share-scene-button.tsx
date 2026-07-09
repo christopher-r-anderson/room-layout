@@ -11,7 +11,7 @@ export function ShareSceneButton({
   disabled = false,
   onClick,
   ...props
-}: ComponentProps<typeof Button>) {
+}: Omit<ComponentProps<typeof Button>, 'children' | 'aria-label'>) {
   const { t } = useLingui()
   const [shareResult, setShareResult] = useState<'shared' | 'copied' | null>(
     null,
