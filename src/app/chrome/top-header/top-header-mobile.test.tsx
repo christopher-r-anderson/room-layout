@@ -112,9 +112,14 @@ describe('TopHeaderMobile', () => {
 
   it('keeps share inside the More actions drawer instead of the mobile header row', () => {
     openMoreActionsDialog()
-    const { container } = renderMobileHeader()
+    renderMobileHeader()
 
-    const mobileHeaderRoot = container.querySelector('[data-top-header-root]')
+    // The open More actions modal takes the header out of the accessibility
+    // tree, so include hidden elements when locating it.
+    const mobileHeaderRoot = screen.getByRole('toolbar', {
+      name: 'Editor actions',
+      hidden: true,
+    })
 
     expect(mobileHeaderRoot).not.toContainElement(
       screen.getByRole('button', { name: 'Share room layout' }),

@@ -12,7 +12,6 @@ export type InteractionSource =
 export type PanelInteractionSource = 'panel-keyboard' | 'panel-pointer'
 
 export interface OutlinerFocusRequest {
-  token: number
   preferredIndex?: number
   targetSelectedId?: string | null
   focusContainer?: boolean
@@ -20,21 +19,21 @@ export interface OutlinerFocusRequest {
 
 // The selection session: the selected item pointer, how it was selected
 // (`selectedSource`, read to decide where focus lands after a delete), and the
-// focus-intent tokens (outliner / room-view focus handoff). Session-scoped -
+// focus-intent requests (outliner / room-view focus handoff). Session-scoped -
 // never serialized, never part of the undo timeline (history mutations
 // reconcile the pointer against the restored items instead).
 interface SelectionStoreState {
   selectedId: string | null
   selectedSource: InteractionSource
   outlinerFocusRequest: OutlinerFocusRequest | null
-  roomViewFocusRequest: number | null
+  roomViewFocusRequest: boolean
 }
 
 export const useSelectionStore = create<SelectionStoreState>()(() => ({
   selectedId: null,
   selectedSource: null,
   outlinerFocusRequest: null,
-  roomViewFocusRequest: null,
+  roomViewFocusRequest: false,
 }))
 
 export const selectionActions = {
@@ -59,13 +58,11 @@ export const selectionActions = {
     )
   },
   requestRoomViewFocus: () => {
-    useSelectionStore.setState({ roomViewFocusRequest: Date.now() })
+    useSelectionStore.setState({ roomViewFocusRequest: true })
   },
   clearRoomViewFocusRequest: () => {
     useSelectionStore.setState((state) =>
-      state.roomViewFocusRequest === null
-        ? state
-        : { roomViewFocusRequest: null },
+      state.roomViewFocusRequest ? { roomViewFocusRequest: false } : state,
     )
   },
   reset: () => {

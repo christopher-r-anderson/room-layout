@@ -98,7 +98,7 @@ export function EditorBody({ testOverlaysHidden }: EditorBodyProps) {
   // Consume room-view focus-intent requests (e.g. post-delete) from external
   // coordinators; EditorBody owns the room-view element.
   useEffect(() => {
-    if (roomViewFocusRequest === null) {
+    if (!roomViewFocusRequest) {
       return
     }
 

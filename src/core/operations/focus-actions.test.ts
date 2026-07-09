@@ -96,7 +96,6 @@ describe('startOutlinerFocusReconciler', () => {
 
   it('clears a pending outliner-focus request when a blocking overlay opens', () => {
     selectionActions.requestOutlinerFocus({
-      token: 1,
       focusContainer: true,
     })
     expect(useSelectionStore.getState().outlinerFocusRequest).not.toBeNull()
@@ -108,7 +107,6 @@ describe('startOutlinerFocusReconciler', () => {
 
   it('leaves the request when a non-blocking overlay opens', () => {
     selectionActions.requestOutlinerFocus({
-      token: 1,
       focusContainer: true,
     })
 

@@ -34,7 +34,6 @@ export function TopHeaderMobile() {
   return (
     <div
       ref={registerExclusionElement('top-header')}
-      data-top-header-root
       className="pointer-events-auto"
     >
       <Toolbar.Root

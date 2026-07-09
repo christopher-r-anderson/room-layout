@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 import {
   resetSelectionStore,
   selectionActions,
@@ -39,7 +39,6 @@ describe('useSelectionStore', () => {
 
   it('tracks outliner focus request lifecycle', () => {
     const request: OutlinerFocusRequest = {
-      token: 101,
       targetSelectedId: 'chair-1',
     }
 
@@ -53,21 +52,18 @@ describe('useSelectionStore', () => {
   })
 
   it('tracks room-view focus request lifecycle', () => {
-    expect(useSelectionStore.getState().roomViewFocusRequest).toBeNull()
+    expect(useSelectionStore.getState().roomViewFocusRequest).toBe(false)
 
-    // Pin Date.now() so the stamped token is deterministic to assert.
-    const nowSpy = vi.spyOn(Date, 'now').mockReturnValue(42)
     selectionActions.requestRoomViewFocus()
-    nowSpy.mockRestore()
-    expect(useSelectionStore.getState().roomViewFocusRequest).toBe(42)
+    expect(useSelectionStore.getState().roomViewFocusRequest).toBe(true)
 
     selectionActions.clearRoomViewFocusRequest()
-    expect(useSelectionStore.getState().roomViewFocusRequest).toBeNull()
+    expect(useSelectionStore.getState().roomViewFocusRequest).toBe(false)
   })
 
   it('resets the selection session to defaults', () => {
     selectionActions.setSelection('chair-1', 'panel-keyboard')
-    selectionActions.requestOutlinerFocus({ token: 7, focusContainer: true })
+    selectionActions.requestOutlinerFocus({ focusContainer: true })
 
     resetSelectionStore()
 
@@ -75,7 +71,7 @@ describe('useSelectionStore', () => {
       selectedId: null,
       selectedSource: null,
       outlinerFocusRequest: null,
-      roomViewFocusRequest: null,
+      roomViewFocusRequest: false,
     })
   })
 })

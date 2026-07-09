@@ -10,8 +10,11 @@ import { i18n } from '@/shared/i18n/i18n'
 
 const NO_SELECTION_FOCUS_FALLBACK = msg`No item selected. Focus moved to Furniture in room.`
 
+// Excludes tabindex="-1" on every clause, not just the [tabindex] one, so in a
+// roving-tabindex toolbar the query lands on the active (tabindex="0") item
+// rather than the first DOM button (which may be roving-inactive).
 const FOCUSABLE_CONTROL_SELECTOR =
-  'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+  'button:not([disabled]):not([tabindex="-1"]), input:not([disabled]):not([tabindex="-1"]), select:not([disabled]):not([tabindex="-1"]), textarea:not([disabled]):not([tabindex="-1"]), [tabindex]:not([tabindex="-1"])'
 
 function findFirstFocusableControl(root: ParentNode | null) {
   return root?.querySelector<HTMLElement>(FOCUSABLE_CONTROL_SELECTOR) ?? null
@@ -33,19 +36,21 @@ export function useEditorFocusCommands(): EditorFocusCommands {
   const { detailsPanelRef, selectedToolbarRef } = useEditorRefs()
   const selectedFurniture = useSelectedFurniture()
 
+  // With nothing selected there is no inspector or item toolbar to enter, so
+  // both those commands fall back to the outliner and say so.
+  const focusOutlinerWithNoSelectionNotice = useCallback(() => {
+    requestOutlinerFocus()
+    feedback.interactionUpdate(i18n._(NO_SELECTION_FOCUS_FALLBACK))
+  }, [])
+
   const focusInspector = useCallback(() => {
     if (selectedFurniture === null) {
-      requestOutlinerFocus()
-      feedback.interactionUpdate(i18n._(NO_SELECTION_FOCUS_FALLBACK))
+      focusOutlinerWithNoSelectionNotice()
       return
     }
 
-    const firstFocusableControl = findFirstFocusableControl(
-      detailsPanelRef.current,
-    )
-
-    firstFocusableControl?.focus()
-  }, [detailsPanelRef, selectedFurniture])
+    findFirstFocusableControl(detailsPanelRef.current)?.focus()
+  }, [detailsPanelRef, selectedFurniture, focusOutlinerWithNoSelectionNotice])
 
   const focusRoomView = useCallback(() => {
     selectionActions.requestRoomViewFocus()
@@ -61,8 +66,7 @@ export function useEditorFocusCommands(): EditorFocusCommands {
 
   const focusToolbar = useCallback(() => {
     if (selectedFurniture === null) {
-      requestOutlinerFocus()
-      feedback.interactionUpdate(i18n._(NO_SELECTION_FOCUS_FALLBACK))
+      focusOutlinerWithNoSelectionNotice()
       return
     }
 
@@ -76,7 +80,12 @@ export function useEditorFocusCommands(): EditorFocusCommands {
     // Fall back when the floating toolbar is not currently mounted; the same
     // actions are reachable in the details panel.
     findFirstFocusableControl(detailsPanelRef.current)?.focus()
-  }, [detailsPanelRef, selectedToolbarRef, selectedFurniture])
+  }, [
+    detailsPanelRef,
+    selectedToolbarRef,
+    selectedFurniture,
+    focusOutlinerWithNoSelectionNotice,
+  ])
 
   return { focusInspector, focusRoomView, focusOutliner, focusToolbar }
 }

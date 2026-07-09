@@ -58,7 +58,6 @@ export function confirmDeleteSelection(
     selectionActions.requestRoomViewFocus()
   } else {
     selectionActions.requestOutlinerFocus({
-      token: Date.now(),
       preferredIndex: deletedIndex >= 0 ? deletedIndex : 0,
     })
   }

@@ -72,9 +72,11 @@ describe('TopHeaderDesktop', () => {
   })
 
   it('keeps share as a direct visible action in the desktop header', () => {
-    const { container } = renderDesktopHeader()
+    renderDesktopHeader()
 
-    const desktopHeaderRoot = container.querySelector('[data-top-header-root]')
+    const desktopHeaderRoot = screen.getByRole('toolbar', {
+      name: 'Editor actions',
+    })
     const shareButton = screen.getByRole('button', {
       name: 'Share room layout',
     })
