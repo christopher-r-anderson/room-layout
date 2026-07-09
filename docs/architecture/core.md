@@ -161,9 +161,10 @@ persistence.
   asset load. Invoked at app mount (via the thin `use-startup-bootstrap` hook)
   and by `requestAssetRetry`; latest wins, a superseded or cancelled run
   writes nothing.
-- `restore-flow`, `scene-reset`, `referenced-collections` - the flows that
-  orchestrate the persistence codecs: startup restore source selection and
-  application, reset-to-defaults, and the bootstrap's gated-set resolution.
+- `restore-flow`, `restore-state`, `scene-reset`, `referenced-collections` -
+  the flows that orchestrate the persistence codecs: startup restore source
+  selection and reporting, restorable-state normalization and application,
+  reset-to-defaults, and the bootstrap's gated-set resolution.
 - `selection-actions` + `selection-mutations` - the selection surface. The
   mutation writes the pointer + provenance atomically (and drops the hover
   preview on change); the action layers on the readiness guard and the
