@@ -1,13 +1,12 @@
-import { useCallback, type KeyboardEvent } from 'react'
+import { useCallback, useEffect, useRef, type KeyboardEvent } from 'react'
 import { useSelectedFurniture } from '@/core/operations/selected-furniture'
 import { useCommandDispatch } from '@/core/commands/command-dispatch-context'
-import { useEditorRefs } from '@/shared/providers/editor-refs-context'
 import { useSelectedItemInteraction } from './selected-item-interaction-context'
 import { SelectedItemTools } from './selected-item-tools'
-import { focusActions } from '@/core/stores/focus-store'
+import { focusActions, usePendingFocus } from '@/core/stores/focus-store'
 import { Surface } from '@/shared/ui/surface'
 import { cn } from '@/shared/lib/utils'
-import { isFocusLeaving } from '@/shared/lib/focus'
+import { focusFirstControl, isFocusLeaving } from '@/shared/lib/focus'
 
 /**
  * The connected selected-item action toolbar (rotate + delete). It owns the
@@ -19,20 +18,34 @@ export function SelectedItemToolbar({ className }: { className?: string }) {
   const interaction = useSelectedItemInteraction()
   const selectedFurniture = useSelectedFurniture()
   const dispatch = useCommandDispatch()
-  const { selectedToolbarRef } = useEditorRefs()
+  const pendingFocus = usePendingFocus()
+  const directive =
+    pendingFocus?.surface === 'item-actions' ? pendingFocus : null
+  const elementRef = useRef<HTMLDivElement | null>(null)
 
   // Stable so React only calls it on real mount/unmount; the toolbar unmounts
   // without a blur event when a delete clears the selection while it holds
   // focus.
-  const surfaceRef = useCallback(
-    (element: HTMLDivElement | null) => {
-      selectedToolbarRef.current = element
-      if (element === null) {
-        focusActions.surfaceBlurred('item-actions')
-      }
-    },
-    [selectedToolbarRef],
-  )
+  const surfaceRef = useCallback((element: HTMLDivElement | null) => {
+    elementRef.current = element
+    if (element === null) {
+      focusActions.surfaceBlurred('item-actions')
+    }
+  }, [])
+
+  // Realizes item-actions focus directives on the first roving-active tool.
+  // Passive effect on purpose: the toolbar's roving tabindex is assigned in
+  // Base UI's own effects, so at layout-effect time every tool still reads
+  // tabindex="-1" and the focusable query would miss.
+  useEffect(() => {
+    if (!directive) {
+      return
+    }
+
+    if (focusFirstControl(elementRef.current)) {
+      focusActions.directiveRealized(directive)
+    }
+  }, [directive])
 
   if (selectedFurniture === null) {
     return null

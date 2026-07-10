@@ -1,4 +1,6 @@
+import { useLayoutEffect } from 'react'
 import { useSelectedFurniture } from '@/core/operations/selected-furniture'
+import { focusActions, usePendingFocus } from '@/core/stores/focus-store'
 import {
   useSelectedItemActionsSizeRef,
   useSelectedItemPlacement,
@@ -23,6 +25,27 @@ export function FloatingSelectedItemSite() {
     isFloating,
     selectedFurniture?.id ?? null,
   )
+  const pendingFocus = usePendingFocus()
+  const unrealizableDirective =
+    pendingFocus?.surface === 'item-actions' && !isFloating
+      ? pendingFocus
+      : null
+  const hasSelection = selectedFurniture !== null
+
+  // This site owns the desktop toolbar's mounting, so it also owns the
+  // directive the hidden toolbar cannot realize: forward it to the inspector
+  // (which carries the same actions), or drop it if the selection is gone.
+  useLayoutEffect(() => {
+    if (!unrealizableDirective) {
+      return
+    }
+
+    if (hasSelection) {
+      focusActions.setPendingFocus({ surface: 'inspector' })
+    } else {
+      focusActions.directiveRealized(unrealizableDirective)
+    }
+  }, [unrealizableDirective, hasSelection])
 
   if (selectedFurniture === null) {
     return null
