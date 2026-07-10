@@ -59,7 +59,7 @@ function canMatchShortcut(
     return false
   }
 
-  // Room-view-scoped shortcuts only fire when the scene has keyboard focus.
+  // Scene-scoped shortcuts only fire while the scene surface holds focus.
   if (shortcut.requiresRoomViewFocus && !context.sceneHasFocus) {
     return false
   }

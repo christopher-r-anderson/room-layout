@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 
-/** The focus-routable editor surfaces; null means focus is elsewhere (chrome, body). */
+/** The focus-routable editor surfaces. */
 export type FocusableSurface =
   | 'scene'
   | 'item-collection'
