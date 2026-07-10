@@ -1,55 +1,113 @@
-import { useSceneDocumentStore } from '@/core/stores/scene-document-store'
-import { getSelectedFurniture } from '@/core/operations/selected-furniture'
+import type { MessageDescriptor } from '@lingui/core'
 import {
-  selectionActions,
-  useSelectionStore,
-} from '@/core/stores/selection-store'
+  focusActions,
+  getFocusedSurface,
+  getPendingFocus,
+} from '@/core/stores/focus-store'
+import { useSelectionStore } from '@/core/stores/selection-store'
 import { subscribeToBlockingOverlay } from '@/core/stores/dialog-store'
+import { feedback } from '@/core/stores/feedback-store'
 import { createReconciler } from '@/core/operations/reconciler'
+import {
+  resolveFocusIntent,
+  type FocusAnnouncement,
+  type FocusGestureOrigin,
+  type FocusIntent,
+  type FocusOriginSurface,
+  type GestureModality,
+} from '@/core/operations/focus-policy'
+import {
+  getHeaderLayoutMode,
+  subscribeToHeaderLayoutMode,
+} from '@/shared/layout/use-header-layout-mode'
+import { i18n } from '@/shared/i18n/i18n'
+import {
+  FURNITURE_LIST_UNAVAILABLE_MESSAGE,
+  NO_SELECTION_FOCUS_FALLBACK_MESSAGE,
+  NO_SELECTION_FOCUS_UNAVAILABLE_MESSAGE,
+} from '@/shared/messages/command-messages'
 
-/**
- * Routes focus into the outliner with intelligent fallback: the selected item if
- * there is one, else the first item, else the outliner container itself. Reads
- * current state at call time, so it works as a plain action without a hook.
- */
-export function requestOutlinerFocus() {
-  const state = useSceneDocumentStore.getState()
-  const selectedFurniture = getSelectedFurniture()
+const ANNOUNCEMENT_MESSAGES: Record<FocusAnnouncement, MessageDescriptor> = {
+  'no-selection-moved-to-list': NO_SELECTION_FOCUS_FALLBACK_MESSAGE,
+  'no-selection': NO_SELECTION_FOCUS_UNAVAILABLE_MESSAGE,
+  'list-unavailable': FURNITURE_LIST_UNAVAILABLE_MESSAGE,
+}
 
-  if (selectedFurniture !== null) {
-    selectionActions.requestOutlinerFocus({
-      targetSelectedId: selectedFurniture.id,
-    })
-    return
+export interface FocusGestureOriginInput {
+  modality?: GestureModality
+  /** Omit when the gesture site cannot name its surface; filled from the focus store. */
+  surface?: FocusOriginSurface
+}
+
+// With no tracked claim, distinguish "focus fell to the body" (a repairable
+// loss) from "focus survives on an untracked control" (never steal from it).
+function readOriginSurface(): FocusOriginSurface {
+  const focusedSurface = getFocusedSurface()
+
+  if (focusedSurface !== null) {
+    return focusedSurface
   }
 
-  if (state.history.present.length > 0) {
-    selectionActions.requestOutlinerFocus({
-      preferredIndex: 0,
-    })
-    return
-  }
-
-  selectionActions.requestOutlinerFocus({
-    focusContainer: true,
-  })
+  const activeElement = document.activeElement
+  return activeElement === null || activeElement === document.body
+    ? 'unknown'
+    : 'chrome'
 }
 
 /**
- * When a blocking overlay opens, cancel any pending outliner-focus request — the
- * outliner is behind the overlay, so the queued focus must not fire. Idempotent;
- * returns an unsubscribe.
+ * The one focus-intent entry point: resolves the semantic intent against the
+ * gesture origin and current layout, then either stores the directive for its
+ * (mounted, by construction) surface to realize, or drops it — announcing
+ * either way when the policy says so. Call after the producing mutation.
  */
-export const startOutlinerFocusReconciler = createReconciler(() => [
+export function requestFocus(
+  intent: FocusIntent,
+  originInput: FocusGestureOriginInput = {},
+) {
+  const origin: FocusGestureOrigin = {
+    modality: originInput.modality ?? null,
+    surface: originInput.surface ?? readOriginSurface(),
+  }
+
+  const resolution = resolveFocusIntent(intent, origin, {
+    layout: getHeaderLayoutMode(),
+    hasSelection: useSelectionStore.getState().selectedId !== null,
+  })
+
+  if (resolution.announcement !== null) {
+    feedback.interactionUpdate(
+      i18n._(ANNOUNCEMENT_MESSAGES[resolution.announcement]),
+    )
+  }
+
+  if (resolution.directive !== null) {
+    focusActions.setPendingFocus(resolution.directive)
+  }
+}
+
+/**
+ * Clears a pending focus directive when the world changes out from under it:
+ * a blocking overlay opening (the target is behind the overlay), or a layout
+ * flip (the target surface may have left the layout). Idempotent; returns an
+ * unsubscribe.
+ */
+export const startPendingFocusReconciler = createReconciler(() => [
   subscribeToBlockingOverlay((isOpen, wasOpen) => {
     if (!isOpen || wasOpen) {
       return
     }
 
-    if (useSelectionStore.getState().outlinerFocusRequest === null) {
+    if (getPendingFocus() === null) {
       return
     }
 
-    selectionActions.clearOutlinerFocusRequest()
+    focusActions.clearPendingFocus()
+  }),
+  subscribeToHeaderLayoutMode(() => {
+    if (getPendingFocus() === null) {
+      return
+    }
+
+    focusActions.clearPendingFocus()
   }),
 ])

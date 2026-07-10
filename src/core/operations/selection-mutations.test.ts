@@ -34,25 +34,23 @@ beforeEach(() => {
 
 afterEach(resetStores)
 
-it('selectById selects an existing item and records the source', () => {
-  expect(selectById(CHAIR.id, 'panel-keyboard')).toEqual({
+it('selectById selects an existing item', () => {
+  expect(selectById(CHAIR.id)).toEqual({
     ok: true,
     status: 'selected',
   })
   expect(useSelectionStore.getState().selectedId).toBe(CHAIR.id)
-  expect(useSelectionStore.getState().selectedSource).toBe('panel-keyboard')
 })
 
 it('selectById clears the selection for a null id', () => {
-  selectionActions.setSelection(CHAIR.id, 'canvas-pointer')
+  selectionActions.setSelection(CHAIR.id)
 
   expect(selectById(null)).toEqual({ ok: true, status: 'cleared' })
   expect(useSelectionStore.getState().selectedId).toBeNull()
-  expect(useSelectionStore.getState().selectedSource).toBeNull()
 })
 
 it('selectById reports not-found and keeps the current selection', () => {
-  selectionActions.setSelection(CHAIR.id, 'canvas-pointer')
+  selectionActions.setSelection(CHAIR.id)
 
   expect(selectById('ghost')).toEqual({ ok: false, status: 'not-found' })
   expect(useSelectionStore.getState().selectedId).toBe(CHAIR.id)
@@ -69,7 +67,7 @@ it('selectById is blocked while a drag is in progress', () => {
 })
 
 it('clearSelection is a no-op while a drag is in progress', () => {
-  selectionActions.setSelection(CHAIR.id, 'canvas-pointer')
+  selectionActions.setSelection(CHAIR.id)
   sceneSessionActions.setDragging(true)
 
   clearSelection()
@@ -78,34 +76,33 @@ it('clearSelection is a no-op while a drag is in progress', () => {
 })
 
 it('clearSelection clears the selection outside a drag', () => {
-  selectionActions.setSelection(CHAIR.id, 'canvas-pointer')
+  selectionActions.setSelection(CHAIR.id)
 
   clearSelection()
 
   expect(useSelectionStore.getState().selectedId).toBeNull()
-  expect(useSelectionStore.getState().selectedSource).toBeNull()
 })
 
 it('applySelection clears the hover preview whenever the pointer changes', () => {
   sceneSessionActions.setPreviewedId(CHAIR.id)
 
-  applySelection(CHAIR.id, 'canvas-pointer')
+  applySelection(CHAIR.id)
 
   expect(useSelectionStore.getState().selectedId).toBe(CHAIR.id)
   expect(useSceneSessionStore.getState().previewedIdRaw).toBeNull()
 
   sceneSessionActions.setPreviewedId(CHAIR.id)
-  applySelection(null, null)
+  applySelection(null)
 
   expect(useSelectionStore.getState().selectedId).toBeNull()
   expect(useSceneSessionStore.getState().previewedIdRaw).toBeNull()
 })
 
 it('applySelection keeps the hover preview when the pointer does not move', () => {
-  applySelection(CHAIR.id, 'canvas-pointer')
+  applySelection(CHAIR.id)
   sceneSessionActions.setPreviewedId(CHAIR.id)
 
-  applySelection(CHAIR.id, 'canvas-pointer')
+  applySelection(CHAIR.id)
 
   expect(useSceneSessionStore.getState().previewedIdRaw).toBe(CHAIR.id)
 })

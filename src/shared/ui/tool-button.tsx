@@ -3,6 +3,7 @@ import {
   useId,
   type ComponentProps,
   type HTMLAttributes,
+  type MouseEventHandler,
   type PointerEventHandler,
   type ReactElement,
   type Ref,
@@ -36,7 +37,7 @@ export function ToolButton({
   onPointerDown,
 }: {
   buttonRef?: Ref<HTMLButtonElement>
-  action?: () => void
+  action?: MouseEventHandler<HTMLButtonElement>
   disabled?: boolean
   disabledMessage?: string
   shortcuts?: string

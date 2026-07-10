@@ -80,7 +80,7 @@ describe('dialogRuntimeContext', () => {
 
   it('reads selected furniture from scene store state', () => {
     sceneDocumentActions.setHistory(createHistoryState([CHAIR]))
-    selectionActions.setSelection(CHAIR.id, null)
+    selectionActions.setSelection(CHAIR.id)
 
     expect(dialogRuntimeContext.getSelectedFurniture()).toEqual(CHAIR)
   })

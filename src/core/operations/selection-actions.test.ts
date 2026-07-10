@@ -58,7 +58,7 @@ describe('selection-actions', () => {
 
   it('clearCanvasSelection clears the selection and the canvas-miss preview together', () => {
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
-    selectionActions.setSelection('chair-1', 'canvas-pointer')
+    selectionActions.setSelection('chair-1')
     sceneSessionActions.setPreviewedId('chair-1')
 
     clearCanvasSelection()
@@ -71,7 +71,7 @@ describe('selection-actions', () => {
 
   it('skips document mutations when the scene is not ready', () => {
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(false)
-    selectionActions.setSelection('chair-1', 'canvas-pointer')
+    selectionActions.setSelection('chair-1')
 
     expect(selectById('chair-1', 'panel-keyboard')).toEqual({
       ok: false,
@@ -79,10 +79,9 @@ describe('selection-actions', () => {
     })
     clearSelection()
 
-    // Neither action reached the document mutations: the selection pointer and
-    // its provenance are untouched, and nothing announced.
+    // Neither action reached the document mutations: the selection pointer is
+    // untouched, and nothing announced.
     expect(useSelectionStore.getState().selectedId).toBe('chair-1')
-    expect(useSelectionStore.getState().selectedSource).toBe('canvas-pointer')
     expect(politeText()).toBe('')
   })
 
@@ -90,12 +89,11 @@ describe('selection-actions', () => {
     selectByCanvasPointer('chair-1')
 
     expect(useSelectionStore.getState().selectedId).toBe('chair-1')
-    expect(useSelectionStore.getState().selectedSource).toBe('canvas-pointer')
     expect(politeText()).toBe('Chair selected.')
   })
 
   it('does not announce a canvas pointer reselect of the same item', () => {
-    selectionActions.setSelection('chair-1', 'canvas-pointer')
+    selectionActions.setSelection('chair-1')
 
     selectByCanvasPointer('chair-1')
 
@@ -108,20 +106,18 @@ describe('selection-actions', () => {
     selectById('chair-1', 'panel-keyboard')
 
     expect(politeText()).toBe('Chair selected.')
-    expect(useSelectionStore.getState().selectedSource).toBe('panel-keyboard')
 
-    selectionActions.setSelection(null, null)
+    selectionActions.setSelection(null)
     selectById('chair-1', 'canvas-keyboard')
 
     expect(politeText()).toBe(
       'Chair selected. Press Shift+T to reach its actions.',
     )
-    expect(useSelectionStore.getState().selectedSource).toBe('canvas-keyboard')
   })
 
   it('does not announce when selectById lands on the already-selected item', () => {
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
-    selectionActions.setSelection('chair-1', 'panel-keyboard')
+    selectionActions.setSelection('chair-1')
 
     selectById('chair-1', 'panel-keyboard')
 
@@ -141,7 +137,7 @@ describe('selection-actions', () => {
 
   it('announces a landed clear', () => {
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
-    selectionActions.setSelection('chair-1', 'canvas-pointer')
+    selectionActions.setSelection('chair-1')
 
     clearSelection()
 
@@ -151,7 +147,7 @@ describe('selection-actions', () => {
 
   it('does not announce a clear that was blocked by the mutation', () => {
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
-    selectionActions.setSelection('chair-1', 'canvas-pointer')
+    selectionActions.setSelection('chair-1')
     // The mutation no-ops mid-drag: the store keeps its selection.
     sceneSessionActions.setDragging(true)
 

@@ -42,7 +42,7 @@ function seedCommittedChairHistory() {
   sceneDocumentActions.setHistory(
     commitHistoryPresent(createHistoryState<FurnitureItem[]>([]), [CHAIR]),
   )
-  selectionActions.setSelection(CHAIR.id, null)
+  selectionActions.setSelection(CHAIR.id)
 }
 
 function seedLoadedChairCollection() {

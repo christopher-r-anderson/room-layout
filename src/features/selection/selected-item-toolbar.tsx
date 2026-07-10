@@ -40,7 +40,7 @@ export function SelectedItemToolbar({ className }: { className?: string }) {
 
   const handleOpenDeleteDialog = () => {
     try {
-      dispatch({ kind: 'open-delete-dialog', returnFocusTo: 'outliner' })
+      dispatch({ kind: 'open-delete-dialog', originSurface: 'item-actions' })
     } finally {
       interaction.consumeBlurCommitSuppression()
     }

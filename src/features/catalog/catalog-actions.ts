@@ -70,7 +70,7 @@ export async function addFurniture(): Promise<boolean> {
     return false
   }
 
-  const result = addFurnitureToDocument(catalogIdToAdd, { source: 'toolbar' })
+  const result = addFurnitureToDocument(catalogIdToAdd)
 
   if (!result.ok) {
     const failureMessage =

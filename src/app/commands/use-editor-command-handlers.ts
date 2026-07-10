@@ -32,15 +32,15 @@ export function useEditorCommandHandlers(): EditorCommandHandlers {
     'focus-room-view': focus.focusRoomView,
     'focus-outliner': focus.focusOutliner,
     'focus-toolbar': focus.focusToolbar,
-    undo: () => {
-      undo()
+    undo: (command) => {
+      undo(command.modality)
     },
-    redo: () => {
-      redo()
+    redo: (command) => {
+      redo(command.modality)
     },
     'start-over': startOverIntent,
     'open-delete-dialog': (command) => {
-      openDeleteDialog(command.returnFocusTo)
+      openDeleteDialog(command.originSurface)
     },
     'focus-selected': focusSelectedInView,
     'move-selection': (command) => {

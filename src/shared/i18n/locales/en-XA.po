@@ -295,6 +295,9 @@ msgstr "[Ńō ƒũŕńĩţũŕē ĩń ţĥē ŕōōḿ.āēīōūáéíóúāē�
 msgid "No item selected"
 msgstr "[Ńō ĩţēḿ śēĺēćţēďāēīōūáéíóúāē]"
 
+msgid "No item selected."
+msgstr "[Ńō ĩţēḿ śēĺēćţēď.āēīōūáéíóúāē]"
+
 msgid "No item selected. Focus moved to Furniture in room."
 msgstr "[Ńō ĩţēḿ śēĺēćţēď. Ƒōćũś ḿōvēď ţō Ƒũŕńĩţũŕē ĩń ŕōōḿ.āēīōūáéíóúāēīōūáéíóúā]"
 
@@ -568,6 +571,9 @@ msgstr "[Ţĥē ƒũŕńĩţũŕē ćàţàĺōğ ŕēqũēśţ ţĩḿēď ōũ
 
 msgid "The furniture catalog was fetched but failed validation checks."
 msgstr "[Ţĥē ƒũŕńĩţũŕē ćàţàĺōğ ŵàś ƒēţćĥēď ƀũţ ƒàĩĺēď vàĺĩďàţĩōń ćĥēćķś.āēīōūáéíóúāēīōūáéíóúāēīōūá]"
+
+msgid "The furniture list is not available in this layout."
+msgstr "[Ţĥē ƒũŕńĩţũŕē ĺĩśţ ĩś ńōţ àvàĩĺàƀĺē ĩń ţĥĩś ĺàŷōũţ.āēīōūáéíóúāēīōūáéíóúā]"
 
 msgid "The room editor could not start"
 msgstr "[Ţĥē ŕōōḿ ēďĩţōŕ ćōũĺď ńōţ śţàŕţāēīōūáéíóúāēī]"

@@ -8,10 +8,7 @@ import {
   useSceneDocumentStore,
 } from '@/core/stores/scene-document-store'
 import { useSceneSessionStore } from '@/core/stores/scene-session-store'
-import {
-  useSelectionStore,
-  type InteractionSource,
-} from '@/core/stores/selection-store'
+import { useSelectionStore } from '@/core/stores/selection-store'
 import { applySelection } from './selection-mutations'
 import { useAssetsStore } from '@/core/stores/assets-store'
 import { getCollectionNodeDefaults } from '@/core/stores/collection-scene-registry'
@@ -47,7 +44,7 @@ export function deleteSelection(): boolean {
   }
 
   sceneDocumentActions.setHistory(operationResult.history)
-  applySelection(null, null)
+  applySelection(null)
 
   return true
 }
@@ -119,10 +116,7 @@ export function rotateSelection(deltaRadians: number): boolean {
   return true
 }
 
-export function addFurniture(
-  catalogId: string,
-  options?: { source?: InteractionSource },
-): AddFurnitureResult {
+export function addFurniture(catalogId: string): AddFurnitureResult {
   // An add mid-drag would interleave history commits with the drag's coalesced
   // writes (ghost undo state) and retarget the selection mid-gesture.
   if (useSceneSessionStore.getState().isDragging) {
@@ -150,10 +144,7 @@ export function addFurniture(
 
   if (operationResult.incrementInstanceId) {
     sceneDocumentActions.setInstanceIdCounter(instanceIdCounter + 1)
-    applySelection(
-      operationResult.result.ok ? operationResult.result.id : null,
-      options?.source ?? null,
-    )
+    applySelection(operationResult.result.ok ? operationResult.result.id : null)
   }
 
   return operationResult.result

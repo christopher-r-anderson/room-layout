@@ -1,81 +1,164 @@
 // @vitest-environment jsdom
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { createHistoryState } from '@/shared/lib/ui/editor-history'
-import type { FurnitureItem } from '@/domain/furniture'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
-  resetSceneDocumentStore,
-  sceneDocumentActions,
-} from '@/core/stores/scene-document-store'
+  focusActions,
+  getPendingFocus,
+  resetFocusStore,
+} from '@/core/stores/focus-store'
 import {
   resetSelectionStore,
   selectionActions,
-  useSelectionStore,
 } from '@/core/stores/selection-store'
 import { dialogActions, resetDialogStore } from '@/core/stores/dialog-store'
-import {
-  requestOutlinerFocus,
-  startOutlinerFocusReconciler,
-} from './focus-actions'
+import { feedback } from '@/core/stores/feedback-store'
+import { requestFocus, startPendingFocusReconciler } from './focus-actions'
 
-function item(id: string): FurnitureItem {
+type MediaQueryChangeListener = (event: { matches: boolean }) => void
+
+// jsdom's matchMedia never matches, which reads as the mobile layout. This
+// stub makes the layout controllable and captures change listeners so tests
+// can flip it.
+function stubLayout(initial: 'desktop' | 'mobile') {
+  let matches = initial === 'desktop'
+  const listeners = new Set<MediaQueryChangeListener>()
+
+  vi.stubGlobal(
+    'matchMedia',
+    vi.fn().mockImplementation((query: string) => ({
+      get matches() {
+        return matches
+      },
+      media: query,
+      addEventListener: (_: string, listener: MediaQueryChangeListener) => {
+        listeners.add(listener)
+      },
+      removeEventListener: (_: string, listener: MediaQueryChangeListener) => {
+        listeners.delete(listener)
+      },
+    })),
+  )
+
   return {
-    id,
-    catalogId: 'chair',
-    collectionId: 'collection-1',
-    footprintSize: { width: 1, depth: 1 },
-    kind: 'armchair',
-    name: id,
-    nodeName: 'ChairNode',
-    position: [0, 0, 0],
-    rotationY: 0,
-    sourcePath: '/models/chair.glb',
+    flipTo(layout: 'desktop' | 'mobile') {
+      matches = layout === 'desktop'
+      listeners.forEach((listener) => {
+        listener({ matches })
+      })
+    },
   }
 }
 
-describe('requestOutlinerFocus', () => {
-  beforeEach(() => {
-    resetSceneDocumentStore()
-    resetSelectionStore()
+beforeEach(() => {
+  resetFocusStore()
+  resetSelectionStore()
+})
+
+afterEach(() => {
+  vi.unstubAllGlobals()
+  vi.restoreAllMocks()
+})
+
+describe('requestFocus', () => {
+  it('stores the resolved directive for the surface to realize', () => {
+    stubLayout('desktop')
+
+    requestFocus({ kind: 'surface', surface: 'item-collection' })
+
+    expect(getPendingFocus()).toEqual({
+      surface: 'item-collection',
+      target: { kind: 'auto' },
+    })
   })
 
-  it('queues a focus request targeting the selected item', () => {
-    sceneDocumentActions.setHistory(createHistoryState([item('a'), item('b')]))
-    selectionActions.setSelection('b', null)
+  it('announces a drop instead of storing a directive', () => {
+    stubLayout('mobile')
+    const announce = vi.spyOn(feedback, 'interactionUpdate')
 
-    requestOutlinerFocus()
+    requestFocus({ kind: 'surface', surface: 'item-collection' })
 
-    expect(useSelectionStore.getState().outlinerFocusRequest).toEqual(
-      expect.objectContaining({ targetSelectedId: 'b' }),
+    expect(getPendingFocus()).toBeNull()
+    expect(announce).toHaveBeenCalledWith(
+      'The furniture list is not available in this layout.',
     )
   })
 
-  it('queues a focus request for the first item when nothing is selected', () => {
-    sceneDocumentActions.setHistory(createHistoryState([item('a')]))
+  it('reads the post-mutation selection for selection-bound intents', () => {
+    stubLayout('desktop')
+    selectionActions.setSelection('chair-1')
 
-    requestOutlinerFocus()
+    requestFocus({ kind: 'surface', surface: 'inspector' })
 
-    expect(useSelectionStore.getState().outlinerFocusRequest).toEqual(
-      expect.objectContaining({ preferredIndex: 0 }),
-    )
+    expect(getPendingFocus()).toEqual({ surface: 'inspector' })
   })
 
-  it('queues a focus request for the outliner container when there are no items', () => {
-    sceneDocumentActions.setHistory(createHistoryState([]))
+  it('fills the origin surface from the tracked focus claim', () => {
+    stubLayout('desktop')
+    focusActions.surfaceFocused('item-collection')
+    selectionActions.setSelection('chair-1')
 
-    requestOutlinerFocus()
-
-    expect(useSelectionStore.getState().outlinerFocusRequest).toEqual(
-      expect.objectContaining({ focusContainer: true }),
+    requestFocus(
+      { kind: 'selected-item', operation: 'history', targetItemId: 'chair-1' },
+      { modality: 'keyboard' },
     )
+
+    expect(getPendingFocus()).toEqual({
+      surface: 'item-collection',
+      target: { kind: 'item', itemId: 'chair-1' },
+    })
+  })
+
+  it('treats an untracked focus location as chrome and never steals from it', () => {
+    stubLayout('desktop')
+    const control = document.createElement('button')
+    document.body.appendChild(control)
+    control.focus()
+
+    requestFocus(
+      { kind: 'selected-item', operation: 'history', targetItemId: 'chair-1' },
+      { modality: 'keyboard' },
+    )
+
+    expect(getPendingFocus()).toBeNull()
+    control.remove()
+  })
+
+  it('treats focus lost to the body as repairable', () => {
+    stubLayout('desktop')
+
+    requestFocus(
+      { kind: 'selected-item', operation: 'history', targetItemId: 'chair-1' },
+      { modality: 'keyboard' },
+    )
+
+    expect(getPendingFocus()).toEqual({
+      surface: 'item-collection',
+      target: { kind: 'item', itemId: 'chair-1' },
+    })
+  })
+
+  it('prefers an explicitly declared origin surface over the tracked claim', () => {
+    stubLayout('desktop')
+    focusActions.surfaceFocused('scene')
+
+    requestFocus(
+      { kind: 'selected-item', operation: 'delete', neighborIndex: 1 },
+      { surface: 'item-actions' },
+    )
+
+    expect(getPendingFocus()).toEqual({
+      surface: 'item-collection',
+      target: { kind: 'index', index: 1 },
+    })
   })
 })
 
-describe('startOutlinerFocusReconciler', () => {
+describe('startPendingFocusReconciler', () => {
+  let layout: ReturnType<typeof stubLayout>
   let stop: () => void
 
   beforeEach(() => {
+    layout = stubLayout('desktop')
     resetDialogStore()
-    resetSelectionStore()
     dialogActions.configureRuntimeContext({
       isDialogsEnabled: () => true,
       getSelectedFurniture: () => null,
@@ -85,33 +168,37 @@ describe('startOutlinerFocusReconciler', () => {
       { id: 'delete', kind: 'blocking' },
       { id: 'room-surface', kind: 'non-blocking' },
     ])
-    stop = startOutlinerFocusReconciler()
+    stop = startPendingFocusReconciler()
   })
 
   afterEach(() => {
     stop()
     resetDialogStore()
-    resetSelectionStore()
   })
 
-  it('clears a pending outliner-focus request when a blocking overlay opens', () => {
-    selectionActions.requestOutlinerFocus({
-      focusContainer: true,
-    })
-    expect(useSelectionStore.getState().outlinerFocusRequest).not.toBeNull()
+  it('clears a pending directive when a blocking overlay opens', () => {
+    requestFocus({ kind: 'surface', surface: 'item-collection' })
+    expect(getPendingFocus()).not.toBeNull()
 
     dialogActions.openDialog('delete')
 
-    expect(useSelectionStore.getState().outlinerFocusRequest).toBeNull()
+    expect(getPendingFocus()).toBeNull()
   })
 
-  it('leaves the request when a non-blocking overlay opens', () => {
-    selectionActions.requestOutlinerFocus({
-      focusContainer: true,
-    })
+  it('leaves the directive when a non-blocking overlay opens', () => {
+    requestFocus({ kind: 'surface', surface: 'item-collection' })
 
     dialogActions.openDialog('room-surface')
 
-    expect(useSelectionStore.getState().outlinerFocusRequest).not.toBeNull()
+    expect(getPendingFocus()).not.toBeNull()
+  })
+
+  it('clears a pending directive when the layout flips', () => {
+    requestFocus({ kind: 'surface', surface: 'item-collection' })
+    expect(getPendingFocus()).not.toBeNull()
+
+    layout.flipTo('mobile')
+
+    expect(getPendingFocus()).toBeNull()
   })
 })

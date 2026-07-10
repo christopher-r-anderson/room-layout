@@ -131,7 +131,7 @@ describe('startup-coordinator', () => {
   })
 
   it('resets the collection pipeline, starts a fresh cycle, and re-runs the bootstrap', () => {
-    selectionActions.setSelection('chair-1', 'canvas-pointer')
+    selectionActions.setSelection('chair-1')
     feedback.interactionUpdate('Chair selected.')
     feedback.formError('Stale error')
 

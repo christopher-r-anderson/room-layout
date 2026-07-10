@@ -408,7 +408,11 @@ msgstr "No furniture in the room."
 msgid "No item selected"
 msgstr "No item selected"
 
-#: src/app/commands/use-editor-focus-commands.ts
+#: src/shared/messages/command-messages.ts
+msgid "No item selected."
+msgstr "No item selected."
+
+#: src/shared/messages/command-messages.ts
 msgid "No item selected. Focus moved to Furniture in room."
 msgstr "No item selected. Focus moved to Furniture in room."
 
@@ -786,6 +790,10 @@ msgstr "The furniture catalog request timed out before startup completed."
 #: src/features/startup/initialization-error.tsx
 msgid "The furniture catalog was fetched but failed validation checks."
 msgstr "The furniture catalog was fetched but failed validation checks."
+
+#: src/shared/messages/command-messages.ts
+msgid "The furniture list is not available in this layout."
+msgstr "The furniture list is not available in this layout."
 
 #: src/features/startup/initialization-error.tsx
 msgid "The room editor could not start"

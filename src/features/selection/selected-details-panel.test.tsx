@@ -36,7 +36,7 @@ beforeEach(() => {
   resetSelectionStore()
   editorLifecycleActions.markAssetsReady()
   sceneDocumentActions.setHistory(createHistoryState([FURNITURE_ITEM]))
-  selectionActions.setSelection(FURNITURE_ITEM.id, null)
+  selectionActions.setSelection(FURNITURE_ITEM.id)
 })
 
 describe('SelectedDetailsPanel', () => {
@@ -118,7 +118,7 @@ describe('SelectedDetailsPanel', () => {
     expect(vi.mocked(dispatch).mock.calls.map(([command]) => command)).toEqual([
       { kind: 'rotate-selection', direction: 1 },
       { kind: 'rotate-selection', direction: -1 },
-      { kind: 'open-delete-dialog', returnFocusTo: 'outliner' },
+      { kind: 'open-delete-dialog', originSurface: 'item-actions' },
     ])
   })
 

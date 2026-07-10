@@ -44,3 +44,13 @@ function subscribe(onStoreChange: () => void) {
 export function useHeaderLayoutMode(): HeaderLayoutMode {
   return useSyncExternalStore(subscribe, getSnapshot, () => 'mobile')
 }
+
+/** Non-reactive snapshot for reads outside React rendering. */
+export function getHeaderLayoutMode(): HeaderLayoutMode {
+  return getSnapshot()
+}
+
+/** Change subscription for non-React coordinators; returns an unsubscribe. */
+export function subscribeToHeaderLayoutMode(onChange: () => void): () => void {
+  return subscribe(onChange)
+}

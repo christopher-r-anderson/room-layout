@@ -215,7 +215,7 @@ describe('editor chrome integration', () => {
     const registerExclusionElement = vi.fn(() => vi.fn())
 
     sceneDocumentActions.setHistory(createHistoryState([selectedFurniture]))
-    selectionActions.setSelection(selectedFurniture.id, null)
+    selectionActions.setSelection(selectedFurniture.id)
     sceneDocumentActions.setFloorFinishId('wood-floor')
     sceneDocumentActions.setWallFinishId('light-gray')
 

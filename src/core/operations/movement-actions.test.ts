@@ -43,7 +43,7 @@ describe('movement-actions', () => {
     resetEditorLifecycleStore()
     resetFeedbackStore()
     sceneDocumentActions.setHistory(createHistoryState([CHAIR]))
-    selectionActions.setSelection(CHAIR.id, null)
+    selectionActions.setSelection(CHAIR.id)
     editorLifecycleActions.markAssetsReady()
   })
 
@@ -169,7 +169,7 @@ describe('movement-actions', () => {
   })
 
   it('does not arm the toolbar pin grace when nothing is selected', () => {
-    selectionActions.setSelection(null, null)
+    selectionActions.setSelection(null)
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
     const reportRotationSpy = vi.spyOn(
       toolbarInteractionActions,

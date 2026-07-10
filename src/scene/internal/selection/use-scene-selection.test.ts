@@ -26,13 +26,13 @@ describe('useSceneSelection', () => {
     const { result } = renderHook(() => useSceneSelection())
 
     act(() => {
-      selectionActions.setSelection('item-2', 'canvas-pointer')
+      selectionActions.setSelection('item-2')
     })
 
     expect(result.current.selectedId).toBe('item-2')
 
     act(() => {
-      selectionActions.setSelection(null, null)
+      selectionActions.setSelection(null)
     })
 
     expect(result.current.selectedId).toBeNull()
@@ -57,7 +57,7 @@ describe('useSceneSelection', () => {
 
     act(() => {
       result.current.registerObject('item-1', object)
-      selectionActions.setSelection('item-1', 'canvas-pointer')
+      selectionActions.setSelection('item-1')
     })
 
     expect(result.current.selectedId).toBe('item-1')
@@ -79,7 +79,7 @@ describe('useSceneSelection', () => {
 
     act(() => {
       result.current.registerObject('item-1', object)
-      selectionActions.setSelection('item-1', 'canvas-pointer')
+      selectionActions.setSelection('item-1')
     })
 
     expect(result.current.selectedId).toBe('item-1')
@@ -95,7 +95,7 @@ describe('useSceneSelection', () => {
 
     act(() => {
       result.current.registerObject('item-1', object)
-      selectionActions.setSelection('item-1', 'canvas-pointer')
+      selectionActions.setSelection('item-1')
     })
 
     expect(result.current.selection).toHaveLength(2)
@@ -109,7 +109,7 @@ describe('useSceneSelection', () => {
     object.add(createDummyMesh())
 
     act(() => {
-      selectionActions.setSelection('item-1', 'canvas-pointer')
+      selectionActions.setSelection('item-1')
     })
 
     expect(result.current.selectedId).toBe('item-1')

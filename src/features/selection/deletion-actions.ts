@@ -4,25 +4,22 @@ import { i18n } from '@/shared/i18n/i18n'
 import { feedback } from '@/core/stores/feedback-store'
 import { dialogActions } from '@/core/stores/dialog-store'
 import { getItems } from '@/core/stores/scene-document-store'
-import {
-  getSelectedSource,
-  selectionActions,
-} from '@/core/stores/selection-store'
 import { sceneCommands } from '@/core/scene-commands'
 import { deleteSelection } from '@/core/operations/furniture-mutations'
+import { requestFocus } from '@/core/operations/focus-actions'
+import type { DeleteOriginSurface } from '@/core/commands/editor-command'
 import { DELETE_SELECTION_MISSING_MESSAGE } from '@/shared/messages/command-messages'
 import { DELETE_DIALOG_ID } from './delete-dialog-definition'
 
 // Focus handoff between opening the delete dialog and confirming it: the
-// opener knows which surface the gesture came from, the confirm decides where
-// focus lands after the item is gone.
-let pendingDeleteFocusTarget: 'room-view' | 'outliner' | null = null
+// opener declares which surface the gesture came from, the confirm hands that
+// origin to the focus resolver once the item is gone.
+let pendingDeleteOrigin: DeleteOriginSurface | null = null
 
 export function confirmDeleteSelection(
   pendingDeleteFurniture: FurnitureItem | null,
 ) {
   const items = getItems()
-  const selectedSource = getSelectedSource()
 
   const pendingId = pendingDeleteFurniture?.id ?? null
   const deletedIndex = pendingId
@@ -32,9 +29,11 @@ export function confirmDeleteSelection(
 
   dialogActions.closeActiveDialog()
 
+  const origin = pendingDeleteOrigin
+  pendingDeleteOrigin = null
+
   if (!sceneCommands.isSceneReady()) {
     feedback.actionError({ title: i18n._(DELETE_SELECTION_MISSING_MESSAGE) })
-    pendingDeleteFocusTarget = null
     return
   }
 
@@ -42,37 +41,25 @@ export function confirmDeleteSelection(
 
   if (!deleted) {
     feedback.actionError({ title: i18n._(DELETE_SELECTION_MISSING_MESSAGE) })
-    pendingDeleteFocusTarget = null
     return
   }
 
-  const pendingFocusTarget = pendingDeleteFocusTarget
-  pendingDeleteFocusTarget = null
-  const isCanvasSource =
-    selectedSource === 'canvas-keyboard' || selectedSource === 'canvas-pointer'
-  const shouldFocusRoomView =
-    pendingFocusTarget === 'room-view' ||
-    (pendingFocusTarget === null && isCanvasSource)
-
-  if (shouldFocusRoomView) {
-    selectionActions.requestRoomViewFocus()
-  } else {
-    selectionActions.requestOutlinerFocus({
-      preferredIndex: deletedIndex >= 0 ? deletedIndex : 0,
-    })
-  }
+  requestFocus(
+    {
+      kind: 'selected-item',
+      operation: 'delete',
+      neighborIndex: deletedIndex >= 0 ? deletedIndex : 0,
+    },
+    { surface: origin ?? undefined },
+  )
 
   if (deletedName) {
     feedback.interactionUpdate(i18n._(msg`${deletedName} removed from room.`))
   }
 }
 
-export function openDeleteDialog(returnFocusTo: 'room-view' | 'outliner') {
+export function openDeleteDialog(originSurface: DeleteOriginSurface) {
   const opened = dialogActions.openDialog(DELETE_DIALOG_ID)
 
-  if (opened) {
-    pendingDeleteFocusTarget = returnFocusTo
-  } else {
-    pendingDeleteFocusTarget = null
-  }
+  pendingDeleteOrigin = opened ? originSurface : null
 }

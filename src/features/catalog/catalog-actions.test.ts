@@ -112,7 +112,7 @@ describe('addFurniture', () => {
     )
   })
 
-  it('selects with the toolbar source and announces the add', async () => {
+  it('adds the active catalog item and announces the add', async () => {
     catalogSelectionActions.setSelectedCatalogId('chair')
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
     vi.mocked(addFurnitureToDocument).mockReturnValue({
@@ -121,9 +121,7 @@ describe('addFurniture', () => {
     })
 
     expect(await addFurniture()).toBe(true)
-    expect(addFurnitureToDocument).toHaveBeenCalledWith('chair', {
-      source: 'toolbar',
-    })
+    expect(addFurnitureToDocument).toHaveBeenCalledWith('chair')
     expect(announceSelectionChange).toHaveBeenCalledWith(
       expect.objectContaining({
         announceMode: 'added',

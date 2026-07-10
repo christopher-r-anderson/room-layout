@@ -79,7 +79,7 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     id: 'undo',
     match: { key: 'z', ctrlOrMeta: true },
     handler: 'use-keyboard-shortcuts',
-    command: { kind: 'undo' },
+    command: { kind: 'undo', modality: 'keyboard' },
     suppressionMode: 'always-on-match',
     helpEntries: [
       {
@@ -100,7 +100,7 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
       { key: 'y', ctrlOrMeta: true },
     ],
     handler: 'use-keyboard-shortcuts',
-    command: { kind: 'redo' },
+    command: { kind: 'redo', modality: 'keyboard' },
     suppressionMode: 'always-on-match',
     helpEntries: [
       {
@@ -207,7 +207,7 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     id: 'delete',
     match: [{ key: 'delete' }, { key: 'backspace' }],
     handler: 'use-keyboard-shortcuts',
-    command: { kind: 'open-delete-dialog', returnFocusTo: 'room-view' },
+    command: { kind: 'open-delete-dialog', originSurface: 'scene' },
     requiresRoomViewFocus: true,
     requiresSelection: true,
     suppressionMode: 'on-execute',

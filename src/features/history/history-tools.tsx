@@ -33,8 +33,11 @@ export function HistoryTools({
       className={cn(buttonGroupVariants({ orientation: 'horizontal' }))}
     >
       <ToolButton
-        action={() => {
-          dispatch({ kind: 'undo' })
+        action={(event) => {
+          dispatch({
+            kind: 'undo',
+            modality: event.detail === 0 ? 'keyboard' : 'pointer',
+          })
         }}
         disabled={undoDisabled}
         disabledMessage={undoDisabledMessage}
@@ -46,8 +49,11 @@ export function HistoryTools({
         className={buttonClassName}
       />
       <ToolButton
-        action={() => {
-          dispatch({ kind: 'redo' })
+        action={(event) => {
+          dispatch({
+            kind: 'redo',
+            modality: event.detail === 0 ? 'keyboard' : 'pointer',
+          })
         }}
         disabled={redoDisabled}
         disabledMessage={redoDisabledMessage}

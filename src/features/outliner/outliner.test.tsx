@@ -25,8 +25,12 @@ import {
 import {
   resetSelectionStore,
   selectionActions,
-  useSelectionStore,
 } from '@/core/stores/selection-store'
+import {
+  focusActions,
+  getPendingFocus,
+  resetFocusStore,
+} from '@/core/stores/focus-store'
 import { selectById } from '@/core/operations/selection-actions'
 import { previewFromOutliner } from '@/core/operations/preview-actions'
 import type { FurnitureItem } from '@/domain/furniture'
@@ -81,7 +85,7 @@ const READ_MODEL: OutlinerReadModel = {
 
 function seedScene(readModel: OutlinerReadModel = READ_MODEL) {
   sceneDocumentActions.setHistory(createHistoryState(readModel.items))
-  selectionActions.setSelection(readModel.selectedId, null)
+  selectionActions.setSelection(readModel.selectedId)
 }
 
 function renderOutliner() {
@@ -97,6 +101,7 @@ describe('SceneOutliner', () => {
     resetSceneDocumentStore()
     resetSceneSessionStore()
     resetSelectionStore()
+    resetFocusStore()
     dialogActions.configureRuntimeContext({
       isDialogsEnabled: () => true,
       getSelectedFurniture: () => READ_MODEL.items[0] ?? null,
@@ -189,20 +194,26 @@ describe('SceneOutliner', () => {
     })
   })
 
-  it('focuses the preferred item when expanded', async () => {
-    selectionActions.requestOutlinerFocus({ preferredIndex: 1 })
+  it('focuses the item at the directed index when expanded', async () => {
+    focusActions.setPendingFocus({
+      surface: 'item-collection',
+      target: { kind: 'index', index: 1 },
+    })
 
     renderOutliner()
 
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /end table/i })).toHaveFocus()
     })
-    expect(useSelectionStore.getState().outlinerFocusRequest).toBeNull()
+    expect(getPendingFocus()).toBeNull()
   })
 
-  it('falls back to toggle button when collapsed and focus is requested', async () => {
+  it('falls back to toggle button when collapsed and focus is directed', async () => {
     saveBooleanPreference(OUTLINER_EXPANDED_PREFERENCE_KEY, false)
-    selectionActions.requestOutlinerFocus({ preferredIndex: 1 })
+    focusActions.setPendingFocus({
+      surface: 'item-collection',
+      target: { kind: 'index', index: 1 },
+    })
 
     renderOutliner()
 
@@ -213,16 +224,17 @@ describe('SceneOutliner', () => {
         }),
       ).toHaveFocus()
     })
-    expect(useSelectionStore.getState().outlinerFocusRequest).toBeNull()
+    expect(getPendingFocus()).toBeNull()
   })
 
-  it('focuses the selected item when targetSelectedId is provided', async () => {
+  it('focuses the targeted item when the directive names one', async () => {
     seedScene({
       ...READ_MODEL,
       selectedId: 'item-2',
     })
-    selectionActions.requestOutlinerFocus({
-      targetSelectedId: 'item-2',
+    focusActions.setPendingFocus({
+      surface: 'item-collection',
+      target: { kind: 'item', itemId: 'item-2' },
     })
 
     renderOutliner()
@@ -230,12 +242,31 @@ describe('SceneOutliner', () => {
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /end table/i })).toHaveFocus()
     })
-    expect(useSelectionStore.getState().outlinerFocusRequest).toBeNull()
+    expect(getPendingFocus()).toBeNull()
   })
 
-  it('focuses the outliner container when requested', async () => {
-    selectionActions.requestOutlinerFocus({
-      focusContainer: true,
+  it('focuses the selected item for an auto target', async () => {
+    seedScene({
+      ...READ_MODEL,
+      selectedId: 'item-2',
+    })
+    focusActions.setPendingFocus({
+      surface: 'item-collection',
+      target: { kind: 'auto' },
+    })
+
+    renderOutliner()
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /end table/i })).toHaveFocus()
+    })
+    expect(getPendingFocus()).toBeNull()
+  })
+
+  it('focuses the outliner container when directed', async () => {
+    focusActions.setPendingFocus({
+      surface: 'item-collection',
+      target: { kind: 'container' },
     })
 
     renderOutliner()
@@ -244,7 +275,20 @@ describe('SceneOutliner', () => {
     await waitFor(() => {
       expect(outlinerRegion).toHaveFocus()
     })
-    expect(useSelectionStore.getState().outlinerFocusRequest).toBeNull()
+    expect(getPendingFocus()).toBeNull()
+  })
+
+  it('defers a directive without consuming it while a blocking overlay is open', () => {
+    const directive = {
+      surface: 'item-collection',
+      target: { kind: 'index', index: 1 },
+    } as const
+    dialogActions.openDialog(DELETE_DIALOG_ID)
+    focusActions.setPendingFocus(directive)
+
+    renderOutliner()
+
+    expect(getPendingFocus()).toEqual(directive)
   })
 
   describe('preview callbacks', () => {
