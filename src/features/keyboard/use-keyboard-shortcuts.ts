@@ -1,6 +1,7 @@
 import { useEffect, useEffectEvent } from 'react'
 import type { EditorCommand } from '@/core/commands/editor-command'
 import type { CommandDispatch } from '@/core/commands/command-dispatch-context'
+import { getFocusedSurface } from '@/core/stores/focus-store'
 import {
   isContentEditableTarget,
   isDialogTarget,
@@ -18,7 +19,7 @@ interface ShortcutContext {
   isBlockingOverlayOpen: boolean
   hasSelection: boolean
   canStartOver: boolean
-  roomViewHasFocus: boolean
+  sceneHasFocus: boolean
 }
 
 interface ShortcutDefinition {
@@ -37,7 +38,6 @@ interface UseKeyboardShortcutsOptions {
   hasSelection: boolean
   isBlockingOverlayOpen: boolean
   canStartOver: boolean
-  roomViewHasFocus: boolean
   dispatch: CommandDispatch
 }
 
@@ -59,8 +59,8 @@ function canMatchShortcut(
     return false
   }
 
-  // Room-view-scoped shortcuts only fire when the room view has keyboard focus.
-  if (shortcut.requiresRoomViewFocus && !context.roomViewHasFocus) {
+  // Room-view-scoped shortcuts only fire when the scene has keyboard focus.
+  if (shortcut.requiresRoomViewFocus && !context.sceneHasFocus) {
     return false
   }
 
@@ -102,7 +102,6 @@ export function useKeyboardShortcuts({
   hasSelection,
   isBlockingOverlayOpen,
   canStartOver,
-  roomViewHasFocus,
   dispatch,
 }: UseKeyboardShortcutsOptions): void {
   const shortcutDefinitions: ShortcutDefinition[] =
@@ -147,7 +146,7 @@ export function useKeyboardShortcuts({
       isBlockingOverlayOpen,
       hasSelection,
       canStartOver,
-      roomViewHasFocus,
+      sceneHasFocus: getFocusedSurface() === 'scene',
     }
 
     for (const shortcut of shortcutDefinitions) {

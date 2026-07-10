@@ -1,12 +1,12 @@
 import { useEffect, useRef } from 'react'
 import { isDialogTarget, isEditingTarget } from './keyboard-event-target'
 import { sceneCommands } from '@/core/scene-commands'
+import { useIsSceneFocused } from '@/core/stores/focus-store'
 import type { CameraKeyName, CameraKeyState } from '@/core/scene.types'
 
 interface UseCameraKeyStateOptions {
   enabled: boolean
   isBlockingOverlayOpen?: boolean
-  roomViewHasFocus: boolean
 }
 
 const CAMERA_KEY_IDS: Record<string, CameraKeyName> = {
@@ -62,8 +62,8 @@ const isZoomModifierChord = (event: KeyboardEvent): boolean => {
 export function useCameraKeyState({
   enabled,
   isBlockingOverlayOpen = false,
-  roomViewHasFocus,
 }: UseCameraKeyStateOptions): void {
+  const sceneHasFocus = useIsSceneFocused()
   const keyStateRef = useRef<CameraKeyState>(new Set())
   const pressedShiftCodesRef = useRef<Set<string>>(new Set())
 
@@ -108,7 +108,7 @@ export function useCameraKeyState({
       sceneCommands.setCameraKeyState(new Set())
     }
 
-    if (!enabled || isBlockingOverlayOpen || !roomViewHasFocus) {
+    if (!enabled || isBlockingOverlayOpen || !sceneHasFocus) {
       resetKeyState()
       return
     }
@@ -169,5 +169,5 @@ export function useCameraKeyState({
       window.removeEventListener('blur', resetKeyState)
       resetKeyState()
     }
-  }, [enabled, isBlockingOverlayOpen, roomViewHasFocus])
+  }, [enabled, isBlockingOverlayOpen, sceneHasFocus])
 }

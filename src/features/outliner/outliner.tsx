@@ -1,4 +1,5 @@
 import {
+  useCallback,
   useEffect,
   useId,
   useLayoutEffect,
@@ -38,6 +39,8 @@ import { useItems } from '@/core/stores/scene-document-store'
 import { useSelectedId } from '@/core/stores/selection-store'
 import { usePreviewedId } from '@/core/operations/previewed-id'
 import { useIsBlockingOverlayOpen } from '@/core/stores/dialog-store'
+import { focusActions } from '@/core/stores/focus-store'
+import { isFocusLeaving } from '@/shared/lib/focus'
 import { Trans, useLingui } from '@lingui/react/macro'
 
 const OUTLINER_EXPANDED_PREFERENCE_KEY = 'outliner-expanded'
@@ -124,19 +127,38 @@ export function Outliner({
     selectionActions.clearOutlinerFocusRequest()
   }, [disabled, focusRequest, isExpanded, items])
 
+  // Stable so React only calls it on real mount/unmount; unmounting while
+  // focused (e.g. resize to mobile) fires no blur event, so the claim is
+  // released here.
+  const sectionRef = useCallback(
+    (node: HTMLElement | null) => {
+      containerRef.current = node
+      if (typeof ref === 'function') {
+        ref(node)
+      } else if (ref) {
+        ref.current = node
+      }
+      if (node === null) {
+        focusActions.surfaceBlurred('item-collection')
+      }
+    },
+    [ref],
+  )
+
   return (
     <section
-      ref={(node) => {
-        containerRef.current = node
-        if (typeof ref === 'function') {
-          ref(node)
-        } else if (ref) {
-          ref.current = node
-        }
-      }}
+      ref={sectionRef}
       className={className}
       aria-labelledby={headingId}
       tabIndex={-1}
+      onFocus={() => {
+        focusActions.surfaceFocused('item-collection')
+      }}
+      onBlur={(event) => {
+        if (isFocusLeaving(event)) {
+          focusActions.surfaceBlurred('item-collection')
+        }
+      }}
     >
       <Card size="sm" variant="overlay" className="w-full">
         <Collapsible

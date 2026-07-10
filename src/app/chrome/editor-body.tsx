@@ -1,5 +1,4 @@
-import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react'
-import { flushSync } from 'react-dom'
+import { Suspense, lazy, useCallback, useEffect, useRef } from 'react'
 import { Trans, useLingui } from '@lingui/react/macro'
 import { useIsBlockingOverlayOpen } from '@/core/stores/dialog-store'
 import { useSelectedFurniture } from '@/core/operations/selected-furniture'
@@ -7,6 +6,8 @@ import {
   selectionActions,
   useRoomViewFocusRequest,
 } from '@/core/stores/selection-store'
+import { focusActions } from '@/core/stores/focus-store'
+import { isFocusLeaving } from '@/shared/lib/focus'
 import { useSceneIsAtDefaults } from '@/core/operations/use-scene-is-at-defaults'
 import {
   useAssetError,
@@ -53,7 +54,6 @@ export interface EditorBodyProps {
 
 export function EditorBody({ testOverlaysHidden }: EditorBodyProps) {
   const { t } = useLingui()
-  const [roomViewHasFocus, setRoomViewHasFocus] = useState(false)
   const sceneIsAtDefaults = useSceneIsAtDefaults()
   const editorInteractionsEnabled = useEditorInteractionsEnabled()
   const isBlockingOverlayOpen = useIsBlockingOverlayOpen()
@@ -111,14 +111,12 @@ export function EditorBody({ testOverlaysHidden }: EditorBodyProps) {
     hasSelection: selectedFurniture !== null,
     isBlockingOverlayOpen,
     canStartOver: !sceneIsAtDefaults,
-    roomViewHasFocus,
     dispatch,
   })
 
   useCameraKeyState({
     enabled: editorInteractionsEnabled,
     isBlockingOverlayOpen,
-    roomViewHasFocus,
   })
 
   const handleCanvasPointerMissed = useCallback(() => {
@@ -158,14 +156,12 @@ export function EditorBody({ testOverlaysHidden }: EditorBodyProps) {
           inert={startupOverlayActive}
           className="pointer-events-auto fixed inset-0 z-0 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
           onFocus={() => {
-            flushSync(() => {
-              setRoomViewHasFocus(true)
-            })
+            focusActions.surfaceFocused('scene')
           }}
-          onBlur={() => {
-            flushSync(() => {
-              setRoomViewHasFocus(false)
-            })
+          onBlur={(event) => {
+            if (isFocusLeaving(event)) {
+              focusActions.surfaceBlurred('scene')
+            }
           }}
           onPointerDownCapture={focusRoomView}
         >

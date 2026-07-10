@@ -3,8 +3,9 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useEffect, useRef } from 'react'
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { EditorCommand } from '@/core/commands/editor-command'
+import { focusActions, resetFocusStore } from '@/core/stores/focus-store'
 import { useKeyboardShortcuts } from './use-keyboard-shortcuts'
 
 const createDispatchSpy = () => vi.fn<(command: EditorCommand) => void>()
@@ -19,7 +20,6 @@ function KeyboardShortcutHarness(props: {
   hasSelection: boolean
   isBlockingOverlayOpen: boolean
   canStartOver?: boolean
-  roomViewHasFocus?: boolean
   dispatch: DispatchSpy
 }) {
   useKeyboardShortcuts({
@@ -27,7 +27,6 @@ function KeyboardShortcutHarness(props: {
     hasSelection: props.hasSelection,
     isBlockingOverlayOpen: props.isBlockingOverlayOpen,
     canStartOver: props.canStartOver ?? true,
-    roomViewHasFocus: props.roomViewHasFocus ?? true,
     dispatch: props.dispatch,
   })
 
@@ -46,7 +45,6 @@ function DialogEscapeHarness(props: {
     hasSelection: props.hasSelection,
     isBlockingOverlayOpen: false,
     canStartOver: true,
-    roomViewHasFocus: true,
     dispatch: props.dispatch,
   })
 
@@ -76,7 +74,6 @@ function TextInputHarness(props: {
     hasSelection: false,
     isBlockingOverlayOpen: props.isBlockingOverlayOpen ?? false,
     canStartOver: props.canStartOver ?? true,
-    roomViewHasFocus: true,
     dispatch: props.dispatch,
   })
 
@@ -98,7 +95,6 @@ function SelectedItemDetailsInputHarness(props: {
     hasSelection: true,
     isBlockingOverlayOpen: false,
     canStartOver: true,
-    roomViewHasFocus: true,
     dispatch: props.dispatch,
   })
 
@@ -127,7 +123,6 @@ function DialogStartOverHarness(props: {
     hasSelection: false,
     isBlockingOverlayOpen: props.isBlockingOverlayOpen,
     canStartOver: props.canStartOver ?? true,
-    roomViewHasFocus: true,
     dispatch: props.dispatch,
   })
 
@@ -153,7 +148,6 @@ function PreHandledEscapeHarness(props: {
     hasSelection: props.hasSelection,
     isBlockingOverlayOpen: false,
     canStartOver: true,
-    roomViewHasFocus: true,
     dispatch: props.dispatch,
   })
 
@@ -187,7 +181,6 @@ function ContentEditableHarness(props: {
     hasSelection: false,
     isBlockingOverlayOpen: false,
     canStartOver: true,
-    roomViewHasFocus: true,
     dispatch: props.dispatch,
   })
 
@@ -231,6 +224,14 @@ function fireStartOverShortcuts(target: Window | HTMLElement): KeyboardEvent[] {
 }
 
 describe('useKeyboardShortcuts', () => {
+  beforeEach(() => {
+    focusActions.surfaceFocused('scene')
+  })
+
+  afterEach(() => {
+    resetFocusStore()
+  })
+
   it('blocks delete shortcuts when a blocking overlay is open and uses the latest blocking-overlay state on rerender', async () => {
     const user = userEvent.setup()
     const dispatch = createDispatchSpy()
@@ -338,13 +339,13 @@ describe('useKeyboardShortcuts', () => {
 
   it('dispatches pane-navigation shortcuts even when the room view does not have focus', () => {
     const dispatch = createDispatchSpy()
+    focusActions.surfaceBlurred('scene')
 
     render(
       <KeyboardShortcutHarness
         enabled
         hasSelection={false}
         isBlockingOverlayOpen={false}
-        roomViewHasFocus={false}
         dispatch={dispatch}
       />,
     )
@@ -766,13 +767,13 @@ describe('useKeyboardShortcuts', () => {
   it('does not clear selection when room view is not focused', async () => {
     const user = userEvent.setup()
     const dispatch = createDispatchSpy()
+    focusActions.surfaceBlurred('scene')
 
     render(
       <KeyboardShortcutHarness
         enabled
         hasSelection
         isBlockingOverlayOpen={false}
-        roomViewHasFocus={false}
         dispatch={dispatch}
       />,
     )
@@ -791,7 +792,6 @@ describe('useKeyboardShortcuts', () => {
         enabled
         hasSelection={false}
         isBlockingOverlayOpen={false}
-        roomViewHasFocus
         dispatch={dispatch}
       />,
     )
@@ -1114,7 +1114,6 @@ describe('useKeyboardShortcuts', () => {
         enabled
         hasSelection={false}
         isBlockingOverlayOpen={false}
-        roomViewHasFocus
         dispatch={dispatch}
       />,
     )
@@ -1141,13 +1140,13 @@ describe('useKeyboardShortcuts', () => {
   it('does not dispatch canvas-browse shortcuts when room view lacks focus', async () => {
     const user = userEvent.setup()
     const dispatch = createDispatchSpy()
+    focusActions.surfaceBlurred('scene')
 
     render(
       <KeyboardShortcutHarness
         enabled
         hasSelection={false}
         isBlockingOverlayOpen={false}
-        roomViewHasFocus={false}
         dispatch={dispatch}
       />,
     )
@@ -1166,7 +1165,6 @@ describe('useKeyboardShortcuts', () => {
         enabled
         hasSelection
         isBlockingOverlayOpen={false}
-        roomViewHasFocus
         dispatch={dispatch}
       />,
     )
@@ -1183,13 +1181,13 @@ describe('useKeyboardShortcuts', () => {
   it('keeps room-view scoped shortcuts inactive until the room view has focus', async () => {
     const user = userEvent.setup()
     const dispatch = createDispatchSpy()
+    focusActions.surfaceBlurred('scene')
 
     render(
       <KeyboardShortcutHarness
         enabled
         hasSelection
         isBlockingOverlayOpen={false}
-        roomViewHasFocus={false}
         dispatch={dispatch}
       />,
     )
