@@ -80,8 +80,12 @@ export function requestFocus(
     )
   }
 
+  // Last write wins for drops too: a "do not move focus" decision must
+  // supersede any older directive that has not been realized yet.
   if (resolution.directive !== null) {
     focusActions.setPendingFocus(resolution.directive)
+  } else {
+    focusActions.clearPendingFocus()
   }
 }
 

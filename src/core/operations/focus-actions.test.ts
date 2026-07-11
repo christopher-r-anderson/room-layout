@@ -136,6 +136,19 @@ describe('requestFocus', () => {
     })
   })
 
+  it('lets a dropped resolution supersede an unrealized directive', () => {
+    stubLayout('desktop')
+    requestFocus({ kind: 'surface', surface: 'item-collection' })
+    expect(getPendingFocus()).not.toBeNull()
+
+    requestFocus(
+      { kind: 'selected-item', operation: 'history', targetItemId: 'chair-1' },
+      { modality: 'pointer' },
+    )
+
+    expect(getPendingFocus()).toBeNull()
+  })
+
   it('prefers an explicitly declared origin surface over the tracked claim', () => {
     stubLayout('desktop')
     focusActions.surfaceFocused('scene')

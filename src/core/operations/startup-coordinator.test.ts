@@ -14,6 +14,11 @@ import {
 import { resetAssetsStore } from '../stores/assets-store'
 import { dialogActions } from '../stores/dialog-store'
 import {
+  focusActions,
+  getPendingFocus,
+  resetFocusStore,
+} from '@/core/stores/focus-store'
+import {
   resetSelectionStore,
   selectionActions,
   useSelectionStore,
@@ -60,6 +65,7 @@ beforeEach(() => {
   resetEditorLifecycleStore()
   resetAssetsStore()
   resetSelectionStore()
+  resetFocusStore()
   resetSceneSessionStore()
   resetFeedbackStore()
 })
@@ -132,6 +138,7 @@ describe('startup-coordinator', () => {
 
   it('resets the collection pipeline, starts a fresh cycle, and re-runs the bootstrap', () => {
     selectionActions.setSelection('chair-1')
+    focusActions.setPendingFocus({ surface: 'scene' })
     feedback.interactionUpdate('Chair selected.')
     feedback.formError('Stale error')
 
@@ -139,6 +146,9 @@ describe('startup-coordinator', () => {
 
     // The shell reset drops any stale selection session alongside the scene.
     expect(useSelectionStore.getState().selectedId).toBeNull()
+    // A queued focus directive describes the pre-reset world; it must not
+    // survive to be realized after the retry.
+    expect(getPendingFocus()).toBeNull()
     expect(resetCollectionPipeline).toHaveBeenCalledTimes(1)
     expect(useEditorLifecycleStore.getState().startupCycle).toBe(1)
     expect(runStartupBootstrap).toHaveBeenCalledTimes(1)

@@ -2,7 +2,11 @@ import { Suspense, lazy, useCallback, useEffect, useRef } from 'react'
 import { Trans, useLingui } from '@lingui/react/macro'
 import { useIsBlockingOverlayOpen } from '@/core/stores/dialog-store'
 import { useSelectedFurniture } from '@/core/operations/selected-furniture'
-import { focusActions, usePendingFocus } from '@/core/stores/focus-store'
+import {
+  focusActions,
+  getPendingFocus,
+  usePendingFocus,
+} from '@/core/stores/focus-store'
 import { isFocusLeaving } from '@/shared/lib/focus'
 import { useSceneIsAtDefaults } from '@/core/operations/use-scene-is-at-defaults'
 import {
@@ -94,15 +98,28 @@ export function EditorBody({ testOverlaysHidden }: EditorBodyProps) {
   }, [])
 
   // Realizes scene focus directives (e.g. post-delete); EditorBody owns the
-  // room-view element.
+  // room-view element. The focus is deferred one frame so it outlives a
+  // closing dialog's own focus restore, which means realization must be
+  // confirmed inside the frame: a newer directive cancels the frame via the
+  // cleanup, and the pending check catches a store write racing the rAF.
   useEffect(() => {
     if (!sceneFocusDirective) {
       return
     }
 
-    focusRoomView()
-    focusActions.directiveRealized(sceneFocusDirective)
-  }, [sceneFocusDirective, focusRoomView])
+    const frame = requestAnimationFrame(() => {
+      if (getPendingFocus() !== sceneFocusDirective) {
+        return
+      }
+
+      roomViewRef.current?.focus()
+      focusActions.directiveRealized(sceneFocusDirective)
+    })
+
+    return () => {
+      cancelAnimationFrame(frame)
+    }
+  }, [sceneFocusDirective, roomViewRef])
 
   useKeyboardShortcuts({
     enabled: editorInteractionsEnabled,
