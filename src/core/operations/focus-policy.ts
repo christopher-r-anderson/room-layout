@@ -61,6 +61,27 @@ export interface FocusResolveContext {
 const DROP: FocusResolution = { directive: null, announcement: null }
 
 /**
+ * Whether an already-resolved directive can still be realized in the given
+ * layout. The exhaustive switch makes adding a surface a compile error until
+ * its layout dependence is decided here.
+ */
+export function directiveSurvivesLayout(
+  directive: FocusDirective,
+  layout: FocusResolveContext['layout'],
+): boolean {
+  switch (directive.surface) {
+    case 'item-collection':
+      return layout === 'desktop'
+    case 'scene':
+    case 'inspector':
+    case 'item-actions':
+      return true
+    default:
+      return directive satisfies never
+  }
+}
+
+/**
  * The focus-routing policy: resolves a semantic intent against the gesture's
  * origin and the current layout to at most one mounted surface. Pure; every
  * cell of the policy table lives in this module's tests.

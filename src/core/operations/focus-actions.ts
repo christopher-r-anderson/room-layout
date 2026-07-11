@@ -9,6 +9,7 @@ import { subscribeToBlockingOverlay } from '@/core/stores/dialog-store'
 import { feedback } from '@/core/stores/feedback-store'
 import { createReconciler } from '@/core/operations/reconciler'
 import {
+  directiveSurvivesLayout,
   resolveFocusIntent,
   type FocusAnnouncement,
   type FocusGestureOrigin,
@@ -90,10 +91,12 @@ export function requestFocus(
 }
 
 /**
- * Clears a pending focus directive when the world changes out from under it:
- * a blocking overlay opening (the target is behind the overlay), or a layout
- * flip (the target surface may have left the layout). Idempotent; returns an
- * unsubscribe.
+ * Clears a pending focus directive when the world changes out from under it.
+ * A blocking overlay opening clears unconditionally (the dialog owns focus
+ * now, and its close-restore handles the return); a layout flip re-validates
+ * the directive against the policy and clears only what the new layout cannot
+ * realize, so e.g. a queued scene repair survives a resize. Idempotent;
+ * returns an unsubscribe.
  */
 export const startPendingFocusReconciler = createReconciler(() => [
   subscribeToBlockingOverlay((isOpen, wasOpen) => {
@@ -108,7 +111,13 @@ export const startPendingFocusReconciler = createReconciler(() => [
     focusActions.clearPendingFocus()
   }),
   subscribeToHeaderLayoutMode(() => {
-    if (getPendingFocus() === null) {
+    const pending = getPendingFocus()
+
+    if (pending === null) {
+      return
+    }
+
+    if (directiveSurvivesLayout(pending, getHeaderLayoutMode())) {
       return
     }
 

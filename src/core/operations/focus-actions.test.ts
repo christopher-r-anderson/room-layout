@@ -206,12 +206,20 @@ describe('startPendingFocusReconciler', () => {
     expect(getPendingFocus()).not.toBeNull()
   })
 
-  it('clears a pending directive when the layout flips', () => {
+  it('clears a directive its new layout cannot realize when the layout flips', () => {
     requestFocus({ kind: 'surface', surface: 'item-collection' })
     expect(getPendingFocus()).not.toBeNull()
 
     layout.flipTo('mobile')
 
     expect(getPendingFocus()).toBeNull()
+  })
+
+  it('keeps a scene directive across a layout flip', () => {
+    requestFocus({ kind: 'surface', surface: 'scene' })
+
+    layout.flipTo('mobile')
+
+    expect(getPendingFocus()).toEqual({ surface: 'scene' })
   })
 })

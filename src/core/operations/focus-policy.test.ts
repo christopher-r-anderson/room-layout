@@ -1,5 +1,6 @@
 import { expect, it } from 'vitest'
 import {
+  directiveSurvivesLayout,
   resolveFocusIntent,
   type FocusGestureOrigin,
   type FocusIntent,
@@ -254,4 +255,32 @@ it('drops keyboard history from an unknown origin on mobile', () => {
   expect(
     resolveFocusIntent(historyIntent('a'), keyboard('unknown'), MOBILE),
   ).toEqual({ directive: null, announcement: null })
+})
+
+// --- Directive layout survival: only the item collection is layout-bound ---
+
+it('re-validates directives against a layout: only item-collection is desktop-bound', () => {
+  const survives = (
+    directive: Parameters<typeof directiveSurvivesLayout>[0],
+    layout: 'desktop' | 'mobile',
+  ) => directiveSurvivesLayout(directive, layout)
+
+  for (const layout of ['desktop', 'mobile'] as const) {
+    expect(survives({ surface: 'scene' }, layout)).toBe(true)
+    expect(survives({ surface: 'inspector' }, layout)).toBe(true)
+    expect(survives({ surface: 'item-actions' }, layout)).toBe(true)
+  }
+
+  expect(
+    survives(
+      { surface: 'item-collection', target: { kind: 'auto' } },
+      'desktop',
+    ),
+  ).toBe(true)
+  expect(
+    survives(
+      { surface: 'item-collection', target: { kind: 'auto' } },
+      'mobile',
+    ),
+  ).toBe(false)
 })
