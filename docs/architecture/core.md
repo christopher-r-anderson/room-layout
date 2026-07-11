@@ -187,7 +187,7 @@ member and a handler key.
 A command is a **declarative editor intent triggerable by the keyboard table or a
 toolbar button**. Its implementation lives with its owning concern - a core
 operation or feature action - and the command layer only wires `kind -> impl`
-(assembled in `app/commands/use-editor-command-handlers.ts`); App invents no
+(assembled in `app/commands/editor-command-handlers.ts`); App invents no
 command semantics. Dispatch a command for that keyboard/toolbar vocabulary; call
 operations or `sceneCommands` directly for intra-feature or intra-component logic.
 

@@ -10,7 +10,6 @@ Contains
 - `lib/`: reusable utilities.
 - `hooks/`: reusable non-feature hooks.
 - `layout/`: shared layout-level utilities and context contracts.
-- `providers/`: reusable provider/context wiring.
 - `messages/`: shared message descriptors and brand/identity constants.
 - `i18n/`: the Lingui i18n runtime - the global `i18n` instance, locale
   resolution/activation, and memoized `Intl` formatters. See
