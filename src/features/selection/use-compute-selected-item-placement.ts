@@ -1,8 +1,6 @@
 import { useEffect, useMemo, useSyncExternalStore } from 'react'
-import { useElementRect } from '@/shared/hooks/use-element-rect'
 import { useElementSize } from '@/shared/hooks/use-element-size'
-import { useEditorRefs } from '@/shared/providers/editor-refs-context'
-import { useExclusionRects } from '@/shared/layout/overlay-exclusion-context'
+import { useEditorRects } from '@/core/layout/editor-rects-context'
 import { useSelectedFurniture } from '@/core/operations/selected-furniture'
 import { useToolbarGeometry } from '@/core/stores/toolbar-geometry-store'
 import { useToolbarEngaged } from '@/core/stores/toolbar-interaction-store'
@@ -50,10 +48,10 @@ export function useComputeSelectedItemPlacement(): ComputeSelectedItemPlacementR
   const selectedFurniture = useSelectedFurniture()
   const selectedToolbarGeometry = useToolbarGeometry()
   const toolbarEngaged = useToolbarEngaged()
-  const { roomViewRef } = useEditorRefs()
-  const exclusionRects = useExclusionRects()
+  // The scene container is measured by the same registry as the chrome, but
+  // it is the placement container, never an exclusion.
+  const { 'room-view': roomViewRect, ...exclusionRects } = useEditorRects()
   const { ref: actionsSizeRef, size: actionSize } = useElementSize()
-  const roomViewRect = useElementRect(roomViewRef)
 
   const previousFloatingCandidateStore = useMemo(
     () => createCandidateStore(undefined),
@@ -100,7 +98,9 @@ export function useComputeSelectedItemPlacement(): ComputeSelectedItemPlacementR
   } as DOMRectReadOnly
 
   const hasMeasuredRoomViewRect =
-    roomViewRect !== null && roomViewRect.width > 0 && roomViewRect.height > 0
+    roomViewRect !== undefined &&
+    roomViewRect.width > 0 &&
+    roomViewRect.height > 0
 
   const toolbarPointScale =
     activeToolbarGeometry && hasMeasuredRoomViewRect

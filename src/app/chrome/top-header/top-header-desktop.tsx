@@ -16,11 +16,11 @@ import { useHistoryAvailability } from '@/core/operations/history-availability'
 import { useSceneIsAtDefaults } from '@/core/operations/use-scene-is-at-defaults'
 import { topHeaderFocusRegistry } from './top-header-focus'
 import { TopHeaderSurface } from './top-header-surface'
-import { useExclusionRegistry } from '@/shared/layout/overlay-exclusion-context'
+import { useEditorRectRegistry } from '@/core/layout/editor-rects-context'
 
 export function TopHeaderDesktop() {
   const { t } = useLingui()
-  const registerExclusionElement = useExclusionRegistry()
+  const registerRect = useEditorRectRegistry()
   const history = useHistoryAvailability()
   const startOverDisabled = useSceneIsAtDefaults()
   const isRoomSurfaceOpen = useDialogOpen(ROOM_SURFACE_DIALOG_ID)
@@ -29,7 +29,7 @@ export function TopHeaderDesktop() {
 
   return (
     <Toolbar.Root
-      ref={registerExclusionElement('top-header')}
+      ref={registerRect('top-header')}
       aria-label={t`Editor actions`}
       className="pointer-events-auto flex flex-wrap items-center justify-between gap-x-0 gap-y-2"
     >

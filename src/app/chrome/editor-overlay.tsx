@@ -11,7 +11,7 @@ import { TopHeaderDesktop } from './top-header/top-header-desktop'
 import { TopHeaderMobile } from './top-header/top-header-mobile'
 import { TopHeaderDialogs } from './top-header/top-header-dialogs'
 import { topHeaderFocusRegistry } from './top-header/top-header-focus'
-import { useExclusionRegistry } from '@/shared/layout/overlay-exclusion-context'
+import { useEditorRectRegistry } from '@/core/layout/editor-rects-context'
 import { useHeaderLayoutMode } from '@/shared/layout/use-header-layout-mode'
 import { dialogActions, useDialogOpen } from '@/core/stores/dialog-store'
 import { ROOM_SURFACE_DIALOG_ID } from '@/features/room-surface/room-surface-dialog-definition'
@@ -32,7 +32,7 @@ export function EditorHeader() {
 }
 
 export function EditorPanels() {
-  const registerExclusionElement = useExclusionRegistry()
+  const registerRect = useEditorRectRegistry()
   const hasSelection = useHasSelection()
   const isRoomSurfaceOpen = useDialogOpen(ROOM_SURFACE_DIALOG_ID)
   const layoutMode = useHeaderLayoutMode()
@@ -46,7 +46,7 @@ export function EditorPanels() {
           that opens it. Its close button returns focus to that toggle. */}
       {isDesktop && (
         <RoomSidebar
-          ref={registerExclusionElement('room-surface')}
+          ref={registerRect('room-surface')}
           open={isRoomSurfaceOpen}
           onClose={() => {
             dialogActions.setDialogOpen(ROOM_SURFACE_DIALOG_ID, false)
@@ -61,7 +61,7 @@ export function EditorPanels() {
           inset gap so the toolbar isn't butted against the panel edge. The panel
           is pinned to the physical right edge, so this clearance is physical too. */}
       <CameraTools
-        ref={registerExclusionElement('camera-tools')}
+        ref={registerRect('camera-tools')}
         className={cn(
           'z-20 pointer-events-auto self-end mt-28 mb-auto',
           isDesktop &&
@@ -78,7 +78,7 @@ export function EditorPanels() {
       <div className="z-10 grid gap-2 md:justify-items-start md:items-end md:grid-cols-2">
         {isDesktop && (
           <Outliner
-            ref={registerExclusionElement('outliner')}
+            ref={registerRect('outliner')}
             className="md:min-w-80 pointer-events-auto"
           />
         )}
@@ -88,9 +88,7 @@ export function EditorPanels() {
             <SelectedItemToolbar className="w-fit" />
           ) : null}
           {hasSelection ? (
-            <SelectedDetailsPanel
-              ref={registerExclusionElement('selected-details')}
-            />
+            <SelectedDetailsPanel ref={registerRect('selected-details')} />
           ) : (
             <SelectedDetailsPlaceholder aria-hidden="true" />
           )}

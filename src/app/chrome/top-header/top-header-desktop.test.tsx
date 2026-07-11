@@ -3,7 +3,7 @@
 import { render, screen } from '@/test/render'
 import { describe, expect, it, vi } from 'vitest'
 import { TopHeaderDesktop } from './top-header-desktop'
-import { OverlayExclusionProvider } from '@/shared/layout/overlay-exclusion-provider'
+import { EditorRectsProvider } from '@/core/layout/editor-rects-provider'
 
 vi.mock('@/features/catalog/catalog-drawer', () => ({
   CatalogDrawer: ({ triggerButton }: { triggerButton?: React.ReactNode }) => (
@@ -53,12 +53,9 @@ vi.mock('./start-over-button', () => ({
 
 function renderDesktopHeader() {
   return render(
-    <OverlayExclusionProvider
-      registerExclusionElement={() => vi.fn()}
-      exclusionRects={{}}
-    >
+    <EditorRectsProvider registerRect={() => vi.fn()} rects={{}}>
       <TopHeaderDesktop />
-    </OverlayExclusionProvider>,
+    </EditorRectsProvider>,
   )
 }
 

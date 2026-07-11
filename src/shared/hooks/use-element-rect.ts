@@ -1,11 +1,4 @@
-import {
-  useCallback,
-  useLayoutEffect,
-  useRef,
-  useState,
-  useSyncExternalStore,
-  type RefObject,
-} from 'react'
+import { useCallback, useRef, useState, useSyncExternalStore } from 'react'
 
 interface ElementRectOptions {
   trackPosition?: boolean
@@ -151,18 +144,4 @@ export function useElementRectRef(options?: ElementRectOptions) {
     ref,
     rect: useMeasuredElementRect(element, trackPosition),
   }
-}
-
-export function useElementRect(ref?: RefObject<HTMLElement | null>) {
-  const [element, setElement] = useState<HTMLElement | null>(null)
-
-  useLayoutEffect(() => {
-    const nextElement = ref?.current ?? null
-
-    if (element !== nextElement) {
-      setElement(nextElement)
-    }
-  }, [element, ref])
-
-  return useMeasuredElementRect(element, true)
 }

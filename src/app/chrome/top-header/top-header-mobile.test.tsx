@@ -8,7 +8,7 @@ import { dialogActions, resetDialogStore } from '@/core/stores/dialog-store'
 import { DIALOG_DEFINITIONS } from '@/app/dialogs/bootstrap-dialog-registry'
 import { HEADER_MORE_ACTIONS_DIALOG_ID } from './header-more-actions-dialog-definition'
 import { CommandDispatchProvider } from '@/core/commands/command-dispatch-provider'
-import { OverlayExclusionProvider } from '@/shared/layout/overlay-exclusion-provider'
+import { EditorRectsProvider } from '@/core/layout/editor-rects-provider'
 
 vi.mock('@/features/catalog/catalog-drawer', () => ({
   CatalogDrawer: () => <button type="button">Add furniture</button>,
@@ -53,12 +53,9 @@ function openMoreActionsDialog() {
 function renderMobileHeader() {
   return render(
     <CommandDispatchProvider value={vi.fn()}>
-      <OverlayExclusionProvider
-        registerExclusionElement={() => vi.fn()}
-        exclusionRects={{}}
-      >
+      <EditorRectsProvider registerRect={() => vi.fn()} rects={{}}>
         <TopHeaderMobile />
-      </OverlayExclusionProvider>
+      </EditorRectsProvider>
     </CommandDispatchProvider>,
   )
 }

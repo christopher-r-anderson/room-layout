@@ -1,11 +1,10 @@
 // @vitest-environment jsdom
 import { createEvent, fireEvent, render, screen } from '@/test/render'
 import userEvent from '@testing-library/user-event'
-import { createRef, type ReactNode } from 'react'
+import { type ReactNode } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { TooltipProvider } from '@/shared/ui/tooltip'
-import { EditorRefsProvider } from '@/shared/providers/editor-refs-provider'
-import { OverlayExclusionProvider } from '@/shared/layout/overlay-exclusion-provider'
+import { EditorRectsProvider } from '@/core/layout/editor-rects-provider'
 import { CommandDispatchProvider } from '@/core/commands/command-dispatch-provider'
 import type { CommandDispatch } from '@/core/commands/command-dispatch-context'
 import { createHistoryState } from '@/shared/lib/ui/editor-history'
@@ -219,27 +218,21 @@ function renderPanel({
   placement: SelectedItemPlacement
   children: ReactNode
 }) {
-  const roomViewRef = createRef<HTMLElement>()
-  const registerExclusionElement = vi.fn(() => vi.fn())
+  const registerRect = vi.fn(() => vi.fn())
 
   render(
     <TooltipProvider>
-      <EditorRefsProvider value={{ roomViewRef }}>
-        <OverlayExclusionProvider
-          registerExclusionElement={registerExclusionElement}
-          exclusionRects={{}}
-        >
-          <SelectedItemInteractionProvider>
-            <SelectedItemPlacementProvider
-              value={{ placement, actionsSizeRef: vi.fn() }}
-            >
-              <CommandDispatchProvider value={vi.fn()}>
-                {children}
-              </CommandDispatchProvider>
-            </SelectedItemPlacementProvider>
-          </SelectedItemInteractionProvider>
-        </OverlayExclusionProvider>
-      </EditorRefsProvider>
+      <EditorRectsProvider registerRect={registerRect} rects={{}}>
+        <SelectedItemInteractionProvider>
+          <SelectedItemPlacementProvider
+            value={{ placement, actionsSizeRef: vi.fn() }}
+          >
+            <CommandDispatchProvider value={vi.fn()}>
+              {children}
+            </CommandDispatchProvider>
+          </SelectedItemPlacementProvider>
+        </SelectedItemInteractionProvider>
+      </EditorRectsProvider>
     </TooltipProvider>,
   )
 }
@@ -247,25 +240,23 @@ function renderPanel({
 function renderFloatingActions(dispatch: CommandDispatch) {
   render(
     <TooltipProvider>
-      <EditorRefsProvider value={{ roomViewRef: createRef<HTMLElement>() }}>
-        <CommandDispatchProvider value={dispatch}>
-          <SelectedItemInteractionProvider>
-            <SelectedItemPlacementProvider
-              value={{
-                placement: {
-                  site: 'floating',
-                  candidateId: 'bottom-center',
-                  left: 12,
-                  top: 24,
-                },
-                actionsSizeRef: vi.fn(),
-              }}
-            >
-              <FloatingSelectedItemSite />
-            </SelectedItemPlacementProvider>
-          </SelectedItemInteractionProvider>
-        </CommandDispatchProvider>
-      </EditorRefsProvider>
+      <CommandDispatchProvider value={dispatch}>
+        <SelectedItemInteractionProvider>
+          <SelectedItemPlacementProvider
+            value={{
+              placement: {
+                site: 'floating',
+                candidateId: 'bottom-center',
+                left: 12,
+                top: 24,
+              },
+              actionsSizeRef: vi.fn(),
+            }}
+          >
+            <FloatingSelectedItemSite />
+          </SelectedItemPlacementProvider>
+        </SelectedItemInteractionProvider>
+      </CommandDispatchProvider>
     </TooltipProvider>,
   )
 }
