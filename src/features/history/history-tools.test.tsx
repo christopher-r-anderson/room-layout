@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { render, screen, within } from '@/test/render'
+import { fireEvent, render, screen, within } from '@/test/render'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import type { ReactElement } from 'react'
@@ -45,6 +45,21 @@ describe('HistoryTools', () => {
       { kind: 'undo', modality: 'pointer' },
       { kind: 'redo', modality: 'pointer' },
     ])
+  })
+
+  it('reads keyboard activation (detail 0) as keyboard modality', () => {
+    const dispatch: CommandDispatch = vi.fn()
+
+    renderWithDispatch(<HistoryTools canRedo canUndo />, dispatch)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Undo' }), {
+      detail: 0,
+    })
+
+    expect(dispatch).toHaveBeenCalledWith({
+      kind: 'undo',
+      modality: 'keyboard',
+    })
   })
 
   it('is non-interactive when there is no history to traverse', async () => {

@@ -4,9 +4,10 @@ import { useCommandDispatch } from '@/core/commands/command-dispatch-context'
 import { useSelectedItemInteraction } from './selected-item-interaction-context'
 import { SelectedItemTools } from './selected-item-tools'
 import { focusActions, usePendingFocus } from '@/core/stores/focus-store'
+import { useSurfaceFocusClaim } from '@/core/layout/use-surface-focus-claim'
 import { Surface } from '@/shared/ui/surface'
 import { cn } from '@/shared/lib/utils'
-import { focusFirstControl, isFocusLeaving } from '@/shared/lib/focus'
+import { focusFirstControl } from '@/shared/lib/focus'
 
 /**
  * The connected selected-item action toolbar (rotate + delete). It owns the
@@ -22,29 +23,29 @@ export function SelectedItemToolbar({ className }: { className?: string }) {
   const directive =
     pendingFocus?.surface === 'item-actions' ? pendingFocus : null
   const elementRef = useRef<HTMLDivElement | null>(null)
+  const claim = useSurfaceFocusClaim('item-actions')
 
-  // Stable so React only calls it on real mount/unmount; the toolbar unmounts
-  // without a blur event when a delete clears the selection while it holds
-  // focus.
-  const surfaceRef = useCallback((element: HTMLDivElement | null) => {
-    elementRef.current = element
-    if (element === null) {
-      focusActions.surfaceBlurred('item-actions')
-    }
-  }, [])
+  const surfaceRef = useCallback(
+    (element: HTMLDivElement | null) => {
+      elementRef.current = element
+      claim.claimRef(element)
+    },
+    [claim],
+  )
 
   // Realizes item-actions focus directives on the first roving-active tool.
   // Passive effect on purpose: the toolbar's roving tabindex is assigned in
   // Base UI's own effects, so at layout-effect time every tool still reads
-  // tabindex="-1" and the focusable query would miss.
+  // tabindex="-1" and the focusable query would miss. The directive is
+  // consumed even if no control matched: a directive for a mounted surface
+  // must realize or drop, never linger.
   useEffect(() => {
     if (!directive) {
       return
     }
 
-    if (focusFirstControl(elementRef.current)) {
-      focusActions.directiveRealized(directive)
-    }
+    focusFirstControl(elementRef.current)
+    focusActions.directiveRealized(directive)
   }, [directive])
 
   if (selectedFurniture === null) {
@@ -59,10 +60,11 @@ export function SelectedItemToolbar({ className }: { className?: string }) {
     }
   }
 
-  // Escape peels one layer at a time: a focused action's tooltip dismisses on
-  // the first Escape (marking the event handled), and the next Escape reaches
-  // this boundary and returns focus to the room view without clearing the
-  // selection (a further Escape, now on the room view, clears it).
+  // Escape peels one layer at a time: a focused action's tooltip dismisses
+  // the first Escape (Base UI stops its propagation, so it never reaches this
+  // boundary), and the next Escape gets here and returns focus to the room
+  // view without clearing the selection (a further Escape, now on the room
+  // view, clears it).
   const handleEscapeToRoomView = (event: KeyboardEvent<HTMLElement>) => {
     if (event.key !== 'Escape' || event.defaultPrevented) {
       return
@@ -79,14 +81,8 @@ export function SelectedItemToolbar({ className }: { className?: string }) {
       data-slot="selected-item-toolbar"
       className={cn('pointer-events-auto', className)}
       onKeyDown={handleEscapeToRoomView}
-      onFocus={() => {
-        focusActions.surfaceFocused('item-actions')
-      }}
-      onBlur={(event) => {
-        if (isFocusLeaving(event)) {
-          focusActions.surfaceBlurred('item-actions')
-        }
-      }}
+      onFocus={claim.onFocus}
+      onBlur={claim.onBlur}
     >
       <SelectedItemTools
         onOpenDeleteDialog={handleOpenDeleteDialog}

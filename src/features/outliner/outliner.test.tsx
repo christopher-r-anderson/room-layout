@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { render, screen, waitFor } from '@/test/render'
+import { act, render, screen, waitFor } from '@/test/render'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createHistoryState } from '@/shared/lib/ui/editor-history'
@@ -276,6 +276,53 @@ describe('SceneOutliner', () => {
       expect(outlinerRegion).toHaveFocus()
     })
     expect(getPendingFocus()).toBeNull()
+  })
+
+  it('repairs focus to the nearest row when the focused row is removed', async () => {
+    seedScene()
+    renderOutliner()
+
+    const endTableButton = screen.getByRole('button', { name: /end table/i })
+    act(() => {
+      endTableButton.focus()
+    })
+    expect(endTableButton).toHaveFocus()
+
+    // Removing the focused row fires no blur; focus silently falls to the
+    // body until the repair effect lands on the nearest remaining row.
+    act(() => {
+      sceneDocumentActions.setHistory(
+        createHistoryState(
+          READ_MODEL.items.filter((item) => item.id !== 'item-2'),
+        ),
+      )
+    })
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('button', { name: /leather couch/i }),
+      ).toHaveFocus()
+    })
+  })
+
+  it('repairs focus to the container when the last row is removed', async () => {
+    seedScene({ ...READ_MODEL, items: [READ_MODEL.items[0]] })
+    renderOutliner()
+
+    const couchButton = screen.getByRole('button', { name: /leather couch/i })
+    act(() => {
+      couchButton.focus()
+    })
+
+    act(() => {
+      sceneDocumentActions.setHistory(createHistoryState([]))
+    })
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('region', { name: 'Furniture in room' }),
+      ).toHaveFocus()
+    })
   })
 
   it('defers a directive without consuming it while a blocking overlay is open', () => {

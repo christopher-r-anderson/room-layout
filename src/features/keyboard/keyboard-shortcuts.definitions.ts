@@ -187,10 +187,10 @@ export const KEYBOARD_SHORTCUTS: readonly KeyboardShortcutDefinition[] = [
     ],
   },
   {
-    id: 'focus-toolbar',
+    id: 'focus-item-actions',
     match: { key: 'T', shift: true },
     handler: 'use-keyboard-shortcuts',
-    command: { kind: 'focus-toolbar' },
+    command: { kind: 'focus-item-actions' },
     helpEntries: [
       {
         sectionTitle: msg`Navigation`,

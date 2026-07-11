@@ -28,7 +28,7 @@ recommendation; the actual cut is a decision for Phase 3.
   `intentional-unit-exclusions.md` (covered-by-e2e wrappers with spec
   cross-references, presentational/config skips, and explicitly accepted gaps),
   linked from `docs/architecture/testing.md`. The gap analysis also closed the two
-  real holes it found — `focus-selected` (`F`) and `focus-toolbar` (`Shift+T`) now
+  real holes it found — `focus-selected` (`F`) and `focus-item-actions` (`Shift+T`) now
   have e2e — so every Tier 2 wrapper is genuinely e2e-covered. The skip list below
   is superseded by that doc.
 - **Over-mock rewrites — done.** Per-file outcome:

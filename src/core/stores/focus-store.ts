@@ -4,8 +4,6 @@ import type {
   FocusableSurface,
 } from '@/core/operations/focus-policy'
 
-export type { FocusableSurface }
-
 // Where keyboard focus currently rests (written by each surface's own
 // focus/blur handlers — current location only, never a focus history) and the
 // pending resolved focus directive awaiting realization by its surface.

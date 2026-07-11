@@ -8,18 +8,15 @@ import type { EditorRectId } from './editor-rects-context'
 describe('EditorRectsContext', () => {
   it('exposes the registry and rects through their own hooks', () => {
     const registerCallback = vi.fn<(element: HTMLElement | null) => void>()
-    const registerExclusionElement = vi.fn((key: EditorRectId) => {
+    const registerRect = vi.fn((key: EditorRectId) => {
       void key
       return registerCallback
     })
-    const exclusionRects = {
+    const providedRects = {
       'top-header': new DOMRectReadOnly(1, 2, 3, 4),
     }
     const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <EditorRectsProvider
-        registerRect={registerExclusionElement}
-        rects={exclusionRects}
-      >
+      <EditorRectsProvider registerRect={registerRect} rects={providedRects}>
         {children}
       </EditorRectsProvider>
     )
@@ -29,8 +26,8 @@ describe('EditorRectsContext', () => {
     })
     const { result: rects } = renderHook(() => useEditorRects(), { wrapper })
 
-    expect(registry.current).toBe(registerExclusionElement)
-    expect(rects.current).toEqual(exclusionRects)
+    expect(registry.current).toBe(registerRect)
+    expect(rects.current).toEqual(providedRects)
   })
 
   it('throws outside the provider', () => {

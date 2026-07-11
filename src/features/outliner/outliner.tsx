@@ -30,13 +30,12 @@ import {
 } from '@/shared/lib/ui/storage'
 import { selectById } from '@/core/operations/selection-actions'
 import { previewFromOutliner } from '@/core/operations/preview-actions'
-import { type PanelInteractionSource } from '@/core/stores/selection-store'
 import { useItems } from '@/core/stores/scene-document-store'
 import { useSelectedId } from '@/core/stores/selection-store'
 import { usePreviewedId } from '@/core/operations/previewed-id'
 import { useIsBlockingOverlayOpen } from '@/core/stores/dialog-store'
 import { focusActions, usePendingFocus } from '@/core/stores/focus-store'
-import { isFocusLeaving } from '@/shared/lib/focus'
+import { useSurfaceFocusClaim } from '@/core/layout/use-surface-focus-claim'
 import { Trans, useLingui } from '@lingui/react/macro'
 
 const OUTLINER_EXPANDED_PREFERENCE_KEY = 'outliner-expanded'
@@ -67,10 +66,34 @@ export function Outliner({
   const toggleButtonRef = useRef<HTMLButtonElement | null>(null)
   const buttonRefs = useRef(new Map<string, HTMLButtonElement>())
   const [isExpanded, setIsExpanded] = useState(loadStoredExpandedState)
+  const focusedRowIndexRef = useRef<number | null>(null)
+  const claim = useSurfaceFocusClaim('item-collection')
 
   useEffect(() => {
     saveBooleanPreference(OUTLINER_EXPANDED_PREFERENCE_KEY, isExpanded)
   }, [isExpanded])
+
+  // Repairs focus when the focused row is removed by a mutation (undo/redo,
+  // reload): element removal fires no blur, so DOM focus silently falls to the
+  // body. Within-surface landing is this surface's concern - repair to the
+  // nearest remaining row, else the container.
+  useLayoutEffect(() => {
+    const focusedRowIndex = focusedRowIndexRef.current
+
+    if (focusedRowIndex === null || document.activeElement !== document.body) {
+      return
+    }
+
+    focusedRowIndexRef.current = null
+
+    if (items.length === 0) {
+      containerRef.current?.focus()
+      return
+    }
+
+    const nextIndex = Math.min(focusedRowIndex, items.length - 1)
+    buttonRefs.current.get(items[nextIndex].id)?.focus()
+  }, [items])
 
   // Realizes item-collection focus directives: the resolver picked this
   // surface, the cascade below picks the element (target, with fallbacks, down
@@ -124,9 +147,6 @@ export function Outliner({
     focusActions.directiveRealized(directive)
   }, [directive, disabled, isExpanded, items, selectedId])
 
-  // Stable so React only calls it on real mount/unmount; unmounting while
-  // focused (e.g. resize to mobile) fires no blur event, so the claim is
-  // released here.
   const sectionRef = useCallback(
     (node: HTMLElement | null) => {
       containerRef.current = node
@@ -135,11 +155,9 @@ export function Outliner({
       } else if (ref) {
         ref.current = node
       }
-      if (node === null) {
-        focusActions.surfaceBlurred('item-collection')
-      }
+      claim.claimRef(node)
     },
-    [ref],
+    [ref, claim],
   )
 
   return (
@@ -148,14 +166,8 @@ export function Outliner({
       className={className}
       aria-labelledby={headingId}
       tabIndex={-1}
-      onFocus={() => {
-        focusActions.surfaceFocused('item-collection')
-      }}
-      onBlur={(event) => {
-        if (isFocusLeaving(event)) {
-          focusActions.surfaceBlurred('item-collection')
-        }
-      }}
+      onFocus={claim.onFocus}
+      onBlur={claim.onBlur}
     >
       <Card size="sm" variant="overlay" className="w-full">
         <Collapsible
@@ -222,18 +234,21 @@ export function Outliner({
                             'data-[previewed]:bg-accent data-[previewed]:text-accent-foreground',
                           )}
                           onClick={(e) => {
-                            const source: PanelInteractionSource =
+                            selectById(
+                              item.id,
                               e.detail === 0
                                 ? 'panel-keyboard'
-                                : 'panel-pointer'
-                            selectById(item.id, source)
+                                : 'panel-pointer',
+                            )
                           }}
                           onFocus={() => {
+                            focusedRowIndexRef.current = items.indexOf(item)
                             if (!disabled) {
                               previewFromOutliner(item.id, 'outliner-focus')
                             }
                           }}
                           onBlur={() => {
+                            focusedRowIndexRef.current = null
                             if (!disabled) {
                               previewFromOutliner(null, 'outliner-focus')
                             }

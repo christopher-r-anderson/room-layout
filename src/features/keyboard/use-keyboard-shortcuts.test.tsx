@@ -384,7 +384,7 @@ describe('useKeyboardShortcuts', () => {
       { kind: 'focus-inspector' },
       { kind: 'focus-room-view' },
       { kind: 'focus-outliner' },
-      { kind: 'focus-toolbar' },
+      { kind: 'focus-item-actions' },
     ])
     expect(focusInspectorEvent.defaultPrevented).toBe(true)
     expect(focusRoomViewEvent.defaultPrevented).toBe(true)

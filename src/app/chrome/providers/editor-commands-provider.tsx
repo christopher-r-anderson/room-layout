@@ -1,18 +1,15 @@
 import type { ReactNode } from 'react'
-import { useCommandDispatchValue } from '@/core/commands/command-dispatch-context'
 import { CommandDispatchProvider } from '@/core/commands/command-dispatch-provider'
-import { useEditorCommandHandlers } from '@/app/commands/use-editor-command-handlers'
+import { dispatchEditorCommand } from '@/app/commands/editor-command-handlers'
 
 /**
- * Builds the editor command dispatch inside the provider tree and provides it
- * to the subtree. Lives here so App no longer assembles dispatch itself.
+ * Provides the editor command dispatch to the subtree. The handler map is a
+ * module constant (no handler closes over component state), so the dispatch is
+ * a plain function.
  */
 export function EditorCommandsProvider({ children }: { children: ReactNode }) {
-  const commandHandlers = useEditorCommandHandlers()
-  const dispatchCommand = useCommandDispatchValue(commandHandlers)
-
   return (
-    <CommandDispatchProvider value={dispatchCommand}>
+    <CommandDispatchProvider value={dispatchEditorCommand}>
       {children}
     </CommandDispatchProvider>
   )

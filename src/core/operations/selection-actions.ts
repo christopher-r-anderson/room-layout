@@ -2,10 +2,7 @@ import { msg } from '@lingui/core/macro'
 import type { FurnitureItem } from '@/domain/furniture'
 import { i18n } from '@/shared/i18n/i18n'
 import { useSceneDocumentStore } from '@/core/stores/scene-document-store'
-import {
-  useSelectionStore,
-  type InteractionSource,
-} from '@/core/stores/selection-store'
+import { useSelectionStore } from '@/core/stores/selection-store'
 import { feedback } from '@/core/stores/feedback-store'
 import { clearPreviewOnCanvasMiss } from '@/core/operations/preview-actions'
 import { sceneCommands } from '@/core/scene-commands'
@@ -14,6 +11,12 @@ import {
   selectById as selectDocumentById,
 } from './selection-mutations'
 import type { SelectByIdResult } from '@/core/scene.types'
+
+/** How a selection gesture was made; drives the announcement mode. */
+export type InteractionSource =
+  | 'canvas-keyboard'
+  | 'panel-keyboard'
+  | 'panel-pointer'
 
 export type SelectionAnnouncementMode =
   | 'default'
@@ -92,7 +95,7 @@ export function selectByCanvasPointer(id: string) {
 
 export function selectById(
   id: string | null,
-  source?: InteractionSource,
+  source: InteractionSource,
 ): SelectByIdResult {
   if (!sceneCommands.isSceneReady()) {
     return {
@@ -106,12 +109,7 @@ export function selectById(
 
   if (result.ok && previousSelectedId !== id) {
     announceSelectionChange({
-      announceMode:
-        source === 'panel-keyboard'
-          ? 'panel-keyboard'
-          : source === 'canvas-keyboard'
-            ? 'canvas-keyboard'
-            : 'default',
+      announceMode: source === 'panel-pointer' ? 'default' : source,
       items: useSceneDocumentStore.getState().history.present,
       newId: id,
       previousSelectedId,

@@ -1,16 +1,5 @@
 import { create } from 'zustand'
 
-/** How a selection gesture was made; drives selection announcements. */
-export type InteractionSource =
-  | 'canvas-keyboard'
-  | 'canvas-pointer'
-  | 'panel-keyboard'
-  | 'panel-pointer'
-  | 'toolbar'
-  | null
-
-export type PanelInteractionSource = 'panel-keyboard' | 'panel-pointer'
-
 // The selection session: the selected item pointer. Session-scoped - never
 // serialized, never part of the undo timeline (history mutations reconcile the
 // pointer against the restored items instead).
