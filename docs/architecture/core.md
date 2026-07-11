@@ -34,7 +34,7 @@ Editor state is scoped by lifetime, and store names say which scope they hold:
   own retry semantics - a retry deliberately preserves e.g.
   `restoreAttemptCount`, which guards the one-time restore.
 - **Ephemeral** values that nothing renders from stay out of stores entirely -
-  module-level cells (the preview hysteresis timer, pending focus targets) or
+  module-level cells (the preview hysteresis timer, the pending delete origin) or
   refs.
 
 The rule of thumb: if losing a value on reload should not lose user work, it is

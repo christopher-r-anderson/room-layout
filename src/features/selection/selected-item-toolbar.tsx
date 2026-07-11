@@ -60,10 +60,11 @@ export function SelectedItemToolbar({ className }: { className?: string }) {
     }
   }
 
-  // Escape peels one layer at a time: a focused action's tooltip dismisses on
-  // the first Escape (marking the event handled), and the next Escape reaches
-  // this boundary and returns focus to the room view without clearing the
-  // selection (a further Escape, now on the room view, clears it).
+  // Escape peels one layer at a time: a focused action's tooltip dismisses
+  // the first Escape (Base UI stops its propagation, so it never reaches this
+  // boundary), and the next Escape gets here and returns focus to the room
+  // view without clearing the selection (a further Escape, now on the room
+  // view, clears it).
   const handleEscapeToRoomView = (event: KeyboardEvent<HTMLElement>) => {
     if (event.key !== 'Escape' || event.defaultPrevented) {
       return

@@ -10,7 +10,7 @@ stays local to each dialog — see
 
 ```mermaid
 flowchart LR
-  P["producer<br/>(pane command · delete · undo/redo)"] -->|"semantic intent<br/>+ gesture origin"| R["requestFocus<br/>core/operations/focus-actions.ts"]
+  P["producer<br/>(pane command · delete ·<br/>undo/redo · catalog add)"] -->|"semantic intent<br/>+ gesture origin"| R["requestFocus<br/>core/operations/focus-actions.ts"]
   R -->|"resolveFocusIntent<br/>(pure, core/operations/focus-policy.ts)"| D["pendingFocus directive<br/>core/stores/focus-store.ts"]
   R -. "drop + announce" .-> LR["live region"]
   D --> S["owning surface realizes<br/>(effect: focus, then directiveRealized)"]
@@ -45,7 +45,9 @@ operation type is never one of them:
 
 The resolver picks surfaces; where focus lands _within_ a surface is that
 surface's own concern (the outliner's target cascade, the panels' first
-control, the scene section itself).
+control, the scene section itself). That includes within-surface repair: the
+outliner refocuses the nearest remaining row when a mutation removes the
+focused one, with no resolver involvement.
 
 ## Policy principles
 
@@ -62,15 +64,20 @@ control, the scene section itself).
 
 A directive is session state that can outlive its moment, so:
 
-- **Supersession**: `requestFocus` is the only minter, and every resolution
-  supersedes — it writes a directive or clears the pending one. Consumers
-  realize with `directiveRealized(directive)`, which is reference-guarded so a
-  late realization cannot drop a newer directive.
+- **Supersession**: `requestFocus` mints directives and every resolution
+  supersedes — it writes a directive or clears the pending one. The one other
+  minter is the desktop toolbar site, which forwards an item-actions
+  directive its placement-hidden toolbar cannot realize to the inspector.
+  Consumers realize with `directiveRealized(directive)`, which is
+  reference-guarded so a late realization cannot drop a newer directive.
 - **World changes re-validate**: the pending-focus reconciler clears on
-  blocking-overlay open and on startup shell reset, and re-validates on layout
-  flips via `directiveSurvivesLayout` — exhaustive over surfaces, so adding a
-  surface will not compile until its layout dependence is decided. Any new
-  kind of world change must clear or re-validate the same way.
+  blocking-overlay open and re-validates on layout flips via
+  `directiveSurvivesLayout` — exhaustive over surfaces, so adding a surface
+  will not compile until its layout dependence is decided. The startup shell
+  reset clears the whole focus store directly. Any new kind of world change
+  must clear or re-validate the same way. Known edge: pane shortcuts can mint
+  during the brief window before the lazy chrome chunk mounts its realizer;
+  the directive realizes late instead of never (bounded by the warm fetch).
 - **Deferred realization confirms**: the scene consumer focuses one frame
   late (outliving a closing dialog's own restore), so it re-checks the
   directive is still pending inside the frame and cancels when superseded.

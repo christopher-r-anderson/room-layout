@@ -87,6 +87,8 @@ export function CatalogDrawer({
           // The likely next action after adding is to place the item, so route
           // focus to the room view where the arrow keys move the now-selected
           // item. On every other close the drawer restores focus to its trigger.
+          // Deliberately a raw scene intent rather than focusScene(): the add
+          // announcement already speaks, so its preview side effect is skipped.
           focusRoomViewOnCloseRef.current = false
           event.preventDefault()
           requestFocus({ kind: 'surface', surface: 'scene' })
