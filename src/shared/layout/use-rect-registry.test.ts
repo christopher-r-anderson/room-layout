@@ -2,7 +2,7 @@
 
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { useOverlayExclusionRects } from './use-overlay-exclusion-rects'
+import { useRectRegistry } from './use-rect-registry'
 
 const measuredRects = new WeakMap<Element, DOMRectReadOnly>()
 const originalVisualViewport = Object.getOwnPropertyDescriptor(
@@ -126,17 +126,17 @@ afterEach(() => {
   }
 })
 
-describe('useOverlayExclusionRects', () => {
+describe('useRectRegistry', () => {
   it('registers, replaces, and unregisters exclusion elements', async () => {
     installBoundingClientRectMock()
     installResizeObserver()
     installVisualViewport()
 
-    const { result } = renderHook(() => useOverlayExclusionRects())
+    const { result } = renderHook(() => useRectRegistry())
     const registerTopHeader =
-      result.current.registerExclusionElement('top-header')
+      result.current.registerRectElement('top-header')
 
-    expect(result.current.registerExclusionElement('top-header')).toBe(
+    expect(result.current.registerRectElement('top-header')).toBe(
       registerTopHeader,
     )
 
@@ -191,9 +191,9 @@ describe('useOverlayExclusionRects', () => {
     installResizeObserver()
     const visualViewport = installVisualViewport()
 
-    const { result, unmount } = renderHook(() => useOverlayExclusionRects())
+    const { result, unmount } = renderHook(() => useRectRegistry())
     const registerTopHeaderTest =
-      result.current.registerExclusionElement('top-header')
+      result.current.registerRectElement('top-header')
     const element = createMeasuredElement(createRect(10, 20, 140, 60))
 
     act(() => {
@@ -285,9 +285,9 @@ describe('useOverlayExclusionRects', () => {
     installResizeObserver()
     installVisualViewport()
 
-    const { result } = renderHook(() => useOverlayExclusionRects())
+    const { result } = renderHook(() => useRectRegistry())
     const registerCameraTools =
-      result.current.registerExclusionElement('camera-tools')
+      result.current.registerRectElement('camera-tools')
     const element = createMeasuredElement(createRect(12, 40, 48, 144))
 
     act(() => {

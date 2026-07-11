@@ -20,7 +20,7 @@ import {
   resetSelectionStore,
   selectionActions,
 } from '@/core/stores/selection-store'
-import { OverlayExclusionProvider } from '../../shared/layout/overlay-exclusion-provider'
+import { EditorRectsProvider } from '@/core/layout/editor-rects-provider'
 import { EditorRefsProvider } from '../../shared/providers/editor-refs-provider'
 import { CommandDispatchProvider } from '@/core/commands/command-dispatch-provider'
 import { SelectedItemInteractionProvider } from '@/features/selection/selected-item-interaction-provider'
@@ -212,7 +212,7 @@ describe('editor chrome integration', () => {
   it('wires outliner reverse-tab handoff and room focus return across the shell', async () => {
     const user = userEvent.setup()
     const selectedFurniture = createSelectedFurniture()
-    const registerExclusionElement = vi.fn(() => vi.fn())
+    const registerRect = vi.fn(() => vi.fn())
 
     sceneDocumentActions.setHistory(createHistoryState([selectedFurniture]))
     selectionActions.setSelection(selectedFurniture.id)
@@ -235,9 +235,9 @@ describe('editor chrome integration', () => {
       return (
         <TooltipProvider>
           <EditorRefsProvider value={{ roomViewRef }}>
-            <OverlayExclusionProvider
-              registerExclusionElement={registerExclusionElement}
-              exclusionRects={{}}
+            <EditorRectsProvider
+              registerRect={registerRect}
+              rects={{}}
             >
               <SelectedItemInteractionProvider>
                 <SelectedItemPlacementProvider value={placementValue}>
@@ -255,7 +255,7 @@ describe('editor chrome integration', () => {
                   </CommandDispatchProvider>
                 </SelectedItemPlacementProvider>
               </SelectedItemInteractionProvider>
-            </OverlayExclusionProvider>
+            </EditorRectsProvider>
           </EditorRefsProvider>
         </TooltipProvider>
       )

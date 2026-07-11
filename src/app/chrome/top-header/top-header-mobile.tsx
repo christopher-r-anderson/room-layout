@@ -21,11 +21,11 @@ import { HEADER_MORE_ACTIONS_DIALOG_ID } from './header-more-actions-dialog-defi
 import { useHistoryAvailability } from '@/core/operations/history-availability'
 import { topHeaderFocusRegistry } from './top-header-focus'
 import { TopHeaderSurface } from './top-header-surface'
-import { useExclusionRegistry } from '@/shared/layout/overlay-exclusion-context'
+import { useEditorRectRegistry } from '@/core/layout/editor-rects-context'
 
 export function TopHeaderMobile() {
   const { t } = useLingui()
-  const registerExclusionElement = useExclusionRegistry()
+  const registerRect = useEditorRectRegistry()
   const history = useHistoryAvailability()
   const isRoomSurfaceOpen = useDialogOpen(ROOM_SURFACE_DIALOG_ID)
   const isHeaderMoreActionsOpen = useDialogOpen(HEADER_MORE_ACTIONS_DIALOG_ID)
@@ -33,7 +33,7 @@ export function TopHeaderMobile() {
 
   return (
     <div
-      ref={registerExclusionElement('top-header')}
+      ref={registerRect('top-header')}
       className="pointer-events-auto"
     >
       <Toolbar.Root
@@ -114,7 +114,7 @@ export function TopHeaderMobile() {
       </Toolbar.Root>
 
       <RoomDrawer
-        ref={registerExclusionElement('room-surface')}
+        ref={registerRect('room-surface')}
         open={isRoomSurfaceOpen}
         onOpenChange={(open) =>
           dialogActions.setDialogOpen(ROOM_SURFACE_DIALOG_ID, open)

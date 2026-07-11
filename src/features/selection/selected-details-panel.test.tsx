@@ -5,7 +5,7 @@ import { createRef, type ReactNode } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { TooltipProvider } from '@/shared/ui/tooltip'
 import { EditorRefsProvider } from '@/shared/providers/editor-refs-provider'
-import { OverlayExclusionProvider } from '@/shared/layout/overlay-exclusion-provider'
+import { EditorRectsProvider } from '@/core/layout/editor-rects-provider'
 import { CommandDispatchProvider } from '@/core/commands/command-dispatch-provider'
 import type { CommandDispatch } from '@/core/commands/command-dispatch-context'
 import { createHistoryState } from '@/shared/lib/ui/editor-history'
@@ -220,14 +220,14 @@ function renderPanel({
   children: ReactNode
 }) {
   const roomViewRef = createRef<HTMLElement>()
-  const registerExclusionElement = vi.fn(() => vi.fn())
+  const registerRect = vi.fn(() => vi.fn())
 
   render(
     <TooltipProvider>
       <EditorRefsProvider value={{ roomViewRef }}>
-        <OverlayExclusionProvider
-          registerExclusionElement={registerExclusionElement}
-          exclusionRects={{}}
+        <EditorRectsProvider
+          registerRect={registerRect}
+          rects={{}}
         >
           <SelectedItemInteractionProvider>
             <SelectedItemPlacementProvider
@@ -238,7 +238,7 @@ function renderPanel({
               </CommandDispatchProvider>
             </SelectedItemPlacementProvider>
           </SelectedItemInteractionProvider>
-        </OverlayExclusionProvider>
+        </EditorRectsProvider>
       </EditorRefsProvider>
     </TooltipProvider>,
   )

@@ -1,6 +1,7 @@
 import { type ReactNode } from 'react'
-import { OverlayExclusionProvider } from '@/shared/layout/overlay-exclusion-provider'
-import { useOverlayExclusionRects } from '@/shared/layout/use-overlay-exclusion-rects'
+import { EditorRectsProvider } from '@/core/layout/editor-rects-provider'
+import type { EditorRectId } from '@/core/layout/editor-rects-context'
+import { useRectRegistry } from '@/shared/layout/use-rect-registry'
 
 interface ShellLayoutServicesProviderProps {
   children: ReactNode
@@ -9,14 +10,11 @@ interface ShellLayoutServicesProviderProps {
 export function ShellLayoutServicesProvider({
   children,
 }: ShellLayoutServicesProviderProps) {
-  const { rects, registerExclusionElement } = useOverlayExclusionRects()
+  const { rects, registerRectElement } = useRectRegistry<EditorRectId>()
 
   return (
-    <OverlayExclusionProvider
-      registerExclusionElement={registerExclusionElement}
-      exclusionRects={rects}
-    >
+    <EditorRectsProvider registerRect={registerRectElement} rects={rects}>
       {children}
-    </OverlayExclusionProvider>
+    </EditorRectsProvider>
   )
 }

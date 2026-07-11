@@ -1,13 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-export type OverlayExclusionRectId =
-  | 'top-header'
-  | 'outliner'
-  | 'selected-details'
-  | 'camera-tools'
-  | 'room-surface'
-
-type ExclusionRectMap = Partial<Record<OverlayExclusionRectId, DOMRectReadOnly>>
+export type RectMap<Id extends string> = Partial<Record<Id, DOMRectReadOnly>>
 
 function areRectsEqual(
   left: DOMRectReadOnly | undefined,
@@ -25,25 +18,30 @@ function areRectsEqual(
   )
 }
 
-export function useOverlayExclusionRects() {
-  const elementsRef = useRef(new Map<OverlayExclusionRectId, HTMLElement>())
+/**
+ * A live rect registry: ref-callback registration keyed by id, measured via
+ * one ResizeObserver plus viewport and transition listeners. Generic over the
+ * id vocabulary; callers own what the ids mean.
+ */
+export function useRectRegistry<Id extends string>() {
+  const elementsRef = useRef(new Map<Id, HTMLElement>())
   const callbacksRef = useRef(
-    new Map<OverlayExclusionRectId, (element: HTMLElement | null) => void>(),
+    new Map<Id, (element: HTMLElement | null) => void>(),
   )
   const observerRef = useRef<ResizeObserver | null>(null)
   const refreshQueuedRef = useRef(false)
-  const [rects, setRects] = useState<ExclusionRectMap>({})
+  const [rects, setRects] = useState<RectMap<Id>>({})
 
   const refreshRects = useCallback(() => {
-    const nextRects: ExclusionRectMap = {}
+    const nextRects: RectMap<Id> = {}
 
     for (const [id, element] of elementsRef.current) {
       nextRects[id] = element.getBoundingClientRect()
     }
 
     setRects((currentRects) => {
-      const currentKeys = Object.keys(currentRects) as OverlayExclusionRectId[]
-      const nextKeys = Object.keys(nextRects) as OverlayExclusionRectId[]
+      const currentKeys = Object.keys(currentRects) as Id[]
+      const nextKeys = Object.keys(nextRects) as Id[]
 
       if (
         currentKeys.length === nextKeys.length &&
@@ -121,8 +119,8 @@ export function useOverlayExclusionRects() {
     }
   }, [refreshRects, unobserveElementTransitions])
 
-  const registerExclusionElement = useCallback(
-    (id: OverlayExclusionRectId) => {
+  const registerRectElement = useCallback(
+    (id: Id) => {
       const existing = callbacksRef.current.get(id)
       if (existing) {
         return existing
@@ -167,6 +165,6 @@ export function useOverlayExclusionRects() {
   return {
     rects,
     refreshRects,
-    registerExclusionElement,
+    registerRectElement,
   }
 }
