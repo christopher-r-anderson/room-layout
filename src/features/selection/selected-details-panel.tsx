@@ -23,15 +23,16 @@ export function SelectedDetailsPanel({ ref }: { ref?: Ref<HTMLElement> }) {
     }
   }, [])
 
-  // Realizes inspector focus directives on the panel's first control.
+  // Realizes inspector focus directives on the panel's first control. The
+  // directive is consumed even if no control matched: a directive for a
+  // mounted surface must realize or drop, never linger.
   useLayoutEffect(() => {
     if (!directive) {
       return
     }
 
-    if (focusFirstControl(elementRef.current)) {
-      focusActions.directiveRealized(directive)
-    }
+    focusFirstControl(elementRef.current)
+    focusActions.directiveRealized(directive)
   }, [directive])
 
   if (selectedFurniture === null) {

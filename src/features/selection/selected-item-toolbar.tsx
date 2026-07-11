@@ -36,15 +36,16 @@ export function SelectedItemToolbar({ className }: { className?: string }) {
   // Realizes item-actions focus directives on the first roving-active tool.
   // Passive effect on purpose: the toolbar's roving tabindex is assigned in
   // Base UI's own effects, so at layout-effect time every tool still reads
-  // tabindex="-1" and the focusable query would miss.
+  // tabindex="-1" and the focusable query would miss. The directive is
+  // consumed even if no control matched: a directive for a mounted surface
+  // must realize or drop, never linger.
   useEffect(() => {
     if (!directive) {
       return
     }
 
-    if (focusFirstControl(elementRef.current)) {
-      focusActions.directiveRealized(directive)
-    }
+    focusFirstControl(elementRef.current)
+    focusActions.directiveRealized(directive)
   }, [directive])
 
   if (selectedFurniture === null) {

@@ -67,10 +67,33 @@ export function Outliner({
   const toggleButtonRef = useRef<HTMLButtonElement | null>(null)
   const buttonRefs = useRef(new Map<string, HTMLButtonElement>())
   const [isExpanded, setIsExpanded] = useState(loadStoredExpandedState)
+  const focusedRowIndexRef = useRef<number | null>(null)
 
   useEffect(() => {
     saveBooleanPreference(OUTLINER_EXPANDED_PREFERENCE_KEY, isExpanded)
   }, [isExpanded])
+
+  // Repairs focus when the focused row is removed by a mutation (undo/redo,
+  // reload): element removal fires no blur, so DOM focus silently falls to the
+  // body. Within-surface landing is this surface's concern - repair to the
+  // nearest remaining row, else the container.
+  useLayoutEffect(() => {
+    const focusedRowIndex = focusedRowIndexRef.current
+
+    if (focusedRowIndex === null || document.activeElement !== document.body) {
+      return
+    }
+
+    focusedRowIndexRef.current = null
+
+    if (items.length === 0) {
+      containerRef.current?.focus()
+      return
+    }
+
+    const nextIndex = Math.min(focusedRowIndex, items.length - 1)
+    buttonRefs.current.get(items[nextIndex].id)?.focus()
+  }, [items])
 
   // Realizes item-collection focus directives: the resolver picked this
   // surface, the cascade below picks the element (target, with fallbacks, down
@@ -229,11 +252,13 @@ export function Outliner({
                             selectById(item.id, source)
                           }}
                           onFocus={() => {
+                            focusedRowIndexRef.current = items.indexOf(item)
                             if (!disabled) {
                               previewFromOutliner(item.id, 'outliner-focus')
                             }
                           }}
                           onBlur={() => {
+                            focusedRowIndexRef.current = null
                             if (!disabled) {
                               previewFromOutliner(null, 'outliner-focus')
                             }
