@@ -1,4 +1,4 @@
-import { useCallback, type FocusEvent } from 'react'
+import { useCallback, useMemo, type FocusEvent } from 'react'
 import { focusActions } from '@/core/stores/focus-store'
 import type { FocusableSurface } from '@/core/operations/focus-policy'
 import { isFocusLeaving } from '@/shared/lib/focus'
@@ -33,5 +33,12 @@ export function useSurfaceFocusClaim(surface: FocusableSurface) {
     [surface],
   )
 
-  return { claimRef, onFocus, onBlur }
+  // A stable object, not just stable members: consumers compose claimRef into
+  // ref callbacks whose deps include this value, and an identity change there
+  // makes React detach/reattach the ref every render — firing claimRef(null)
+  // and wrongly releasing a held claim.
+  return useMemo(
+    () => ({ claimRef, onFocus, onBlur }),
+    [claimRef, onFocus, onBlur],
+  )
 }
