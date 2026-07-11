@@ -153,8 +153,8 @@ export function Scene({
   })
 
   // The handlers close over fresh component state, so keep them in a ref synced
-  // each render and register stable wrappers that read the latest at call time
-  // (same shape as useCommandDispatchValue). Registration then lasts exactly one
+  // each render and register stable wrappers that read the latest at call time.
+  // Registration then lasts exactly one
   // mount and drives the lifecycle store's sceneReady flag: a passive effect so
   // readiness never fires before the canvas has painted, and handler churn
   // never re-registers.

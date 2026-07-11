@@ -23,7 +23,7 @@ gap analysis.
 | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `scene/internal/camera/use-camera-operations.ts`              | `editor-hotkeys` (presets, WASD/pan/zoom, **focus-selected `F`**), `selected-toolbar-placement`                                                  |
 | `scene/internal/selection/use-toolbar-geometry-projection.ts` | `selected-toolbar-placement` (active projection), `selected-toolbar-idle` (idle no-op short-circuit)                                             |
-| `app/commands/use-editor-command-handlers.ts`                 | exercised across the above; `focus-selected` and `focus-toolbar` routing now pressed in e2e                                                      |
+| `app/commands/use-editor-command-handlers.ts`                 | exercised across the above; `focus-selected` and `focus-item-actions` routing now pressed in e2e                                                 |
 | `app/commands/use-editor-focus-commands.ts`                   | `focusRoomView` (harness), `focusOutliner`/`focusInspector` (tab-order, post-delete), **`focusToolbar` Shift+T**                                 |
 | `features/keyboard/use-keyboard-shortcuts.ts`                 | `editor-hotkeys`, `editor-accessibility-flows` (dispatch + modal suppression)                                                                    |
 | `features/startup/use-startup-bootstrap.ts` (thin mount hook) | `startup-loading`, `startup-load-error`, `url-restore` (the fetch pipeline itself is unit-tested in `core/operations/startup-bootstrap.test.ts`) |

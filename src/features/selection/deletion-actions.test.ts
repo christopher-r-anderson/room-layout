@@ -28,6 +28,7 @@ import { sceneCommands } from '@/core/scene-commands'
 import { deleteSelection } from '@/core/operations/furniture-mutations'
 import { confirmDeleteSelection, openDeleteDialog } from './deletion-actions'
 import { CHAIR } from '@/test/support/furniture'
+import { stubLayout } from '@/test/support/stub-layout'
 
 vi.mock('@/core/operations/furniture-mutations', () => ({
   addFurniture: vi.fn(),
@@ -36,41 +37,6 @@ vi.mock('@/core/operations/furniture-mutations', () => ({
   rotateSelection: vi.fn(),
   setSelectionTransform: vi.fn(),
 }))
-
-type MediaQueryChangeListener = (event: { matches: boolean }) => void
-
-// jsdom's matchMedia never matches, which reads as the mobile layout. This
-// stub makes the layout controllable and captures change listeners so tests
-// can flip it.
-function stubLayout(initial: 'desktop' | 'mobile') {
-  let matches = initial === 'desktop'
-  const listeners = new Set<MediaQueryChangeListener>()
-
-  vi.stubGlobal(
-    'matchMedia',
-    vi.fn().mockImplementation((query: string) => ({
-      get matches() {
-        return matches
-      },
-      media: query,
-      addEventListener: (_: string, listener: MediaQueryChangeListener) => {
-        listeners.add(listener)
-      },
-      removeEventListener: (_: string, listener: MediaQueryChangeListener) => {
-        listeners.delete(listener)
-      },
-    })),
-  )
-
-  return {
-    flipTo(layout: 'desktop' | 'mobile') {
-      matches = layout === 'desktop'
-      listeners.forEach((listener) => {
-        listener({ matches })
-      })
-    },
-  }
-}
 
 beforeEach(() => {
   resetSceneDocumentStore()
@@ -124,20 +90,6 @@ describe('deletion-actions', () => {
     )
   })
 
-  it('returns focus to the scene on mobile too when opened from it', () => {
-    stubLayout('mobile')
-    vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
-    vi.mocked(deleteSelection).mockReturnValue(true)
-    vi.spyOn(dialogActions, 'openDialog').mockReturnValue(true)
-    vi.spyOn(dialogActions, 'closeActiveDialog')
-    selectionActions.setSelection(CHAIR.id)
-
-    openDeleteDialog('scene')
-    confirmDeleteSelection(CHAIR)
-
-    expect(getPendingFocus()).toEqual({ surface: 'scene' })
-  })
-
   it('directs focus to the item collection at the deleted index when opened from the item actions on desktop', () => {
     stubLayout('desktop')
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
@@ -155,6 +107,9 @@ describe('deletion-actions', () => {
     })
   })
 
+  // Pins the historic mobile leak through the full action path (origin
+  // handoff across the dialog on the mobile layout); the policy cell itself
+  // lives in focus-policy.test.
   it('repairs focus to the scene when opened from the item actions on mobile', () => {
     stubLayout('mobile')
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)

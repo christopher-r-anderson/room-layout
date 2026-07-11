@@ -7,7 +7,7 @@ import {
   getPendingFocus,
   usePendingFocus,
 } from '@/core/stores/focus-store'
-import { isFocusLeaving } from '@/shared/lib/focus'
+import { useSurfaceFocusClaim } from '@/core/layout/use-surface-focus-claim'
 import { useSceneIsAtDefaults } from '@/core/operations/use-scene-is-at-defaults'
 import {
   useAssetError,
@@ -63,13 +63,15 @@ export function EditorBody({ testOverlaysHidden }: EditorBodyProps) {
   const selectedFurniture = useSelectedFurniture()
   const roomViewRef = useRef<HTMLElement | null>(null)
   const registerRoomViewRect = useEditorRectRegistry()('room-view')
+  const claim = useSurfaceFocusClaim('scene')
   // Stable so React only detaches on real unmount, not per render.
   const sectionRef = useCallback(
     (node: HTMLElement | null) => {
       roomViewRef.current = node
       registerRoomViewRect(node)
+      claim.claimRef(node)
     },
-    [registerRoomViewRect],
+    [registerRoomViewRect, claim],
   )
   const dispatch = useCommandDispatch()
   const pendingFocus = usePendingFocus()
@@ -179,14 +181,8 @@ export function EditorBody({ testOverlaysHidden }: EditorBodyProps) {
           tabIndex={0}
           inert={startupOverlayActive}
           className="pointer-events-auto fixed inset-0 z-0 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
-          onFocus={() => {
-            focusActions.surfaceFocused('scene')
-          }}
-          onBlur={(event) => {
-            if (isFocusLeaving(event)) {
-              focusActions.surfaceBlurred('scene')
-            }
-          }}
+          onFocus={claim.onFocus}
+          onBlur={claim.onBlur}
           onPointerDownCapture={focusRoomView}
         >
           <p id="scene-instructions" className="sr-only">

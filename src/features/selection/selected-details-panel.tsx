@@ -1,7 +1,8 @@
 import { useCallback, useLayoutEffect, useRef, type Ref } from 'react'
 import { useSelectedFurniture } from '@/core/operations/selected-furniture'
 import { focusActions, usePendingFocus } from '@/core/stores/focus-store'
-import { focusFirstControl, isFocusLeaving } from '@/shared/lib/focus'
+import { useSurfaceFocusClaim } from '@/core/layout/use-surface-focus-claim'
+import { focusFirstControl } from '@/shared/lib/focus'
 import { SelectedDetailsView } from './selected-details-view'
 import { useSelectedItemInteraction } from './selected-item-interaction-context'
 import { updateSelectedItemDetails } from './selected-item-detail-actions'
@@ -13,15 +14,15 @@ export function SelectedDetailsPanel({ ref }: { ref?: Ref<HTMLElement> }) {
   const pendingFocus = usePendingFocus()
   const directive = pendingFocus?.surface === 'inspector' ? pendingFocus : null
   const elementRef = useRef<HTMLDivElement | null>(null)
+  const claim = useSurfaceFocusClaim('inspector')
 
-  // Stable so React only calls it on real mount/unmount; the panel unmounts
-  // without a blur event when the selection clears while it holds focus.
-  const wrapperRef = useCallback((element: HTMLDivElement | null) => {
-    elementRef.current = element
-    if (element === null) {
-      focusActions.surfaceBlurred('inspector')
-    }
-  }, [])
+  const wrapperRef = useCallback(
+    (element: HTMLDivElement | null) => {
+      elementRef.current = element
+      claim.claimRef(element)
+    },
+    [claim],
+  )
 
   // Realizes inspector focus directives on the panel's first control. The
   // directive is consumed even if no control matched: a directive for a
@@ -43,14 +44,8 @@ export function SelectedDetailsPanel({ ref }: { ref?: Ref<HTMLElement> }) {
     <div
       ref={wrapperRef}
       className="contents"
-      onFocus={() => {
-        focusActions.surfaceFocused('inspector')
-      }}
-      onBlur={(event) => {
-        if (isFocusLeaving(event)) {
-          focusActions.surfaceBlurred('inspector')
-        }
-      }}
+      onFocus={claim.onFocus}
+      onBlur={claim.onBlur}
     >
       <SelectedDetailsView
         key={selectedFurniture.id}

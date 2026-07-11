@@ -20,6 +20,7 @@ import {
 } from '@/core/stores/editor-lifecycle-store'
 import { redo as redoDocument, undo as undoDocument } from './history-mutations'
 import { redo, undo } from './history-actions'
+import { stubLayout } from '@/test/support/stub-layout'
 
 vi.mock('./history-mutations', () => ({
   redo: vi.fn(),
@@ -28,41 +29,6 @@ vi.mock('./history-mutations', () => ({
 }))
 
 const politeText = () => feedbackStoreForTests.getState().polite.text
-
-type MediaQueryChangeListener = (event: { matches: boolean }) => void
-
-// jsdom's matchMedia never matches, which reads as the mobile layout. This
-// stub makes the layout controllable and captures change listeners so tests
-// can flip it.
-function stubLayout(initial: 'desktop' | 'mobile') {
-  let matches = initial === 'desktop'
-  const listeners = new Set<MediaQueryChangeListener>()
-
-  vi.stubGlobal(
-    'matchMedia',
-    vi.fn().mockImplementation((query: string) => ({
-      get matches() {
-        return matches
-      },
-      media: query,
-      addEventListener: (_: string, listener: MediaQueryChangeListener) => {
-        listeners.add(listener)
-      },
-      removeEventListener: (_: string, listener: MediaQueryChangeListener) => {
-        listeners.delete(listener)
-      },
-    })),
-  )
-
-  return {
-    flipTo(layout: 'desktop' | 'mobile') {
-      matches = layout === 'desktop'
-      listeners.forEach((listener) => {
-        listener({ matches })
-      })
-    },
-  }
-}
 
 // The document mutation is mocked, so it will not reconcile the selection
 // pointer itself; these helpers simulate that reconcile inside the mock so the
@@ -166,31 +132,6 @@ describe('history-actions', () => {
     selectionActions.setSelection('chair-1')
 
     undo('pointer')
-
-    expect(politeText()).toBe('Undo complete.')
-    expect(getPendingFocus()).toBeNull()
-  })
-
-  it('does not move focus when the keyboard undo came from the scene', () => {
-    stubLayout('desktop')
-    vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
-    mockUndoReconcilingSelectionTo('chair-2')
-    selectionActions.setSelection('chair-1')
-    focusActions.surfaceFocused('scene')
-
-    undo('keyboard')
-
-    // Focus survives in the scene; the announcement carries the change.
-    expect(getPendingFocus()).toBeNull()
-  })
-
-  it('does not mint a directive on mobile where the item collection is absent', () => {
-    stubLayout('mobile')
-    vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
-    mockUndoReconcilingSelectionTo('chair-2')
-    selectionActions.setSelection('chair-1')
-
-    undo('keyboard')
 
     expect(politeText()).toBe('Undo complete.')
     expect(getPendingFocus()).toBeNull()

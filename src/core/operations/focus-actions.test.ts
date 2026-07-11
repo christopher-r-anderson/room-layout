@@ -12,41 +12,7 @@ import {
 import { dialogActions, resetDialogStore } from '@/core/stores/dialog-store'
 import { feedback } from '@/core/stores/feedback-store'
 import { requestFocus, startPendingFocusReconciler } from './focus-actions'
-
-type MediaQueryChangeListener = (event: { matches: boolean }) => void
-
-// jsdom's matchMedia never matches, which reads as the mobile layout. This
-// stub makes the layout controllable and captures change listeners so tests
-// can flip it.
-function stubLayout(initial: 'desktop' | 'mobile') {
-  let matches = initial === 'desktop'
-  const listeners = new Set<MediaQueryChangeListener>()
-
-  vi.stubGlobal(
-    'matchMedia',
-    vi.fn().mockImplementation((query: string) => ({
-      get matches() {
-        return matches
-      },
-      media: query,
-      addEventListener: (_: string, listener: MediaQueryChangeListener) => {
-        listeners.add(listener)
-      },
-      removeEventListener: (_: string, listener: MediaQueryChangeListener) => {
-        listeners.delete(listener)
-      },
-    })),
-  )
-
-  return {
-    flipTo(layout: 'desktop' | 'mobile') {
-      matches = layout === 'desktop'
-      listeners.forEach((listener) => {
-        listener({ matches })
-      })
-    },
-  }
-}
+import { stubLayout } from '@/test/support/stub-layout'
 
 beforeEach(() => {
   resetFocusStore()

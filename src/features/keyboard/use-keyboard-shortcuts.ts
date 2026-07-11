@@ -19,7 +19,7 @@ interface ShortcutContext {
   isBlockingOverlayOpen: boolean
   hasSelection: boolean
   canStartOver: boolean
-  sceneHasFocus: boolean
+  roomViewHasFocus: boolean
 }
 
 interface ShortcutDefinition {
@@ -59,8 +59,8 @@ function canMatchShortcut(
     return false
   }
 
-  // Scene-scoped shortcuts only fire while the scene surface holds focus.
-  if (shortcut.requiresRoomViewFocus && !context.sceneHasFocus) {
+  // Room-view-scoped shortcuts only fire while the scene surface holds focus.
+  if (shortcut.requiresRoomViewFocus && !context.roomViewHasFocus) {
     return false
   }
 
@@ -146,7 +146,7 @@ export function useKeyboardShortcuts({
       isBlockingOverlayOpen,
       hasSelection,
       canStartOver,
-      sceneHasFocus: getFocusedSurface() === 'scene',
+      roomViewHasFocus: getFocusedSurface() === 'scene',
     }
 
     for (const shortcut of shortcutDefinitions) {

@@ -131,10 +131,6 @@ export const startPendingFocusReconciler = createReconciler(() => [
       return
     }
 
-    if (getPendingFocus() === null) {
-      return
-    }
-
     focusActions.clearPendingFocus()
   }),
   subscribeToHeaderLayoutMode(() => {

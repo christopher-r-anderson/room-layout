@@ -164,7 +164,6 @@ export function useRectRegistry<Id extends string>() {
 
   return {
     rects,
-    refreshRects,
     registerRectElement,
   }
 }
