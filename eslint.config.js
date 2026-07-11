@@ -337,7 +337,8 @@ export default defineConfig([
 
   // Shared is the reusable kit/infra tier: fully decoupled from the runtime
   // layers and from the model (architecture.md: shared carries no model
-  // knowledge). One uniform block — no shared subdirectory gets a looser rule.
+  // knowledge). One uniform block — no shared subdirectory gets a looser rule
+  // (shared/lib gets a stricter one below).
   {
     files: ['src/shared/**/*.{ts,tsx}'],
     ignores: RUNTIME_NON_TEST_IGNORES,
@@ -355,6 +356,47 @@ export default defineConfig([
               ],
               message:
                 'src/shared must not import from app, features, core, scene, or domain (shared carries no model knowledge).',
+            },
+            {
+              group: RUNTIME_TEST_IMPORT_GROUP,
+              message: 'Runtime code must not import from src/test.',
+            },
+            {
+              regex: PARENT_RELATIVE_IMPORT_REGEX,
+              message: PARENT_RELATIVE_IMPORT_MESSAGE,
+            },
+          ],
+        },
+      ],
+    },
+  },
+
+  // shared/lib is the framework-agnostic slice of shared: plain TS utilities
+  // consumable from any event/DOM source. Restates the shared restrictions
+  // (later matching blocks replace no-restricted-imports wholesale) and adds
+  // the React ban.
+  {
+    files: ['src/shared/lib/**/*.{ts,tsx}'],
+    ignores: RUNTIME_NON_TEST_IGNORES,
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: RESTRICTED_ZUSTAND_IMPORT_PATHS,
+          patterns: [
+            {
+              group: [
+                ...RUNTIME_APP_FEATURE_EDITOR_SCENE_IMPORT_GROUP,
+                '@/domain',
+                '@/domain/**',
+              ],
+              message:
+                'src/shared must not import from app, features, core, scene, or domain (shared carries no model knowledge).',
+            },
+            {
+              group: ['react', 'react-dom', 'react/**', 'react-dom/**'],
+              message:
+                'src/shared/lib is framework-agnostic: type helpers on minimal structural shapes instead of React types.',
             },
             {
               group: RUNTIME_TEST_IMPORT_GROUP,

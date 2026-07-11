@@ -4,9 +4,8 @@ import { CommandDispatchProvider } from '@/core/commands/command-dispatch-provid
 import { useEditorCommandHandlers } from '@/app/commands/use-editor-command-handlers'
 
 /**
- * Builds the editor command dispatch inside the provider tree — the handler map
- * reads the editor refs from context — and provides it to the subtree. Lives
- * here so App no longer assembles dispatch itself.
+ * Builds the editor command dispatch inside the provider tree and provides it
+ * to the subtree. Lives here so App no longer assembles dispatch itself.
  */
 export function EditorCommandsProvider({ children }: { children: ReactNode }) {
   const commandHandlers = useEditorCommandHandlers()
