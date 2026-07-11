@@ -1,8 +1,7 @@
-import { useCallback, type Ref } from 'react'
-import { useEditorRefs } from '@/shared/providers/editor-refs-context'
+import { useCallback, useLayoutEffect, useRef, type Ref } from 'react'
 import { useSelectedFurniture } from '@/core/operations/selected-furniture'
-import { focusActions } from '@/core/stores/focus-store'
-import { isFocusLeaving } from '@/shared/lib/focus'
+import { focusActions, usePendingFocus } from '@/core/stores/focus-store'
+import { focusFirstControl, isFocusLeaving } from '@/shared/lib/focus'
 import { SelectedDetailsView } from './selected-details-view'
 import { useSelectedItemInteraction } from './selected-item-interaction-context'
 import { updateSelectedItemDetails } from './selected-item-detail-actions'
@@ -10,20 +9,30 @@ import { formatSelectedItemDetailsInvalidValueMessage } from './selected-item-de
 
 export function SelectedDetailsPanel({ ref }: { ref?: Ref<HTMLElement> }) {
   const interaction = useSelectedItemInteraction()
-  const { detailsPanelRef } = useEditorRefs()
   const selectedFurniture = useSelectedFurniture()
+  const pendingFocus = usePendingFocus()
+  const directive = pendingFocus?.surface === 'inspector' ? pendingFocus : null
+  const elementRef = useRef<HTMLDivElement | null>(null)
 
   // Stable so React only calls it on real mount/unmount; the panel unmounts
   // without a blur event when the selection clears while it holds focus.
-  const wrapperRef = useCallback(
-    (element: HTMLDivElement | null) => {
-      detailsPanelRef.current = element
-      if (element === null) {
-        focusActions.surfaceBlurred('inspector')
-      }
-    },
-    [detailsPanelRef],
-  )
+  const wrapperRef = useCallback((element: HTMLDivElement | null) => {
+    elementRef.current = element
+    if (element === null) {
+      focusActions.surfaceBlurred('inspector')
+    }
+  }, [])
+
+  // Realizes inspector focus directives on the panel's first control.
+  useLayoutEffect(() => {
+    if (!directive) {
+      return
+    }
+
+    if (focusFirstControl(elementRef.current)) {
+      focusActions.directiveRealized(directive)
+    }
+  }, [directive])
 
   if (selectedFurniture === null) {
     return null

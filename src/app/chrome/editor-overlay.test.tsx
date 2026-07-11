@@ -220,9 +220,7 @@ describe('editor chrome integration', () => {
     sceneDocumentActions.setWallFinishId('light-gray')
 
     function TestHarness() {
-      const detailsPanelRef = React.useRef<HTMLDivElement | null>(null)
       const roomViewRef = React.useRef<HTMLElement | null>(null)
-      const selectedToolbarRef = React.useRef<HTMLDivElement | null>(null)
       const placementValue = React.useMemo(
         () => ({
           placement: {
@@ -236,9 +234,7 @@ describe('editor chrome integration', () => {
 
       return (
         <TooltipProvider>
-          <EditorRefsProvider
-            value={{ roomViewRef, detailsPanelRef, selectedToolbarRef }}
-          >
+          <EditorRefsProvider value={{ roomViewRef }}>
             <OverlayExclusionProvider
               registerExclusionElement={registerExclusionElement}
               exclusionRects={{}}

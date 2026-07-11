@@ -13,12 +13,7 @@ import { ShellLayoutServicesProvider } from './shell-layout-services-provider'
  */
 export function EditorProviders({ children }: { children: ReactNode }) {
   const roomViewRef = useRef<HTMLElement | null>(null)
-  const detailsPanelRef = useRef<HTMLDivElement | null>(null)
-  const selectedToolbarRef = useRef<HTMLDivElement | null>(null)
-  const editorRefs = useMemo(
-    () => ({ roomViewRef, detailsPanelRef, selectedToolbarRef }),
-    [],
-  )
+  const editorRefs = useMemo(() => ({ roomViewRef }), [])
 
   return (
     // Hover tooltips wait briefly so cursor passes over the toolbars don't pop

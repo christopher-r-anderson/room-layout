@@ -1,4 +1,10 @@
 import type { EditorCommandHandlers } from '@/core/commands/editor-command'
+import {
+  focusInspector,
+  focusItemActions,
+  focusItemCollection,
+  focusScene,
+} from '@/core/operations/focus-actions'
 import { redo, undo } from '@/core/operations/history-actions'
 import {
   moveSelection,
@@ -16,22 +22,17 @@ import {
   browseCanvasPreview,
   selectCanvasPreviewed,
 } from '@/core/operations/canvas-keyboard-actions'
-import { useEditorFocusCommands } from './use-editor-focus-commands'
 
 /**
- * Assembles the concrete editor command map: most kinds wire straight to a core
- * operation or feature action; the view-bound focus impls come from
- * useEditorFocusCommands (which reads the editor refs from context). No command
- * semantics are invented here.
+ * Assembles the concrete editor command map: every kind wires straight to a
+ * core operation or feature action. No command semantics are invented here.
  */
 export function useEditorCommandHandlers(): EditorCommandHandlers {
-  const focus = useEditorFocusCommands()
-
   return {
-    'focus-inspector': focus.focusInspector,
-    'focus-room-view': focus.focusRoomView,
-    'focus-outliner': focus.focusOutliner,
-    'focus-toolbar': focus.focusToolbar,
+    'focus-inspector': focusInspector,
+    'focus-room-view': focusScene,
+    'focus-outliner': focusItemCollection,
+    'focus-toolbar': focusItemActions,
     undo: (command) => {
       undo(command.modality)
     },

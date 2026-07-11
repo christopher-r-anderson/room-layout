@@ -22,6 +22,11 @@ import {
   resetSelectionStore,
   selectionActions,
 } from '@/core/stores/selection-store'
+import {
+  focusActions,
+  getPendingFocus,
+  resetFocusStore,
+} from '@/core/stores/focus-store'
 import { SelectedDetailsPanel } from './selected-details-panel'
 import { FloatingSelectedItemSite } from './floating-selected-item-site'
 import { SelectedItemInteractionProvider } from './selected-item-interaction-provider'
@@ -34,14 +39,15 @@ beforeEach(() => {
   resetEditorLifecycleStore()
   resetSceneDocumentStore()
   resetSelectionStore()
+  resetFocusStore()
   editorLifecycleActions.markAssetsReady()
   sceneDocumentActions.setHistory(createHistoryState([FURNITURE_ITEM]))
   selectionActions.setSelection(FURNITURE_ITEM.id)
 })
 
 describe('SelectedDetailsPanel', () => {
-  it('attaches the controls ref when hidden placement still shows details', () => {
-    const { detailsPanelRef } = renderPanel({
+  it('renders the details controls when hidden placement still shows details', () => {
+    renderPanel({
       placement: { site: 'hidden', reason: 'computed-hidden' },
       children: <SelectedDetailsPanel />,
     })
@@ -52,13 +58,13 @@ describe('SelectedDetailsPanel', () => {
     expect(
       screen.queryByRole('toolbar', { name: 'Selected item actions' }),
     ).not.toBeInTheDocument()
-    expect(detailsPanelRef.current).toContainElement(
+    expect(
       screen.getByLabelText('Distance from left wall (m)'),
-    )
+    ).toBeInTheDocument()
   })
 
-  it('keeps the details panel ref when floating actions also render', () => {
-    const { detailsPanelRef } = renderPanel({
+  it('renders the details controls when floating actions also render', () => {
+    renderPanel({
       placement: {
         site: 'floating',
         candidateId: 'bottom-center',
@@ -79,13 +85,68 @@ describe('SelectedDetailsPanel', () => {
     expect(
       screen.getAllByRole('toolbar', { name: 'Selected item actions' }),
     ).toHaveLength(1)
-    expect(detailsPanelRef.current).toContainElement(
+    expect(
       screen.getByLabelText('Distance from left wall (m)'),
-    )
+    ).toBeInTheDocument()
+  })
+
+  it('realizes an inspector directive on the first details control', () => {
+    focusActions.setPendingFocus({ surface: 'inspector' })
+
+    renderPanel({
+      placement: { site: 'hidden', reason: 'computed-hidden' },
+      children: <SelectedDetailsPanel />,
+    })
+
+    expect(screen.getByLabelText('Distance from left wall (m)')).toHaveFocus()
+    expect(getPendingFocus()).toBeNull()
+  })
+
+  it('realizes an item-actions directive on the floating toolbar when it shows', () => {
+    focusActions.setPendingFocus({ surface: 'item-actions' })
+
+    renderPanel({
+      placement: {
+        site: 'floating',
+        candidateId: 'bottom-center',
+        left: 12,
+        top: 24,
+      },
+      children: (
+        <>
+          <FloatingSelectedItemSite />
+          <SelectedDetailsPanel />
+        </>
+      ),
+    })
+
+    expect(
+      screen
+        .getByRole('toolbar', { name: 'Selected item actions' })
+        .querySelector('button'),
+    ).toHaveFocus()
+    expect(getPendingFocus()).toBeNull()
+  })
+
+  it('forwards an item-actions directive to the inspector while the toolbar is hidden', () => {
+    focusActions.setPendingFocus({ surface: 'item-actions' })
+
+    renderPanel({
+      placement: { site: 'hidden', reason: 'computed-hidden' },
+      children: (
+        <>
+          <FloatingSelectedItemSite />
+          <SelectedDetailsPanel />
+        </>
+      ),
+    })
+
+    expect(screen.getByLabelText('Distance from left wall (m)')).toHaveFocus()
+    expect(getPendingFocus()).toBeNull()
   })
 
   it('does not render the floating toolbar when placement is hidden', () => {
-    const { detailsPanelRef } = renderPanel({
+    renderPanel({
       placement: { site: 'hidden', reason: 'computed-hidden' },
       children: (
         <>
@@ -98,9 +159,9 @@ describe('SelectedDetailsPanel', () => {
     expect(
       screen.queryAllByRole('toolbar', { name: 'Selected item actions' }),
     ).toHaveLength(0)
-    expect(detailsPanelRef.current).toContainElement(
+    expect(
       screen.getByLabelText('Distance from left wall (m)'),
-    )
+    ).toBeInTheDocument()
   })
 
   it('dispatches rotate and delete commands from the floating actions', async () => {
@@ -159,15 +220,11 @@ function renderPanel({
   children: ReactNode
 }) {
   const roomViewRef = createRef<HTMLElement>()
-  const detailsPanelRef = createRef<HTMLDivElement>()
-  const selectedToolbarRef = createRef<HTMLDivElement>()
   const registerExclusionElement = vi.fn(() => vi.fn())
 
   render(
     <TooltipProvider>
-      <EditorRefsProvider
-        value={{ roomViewRef, detailsPanelRef, selectedToolbarRef }}
-      >
+      <EditorRefsProvider value={{ roomViewRef }}>
         <OverlayExclusionProvider
           registerExclusionElement={registerExclusionElement}
           exclusionRects={{}}
@@ -185,20 +242,12 @@ function renderPanel({
       </EditorRefsProvider>
     </TooltipProvider>,
   )
-
-  return { detailsPanelRef }
 }
 
 function renderFloatingActions(dispatch: CommandDispatch) {
   render(
     <TooltipProvider>
-      <EditorRefsProvider
-        value={{
-          roomViewRef: createRef<HTMLElement>(),
-          detailsPanelRef: createRef<HTMLDivElement>(),
-          selectedToolbarRef: createRef<HTMLDivElement>(),
-        }}
-      >
+      <EditorRefsProvider value={{ roomViewRef: createRef<HTMLElement>() }}>
         <CommandDispatchProvider value={dispatch}>
           <SelectedItemInteractionProvider>
             <SelectedItemPlacementProvider

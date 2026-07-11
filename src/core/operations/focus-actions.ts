@@ -7,6 +7,8 @@ import {
 import { useSelectionStore } from '@/core/stores/selection-store'
 import { subscribeToBlockingOverlay } from '@/core/stores/dialog-store'
 import { feedback } from '@/core/stores/feedback-store'
+import { getSelectedFurniture } from '@/core/operations/selected-furniture'
+import { previewFromCanvasKeyboard } from '@/core/operations/preview-actions'
 import { createReconciler } from '@/core/operations/reconciler'
 import {
   directiveSurvivesLayout,
@@ -88,6 +90,31 @@ export function requestFocus(
   } else {
     focusActions.clearPendingFocus()
   }
+}
+
+// The pane focus commands (Shift+R/O/I/T): plain surface intents, plus the
+// scene command's preview side effect. The resolver owns the no-selection
+// fallbacks and their announcements.
+export function focusScene() {
+  requestFocus({ kind: 'surface', surface: 'scene' })
+
+  const selectedFurniture = getSelectedFurniture()
+
+  if (selectedFurniture !== null) {
+    previewFromCanvasKeyboard(selectedFurniture.id)
+  }
+}
+
+export function focusItemCollection() {
+  requestFocus({ kind: 'surface', surface: 'item-collection' })
+}
+
+export function focusInspector() {
+  requestFocus({ kind: 'surface', surface: 'inspector' })
+}
+
+export function focusItemActions() {
+  requestFocus({ kind: 'surface', surface: 'item-actions' })
 }
 
 /**
