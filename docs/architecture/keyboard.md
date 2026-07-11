@@ -31,7 +31,7 @@ Room-view-scoped shortcuts require the 3D room view to have DOM focus before the
 
 The 3D room view is a focusable room-view wrapper element with `tabIndex={0}` and visible focus styling. Clicking the canvas or pressing Tab to it acquires focus.
 
-Focus state is tracked as `roomViewHasFocus`, and `ShortcutContext` includes that field so shortcut execution can apply room-view focus rules consistently.
+Focus location is tracked by `focus-store` (`focusedSurface`, written by each surface's focus/blur handlers) and read at keydown time, so shortcut gating is always current without prop threading.
 
 Global shortcuts (Undo, Redo, Start Over) remain active regardless of room-view focus.
 
