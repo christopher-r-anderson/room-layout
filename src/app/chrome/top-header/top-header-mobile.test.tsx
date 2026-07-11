@@ -9,6 +9,7 @@ import { DIALOG_DEFINITIONS } from '@/app/dialogs/bootstrap-dialog-registry'
 import { HEADER_MORE_ACTIONS_DIALOG_ID } from './header-more-actions-dialog-definition'
 import { CommandDispatchProvider } from '@/core/commands/command-dispatch-provider'
 import { EditorRectsProvider } from '@/core/layout/editor-rects-provider'
+import type { ReactNode } from 'react'
 
 vi.mock('@/features/catalog/catalog-drawer', () => ({
   CatalogDrawer: () => <button type="button">Add furniture</button>,
@@ -27,11 +28,11 @@ vi.mock('./share-scene-button', () => ({
 }))
 
 vi.mock('@/shared/ui/tooltip', () => ({
-  Tooltip: ({ children }: { children?: React.ReactNode }) => <>{children}</>,
-  TooltipContent: ({ children }: { children?: React.ReactNode }) => (
+  Tooltip: ({ children }: { children?: ReactNode }) => <>{children}</>,
+  TooltipContent: ({ children }: { children?: ReactNode }) => (
     <span>{children}</span>
   ),
-  TooltipTrigger: ({ render }: { render: React.ReactNode }) => <>{render}</>,
+  TooltipTrigger: ({ render }: { render: ReactNode }) => <>{render}</>,
 }))
 
 beforeEach(() => {

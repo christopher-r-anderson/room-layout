@@ -5,9 +5,10 @@ import { IconPlus } from '@tabler/icons-react'
 import { describe, expect, it, vi } from 'vitest'
 import { Toolbar } from '@base-ui/react/toolbar'
 import { ToolButton } from './tool-button'
+import type { ReactElement } from 'react'
 
 // ToolButton is a Toolbar.Button, so it only mounts inside a Toolbar.Root.
-function renderInToolbar(ui: React.ReactElement) {
+function renderInToolbar(ui: ReactElement) {
   return render(<Toolbar.Root>{ui}</Toolbar.Root>)
 }
 

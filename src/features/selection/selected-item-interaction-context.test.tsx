@@ -3,6 +3,7 @@ import { act, renderHook } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { useSelectedItemInteraction } from './selected-item-interaction-context'
 import { SelectedItemInteractionProvider } from './selected-item-interaction-provider'
+import type { ReactNode } from 'react'
 
 describe('SelectedItemInteractionContext', () => {
   it('throws outside the provider', () => {
@@ -12,7 +13,7 @@ describe('SelectedItemInteractionContext', () => {
   })
 
   it('prepare followed by consume returns true and clears the flag', () => {
-    const wrapper = ({ children }: { children: React.ReactNode }) => (
+    const wrapper = ({ children }: { children: ReactNode }) => (
       <SelectedItemInteractionProvider>
         {children}
       </SelectedItemInteractionProvider>
@@ -42,7 +43,7 @@ describe('SelectedItemInteractionContext', () => {
   })
 
   it('consume without prepare returns false', () => {
-    const wrapper = ({ children }: { children: React.ReactNode }) => (
+    const wrapper = ({ children }: { children: ReactNode }) => (
       <SelectedItemInteractionProvider>
         {children}
       </SelectedItemInteractionProvider>

@@ -4,9 +4,10 @@ import { render, screen } from '@/test/render'
 import { describe, expect, it, vi } from 'vitest'
 import { TopHeaderDesktop } from './top-header-desktop'
 import { EditorRectsProvider } from '@/core/layout/editor-rects-provider'
+import type { ReactNode } from 'react'
 
 vi.mock('@/features/catalog/catalog-drawer', () => ({
-  CatalogDrawer: ({ triggerButton }: { triggerButton?: React.ReactNode }) => (
+  CatalogDrawer: ({ triggerButton }: { triggerButton?: ReactNode }) => (
     <>{triggerButton ?? null}</>
   ),
 }))
@@ -23,24 +24,20 @@ vi.mock('@/features/keyboard/keyboard-shortcuts-help', () => ({
   KeyboardShortcutsDialog: ({
     triggerButton,
   }: {
-    triggerButton?: React.ReactNode
+    triggerButton?: ReactNode
   }) => <>{triggerButton ?? null}</>,
 }))
 
 vi.mock('@/features/project-info/project-info-dialog', () => ({
-  ProjectInfoDialog: ({
-    triggerButton,
-  }: {
-    triggerButton?: React.ReactNode
-  }) => <>{triggerButton ?? null}</>,
+  ProjectInfoDialog: ({ triggerButton }: { triggerButton?: ReactNode }) => (
+    <>{triggerButton ?? null}</>
+  ),
 }))
 
 vi.mock('@/shared/ui/tooltip', () => ({
-  Tooltip: ({ children }: { children?: React.ReactNode }) => <>{children}</>,
-  TooltipContent: ({ children }: { children?: React.ReactNode }) => (
-    <>{children}</>
-  ),
-  TooltipTrigger: ({ render }: { render: React.ReactNode }) => <>{render}</>,
+  Tooltip: ({ children }: { children?: ReactNode }) => <>{children}</>,
+  TooltipContent: ({ children }: { children?: ReactNode }) => <>{children}</>,
+  TooltipTrigger: ({ render }: { render: ReactNode }) => <>{render}</>,
 }))
 
 vi.mock('@/features/room-surface/room-sidebar', () => ({

@@ -8,6 +8,7 @@ import { msg } from '@lingui/core/macro'
 import { Trans, useLingui } from '@lingui/react/macro'
 import { Fragment } from 'react'
 import attributions from './asset-attributions.json'
+import type { ReactNode } from 'react'
 
 interface AttributionContributor {
   label: string
@@ -39,7 +40,7 @@ function ExternalLink({
   children,
 }: {
   href: string
-  children: React.ReactNode
+  children: ReactNode
 }) {
   return (
     <a
