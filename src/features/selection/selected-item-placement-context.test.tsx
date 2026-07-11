@@ -7,6 +7,7 @@ import {
   useSelectedItemPlacement,
 } from './selected-item-placement-context'
 import { SelectedItemPlacementProvider } from './selected-item-placement-provider'
+import type { ReactNode } from 'react'
 
 describe('SelectedItemPlacementContext', () => {
   it('useSelectedItemPlacement throws outside the provider', () => {
@@ -29,7 +30,7 @@ describe('SelectedItemPlacementContext', () => {
     const actionsSizeRef = (_element: HTMLElement | null) => {
       void _element
     }
-    const wrapper = ({ children }: { children: React.ReactNode }) => (
+    const wrapper = ({ children }: { children: ReactNode }) => (
       <SelectedItemPlacementProvider value={{ placement, actionsSizeRef }}>
         {children}
       </SelectedItemPlacementProvider>

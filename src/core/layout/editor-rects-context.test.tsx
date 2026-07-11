@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { useEditorRects, useEditorRectRegistry } from './editor-rects-context'
 import { EditorRectsProvider } from './editor-rects-provider'
 import type { EditorRectId } from './editor-rects-context'
+import type { ReactNode } from 'react'
 
 describe('EditorRectsContext', () => {
   it('exposes the registry and rects through their own hooks', () => {
@@ -15,7 +16,7 @@ describe('EditorRectsContext', () => {
     const providedRects = {
       'top-header': new DOMRectReadOnly(1, 2, 3, 4),
     }
-    const wrapper = ({ children }: { children: React.ReactNode }) => (
+    const wrapper = ({ children }: { children: ReactNode }) => (
       <EditorRectsProvider registerRect={registerRect} rects={providedRects}>
         {children}
       </EditorRectsProvider>
