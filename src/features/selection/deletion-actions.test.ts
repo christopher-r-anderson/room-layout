@@ -13,8 +13,12 @@ import {
 import {
   resetSelectionStore,
   selectionActions,
-  useSelectionStore,
 } from '@/core/stores/selection-store'
+import {
+  focusActions,
+  getPendingFocus,
+  resetFocusStore,
+} from '@/core/stores/focus-store'
 import {
   editorLifecycleActions,
   resetEditorLifecycleStore,
@@ -33,9 +37,45 @@ vi.mock('@/core/operations/furniture-mutations', () => ({
   setSelectionTransform: vi.fn(),
 }))
 
+type MediaQueryChangeListener = (event: { matches: boolean }) => void
+
+// jsdom's matchMedia never matches, which reads as the mobile layout. This
+// stub makes the layout controllable and captures change listeners so tests
+// can flip it.
+function stubLayout(initial: 'desktop' | 'mobile') {
+  let matches = initial === 'desktop'
+  const listeners = new Set<MediaQueryChangeListener>()
+
+  vi.stubGlobal(
+    'matchMedia',
+    vi.fn().mockImplementation((query: string) => ({
+      get matches() {
+        return matches
+      },
+      media: query,
+      addEventListener: (_: string, listener: MediaQueryChangeListener) => {
+        listeners.add(listener)
+      },
+      removeEventListener: (_: string, listener: MediaQueryChangeListener) => {
+        listeners.delete(listener)
+      },
+    })),
+  )
+
+  return {
+    flipTo(layout: 'desktop' | 'mobile') {
+      matches = layout === 'desktop'
+      listeners.forEach((listener) => {
+        listener({ matches })
+      })
+    },
+  }
+}
+
 beforeEach(() => {
   resetSceneDocumentStore()
   resetSelectionStore()
+  resetFocusStore()
   resetEditorLifecycleStore()
   resetFeedbackStore()
   sceneDocumentActions.setHistory(createHistoryState([CHAIR]))
@@ -43,6 +83,7 @@ beforeEach(() => {
 })
 
 afterEach(() => {
+  vi.unstubAllGlobals()
   vi.restoreAllMocks()
   vi.clearAllMocks()
 })
@@ -63,83 +104,87 @@ describe('deletion-actions', () => {
         type: 'error',
       }),
     )
-    expect(useSelectionStore.getState().roomViewFocusRequest).toBe(false)
-    expect(useSelectionStore.getState().outlinerFocusRequest).toBeNull()
+    expect(getPendingFocus()).toBeNull()
   })
 
-  it('requests room-view focus after delete when canvas was the source', () => {
+  it('returns focus to the scene when the dialog was opened from it', () => {
+    stubLayout('desktop')
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
     vi.mocked(deleteSelection).mockReturnValue(true)
+    vi.spyOn(dialogActions, 'openDialog').mockReturnValue(true)
     vi.spyOn(dialogActions, 'closeActiveDialog')
-    selectionActions.setSelection(CHAIR.id, 'canvas-keyboard')
+    selectionActions.setSelection(CHAIR.id)
 
+    openDeleteDialog('scene')
     confirmDeleteSelection(CHAIR)
 
-    expect(useSelectionStore.getState().roomViewFocusRequest).toBe(true)
-    expect(useSelectionStore.getState().outlinerFocusRequest).toBeNull()
+    expect(getPendingFocus()).toEqual({ surface: 'scene' })
     expect(feedbackStoreForTests.getState().polite.text).toBe(
       `${CHAIR.name} removed from room.`,
     )
   })
 
-  it('requests outliner focus at the deleted index when not a canvas source', () => {
-    vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
-    vi.mocked(deleteSelection).mockReturnValue(true)
-    vi.spyOn(dialogActions, 'closeActiveDialog')
-    selectionActions.setSelection(CHAIR.id, 'panel-keyboard')
-
-    confirmDeleteSelection(CHAIR)
-
-    expect(useSelectionStore.getState().roomViewFocusRequest).toBe(false)
-    expect(useSelectionStore.getState().outlinerFocusRequest).toEqual(
-      expect.objectContaining({ preferredIndex: 0 }),
-    )
-  })
-
-  it('returns focus to the outliner when the dialog was opened from it', () => {
+  it('returns focus to the scene on mobile too when opened from it', () => {
+    stubLayout('mobile')
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
     vi.mocked(deleteSelection).mockReturnValue(true)
     vi.spyOn(dialogActions, 'openDialog').mockReturnValue(true)
     vi.spyOn(dialogActions, 'closeActiveDialog')
-    // Canvas source would otherwise send focus to the room view; the recorded
-    // open target must win.
-    selectionActions.setSelection(CHAIR.id, 'canvas-keyboard')
+    selectionActions.setSelection(CHAIR.id)
 
-    openDeleteDialog('outliner')
+    openDeleteDialog('scene')
     confirmDeleteSelection(CHAIR)
 
-    expect(useSelectionStore.getState().roomViewFocusRequest).toBe(false)
-    expect(useSelectionStore.getState().outlinerFocusRequest).toEqual(
-      expect.objectContaining({ preferredIndex: 0 }),
-    )
+    expect(getPendingFocus()).toEqual({ surface: 'scene' })
   })
 
-  it('returns focus to the room view when the dialog was opened from it', () => {
+  it('directs focus to the item collection at the deleted index when opened from the item actions on desktop', () => {
+    stubLayout('desktop')
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
     vi.mocked(deleteSelection).mockReturnValue(true)
     vi.spyOn(dialogActions, 'openDialog').mockReturnValue(true)
     vi.spyOn(dialogActions, 'closeActiveDialog')
-    selectionActions.setSelection(CHAIR.id, 'panel-keyboard')
+    selectionActions.setSelection(CHAIR.id)
 
-    openDeleteDialog('room-view')
+    openDeleteDialog('item-actions')
     confirmDeleteSelection(CHAIR)
 
-    expect(useSelectionStore.getState().roomViewFocusRequest).toBe(true)
-    expect(useSelectionStore.getState().outlinerFocusRequest).toBeNull()
+    expect(getPendingFocus()).toEqual({
+      surface: 'item-collection',
+      target: { kind: 'index', index: 0 },
+    })
   })
 
-  it('drops the recorded focus target when the dialog refuses to open', () => {
+  it('repairs focus to the scene when opened from the item actions on mobile', () => {
+    stubLayout('mobile')
+    vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
+    vi.mocked(deleteSelection).mockReturnValue(true)
+    vi.spyOn(dialogActions, 'openDialog').mockReturnValue(true)
+    vi.spyOn(dialogActions, 'closeActiveDialog')
+    selectionActions.setSelection(CHAIR.id)
+
+    // The item-actions surface unmounts with the deleted selection on mobile;
+    // focus must land on the scene instead of falling to the body.
+    openDeleteDialog('item-actions')
+    confirmDeleteSelection(CHAIR)
+
+    expect(getPendingFocus()).toEqual({ surface: 'scene' })
+  })
+
+  it('drops the recorded origin when the dialog refuses to open', () => {
+    stubLayout('desktop')
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
     vi.mocked(deleteSelection).mockReturnValue(true)
     vi.spyOn(dialogActions, 'openDialog').mockReturnValue(false)
     vi.spyOn(dialogActions, 'closeActiveDialog')
-    selectionActions.setSelection(CHAIR.id, 'canvas-keyboard')
+    selectionActions.setSelection(CHAIR.id)
+    // The recorded item-actions origin would send focus to the item
+    // collection; with it dropped, the tracked scene claim decides.
+    focusActions.surfaceFocused('scene')
 
-    openDeleteDialog('outliner')
+    openDeleteDialog('item-actions')
     confirmDeleteSelection(CHAIR)
 
-    // With no recorded target, the canvas source decides: room view.
-    expect(useSelectionStore.getState().roomViewFocusRequest).toBe(true)
-    expect(useSelectionStore.getState().outlinerFocusRequest).toBeNull()
+    expect(getPendingFocus()).toEqual({ surface: 'scene' })
   })
 })

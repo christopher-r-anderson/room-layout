@@ -1,10 +1,12 @@
 import type { CameraPreset } from '@/core/scene.types'
+import type { GestureModality } from '@/core/operations/focus-policy'
 
 type RotationDirection = -1 | 1
 
 type CanvasBrowseDirection = 'next' | 'prev' | 'first' | 'last'
 
-type DeleteDialogReturnFocus = 'room-view' | 'outliner'
+/** The two surfaces a delete gesture can structurally come from. */
+export type DeleteOriginSurface = 'scene' | 'item-actions'
 
 interface MoveSelectionDelta {
   x: number
@@ -12,8 +14,8 @@ interface MoveSelectionDelta {
 }
 
 export type EditorCommand =
-  | { kind: 'undo' }
-  | { kind: 'redo' }
+  | { kind: 'undo'; modality: GestureModality }
+  | { kind: 'redo'; modality: GestureModality }
   | { kind: 'start-over' }
   | { kind: 'focus-inspector' }
   | { kind: 'focus-room-view' }
@@ -27,7 +29,7 @@ export type EditorCommand =
   | { kind: 'move-selection'; delta: MoveSelectionDelta }
   | { kind: 'rotate-selection'; direction: RotationDirection }
   | { kind: 'canvas-browse'; direction: CanvasBrowseDirection }
-  | { kind: 'open-delete-dialog'; returnFocusTo: DeleteDialogReturnFocus }
+  | { kind: 'open-delete-dialog'; originSurface: DeleteOriginSurface }
 
 /**
  * One handler per command kind, each receiving its exact command variant. The

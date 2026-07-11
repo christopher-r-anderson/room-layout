@@ -42,8 +42,8 @@ describe('HistoryTools', () => {
     await user.click(screen.getByRole('button', { name: 'Redo' }))
 
     expect(vi.mocked(dispatch).mock.calls.map(([command]) => command)).toEqual([
-      { kind: 'undo' },
-      { kind: 'redo' },
+      { kind: 'undo', modality: 'pointer' },
+      { kind: 'redo', modality: 'pointer' },
     ])
   })
 

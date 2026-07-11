@@ -30,16 +30,12 @@ import {
 } from '@/shared/lib/ui/storage'
 import { selectById } from '@/core/operations/selection-actions'
 import { previewFromOutliner } from '@/core/operations/preview-actions'
-import {
-  selectionActions,
-  useOutlinerFocusRequest,
-  type PanelInteractionSource,
-} from '@/core/stores/selection-store'
+import { type PanelInteractionSource } from '@/core/stores/selection-store'
 import { useItems } from '@/core/stores/scene-document-store'
 import { useSelectedId } from '@/core/stores/selection-store'
 import { usePreviewedId } from '@/core/operations/previewed-id'
 import { useIsBlockingOverlayOpen } from '@/core/stores/dialog-store'
-import { focusActions } from '@/core/stores/focus-store'
+import { focusActions, usePendingFocus } from '@/core/stores/focus-store'
 import { isFocusLeaving } from '@/shared/lib/focus'
 import { Trans, useLingui } from '@lingui/react/macro'
 
@@ -60,10 +56,11 @@ export function Outliner({
   const items = useItems()
   const selectedId = useSelectedId()
   const isBlockingOverlayOpen = useIsBlockingOverlayOpen()
-  const derivedFocusRequest = useOutlinerFocusRequest()
+  const pendingFocus = usePendingFocus()
   const previewedId = usePreviewedId()
   const disabled = isBlockingOverlayOpen
-  const focusRequest = isBlockingOverlayOpen ? null : derivedFocusRequest
+  const directive =
+    pendingFocus?.surface === 'item-collection' ? pendingFocus : null
   const headingId = useId()
   const contentId = useId()
   const containerRef = useRef<HTMLElement | null>(null)
@@ -75,44 +72,44 @@ export function Outliner({
     saveBooleanPreference(OUTLINER_EXPANDED_PREFERENCE_KEY, isExpanded)
   }, [isExpanded])
 
+  // Realizes item-collection focus directives: the resolver picked this
+  // surface, the cascade below picks the element (target, with fallbacks, down
+  // to the container). Defers without clearing while a blocking overlay is up;
+  // the pending-focus reconciler clears directives that must not fire.
   useLayoutEffect(() => {
-    if (!focusRequest || disabled) {
+    if (!directive || disabled) {
       return
     }
 
     if (!isExpanded) {
       // Keep focus on a visible control when collapsed instead of targeting hidden content.
       toggleButtonRef.current?.focus()
-      selectionActions.clearOutlinerFocusRequest()
+      focusActions.directiveRealized(directive)
       return
     }
 
-    if (focusRequest.focusContainer) {
+    const { target } = directive
+
+    if (target.kind === 'container' || items.length === 0) {
       containerRef.current?.focus()
-      selectionActions.clearOutlinerFocusRequest()
+      focusActions.directiveRealized(directive)
       return
     }
 
-    if (focusRequest.targetSelectedId) {
-      const selectedButton = buttonRefs.current.get(
-        focusRequest.targetSelectedId,
-      )
+    if (target.kind === 'item' || target.kind === 'auto') {
+      const preferredId =
+        target.kind === 'item' ? target.itemId : (selectedId ?? items[0].id)
+      const preferredButton = buttonRefs.current.get(preferredId)
 
-      if (selectedButton) {
-        selectedButton.focus()
-        selectionActions.clearOutlinerFocusRequest()
+      if (preferredButton) {
+        preferredButton.focus()
+        focusActions.directiveRealized(directive)
         return
       }
     }
 
-    if (items.length === 0) {
-      containerRef.current?.focus()
-      selectionActions.clearOutlinerFocusRequest()
-      return
-    }
-
     const nextIndex = Math.min(
-      focusRequest.preferredIndex ?? 0,
+      target.kind === 'index' ? target.index : 0,
       items.length - 1,
     )
     const nextItem = items[Math.max(nextIndex, 0)]
@@ -124,8 +121,8 @@ export function Outliner({
 
     nextButton.focus()
 
-    selectionActions.clearOutlinerFocusRequest()
-  }, [disabled, focusRequest, isExpanded, items])
+    focusActions.directiveRealized(directive)
+  }, [directive, disabled, isExpanded, items, selectedId])
 
   // Stable so React only calls it on real mount/unmount; unmounting while
   // focused (e.g. resize to mobile) fires no blur event, so the claim is

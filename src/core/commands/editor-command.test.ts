@@ -28,8 +28,8 @@ function createMockHandlers(): EditorCommandHandlers {
 
 describe('runEditorCommand', () => {
   it.each<EditorCommand>([
-    { kind: 'undo' },
-    { kind: 'redo' },
+    { kind: 'undo', modality: 'keyboard' },
+    { kind: 'redo', modality: 'keyboard' },
     { kind: 'start-over' },
     { kind: 'focus-inspector' },
     { kind: 'focus-room-view' },
@@ -43,7 +43,7 @@ describe('runEditorCommand', () => {
     { kind: 'move-selection', delta: { x: -1, z: 0 } },
     { kind: 'rotate-selection', direction: -1 },
     { kind: 'canvas-browse', direction: 'last' },
-    { kind: 'open-delete-dialog', returnFocusTo: 'room-view' },
+    { kind: 'open-delete-dialog', originSurface: 'scene' },
   ])(
     'routes %o to the handler for its kind with the full command',
     (command) => {

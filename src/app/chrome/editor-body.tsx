@@ -3,10 +3,10 @@ import { Trans, useLingui } from '@lingui/react/macro'
 import { useIsBlockingOverlayOpen } from '@/core/stores/dialog-store'
 import { useSelectedFurniture } from '@/core/operations/selected-furniture'
 import {
-  selectionActions,
-  useRoomViewFocusRequest,
-} from '@/core/stores/selection-store'
-import { focusActions } from '@/core/stores/focus-store'
+  focusActions,
+  getPendingFocus,
+  usePendingFocus,
+} from '@/core/stores/focus-store'
 import { isFocusLeaving } from '@/shared/lib/focus'
 import { useSceneIsAtDefaults } from '@/core/operations/use-scene-is-at-defaults'
 import {
@@ -63,7 +63,9 @@ export function EditorBody({ testOverlaysHidden }: EditorBodyProps) {
   const selectedFurniture = useSelectedFurniture()
   const { roomViewRef } = useEditorRefs()
   const dispatch = useCommandDispatch()
-  const roomViewFocusRequest = useRoomViewFocusRequest()
+  const pendingFocus = usePendingFocus()
+  const sceneFocusDirective =
+    pendingFocus?.surface === 'scene' ? pendingFocus : null
   const roomViewFocusFrameRef = useRef<number | null>(null)
 
   const focusRoomView = useCallback(() => {
@@ -95,16 +97,29 @@ export function EditorBody({ testOverlaysHidden }: EditorBodyProps) {
     })
   }, [])
 
-  // Consume room-view focus-intent requests (e.g. post-delete) from external
-  // coordinators; EditorBody owns the room-view element.
+  // Realizes scene focus directives (e.g. post-delete); EditorBody owns the
+  // room-view element. The focus is deferred one frame so it outlives a
+  // closing dialog's own focus restore, which means realization must be
+  // confirmed inside the frame: a newer directive cancels the frame via the
+  // cleanup, and the pending check catches a store write racing the rAF.
   useEffect(() => {
-    if (!roomViewFocusRequest) {
+    if (!sceneFocusDirective) {
       return
     }
 
-    focusRoomView()
-    selectionActions.clearRoomViewFocusRequest()
-  }, [roomViewFocusRequest, focusRoomView])
+    const frame = requestAnimationFrame(() => {
+      if (getPendingFocus() !== sceneFocusDirective) {
+        return
+      }
+
+      roomViewRef.current?.focus()
+      focusActions.directiveRealized(sceneFocusDirective)
+    })
+
+    return () => {
+      cancelAnimationFrame(frame)
+    }
+  }, [sceneFocusDirective, roomViewRef])
 
   useKeyboardShortcuts({
     enabled: editorInteractionsEnabled,

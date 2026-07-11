@@ -8,8 +8,12 @@ import {
 import {
   resetSelectionStore,
   selectionActions,
-  useSelectionStore,
 } from '@/core/stores/selection-store'
+import {
+  focusActions,
+  getPendingFocus,
+  resetFocusStore,
+} from '@/core/stores/focus-store'
 import {
   editorLifecycleActions,
   resetEditorLifecycleStore,
@@ -25,24 +29,61 @@ vi.mock('./history-mutations', () => ({
 
 const politeText = () => feedbackStoreForTests.getState().polite.text
 
+type MediaQueryChangeListener = (event: { matches: boolean }) => void
+
+// jsdom's matchMedia never matches, which reads as the mobile layout. This
+// stub makes the layout controllable and captures change listeners so tests
+// can flip it.
+function stubLayout(initial: 'desktop' | 'mobile') {
+  let matches = initial === 'desktop'
+  const listeners = new Set<MediaQueryChangeListener>()
+
+  vi.stubGlobal(
+    'matchMedia',
+    vi.fn().mockImplementation((query: string) => ({
+      get matches() {
+        return matches
+      },
+      media: query,
+      addEventListener: (_: string, listener: MediaQueryChangeListener) => {
+        listeners.add(listener)
+      },
+      removeEventListener: (_: string, listener: MediaQueryChangeListener) => {
+        listeners.delete(listener)
+      },
+    })),
+  )
+
+  return {
+    flipTo(layout: 'desktop' | 'mobile') {
+      matches = layout === 'desktop'
+      listeners.forEach((listener) => {
+        listener({ matches })
+      })
+    },
+  }
+}
+
 // The document mutation is mocked, so it will not reconcile the selection
 // pointer itself; these helpers simulate that reconcile inside the mock so the
 // action observes a moved (or unmoved) selection.
 function mockUndoReconcilingSelectionTo(selectedId: string | null) {
   vi.mocked(undoDocument).mockImplementation(() => {
-    selectionActions.setSelection(selectedId, null)
+    selectionActions.setSelection(selectedId)
     return true
   })
 }
 
 beforeEach(() => {
   resetSelectionStore()
+  resetFocusStore()
   resetEditorLifecycleStore()
   resetFeedbackStore()
   editorLifecycleActions.markAssetsReady()
 })
 
 afterEach(() => {
+  vi.unstubAllGlobals()
   vi.restoreAllMocks()
   vi.clearAllMocks()
 })
@@ -51,86 +92,135 @@ describe('history-actions', () => {
   it('skips document undo/redo when the scene is not ready', () => {
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(false)
 
-    undo()
-    redo()
+    undo('keyboard')
+    redo('keyboard')
 
     expect(undoDocument).not.toHaveBeenCalled()
     expect(redoDocument).not.toHaveBeenCalled()
     expect(politeText()).toBe('')
-    expect(useSelectionStore.getState().outlinerFocusRequest).toBeNull()
+    expect(getPendingFocus()).toBeNull()
   })
 
-  it('announces undo and focuses the reconciled selection in the outliner', () => {
+  it('announces undo and directs focus to the reconciled selection in the item collection', () => {
+    stubLayout('desktop')
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
     mockUndoReconcilingSelectionTo('chair-2')
-    selectionActions.setSelection('chair-1', 'canvas-pointer')
+    selectionActions.setSelection('chair-1')
 
-    undo()
+    undo('keyboard')
 
     expect(politeText()).toBe('Undo complete.')
-    expect(useSelectionStore.getState().outlinerFocusRequest).toEqual(
-      expect.objectContaining({ targetSelectedId: 'chair-2' }),
-    )
+    expect(getPendingFocus()).toEqual({
+      surface: 'item-collection',
+      target: { kind: 'item', itemId: 'chair-2' },
+    })
   })
 
-  it('focuses the outliner container when undo deselects', () => {
+  it('directs focus to the item-collection container when undo deselects', () => {
+    stubLayout('desktop')
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
     mockUndoReconcilingSelectionTo(null)
-    selectionActions.setSelection('chair-1', 'canvas-pointer')
+    selectionActions.setSelection('chair-1')
 
-    undo()
+    undo('keyboard')
 
-    expect(useSelectionStore.getState().outlinerFocusRequest).toEqual(
-      expect.objectContaining({ focusContainer: true }),
-    )
+    expect(getPendingFocus()).toEqual({
+      surface: 'item-collection',
+      target: { kind: 'container' },
+    })
   })
 
-  it('announces redo and focuses the reconciled selection in the outliner', () => {
+  it('announces redo and directs focus to the reconciled selection in the item collection', () => {
+    stubLayout('desktop')
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
     vi.mocked(redoDocument).mockImplementation(() => {
-      selectionActions.setSelection('chair-1', null)
+      selectionActions.setSelection('chair-1')
       return true
     })
 
-    redo()
+    redo('keyboard')
 
     expect(politeText()).toBe('Redo complete.')
-    expect(useSelectionStore.getState().outlinerFocusRequest).toEqual(
-      expect.objectContaining({ targetSelectedId: 'chair-1' }),
-    )
+    expect(getPendingFocus()).toEqual({
+      surface: 'item-collection',
+      target: { kind: 'item', itemId: 'chair-1' },
+    })
   })
 
   it('does not move focus when undo leaves the selection unchanged', () => {
+    stubLayout('desktop')
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
     vi.mocked(undoDocument).mockReturnValue(true)
-    selectionActions.setSelection('chair-1', 'canvas-pointer')
+    selectionActions.setSelection('chair-1')
 
-    undo()
+    undo('keyboard')
 
     expect(politeText()).toBe('Undo complete.')
-    expect(useSelectionStore.getState().outlinerFocusRequest).toBeNull()
+    expect(getPendingFocus()).toBeNull()
   })
 
-  it('leaves an already-pending outliner focus request in place', () => {
+  it('does not move focus for a pointer undo', () => {
+    stubLayout('desktop')
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
     mockUndoReconcilingSelectionTo('chair-2')
-    selectionActions.setSelection('chair-1', 'canvas-pointer')
-    selectionActions.requestOutlinerFocus({ preferredIndex: 1 })
+    selectionActions.setSelection('chair-1')
 
-    undo()
+    undo('pointer')
 
-    expect(useSelectionStore.getState().outlinerFocusRequest).toEqual(
-      expect.objectContaining({ preferredIndex: 1 }),
-    )
+    expect(politeText()).toBe('Undo complete.')
+    expect(getPendingFocus()).toBeNull()
+  })
+
+  it('does not move focus when the keyboard undo came from the scene', () => {
+    stubLayout('desktop')
+    vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
+    mockUndoReconcilingSelectionTo('chair-2')
+    selectionActions.setSelection('chair-1')
+    focusActions.surfaceFocused('scene')
+
+    undo('keyboard')
+
+    // Focus survives in the scene; the announcement carries the change.
+    expect(getPendingFocus()).toBeNull()
+  })
+
+  it('does not mint a directive on mobile where the item collection is absent', () => {
+    stubLayout('mobile')
+    vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
+    mockUndoReconcilingSelectionTo('chair-2')
+    selectionActions.setSelection('chair-1')
+
+    undo('keyboard')
+
+    expect(politeText()).toBe('Undo complete.')
+    expect(getPendingFocus()).toBeNull()
+  })
+
+  it('supersedes an unrealized pending focus directive', () => {
+    stubLayout('desktop')
+    vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
+    mockUndoReconcilingSelectionTo('chair-2')
+    selectionActions.setSelection('chair-1')
+    focusActions.setPendingFocus({
+      surface: 'item-collection',
+      target: { kind: 'index', index: 1 },
+    })
+
+    undo('keyboard')
+
+    expect(getPendingFocus()).toEqual({
+      surface: 'item-collection',
+      target: { kind: 'item', itemId: 'chair-2' },
+    })
   })
 
   it('does not announce when undo returns false', () => {
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
     vi.mocked(undoDocument).mockReturnValue(false)
 
-    undo()
+    undo('keyboard')
 
     expect(politeText()).toBe('')
-    expect(useSelectionStore.getState().outlinerFocusRequest).toBeNull()
+    expect(getPendingFocus()).toBeNull()
   })
 })

@@ -45,7 +45,7 @@ test('applies Arrow, Shift+Arrow, and Alt+Arrow movement steps in no-mouse flow'
   await expect.poll(itemX).toBeGreaterThan(afterShift)
 })
 
-test('keeps announcements deterministic and reconciles focus on undo selection loss', async ({
+test('keeps announcements deterministic and keeps scene focus through undo selection loss', async ({
   page,
 }) => {
   await openEditor(page)
@@ -72,8 +72,10 @@ test('keeps announcements deterministic and reconciles focus on undo selection l
   await page.keyboard.press('Control+z')
   await waitForItemCount(page, 0)
   await waitForPoliteAnnouncement(page, 'Undo complete.')
+  // Undo never yanks focus across surfaces: the scene keeps it and the
+  // announcement carries the change.
   await expect(
-    page.getByRole('region', { name: 'Furniture in room' }),
+    page.getByRole('region', { name: 'Interactive 3D room editor' }),
   ).toBeFocused()
 })
 

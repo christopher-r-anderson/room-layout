@@ -78,7 +78,7 @@ export function announceSelectionChange(options: {
 // readiness guard.
 export function selectByCanvasPointer(id: string) {
   const previousSelectedId = useSelectionStore.getState().selectedId
-  const result = selectDocumentById(id, 'canvas-pointer')
+  const result = selectDocumentById(id)
 
   if (result.ok && previousSelectedId !== id) {
     announceSelectionChange({
@@ -102,7 +102,7 @@ export function selectById(
   }
 
   const previousSelectedId = useSelectionStore.getState().selectedId
-  const result = selectDocumentById(id, source ?? null)
+  const result = selectDocumentById(id)
 
   if (result.ok && previousSelectedId !== id) {
     announceSelectionChange({

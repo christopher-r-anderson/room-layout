@@ -29,13 +29,13 @@ it('joins the selection pointer with the document items', () => {
 
   act(() => {
     sceneDocumentActions.setHistory(createHistoryState([CHAIR]))
-    selectionActions.setSelection(CHAIR.id, 'canvas-pointer')
+    selectionActions.setSelection(CHAIR.id)
   })
 
   expect(result.current).toEqual(CHAIR)
 
   act(() => {
-    selectionActions.setSelection(null, null)
+    selectionActions.setSelection(null)
   })
 
   expect(result.current).toBeNull()
@@ -43,14 +43,14 @@ it('joins the selection pointer with the document items', () => {
 
 it('returns null when the pointed-at item is not in the document', () => {
   sceneDocumentActions.setHistory(createHistoryState([CHAIR]))
-  selectionActions.setSelection('ghost', 'canvas-pointer')
+  selectionActions.setSelection('ghost')
 
   expect(getSelectedFurniture()).toBeNull()
 })
 
 it('reads the selected item imperatively', () => {
   sceneDocumentActions.setHistory(createHistoryState([CHAIR]))
-  selectionActions.setSelection(CHAIR.id, 'panel-keyboard')
+  selectionActions.setSelection(CHAIR.id)
 
   expect(getSelectedFurniture()).toEqual(CHAIR)
 })

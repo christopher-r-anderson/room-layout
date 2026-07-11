@@ -57,7 +57,7 @@ function seedLoadedChairCollection() {
 
 function seedSelectedChair() {
   sceneDocumentActions.setHistory(createHistoryState([CHAIR]))
-  selectionActions.setSelection(CHAIR.id, null)
+  selectionActions.setSelection(CHAIR.id)
 }
 
 function resetAllStores() {
@@ -71,10 +71,10 @@ function resetAllStores() {
 beforeEach(resetAllStores)
 afterEach(resetAllStores)
 
-it('addFurniture spawns the catalog item, selects it with the given source, and bumps the instance counter', () => {
+it('addFurniture spawns the catalog item, selects it, and bumps the instance counter', () => {
   seedLoadedChairCollection()
 
-  const result = addFurniture(CATALOG_CHAIR.id, { source: 'toolbar' })
+  const result = addFurniture(CATALOG_CHAIR.id)
 
   expect(result).toEqual({ ok: true, id: 'furniture-instance-1' })
   const state = useSceneDocumentStore.getState()
@@ -86,7 +86,6 @@ it('addFurniture spawns the catalog item, selects it with the given source, and 
     sourcePath: CHAIR.sourcePath,
   })
   expect(useSelectionStore.getState().selectedId).toBe('furniture-instance-1')
-  expect(useSelectionStore.getState().selectedSource).toBe('toolbar')
   expect(state.instanceIdCounter).toBe(1)
 })
 

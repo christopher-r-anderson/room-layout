@@ -13,7 +13,6 @@ import {
 import {
   resetSelectionStore,
   selectionActions,
-  useSelectionStore,
 } from '@/core/stores/selection-store'
 import { sceneCommands } from '@/core/scene-commands'
 import {
@@ -41,7 +40,7 @@ describe('selected-item-detail-actions', () => {
     resetEditorLifecycleStore()
     resetFeedbackStore()
     sceneDocumentActions.setHistory(createHistoryState([CHAIR]))
-    selectionActions.setSelection(CHAIR.id, null)
+    selectionActions.setSelection(CHAIR.id)
   })
 
   afterEach(() => {
@@ -67,7 +66,7 @@ describe('selected-item-detail-actions', () => {
       expect(setSelectionTransform).not.toHaveBeenCalled()
     })
 
-    it('applies the transform, marks panel-keyboard source, and announces on success', () => {
+    it('applies the transform and announces on success', () => {
       editorLifecycleActions.markAssetsReady()
       vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)
       const updatedItem = { ...CHAIR, name: 'Chair' }
@@ -83,7 +82,6 @@ describe('selected-item-detail-actions', () => {
           value: 90,
         }),
       ).toEqual({ ok: true, item: updatedItem })
-      expect(useSelectionStore.getState().selectedSource).toBe('panel-keyboard')
       expect(politeText()).toBe('Chair details updated.')
     })
 

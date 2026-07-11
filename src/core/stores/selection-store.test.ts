@@ -5,7 +5,6 @@ import {
   resetSelectionStore,
   selectionActions,
   useSelectionStore,
-  type OutlinerFocusRequest,
 } from './selection-store'
 
 beforeEach(() => {
@@ -13,65 +12,33 @@ beforeEach(() => {
 })
 
 describe('useSelectionStore', () => {
-  it('writes the selected id and its source atomically', () => {
+  it('writes the selected id', () => {
     expect(useSelectionStore.getState().selectedId).toBeNull()
-    expect(useSelectionStore.getState().selectedSource).toBeNull()
 
-    selectionActions.setSelection('chair-1', 'canvas-pointer')
+    selectionActions.setSelection('chair-1')
 
     expect(useSelectionStore.getState().selectedId).toBe('chair-1')
-    expect(useSelectionStore.getState().selectedSource).toBe('canvas-pointer')
 
-    selectionActions.setSelection('chair-2', 'panel-keyboard')
+    selectionActions.setSelection('chair-2')
 
     expect(useSelectionStore.getState().selectedId).toBe('chair-2')
-    expect(useSelectionStore.getState().selectedSource).toBe('panel-keyboard')
   })
 
-  it('forces the source null when the selection clears', () => {
-    selectionActions.setSelection('chair-1', 'canvas-keyboard')
+  it('clears the selection', () => {
+    selectionActions.setSelection('chair-1')
 
-    selectionActions.setSelection(null, 'canvas-keyboard')
+    selectionActions.setSelection(null)
 
     expect(useSelectionStore.getState().selectedId).toBeNull()
-    expect(useSelectionStore.getState().selectedSource).toBeNull()
-  })
-
-  it('tracks outliner focus request lifecycle', () => {
-    const request: OutlinerFocusRequest = {
-      targetSelectedId: 'chair-1',
-    }
-
-    expect(useSelectionStore.getState().outlinerFocusRequest).toBeNull()
-
-    selectionActions.requestOutlinerFocus(request)
-    expect(useSelectionStore.getState().outlinerFocusRequest).toEqual(request)
-
-    selectionActions.clearOutlinerFocusRequest()
-    expect(useSelectionStore.getState().outlinerFocusRequest).toBeNull()
-  })
-
-  it('tracks room-view focus request lifecycle', () => {
-    expect(useSelectionStore.getState().roomViewFocusRequest).toBe(false)
-
-    selectionActions.requestRoomViewFocus()
-    expect(useSelectionStore.getState().roomViewFocusRequest).toBe(true)
-
-    selectionActions.clearRoomViewFocusRequest()
-    expect(useSelectionStore.getState().roomViewFocusRequest).toBe(false)
   })
 
   it('resets the selection session to defaults', () => {
-    selectionActions.setSelection('chair-1', 'panel-keyboard')
-    selectionActions.requestOutlinerFocus({ focusContainer: true })
+    selectionActions.setSelection('chair-1')
 
     resetSelectionStore()
 
     expect(useSelectionStore.getState()).toMatchObject({
       selectedId: null,
-      selectedSource: null,
-      outlinerFocusRequest: null,
-      roomViewFocusRequest: false,
     })
   })
 })

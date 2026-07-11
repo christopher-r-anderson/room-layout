@@ -11,6 +11,7 @@ import {
 import { sceneDocumentActions } from '@/core/stores/scene-document-store'
 import { resetSceneSessionStore } from '@/core/stores/scene-session-store'
 import { resetSelectionStore } from '@/core/stores/selection-store'
+import { resetFocusStore } from '@/core/stores/focus-store'
 import { resetToolbarGeometryStore } from '@/core/stores/toolbar-geometry-store'
 import { resetToolbarInteractionStore } from '@/core/stores/toolbar-interaction-store'
 import { loadSceneDraft } from '@/core/persistence/scene-draft'
@@ -36,6 +37,9 @@ function resetStartupShell() {
   // module scratch (hysteresis timer, active source) alongside it.
   resetPreviewState()
   resetSelectionStore()
+  // A queued focus directive describes the pre-reset world; the surface claim
+  // re-syncs from real focus events.
+  resetFocusStore()
   resetToolbarGeometryStore()
   resetToolbarInteractionStore()
   clearSceneServices()

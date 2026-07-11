@@ -24,7 +24,7 @@ export function undo(): boolean {
   }
 
   sceneDocumentActions.setHistory(undoResult.history)
-  applySelection(undoResult.selectedId, null)
+  applySelection(undoResult.selectedId)
 
   return true
 }
@@ -40,7 +40,7 @@ export function redo(): boolean {
   }
 
   sceneDocumentActions.setHistory(redoResult.history)
-  applySelection(redoResult.selectedId, null)
+  applySelection(redoResult.selectedId)
 
   return true
 }
@@ -58,5 +58,5 @@ export function restoreInitialLayout(instances: FurnitureInstance[]) {
 
   sceneDocumentActions.setInstanceIdCounter(restoredState.instanceIdSeed)
   sceneDocumentActions.setHistory(restoredState.history)
-  applySelection(null, null)
+  applySelection(null)
 }

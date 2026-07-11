@@ -247,7 +247,7 @@ describe('useKeyboardShortcuts', () => {
 
     await user.keyboard('{Delete}')
     expect(dispatchedCommands(dispatch)).toEqual([
-      { kind: 'open-delete-dialog', returnFocusTo: 'room-view' },
+      { kind: 'open-delete-dialog', originSurface: 'scene' },
     ])
 
     view.rerender(
@@ -261,7 +261,7 @@ describe('useKeyboardShortcuts', () => {
 
     await user.keyboard('{Delete}')
     expect(dispatchedCommands(dispatch)).toEqual([
-      { kind: 'open-delete-dialog', returnFocusTo: 'room-view' },
+      { kind: 'open-delete-dialog', originSurface: 'scene' },
     ])
   })
 
@@ -280,7 +280,7 @@ describe('useKeyboardShortcuts', () => {
 
     await user.keyboard('{Backspace}')
     expect(dispatchedCommands(dispatch)).toEqual([
-      { kind: 'open-delete-dialog', returnFocusTo: 'room-view' },
+      { kind: 'open-delete-dialog', originSurface: 'scene' },
     ])
   })
 
@@ -329,9 +329,9 @@ describe('useKeyboardShortcuts', () => {
     await user.keyboard('.')
 
     expect(dispatchedCommands(dispatch)).toEqual([
-      { kind: 'undo' },
-      { kind: 'redo' },
-      { kind: 'redo' },
+      { kind: 'undo', modality: 'keyboard' },
+      { kind: 'redo', modality: 'keyboard' },
+      { kind: 'redo', modality: 'keyboard' },
       { kind: 'rotate-selection', direction: 1 },
       { kind: 'rotate-selection', direction: -1 },
     ])
@@ -484,8 +484,8 @@ describe('useKeyboardShortcuts', () => {
     fireEvent(window, redoEvent)
 
     expect(dispatchedCommands(dispatch)).toEqual([
-      { kind: 'undo' },
-      { kind: 'redo' },
+      { kind: 'undo', modality: 'keyboard' },
+      { kind: 'redo', modality: 'keyboard' },
     ])
     expect(undoEvent.defaultPrevented).toBe(true)
     expect(redoEvent.defaultPrevented).toBe(true)

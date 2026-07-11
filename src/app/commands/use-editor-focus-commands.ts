@@ -1,14 +1,8 @@
 import { useCallback } from 'react'
-import { msg } from '@lingui/core/macro'
-import { feedback } from '@/core/stores/feedback-store'
 import { useSelectedFurniture } from '@/core/operations/selected-furniture'
-import { selectionActions } from '@/core/stores/selection-store'
 import { previewFromCanvasKeyboard } from '@/core/operations/preview-actions'
-import { requestOutlinerFocus } from '@/core/operations/focus-actions'
+import { requestFocus } from '@/core/operations/focus-actions'
 import { useEditorRefs } from '@/shared/providers/editor-refs-context'
-import { i18n } from '@/shared/i18n/i18n'
-
-const NO_SELECTION_FOCUS_FALLBACK = msg`No item selected. Focus moved to Furniture in room.`
 
 // Excludes tabindex="-1" on every clause, not just the [tabindex] one, so in a
 // roving-tabindex toolbar the query lands on the active (tabindex="0") item
@@ -28,32 +22,26 @@ export interface EditorFocusCommands {
 }
 
 /**
- * The focus-routing command implementations. They are view-bound (they read the
- * details-panel DOM ref from context and the current selection) so they live
- * in app, isolated here so the command map only wires them in.
+ * The focus-routing command implementations. Scene and outliner routing go
+ * through the focus resolver as surface intents (which also owns the
+ * no-selection fallback and its announcement); the inspector and item toolbar
+ * still reach through the editor refs while they lack directive consumers.
  */
 export function useEditorFocusCommands(): EditorFocusCommands {
   const { detailsPanelRef, selectedToolbarRef } = useEditorRefs()
   const selectedFurniture = useSelectedFurniture()
 
-  // With nothing selected there is no inspector or item toolbar to enter, so
-  // both those commands fall back to the outliner and say so.
-  const focusOutlinerWithNoSelectionNotice = useCallback(() => {
-    requestOutlinerFocus()
-    feedback.interactionUpdate(i18n._(NO_SELECTION_FOCUS_FALLBACK))
-  }, [])
-
   const focusInspector = useCallback(() => {
     if (selectedFurniture === null) {
-      focusOutlinerWithNoSelectionNotice()
+      requestFocus({ kind: 'surface', surface: 'inspector' })
       return
     }
 
     findFirstFocusableControl(detailsPanelRef.current)?.focus()
-  }, [detailsPanelRef, selectedFurniture, focusOutlinerWithNoSelectionNotice])
+  }, [detailsPanelRef, selectedFurniture])
 
   const focusRoomView = useCallback(() => {
-    selectionActions.requestRoomViewFocus()
+    requestFocus({ kind: 'surface', surface: 'scene' })
 
     if (selectedFurniture !== null) {
       previewFromCanvasKeyboard(selectedFurniture.id)
@@ -61,12 +49,12 @@ export function useEditorFocusCommands(): EditorFocusCommands {
   }, [selectedFurniture])
 
   const focusOutliner = useCallback(() => {
-    requestOutlinerFocus()
+    requestFocus({ kind: 'surface', surface: 'item-collection' })
   }, [])
 
   const focusToolbar = useCallback(() => {
     if (selectedFurniture === null) {
-      focusOutlinerWithNoSelectionNotice()
+      requestFocus({ kind: 'surface', surface: 'item-actions' })
       return
     }
 
@@ -80,12 +68,7 @@ export function useEditorFocusCommands(): EditorFocusCommands {
     // Fall back when the floating toolbar is not currently mounted; the same
     // actions are reachable in the details panel.
     findFirstFocusableControl(detailsPanelRef.current)?.focus()
-  }, [
-    detailsPanelRef,
-    selectedToolbarRef,
-    selectedFurniture,
-    focusOutlinerWithNoSelectionNotice,
-  ])
+  }, [detailsPanelRef, selectedToolbarRef, selectedFurniture])
 
   return { focusInspector, focusRoomView, focusOutliner, focusToolbar }
 }

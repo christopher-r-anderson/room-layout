@@ -3,7 +3,6 @@ import { resolvePositionFromWallClearances } from '@/domain/geometry/wall-cleara
 import { i18n } from '@/shared/i18n/i18n'
 import { feedback } from '@/core/stores/feedback-store'
 import { getSelectedFurniture } from '@/core/operations/selected-furniture'
-import { applySelection } from '@/core/operations/selection-mutations'
 import { sceneCommands } from '@/core/scene-commands'
 import { setSelectionTransform } from '@/core/operations/furniture-mutations'
 import type {
@@ -55,10 +54,6 @@ export function updateSelectedItemDetails(
   })
 
   if (result.ok) {
-    // Same-id in practice (the transform applied to the current selection);
-    // routed through applySelection so the provenance refresh cannot bypass
-    // the one-write-path invariant.
-    applySelection(result.item.id, 'panel-keyboard')
     const itemName = result.item.name
     feedback.interactionUpdate(i18n._(msg`${itemName} details updated.`))
     return { ok: true, item: result.item }

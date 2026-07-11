@@ -15,3 +15,9 @@ export const ADD_FURNITURE_UNAVAILABLE_MESSAGE: MessageDescriptor = msg`That ite
 export const ADD_FURNITURE_WHILE_DRAGGING_MESSAGE: MessageDescriptor = msg`Finish dragging before adding furniture.`
 
 export const DELETE_SELECTION_MISSING_MESSAGE: MessageDescriptor = msg`No selected furniture item was available to delete.`
+
+export const NO_SELECTION_FOCUS_FALLBACK_MESSAGE: MessageDescriptor = msg`No item selected. Focus moved to Furniture in room.`
+
+export const NO_SELECTION_FOCUS_UNAVAILABLE_MESSAGE: MessageDescriptor = msg`No item selected`
+
+export const FURNITURE_LIST_UNAVAILABLE_MESSAGE: MessageDescriptor = msg`The furniture list is not available in this layout.`

@@ -15,7 +15,7 @@ import {
 } from '@/shared/ui/drawer'
 import { cn } from '@/shared/lib/utils'
 import { useDialogOpen } from '@/core/stores/dialog-store'
-import { selectionActions } from '@/core/stores/selection-store'
+import { requestFocus } from '@/core/operations/focus-actions'
 import {
   useCatalogEntries,
   useSourcePathByCatalogId,
@@ -89,7 +89,7 @@ export function CatalogDrawer({
           // item. On every other close the drawer restores focus to its trigger.
           focusRoomViewOnCloseRef.current = false
           event.preventDefault()
-          selectionActions.requestRoomViewFocus()
+          requestFocus({ kind: 'surface', surface: 'scene' })
         }}
       >
         <DrawerHeader>

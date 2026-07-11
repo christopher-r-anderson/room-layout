@@ -6,25 +6,22 @@ import {
 import {
   selectionActions,
   useSelectionStore,
-  type InteractionSource,
 } from '@/core/stores/selection-store'
 import type { SelectByIdResult } from '@/core/scene.types'
 
-// Selection session mutations, blocked mid-drag. The pointer and its
-// provenance are written atomically; a selection change also drops any hover
-// preview so the two never point at each other's item.
+// Selection session mutations, blocked mid-drag. A selection change also drops
+// any hover preview so the two never point at each other's item.
 
 /**
  * The one write path for the selection pointer: clears the hover preview when
- * the pointer changes, then writes id + provenance atomically. Every mutation
- * that moves the selection (including add/delete/undo/restore) goes through
- * here.
+ * the pointer changes, then writes the id. Every mutation that moves the
+ * selection (including add/delete/undo/restore) goes through here.
  */
-export function applySelection(id: string | null, source: InteractionSource) {
+export function applySelection(id: string | null) {
   if (useSelectionStore.getState().selectedId !== id) {
     sceneSessionActions.setPreviewedId(null)
   }
-  selectionActions.setSelection(id, source)
+  selectionActions.setSelection(id)
 }
 
 export function clearSelection() {
@@ -32,13 +29,10 @@ export function clearSelection() {
     return
   }
 
-  applySelection(null, null)
+  applySelection(null)
 }
 
-export function selectById(
-  id: string | null,
-  source: InteractionSource = null,
-): SelectByIdResult {
+export function selectById(id: string | null): SelectByIdResult {
   const { history } = useSceneDocumentStore.getState()
   const { isDragging } = useSceneSessionStore.getState()
 
@@ -50,7 +44,7 @@ export function selectById(
   }
 
   if (id === null) {
-    applySelection(null, null)
+    applySelection(null)
     return {
       ok: true,
       status: 'cleared',
@@ -66,7 +60,7 @@ export function selectById(
     }
   }
 
-  applySelection(id, source)
+  applySelection(id)
 
   return {
     ok: true,
