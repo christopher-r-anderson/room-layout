@@ -405,12 +405,9 @@ msgid "No furniture in the room."
 msgstr "No furniture in the room."
 
 #: src/features/camera/camera-tools.tsx
+#: src/shared/messages/command-messages.ts
 msgid "No item selected"
 msgstr "No item selected"
-
-#: src/shared/messages/command-messages.ts
-msgid "No item selected."
-msgstr "No item selected."
 
 #: src/shared/messages/command-messages.ts
 msgid "No item selected. Focus moved to Furniture in room."

@@ -295,9 +295,6 @@ msgstr "[Ńō ƒũŕńĩţũŕē ĩń ţĥē ŕōōḿ.āēīōūáéíóúāē�
 msgid "No item selected"
 msgstr "[Ńō ĩţēḿ śēĺēćţēďāēīōūáéíóúāē]"
 
-msgid "No item selected."
-msgstr "[Ńō ĩţēḿ śēĺēćţēď.āēīōūáéíóúāē]"
-
 msgid "No item selected. Focus moved to Furniture in room."
 msgstr "[Ńō ĩţēḿ śēĺēćţēď. Ƒōćũś ḿōvēď ţō Ƒũŕńĩţũŕē ĩń ŕōōḿ.āēīōūáéíóúāēīōūáéíóúā]"
 
