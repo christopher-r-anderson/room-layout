@@ -45,7 +45,7 @@ mobile More drawer). While one is open:
 
 - scene interaction is disabled;
 - preview visibility/clearing follows the blocking state;
-- outliner focus handoff is suspended;
+- any pending focus directive is cleared (see [focus.md](focus.md));
 - keyboard shortcuts are blocked and held camera-key state is cleared.
 
 Consumers read this as `isBlockingOverlayOpen`, derived from `kind: 'blocking'`.

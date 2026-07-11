@@ -13,8 +13,8 @@ Contains
   composing the provider tree.
 - `chrome/`: app-shell composition (editor body/overlay, top header, announcer)
   and the provider-composition root in `chrome/providers`.
-- `commands/`: assembles the editor command map and the view-bound focus command
-  impls. Command semantics live in `core`/features; this only wires them.
+- `commands/`: assembles the editor command map. Command semantics live in
+  `core`/features; this only wires them.
 - `dialogs/`: app-owned dialog runtime context and registry bootstrap.
 - `testing/`: runtime test harness hooks used by browser automation.
 

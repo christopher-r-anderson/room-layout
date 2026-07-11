@@ -66,15 +66,16 @@ importing the generic bound hook from a feature is an ESLint error - its
   synchronously with the gesture; mutations and draft persistence guard on
   it), and the floor-finish loading indicator. Written by scene gestures and
   core preview actions.
-- **`selection-store`** - the selection **session**: the selected item pointer,
-  its provenance (`selectedSource`, read to decide post-delete focus), and the
-  focus-intent tokens (outliner and room-view focus handoff). The pointer and
-  its source are written atomically through `applySelection`
+- **`selection-store`** - the selection **session**: the selected item
+  pointer, written through `applySelection`
   (`operations/selection-mutations`), the one write path every mutation that
   moves the selection goes through. History mutations reconcile the pointer
-  against restored items rather than undoing it. The pointer is written by
-  core operations only; the focus-intent tokens are requested/cleared by the
-  owning surfaces (selection and outliner features, app focus commands).
+  against restored items rather than undoing it.
+- **`focus-store`** - the focus **session**: `focusedSurface` (the
+  current-location claim written by each surface's own focus/blur handlers)
+  and `pendingFocus` (the resolved focus directive awaiting realization by
+  its surface). Minted only by `requestFocus`; see
+  [focus.md](focus.md).
 - **`editor-lifecycle-store`** - the single owner of the startup phase machine
   (`loading | ready | errored`), asset errors, restore outcome/attempt tracking,
   the `startupCycle` counter (bumped only on an explicit retry: the Scene
@@ -134,7 +135,7 @@ operation, never by importing a sibling feature.
 Standing reconcilers - store subscriptions that coordinate derived writes
 across stores - are built with `createReconciler` (which owns the idempotency
 guard and cleanup fan-in) and started together from `startEditorReconcilers`
-at app startup: outliner focus, preview hygiene, collection loading, and draft
+at app startup: pending focus, preview hygiene, collection loading, and draft
 persistence.
 
 - `history-actions`, `movement-actions`, `selection-actions` - undo/redo,

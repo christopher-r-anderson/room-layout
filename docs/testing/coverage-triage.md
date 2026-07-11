@@ -32,7 +32,7 @@ recommendation; the actual cut is a decision for Phase 3.
   have e2e — so every Tier 2 wrapper is genuinely e2e-covered. The skip list below
   is superseded by that doc.
 - **Over-mock rewrites — done.** Per-file outcome:
-  - `focus-actions`: assert the queued `useSelectionFocusStore` request over spy calls.
+  - `focus-actions`: assert the queued focus request in the store over spy calls.
   - `selection-actions`: assert the real preview clear in `clearCanvasSelection`;
     the `selectionEffects` payload assertions kept (legitimate boundary tests).
   - `use-scene-snapshot`: swap the mock-mapped content recheck for a stable-getter
@@ -68,7 +68,7 @@ branch/behaviour gaps. Best value per line.
 | `core/operations/movement-actions.ts` _(ledger expand)_                | Movement/blocked announcement strings (`queueMovementAnnouncement`/`formatMoveBlockedMessage`); the test file already mocks feedback but never asserts them.            | S — assert on the existing mock          |
 | `scene/internal/three/get-visual-object-bounds.ts` _(ledger top-fix)_  | Returned `Box3` union across meshes, ui-bounds exclusion, null-on-empty — the function's actual output (current test only checks a cache-hit).                          | S — real three meshes                    |
 
-Cheap ledger `expand` follow-ons in the same spirit (all small, pure): `scene-services` `clearSceneServices`/`getSceneServicesIfReady` null; `validate-catalog-asset-nodes` `!sourceScene` branch; `use-camera-key-motion` keyS/A/D + delta-cap; `scene-model` `hasNoFurniture` union; `catalog-manifest` floor diffuse/normal invalid-path; `selection-store` `roomViewFocusRequest`.
+Cheap ledger `expand` follow-ons in the same spirit (all small, pure): `scene-services` `clearSceneServices`/`getSceneServicesIfReady` null; `validate-catalog-asset-nodes` `!sourceScene` branch; `use-camera-key-motion` keyS/A/D + delta-cap; `scene-model` `hasNoFurniture` union; `catalog-manifest` floor diffuse/normal invalid-path.
 
 ## Tier 2 — orchestration / hooks (judgment call)
 
