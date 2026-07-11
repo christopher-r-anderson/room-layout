@@ -32,10 +32,7 @@ export function TopHeaderMobile() {
   const blockingOverlayOpen = useIsBlockingOverlayOpen()
 
   return (
-    <div
-      ref={registerRect('top-header')}
-      className="pointer-events-auto"
-    >
+    <div ref={registerRect('top-header')} className="pointer-events-auto">
       <Toolbar.Root
         aria-label={t`Editor actions`}
         render={<TopHeaderSurface className="w-full" />}

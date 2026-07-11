@@ -88,9 +88,7 @@ export function EditorPanels() {
             <SelectedItemToolbar className="w-fit" />
           ) : null}
           {hasSelection ? (
-            <SelectedDetailsPanel
-              ref={registerRect('selected-details')}
-            />
+            <SelectedDetailsPanel ref={registerRect('selected-details')} />
           ) : (
             <SelectedDetailsPlaceholder aria-hidden="true" />
           )}

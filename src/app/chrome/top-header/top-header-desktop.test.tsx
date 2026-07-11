@@ -53,10 +53,7 @@ vi.mock('./start-over-button', () => ({
 
 function renderDesktopHeader() {
   return render(
-    <EditorRectsProvider
-      registerRect={() => vi.fn()}
-      rects={{}}
-    >
+    <EditorRectsProvider registerRect={() => vi.fn()} rects={{}}>
       <TopHeaderDesktop />
     </EditorRectsProvider>,
   )

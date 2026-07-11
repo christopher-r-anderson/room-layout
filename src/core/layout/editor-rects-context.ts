@@ -1,12 +1,13 @@
 import { createContext, useContext } from 'react'
 
-/** The live-measured editor regions: the overlay chrome panels. */
+/** The live-measured editor regions: the overlay chrome panels plus the scene container. */
 export type EditorRectId =
   | 'top-header'
   | 'outliner'
   | 'selected-details'
   | 'camera-tools'
   | 'room-surface'
+  | 'room-view'
 
 export type EditorRectMap = Partial<Record<EditorRectId, DOMRectReadOnly>>
 

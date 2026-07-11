@@ -133,8 +133,7 @@ describe('useRectRegistry', () => {
     installVisualViewport()
 
     const { result } = renderHook(() => useRectRegistry())
-    const registerTopHeader =
-      result.current.registerRectElement('top-header')
+    const registerTopHeader = result.current.registerRectElement('top-header')
 
     expect(result.current.registerRectElement('top-header')).toBe(
       registerTopHeader,

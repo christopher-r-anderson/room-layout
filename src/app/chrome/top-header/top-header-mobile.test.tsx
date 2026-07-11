@@ -53,10 +53,7 @@ function openMoreActionsDialog() {
 function renderMobileHeader() {
   return render(
     <CommandDispatchProvider value={vi.fn()}>
-      <EditorRectsProvider
-        registerRect={() => vi.fn()}
-        rects={{}}
-      >
+      <EditorRectsProvider registerRect={() => vi.fn()} rects={{}}>
         <TopHeaderMobile />
       </EditorRectsProvider>
     </CommandDispatchProvider>,

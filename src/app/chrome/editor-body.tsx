@@ -22,7 +22,7 @@ import { useCameraKeyState } from '@/features/keyboard/use-camera-key-state'
 import { useCommandDispatch } from '@/core/commands/command-dispatch-context'
 import { clearCanvasSelection } from '@/core/operations/selection-actions'
 import { APP_NAME } from '@/shared/messages/app-identity'
-import { useEditorRefs } from '@/shared/providers/editor-refs-context'
+import { useEditorRectRegistry } from '@/core/layout/editor-rects-context'
 import { Announcer } from './announcer'
 import { withStartupChunkRetry } from './startup-chunk-retry'
 import { AppToaster } from '@/shared/ui/toast'
@@ -61,7 +61,16 @@ export function EditorBody({ testOverlaysHidden }: EditorBodyProps) {
   const startupOverlayActive = useStartupOverlayActive()
   const assetError = useAssetError()
   const selectedFurniture = useSelectedFurniture()
-  const { roomViewRef } = useEditorRefs()
+  const roomViewRef = useRef<HTMLElement | null>(null)
+  const registerRoomViewRect = useEditorRectRegistry()('room-view')
+  // Stable so React only detaches on real unmount, not per render.
+  const sectionRef = useCallback(
+    (node: HTMLElement | null) => {
+      roomViewRef.current = node
+      registerRoomViewRect(node)
+    },
+    [registerRoomViewRect],
+  )
   const dispatch = useCommandDispatch()
   const pendingFocus = usePendingFocus()
   const sceneFocusDirective =
@@ -166,7 +175,7 @@ export function EditorBody({ testOverlaysHidden }: EditorBodyProps) {
         <section
           aria-describedby="scene-instructions"
           aria-label={t`Interactive 3D room editor`}
-          ref={roomViewRef}
+          ref={sectionRef}
           tabIndex={0}
           inert={startupOverlayActive}
           className="pointer-events-auto fixed inset-0 z-0 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring/50"

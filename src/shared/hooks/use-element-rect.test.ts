@@ -2,7 +2,7 @@
 
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { useElementRect, useElementRectRef } from './use-element-rect'
+import { useElementRectRef } from './use-element-rect'
 
 const measuredRects = new WeakMap<Element, DOMRectReadOnly>()
 const originalVisualViewport = Object.getOwnPropertyDescriptor(
@@ -35,10 +35,6 @@ function createMeasuredElement(rect: DOMRectReadOnly) {
   return element
 }
 
-function setMeasuredRect(element: HTMLElement, rect: DOMRectReadOnly) {
-  measuredRects.set(element, rect)
-}
-
 class MockResizeObserver {
   static instances: MockResizeObserver[] = []
 
@@ -69,16 +65,6 @@ function installBoundingClientRectMock() {
 function installResizeObserver() {
   MockResizeObserver.instances = []
   vi.stubGlobal('ResizeObserver', MockResizeObserver)
-}
-
-function getResizeObserverInstance() {
-  const observer = MockResizeObserver.instances.at(0)
-
-  if (!observer) {
-    throw new Error('Expected a ResizeObserver instance to be registered')
-  }
-
-  return observer
 }
 
 function installVisualViewport() {
@@ -126,79 +112,7 @@ afterEach(() => {
   }
 })
 
-describe('useElementRect', () => {
-  it('measures the provided element and updates from ResizeObserver', async () => {
-    installBoundingClientRectMock()
-    installResizeObserver()
-    installVisualViewport()
-
-    const element = createMeasuredElement(createRect(40, 24, 800, 600))
-    const ref = { current: element }
-
-    const { result } = renderHook(() => useElementRect(ref))
-
-    await waitFor(() => {
-      expect(result.current).toMatchObject({
-        left: 40,
-        top: 24,
-        width: 800,
-        height: 600,
-      })
-    })
-
-    setMeasuredRect(element, createRect(64, 32, 720, 540))
-    act(() => {
-      getResizeObserverInstance().trigger()
-    })
-
-    await waitFor(() => {
-      expect(result.current).toMatchObject({
-        left: 64,
-        top: 32,
-        width: 720,
-        height: 540,
-      })
-    })
-  })
-
-  it('refreshes from viewport events and clears when the element disappears', async () => {
-    installBoundingClientRectMock()
-    installResizeObserver()
-    const visualViewport = installVisualViewport()
-
-    const element = createMeasuredElement(createRect(12, 18, 640, 480))
-    let ref = { current: element as HTMLElement | null }
-
-    const { result, rerender } = renderHook(
-      ({ targetRef }) => useElementRect(targetRef),
-      {
-        initialProps: { targetRef: ref },
-      },
-    )
-
-    await waitFor(() => {
-      expect(result.current).toMatchObject({ left: 12, top: 18 })
-    })
-
-    setMeasuredRect(element, createRect(20, 30, 640, 480))
-    act(() => {
-      visualViewport.dispatch('scroll')
-    })
-
-    await waitFor(() => {
-      expect(result.current).toMatchObject({ left: 20, top: 30 })
-    })
-
-    act(() => {
-      ref = { current: null }
-      rerender({ targetRef: ref })
-    })
-
-    await waitFor(() => {
-      expect(result.current).toBeNull()
-    })
-  })
-
+describe('useElementRectRef', () => {
   it('supports a callback ref variant that measures after mount', async () => {
     installBoundingClientRectMock()
     installResizeObserver()

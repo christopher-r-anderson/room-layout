@@ -21,7 +21,6 @@ import {
   selectionActions,
 } from '@/core/stores/selection-store'
 import { EditorRectsProvider } from '@/core/layout/editor-rects-provider'
-import { EditorRefsProvider } from '../../shared/providers/editor-refs-provider'
 import { CommandDispatchProvider } from '@/core/commands/command-dispatch-provider'
 import { SelectedItemInteractionProvider } from '@/features/selection/selected-item-interaction-provider'
 import { SelectedItemPlacementProvider } from '@/features/selection/selected-item-placement-provider'
@@ -220,7 +219,6 @@ describe('editor chrome integration', () => {
     sceneDocumentActions.setWallFinishId('light-gray')
 
     function TestHarness() {
-      const roomViewRef = React.useRef<HTMLElement | null>(null)
       const placementValue = React.useMemo(
         () => ({
           placement: {
@@ -234,29 +232,24 @@ describe('editor chrome integration', () => {
 
       return (
         <TooltipProvider>
-          <EditorRefsProvider value={{ roomViewRef }}>
-            <EditorRectsProvider
-              registerRect={registerRect}
-              rects={{}}
-            >
-              <SelectedItemInteractionProvider>
-                <SelectedItemPlacementProvider value={placementValue}>
-                  <CommandDispatchProvider value={vi.fn()}>
-                    {/* Mirrors the EditorBody shell: header chrome precedes
+          <EditorRectsProvider registerRect={registerRect} rects={{}}>
+            <SelectedItemInteractionProvider>
+              <SelectedItemPlacementProvider value={placementValue}>
+                <CommandDispatchProvider value={vi.fn()}>
+                  {/* Mirrors the EditorBody shell: header chrome precedes
                         the panels inside main. */}
-                    <div className="relative min-h-192">
-                      <header>
-                        <EditorHeader />
-                      </header>
-                      <main>
-                        <EditorPanels />
-                      </main>
-                    </div>
-                  </CommandDispatchProvider>
-                </SelectedItemPlacementProvider>
-              </SelectedItemInteractionProvider>
-            </EditorRectsProvider>
-          </EditorRefsProvider>
+                  <div className="relative min-h-192">
+                    <header>
+                      <EditorHeader />
+                    </header>
+                    <main>
+                      <EditorPanels />
+                    </main>
+                  </div>
+                </CommandDispatchProvider>
+              </SelectedItemPlacementProvider>
+            </SelectedItemInteractionProvider>
+          </EditorRectsProvider>
         </TooltipProvider>
       )
     }
