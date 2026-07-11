@@ -58,7 +58,7 @@ pnpm format       # check formatting
 pnpm format:write # apply formatting
 pnpm fix          # lint + format fixes
 
-pnpm preflight    # full gate: lint, format, typecheck, test:run, knip, i18n:check, build, test:e2e
+pnpm preflight    # full gate before substantial changes; see package.json for the steps
 
 pnpm knip         # check for unused files and exports
 pnpm knip:fix     # remove unused files and exports
@@ -150,13 +150,14 @@ In addition to this README, project-specific guides are available:
 
 ### Automation
 
-- [AGENTS.md](AGENTS.md): Agent contract and routing to modular policy files.
+- [AGENTS.md](AGENTS.md): Agent guide (`CLAUDE.md` is a symlink to it).
 
 Local architecture notes are also available in:
 
 - `src/app/README.md`
 - `src/features/README.md`
-- `src/editor-state/README.md`
+- `src/core/README.md`
+- `src/domain/README.md`
 - `src/shared/README.md`
 - `src/scene/README.md`
 - `src/test/README.md`

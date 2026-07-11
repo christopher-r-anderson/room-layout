@@ -82,7 +82,6 @@ export default defineConfig([
     'node_modules',
     'assets-source',
     'public/models',
-    '.agents',
     '.claude',
   ]),
   {
@@ -228,7 +227,7 @@ export default defineConfig([
     },
   },
 
-  // Editor-state boundaries.
+  // Core boundaries.
   {
     files: ['src/core/**/*.{ts,tsx}'],
     ignores: RUNTIME_NON_TEST_IGNORES,

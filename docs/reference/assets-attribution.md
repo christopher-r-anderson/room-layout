@@ -8,25 +8,25 @@ Third-party assets used by this repository and their attribution metadata.
   - source: <https://sketchfab.com/3d-models/leather-couch-c2ac7a44144e4b80ab51f21b59c827f8>
   - author: <https://sketchfab.com/YouSaveTime>
   - license: CC Attribution 4.0
-  - local details: `assets-source/leather-couch/leather-couch-source.txt`
+  - local details: `assets-source/models/yousavetime-leather-collection/leather-collection.md`
 
 - End Table
   - source: <https://sketchfab.com/3d-models/end-table-d0032d49ca214200929d4151d733f828>
   - author: <https://sketchfab.com/cirax-we>
   - license: CC Attribution 4.0
-  - local details: `assets-source/cirax-we-end-table/end-table.txt`
+  - local details: `assets-source/models/cirax-we-end-table/end-table.md`
 
 - Modern Coffee Table
   - source: <https://sketchfab.com/3d-models/coffee-table-91872709bf054d8994be323599e23107>
   - author: <https://sketchfab.com/zeerkad>
   - license: CC Attribution 4.0
-  - local details: `assets-source/zeerkad-coffee-table/coffee-table.txt`
+  - local details: `assets-source/models/zeerkad-coffee-table/coffee-table.md`
 
 - Classic Coffee Table
   - source: <https://sketchfab.com/3d-models/coffee-table-living-room-aa5b9a41c90245e8992ba93de6dde8c8>
   - author: <https://sketchfab.com/maurib98>
   - license: CC Attribution 4.0
-  - local details: `assets-source/machine-meza-coffee-table-living-room/coffee-table-living-room.txt`
+  - local details: `assets-source/models/machine-meza-coffee-table-living-room/coffee-table-living-room.md`
 
 ## Environment Textures
 

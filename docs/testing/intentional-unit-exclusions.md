@@ -1,9 +1,7 @@
 # Intentional Unit-Test Exclusions
 
 The standing record of code deliberately **not** unit-tested, with where it is
-covered instead. This is the "lock-in" from the Phase 2 coverage triage
-(`coverage-triage.md` Tier 2/3), now backed by the **verified** e2e coverage map
-the e2e audit produced (`e2e-audit-ledger.md`).
+covered instead.
 
 Its job: stop a `0%` unit-coverage reading from looking like a gap, and stop us
 re-litigating the same files. Coverage % is a prompt, not a goal.
@@ -16,8 +14,7 @@ is presentational/config/trivial glue, or it is an accepted gap (cited rationale
 Thin glue wrappers around already-unit-tested pure cores (history transitions,
 furniture operations, geometry, command maps). Unit-testing them would mean
 mocking the pure core (testing the mocks) or rebuilding the live scene (which is
-what e2e already does). Coverage was **verified** spec-by-spec during the e2e
-gap analysis.
+what e2e already does). The cited e2e coverage is verified spec-by-spec.
 
 | module                                                        | covered by (e2e)                                                                                                                                 |
 | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -58,9 +55,8 @@ gap analysis.
 
 ## Accepted gaps (not covered anywhere, by choice)
 
-Surfaced by the e2e gap analysis and deliberately left unfilled — each is covered
-more cheaply elsewhere or is too low-value for the e2e cost. Recorded so the
-choice is explicit, not an oversight.
+Each is covered more cheaply elsewhere or is too low-value for the e2e cost.
+Recorded so the choice is explicit, not an oversight.
 
 - **Room finish and lighting mood applied in isolation** — only asserted via the
   `url-restore` serialization round-trip, not a standalone "change finish/mood →

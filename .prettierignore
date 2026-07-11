@@ -7,7 +7,3 @@ public/models/
 
 # Agent worktrees (full repo copies) and session state.
 .claude/
-
-# Agent guidance docs are first-party and should be format-checked.
-# Ignore only externally managed skill payloads.
-.agents/skills/shadcn/

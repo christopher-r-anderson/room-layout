@@ -11,6 +11,20 @@ are not treated as immutable vendor code.
 Use shadcn install flows as scaffolding, then maintain resulting components as
 normal repository code.
 
+## Adding a New Component
+
+When the project needs a component that the shadcn registry provides, install
+it as scaffolding (`pnpm dlx shadcn@latest add <component>`), then adapt it to
+repository conventions before use:
+
+- logical CSS utilities (see below); `components.json` sets `"rtl": true` so
+  new scaffolds mostly arrive in this form
+- user-facing strings routed through Lingui (`docs/architecture/i18n.md`)
+- align primitives with the components already in `src/shared/ui/` (Base UI)
+
+Once adapted, the component is owned: it is never diffed against or updated
+from the shadcn registry.
+
 ## Testing
 
 Ownership extends to testing: `shared/ui` follows the repository's value rule
@@ -52,5 +66,4 @@ re-verify - they do not follow `dir` and may need `:dir()` handling. See
 ## Related Docs
 
 - `README.md`
-- `.agents/skills/shadcn/SKILL.md`
 - `docs/architecture/i18n.md`

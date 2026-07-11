@@ -1,55 +1,71 @@
-# Room Layout Agent Contract
+# Room Layout - Agent Guide
 
-Keep always-loaded agent context small. Route deeper guidance to
-task-specific policy files.
+Browser-based 3D room-layout editor: React 19 + TypeScript, three.js via
+react-three-fiber, zustand stores, Tailwind CSS 4, Base UI + shadcn-derived
+components, Lingui i18n, Vite, pnpm.
 
-## Core Rules
+## Commands
 
-- Preserve architecture boundaries enforced in `eslint.config.js`.
-- Treat `docs/architecture/architecture.md` as architecture policy source of truth.
-- Keep runtime code independent from `src/test/**`.
-- Do not import `@/scene/internal/**` outside scene runtime/tests.
-- Use `@/` alias for source imports unless local relative import is more
-  appropriate inside the same module area.
+- `pnpm dev` - start the dev server
+- `pnpm lint` / `pnpm typecheck` / `pnpm test:run` - default validation set
+- `pnpm test:e2e` - Playwright lane (Chromium); first run needs
+  `pnpm test:e2e:install`
+- `pnpm fix` - apply lint and format fixes; run before finalizing edits
+- `pnpm preflight` - the full gate (see `package.json` for the steps); run
+  before finalizing a substantial change
 
-## Required Skills and Tools
+Fresh clones and worktrees need `pnpm install` first.
 
-- Use `./.agents/skills/git-commit/SKILL.md` when the user asks to commit.
-- Use `./.agents/skills/shadcn/SKILL.md` when working on shadcn/ui workflows.
-- See `./.agents/skills/README.md` for mixed-source skill provenance and
-  formatting ownership.
-- Use Context7 for external library/framework docs and setup guidance.
+## Architecture
 
-## Validation Defaults
+`docs/architecture/architecture.md` is the placement-policy source of truth;
+`eslint.config.js` is the executable boundary contract. Layers under `src/`:
 
-- Keep base checks to `pnpm lint`, `pnpm typecheck`, and `pnpm test:run`.
-- Use `pnpm test:e2e` for browser-facing behavior changes.
-- For frame-time-sensitive flow changes, rely on the e2e idle-churn gate (`e2e/selected-toolbar-idle.spec.ts`) and profile interactively on a real GPU.
-- Run `pnpm fix` before finalizing edits.
-- Run `pnpm preflight` for the complete gate (lint, format, typecheck, test:run, knip, build, test:e2e) before finalizing a substantial change.
+- `app` - composition root: chrome, dialogs, command wiring
+- `features` - user-facing capabilities; features never import each other
+- `core` - headless editor engine: stores, operations, commands, persistence
+- `scene` - 3D rendering; internals stay inside `scene/internal`
+- `domain` - pure model: catalog, furniture, geometry; imports no other layer
+- `shared` - reusable UI/lib/hooks with no editor knowledge
+- `src/test` - test-only helpers; runtime code never imports them
 
-## Task Routing
+Use the `@/` alias for imports unless a local relative import is more
+appropriate within the same module area.
 
-- Architecture and placement policy: `./.agents/policies/architecture.md`
-- Test selection matrix: `./.agents/policies/testing.md`
-- Docs sync and anti-drift policy: `./.agents/policies/docs-sync.md`
-- Refactor/move-only playbook: `./.agents/playbooks/refactor-move-only.md`
-- Runtime behavior change playbook: `./.agents/playbooks/runtime-change.md`
-- UI and accessibility playbook: `./.agents/playbooks/ui-a11y-change.md`
+## Testing
 
-## Human Docs
+- Browser-facing behavior changes: add `pnpm test:e2e` to the default set.
+- Frame-time-sensitive changes: the idle-churn gate
+  (`e2e/selected-toolbar-idle.spec.ts`) is the CI fence; profile on a real GPU
+  for actual frame time.
+- Lane selection, determinism rules, and a11y lanes:
+  `docs/architecture/testing.md`.
 
-- Project overview and scripts: `README.md`
-- Architecture policy: `docs/architecture/architecture.md`
-- Layer-local context:
-  - `src/app/README.md`
-  - `src/features/README.md`
-  - `src/core/README.md`
-  - `src/shared/README.md`
-  - `src/scene/README.md`
+## Commits
 
-## Scope Guardrails
+- Conventional commits: `type(scope): subject`, subject <=50 chars (hard limit
+  72), reference issues/PRs as `#<number>` when relevant.
+- Body is a succinct lowercase bullet list describing the final state - no
+  prose.
+- Never add `Co-Authored-By` or other trailers.
+- Never force-push, amend pushed commits, or rewrite history unless explicitly
+  asked; fix problems in new commits.
 
-- Keep AGENTS and `.agents/policies/*` operational and concise.
-- Put long explanations in human docs under `docs/`.
-- Do not duplicate policy text across AGENTS and docs; link to canonical source.
+## Style
+
+- Comments are sparing: only constraints the code cannot express.
+- Docs, comments, and commit text state current reality only - no journey
+  notes, legacy references, or status markers.
+- Use ASCII `-` and `->` for dashes and arrows in comments, docs, and commits.
+- When a change alters behavior or structure, update the overlapping docs
+  (`docs/`, `src/*/README.md`, `README.md`) in the same change.
+
+## Docs Map
+
+- `docs/architecture/` - canonical per-subsystem docs (architecture, core,
+  scene, focus, feedback, keyboard, i18n, startup, testing, ...)
+- `src/*/README.md` - layer-local intent, one per layer
+- `docs/guide/` - end-user guides; `docs/reference/` - schema, shortcut, and
+  attribution references
+- UI components are shadcn-bootstrapped but repo-owned:
+  `docs/architecture/ui-components.md`
