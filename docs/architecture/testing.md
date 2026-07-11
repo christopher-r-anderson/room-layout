@@ -91,6 +91,8 @@ keep them stable:
   load. Use a fixed, small input and assert the durable invariant, not an exact
   value that only a precisely-bounded input would guarantee - push exact-value
   checks down to deterministic unit tests.
+- In unit tests, prefer tolerant float assertions (`toBeCloseTo`) for
+  geometry-derived values.
 
 ## Accessibility Test Coverage
 
@@ -132,4 +134,3 @@ See also:
 - [editor-workflow.md](editor-workflow.md)
 - [dialogs-and-overlays.md](dialogs-and-overlays.md)
 - [../testing/intentional-unit-exclusions.md](../testing/intentional-unit-exclusions.md)
-- [.agents/policies/testing.md](../../.agents/policies/testing.md)

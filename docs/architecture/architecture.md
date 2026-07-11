@@ -108,7 +108,7 @@ For local context inside each area, see:
 ## Related Docs
 
 - Root overview and scripts: `README.md`
-- Agent operating contract and policy routing: `AGENTS.md`, `.agents/README.md`
+- Agent guide: `AGENTS.md`
 - Core layer reference: `docs/architecture/core.md`
 - The scene/core seam (document ownership and the engine port): `docs/architecture/scene-and-core.md`
 - Startup, asset loading, and the bundle split: `docs/architecture/startup-and-asset-loading.md`
