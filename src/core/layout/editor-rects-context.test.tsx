@@ -5,7 +5,7 @@ import { useEditorRects, useEditorRectRegistry } from './editor-rects-context'
 import { EditorRectsProvider } from './editor-rects-provider'
 import type { EditorRectId } from './editor-rects-context'
 
-describe('OverlayExclusionContext', () => {
+describe('EditorRectsContext', () => {
   it('exposes the registry and rects through their own hooks', () => {
     const registerCallback = vi.fn<(element: HTMLElement | null) => void>()
     const registerExclusionElement = vi.fn((key: EditorRectId) => {
