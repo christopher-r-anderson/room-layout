@@ -23,7 +23,7 @@ Current source order:
 
 - `ui-bounds-node`: preferred when the catalog entry provides `uiBoundsNodeName` and the referenced descendant exists in the cloned object subtree
 - `render-bounds`: fallback when no UI bounds mesh is available
-- `object-origin`: last-resort projected point; this is dock-only because one point is not enough to build a reliable avoidance shape
+- `object-origin`: last-resort projected point; one point is not enough to build a reliable avoidance shape, so it always takes the clamped fallback placement
 - unavailable: no selected object, object not ready, or projection failure
 
 `uiBoundsNodeName` provides a preferred toolbar bounds source. It is not an authored point anchor, and it does not bypass overlap checks.
@@ -42,7 +42,7 @@ flowchart TD
   B -->|No| D{Visual bounds available?}
   D -->|Yes| E[Project render-bounds corners]
   D -->|No| F{Object origin projects?}
-  F -->|Yes| G[Use object-origin geometry\ndock only]
+  F -->|Yes| G[Use object-origin geometry\nclamped fallback only]
   F -->|No| H[Unavailable geometry]
   C --> I[Available geometry]
   E --> I
@@ -55,9 +55,9 @@ App-side placement converts the scene geometry into viewport CSS pixels and reso
 Key rules:
 
 - Scene points start in canvas-local CSS pixels.
-- `SelectedItemControls` measures the room-view rect reactively and converts those points into viewport CSS pixels.
+- `useComputeSelectedItemPlacement` reads the room-view rect from the editor rects registry and converts those points into viewport CSS pixels.
 - The placement helper works entirely in viewport CSS pixels.
-- The current selected-controls wrapper is viewport-aligned, so returned `left` and `top` values can be applied directly with `translate3d(...)`.
+- `FloatingSelectedItemSite` is viewport-aligned, so returned `left` and `top` values can be applied directly with `translate3d(...)`.
 
 Desktop floating placement uses a middle-ground candidate strategy rather than a four-side first-fit policy or a full silhouette search.
 
@@ -70,11 +70,11 @@ The helper:
 - rejects floating candidates that overlap visible chrome or intersect the projected object hull
 - applies hard gates for container fit, cross-axis clamp shift, and attachment distance
 - scores the remaining candidates using side preference, clamp amount, attachment distance, compactness, and object or chrome clearance, then applies hysteresis via the previous floating candidate id
-- falls back to deterministic docked placement when floating is forced off, confidence checks fail, or no floating candidate survives with an acceptable score
+- falls back to a clamped floating placement when confidence checks fail or no candidate survives with an acceptable score: anchored to whichever side of the bounds overlaps chrome least, clamped on screen, allowed to overlap the object - the toolbar never hides while projected geometry exists
 
-Docked placement is best-effort. Floating placement has hard overlap rejection; docked placement still returns the least-bad deterministic slot if the viewport is heavily constrained.
+The fallback is best-effort: normal candidates have hard overlap rejection, while the fallback returns the least-bad clamped slot if the viewport is heavily constrained.
 
-Mobile stays docked by default through the shared header layout mode breakpoint.
+Mobile never computes a floating placement: the same toolbar renders statically above the details panel through the shared header layout mode breakpoint.
 
 ## Engagement Pin
 
@@ -89,17 +89,17 @@ The pin is distinct from hysteresis. Hysteresis is an engine concern that keeps 
 ```mermaid
 flowchart TD
   A[Geometry points + counts] --> B[Convert to viewport CSS pixels]
-  B --> C{Force docked or object-origin?}
-  C -->|Yes| D[Deterministic docked placement]
-  C -->|No| E{Geometry confidence passes?}
-  E -->|No| D
+  B --> C{Any projected points?}
+  C -->|No| H[Hidden]
+  C -->|Yes| E{Geometry confidence passes?}
+  E -->|No| D[Clamped fallback placement]
   E -->|Yes| F[Generate curated floating candidates]
   F --> G[Apply hard gates\nfit, no chrome overlap, no object overlap]
-  G --> H[Score valid candidates]
-  H --> I{Previous floating candidate still close enough?}
-  I -->|Yes| J[Keep previous floating candidate]
-  I -->|No| K[Use best scored floating candidate]
-  H -->|No valid floating candidate| D
+  G --> I[Score valid candidates]
+  I --> J{Previous floating candidate still close enough?}
+  J -->|Yes| K[Keep previous floating candidate]
+  J -->|No| L[Use best scored floating candidate]
+  I -->|No survivor or poor best score| D
 ```
 
 ## Practical Notes

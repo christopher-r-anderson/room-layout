@@ -29,7 +29,7 @@ export type ToolbarFloatingCandidateId =
   | 'left-upper'
   | 'left-lower'
 
-export interface FloatingCandidateAnchor {
+interface FloatingCandidateAnchor {
   id: ToolbarFloatingCandidateId
   side: ToolbarSide
   anchor: ScreenPoint

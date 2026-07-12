@@ -34,7 +34,6 @@ import {
   createRectFromAnchor,
   getAttachmentDistance,
   getCandidateAnchors,
-  type FloatingCandidateAnchor,
   type ToolbarFloatingCandidateId,
   type ToolbarSide,
 } from './toolbar-anchors'
@@ -190,10 +189,6 @@ function getMinimumExclusionDistance(rect: Rect, exclusionRects: Rect[]) {
   )
 }
 
-function createFloatingCandidate(candidate: FloatingCandidateAnchor) {
-  return candidate
-}
-
 function isLowConfidenceGeometry({
   bounds,
   containerRect,
@@ -324,7 +319,6 @@ function createFloatingCandidates({
   toolbarSize: { width: number; height: number }
 }) {
   const candidates = getCandidateAnchors(points, bounds, hull)
-    .map(createFloatingCandidate)
     .map((candidate) => {
       const idealRect = createRectFromAnchor(
         candidate.anchor,
