@@ -280,6 +280,52 @@ describe('computeSelectedToolbarPlacement', () => {
     expect(['left', 'right']).toContain(placement.side)
   })
 
+  it('tucks a side candidate inside the bounding box beside a thin-column silhouette', () => {
+    // A wide table top over a narrow column: the hull contour slopes inward
+    // below the top, so with top and bottom blocked a side candidate can sit
+    // closer to the column than the bounding box (x 300..500) would allow.
+    const placement = computeSelectedToolbarPlacement({
+      containerRect: CONTAINER_RECT,
+      exclusionRects: {
+        'top-header': {
+          left: 220,
+          top: 60,
+          width: 360,
+          height: 140,
+          right: 580,
+          bottom: 200,
+        } as DOMRectReadOnly,
+        'selected-details': {
+          left: 250,
+          top: 470,
+          width: 320,
+          height: 120,
+          right: 570,
+          bottom: 590,
+        } as DOMRectReadOnly,
+      },
+      points: [
+        { x: 300, y: 200 },
+        { x: 500, y: 200 },
+        { x: 300, y: 240 },
+        { x: 500, y: 240 },
+        { x: 380, y: 240 },
+        { x: 420, y: 240 },
+        { x: 380, y: 460 },
+        { x: 420, y: 460 },
+      ],
+      projectedPointCount: 8,
+      source: 'render-bounds',
+      sourcePointCount: 8,
+      toolbarSize: TOOLBAR_SIZE,
+    })
+
+    expect(placement.mode).toBe('floating')
+    expect(['left', 'right']).toContain(placement.side)
+    expect(placement.left).toBeLessThan(500)
+    expect(placement.left + TOOLBAR_SIZE.width).toBeGreaterThan(300)
+  })
+
   it('keeps top placement for a chunkier diagonal object when top space is open', () => {
     const placement = computeSelectedToolbarPlacement({
       containerRect: CONTAINER_RECT,

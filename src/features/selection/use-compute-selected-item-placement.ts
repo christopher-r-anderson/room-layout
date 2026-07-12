@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useSyncExternalStore } from 'react'
+import { useMemo, useState } from 'react'
 import { useElementSize } from '@/shared/hooks/use-element-size'
 import { useEditorRects } from '@/core/layout/editor-rects-context'
 import { useSelectedFurniture } from '@/core/operations/selected-furniture'
@@ -16,32 +16,9 @@ interface ComputeSelectedItemPlacementResult {
   actionsSizeRef: (element: HTMLElement | null) => void
 }
 
-function createCandidateStore(
-  initialValue: ToolbarFloatingCandidateId | undefined,
-) {
-  let value = initialValue
-  const listeners = new Set<() => void>()
-
-  return {
-    getSnapshot: () => value,
-    subscribe: (listener: () => void) => {
-      listeners.add(listener)
-
-      return () => {
-        listeners.delete(listener)
-      }
-    },
-    set: (nextValue: ToolbarFloatingCandidateId | undefined) => {
-      if (value === nextValue) {
-        return
-      }
-
-      value = nextValue
-      listeners.forEach((listener) => {
-        listener()
-      })
-    },
-  }
+interface HysteresisMemory {
+  resetKey: string
+  candidateId: ToolbarFloatingCandidateId | undefined
 }
 
 export function useComputeSelectedItemPlacement(): ComputeSelectedItemPlacementResult {
@@ -53,33 +30,30 @@ export function useComputeSelectedItemPlacement(): ComputeSelectedItemPlacementR
   const { 'room-view': roomViewRect, ...exclusionRects } = useEditorRects()
   const { ref: actionsSizeRef, size: actionSize } = useElementSize()
 
-  const previousFloatingCandidateStore = useMemo(
-    () => createCandidateStore(undefined),
-    [],
-  )
-  const previousFloatingCandidateId = useSyncExternalStore(
-    previousFloatingCandidateStore.subscribe,
-    previousFloatingCandidateStore.getSnapshot,
-    previousFloatingCandidateStore.getSnapshot,
-  )
-
   const activeToolbarSource =
     selectedToolbarGeometry.kind === 'available'
       ? selectedToolbarGeometry.source
       : undefined
 
-  useEffect(() => {
-    previousFloatingCandidateStore.set(undefined)
-  }, [
-    previousFloatingCandidateStore,
-    selectedFurniture?.id,
+  // Hysteresis memory: last render's chosen candidate feeds back into the next
+  // placement computation, stored with the adjust-state-during-render pattern
+  // (as in use-pinned-placement). resetKey drops the memory when the placement
+  // context changes so a stale side preference can't bleed across selections.
+  const hysteresisResetKey = [
+    selectedFurniture?.id ?? '',
     selectedToolbarGeometry.kind,
-    activeToolbarSource,
-    actionSize.width,
-    actionSize.height,
-    roomViewRect?.width,
-    roomViewRect?.height,
-  ])
+    activeToolbarSource ?? '',
+    `${String(actionSize.width)}x${String(actionSize.height)}`,
+    `${String(roomViewRect?.width ?? 0)}x${String(roomViewRect?.height ?? 0)}`,
+  ].join(':')
+  const [hysteresis, setHysteresis] = useState<HysteresisMemory>({
+    resetKey: hysteresisResetKey,
+    candidateId: undefined,
+  })
+  const previousFloatingCandidateId =
+    hysteresis.resetKey === hysteresisResetKey
+      ? hysteresis.candidateId
+      : undefined
 
   const activeToolbarGeometry =
     selectedFurniture !== null &&
@@ -137,20 +111,21 @@ export function useComputeSelectedItemPlacement(): ComputeSelectedItemPlacementR
     toolbarSize: actionSize,
   })
 
-  useEffect(() => {
-    if (
-      toolbarPlacement.mode === 'floating' &&
-      toolbarPlacement.candidateId &&
-      toolbarPlacement.candidateId !== previousFloatingCandidateId
-    ) {
-      previousFloatingCandidateStore.set(toolbarPlacement.candidateId)
-    }
-  }, [
-    previousFloatingCandidateId,
-    previousFloatingCandidateStore,
-    toolbarPlacement.candidateId,
-    toolbarPlacement.mode,
-  ])
+  // A hidden frame keeps the memory so the side preference survives brief
+  // geometry gaps under the same context.
+  const nextFloatingCandidateId =
+    toolbarPlacement.mode === 'floating' && toolbarPlacement.candidateId
+      ? toolbarPlacement.candidateId
+      : previousFloatingCandidateId
+  if (
+    hysteresis.resetKey !== hysteresisResetKey ||
+    hysteresis.candidateId !== nextFloatingCandidateId
+  ) {
+    setHysteresis({
+      resetKey: hysteresisResetKey,
+      candidateId: nextFloatingCandidateId,
+    })
+  }
 
   const placement = useMemo<SelectedItemPlacement>(() => {
     if (selectedFurniture === null) {
