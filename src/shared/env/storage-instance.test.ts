@@ -32,6 +32,15 @@ describe('deriveStorageInstance', () => {
     ).toBe('shop-planner')
   })
 
+  it('keeps nested and dotted base paths distinct', () => {
+    expect(
+      deriveStorageInstance({ explicit: undefined, basePath: '/a.b/' }),
+    ).toBe('a-b')
+    expect(
+      deriveStorageInstance({ explicit: undefined, basePath: '/a/b/' }),
+    ).toBe('a.b')
+  })
+
   it('prefers an explicit instance over the base path', () => {
     expect(
       deriveStorageInstance({ explicit: 'e2e', basePath: '/room-layout/' }),

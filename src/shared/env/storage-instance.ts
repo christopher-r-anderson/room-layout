@@ -7,12 +7,22 @@
 
 const MAX_INSTANCE_LENGTH = 64
 
-function sanitizeInstanceSegment(value: string): string {
+function sanitizeChars(value: string, disallowed: RegExp): string {
   return value
     .toLowerCase()
-    .replaceAll(/[^a-z0-9._-]+/g, '-')
+    .replaceAll(disallowed, '-')
     .replaceAll(/-{2,}/g, '-')
     .replaceAll(/^-+|-+$/g, '')
+}
+
+function sanitizeExplicitInstance(value: string): string {
+  return sanitizeChars(value, /[^a-z0-9._-]+/g)
+}
+
+// Excludes '.' so that in a derived instance a dot always marks a path
+// boundary: /a.b/ and /a/b/ stay distinct.
+function sanitizePathSegment(value: string): string {
+  return sanitizeChars(value, /[^a-z0-9_-]+/g)
 }
 
 function capInstanceLength(value: string): string {
@@ -26,7 +36,7 @@ export function deriveStorageInstance(input: {
   basePath: string
 }): string {
   if (input.explicit !== undefined) {
-    const explicit = capInstanceLength(sanitizeInstanceSegment(input.explicit))
+    const explicit = capInstanceLength(sanitizeExplicitInstance(input.explicit))
     if (explicit.length > 0) {
       return explicit
     }
@@ -36,7 +46,7 @@ export function deriveStorageInstance(input: {
   // /shop/planner/ and /shop-planner/ derive distinct instances.
   const derived = input.basePath
     .split('/')
-    .map(sanitizeInstanceSegment)
+    .map(sanitizePathSegment)
     .filter((segment) => segment.length > 0)
     .join('.')
   return capInstanceLength(derived)

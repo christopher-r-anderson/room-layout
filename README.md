@@ -115,7 +115,7 @@ For local production builds, the default fallback remains `/room-layout/`. If ne
 VITE_BASE_PATH=/your-repo-name/ pnpm build
 ```
 
-localStorage keys are namespaced per deployment: the instance segment derives
+`localStorage` keys are namespaced per deployment: the instance segment derives
 from the base path; set `VITE_STORAGE_INSTANCE` to override it (see
 [Configuration](docs/architecture/configuration.md)).
 
