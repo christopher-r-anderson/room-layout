@@ -20,10 +20,11 @@ const LOCALE_DIRECTION: Record<SupportedLocale, 'ltr' | 'rtl'> = {
 // hook - never the canonical signal, so it stays out of shared scene URLs.
 export const LANG_QUERY_PARAM = 'lang'
 
-// Where an explicit locale choice would be remembered across visits. Nothing
+// Where an explicit locale choice would be remembered across visits, read via
+// the shared storage wrapper (which prefixes and instance-scopes it). Nothing
 // writes this yet - reading it is the forward contract for an in-app locale
 // switcher (see docs/architecture/i18n.md#locale-selection).
-export const LOCALE_STORAGE_KEY = 'room-layout:locale'
+export const LOCALE_STORAGE_KEY = 'locale'
 
 export function isSupportedLocale(value: string): value is SupportedLocale {
   return (SUPPORTED_LOCALES as readonly string[]).includes(value)

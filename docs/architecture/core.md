@@ -202,7 +202,10 @@ boundary rules forbid features importing `app` and forbid `shared` importing
 `core/persistence` holds the codecs that serialize the `scene-document-store`
 data model: `scene-draft` (localStorage autosave), `scene-url` (shareable URL
 codec), and `furniture-serialization`. The flows that orchestrate them live in
-`core/operations` (see the operations inventory above).
+`core/operations` (see the operations inventory above). localStorage keys are
+namespaced per deployment via the storage instance segment
+(`docs/architecture/configuration.md`). The draft is a single last-write-wins
+record shared by all tabs; there is no cross-tab synchronization.
 
 ## Boundaries
 

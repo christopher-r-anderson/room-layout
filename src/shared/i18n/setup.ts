@@ -1,4 +1,5 @@
 import type { Messages } from '@lingui/core'
+import { loadStringPreference } from '@/shared/lib/ui/storage'
 import { i18n } from './i18n'
 import { messages as enMessages } from './locales/en.po'
 import type { SupportedLocale } from './locales'
@@ -59,12 +60,8 @@ function readQueryLocale(): SupportedLocale | null {
 }
 
 function readStoredLocale(): SupportedLocale | null {
-  try {
-    const value = window.localStorage.getItem(LOCALE_STORAGE_KEY)
-    return value && isSupportedLocale(value) ? value : null
-  } catch {
-    return null
-  }
+  const value = loadStringPreference(LOCALE_STORAGE_KEY)
+  return value && isSupportedLocale(value) ? value : null
 }
 
 function readNavigatorLocale(): SupportedLocale | null {

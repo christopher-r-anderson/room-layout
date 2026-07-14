@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   loadBooleanPreference,
   loadJsonWithDefault,
+  loadStringPreference,
   removeKey,
   saveBooleanPreference,
   saveJson,
@@ -125,6 +126,28 @@ describe('saveJson', () => {
   it('writes the correct prefixed key', () => {
     saveJson(KEY, { count: 3 })
     expect(window.localStorage.getItem(PREFIXED_KEY)).toBe('{"count":3}')
+  })
+})
+
+describe('loadStringPreference', () => {
+  beforeEach(() => {
+    window.localStorage.clear()
+  })
+
+  it('returns null when the key is absent', () => {
+    expect(loadStringPreference(KEY)).toBeNull()
+  })
+
+  it('returns the raw stored string', () => {
+    window.localStorage.setItem(PREFIXED_KEY, 'en-XA')
+    expect(loadStringPreference(KEY)).toBe('en-XA')
+  })
+
+  it('returns null when localStorage.getItem throws', () => {
+    vi.spyOn(window.localStorage, 'getItem').mockImplementationOnce(() => {
+      throw new Error('storage unavailable')
+    })
+    expect(loadStringPreference(KEY)).toBeNull()
   })
 })
 

@@ -1,7 +1,10 @@
+import { STORAGE_INSTANCE } from '@/shared/env/storage-instance'
+
 const APP_STORAGE_PREFIX = 'room-layout'
 
 function makeStorageKey(key: string) {
-  return `${APP_STORAGE_PREFIX}:${key}`
+  const instanceSegment = STORAGE_INSTANCE ? `:${STORAGE_INSTANCE}` : ''
+  return `${APP_STORAGE_PREFIX}${instanceSegment}:${key}`
 }
 
 export type StorageValidator<T> = (value: unknown) => value is T
@@ -72,6 +75,10 @@ export function saveJson(key: string, value: unknown): void {
 
 export function removeKey(key: string): void {
   removeLocalStorageValue(key)
+}
+
+export function loadStringPreference(key: string): string | null {
+  return readLocalStorageValue(key)
 }
 
 export function loadBooleanPreference(

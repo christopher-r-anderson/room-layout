@@ -3,6 +3,9 @@ import type { PerfCounterSnapshot } from '../../src/shared/debug/perf-counters'
 
 const FURNITURE_ASSET_ROUTE = /\/models\/.+\.glb(?:\?.*)?$/
 export const EDITOR_READY_TIMEOUT_MS = 30_000
+// The e2e build pins the storage instance segment to `e2e`
+// (VITE_STORAGE_INSTANCE in playwright.config.ts).
+export const SCENE_DRAFT_STORAGE_KEY = 'room-layout:e2e:scene-draft'
 // Pointer picking flows through browser input dispatch + R3F/Three render timing.
 // On CI this can settle a few frames later than local runs due to external runtime
 // variance (headless Chromium scheduling, CPU contention, trace/video overhead), so
