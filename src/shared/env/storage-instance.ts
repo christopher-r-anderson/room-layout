@@ -1,11 +1,7 @@
 // The storage instance segment namespaces every localStorage key so
 // deployments sharing an origin cannot clobber each other's drafts and
-// preferences. An explicit VITE_STORAGE_INSTANCE wins; otherwise the segment
-// is the build's base path with its surrounding slashes trimmed. Neither value
-// is slugged or sanitized - localStorage keys have no charset restrictions,
-// and any lossy rewrite would let distinct base paths collide. The value must
-// resolve synchronously: the locale preference is read from storage before
-// first render (docs/architecture/configuration.md).
+// preferences. It must resolve synchronously: the locale preference is read
+// from storage before first render (docs/architecture/configuration.md).
 
 // Returns the instance segment, or '' when none applies (root-path deploys and
 // dev servers), which keeps their keys unsegmented.

@@ -20,23 +20,27 @@ resolved defaults are never written back.
 
 ## Storage instance key
 
-Every localStorage key is shaped `room-layout[:<instance>]:<key>`
+localStorage keys are `room-layout:` plus the key name, with an instance
+segment spliced in when one exists: dev writes `room-layout:scene-draft`, the
+Pages deploy writes `room-layout:<room-layout>:scene-draft`
 (`shared/lib/ui/storage.ts`). The instance segment keeps deployments that
-share an origin out of each other's drafts and preferences.
+share an origin out of each other's drafts and preferences. The angle
+brackets are literal: they cannot appear in a URL path, so a derived instance
+cannot contain or forge the delimiter.
 
 `shared/env/storage-instance.ts` resolves the segment at build time:
 
-1. `VITE_STORAGE_INSTANCE`, verbatim (trimmed; blank falls through)
+1. `VITE_STORAGE_INSTANCE`, verbatim (trimmed; blank falls through; must not
+   contain `>`)
 2. otherwise the base path with its surrounding slashes trimmed:
    `/room-layout/` -> `room-layout`, `/shop/planner/` -> `shop/planner`, `/`
    -> no segment (dev servers and root deploys keep unsegmented keys)
 
-Neither value is slugged or sanitized - localStorage keys have no charset
-restrictions, and any lossy rewrite would let distinct base paths collide.
-Same-origin deployments necessarily differ in base path, so the derived
-default already separates them; the env var covers same-build cases the path
-cannot distinguish. The e2e lane pins it to `e2e` (`playwright.config.ts`) so
-specs can assert exact keys.
+The base path is not rewritten - a lossy transform would let distinct base
+paths collide. Same-origin deployments necessarily differ in base path, so
+the derived default already separates them; the env var covers same-build
+cases the path cannot distinguish. The e2e lane pins it to `e2e`
+(`playwright.config.ts`) so specs can assert exact keys.
 
 The segment comes from build-time inputs because keys are read before first
 render (the locale preference), ahead of any fetched config.

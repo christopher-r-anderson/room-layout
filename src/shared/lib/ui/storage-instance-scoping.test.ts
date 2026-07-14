@@ -8,7 +8,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const KEY = 'test-pref'
-const SCOPED_KEY = 'room-layout:test-instance:test-pref'
+const SCOPED_KEY = 'room-layout:<test-instance>:test-pref'
 
 async function importScopedStorage() {
   vi.stubEnv('VITE_STORAGE_INSTANCE', 'test-instance')
