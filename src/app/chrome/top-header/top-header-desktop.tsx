@@ -2,10 +2,9 @@ import { Toolbar } from '@base-ui/react/toolbar'
 import { CatalogDrawer } from '@/features/catalog/catalog-drawer'
 import { CatalogAddButton } from '@/features/catalog/catalog-add-button'
 import { HistoryTools } from '@/features/history/history-tools'
-import { Button } from '@/shared/ui/button'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/shared/ui/tooltip'
+import { ToolbarPopupButton } from '@/shared/ui/toolbar-button'
 import { IconHomeCog, IconInfoCircle, IconKeyboard } from '@tabler/icons-react'
-import { Trans, useLingui } from '@lingui/react/macro'
+import { useLingui } from '@lingui/react/macro'
 import { StartOverButton } from './start-over-button'
 import { ShareSceneButton } from './share-scene-button'
 import { dialogActions, useDialogOpen } from '@/core/stores/dialog-store'
@@ -37,45 +36,31 @@ export function TopHeaderDesktop() {
         <CatalogDrawer
           triggerButton={<Toolbar.Button render={<CatalogAddButton />} />}
         />
-        <Tooltip>
-          <TooltipTrigger
-            render={
-              <Toolbar.Button
-                render={
-                  <Button
-                    ref={topHeaderFocusRegistry.register('top-header-room')}
-                    type="button"
-                    variant="secondary"
-                    size="toolbar"
-                    className="pointer-events-auto"
-                    aria-controls="room-surface"
-                    aria-expanded={isRoomSurfaceOpen}
-                    onClick={() => {
-                      dialogActions.setDialogOpen(
-                        ROOM_SURFACE_DIALOG_ID,
-                        !isRoomSurfaceOpen,
-                      )
-                    }}
-                    onKeyDown={(event) => {
-                      if (event.key !== 'Escape' || !isRoomSurfaceOpen) {
-                        return
-                      }
-
-                      event.preventDefault()
-                      dialogActions.setDialogOpen(ROOM_SURFACE_DIALOG_ID, false)
-                    }}
-                  >
-                    <IconHomeCog size={16} aria-hidden="true" />
-                    <Trans>Room</Trans>
-                  </Button>
-                }
-              />
+        <ToolbarPopupButton
+          buttonRef={topHeaderFocusRegistry.register('top-header-room')}
+          controlsId="room-surface"
+          expanded={isRoomSurfaceOpen}
+          label={t`Room`}
+          icon={<IconHomeCog />}
+          size="toolbar"
+          className="pointer-events-auto"
+          tooltipSide="bottom"
+          tooltip={t`Adjust wall, floor, and lighting`}
+          onClick={() => {
+            dialogActions.setDialogOpen(
+              ROOM_SURFACE_DIALOG_ID,
+              !isRoomSurfaceOpen,
+            )
+          }}
+          onKeyDown={(event) => {
+            if (event.key !== 'Escape' || !isRoomSurfaceOpen) {
+              return
             }
-          />
-          <TooltipContent side="bottom">
-            <Trans>Adjust wall, floor, and lighting</Trans>
-          </TooltipContent>
-        </Tooltip>
+
+            event.preventDefault()
+            dialogActions.setDialogOpen(ROOM_SURFACE_DIALOG_ID, false)
+          }}
+        />
       </TopHeaderSurface>
 
       <TopHeaderSurface>
@@ -92,66 +77,36 @@ export function TopHeaderDesktop() {
       </TopHeaderSurface>
 
       <TopHeaderSurface>
-        <Tooltip>
-          <TooltipTrigger
-            render={
-              <Toolbar.Button
-                render={
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="toolbar-icon"
-                    aria-controls="keyboard-shortcuts-dialog"
-                    aria-haspopup="dialog"
-                    aria-expanded={isKeyboardShortcutsOpen}
-                    aria-label={t`Keyboard shortcuts`}
-                    onClick={() => {
-                      dialogActions.openDialog(KEYBOARD_SHORTCUTS_DIALOG_ID)
-                    }}
-                  >
-                    <IconKeyboard aria-hidden="true" />
-                    <span className="sr-only">
-                      <Trans>Keyboard shortcuts</Trans>
-                    </span>
-                  </Button>
-                }
-              />
-            }
-          />
-          <TooltipContent side="bottom">
-            <Trans>Keyboard shortcuts</Trans>
-          </TooltipContent>
-        </Tooltip>
-        <Tooltip>
-          <TooltipTrigger
-            render={
-              <Toolbar.Button
-                render={
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="toolbar-icon"
-                    aria-controls="project-info-dialog"
-                    aria-haspopup="dialog"
-                    aria-expanded={isProjectInfoOpen}
-                    aria-label={t`Open project and asset info`}
-                    onClick={() => {
-                      dialogActions.openDialog(PROJECT_INFO_DIALOG_ID)
-                    }}
-                  >
-                    <IconInfoCircle aria-hidden="true" />
-                    <span className="sr-only">
-                      <Trans>Open project and asset info</Trans>
-                    </span>
-                  </Button>
-                }
-              />
-            }
-          />
-          <TooltipContent side="bottom">
-            <Trans>Project and asset info</Trans>
-          </TooltipContent>
-        </Tooltip>
+        <ToolbarPopupButton
+          controlsId="keyboard-shortcuts-dialog"
+          expanded={isKeyboardShortcutsOpen}
+          popupType="dialog"
+          label={t`Keyboard shortcuts`}
+          showLabel={false}
+          icon={<IconKeyboard />}
+          variant="outline"
+          size="toolbar-icon"
+          tooltipSide="bottom"
+          tooltip={t`Keyboard shortcuts`}
+          onClick={() => {
+            dialogActions.openDialog(KEYBOARD_SHORTCUTS_DIALOG_ID)
+          }}
+        />
+        <ToolbarPopupButton
+          controlsId="project-info-dialog"
+          expanded={isProjectInfoOpen}
+          popupType="dialog"
+          label={t`Open project and asset info`}
+          showLabel={false}
+          icon={<IconInfoCircle />}
+          variant="outline"
+          size="toolbar-icon"
+          tooltipSide="bottom"
+          tooltip={t`Project and asset info`}
+          onClick={() => {
+            dialogActions.openDialog(PROJECT_INFO_DIALOG_ID)
+          }}
+        />
         <Toolbar.Button
           render={<ShareSceneButton className="min-w-26" size="toolbar" />}
         />

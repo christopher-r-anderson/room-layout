@@ -12,7 +12,7 @@ import {
 import { cn } from '@/shared/lib/utils'
 import { Caption } from '@/shared/ui/caption'
 import { Surface } from '@/shared/ui/surface'
-import { ToolButton } from '@/shared/ui/tool-button'
+import { ToolbarCommandButton } from '@/shared/ui/toolbar-button'
 import { useCommandDispatch } from '@/core/commands/command-dispatch-context'
 
 export interface CameraToolsProps {
@@ -54,63 +54,63 @@ export function CameraTools({
         aria-label={t`Camera`}
         className="flex flex-col gap-1"
       >
-        <ToolButton
-          action={() => {
+        <ToolbarCommandButton
+          onClick={() => {
             dispatch({ kind: 'set-camera-preset', preset: 'corner' })
           }}
           shortcuts="1"
           label={t`Switch to Corner view`}
           visibleLabel={t`Corner`}
-          displayLabel={displayLabels}
+          showLabel={displayLabels}
           className={buttonClass}
           icon={<IconBoxAlignBottomRight />}
           tooltipSide="left"
         />
-        <ToolButton
-          action={() => {
+        <ToolbarCommandButton
+          onClick={() => {
             dispatch({ kind: 'set-camera-preset', preset: 'front' })
           }}
           shortcuts="2"
           label={t`Switch to Front view`}
           visibleLabel={t`Front`}
-          displayLabel={displayLabels}
+          showLabel={displayLabels}
           className={buttonClass}
           icon={<IconBoxAlignBottom />}
           tooltipSide="left"
         />
-        <ToolButton
-          action={() => {
+        <ToolbarCommandButton
+          onClick={() => {
             dispatch({ kind: 'set-camera-preset', preset: 'side' })
           }}
           shortcuts="3"
           label={t`Switch to Side view`}
           visibleLabel={t`Side`}
-          displayLabel={displayLabels}
+          showLabel={displayLabels}
           className={buttonClass}
           icon={<IconBoxAlignRight />}
           tooltipSide="left"
         />
-        <ToolButton
-          action={() => {
+        <ToolbarCommandButton
+          onClick={() => {
             dispatch({ kind: 'set-camera-preset', preset: 'top' })
           }}
           shortcuts="4"
           label={t`Switch to Top view`}
           visibleLabel={t`Top`}
-          displayLabel={displayLabels}
+          showLabel={displayLabels}
           className={buttonClass}
           icon={<IconBoxMargin />}
           tooltipSide="left"
         />
-        <ToolButton
-          action={() => {
+        <ToolbarCommandButton
+          onClick={() => {
             dispatch({ kind: 'focus-selected' })
           }}
           disabled={!hasSelection}
           disabledMessage={t`No item selected`}
           shortcuts="F"
           label={t`Focus Selected`}
-          displayLabel={displayLabels}
+          showLabel={displayLabels}
           className={buttonClass}
           icon={<IconFocus2 />}
           tooltipSide="left"

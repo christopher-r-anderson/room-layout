@@ -36,7 +36,8 @@ Ownership extends to testing: `shared/ui` follows the repository's value rule
   the project layer is composition and styling, exercised by the e2e lane
   through real dialogs, drawers, and toolbars.
 - Components that add a project contract are unit-tested in place — e.g.
-  `tool-button` (label/assistive-tech contract), `dialog`/`alert-dialog`
+  `toolbar-button` (label/assistive-tech and popup-wiring contracts),
+  `dialog`/`alert-dialog`
   (mobile gutter survival under caller class merges), and
   `keyboard-shortcut-display` (shortcut formatting).
 - The folder is included in the coverage map like any owned code; the

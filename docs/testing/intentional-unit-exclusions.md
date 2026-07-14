@@ -49,7 +49,7 @@ what e2e already does). The cited e2e coverage is verified spec-by-spec.
   the project layer is composition and class strings, exercised throughout the
   e2e lane (dialog/drawer/toolbar flows, `editor-a11y-audits`). Unit tests here
   would re-test the library or pin class names. Components that **add a project
-  contract** are unit-tested in place: `tool-button` (label/AT contract),
+  contract** are unit-tested in place: `toolbar-button` (label/AT and popup-wiring contracts),
   `dialog`/`alert-dialog` (gutter survival, `data-size`),
   `keyboard-shortcut-display` (shortcut formatting).
 
