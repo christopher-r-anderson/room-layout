@@ -15,6 +15,7 @@
 import { expect, test, type Page } from '@playwright/test'
 import type { FurnitureInstance } from '../src/domain/furniture'
 import {
+  SCENE_DRAFT_STORAGE_KEY,
   addFurniture,
   openEditor,
   readSceneState,
@@ -74,9 +75,9 @@ function makeSceneRoute(
 async function readDraftFromStorage(
   page: Page,
 ): Promise<SceneDraftPayload | null> {
-  const rawData = await page.evaluate(() => {
-    return localStorage.getItem('room-layout:scene-draft')
-  })
+  const rawData = await page.evaluate((storageKey) => {
+    return localStorage.getItem(storageKey)
+  }, SCENE_DRAFT_STORAGE_KEY)
 
   if (!rawData) {
     return null
@@ -361,9 +362,9 @@ test('Share button falls back to clipboard copy when native share is unavailable
 test('invalid shared link falls back to local draft when available', async ({
   page,
 }) => {
-  await page.addInitScript(() => {
+  await page.addInitScript((storageKey) => {
     window.localStorage.setItem(
-      'room-layout:scene-draft',
+      storageKey,
       JSON.stringify({
         version: 1,
         items: [
@@ -378,7 +379,7 @@ test('invalid shared link falls back to local draft when available', async ({
         wallFinishId: 'sage-green',
       }),
     )
-  })
+  }, SCENE_DRAFT_STORAGE_KEY)
 
   await page.goto('/?scene=notjson!!!')
   const state = await waitForEditorReady(page)
@@ -600,10 +601,13 @@ test('handles draft with valid catalog reference but non-finite position gracefu
   // Pre-populate localStorage with a corrupted draft.
   // Note: JSON.stringify converts NaN to null, which when read back will fail
   // position validation in restoreInitialLayout.
-  await page.evaluate((draft) => {
-    const sanitized = JSON.parse(JSON.stringify(draft)) as SceneDraftPayload
-    localStorage.setItem('room-layout:scene-draft', JSON.stringify(sanitized))
-  }, corruptedDraft)
+  await page.evaluate(
+    ({ storageKey, draft }) => {
+      const sanitized = JSON.parse(JSON.stringify(draft)) as SceneDraftPayload
+      localStorage.setItem(storageKey, JSON.stringify(sanitized))
+    },
+    { storageKey: SCENE_DRAFT_STORAGE_KEY, draft: corruptedDraft },
+  )
 
   // Reload to trigger startup with the corrupted draft
   await page.reload()

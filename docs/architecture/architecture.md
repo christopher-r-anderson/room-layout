@@ -112,6 +112,7 @@ For local context inside each area, see:
 - Core layer reference: `docs/architecture/core.md`
 - The scene/core seam (document ownership and the engine port): `docs/architecture/scene-and-core.md`
 - Startup, asset loading, and the bundle split: `docs/architecture/startup-and-asset-loading.md`
+- Configuration tiers and the storage instance key: `docs/architecture/configuration.md`
 - Dialog and overlay model: `docs/architecture/dialogs-and-overlays.md`
 - Focus routing between editor surfaces: `docs/architecture/focus.md`
 - Interactivity (toolbars, disabled state, inert seam): `docs/architecture/interactivity.md`

@@ -35,10 +35,15 @@ export default defineConfig({
       // the build; render quality is set independently below.
       VITE_E2E: 'true',
       VITE_E2E_RENDER_QUALITY: 'low',
+      // Pins the localStorage namespace so specs can assert exact keys
+      // regardless of the build's base path.
+      VITE_STORAGE_INSTANCE: 'e2e',
     },
     url: 'http://127.0.0.1:4174',
     // CI always builds fresh; locally a developer can keep a preview server
-    // running for fast iteration (restart it to pick up code changes).
+    // running for fast iteration (restart it to pick up code changes). A reused
+    // server must come from a previous run of this command: the VITE_* env
+    // above is baked into its build, and specs assert against those values.
     reuseExistingServer: !isCI,
     timeout: 180_000,
   },
