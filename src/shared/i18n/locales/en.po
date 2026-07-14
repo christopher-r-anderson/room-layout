@@ -615,6 +615,7 @@ msgstr "Rotation (deg)"
 msgid "Scene"
 msgstr "Scene"
 
+#: src/app/chrome/top-header/header-more-actions-drawer.tsx
 #: src/app/chrome/top-header/top-header-desktop.tsx
 msgid "Scene already matches defaults"
 msgstr "Scene already matches defaults"
