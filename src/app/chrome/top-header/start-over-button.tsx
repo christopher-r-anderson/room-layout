@@ -1,6 +1,6 @@
 import { IconRotate2 } from '@tabler/icons-react'
 import { useLingui } from '@lingui/react/macro'
-import { ToolButton } from '@/shared/ui/tool-button'
+import { ToolbarCommandButton } from '@/shared/ui/toolbar-button'
 import { useCommandDispatch } from '@/core/commands/command-dispatch-context'
 import type { ComponentProps } from 'react'
 
@@ -13,14 +13,14 @@ export function StartOverButton({
   disabled: boolean
   disabledMessage: string
   className?: string
-  size?: ComponentProps<typeof ToolButton>['size']
+  size?: ComponentProps<typeof ToolbarCommandButton>['size']
 }) {
   const dispatch = useCommandDispatch()
   const { t } = useLingui()
 
   return (
-    <ToolButton
-      action={() => {
+    <ToolbarCommandButton
+      onClick={() => {
         dispatch({ kind: 'start-over' })
       }}
       disabled={disabled}

@@ -150,7 +150,7 @@ Unlike discrete shortcuts, this path does not use `suppressionMode`.
 
 ## UI Integration Notes
 
-`ToolButton` can attach keyboard metadata to controls using `shortcuts` (ARIA keyshortcuts format), and the shared UI renders consistent key hints via `KbdShortcutDisplay`.
+`ToolbarCommandButton` can attach keyboard metadata to controls using `shortcuts` (ARIA keyshortcuts format), and the shared UI renders consistent key hints via `KbdShortcutDisplay`.
 
 Non-shortcut toolbar actions such as `Add Furniture` and `Room` remain normal focusable buttons in the header toolbar, the first tab stop on the page. They are intentionally discovered through tab order rather than global key bindings.
 

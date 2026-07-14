@@ -1,16 +1,15 @@
 import { Toolbar } from '@base-ui/react/toolbar'
-import { Button } from '@/shared/ui/button'
 import { CatalogDrawer } from '@/features/catalog/catalog-drawer'
 import { CatalogAddButton } from '@/features/catalog/catalog-add-button'
 import { HistoryTools } from '@/features/history/history-tools'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/shared/ui/tooltip'
+import { ToolbarPopupButton } from '@/shared/ui/toolbar-button'
 import { IconDotsVertical, IconHomeCog } from '@tabler/icons-react'
 import { RoomDrawer } from '@/features/room-surface/room-drawer'
 import {
   HeaderMoreActionsDrawer,
   HEADER_MORE_ACTIONS_CONTENT_ID,
 } from './header-more-actions-drawer'
-import { Trans, useLingui } from '@lingui/react/macro'
+import { useLingui } from '@lingui/react/macro'
 import {
   dialogActions,
   useDialogOpen,
@@ -40,74 +39,45 @@ export function TopHeaderMobile() {
         <CatalogDrawer
           triggerButton={<Toolbar.Button render={<CatalogAddButton />} />}
         />
-        <Tooltip>
-          <TooltipTrigger
-            render={
-              <Toolbar.Button
-                render={
-                  <Button
-                    ref={topHeaderFocusRegistry.register('top-header-room')}
-                    type="button"
-                    variant="secondary"
-                    size="toolbar"
-                    className="me-auto"
-                    aria-controls="room-drawer"
-                    aria-expanded={isRoomSurfaceOpen}
-                    aria-haspopup="dialog"
-                    onClick={() => {
-                      dialogActions.setDialogOpen(
-                        ROOM_SURFACE_DIALOG_ID,
-                        !isRoomSurfaceOpen,
-                      )
-                    }}
-                  >
-                    <IconHomeCog size={16} aria-hidden="true" />
-                    <Trans>Room</Trans>
-                  </Button>
-                }
-              />
-            }
-          />
-          <TooltipContent side="bottom">
-            <Trans>Adjust wall, floor, and lighting</Trans>
-          </TooltipContent>
-        </Tooltip>
+        <ToolbarPopupButton
+          buttonRef={topHeaderFocusRegistry.register('top-header-room')}
+          controlsId="room-drawer"
+          expanded={isRoomSurfaceOpen}
+          popupType="dialog"
+          label={t`Room`}
+          icon={<IconHomeCog />}
+          size="toolbar"
+          className="me-auto"
+          tooltipSide="bottom"
+          tooltip={t`Adjust wall, floor, and lighting`}
+          onClick={() => {
+            dialogActions.setDialogOpen(
+              ROOM_SURFACE_DIALOG_ID,
+              !isRoomSurfaceOpen,
+            )
+          }}
+        />
         <HistoryTools
           canRedo={history.canRedo}
           canUndo={history.canUndo}
           displayLabels={false}
           buttonSize="toolbar-icon"
         />
-        <Tooltip>
-          <TooltipTrigger
-            render={
-              <Toolbar.Button
-                render={
-                  <Button
-                    ref={topHeaderFocusRegistry.register(
-                      'top-header-more-actions',
-                    )}
-                    type="button"
-                    variant="secondary"
-                    size="toolbar-icon"
-                    aria-label={t`More actions`}
-                    aria-controls={HEADER_MORE_ACTIONS_CONTENT_ID}
-                    aria-expanded={isHeaderMoreActionsOpen}
-                    aria-haspopup="dialog"
-                    onClick={() => {
-                      dialogActions.openDialog(HEADER_MORE_ACTIONS_DIALOG_ID)
-                    }}
-                  >
-                    <IconDotsVertical aria-hidden="true" />
-                  </Button>
-                }
-              />
-            }
-          />
-          <TooltipContent side="bottom">
-            <Trans>More actions</Trans>
-          </TooltipContent>
-        </Tooltip>
+        <ToolbarPopupButton
+          buttonRef={topHeaderFocusRegistry.register('top-header-more-actions')}
+          controlsId={HEADER_MORE_ACTIONS_CONTENT_ID}
+          expanded={isHeaderMoreActionsOpen}
+          popupType="dialog"
+          label={t`More actions`}
+          showLabel={false}
+          icon={<IconDotsVertical />}
+          size="toolbar-icon"
+          tooltipSide="bottom"
+          tooltip={t`More actions`}
+          onClick={() => {
+            dialogActions.openDialog(HEADER_MORE_ACTIONS_DIALOG_ID)
+          }}
+        />
       </Toolbar.Root>
 
       <RoomDrawer

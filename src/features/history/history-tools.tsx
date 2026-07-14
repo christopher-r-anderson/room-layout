@@ -3,7 +3,7 @@ import { useLingui } from '@lingui/react/macro'
 import { IconArrowBackUp, IconArrowForwardUp } from '@tabler/icons-react'
 import { cn } from '@/shared/lib/utils'
 import { buttonGroupVariants } from '@/shared/ui/button-group-variants'
-import { ToolButton } from '@/shared/ui/tool-button'
+import { ToolbarCommandButton } from '@/shared/ui/toolbar-button'
 import { useCommandDispatch } from '@/core/commands/command-dispatch-context'
 import type { ComponentProps } from 'react'
 
@@ -18,7 +18,7 @@ export function HistoryTools({
   canUndo: boolean
   buttonClassName?: string
   displayLabels?: boolean
-  buttonSize?: ComponentProps<typeof ToolButton>['size']
+  buttonSize?: ComponentProps<typeof ToolbarCommandButton>['size']
 }) {
   const { t } = useLingui()
   const dispatch = useCommandDispatch()
@@ -32,8 +32,8 @@ export function HistoryTools({
       aria-label={t`History Actions`}
       className={cn(buttonGroupVariants({ orientation: 'horizontal' }))}
     >
-      <ToolButton
-        action={(event) => {
+      <ToolbarCommandButton
+        onClick={(event) => {
           dispatch({
             kind: 'undo',
             modality: event.detail === 0 ? 'keyboard' : 'pointer',
@@ -43,13 +43,13 @@ export function HistoryTools({
         disabledMessage={undoDisabledMessage}
         shortcuts="Control+Z"
         label={t`Undo`}
-        displayLabel={displayLabels}
+        showLabel={displayLabels}
         icon={<IconArrowBackUp />}
         size={buttonSize}
         className={buttonClassName}
       />
-      <ToolButton
-        action={(event) => {
+      <ToolbarCommandButton
+        onClick={(event) => {
           dispatch({
             kind: 'redo',
             modality: event.detail === 0 ? 'keyboard' : 'pointer',
@@ -59,7 +59,7 @@ export function HistoryTools({
         disabledMessage={redoDisabledMessage}
         shortcuts="Control+Shift+Z Control+Y"
         label={t`Redo`}
-        displayLabel={displayLabels}
+        showLabel={displayLabels}
         icon={<IconArrowForwardUp />}
         size={buttonSize}
         className={buttonClassName}

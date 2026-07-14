@@ -23,24 +23,30 @@ These are deliberately **not** toolbars: the **outliner** (a list), the
 **selected-details panel** (a form), and **drawer/dialog contents** (e.g. the
 More actions drawer — a vertical menu inside a dialog).
 
-A toolbar item is a `Toolbar.Button`. `ToolButton` (`shared/ui/tool-button.tsx`)
-is the standard one (icon + tooltip carrying label, shortcut, and disabled
-reason); plain header buttons are wrapped as `<Toolbar.Button render={…}>`.
+A toolbar item is a `Toolbar.Button`. `ToolbarCommandButton` and
+`ToolbarPopupButton` (`shared/ui/toolbar-button.tsx`) are the standard items -
+both render an icon+label button with a tooltip. The command variant acts now
+and carries the shortcut and disabled-reason wiring; the popup variant opens or
+toggles another surface and carries `aria-controls`/`aria-expanded` (plus
+`aria-haspopup` for dialogs and drawers). Already-composed shared buttons (Add
+Furniture, Share) are enrolled with a bare `<Toolbar.Button render={...}>`; the
+tooltip/toolbar/button nesting is never hand-built at a call site. Outside a
+`Toolbar.Root`, use `Button` directly.
 
 ## Disabled state
 
-- **Toolbar controls** use `ToolButton` / `Toolbar.Button` with the `disabled`
+- **Toolbar controls** use `ToolbarCommandButton` / `Toolbar.Button` with the `disabled`
   prop. Base UI keeps the item focusable, marks it `aria-disabled`, and
   suppresses activation — so screen-reader and keyboard users still reach a
   disabled action and its tooltip explains why it is off. This focusable-disabled
   behavior is the reason these controls are toolbar items rather than bare
-  buttons. `ToolButton` carries no hand-rolled disabled handling.
+  buttons. `ToolbarCommandButton` carries no hand-rolled disabled handling.
 - **Form controls** — the catalog **Add Item** button uses the native `disabled`
   attribute (nothing selected to add). The catalog radios and selected-details
   inputs carry no disabled handling.
 - For a disabled item whose absence is obvious from a neighbour, the escape hatch
   is Base UI's `focusableWhenDisabled={false}` on the underlying `Toolbar.Button`
-  (would need forwarding through `ToolButton`); nothing needs it today.
+  (would need forwarding through `ToolbarCommandButton`); nothing needs it today.
 
 Disabled state only ever encodes an intrinsic capability gap — no history to undo,
 no selection to act on, a scene already at defaults, nothing picked to add. It
