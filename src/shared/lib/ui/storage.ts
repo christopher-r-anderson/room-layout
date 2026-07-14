@@ -2,8 +2,8 @@ import { STORAGE_INSTANCE } from '@/shared/env/storage-instance'
 
 const APP_STORAGE_PREFIX = 'room-layout'
 
-// Angle brackets cannot appear in a URL path, so a derived instance can never
-// contain or forge the delimiter.
+// Angle brackets delimit the instance unambiguously: they cannot appear in a
+// URL path, and deriveStorageInstance rejects them in explicit values.
 function makeStorageKey(key: string) {
   const instanceSegment = STORAGE_INSTANCE ? `:<${STORAGE_INSTANCE}>` : ''
   return `${APP_STORAGE_PREFIX}${instanceSegment}:${key}`

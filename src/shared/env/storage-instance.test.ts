@@ -34,4 +34,13 @@ describe('deriveStorageInstance', () => {
       deriveStorageInstance({ explicit: '   ', basePath: '/room-layout/' }),
     ).toBe('room-layout')
   })
+
+  it('ignores an explicit instance containing angle brackets', () => {
+    expect(
+      deriveStorageInstance({ explicit: 'a>b', basePath: '/room-layout/' }),
+    ).toBe('room-layout')
+    expect(
+      deriveStorageInstance({ explicit: '<a', basePath: '/room-layout/' }),
+    ).toBe('room-layout')
+  })
 })

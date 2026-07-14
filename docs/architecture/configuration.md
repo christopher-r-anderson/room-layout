@@ -30,8 +30,8 @@ cannot contain or forge the delimiter.
 
 `shared/env/storage-instance.ts` resolves the segment at build time:
 
-1. `VITE_STORAGE_INSTANCE`, verbatim (trimmed; blank falls through; must not
-   contain `>`)
+1. `VITE_STORAGE_INSTANCE`, verbatim (trimmed; a blank value or one
+   containing angle brackets falls through)
 2. otherwise the base path with its surrounding slashes trimmed:
    `/room-layout/` -> `room-layout`, `/shop/planner/` -> `shop/planner`, `/`
    -> no segment (dev servers and root deploys keep unsegmented keys)

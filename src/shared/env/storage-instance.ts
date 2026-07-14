@@ -10,7 +10,9 @@ export function deriveStorageInstance(input: {
   basePath: string
 }): string {
   const explicit = input.explicit?.trim()
-  if (explicit) {
+  // Angle brackets would break the key delimiter (see makeStorageKey); an
+  // invalid explicit value falls through to the derived default.
+  if (explicit && !/[<>]/.test(explicit)) {
     return explicit
   }
 
