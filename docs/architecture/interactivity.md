@@ -41,6 +41,10 @@ tooltip/toolbar/button nesting is never hand-built at a call site. Outside a
   disabled action and its tooltip explains why it is off. This focusable-disabled
   behavior is the reason these controls are toolbar items rather than bare
   buttons. `ToolbarCommandButton` carries no hand-rolled disabled handling.
+- **Drawer/menu rows** — the More actions **Start Over** row uses Base UI's
+  `focusableWhenDisabled` (styled via `ariaDisabledButtonClasses`) with a
+  visible reason line under the row, wired as its `aria-describedby`. A drawer
+  has no hover-tooltip channel on touch, so the reason is shown inline instead.
 - **Form controls** — the catalog **Add Item** button uses the native `disabled`
   attribute (nothing selected to add). The catalog radios and selected-details
   inputs carry no disabled handling.

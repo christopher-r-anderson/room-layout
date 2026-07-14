@@ -14,6 +14,7 @@ import { Toolbar } from '@base-ui/react/toolbar'
 import { cn } from '@/shared/lib/utils'
 import { Tooltip, TooltipContent, TooltipTrigger } from './tooltip'
 import { Button } from './button'
+import { ariaDisabledButtonClasses } from './button-variants'
 import { KbdShortcutDisplay } from './keyboard-shortcut-display'
 
 /**
@@ -146,10 +147,7 @@ export function ToolbarCommandButton({
       visibleLabel={visibleLabel}
       showLabel={showLabel}
       size={size}
-      className={cn(
-        'aria-disabled:active:translate-y-0 aria-disabled:cursor-not-allowed aria-disabled:opacity-50',
-        className,
-      )}
+      className={cn(ariaDisabledButtonClasses, className)}
       tooltipSide={tooltipSide}
       tooltipClassName="flex flex-col items-start gap-1"
       tooltipContent={
