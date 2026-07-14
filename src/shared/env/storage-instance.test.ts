@@ -14,11 +14,20 @@ describe('deriveStorageInstance', () => {
     ).toBe('room-layout')
   })
 
-  it('joins nested base path segments', () => {
+  it('joins nested base path segments with dots', () => {
     expect(
       deriveStorageInstance({
         explicit: undefined,
         basePath: '/shop/planner/',
+      }),
+    ).toBe('shop.planner')
+  })
+
+  it('keeps nested and hyphenated base paths distinct', () => {
+    expect(
+      deriveStorageInstance({
+        explicit: undefined,
+        basePath: '/shop-planner/',
       }),
     ).toBe('shop-planner')
   })

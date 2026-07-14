@@ -12,8 +12,11 @@ function sanitizeInstanceSegment(value: string): string {
     .toLowerCase()
     .replaceAll(/[^a-z0-9._-]+/g, '-')
     .replaceAll(/-{2,}/g, '-')
-    .slice(0, MAX_INSTANCE_LENGTH)
     .replaceAll(/^-+|-+$/g, '')
+}
+
+function capInstanceLength(value: string): string {
+  return value.slice(0, MAX_INSTANCE_LENGTH).replace(/[.-]+$/, '')
 }
 
 // Returns the instance segment, or '' when none applies (root-path deploys and
@@ -23,13 +26,20 @@ export function deriveStorageInstance(input: {
   basePath: string
 }): string {
   if (input.explicit !== undefined) {
-    const explicit = sanitizeInstanceSegment(input.explicit)
+    const explicit = capInstanceLength(sanitizeInstanceSegment(input.explicit))
     if (explicit.length > 0) {
       return explicit
     }
   }
 
-  return sanitizeInstanceSegment(input.basePath.replaceAll('/', '-'))
+  // Path separators map to '.' while sanitization noise maps to '-', so
+  // /shop/planner/ and /shop-planner/ derive distinct instances.
+  const derived = input.basePath
+    .split('/')
+    .map(sanitizeInstanceSegment)
+    .filter((segment) => segment.length > 0)
+    .join('.')
+  return capInstanceLength(derived)
 }
 
 export const STORAGE_INSTANCE = deriveStorageInstance({

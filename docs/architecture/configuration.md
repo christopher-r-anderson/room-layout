@@ -28,7 +28,8 @@ share an origin out of each other's drafts and preferences.
 
 1. `VITE_STORAGE_INSTANCE`, sanitized to `[a-z0-9._-]` (ignored when it
    sanitizes to nothing)
-2. otherwise a slug of the base path: `/room-layout/` -> `room-layout`, `/` ->
+2. otherwise a slug of the base path, segments joined with `.`:
+   `/room-layout/` -> `room-layout`, `/shop/planner/` -> `shop.planner`, `/` ->
    no segment (dev servers and root deploys keep unsegmented keys)
 
 Same-origin deployments necessarily differ in base path, so the derived
