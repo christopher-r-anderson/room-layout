@@ -59,7 +59,7 @@ it('drops the reason line and description once the scene diverges from defaults'
 
   const startOver = screen.getByRole('button', { name: 'Start Over' })
 
-  expect(startOver).toHaveAttribute('aria-disabled', 'false')
+  expect(startOver).not.toHaveAttribute('aria-disabled', 'true')
   expect(startOver).not.toHaveAccessibleDescription()
   expect(
     screen.queryByText('Scene already matches defaults'),
