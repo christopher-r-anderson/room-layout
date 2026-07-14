@@ -29,7 +29,7 @@ both render an icon+label button with a tooltip. The command variant acts now
 and carries the shortcut and disabled-reason wiring; the popup variant opens or
 toggles another surface and carries `aria-controls`/`aria-expanded` (plus
 `aria-haspopup` for dialogs and drawers). Already-composed shared buttons (Add
-Furniture, Share) are enrolled with a bare `<Toolbar.Button render={…}>`; the
+Furniture, Share) are enrolled with a bare `<Toolbar.Button render={...}>`; the
 tooltip/toolbar/button nesting is never hand-built at a call site. Outside a
 `Toolbar.Root`, use `Button` directly.
 

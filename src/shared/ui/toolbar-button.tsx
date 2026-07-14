@@ -70,13 +70,13 @@ function ToolbarButtonShell({
             disabled={disabled}
             render={
               <Button
+                {...buttonProps}
                 ref={buttonRef}
                 type="button"
                 variant={variant}
                 size={size}
                 aria-label={label}
                 className={className}
-                {...buttonProps}
               >
                 {ariaHiddenIcon}
                 <span className={showLabel ? undefined : 'sr-only'}>
@@ -154,7 +154,9 @@ export function ToolbarCommandButton({
       tooltipClassName="flex flex-col items-start gap-1"
       tooltipContent={
         <>
-          <span className="pb-2">{disabled ? disabledMessage : label}</span>
+          <span className="pb-2">
+            {showDisabledReason ? disabledMessage : label}
+          </span>
           <KbdShortcutDisplay shortcuts={shortcuts} />
         </>
       }
