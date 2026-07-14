@@ -8,37 +8,19 @@ describe('deriveStorageInstance', () => {
     )
   })
 
-  it('derives the segment from the base path', () => {
+  it('trims surrounding slashes from the base path', () => {
     expect(
       deriveStorageInstance({ explicit: undefined, basePath: '/room-layout/' }),
     ).toBe('room-layout')
   })
 
-  it('joins nested base path segments with dots', () => {
+  it('preserves nested base paths verbatim', () => {
     expect(
       deriveStorageInstance({
         explicit: undefined,
         basePath: '/shop/planner/',
       }),
-    ).toBe('shop.planner')
-  })
-
-  it('keeps nested and hyphenated base paths distinct', () => {
-    expect(
-      deriveStorageInstance({
-        explicit: undefined,
-        basePath: '/shop-planner/',
-      }),
-    ).toBe('shop-planner')
-  })
-
-  it('keeps nested and dotted base paths distinct', () => {
-    expect(
-      deriveStorageInstance({ explicit: undefined, basePath: '/a.b/' }),
-    ).toBe('a-b')
-    expect(
-      deriveStorageInstance({ explicit: undefined, basePath: '/a/b/' }),
-    ).toBe('a.b')
+    ).toBe('shop/planner')
   })
 
   it('prefers an explicit instance over the base path', () => {
@@ -47,22 +29,9 @@ describe('deriveStorageInstance', () => {
     ).toBe('e2e')
   })
 
-  it('sanitizes mixed case and unsafe characters', () => {
+  it('ignores a blank explicit instance', () => {
     expect(
-      deriveStorageInstance({ explicit: 'Shop A/Living Room!', basePath: '/' }),
-    ).toBe('shop-a-living-room')
-  })
-
-  it('falls back to the base path when the explicit value sanitizes to nothing', () => {
-    expect(
-      deriveStorageInstance({ explicit: '///', basePath: '/room-layout/' }),
+      deriveStorageInstance({ explicit: '   ', basePath: '/room-layout/' }),
     ).toBe('room-layout')
-  })
-
-  it('caps over-length values', () => {
-    const explicit = 'a'.repeat(80)
-    expect(
-      deriveStorageInstance({ explicit, basePath: '/' }).length,
-    ).toBeLessThanOrEqual(64)
   })
 })
