@@ -24,6 +24,9 @@ it('frames tall narrow rooms by raising the corner preset with the wall height',
   const views = getCameraPresetViews({ width: 2, depth: 2, height: 5 })
 
   expect(views.corner.position).toEqual([2, 10, 2])
+  // Front/side back away far enough for the 5m walls at the eye-height view.
+  expect(views.front.position).toEqual([0, 2, 8.8])
+  expect(views.side.position).toEqual([8.8, 2, 0])
 })
 
 it('frames wide shallow rooms by scaling the front preset with the width', () => {

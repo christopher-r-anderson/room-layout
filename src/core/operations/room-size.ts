@@ -109,12 +109,17 @@ export function useOutOfBoundsStatus(): OutOfBoundsStatus {
   const items = useItems()
   const bounds = useRoomLayoutBounds()
 
-  return useMemo(
-    () => ({
-      outOfBoundsCount: getOutOfBoundsItemIds(items, bounds).length,
+  return useMemo(() => {
+    const outOfBoundsCount = getOutOfBoundsItemIds(items, bounds).length
+
+    if (outOfBoundsCount === 0) {
+      return { outOfBoundsCount: 0, oversizedCount: 0, canMoveInside: false }
+    }
+
+    return {
+      outOfBoundsCount,
       oversizedCount: getOversizedItemIds(items, bounds).length,
       canMoveInside: clampItemsToLayoutBounds(items, bounds).movedCount > 0,
-    }),
-    [items, bounds],
-  )
+    }
+  }, [items, bounds])
 }

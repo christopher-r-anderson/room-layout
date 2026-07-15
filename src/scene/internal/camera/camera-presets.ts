@@ -12,10 +12,16 @@ function getRoomFramingDimension(size: RoomSize) {
   return Math.max(size.width, size.depth, 2 * size.height)
 }
 
+// Distance for the eye-height front/side views: far enough for the viewed
+// span (1.5x the facing axis, wide rooms scale with the cross span) and for
+// the wall height - with the target at y=1 and the 50-degree vertical FOV,
+// framing up to `height` needs ~2.2x (height - 1).
+function getEyeLevelViewDistance(size: RoomSize, axis: number, span: number) {
+  return Math.max(1.5 * Math.max(axis, 0.75 * span), 2.2 * (size.height - 1))
+}
+
 // Derived from the room size; the ratios reproduce the views tuned for the
 // default 6x6 room (corner [6,6,6], front [0,2,9], side [9,2,0], top y=10).
-// Front/side distances scale with the span being viewed as well as the axis
-// the camera sits on, so wide-but-shallow rooms still fit the frame.
 export function getCameraPresetViews(
   size: RoomSize,
 ): Record<CameraPreset, PresetView> {
@@ -28,12 +34,12 @@ export function getCameraPresetViews(
     },
     front: {
       // Eye-height, centered, looking at the front face of the room.
-      position: [0, 2, 1.5 * Math.max(size.depth, 0.75 * size.width)],
+      position: [0, 2, getEyeLevelViewDistance(size, size.depth, size.width)],
       target: [0, 1, 0],
     },
     side: {
       // Eye-height, centered, looking at the right side face of the room.
-      position: [1.5 * Math.max(size.width, 0.75 * size.depth), 2, 0],
+      position: [getEyeLevelViewDistance(size, size.width, size.depth), 2, 0],
       target: [0, 1, 0],
     },
     top: {

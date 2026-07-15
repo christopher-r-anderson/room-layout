@@ -34,19 +34,18 @@ export function updateSelectedItemDetails(
     }
   }
 
-  const roomBounds = getCurrentRoomLayoutBounds()
   const nextPosition: [number, number, number] | undefined =
     input.field === 'positionX'
       ? resolvePositionFromWallClearances(
           selectedFurniture,
           { left: input.value },
-          roomBounds,
+          getCurrentRoomLayoutBounds(),
         )
       : input.field === 'positionZ'
         ? resolvePositionFromWallClearances(
             selectedFurniture,
             { back: input.value },
-            roomBounds,
+            getCurrentRoomLayoutBounds(),
           )
         : undefined
   const nextRotationY =
