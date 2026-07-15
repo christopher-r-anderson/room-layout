@@ -90,9 +90,11 @@ function clampPositionToBounds(
   return [nextX, position[1], nextZ]
 }
 
-// Serialized positions are rounded to 3 decimals, so a wall-flush item can
-// re-load with its footprint up to 0.5 mm past the wall; only a larger
-// excursion counts as out of bounds.
+// Serialized positions and rotations are rounded to 3 decimals, so a
+// wall-flush item can re-load with its footprint slightly past the wall:
+// up to 0.5 mm from the position alone, and more once the rounded rotation
+// shifts the projected footprint corners. 2 mm absorbs that combined error
+// while still catching any real excursion.
 const OUT_OF_BOUNDS_TOLERANCE_METERS = 0.002
 
 function isFootprintOutOfBounds(

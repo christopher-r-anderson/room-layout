@@ -14,7 +14,6 @@ import { roundTo3 } from '@/core/persistence/furniture-serialization'
 import {
   getRoomSize,
   sceneDocumentActions,
-  useItems,
   useRoomSize,
   useSceneDocumentStore,
 } from '@/core/stores/scene-document-store'
@@ -89,11 +88,4 @@ export function useRoomLayoutBounds(): LayoutBounds {
 /** Non-reactive peer of {@link useRoomLayoutBounds} for use outside React. */
 export function getCurrentRoomLayoutBounds(): LayoutBounds {
   return getRoomLayoutBounds(getRoomSize())
-}
-
-export function useOutOfBoundsItemIds(): string[] {
-  const items = useItems()
-  const bounds = useRoomLayoutBounds()
-
-  return useMemo(() => getOutOfBoundsItemIds(items, bounds), [items, bounds])
 }
