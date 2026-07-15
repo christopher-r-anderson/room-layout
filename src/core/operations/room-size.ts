@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import {
   clampItemsToLayoutBounds,
   getOutOfBoundsItemIds,
+  getOversizedItemIds,
   type LayoutBounds,
 } from '@/domain/geometry/furniture-layout'
 import {
@@ -14,6 +15,7 @@ import { roundRoomSize } from '@/core/persistence/furniture-serialization'
 import {
   getRoomSize,
   sceneDocumentActions,
+  useItems,
   useRoomSize,
   useSceneDocumentStore,
 } from '@/core/stores/scene-document-store'
@@ -84,4 +86,35 @@ export function useRoomLayoutBounds(): LayoutBounds {
 /** Non-reactive peer of {@link useRoomLayoutBounds} for use outside React. */
 export function getCurrentRoomLayoutBounds(): LayoutBounds {
   return getRoomLayoutBounds(getRoomSize())
+}
+
+/** Ids of items whose footprint pokes past the current room's walls. */
+export function useOutOfBoundsItemIds(): string[] {
+  const items = useItems()
+  const bounds = useRoomLayoutBounds()
+
+  return useMemo(() => getOutOfBoundsItemIds(items, bounds), [items, bounds])
+}
+
+export interface OutOfBoundsStatus {
+  outOfBoundsCount: number
+  /** Items larger than the room: pulling them inside can only center them. */
+  oversizedCount: number
+  /** Whether {@link moveItemsInsideRoom} would change any position. */
+  canMoveInside: boolean
+}
+
+/** The Size tab's read model for the out-of-bounds warning row. */
+export function useOutOfBoundsStatus(): OutOfBoundsStatus {
+  const items = useItems()
+  const bounds = useRoomLayoutBounds()
+
+  return useMemo(
+    () => ({
+      outOfBoundsCount: getOutOfBoundsItemIds(items, bounds).length,
+      oversizedCount: getOversizedItemIds(items, bounds).length,
+      canMoveInside: clampItemsToLayoutBounds(items, bounds).movedCount > 0,
+    }),
+    [items, bounds],
+  )
 }

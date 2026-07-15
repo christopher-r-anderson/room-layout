@@ -12,7 +12,7 @@ export const DEFAULT_ROOM_SIZE: RoomSize = {
   height: 2.5,
 }
 
-const ROOM_SIZE_LIMITS = {
+export const ROOM_SIZE_LIMITS = {
   width: { min: 2, max: 20 },
   depth: { min: 2, max: 20 },
   height: { min: 2, max: 5 },

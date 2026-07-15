@@ -120,6 +120,28 @@ export function getOutOfBoundsItemIds(
     .map((item) => item.id)
 }
 
+/**
+ * Ids of items whose footprint is larger than the room on some axis - they
+ * can never fully fit, so pulling them inside only centers them.
+ */
+export function getOversizedItemIds(
+  items: readonly FurnitureLayoutItem[],
+  bounds: LayoutBounds,
+): string[] {
+  return items
+    .filter((item) => {
+      const footprintBounds = getFootprintBounds(getFootprint(item))
+
+      return (
+        footprintBounds.maxX - footprintBounds.minX >
+          bounds.maxX - bounds.minX + OUT_OF_BOUNDS_TOLERANCE_METERS ||
+        footprintBounds.maxZ - footprintBounds.minZ >
+          bounds.maxZ - bounds.minZ + OUT_OF_BOUNDS_TOLERANCE_METERS
+      )
+    })
+    .map((item) => item.id)
+}
+
 // Like clampPositionToBounds, but a footprint larger than the room gets
 // centered on the exceeded axis instead of favoring whichever edge the
 // original position happened to violate.
