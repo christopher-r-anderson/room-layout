@@ -42,6 +42,7 @@ interface SceneDraftPayload {
   floorFinishId?: string
   wallFinishId?: string
   lightingMoodId?: string
+  roomSize?: { width: number; depth: number; height: number }
 }
 
 // ---------------------------------------------------------------------------
@@ -55,6 +56,7 @@ function makeSceneRoute(
     floorFinishId?: string
     wallFinishId?: string
     lightingMoodId?: string
+    roomSize?: { width: number; depth: number; height: number }
   },
 ): string {
   const payload = {
@@ -65,6 +67,7 @@ function makeSceneRoute(
     ...(options?.lightingMoodId
       ? { lightingMoodId: options.lightingMoodId }
       : {}),
+    ...(options?.roomSize ? { roomSize: options.roomSize } : {}),
   }
   const params = new URLSearchParams()
   params.set('scene', JSON.stringify(payload))
@@ -240,6 +243,55 @@ test('ignores unknown finish and lighting mood IDs from ?scene= while still rest
   expect(state.wallFinishId).toBe('light-gray')
   expect(state.lightingMoodId).toBe('daylight')
   expect(state.restoreOutcome).toBe('restored')
+})
+
+test('restores the room size from ?scene= and persists it to the draft', async ({
+  page,
+}) => {
+  await page.goto(
+    makeSceneRoute([VALID_ITEM], {
+      roomSize: { width: 8, depth: 10, height: 3 },
+    }),
+  )
+  const state = await waitForEditorReady(page)
+
+  expect(state.restoreOutcome).toBe('restored')
+  expect(state.roomSize).toEqual({ width: 8, depth: 10, height: 3 })
+
+  // The restore re-saves the draft, so the size survives a reload without the
+  // scene param.
+  await expect
+    .poll(async () => (await readDraftFromStorage(page))?.roomSize)
+    .toEqual({ width: 8, depth: 10, height: 3 })
+
+  await page.goto('/')
+  const reloadedState = await waitForEditorReady(page)
+
+  expect(reloadedState.roomSize).toEqual({ width: 8, depth: 10, height: 3 })
+})
+
+test('warns when ?scene= furniture does not fit the stored room size', async ({
+  page,
+}) => {
+  // The armchair sits at x=1.5 - inside the default room, outside a 2m-wide
+  // one. Restore stays verbatim: the item keeps its saved position.
+  const outsideItem = {
+    ...VALID_ITEM,
+    position: [1.5, 0, 0] as [number, number, number],
+  }
+  await page.goto(
+    makeSceneRoute([outsideItem], {
+      roomSize: { width: 2, depth: 2, height: 2.5 },
+    }),
+  )
+  const state = await waitForEditorReady(page)
+
+  expect(state.restoreOutcome).toBe('restored')
+  expect(state.items[0].position).toEqual(outsideItem.position)
+  await waitForToast(page, {
+    text: '1 item is outside the room walls.',
+    type: 'warning',
+  })
 })
 
 test('normalizes unknown finish IDs from ?scene= so a reloaded empty room stays fresh', async ({

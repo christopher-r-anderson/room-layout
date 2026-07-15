@@ -10,7 +10,7 @@ import {
   type RoomSize,
 } from '@/domain/geometry/room-metrics'
 import { commitHistoryPresent } from '@/shared/lib/ui/editor-history'
-import { roundTo3 } from '@/core/persistence/furniture-serialization'
+import { roundRoomSize } from '@/core/persistence/furniture-serialization'
 import {
   getRoomSize,
   sceneDocumentActions,
@@ -39,11 +39,7 @@ export function setRoomSize(next: RoomSize): SetRoomSizeResult {
     return { ok: false, reason: 'dragging' }
   }
 
-  const rounded: RoomSize = {
-    width: roundTo3(next.width),
-    depth: roundTo3(next.depth),
-    height: roundTo3(next.height),
-  }
+  const rounded = roundRoomSize(next)
 
   if (!isRoomSizeWithinLimits(rounded)) {
     return { ok: false, reason: 'out-of-range' }

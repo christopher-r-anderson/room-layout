@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createHistoryState } from '@/shared/lib/ui/editor-history'
+import { DEFAULT_ROOM_SIZE } from '@/domain/geometry/room-metrics'
 import type { EnvironmentMaterialConfig } from '@/domain/environment-materials'
 import {
   editorLifecycleActions,
@@ -175,6 +176,7 @@ describe('startDraftPersistenceReconciler', () => {
         floorFinishId: 'floor-default',
         wallFinishId: 'wall-default',
         lightingMoodId: 'lighting-default',
+        roomSize: DEFAULT_ROOM_SIZE,
       },
     )
     expect(clearSceneDraft).not.toHaveBeenCalled()
@@ -204,6 +206,7 @@ describe('startDraftPersistenceReconciler', () => {
         floorFinishId: 'floor-default',
         wallFinishId: 'wall-default',
         lightingMoodId: 'lighting-default',
+        roomSize: DEFAULT_ROOM_SIZE,
       },
     )
   })
@@ -219,6 +222,7 @@ describe('startDraftPersistenceReconciler', () => {
       floorFinishId: 'floor-alt',
       wallFinishId: 'wall-default',
       lightingMoodId: 'lighting-default',
+      roomSize: DEFAULT_ROOM_SIZE,
     })
 
     sceneDocumentActions.setFloorFinishId('floor-default')

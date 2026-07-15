@@ -1,6 +1,15 @@
 import type { FurnitureCatalogEntry } from '@/domain/catalog'
 import type { FurnitureInstance, FurnitureItem } from '@/domain/furniture'
-import { isValidFurnitureInstance, roundTo3 } from './furniture-serialization'
+import {
+  isDefaultRoomSize,
+  type RoomSize,
+} from '@/domain/geometry/room-metrics'
+import {
+  isValidFurnitureInstance,
+  isValidRoomSizePayload,
+  roundRoomSize,
+  roundTo3,
+} from './furniture-serialization'
 
 export const SCENE_URL_PARAM = 'scene'
 export const SCENE_URL_MAX_ENCODED_LENGTH = 4000
@@ -16,6 +25,7 @@ interface SceneUrlPayloadV1 {
   floorFinishId?: string
   wallFinishId?: string
   lightingMoodId?: string
+  roomSize?: RoomSize
 }
 
 // ---------------------------------------------------------------------------
@@ -36,6 +46,7 @@ export type ParseSceneUrlResult =
       floorFinishId?: string
       wallFinishId?: string
       lightingMoodId?: string
+      roomSize?: RoomSize
     }
   | { ok: false; reason: ParseSceneUrlOutcome }
 
@@ -72,6 +83,10 @@ function isValidScenePayloadV1(value: unknown): value is SceneUrlPayloadV1 {
     }
   }
 
+  if ('roomSize' in v && !isValidRoomSizePayload(v.roomSize)) {
+    return false
+  }
+
   return true
 }
 
@@ -92,6 +107,7 @@ export function serializeSceneToUrl(
     floorFinishId?: string
     wallFinishId?: string
     lightingMoodId?: string
+    roomSize?: RoomSize
   },
 ): string | null {
   const sortedItems: FurnitureInstance[] = [...items]
@@ -122,6 +138,11 @@ export function serializeSceneToUrl(
 
   if (options?.lightingMoodId) {
     payload.lightingMoodId = options.lightingMoodId
+  }
+
+  // Omitted at the default size so links to unresized rooms stay unchanged.
+  if (options?.roomSize && !isDefaultRoomSize(options.roomSize)) {
+    payload.roomSize = roundRoomSize(options.roomSize)
   }
 
   const jsonString = JSON.stringify(payload)
@@ -200,6 +221,7 @@ export function parseSceneUrl(href: string): ParseSceneUrlResult {
     floorFinishId: payload.floorFinishId,
     wallFinishId: payload.wallFinishId,
     lightingMoodId: payload.lightingMoodId,
+    roomSize: payload.roomSize,
   }
 }
 

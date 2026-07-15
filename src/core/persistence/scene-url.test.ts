@@ -19,6 +19,7 @@ interface ScenePayload {
   floorFinishId?: string
   wallFinishId?: string
   lightingMoodId?: string
+  roomSize?: { width: number; depth: number; height: number }
   items: {
     id: string
     catalogId: string
@@ -143,6 +144,29 @@ describe('serializeSceneToUrl', () => {
     expect(payload.floorFinishId).toBe('granite-tile')
     expect(payload.wallFinishId).toBe('sage-green')
     expect(payload.lightingMoodId).toBe('warm-white')
+  })
+
+  it('includes a non-default room size, rounded to 3 decimals', () => {
+    const url = serializeSceneToUrl([], 'https://example.com/', {
+      roomSize: { width: 4.0004, depth: 5, height: 3 },
+    })
+    if (url === null) throw new Error('expected non-null URL')
+
+    expect(parsePayload(url).roomSize).toEqual({
+      width: 4,
+      depth: 5,
+      height: 3,
+    })
+  })
+
+  it('omits the room size at the default, keeping existing links byte-identical', () => {
+    const url = serializeSceneToUrl([], 'https://example.com/', {
+      roomSize: { width: 6, depth: 6, height: 2.5 },
+    })
+    if (url === null) throw new Error('expected non-null URL')
+
+    expect('roomSize' in parsePayload(url)).toBe(false)
+    expect(url).toBe(requireSceneUrl([], 'https://example.com/'))
   })
 
   it('omits finish and mood IDs when not provided', () => {
@@ -319,6 +343,46 @@ describe('parseSceneUrl', () => {
       `https://example.com/?${SCENE_URL_PARAM}=${encodeURIComponent(payload)}`,
     )
     expect(result).toEqual({ ok: false, reason: 'invalid-schema' })
+  })
+
+  it('returns the room size from the payload', () => {
+    const payload = JSON.stringify({
+      v: 1,
+      items: [],
+      roomSize: { width: 4, depth: 5, height: 3 },
+    })
+    const result = parseSceneUrl(
+      `https://example.com/?${SCENE_URL_PARAM}=${encodeURIComponent(payload)}`,
+    )
+    expect(result).toMatchObject({
+      ok: true,
+      roomSize: { width: 4, depth: 5, height: 3 },
+    })
+  })
+
+  it('leaves the room size undefined when the payload omits it', () => {
+    const payload = JSON.stringify({ v: 1, items: [] })
+    const result = parseSceneUrl(
+      `https://example.com/?${SCENE_URL_PARAM}=${encodeURIComponent(payload)}`,
+    )
+    if (!result.ok) throw new Error('expected ok result')
+    expect(result.roomSize).toBeUndefined()
+  })
+
+  it('returns invalid-schema for a malformed room size', () => {
+    for (const roomSize of [
+      { width: 4, depth: 5 },
+      { width: '4', depth: 5, height: 3 },
+      { width: 0, depth: 5, height: 3 },
+      { width: 4, depth: Infinity, height: 3 },
+      'big',
+    ]) {
+      const payload = JSON.stringify({ v: 1, items: [], roomSize })
+      const result = parseSceneUrl(
+        `https://example.com/?${SCENE_URL_PARAM}=${encodeURIComponent(payload)}`,
+      )
+      expect(result).toEqual({ ok: false, reason: 'invalid-schema' })
+    }
   })
 
   it('returns invalid-schema when wallFinishId is not a string', () => {

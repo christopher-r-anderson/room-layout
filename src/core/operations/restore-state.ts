@@ -1,9 +1,22 @@
+import { plural } from '@lingui/core/macro'
 import { createDefaultSceneState } from '@/domain/scene-defaults'
 import { isSceneStateAtDefaults } from '@/domain/scene-model'
+import { getOutOfBoundsItemIds } from '@/domain/geometry/furniture-layout'
+import {
+  clampRoomSize,
+  DEFAULT_ROOM_SIZE,
+  getRoomLayoutBounds,
+  type RoomSize,
+} from '@/domain/geometry/room-metrics'
 import { useAssetsStore } from '@/core/stores/assets-store'
-import { sceneDocumentActions } from '@/core/stores/scene-document-store'
+import { feedback } from '@/core/stores/feedback-store'
+import {
+  getItems,
+  sceneDocumentActions,
+} from '@/core/stores/scene-document-store'
 import { restoreInitialLayout } from './history-mutations'
 import { saveSceneDraft } from '@/core/persistence/scene-draft'
+import { roundRoomSize } from '@/core/persistence/furniture-serialization'
 import type { RestorableState } from './restore-flow'
 
 /** The catalog and finish vocabulary a restorable state is resolved against. */
@@ -34,11 +47,14 @@ export function resolveFinishContext(): FinishContext {
   }
 }
 
-/** Coerces each finish id to itself when known, else the environment default. */
+/**
+ * Coerces each finish id to itself when known, else the environment default,
+ * and the room size into its limits (or the default when absent).
+ */
 export function normalizeRestorableState(
   state: RestorableState,
   context: FinishContext,
-): RestorableState {
+): RestorableState & { roomSize: RoomSize } {
   return {
     ...state,
     floorFinishId: context.floorFinishIds.includes(state.floorFinishId ?? '')
@@ -50,6 +66,9 @@ export function normalizeRestorableState(
     lightingMoodId: context.lightingMoodIds.includes(state.lightingMoodId ?? '')
       ? state.lightingMoodId
       : context.defaultLightingMoodId,
+    roomSize: state.roomSize
+      ? clampRoomSize(roundRoomSize(state.roomSize))
+      : DEFAULT_ROOM_SIZE,
   }
 }
 
@@ -63,7 +82,10 @@ export function applyRestorableState(
 ) {
   const normalized = normalizeRestorableState(state, context)
 
+  // Layout first: it is the step that can throw, and the restore flow's
+  // fallback branches must not inherit this payload's room size.
   restoreInitialLayout(normalized.items)
+  sceneDocumentActions.setRoomSize(normalized.roomSize)
 
   if (
     normalized.floorFinishId &&
@@ -90,7 +112,25 @@ export function applyRestorableState(
     floorFinishId: normalized.floorFinishId,
     wallFinishId: normalized.wallFinishId,
     lightingMoodId: normalized.lightingMoodId,
+    roomSize: normalized.roomSize,
   })
+
+  // Restore is verbatim - furniture that does not fit the stored room size
+  // keeps its saved position - so the mismatch is worth a warning. The
+  // rebuilt items carry the footprints, so the check reads the store.
+  const outOfBoundsCount = getOutOfBoundsItemIds(
+    getItems(),
+    getRoomLayoutBounds(normalized.roomSize),
+  ).length
+
+  if (outOfBoundsCount > 0) {
+    feedback.actionWarning({
+      title: plural(outOfBoundsCount, {
+        one: '# item is outside the room walls.',
+        other: '# items are outside the room walls.',
+      }),
+    })
+  }
 }
 
 /** Whether the state, once normalized, matches the environment's defaults. */
@@ -106,6 +146,7 @@ export function isRestorableStateAtDefaults(
       floorFinishId: normalized.floorFinishId,
       wallFinishId: normalized.wallFinishId,
       lightingMoodId: normalized.lightingMoodId,
+      roomSize: normalized.roomSize,
     },
     createDefaultSceneState({
       defaultFloorFinishId: context.defaultFloorFinishId,

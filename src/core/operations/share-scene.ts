@@ -18,7 +18,8 @@ import { LANG_QUERY_PARAM } from '@/shared/i18n/locales'
  * button's own label is the visual success surface).
  */
 export async function shareScene(): Promise<'shared' | 'copied' | null> {
-  const items = useSceneDocumentStore.getState().history.present
+  const { history, roomSize } = useSceneDocumentStore.getState()
+  const items = history.present
   const { activeFloorFinishId, activeWallFinishId, activeLightingMoodId } =
     getActiveFinishIds()
 
@@ -31,6 +32,7 @@ export async function shareScene(): Promise<'shared' | 'copied' | null> {
     floorFinishId: activeFloorFinishId || undefined,
     wallFinishId: activeWallFinishId || undefined,
     lightingMoodId: activeLightingMoodId || undefined,
+    roomSize,
   })
 
   if (!url) {
