@@ -13,6 +13,16 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
+#. placeholder {0}: result.outOfBoundsCount
+#: src/features/room-surface/room-size-controls.tsx
+msgid "{0, plural, one {# item is outside the room walls.} other {# items are outside the room walls.}}"
+msgstr "{0, plural, one {# item is outside the room walls.} other {# items are outside the room walls.}}"
+
+#. placeholder {0}: result.movedCount
+#: src/features/room-surface/room-size-controls.tsx
+msgid "{0, plural, one {Moved # item inside the room.} other {Moved # items inside the room.}}"
+msgstr "{0, plural, one {Moved # item inside the room.} other {Moved # items inside the room.}}"
+
 #: src/features/selection/deletion-actions.ts
 msgid "{deletedName} removed from room."
 msgstr "{deletedName} removed from room."
@@ -37,11 +47,16 @@ msgstr "{itemName} details updated."
 msgid "{itemName} Placement"
 msgstr "{itemName} Placement"
 
+#: src/features/room-surface/room-size-controls.tsx
+msgid "{label} must be between {min} and {max}."
+msgstr "{label} must be between {min} and {max}."
+
 #: src/core/operations/movement-actions.ts
 msgid "{movedItemName} moved to X {x} and Z {z}."
 msgstr "{movedItemName} moved to X {x} and Z {z}."
 
 #: src/core/operations/restore-state.ts
+#: src/features/room-surface/room-size-controls.tsx
 msgid "{outOfBoundsCount, plural, one {# item is outside the room walls.} other {# items are outside the room walls.}}"
 msgstr "{outOfBoundsCount, plural, one {# item is outside the room walls.} other {# items are outside the room walls.}}"
 
@@ -215,6 +230,10 @@ msgstr "Could not open share options."
 msgid "Couldn't load that item. Check your connection and try again."
 msgstr "Couldn't load that item. Check your connection and try again."
 
+#: src/features/room-surface/room-size-controls.tsx
+msgid "Depth (m)"
+msgstr "Depth (m)"
+
 #: src/features/keyboard/keyboard-shortcuts.definitions.ts
 msgid "Details"
 msgstr "Details"
@@ -244,6 +263,10 @@ msgstr "Editor actions"
 msgid "Editor failed to load"
 msgstr "Editor failed to load"
 
+#: src/features/room-surface/room-size-controls.tsx
+msgid "Enter a number for {label}."
+msgstr "Enter a number for {label}."
+
 #: src/shared/messages/command-messages.ts
 msgid "Finish dragging before adding furniture."
 msgstr "Finish dragging before adding furniture."
@@ -255,6 +278,10 @@ msgstr "Finish dragging before editing item details."
 #: src/core/operations/movement-actions.ts
 msgid "Finish dragging before using movement controls."
 msgstr "Finish dragging before using movement controls."
+
+#: src/features/room-surface/room-size-controls.tsx
+msgid "Finish moving furniture before resizing the room."
+msgstr "Finish moving furniture before resizing the room."
 
 #: src/features/room-surface/room-controls.tsx
 msgid "Floor"
@@ -391,6 +418,10 @@ msgstr "Move farther (1.0 m)"
 #: src/features/keyboard/keyboard-shortcuts.definitions.ts
 msgid "Move finely (0.1 m)"
 msgstr "Move finely (0.1 m)"
+
+#: src/features/room-surface/room-size-controls.tsx
+msgid "Move items inside"
+msgstr "Move items inside"
 
 #: src/core/operations/movement-actions.ts
 msgid "Movement blocked by another furniture item."
@@ -596,6 +627,10 @@ msgstr "Room Layout: an open source 3D furniture layout tool. All 3D assets are 
 msgid "Room loading progress"
 msgstr "Room loading progress"
 
+#: src/features/room-surface/room-size-controls.tsx
+msgid "Room size"
+msgstr "Room size"
+
 #: src/features/keyboard/keyboard-shortcuts.definitions.ts
 #: src/features/selection/selected-details-view.tsx
 msgid "Rotate"
@@ -673,6 +708,10 @@ msgstr "Selection"
 msgid "Selection cleared."
 msgstr "Selection cleared."
 
+#: src/features/room-surface/room-size-controls.tsx
+msgid "Set your room's size in meters. Enter or Tab applies a value; Esc cancels."
+msgstr "Set your room's size in meters. Enter or Tab applies a value; Esc cancels."
+
 #: src/app/chrome/top-header/share-scene-button.tsx
 msgid "Share"
 msgstr "Share"
@@ -717,6 +756,10 @@ msgstr "Shared link was invalid. Recovered your local draft."
 #: src/features/keyboard/keyboard-shortcuts.definitions.ts
 msgid "Side"
 msgstr "Side"
+
+#: src/features/room-surface/room-controls.tsx
+msgid "Size"
+msgstr "Size"
 
 #: src/features/project-info/asset-attribution.tsx
 msgid "Source"
@@ -855,9 +898,17 @@ msgstr "View Presets"
 msgid "Wall finish"
 msgstr "Wall finish"
 
+#: src/features/room-surface/room-size-controls.tsx
+msgid "Wall height (m)"
+msgstr "Wall height (m)"
+
 #: src/features/room-surface/room-controls.tsx
 msgid "Walls"
 msgstr "Walls"
+
+#: src/features/room-surface/room-size-controls.tsx
+msgid "Width (m)"
+msgstr "Width (m)"
 
 #: src/features/keyboard/keyboard-shortcuts.definitions.ts
 msgid "Zoom in/out"

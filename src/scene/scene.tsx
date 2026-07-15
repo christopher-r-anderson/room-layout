@@ -43,6 +43,7 @@ import {
   useItems,
   useRoomSize,
 } from '@/core/stores/scene-document-store'
+import { useOutOfBoundsItemIds } from '@/core/operations/room-size'
 import { selectByCanvasPointer } from '@/core/operations/selection-actions'
 import { sceneSessionActions } from '@/core/stores/scene-session-store'
 import {
@@ -109,8 +110,26 @@ export function Scene({
   const furniture = useItems()
   const roomSize = useRoomSize()
   const roomBounds = useMemo(() => getRoomLayoutBounds(roomSize), [roomSize])
-  const { objectRefs, registerObject, selectedId, selection } =
-    useSceneSelection()
+  const {
+    objectRefs,
+    registeredObjects,
+    registerObject,
+    selectedId,
+    selection,
+  } = useSceneSelection()
+  const outOfBoundsIds = useOutOfBoundsItemIds()
+  // Selection/preview outlines take precedence over the warning outline on
+  // the same item, so an engaged item never renders two colors at once.
+  const outOfBoundsMeshes = useMemo(
+    () =>
+      outOfBoundsIds
+        .filter((id) => id !== selectedId && id !== previewedId)
+        .flatMap((id) => {
+          const object = registeredObjects.get(id)
+          return object ? getMeshes(object) : []
+        }),
+    [outOfBoundsIds, registeredObjects, selectedId, previewedId],
+  )
 
   const updateFurniturePosition = useCallback(
     (id: string, nextPosition: [number, number, number]) => {
@@ -292,6 +311,7 @@ export function Scene({
       <SelectionOutlineEffect
         selection={selection}
         preview={showPreviewOutline ? previewMeshes : []}
+        outOfBounds={outOfBoundsMeshes}
         lowQuality={isE2ELowQuality}
       />
       <CameraControls

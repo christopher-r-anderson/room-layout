@@ -11,6 +11,7 @@ import { useEnvironmentConfig } from '@/core/stores/assets-store'
 import { sceneDocumentActions } from '@/core/stores/scene-document-store'
 import { useFloorFinishLoading } from '@/core/stores/scene-session-store'
 import { FinishPicker } from './finish-picker'
+import { RoomSizeControls } from './room-size-controls'
 import { Trans, useLingui } from '@lingui/react/macro'
 
 function formatHexColor(color: number) {
@@ -98,7 +99,7 @@ export function RoomControls() {
 
   return (
     <Tabs defaultValue="walls" className="gap-3">
-      <TabsList className="grid w-full grid-cols-3">
+      <TabsList className="grid w-full grid-cols-4">
         <TabsTrigger value="walls">
           <Trans>Walls</Trans>
         </TabsTrigger>
@@ -107,6 +108,9 @@ export function RoomControls() {
         </TabsTrigger>
         <TabsTrigger value="lighting">
           <Trans>Lighting</Trans>
+        </TabsTrigger>
+        <TabsTrigger value="size">
+          <Trans>Size</Trans>
         </TabsTrigger>
       </TabsList>
 
@@ -166,6 +170,10 @@ export function RoomControls() {
           cardClassName="flex items-center gap-3 p-3"
           renderCard={renderLightingCard}
         />
+      </TabsContent>
+
+      <TabsContent value="size" className="space-y-3">
+        <RoomSizeControls />
       </TabsContent>
     </Tabs>
   )
