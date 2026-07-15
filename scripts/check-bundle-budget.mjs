@@ -19,6 +19,9 @@ const BUDGETS = [
   // Lazily-imported per-locale message catalogs. Each is fetched only when its
   // locale is activated; the active locale is never in the shell chunk.
   { label: 'locale (lazy)', pattern: /^locale-.*\.js$/, maxGzipKB: 20 },
+  // The room-size operations, split into a shared chunk because both the
+  // chrome (Size tab) and the engine (out-of-bounds outline) import them.
+  { label: 'room-size (shared)', pattern: /^room-size-.*\.js$/, maxGzipKB: 5 },
   // three's KTX2Loader Basis transcoder glue (the paired .wasm is not JS, so it
   // is not budgeted here). Fetched lazily by the loader only when decoding KTX2
   // textures, never part of the shell.
