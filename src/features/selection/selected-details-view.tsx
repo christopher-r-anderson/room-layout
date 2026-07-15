@@ -10,6 +10,8 @@ import { feedback } from '@/core/stores/feedback-store'
 import type { FurnitureItem } from '@/domain/furniture'
 import { cn } from '@/shared/lib/utils'
 import { getWallClearances } from '@/domain/geometry/wall-clearance'
+import type { LayoutBounds } from '@/domain/geometry/furniture-layout'
+import { useRoomLayoutBounds } from '@/core/operations/room-size'
 
 type FieldOverride =
   | {
@@ -65,8 +67,8 @@ function formatDegrees(valueRadians: number) {
     : normalizedClockwiseDegrees.toFixed(1).replace(/\.0$/, '')
 }
 
-function createDrafts(item: FurnitureItem) {
-  const clearances = getWallClearances(item)
+function createDrafts(item: FurnitureItem, bounds: LayoutBounds) {
+  const clearances = getWallClearances(item, bounds)
 
   return {
     positionX: formatMeters(clearances.left),
@@ -111,7 +113,8 @@ export function SelectedDetailsView({
 }) {
   const { t } = useLingui()
   const titleId = useId()
-  const committedDrafts = createDrafts(selectedFurniture)
+  const roomBounds = useRoomLayoutBounds()
+  const committedDrafts = createDrafts(selectedFurniture, roomBounds)
   // Bound to a plain identifier so the extracted message reads
   // "{itemName} Placement" rather than an anonymous "{0}" placeholder.
   const itemName = selectedFurniture.name
@@ -242,7 +245,7 @@ export function SelectedDetailsView({
     })
 
     if (result.ok) {
-      const nextDrafts = createDrafts(result.item)
+      const nextDrafts = createDrafts(result.item, roomBounds)
 
       setFieldOverrides((currentOverrides) => ({
         ...currentOverrides,

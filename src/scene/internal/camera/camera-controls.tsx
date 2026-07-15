@@ -7,9 +7,11 @@ import type { RefObject } from 'react'
 export function CameraControls({
   enabled = true,
   controlsRef,
+  maxDistance = 12,
 }: {
   enabled?: boolean
   controlsRef?: RefObject<CameraControlsImpl | null>
+  maxDistance?: number
 }) {
   return (
     <DreiCameraControls
@@ -17,7 +19,7 @@ export function CameraControls({
       makeDefault
       enabled={enabled}
       minDistance={2}
-      maxDistance={12}
+      maxDistance={maxDistance}
       maxPolarAngle={Math.PI / 2 - 0.05}
     />
   )

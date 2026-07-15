@@ -1,7 +1,0 @@
-export {
-  ROOM_FLOOR_DEPTH_METERS,
-  ROOM_FLOOR_WIDTH_METERS,
-  ROOM_HALF_DEPTH_METERS,
-  ROOM_HALF_WIDTH_METERS,
-  ROOM_WALL_HEIGHT_METERS,
-} from '@/domain/geometry/room-metrics'

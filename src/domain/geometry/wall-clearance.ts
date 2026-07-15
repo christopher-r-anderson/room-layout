@@ -1,18 +1,10 @@
 import type { FurnitureItem } from '@/domain/furniture'
 import { getFootprintBounds } from './furniture-footprint'
 import type { LayoutBounds } from './furniture-layout'
-import { ROOM_HALF_DEPTH_METERS, ROOM_HALF_WIDTH_METERS } from './room-metrics'
 
 export interface WallClearances {
   left: number
   back: number
-}
-
-const DEFAULT_ROOM_BOUNDS: LayoutBounds = {
-  minX: -ROOM_HALF_WIDTH_METERS,
-  maxX: ROOM_HALF_WIDTH_METERS,
-  minZ: -ROOM_HALF_DEPTH_METERS,
-  maxZ: ROOM_HALF_DEPTH_METERS,
 }
 
 function getItemFootprintBounds(item: FurnitureItem) {
@@ -26,7 +18,7 @@ function getItemFootprintBounds(item: FurnitureItem) {
 
 export function getWallClearances(
   item: FurnitureItem,
-  bounds: LayoutBounds = DEFAULT_ROOM_BOUNDS,
+  bounds: LayoutBounds,
 ): WallClearances {
   const footprintBounds = getItemFootprintBounds(item)
 
@@ -39,7 +31,7 @@ export function getWallClearances(
 export function resolvePositionFromWallClearances(
   item: FurnitureItem,
   nextClearances: Partial<WallClearances>,
-  bounds: LayoutBounds = DEFAULT_ROOM_BOUNDS,
+  bounds: LayoutBounds,
 ): [number, number, number] {
   const footprintBounds = getItemFootprintBounds(item)
   const nextX =

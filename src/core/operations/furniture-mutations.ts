@@ -1,7 +1,7 @@
 import {
   FURNITURE_EDGE_SNAP_THRESHOLD_METERS,
   FURNITURE_SNAP_SIZE_METERS,
-  ROOM_LAYOUT_BOUNDS,
+  getRoomLayoutBounds,
 } from '@/domain/geometry/room-metrics'
 import {
   sceneDocumentActions,
@@ -53,7 +53,7 @@ export function moveSelection(delta: {
   x: number
   z: number
 }): MoveSelectionResult {
-  const { history } = useSceneDocumentStore.getState()
+  const { history, roomSize } = useSceneDocumentStore.getState()
   const { isDragging } = useSceneSessionStore.getState()
   const { selectedId } = useSelectionStore.getState()
   const { history: nextHistory, result } = resolveMoveSelectionInHistory({
@@ -61,7 +61,7 @@ export function moveSelection(delta: {
     selectedId,
     isDragging,
     delta,
-    bounds: ROOM_LAYOUT_BOUNDS,
+    bounds: getRoomLayoutBounds(roomSize),
     edgeSnapThreshold: FURNITURE_EDGE_SNAP_THRESHOLD_METERS,
   })
 
@@ -76,7 +76,7 @@ export function setSelectionTransform(input: {
   position?: [number, number, number]
   rotationY?: number
 }): UpdateSelectionTransformResult {
-  const { history } = useSceneDocumentStore.getState()
+  const { history, roomSize } = useSceneDocumentStore.getState()
   const { isDragging } = useSceneSessionStore.getState()
   const { selectedId } = useSelectionStore.getState()
   const { history: nextHistory, result } =
@@ -85,7 +85,7 @@ export function setSelectionTransform(input: {
       selectedId,
       isDragging,
       input,
-      bounds: ROOM_LAYOUT_BOUNDS,
+      bounds: getRoomLayoutBounds(roomSize),
     })
 
   if (result.ok) {
@@ -102,13 +102,13 @@ export function rotateSelection(deltaRadians: number): boolean {
     return false
   }
 
-  const { history } = useSceneDocumentStore.getState()
+  const { history, roomSize } = useSceneDocumentStore.getState()
   const { selectedId } = useSelectionStore.getState()
   const nextHistory = rotateSelectedFurnitureInHistory({
     history,
     selectedId,
     deltaRadians,
-    bounds: ROOM_LAYOUT_BOUNDS,
+    bounds: getRoomLayoutBounds(roomSize),
   })
 
   sceneDocumentActions.setHistory(nextHistory)
@@ -123,7 +123,8 @@ export function addFurniture(catalogId: string): AddFurnitureResult {
     return { ok: false, reason: 'dragging' }
   }
 
-  const { history, instanceIdCounter } = useSceneDocumentStore.getState()
+  const { history, instanceIdCounter, roomSize } =
+    useSceneDocumentStore.getState()
   const { catalog, collections } = useAssetsStore.getState()
   const operationResult = addFurnitureToHistory({
     history,
@@ -135,7 +136,7 @@ export function addFurniture(catalogId: string): AddFurnitureResult {
     nextId: createFurnitureInstanceId(instanceIdCounter + 1),
     catalog,
     collections,
-    bounds: ROOM_LAYOUT_BOUNDS,
+    bounds: getRoomLayoutBounds(roomSize),
     edgeSnapThreshold: FURNITURE_EDGE_SNAP_THRESHOLD_METERS,
     snapSize: FURNITURE_SNAP_SIZE_METERS,
   })

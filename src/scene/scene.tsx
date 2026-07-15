@@ -1,6 +1,7 @@
 import { getMeshes } from '@/scene/internal/three/get-meshes'
 import { Room } from './internal/environment/room'
 import { Lighting } from './internal/environment/lighting'
+import { getShadowExtent } from './internal/environment/shadow-extent'
 import { resolveMoodExposure } from './internal/environment/lighting-mood'
 import type {
   FloorFinishOption,
@@ -8,6 +9,7 @@ import type {
   WallFinishOption,
 } from '@/domain/environment-materials'
 import { CameraControls } from './internal/camera/camera-controls'
+import { getCameraMaxDistance } from './internal/camera/camera-presets'
 import { InteractiveFurniture } from './internal/furniture/interactive-furniture'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import type { CameraControlsImpl } from '@react-three/drei'
@@ -31,7 +33,7 @@ import {
   FLOOR_PLANE_Y,
   FURNITURE_EDGE_SNAP_THRESHOLD_METERS,
   FURNITURE_SNAP_SIZE_METERS,
-  ROOM_LAYOUT_BOUNDS,
+  getRoomLayoutBounds,
 } from '@/domain/geometry/room-metrics'
 import { useToolbarGeometryProjection } from './internal/selection/use-toolbar-geometry-projection'
 import { perfCounters } from '@/shared/debug/perf-counters'
@@ -39,6 +41,7 @@ import { IS_E2E_BUILD } from '@/shared/env/e2e'
 import {
   sceneDocumentActions,
   useItems,
+  useRoomSize,
 } from '@/core/stores/scene-document-store'
 import { selectByCanvasPointer } from '@/core/operations/selection-actions'
 import { sceneSessionActions } from '@/core/stores/scene-session-store'
@@ -104,6 +107,8 @@ export function Scene({
   const cameraControlsRef = useRef<CameraControlsImpl | null>(null)
   const cameraKeyStateRef = useRef<CameraKeyState>(new Set())
   const furniture = useItems()
+  const roomSize = useRoomSize()
+  const roomBounds = useMemo(() => getRoomLayoutBounds(roomSize), [roomSize])
   const { objectRefs, registerObject, selectedId, selection } =
     useSceneSelection()
 
@@ -125,7 +130,7 @@ export function Scene({
       furniture,
       updateFurniturePosition,
       updateHistory: sceneDocumentActions.updateHistory,
-      bounds: ROOM_LAYOUT_BOUNDS,
+      bounds: roomBounds,
       floorPlaneY: FLOOR_PLANE_Y,
       snapSize: FURNITURE_SNAP_SIZE_METERS,
       edgeSnapThreshold: FURNITURE_EDGE_SNAP_THRESHOLD_METERS,
@@ -144,6 +149,20 @@ export function Scene({
   })
 
   useCameraKeyMotion({ cameraControlsRef, cameraKeyStateRef })
+
+  // Recenter on the corner preset when the room size changes after mount, so
+  // the camera keeps framing the whole room. The initial size (including a
+  // restore that landed before the canvas mounted) is framed by the Canvas's
+  // starting camera, not a preset jump.
+  const framedRoomSizeRef = useRef(roomSize)
+  useEffect(() => {
+    if (framedRoomSizeRef.current === roomSize) {
+      return
+    }
+
+    framedRoomSizeRef.current = roomSize
+    handleSetCameraPreset('corner')
+  }, [roomSize, handleSetCameraPreset])
 
   const getSnapshot = useSceneSnapshot({
     camera,
@@ -275,9 +294,18 @@ export function Scene({
         preview={showPreviewOutline ? previewMeshes : []}
         lowQuality={isE2ELowQuality}
       />
-      <CameraControls enabled={!dragState} controlsRef={cameraControlsRef} />
-      <Lighting lowQuality={isE2ELowQuality} mood={lightingMoodOption} />
+      <CameraControls
+        enabled={!dragState}
+        controlsRef={cameraControlsRef}
+        maxDistance={getCameraMaxDistance(roomSize)}
+      />
+      <Lighting
+        lowQuality={isE2ELowQuality}
+        mood={lightingMoodOption}
+        shadowExtent={getShadowExtent(roomSize)}
+      />
       <Room
+        size={roomSize}
         receiveShadows={!isE2ELowQuality}
         floorOption={floorOption}
         wallOption={wallOption}

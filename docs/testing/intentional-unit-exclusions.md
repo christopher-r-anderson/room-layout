@@ -84,5 +84,4 @@ Recorded so the choice is explicit, not an oversight.
 
 Chasing a coverage number; re-testing Base UI primitive behavior through
 `shared/ui` wrappers (the library tests that; project-added contracts there
-**are** in scope — see above); testing pure-constant modules
-(`domain/geometry/room-metrics.ts`).
+**are** in scope — see above); testing pure-constant modules.
