@@ -82,8 +82,10 @@ export function applyRestorableState(
 ) {
   const normalized = normalizeRestorableState(state, context)
 
-  sceneDocumentActions.setRoomSize(normalized.roomSize)
+  // Layout first: it is the step that can throw, and the restore flow's
+  // fallback branches must not inherit this payload's room size.
   restoreInitialLayout(normalized.items)
+  sceneDocumentActions.setRoomSize(normalized.roomSize)
 
   if (
     normalized.floorFinishId &&

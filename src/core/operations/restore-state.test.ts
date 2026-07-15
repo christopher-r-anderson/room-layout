@@ -131,6 +131,21 @@ it('applies the stored room size and warns when restored items fall outside it',
   )
 })
 
+it('leaves the room size untouched when the layout restore throws', () => {
+  vi.mocked(restoreInitialLayout).mockImplementationOnce(() => {
+    throw new Error('broken payload')
+  })
+
+  expect(() =>
+    applyRestorableState(
+      { items: [ITEM], roomSize: { width: 4, depth: 4, height: 2.5 } },
+      CONTEXT,
+    ),
+  ).toThrow('broken payload')
+
+  expect(useSceneDocumentStore.getState().roomSize).toEqual(DEFAULT_ROOM_SIZE)
+})
+
 it('does not warn when every restored item fits the stored room size', () => {
   const addToast = vi.spyOn(appToastManager, 'add').mockReturnValue('toast-1')
   sceneDocumentActions.setHistory(
