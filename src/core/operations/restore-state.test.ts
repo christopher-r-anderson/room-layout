@@ -136,12 +136,12 @@ it('leaves the room size untouched when the layout restore throws', () => {
     throw new Error('broken payload')
   })
 
-  expect(() =>
+  expect(() => {
     applyRestorableState(
       { items: [ITEM], roomSize: { width: 4, depth: 4, height: 2.5 } },
       CONTEXT,
-    ),
-  ).toThrow('broken payload')
+    )
+  }).toThrow('broken payload')
 
   expect(useSceneDocumentStore.getState().roomSize).toEqual(DEFAULT_ROOM_SIZE)
 })
