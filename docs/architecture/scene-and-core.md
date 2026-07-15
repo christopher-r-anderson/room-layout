@@ -14,8 +14,9 @@ the declarative React UI share furniture state.
   (`core/operations/furniture-mutations`, `history-mutations`,
   `selection-mutations`) that validates against the rules and writes the store.
 - **`domain` owns the rules.** Collision, bounds, edge-snap, spawn placement,
-  and the room's layout constants are pure geometry in `@/domain/geometry`,
-  called synchronously by the core mutations. No renderer, no store, no React.
+  and the room-size model (defaults, limits, size -> bounds derivation) are
+  pure geometry in `@/domain/geometry`, called synchronously by the core
+  mutations. No renderer, no store, no React.
 - **`scene` renders and maps input.** The r3f component tree is a projection of
   the document; pointer gestures are mapped to world-space intents (rays ->
   positions) and fed to the same rules and store; the camera, screen-space

@@ -30,6 +30,11 @@ const PREVIEW_OUTLINE: OutlineColors = {
   hidden: 0x2563eb,
   strength: 2.1,
 }
+const OUT_OF_BOUNDS_OUTLINE: OutlineColors = {
+  visible: 0xef4444,
+  hidden: 0x991b1b,
+  strength: 2.6,
+}
 
 function makeOutlinePass(
   resolution: Vector2,
@@ -51,6 +56,8 @@ export interface SelectionOutlineEffectProps {
   selection: Object3D[]
   /** Meshes of the previewed (hovered/focused) item; outlined in the preview color. */
   preview: Object3D[]
+  /** Meshes of items outside the room walls; outlined in the warning color. */
+  outOfBounds: Object3D[]
   lowQuality: boolean
 }
 
@@ -63,6 +70,7 @@ export interface SelectionOutlineEffectProps {
 export function SelectionOutlineEffect({
   selection,
   preview,
+  outOfBounds,
   lowQuality,
 }: SelectionOutlineEffectProps) {
   const gl = useThree((state) => state.gl)
@@ -74,6 +82,7 @@ export function SelectionOutlineEffect({
   const composerRef = useRef<EffectComposer | null>(null)
   const selectionPassRef = useRef<OutlinePass | null>(null)
   const previewPassRef = useRef<OutlinePass | null>(null)
+  const outOfBoundsPassRef = useRef<OutlinePass | null>(null)
 
   useEffect(() => {
     const resolution = new Vector2(size.width, size.height)
@@ -100,6 +109,17 @@ export function SelectionOutlineEffect({
       PREVIEW_OUTLINE,
     )
     composer.addPass(previewPass)
+    // Usually empty (out-of-bounds items only exist after a shrink or an
+    // ill-fitting restore), so this pass starts disabled and is enabled with
+    // its object set - the composer then skips it entirely on idle frames.
+    const outOfBoundsPass = makeOutlinePass(
+      resolution,
+      scene,
+      camera,
+      OUT_OF_BOUNDS_OUTLINE,
+    )
+    outOfBoundsPass.enabled = false
+    composer.addPass(outOfBoundsPass)
 
     composer.addPass(new OutputPass())
     composer.setPixelRatio(gl.getPixelRatio())
@@ -108,15 +128,18 @@ export function SelectionOutlineEffect({
     composerRef.current = composer
     selectionPassRef.current = selectionPass
     previewPassRef.current = previewPass
+    outOfBoundsPassRef.current = outOfBoundsPass
     invalidate()
 
     return () => {
       selectionPass.dispose()
       previewPass.dispose()
+      outOfBoundsPass.dispose()
       composer.dispose()
       composerRef.current = null
       selectionPassRef.current = null
       previewPassRef.current = null
+      outOfBoundsPassRef.current = null
     }
     // Recreated only when the renderer/scene/camera or quality changes; size is
     // applied through the resize effect below.
@@ -141,8 +164,12 @@ export function SelectionOutlineEffect({
     if (previewPassRef.current) {
       previewPassRef.current.selectedObjects = preview
     }
+    if (outOfBoundsPassRef.current) {
+      outOfBoundsPassRef.current.selectedObjects = outOfBounds
+      outOfBoundsPassRef.current.enabled = outOfBounds.length > 0
+    }
     invalidate()
-  }, [selection, preview, invalidate])
+  }, [selection, preview, outOfBounds, invalidate])
 
   useFrame((_, delta) => {
     composerRef.current?.render(delta)

@@ -5,6 +5,8 @@ import { useSelectedId } from '@/core/stores/selection-store'
 
 interface SceneSelectionState {
   objectRefs: RefObject<Map<string, Object3D>>
+  /** Reactive mirror of the registry, for render state derived from it. */
+  registeredObjects: Map<string, Object3D>
   registerObject: (id: string, object: Object3D | null) => void
   selectedId: string | null
   selection: ReturnType<typeof getMeshes>
@@ -60,6 +62,7 @@ export function useSceneSelection(): SceneSelectionState {
 
   return {
     objectRefs,
+    registeredObjects,
     registerObject,
     selectedId,
     selection,

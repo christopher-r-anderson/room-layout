@@ -2,6 +2,7 @@ import { msg } from '@lingui/core/macro'
 import { resolvePositionFromWallClearances } from '@/domain/geometry/wall-clearance'
 import { i18n } from '@/shared/i18n/i18n'
 import { feedback } from '@/core/stores/feedback-store'
+import { getCurrentRoomLayoutBounds } from '@/core/operations/room-size'
 import { getSelectedFurniture } from '@/core/operations/selected-furniture'
 import { sceneCommands } from '@/core/scene-commands'
 import { setSelectionTransform } from '@/core/operations/furniture-mutations'
@@ -35,13 +36,17 @@ export function updateSelectedItemDetails(
 
   const nextPosition: [number, number, number] | undefined =
     input.field === 'positionX'
-      ? resolvePositionFromWallClearances(selectedFurniture, {
-          left: input.value,
-        })
+      ? resolvePositionFromWallClearances(
+          selectedFurniture,
+          { left: input.value },
+          getCurrentRoomLayoutBounds(),
+        )
       : input.field === 'positionZ'
-        ? resolvePositionFromWallClearances(selectedFurniture, {
-            back: input.value,
-          })
+        ? resolvePositionFromWallClearances(
+            selectedFurniture,
+            { back: input.value },
+            getCurrentRoomLayoutBounds(),
+          )
         : undefined
   const nextRotationY =
     input.field === 'rotationDegrees'

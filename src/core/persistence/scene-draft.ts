@@ -1,10 +1,19 @@
 import type { FurnitureInstance } from '@/domain/furniture'
 import {
+  isDefaultRoomSize,
+  type RoomSize,
+} from '@/domain/geometry/room-metrics'
+import {
   loadJsonWithDefault,
   removeKey,
   saveJson,
 } from '@/shared/lib/ui/storage'
-import { isValidFurnitureInstance, roundTo3 } from './furniture-serialization'
+import {
+  isValidFurnitureInstance,
+  isValidRoomSizePayload,
+  roundRoomSize,
+  roundTo3,
+} from './furniture-serialization'
 
 const SCENE_DRAFT_STORAGE_KEY = 'scene-draft'
 const SCENE_DRAFT_VERSION = 1
@@ -15,6 +24,7 @@ interface SceneDraftPayloadV1 {
   floorFinishId?: string
   wallFinishId?: string
   lightingMoodId?: string
+  roomSize?: RoomSize
 }
 
 export interface SceneDraftState {
@@ -22,6 +32,7 @@ export interface SceneDraftState {
   floorFinishId?: string
   wallFinishId?: string
   lightingMoodId?: string
+  roomSize?: RoomSize
 }
 
 function isValidSceneDraftPayload(
@@ -56,6 +67,10 @@ function isValidSceneDraftPayload(
     }
   }
 
+  if ('roomSize' in v && !isValidRoomSizePayload(v.roomSize)) {
+    return false
+  }
+
   return true
 }
 
@@ -65,6 +80,7 @@ export function saveSceneDraft(
     floorFinishId?: string
     wallFinishId?: string
     lightingMoodId?: string
+    roomSize?: RoomSize
   },
 ): void {
   const normalizedItems: FurnitureInstance[] = [...items]
@@ -97,6 +113,11 @@ export function saveSceneDraft(
     payload.lightingMoodId = options.lightingMoodId
   }
 
+  // Omitted at the default size so unresized-room drafts stay unchanged.
+  if (options?.roomSize && !isDefaultRoomSize(options.roomSize)) {
+    payload.roomSize = roundRoomSize(options.roomSize)
+  }
+
   saveJson(SCENE_DRAFT_STORAGE_KEY, payload)
 }
 
@@ -116,6 +137,7 @@ export function loadSceneDraft(): SceneDraftState | null {
     floorFinishId: parsed.floorFinishId,
     wallFinishId: parsed.wallFinishId,
     lightingMoodId: parsed.lightingMoodId,
+    roomSize: parsed.roomSize,
   }
 }
 

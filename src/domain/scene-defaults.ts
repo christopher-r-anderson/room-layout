@@ -1,4 +1,5 @@
 import type { EnvironmentMaterialConfig } from '@/domain/environment-materials'
+import { DEFAULT_ROOM_SIZE, type RoomSize } from './geometry/room-metrics'
 import {
   isSceneStateAtDefaults,
   type SceneComparableState,
@@ -9,6 +10,7 @@ export interface DefaultSceneState extends SceneComparableState {
   floorFinishId: string
   wallFinishId: string
   lightingMoodId: string
+  roomSize: RoomSize
 }
 
 export function createDefaultSceneState(options: {
@@ -21,6 +23,7 @@ export function createDefaultSceneState(options: {
     floorFinishId: options.defaultFloorFinishId,
     wallFinishId: options.defaultWallFinishId,
     lightingMoodId: options.defaultLightingMoodId,
+    roomSize: DEFAULT_ROOM_SIZE,
   }
 }
 

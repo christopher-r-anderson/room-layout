@@ -1,7 +1,9 @@
 import {
   roundTo3,
+  roundRoomSize,
   isFiniteNumber,
   isValidFurnitureInstance,
+  isValidRoomSizePayload,
 } from './furniture-serialization'
 import { describe, it, expect } from 'vitest'
 
@@ -107,6 +109,44 @@ describe('furniture-serialization', () => {
       invalidInstances.forEach((instance) => {
         expect(isValidFurnitureInstance(instance)).toBe(false)
       })
+    })
+  })
+
+  describe('isValidRoomSizePayload', () => {
+    it('returns true for finite positive dimensions', () => {
+      expect(isValidRoomSizePayload({ width: 4, depth: 5.5, height: 3 })).toBe(
+        true,
+      )
+      // Out-of-limits values are still structurally valid: range is
+      // load-time policy, applied by the restore normalize.
+      expect(
+        isValidRoomSizePayload({ width: 100, depth: 0.1, height: 50 }),
+      ).toBe(true)
+    })
+
+    it('returns false for missing, non-numeric, non-finite, or non-positive dimensions', () => {
+      const invalid = [
+        null,
+        'room',
+        { width: 4, depth: 5 },
+        { width: '4', depth: 5, height: 3 },
+        { width: 4, depth: NaN, height: 3 },
+        { width: 4, depth: 5, height: Infinity },
+        { width: 0, depth: 5, height: 3 },
+        { width: -4, depth: 5, height: 3 },
+      ]
+
+      invalid.forEach((value) => {
+        expect(isValidRoomSizePayload(value)).toBe(false)
+      })
+    })
+  })
+
+  describe('roundRoomSize', () => {
+    it('rounds each dimension to 3 decimal places', () => {
+      expect(
+        roundRoomSize({ width: 4.0004, depth: 5.0006, height: 3.0004 }),
+      ).toEqual({ width: 4, depth: 5.001, height: 3 })
     })
   })
 })

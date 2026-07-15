@@ -65,4 +65,15 @@ describe('RoomControls', () => {
       'soft-lamplight',
     )
   })
+
+  it('commits a room size from the Size tab to the scene document', () => {
+    render(<RoomControls />)
+
+    fireEvent.click(screen.getByRole('tab', { name: 'Size' }))
+    const depthInput = screen.getByLabelText('Depth (m)')
+    fireEvent.change(depthInput, { target: { value: '10' } })
+    fireEvent.keyDown(depthInput, { key: 'Enter' })
+
+    expect(useSceneDocumentStore.getState().roomSize.depth).toBe(10)
+  })
 })

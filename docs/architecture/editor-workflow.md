@@ -25,6 +25,10 @@ guidance.
 ### Room Surface Editing
 
 - open `Room` and change wall finishes, floor finishes, or the lighting mood
+- set the room size from the `Size` tab; typed dimensions commit on Enter or
+  blur and cancel on Escape
+- shrinking never moves furniture: out-of-bounds items get a warning outline
+  and the `Size` tab offers a one-step undoable `Move items inside`
 - confirm the editor remains interactive while the room surface is open
 
 ### Panel-Driven Editing

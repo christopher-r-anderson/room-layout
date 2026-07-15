@@ -1,5 +1,6 @@
 import type { FurnitureItem } from '@/domain/furniture'
 import {
+  getOversizedItemIds,
   resolveMovedFurniturePosition,
   type LayoutBounds,
 } from './furniture-layout'
@@ -82,6 +83,12 @@ export function findFurnitureSpawnPosition({
   edgeSnapThreshold,
   snapSize,
 }: FindFurnitureSpawnPositionOptions): [number, number, number] | null {
+  // An item larger than the room can never fit: the resolver would clamp it
+  // to a wall-protruding position instead of rejecting it.
+  if (getOversizedItemIds([item], bounds).length > 0) {
+    return null
+  }
+
   const candidateItems = [...items, item]
 
   for (const candidatePosition of getFurnitureSpawnCandidates(

@@ -90,6 +90,126 @@ function clampPositionToBounds(
   return [nextX, position[1], nextZ]
 }
 
+// Serialized positions and rotations are rounded to 3 decimals, so a
+// wall-flush item can re-load with its footprint slightly past the wall:
+// up to 0.5 mm from the position alone, and more once the rounded rotation
+// shifts the projected footprint corners. 2 mm absorbs that combined error
+// while still catching any real excursion.
+const OUT_OF_BOUNDS_TOLERANCE_METERS = 0.002
+
+function isFootprintOutOfBounds(
+  item: FurnitureLayoutItem,
+  bounds: LayoutBounds,
+) {
+  const footprintBounds = getFootprintBounds(getFootprint(item))
+
+  return (
+    footprintBounds.minX < bounds.minX - OUT_OF_BOUNDS_TOLERANCE_METERS ||
+    footprintBounds.maxX > bounds.maxX + OUT_OF_BOUNDS_TOLERANCE_METERS ||
+    footprintBounds.minZ < bounds.minZ - OUT_OF_BOUNDS_TOLERANCE_METERS ||
+    footprintBounds.maxZ > bounds.maxZ + OUT_OF_BOUNDS_TOLERANCE_METERS
+  )
+}
+
+export function getOutOfBoundsItemIds(
+  items: readonly FurnitureLayoutItem[],
+  bounds: LayoutBounds,
+): string[] {
+  return items
+    .filter((item) => isFootprintOutOfBounds(item, bounds))
+    .map((item) => item.id)
+}
+
+/**
+ * Ids of items whose footprint is larger than the room on some axis - they
+ * can never fully fit, so pulling them inside only centers them.
+ */
+export function getOversizedItemIds(
+  items: readonly FurnitureLayoutItem[],
+  bounds: LayoutBounds,
+): string[] {
+  return items
+    .filter((item) => {
+      const footprintBounds = getFootprintBounds(getFootprint(item))
+
+      return (
+        footprintBounds.maxX - footprintBounds.minX >
+          bounds.maxX - bounds.minX + OUT_OF_BOUNDS_TOLERANCE_METERS ||
+        footprintBounds.maxZ - footprintBounds.minZ >
+          bounds.maxZ - bounds.minZ + OUT_OF_BOUNDS_TOLERANCE_METERS
+      )
+    })
+    .map((item) => item.id)
+}
+
+// Like clampPositionToBounds, but a footprint larger than the room gets
+// centered on the exceeded axis instead of favoring whichever edge the
+// original position happened to violate.
+function pullPositionInsideBounds(
+  item: FurnitureLayoutItem,
+  bounds: LayoutBounds,
+): [number, number, number] {
+  const footprintBounds = getFootprintBounds(getFootprint(item))
+  const clamped = clampPositionToBounds(item, item.position, bounds)
+  const next: [number, number, number] = [...clamped]
+
+  if (footprintBounds.maxX - footprintBounds.minX > bounds.maxX - bounds.minX) {
+    next[0] =
+      item.position[0] +
+      (bounds.minX + bounds.maxX) / 2 -
+      (footprintBounds.minX + footprintBounds.maxX) / 2
+  }
+
+  if (footprintBounds.maxZ - footprintBounds.minZ > bounds.maxZ - bounds.minZ) {
+    next[2] =
+      item.position[2] +
+      (bounds.minZ + bounds.maxZ) / 2 -
+      (footprintBounds.minZ + footprintBounds.maxZ) / 2
+  }
+
+  return next
+}
+
+/**
+ * Pulls every out-of-bounds item back inside `bounds`; a footprint larger
+ * than the room ends up centered on the exceeded axis. Returns the input
+ * array identity when nothing moved, so history commits can no-op on it.
+ */
+export function clampItemsToLayoutBounds<T extends FurnitureLayoutItem>(
+  items: T[],
+  bounds: LayoutBounds,
+): { items: T[]; movedCount: number } {
+  let movedCount = 0
+  const nextItems = items.map((item) => {
+    if (!isFootprintOutOfBounds(item, bounds)) {
+      return item
+    }
+
+    const nextPosition = pullPositionInsideBounds(item, bounds)
+
+    // An oversized footprint stays flagged after centering; keep the item's
+    // identity so repeated pulls don't stack no-op history commits.
+    if (
+      nextPosition[0] === item.position[0] &&
+      nextPosition[1] === item.position[1] &&
+      nextPosition[2] === item.position[2]
+    ) {
+      return item
+    }
+
+    movedCount += 1
+
+    return {
+      ...item,
+      position: nextPosition,
+    }
+  })
+
+  return movedCount === 0
+    ? { items, movedCount }
+    : { items: nextItems, movedCount }
+}
+
 function overlapsAnyOtherItem(
   movingId: string,
   movingFootprint: ReturnType<typeof getFootprint>,

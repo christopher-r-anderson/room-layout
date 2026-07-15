@@ -56,6 +56,22 @@ describe('getFurnitureSpawnCandidates', () => {
 })
 
 describe('findFurnitureSpawnPosition', () => {
+  it('returns null for an item larger than the room', () => {
+    const oversized = createFurnitureItem('oversized', [0, 0, 0], {
+      width: 6.5,
+    })
+
+    expect(
+      findFurnitureSpawnPosition({
+        item: oversized,
+        items: [],
+        bounds: roomBounds,
+        edgeSnapThreshold: 0.12,
+        snapSize,
+      }),
+    ).toBeNull()
+  })
+
   it('returns the first valid candidate after rejecting blocked ones', () => {
     const newItem = createFurnitureItem('new', [0, 0, 0])
     const existingItems = [createFurnitureItem('occupied-center', [0, 0, 0])]

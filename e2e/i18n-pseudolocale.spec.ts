@@ -145,6 +145,18 @@ test.describe('pseudo-locale', () => {
     await expectAriaLabelsLocalized(page)
     await expectNoHorizontalOverflow(page)
     await expectNoA11yViolations(page, 'en-XA pseudo-locale: room panel')
+
+    // The Size tab: field labels and description are Lingui strings. Keyboard
+    // activation, since the rightmost tab can sit under the camera overlay.
+    const sizeTab = roomSurface.getByRole('tab', { name: pseudo('Size') })
+    await sizeTab.focus()
+    await sizeTab.press('Enter')
+    await expect(
+      roomSurface.getByText(pseudo('Room size')).first(),
+    ).toBeVisible()
+    await expectAriaLabelsLocalized(page)
+    await expectNoHorizontalOverflow(page)
+    await expectNoA11yViolations(page, 'en-XA pseudo-locale: room size tab')
     await page.keyboard.press('Escape')
     await expect(roomSurface).toBeHidden()
 

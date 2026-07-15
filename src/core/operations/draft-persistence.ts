@@ -4,6 +4,7 @@ import {
   resolveActiveLightingMoodId,
 } from '@/domain/environment-materials'
 import type { FurnitureItem } from '@/domain/furniture'
+import type { RoomSize } from '@/domain/geometry/room-metrics'
 import { useAssetsStore } from '@/core/stores/assets-store'
 import { useEditorLifecycleStore } from '@/core/stores/editor-lifecycle-store'
 import { useSceneDocumentStore } from '@/core/stores/scene-document-store'
@@ -17,6 +18,7 @@ interface DraftSceneState {
   floorFinishId: string
   wallFinishId: string
   lightingMoodId: string
+  roomSize: RoomSize
 }
 
 function selectDraftSceneState(
@@ -27,6 +29,7 @@ function selectDraftSceneState(
     floorFinishId: state.floorFinishId,
     wallFinishId: state.wallFinishId,
     lightingMoodId: state.lightingMoodId,
+    roomSize: state.roomSize,
   }
 }
 
@@ -59,6 +62,7 @@ function persistDraft() {
     floorFinishId: activeFloorFinishId,
     wallFinishId: activeWallFinishId,
     lightingMoodId: activeLightingMoodId,
+    roomSize: sceneState.roomSize,
   })
 }
 

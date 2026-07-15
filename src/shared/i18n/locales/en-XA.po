@@ -25,8 +25,20 @@ msgstr "[{itemName} ďēţàĩĺś ũƥďàţēď.āēīōūáéíóúāēīōū
 msgid "{itemName} Placement"
 msgstr "[{itemName} Ƥĺàćēḿēńţāēīōūáéíóúāēīō]"
 
+msgid "{label} must be between {min} and {max}."
+msgstr "[{label} ḿũśţ ƀē ƀēţŵēēń {min} àńď {max}.āēīōūáéíóúāēīōūá]"
+
+msgid "{movedCount, plural, one {Moved # item inside the room.} other {Moved # items inside the room.}}"
+msgstr "[{movedCount, plural, one {Moved # item inside the room.} other {Moved # items inside the room.}}]"
+
 msgid "{movedItemName} moved to X {x} and Z {z}."
 msgstr "[{movedItemName} ḿōvēď ţō X {x} àńď Ź {z}.āēīōūáéíóúāēīōūáé]"
+
+msgid "{outOfBoundsCount, plural, one {# item is outside the room walls.} other {# items are outside the room walls.}}"
+msgstr "[{outOfBoundsCount, plural, one {# item is outside the room walls.} other {# items are outside the room walls.}}]"
+
+msgid "{oversizedCount, plural, one {# item is larger than the room and cannot fully fit.} other {# items are larger than the room and cannot fully fit.}}"
+msgstr "[{oversizedCount, plural, one {# item is larger than the room and cannot fully fit.} other {# items are larger than the room and cannot fully fit.}}]"
 
 msgid "{rotatingName} rotated."
 msgstr "[{rotatingName} ŕōţàţēď.āēīōūáéíóúāēī]"
@@ -151,6 +163,9 @@ msgstr "[Ćōũĺď ńōţ ōƥēń śĥàŕē ōƥţĩōńś.āēīōūáéíó
 msgid "Couldn't load that item. Check your connection and try again."
 msgstr "[Ćōũĺďń'ţ ĺōàď ţĥàţ ĩţēḿ. Ćĥēćķ ŷōũŕ ćōńńēćţĩōń àńď ţŕŷ àğàĩń.āēīōūáéíóúāēīōūáéíóúāēīōū]"
 
+msgid "Depth (m)"
+msgstr "[Ďēƥţĥ (ḿ)āēīōūáéíó]"
+
 msgid "Details"
 msgstr "[Ďēţàĩĺśāēīōūáé]"
 
@@ -172,6 +187,9 @@ msgstr "[Ēďĩţōŕ àćţĩōńśāēīōūáéíóú]"
 msgid "Editor failed to load"
 msgstr "[Ēďĩţōŕ ƒàĩĺēď ţō ĺōàďāēīōūáéíóúāē]"
 
+msgid "Enter a number for {label}."
+msgstr "[Ēńţēŕ à ńũḿƀēŕ ƒōŕ {label}.āēīōūáéíóúāēīōū]"
+
 msgid "Finish dragging before adding furniture."
 msgstr "[Ƒĩńĩśĥ ďŕàğğĩńğ ƀēƒōŕē àďďĩńğ ƒũŕńĩţũŕē.āēīōūáéíóúāēīōūá]"
 
@@ -180,6 +198,9 @@ msgstr "[Ƒĩńĩśĥ ďŕàğğĩńğ ƀēƒōŕē ēďĩţĩńğ ĩţēḿ ď�
 
 msgid "Finish dragging before using movement controls."
 msgstr "[Ƒĩńĩśĥ ďŕàğğĩńğ ƀēƒōŕē ũśĩńğ ḿōvēḿēńţ ćōńţŕōĺś.āēīōūáéíóúāēīōūáéíó]"
+
+msgid "Finish moving furniture before resizing the room."
+msgstr "[Ƒĩńĩśĥ ḿōvĩńğ ƒũŕńĩţũŕē ƀēƒōŕē ŕēśĩźĩńğ ţĥē ŕōōḿ.āēīōūáéíóúāēīōūáéíóú]"
 
 msgid "Floor"
 msgstr "[Ƒĺōōŕāēīōū]"
@@ -279,6 +300,9 @@ msgstr "[Ḿōvē ƒàŕţĥēŕ (1.0 ḿ)āēīōūáéíóúāēīō]"
 
 msgid "Move finely (0.1 m)"
 msgstr "[Ḿōvē ƒĩńēĺŷ (0.1 ḿ)āēīōūáéíóúāēīō]"
+
+msgid "Move items inside"
+msgstr "[Ḿōvē ĩţēḿś ĩńśĩďēāēīōūáéíóúāē]"
 
 msgid "Movement blocked by another furniture item."
 msgstr "[Ḿōvēḿēńţ ƀĺōćķēď ƀŷ àńōţĥēŕ ƒũŕńĩţũŕē ĩţēḿ.āēīōūáéíóúāēīōūáéí]"
@@ -428,6 +452,9 @@ msgstr "[Ŕōōḿ Ĺàŷōũţ: àń ōƥēń śōũŕćē 3Ď ƒũŕńĩţũŕ
 msgid "Room loading progress"
 msgstr "[Ŕōōḿ ĺōàďĩńğ ƥŕōğŕēśśāēīōūáéíóúāē]"
 
+msgid "Room size"
+msgstr "[Ŕōōḿ śĩźēāēīōūáéíó]"
+
 msgid "Rotate"
 msgstr "[Ŕōţàţēāēīōūá]"
 
@@ -482,6 +509,9 @@ msgstr "[Śēĺēćţĩōńāēīōūáéíó]"
 msgid "Selection cleared."
 msgstr "[Śēĺēćţĩōń ćĺēàŕēď.āēīōūáéíóúāēī]"
 
+msgid "Set your room's size in meters. Enter or Tab applies a value; Esc cancels."
+msgstr "[Śēţ ŷōũŕ ŕōōḿ'ś śĩźē ĩń ḿēţēŕś. Ēńţēŕ ōŕ Ţàƀ àƥƥĺĩēś à vàĺũē; Ēść ćàńćēĺś.āēīōūáéíóúāēīōūáéíóúāēīōūáéíóú]"
+
 msgid "Share"
 msgstr "[Śĥàŕēāēīōū]"
 
@@ -514,6 +544,9 @@ msgstr "[Śĥàŕēď ĺĩńķ ŵàś ĩńvàĺĩď. Ŕēćōvēŕēď ŷōũŕ 
 
 msgid "Side"
 msgstr "[Śĩďēāēīō]"
+
+msgid "Size"
+msgstr "[Śĩźēāēīō]"
 
 msgid "Source"
 msgstr "[Śōũŕćēāēīōūá]"
@@ -614,8 +647,14 @@ msgstr "[Vĩēŵ Ƥŕēśēţśāēīōūáéíó]"
 msgid "Wall finish"
 msgstr "[Ŵàĺĺ ƒĩńĩśĥāēīōūáéí]"
 
+msgid "Wall height (m)"
+msgstr "[Ŵàĺĺ ĥēĩğĥţ (ḿ)āēīōūáéíóúā]"
+
 msgid "Walls"
 msgstr "[Ŵàĺĺśāēīōū]"
+
+msgid "Width (m)"
+msgstr "[Ŵĩďţĥ (ḿ)āēīōūáéíó]"
 
 msgid "Zoom in/out"
 msgstr "[Źōōḿ ĩń/ōũţāēīōūáéí]"

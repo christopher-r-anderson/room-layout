@@ -127,6 +127,29 @@ describe('scene-model', () => {
     ).toBe(false)
   })
 
+  it('compares room sizes, treating a missing one as the default', () => {
+    expect(
+      isSceneStateAtDefaults(
+        { items: [], roomSize: { width: 6, depth: 6, height: 2.5 } },
+        { items: [] },
+      ),
+    ).toBe(true)
+
+    expect(
+      isSceneStateAtDefaults(
+        { items: [], roomSize: { width: 4, depth: 6, height: 2.5 } },
+        { items: [] },
+      ),
+    ).toBe(false)
+
+    expect(
+      isSceneStateAtDefaults(
+        { items: [] },
+        { items: [], roomSize: { width: 6, depth: 6, height: 2.5 } },
+      ),
+    ).toBe(true)
+  })
+
   it('returns false when an item transform differs at the same item count', () => {
     const defaults = {
       items: [
