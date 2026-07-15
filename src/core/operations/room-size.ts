@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import {
   clampItemsToLayoutBounds,
   getOutOfBoundsItemIds,
+  getOversizedItemIds,
   type LayoutBounds,
 } from '@/domain/geometry/furniture-layout'
 import {
@@ -93,4 +94,27 @@ export function useOutOfBoundsItemIds(): string[] {
   const bounds = useRoomLayoutBounds()
 
   return useMemo(() => getOutOfBoundsItemIds(items, bounds), [items, bounds])
+}
+
+export interface OutOfBoundsStatus {
+  outOfBoundsCount: number
+  /** Items larger than the room: pulling them inside can only center them. */
+  oversizedCount: number
+  /** Whether {@link moveItemsInsideRoom} would change any position. */
+  canMoveInside: boolean
+}
+
+/** The Size tab's read model for the out-of-bounds warning row. */
+export function useOutOfBoundsStatus(): OutOfBoundsStatus {
+  const items = useItems()
+  const bounds = useRoomLayoutBounds()
+
+  return useMemo(
+    () => ({
+      outOfBoundsCount: getOutOfBoundsItemIds(items, bounds).length,
+      oversizedCount: getOversizedItemIds(items, bounds).length,
+      canMoveInside: clampItemsToLayoutBounds(items, bounds).movedCount > 0,
+    }),
+    [items, bounds],
+  )
 }

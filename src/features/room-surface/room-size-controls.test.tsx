@@ -74,6 +74,48 @@ it('rejects a non-numeric value with a field error', () => {
   expect(screen.getByText('Enter a number for Width (m).')).toBeInTheDocument()
 })
 
+it('explains oversized items and hides the fix action once nothing can move', () => {
+  const addToast = vi.spyOn(appToastManager, 'add').mockReturnValue('toast-1')
+  // A couch-width footprint off-center in a 2m-wide room: centering is the
+  // only possible fix, and it still cannot fully fit.
+  const couch = makeFurnitureItem({
+    id: 'couch',
+    footprintSize: { width: 2.2, depth: 0.95 },
+    position: [0.5, 0, 0],
+  })
+  sceneDocumentActions.setHistory(createHistoryState([couch]))
+  sceneDocumentActions.setRoomSize({ width: 2, depth: 6, height: 2.5 })
+
+  render(<RoomSizeControls />)
+
+  expect(
+    screen.getByText('1 item is larger than the room and cannot fully fit.'),
+  ).toBeInTheDocument()
+
+  fireEvent.click(screen.getByRole('button', { name: 'Move items inside' }))
+
+  expect(useSceneDocumentStore.getState().history.present[0].position).toEqual([
+    0, 0, 0,
+  ])
+  expect(addToast).toHaveBeenCalledWith(
+    expect.objectContaining({
+      type: 'success',
+      title: 'Moved 1 item inside the room.',
+    }),
+  )
+  // Centered but still oversized: the warning and explanation remain, the
+  // dead action does not.
+  expect(
+    screen.getByText('1 item is outside the room walls.'),
+  ).toBeInTheDocument()
+  expect(
+    screen.getByText('1 item is larger than the room and cannot fully fit.'),
+  ).toBeInTheDocument()
+  expect(
+    screen.queryByRole('button', { name: 'Move items inside' }),
+  ).not.toBeInTheDocument()
+})
+
 it('warns when a shrink leaves items outside and offers the fix action', () => {
   const addToast = vi.spyOn(appToastManager, 'add').mockReturnValue('toast-1')
   const nearWall = makeFurnitureItem({ id: 'near-wall', position: [2.5, 0, 0] })

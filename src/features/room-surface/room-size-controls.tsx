@@ -5,7 +5,7 @@ import { ROOM_SIZE_LIMITS, type RoomSize } from '@/domain/geometry/room-metrics'
 import {
   moveItemsInsideRoom,
   setRoomSize,
-  useOutOfBoundsItemIds,
+  useOutOfBoundsStatus,
 } from '@/core/operations/room-size'
 import { useRoomSize } from '@/core/stores/scene-document-store'
 import { feedback } from '@/core/stores/feedback-store'
@@ -23,7 +23,8 @@ export function RoomSizeControls() {
   const { t } = useLingui()
   const baseId = useId()
   const roomSize = useRoomSize()
-  const outOfBoundsCount = useOutOfBoundsItemIds().length
+  const { outOfBoundsCount, oversizedCount, canMoveInside } =
+    useOutOfBoundsStatus()
 
   const [drafts, setDrafts] = useState<Partial<Record<RoomSizeField, string>>>(
     {},
@@ -88,9 +89,11 @@ export function RoomSizeControls() {
     if (result.ok) {
       resetField(field)
 
-      if (result.outOfBoundsCount > 0) {
+      const outOfBoundsCount = result.outOfBoundsCount
+
+      if (outOfBoundsCount > 0) {
         feedback.actionWarning({
-          title: plural(result.outOfBoundsCount, {
+          title: plural(outOfBoundsCount, {
             one: '# item is outside the room walls.',
             other: '# items are outside the room walls.',
           }),
@@ -119,9 +122,15 @@ export function RoomSizeControls() {
   const handleMoveItemsInside = () => {
     const result = moveItemsInsideRoom()
 
-    if (result.ok && result.movedCount > 0) {
+    if (!result.ok) {
+      return
+    }
+
+    const movedCount = result.movedCount
+
+    if (movedCount > 0) {
       feedback.actionSuccess({
-        title: plural(result.movedCount, {
+        title: plural(movedCount, {
           one: 'Moved # item inside the room.',
           other: 'Moved # items inside the room.',
         }),
@@ -212,14 +221,25 @@ export function RoomSizeControls() {
               other="# items are outside the room walls."
             />
           </p>
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            onClick={handleMoveItemsInside}
-          >
-            <Trans>Move items inside</Trans>
-          </Button>
+          {oversizedCount > 0 ? (
+            <p className="text-xs text-muted-foreground">
+              <Plural
+                value={oversizedCount}
+                one="# item is larger than the room and cannot fully fit."
+                other="# items are larger than the room and cannot fully fit."
+              />
+            </p>
+          ) : null}
+          {canMoveInside ? (
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={handleMoveItemsInside}
+            >
+              <Trans>Move items inside</Trans>
+            </Button>
+          ) : null}
         </div>
       ) : null}
     </div>

@@ -7,14 +7,6 @@ msgstr ""
 "X-Generator: @lingui/cli\n"
 "Language: en-XA\n"
 
-#. placeholder {0}: result.outOfBoundsCount
-msgid "{0, plural, one {# item is outside the room walls.} other {# items are outside the room walls.}}"
-msgstr "[{0, plural, one {# item is outside the room walls.} other {# items are outside the room walls.}}]"
-
-#. placeholder {0}: result.movedCount
-msgid "{0, plural, one {Moved # item inside the room.} other {Moved # items inside the room.}}"
-msgstr "[{0, plural, one {Moved # item inside the room.} other {Moved # items inside the room.}}]"
-
 msgid "{deletedName} removed from room."
 msgstr "[{deletedName} ŕēḿōvēď ƒŕōḿ ŕōōḿ.āēīōūáéíóúāēī]"
 
@@ -36,11 +28,17 @@ msgstr "[{itemName} Ƥĺàćēḿēńţāēīōūáéíóúāēīō]"
 msgid "{label} must be between {min} and {max}."
 msgstr "[{label} ḿũśţ ƀē ƀēţŵēēń {min} àńď {max}.āēīōūáéíóúāēīōūá]"
 
+msgid "{movedCount, plural, one {Moved # item inside the room.} other {Moved # items inside the room.}}"
+msgstr "[{movedCount, plural, one {Moved # item inside the room.} other {Moved # items inside the room.}}]"
+
 msgid "{movedItemName} moved to X {x} and Z {z}."
 msgstr "[{movedItemName} ḿōvēď ţō X {x} àńď Ź {z}.āēīōūáéíóúāēīōūáé]"
 
 msgid "{outOfBoundsCount, plural, one {# item is outside the room walls.} other {# items are outside the room walls.}}"
 msgstr "[{outOfBoundsCount, plural, one {# item is outside the room walls.} other {# items are outside the room walls.}}]"
+
+msgid "{oversizedCount, plural, one {# item is larger than the room and cannot fully fit.} other {# items are larger than the room and cannot fully fit.}}"
+msgstr "[{oversizedCount, plural, one {# item is larger than the room and cannot fully fit.} other {# items are larger than the room and cannot fully fit.}}]"
 
 msgid "{rotatingName} rotated."
 msgstr "[{rotatingName} ŕōţàţēď.āēīōūáéíóúāēī]"

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   clampItemsToLayoutBounds,
   getOutOfBoundsItemIds,
+  getOversizedItemIds,
   resolveAbsoluteFurnitureTransform,
   resolveMovedFurniturePosition,
   resolveRotatedFurnitureTransform,
@@ -314,6 +315,21 @@ describe('getOutOfBoundsItemIds', () => {
     ]
 
     expect(getOutOfBoundsItemIds(items, roomBounds)).toEqual([])
+  })
+})
+
+describe('getOversizedItemIds', () => {
+  it('flags only items whose footprint exceeds the room extent', () => {
+    const items = [
+      baseItems[0], // 2m footprint in a 6m room
+      {
+        ...baseItems[1],
+        id: 'oversized',
+        footprintSize: { width: 8, depth: 1 },
+      },
+    ]
+
+    expect(getOversizedItemIds(items, roomBounds)).toEqual(['oversized'])
   })
 })
 

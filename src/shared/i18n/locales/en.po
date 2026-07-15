@@ -13,16 +13,6 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
-#. placeholder {0}: result.outOfBoundsCount
-#: src/features/room-surface/room-size-controls.tsx
-msgid "{0, plural, one {# item is outside the room walls.} other {# items are outside the room walls.}}"
-msgstr "{0, plural, one {# item is outside the room walls.} other {# items are outside the room walls.}}"
-
-#. placeholder {0}: result.movedCount
-#: src/features/room-surface/room-size-controls.tsx
-msgid "{0, plural, one {Moved # item inside the room.} other {Moved # items inside the room.}}"
-msgstr "{0, plural, one {Moved # item inside the room.} other {Moved # items inside the room.}}"
-
 #: src/features/selection/deletion-actions.ts
 msgid "{deletedName} removed from room."
 msgstr "{deletedName} removed from room."
@@ -51,6 +41,10 @@ msgstr "{itemName} Placement"
 msgid "{label} must be between {min} and {max}."
 msgstr "{label} must be between {min} and {max}."
 
+#: src/features/room-surface/room-size-controls.tsx
+msgid "{movedCount, plural, one {Moved # item inside the room.} other {Moved # items inside the room.}}"
+msgstr "{movedCount, plural, one {Moved # item inside the room.} other {Moved # items inside the room.}}"
+
 #: src/core/operations/movement-actions.ts
 msgid "{movedItemName} moved to X {x} and Z {z}."
 msgstr "{movedItemName} moved to X {x} and Z {z}."
@@ -59,6 +53,10 @@ msgstr "{movedItemName} moved to X {x} and Z {z}."
 #: src/features/room-surface/room-size-controls.tsx
 msgid "{outOfBoundsCount, plural, one {# item is outside the room walls.} other {# items are outside the room walls.}}"
 msgstr "{outOfBoundsCount, plural, one {# item is outside the room walls.} other {# items are outside the room walls.}}"
+
+#: src/features/room-surface/room-size-controls.tsx
+msgid "{oversizedCount, plural, one {# item is larger than the room and cannot fully fit.} other {# items are larger than the room and cannot fully fit.}}"
+msgstr "{oversizedCount, plural, one {# item is larger than the room and cannot fully fit.} other {# items are larger than the room and cannot fully fit.}}"
 
 #: src/core/operations/movement-actions.ts
 msgid "{rotatingName} rotated."
