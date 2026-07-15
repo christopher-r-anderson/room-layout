@@ -1,4 +1,5 @@
 import type { FurnitureInstance } from '@/domain/furniture'
+import type { RoomSize } from '@/domain/geometry/room-metrics'
 
 /**
  * Rounds a number to 3 decimal places using toFixed() for robust floating-point handling.
@@ -36,4 +37,31 @@ export function isValidFurnitureInstance(
   )
     return false
   return true
+}
+
+/**
+ * Type guard for a persisted room size: finite positive dimensions only.
+ * Range limits are load-time policy (the restore normalize clamps), not a
+ * schema concern.
+ */
+export function isValidRoomSizePayload(value: unknown): value is RoomSize {
+  if (typeof value !== 'object' || value === null) return false
+  const v = value as Record<string, unknown>
+
+  return (
+    isFiniteNumber(v.width) &&
+    v.width > 0 &&
+    isFiniteNumber(v.depth) &&
+    v.depth > 0 &&
+    isFiniteNumber(v.height) &&
+    v.height > 0
+  )
+}
+
+export function roundRoomSize(size: RoomSize): RoomSize {
+  return {
+    width: roundTo3(size.width),
+    depth: roundTo3(size.depth),
+    height: roundTo3(size.height),
+  }
 }

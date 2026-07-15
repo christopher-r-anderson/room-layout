@@ -46,6 +46,14 @@ export function clampRoomSize(size: RoomSize): RoomSize {
   }
 }
 
+export function isDefaultRoomSize(size: RoomSize): boolean {
+  return (
+    size.width === DEFAULT_ROOM_SIZE.width &&
+    size.depth === DEFAULT_ROOM_SIZE.depth &&
+    size.height === DEFAULT_ROOM_SIZE.height
+  )
+}
+
 export function isRoomSizeWithinLimits(size: RoomSize): boolean {
   return (
     size.width >= ROOM_SIZE_LIMITS.width.min &&

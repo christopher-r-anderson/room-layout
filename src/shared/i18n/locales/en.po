@@ -41,6 +41,10 @@ msgstr "{itemName} Placement"
 msgid "{movedItemName} moved to X {x} and Z {z}."
 msgstr "{movedItemName} moved to X {x} and Z {z}."
 
+#: src/core/operations/restore-state.ts
+msgid "{outOfBoundsCount, plural, one {# item is outside the room walls.} other {# items are outside the room walls.}}"
+msgstr "{outOfBoundsCount, plural, one {# item is outside the room walls.} other {# items are outside the room walls.}}"
+
 #: src/core/operations/movement-actions.ts
 msgid "{rotatingName} rotated."
 msgstr "{rotatingName} rotated."

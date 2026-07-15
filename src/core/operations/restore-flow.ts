@@ -10,12 +10,14 @@ import { i18n } from '@/shared/i18n/i18n'
 import { feedback } from '@/core/stores/feedback-store'
 import { editorLifecycleActions } from '@/core/stores/editor-lifecycle-store'
 import type { FurnitureInstance } from '@/domain/furniture'
+import type { RoomSize } from '@/domain/geometry/room-metrics'
 
 export interface RestorableState {
   items: FurnitureInstance[]
   floorFinishId?: string
   wallFinishId?: string
   lightingMoodId?: string
+  roomSize?: RoomSize
 }
 
 type DraftRestoreAttempt = 'restored' | 'failed' | 'missing'

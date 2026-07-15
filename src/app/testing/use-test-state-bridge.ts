@@ -22,6 +22,7 @@ interface BrowserSceneState {
   floorFinishId: string
   wallFinishId: string
   lightingMoodId: string
+  roomSize: { width: number; depth: number; height: number }
   selectedId: string | null
   previewedId: string | null
   selectedName: string | null
@@ -92,6 +93,7 @@ export function useTestStateBridge({
           floorFinishId: activeFloorFinishId,
           wallFinishId: activeWallFinishId,
           lightingMoodId: activeLightingMoodId,
+          roomSize: storeState.roomSize,
           selectedId,
           previewedId: getPreviewedId(),
           selectedName: selectedItem?.name ?? null,

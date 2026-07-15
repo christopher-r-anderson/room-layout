@@ -13,6 +13,7 @@ import {
 } from '@/core/stores/scene-document-store'
 import { serializeSceneToUrl } from '@/core/persistence/scene-url'
 import { CHAIR } from '@/test/support/furniture'
+import { DEFAULT_ROOM_SIZE } from '@/domain/geometry/room-metrics'
 import { shareScene } from './share-scene'
 
 vi.mock('@/core/persistence/scene-url', () => ({
@@ -74,7 +75,11 @@ describe('shareScene', () => {
     expect(serializeSceneToUrlMock).toHaveBeenCalledWith(
       [CHAIR],
       window.location.href,
-      { floorFinishId: 'oak-floor', wallFinishId: 'white-wall' },
+      {
+        floorFinishId: 'oak-floor',
+        wallFinishId: 'white-wall',
+        roomSize: DEFAULT_ROOM_SIZE,
+      },
     )
     expect(clipboardWriteText).toHaveBeenCalledWith(SHARE_URL)
     expect(result).toBe('copied')

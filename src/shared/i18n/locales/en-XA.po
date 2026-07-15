@@ -28,6 +28,9 @@ msgstr "[{itemName} Ƥĺàćēḿēńţāēīōūáéíóúāēīō]"
 msgid "{movedItemName} moved to X {x} and Z {z}."
 msgstr "[{movedItemName} ḿōvēď ţō X {x} àńď Ź {z}.āēīōūáéíóúāēīōūáé]"
 
+msgid "{outOfBoundsCount, plural, one {# item is outside the room walls.} other {# items are outside the room walls.}}"
+msgstr "[{outOfBoundsCount, plural, one {# item is outside the room walls.} other {# items are outside the room walls.}}]"
+
 msgid "{rotatingName} rotated."
 msgstr "[{rotatingName} ŕōţàţēď.āēīōūáéíóúāēī]"
 

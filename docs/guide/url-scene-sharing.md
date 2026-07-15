@@ -18,6 +18,10 @@ that layout on startup. This doc is the overview; the exact encoder/decoder is
 - `items[].rotationY`: radians rounded to 3 decimals
 - `floorFinishId` and `wallFinishId`: optional environment finish IDs
 - `lightingMoodId`: optional lighting mood ID
+- `roomSize`: optional `{ width, depth, height }` in meters, rounded to 3
+  decimals; omitted at the default size (6 x 6 x 2.5). Out-of-limits values
+  are clamped on load; furniture is restored verbatim even when it falls
+  outside the room, with a warning.
 
 Optional environment fields are additive: a payload that omits them, or an older
 client that does not recognize one, still loads (unknown fields are ignored and

@@ -1,3 +1,5 @@
+import { DEFAULT_ROOM_SIZE, type RoomSize } from './geometry/room-metrics'
+
 interface SceneComparableItem {
   catalogId: string
   position: readonly [number, number, number]
@@ -9,6 +11,7 @@ export interface SceneComparableState {
   floorFinishId?: string
   wallFinishId?: string
   lightingMoodId?: string
+  roomSize?: RoomSize
 }
 
 function compareSceneItems(a: SceneComparableItem, b: SceneComparableItem) {
@@ -41,6 +44,19 @@ export function isSceneStateAtDefaults(
   state: SceneComparableState,
   defaults: SceneComparableState,
 ) {
+  // A missing room size means the state predates resizable rooms - the
+  // default size, exactly like a missing finish id falls to its default.
+  const stateRoomSize = state.roomSize ?? DEFAULT_ROOM_SIZE
+  const defaultRoomSize = defaults.roomSize ?? DEFAULT_ROOM_SIZE
+
+  if (
+    stateRoomSize.width !== defaultRoomSize.width ||
+    stateRoomSize.depth !== defaultRoomSize.depth ||
+    stateRoomSize.height !== defaultRoomSize.height
+  ) {
+    return false
+  }
+
   if (state.floorFinishId !== defaults.floorFinishId) {
     return false
   }

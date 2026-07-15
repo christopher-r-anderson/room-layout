@@ -1,3 +1,4 @@
+import { DEFAULT_ROOM_SIZE } from '@/domain/geometry/room-metrics'
 import { useAssetsStore } from '@/core/stores/assets-store'
 import { sceneDocumentActions } from '@/core/stores/scene-document-store'
 import { clearPreviewOnCanvasMiss } from '@/core/operations/preview-actions'
@@ -28,6 +29,7 @@ export function resetSceneToDefaults() {
   sceneDocumentActions.setLightingMoodId(
     environmentConfig?.defaultLightingMoodId ?? '',
   )
+  sceneDocumentActions.setRoomSize(DEFAULT_ROOM_SIZE)
 
   // Cosmetic: recentering the camera is best-effort, so it is fine to skip if
   // the scene is somehow not ready.

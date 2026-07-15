@@ -63,10 +63,42 @@ describe('scene draft storage', () => {
     })
   })
 
+  it('round-trips a non-default room size, rounded to 3 decimals', () => {
+    saveSceneDraft([], {
+      roomSize: { width: 4.0004, depth: 5, height: 3 },
+    })
+
+    expect(loadSceneDraft()?.roomSize).toEqual({
+      width: 4,
+      depth: 5,
+      height: 3,
+    })
+  })
+
+  it('omits the room size at the default and loads it as undefined', () => {
+    saveSceneDraft([makeFurnitureItem()], {
+      roomSize: { width: 6, depth: 6, height: 2.5 },
+    })
+
+    const draft = loadSceneDraft()
+    expect(draft).not.toBeNull()
+    expect(draft?.roomSize).toBeUndefined()
+  })
+
   it('returns null for invalid or incompatible payload', () => {
     // Write a future-version payload through the same storage API the module
     // uses, rather than coupling to the storage lib's key-prefixing.
     saveJson('scene-draft', { version: 2, items: [] })
+
+    expect(loadSceneDraft()).toBeNull()
+  })
+
+  it('returns null for a draft with a malformed room size', () => {
+    saveJson('scene-draft', {
+      version: 1,
+      items: [],
+      roomSize: { width: -1, depth: 5, height: 3 },
+    })
 
     expect(loadSceneDraft()).toBeNull()
   })

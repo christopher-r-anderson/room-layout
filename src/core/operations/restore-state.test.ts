@@ -1,4 +1,7 @@
 import { beforeEach, expect, it, vi } from 'vitest'
+import { createHistoryState } from '@/shared/lib/ui/editor-history'
+import { DEFAULT_ROOM_SIZE } from '@/domain/geometry/room-metrics'
+import { makeFurnitureItem } from '@/test/support/furniture'
 import {
   applyRestorableState,
   isRestorableStateAtDefaults,
@@ -7,8 +10,10 @@ import {
 } from './restore-state'
 import { restoreInitialLayout } from './history-mutations'
 import { saveSceneDraft } from '@/core/persistence/scene-draft'
+import { appToastManager } from '@/core/stores/feedback-store'
 import {
   resetSceneDocumentStore,
+  sceneDocumentActions,
   useSceneDocumentStore,
 } from '@/core/stores/scene-document-store'
 import type { FurnitureInstance } from '@/domain/furniture'
@@ -80,7 +85,61 @@ it('applies layout, finishes, and the persisted draft from one normalized snapsh
     floorFinishId: 'floor-oak',
     wallFinishId: 'wall-default',
     lightingMoodId: 'mood-dusk',
+    roomSize: DEFAULT_ROOM_SIZE,
   })
+})
+
+it('clamps a stored room size into limits and defaults an absent one', () => {
+  expect(
+    normalizeRestorableState(
+      { items: [], roomSize: { width: 1, depth: 30, height: 2.5004 } },
+      CONTEXT,
+    ).roomSize,
+  ).toEqual({ width: 2, depth: 20, height: 2.5 })
+
+  expect(normalizeRestorableState({ items: [] }, CONTEXT).roomSize).toEqual(
+    DEFAULT_ROOM_SIZE,
+  )
+})
+
+it('applies the stored room size and warns when restored items fall outside it', () => {
+  const addToast = vi.spyOn(appToastManager, 'add').mockReturnValue('toast-1')
+  // restoreInitialLayout is mocked, so seed the rebuilt items directly: one
+  // outside the 4x4 room, one inside.
+  sceneDocumentActions.setHistory(
+    createHistoryState([
+      makeFurnitureItem({ id: 'outside', position: [10, 0, 0] }),
+      makeFurnitureItem({ id: 'inside', position: [0, 0, 0] }),
+    ]),
+  )
+
+  applyRestorableState(
+    { items: [ITEM], roomSize: { width: 4, depth: 4, height: 2.5 } },
+    CONTEXT,
+  )
+
+  expect(useSceneDocumentStore.getState().roomSize).toEqual({
+    width: 4,
+    depth: 4,
+    height: 2.5,
+  })
+  expect(addToast).toHaveBeenCalledWith(
+    expect.objectContaining({
+      type: 'warning',
+      title: '1 item is outside the room walls.',
+    }),
+  )
+})
+
+it('does not warn when every restored item fits the stored room size', () => {
+  const addToast = vi.spyOn(appToastManager, 'add').mockReturnValue('toast-1')
+  sceneDocumentActions.setHistory(
+    createHistoryState([makeFurnitureItem({ position: [0, 0, 0] })]),
+  )
+
+  applyRestorableState({ items: [ITEM] }, CONTEXT)
+
+  expect(addToast).not.toHaveBeenCalled()
 })
 
 it('skips finish writes when the environment has no vocabulary for them', () => {
@@ -112,6 +171,18 @@ it('treats an empty layout with default (or normalized-to-default) finishes as f
   ).toBe(true)
 
   expect(isRestorableStateAtDefaults({ items: [ITEM] }, CONTEXT)).toBe(false)
+  expect(
+    isRestorableStateAtDefaults(
+      { items: [], roomSize: { width: 4, depth: 6, height: 2.5 } },
+      CONTEXT,
+    ),
+  ).toBe(false)
+  expect(
+    isRestorableStateAtDefaults(
+      { items: [], roomSize: DEFAULT_ROOM_SIZE },
+      CONTEXT,
+    ),
+  ).toBe(true)
   expect(
     isRestorableStateAtDefaults(
       { items: [], floorFinishId: 'floor-oak' },

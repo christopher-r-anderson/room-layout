@@ -16,6 +16,7 @@ import {
 import { restoreInitialLayout } from '@/core/operations/history-mutations'
 import { loadSceneDraft, saveSceneDraft } from '@/core/persistence/scene-draft'
 import { CHAIR } from '@/test/support/furniture'
+import { DEFAULT_ROOM_SIZE } from '@/domain/geometry/room-metrics'
 import { resetSceneToDefaults } from './scene-reset'
 
 vi.mock('@/core/operations/history-mutations', () => ({
@@ -70,6 +71,15 @@ describe('resetSceneToDefaults', () => {
     expect(useSceneDocumentStore.getState().floorFinishId).toBe('oak-floor')
     expect(useSceneDocumentStore.getState().wallFinishId).toBe('white-wall')
     expect(useSceneDocumentStore.getState().lightingMoodId).toBe('daylight')
+  })
+
+  it('restores the default room size', () => {
+    loadEnvironment()
+    sceneDocumentActions.setRoomSize({ width: 4, depth: 5, height: 3 })
+
+    resetSceneToDefaults()
+
+    expect(useSceneDocumentStore.getState().roomSize).toEqual(DEFAULT_ROOM_SIZE)
   })
 
   it('falls back to empty finish ids when no environment is loaded', () => {
