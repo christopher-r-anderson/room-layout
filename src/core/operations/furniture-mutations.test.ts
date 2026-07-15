@@ -144,6 +144,16 @@ it('moveSelection moves the selected item and commits a history entry', () => {
   expect(state.history.past).toHaveLength(1)
 })
 
+it('moveSelection clamps against the bounds of the current room size', () => {
+  seedSelectedChair()
+  sceneDocumentActions.setRoomSize({ width: 4, depth: 4, height: 2.5 })
+
+  const result = moveSelection({ x: 10, z: 0 })
+
+  // The chair's 1x1 footprint stops flush against the 4m room's right wall.
+  expect(result).toEqual({ ok: true, position: [1.5, 0, 0] })
+})
+
 it('setSelectionTransform applies position and rotation and commits a history entry', () => {
   seedSelectedChair()
 

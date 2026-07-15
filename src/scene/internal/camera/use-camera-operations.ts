@@ -2,8 +2,9 @@ import { useCallback, type RefObject } from 'react'
 import type { Object3D } from 'three'
 import type { CameraControlsImpl } from '@react-three/drei'
 import { useSelectionStore } from '@/core/stores/selection-store'
+import { getRoomSize } from '@/core/stores/scene-document-store'
 import { getVisualObjectBounds } from '@/scene/internal/three/get-visual-object-bounds'
-import { CAMERA_PRESETS } from './camera-presets'
+import { getCameraPresetViews } from './camera-presets'
 import type { CameraKeyState, CameraPreset } from '@/core/scene.types'
 
 interface UseCameraOperationsOptions {
@@ -24,7 +25,9 @@ export function useCameraOperations({
 }: UseCameraOperationsOptions) {
   const setCameraPreset = useCallback(
     (preset: CameraPreset) => {
-      const view = CAMERA_PRESETS[preset]
+      // Resolved at call time so the registered scene service never frames a
+      // stale room size.
+      const view = getCameraPresetViews(getRoomSize())[preset]
       void cameraControlsRef.current?.setLookAt(
         ...view.position,
         ...view.target,

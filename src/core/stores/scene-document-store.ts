@@ -5,17 +5,22 @@ import {
   type HistoryState,
 } from '@/shared/lib/ui/editor-history'
 import type { FurnitureItem } from '@/domain/furniture'
+import {
+  DEFAULT_ROOM_SIZE,
+  type RoomSize,
+} from '@/domain/geometry/room-metrics'
 
 // The scene document: the persisted, undoable description of the room - the
-// furniture history, the id counter behind stable instance ids, and the active
-// finish/mood ids. Session state (preview, drag, transient loading) lives in
-// scene-session-store.
+// furniture history, the id counter behind stable instance ids, the active
+// finish/mood ids, and the room size. Session state (preview, drag, transient
+// loading) lives in scene-session-store.
 interface SceneDocumentStoreState {
   history: HistoryState<FurnitureItem[]>
   instanceIdCounter: number
   floorFinishId: string
   wallFinishId: string
   lightingMoodId: string
+  roomSize: RoomSize
 }
 
 export const useSceneDocumentStore = create<SceneDocumentStoreState>()(
@@ -26,6 +31,7 @@ export const useSceneDocumentStore = create<SceneDocumentStoreState>()(
       floorFinishId: '',
       wallFinishId: '',
       lightingMoodId: '',
+      roomSize: DEFAULT_ROOM_SIZE,
     }),
   ),
 )
@@ -69,6 +75,15 @@ export const sceneDocumentActions = {
       state.lightingMoodId === id ? state : { lightingMoodId: id },
     )
   },
+  setRoomSize: (roomSize: RoomSize) => {
+    useSceneDocumentStore.setState((state) =>
+      state.roomSize.width === roomSize.width &&
+      state.roomSize.depth === roomSize.depth &&
+      state.roomSize.height === roomSize.height
+        ? state
+        : { roomSize },
+    )
+  },
   reset: () => {
     useSceneDocumentStore.setState(
       useSceneDocumentStore.getInitialState(),
@@ -94,3 +109,10 @@ export const useWallFinishId = () =>
   useSceneDocumentStore((state) => state.wallFinishId)
 export const useLightingMoodId = () =>
   useSceneDocumentStore((state) => state.lightingMoodId)
+export const useRoomSize = () =>
+  useSceneDocumentStore((state) => state.roomSize)
+
+/** Non-reactive peer of {@link useRoomSize} for use outside React. */
+export function getRoomSize() {
+  return useSceneDocumentStore.getState().roomSize
+}

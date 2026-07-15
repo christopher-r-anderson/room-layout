@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
+  clampItemsToLayoutBounds,
+  getOutOfBoundsItemIds,
   resolveAbsoluteFurnitureTransform,
   resolveMovedFurniturePosition,
   resolveRotatedFurnitureTransform,
@@ -271,5 +273,104 @@ describe('resolveAbsoluteFurnitureTransform', () => {
       ok: false,
       reason: 'blocked-collision',
     })
+  })
+})
+
+// baseItems' 'target' footprint intentionally pokes past the wall; the
+// bounds-fitting cases below need items that genuinely fit.
+const fittingItems = [
+  baseItems[0],
+  {
+    ...baseItems[1],
+    position: [1.8, 0, 0] as [number, number, number],
+  },
+]
+
+describe('getOutOfBoundsItemIds', () => {
+  it('returns no ids when every footprint fits inside the bounds', () => {
+    expect(getOutOfBoundsItemIds(fittingItems, roomBounds)).toEqual([])
+  })
+
+  it('flags items whose footprint crosses a wall', () => {
+    const items = [
+      baseItems[0],
+      {
+        ...baseItems[1],
+        id: 'outside',
+        position: [2.5, 0, 0] as [number, number, number],
+      },
+    ]
+
+    expect(getOutOfBoundsItemIds(items, roomBounds)).toEqual(['outside'])
+  })
+
+  it('tolerates the sub-millimeter excursion left by serialization rounding', () => {
+    // footprint maxX = 3.0005: past the wall by exactly the roundTo3 error.
+    const items = [
+      {
+        ...baseItems[0],
+        position: [2.0005, 0, 0] as [number, number, number],
+      },
+    ]
+
+    expect(getOutOfBoundsItemIds(items, roomBounds)).toEqual([])
+  })
+})
+
+describe('clampItemsToLayoutBounds', () => {
+  it('returns the input array identity when nothing moves', () => {
+    const result = clampItemsToLayoutBounds(fittingItems, roomBounds)
+
+    expect(result.items).toBe(fittingItems)
+    expect(result.movedCount).toBe(0)
+  })
+
+  it('pulls out-of-bounds items flush to the wall and counts them', () => {
+    const items = [
+      baseItems[0],
+      {
+        ...baseItems[1],
+        id: 'outside',
+        position: [4, 0, 0] as [number, number, number],
+      },
+    ]
+
+    const result = clampItemsToLayoutBounds(items, roomBounds)
+
+    expect(result.movedCount).toBe(1)
+    expect(result.items[0]).toBe(items[0])
+    expect(result.items[1].position).toEqual([2, 0, 0])
+  })
+
+  it('centers a footprint larger than the room on the exceeded axis', () => {
+    const items = [
+      {
+        ...baseItems[0],
+        footprintSize: { width: 8, depth: 1 },
+        position: [1.5, 0, 0] as [number, number, number],
+      },
+    ]
+
+    const result = clampItemsToLayoutBounds(items, roomBounds)
+
+    expect(result.movedCount).toBe(1)
+    expect(result.items[0].position).toEqual([0, 0, 0])
+  })
+
+  it('keeps identity for an oversized footprint that is already centered', () => {
+    // Still flagged out of bounds, but no closer position exists; a repeat
+    // pull must not report movement or produce fresh objects.
+    const items = [
+      {
+        ...baseItems[0],
+        footprintSize: { width: 8, depth: 1 },
+        position: [0, 0, 0] as [number, number, number],
+      },
+    ]
+
+    const result = clampItemsToLayoutBounds(items, roomBounds)
+
+    expect(result.movedCount).toBe(0)
+    expect(result.items).toBe(items)
   })
 })

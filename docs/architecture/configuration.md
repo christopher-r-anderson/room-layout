@@ -5,13 +5,13 @@ localStorage keys are namespaced.
 
 ## Tiers
 
-| Tier             | Fixed at      | Lives in                        | Examples                                     |
-| ---------------- | ------------- | ------------------------------- | -------------------------------------------- |
-| code defaults    | authoring     | constants in source             | room dimensions, camera presets, meter units |
-| build config     | `vite build`  | `VITE_*` env vars               | `VITE_BASE_PATH`, `VITE_STORAGE_INSTANCE`    |
-| deploy config    | startup fetch | `public/catalog-manifest.json`  | catalog, floor/wall finishes, lighting moods |
-| user preferences | runtime       | localStorage                    | `outliner-expanded`, `locale`                |
-| user data        | runtime       | localStorage, versioned payload | `scene-draft`                                |
+| Tier             | Fixed at      | Lives in                        | Examples                                                     |
+| ---------------- | ------------- | ------------------------------- | ------------------------------------------------------------ |
+| code defaults    | authoring     | constants in source             | room size defaults/limits, camera preset ratios, meter units |
+| build config     | `vite build`  | `VITE_*` env vars               | `VITE_BASE_PATH`, `VITE_STORAGE_INSTANCE`                    |
+| deploy config    | startup fetch | `public/catalog-manifest.json`  | catalog, floor/wall finishes, lighting moods                 |
+| user preferences | runtime       | localStorage                    | `outliner-expanded`, `locale`                                |
+| user data        | runtime       | localStorage, versioned payload | `scene-draft`                                                |
 
 The locale is the one value resolved across tiers: transient `?lang=` override
 -> stored preference -> browser language -> `en`

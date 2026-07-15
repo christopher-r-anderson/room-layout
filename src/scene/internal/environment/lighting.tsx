@@ -6,9 +6,12 @@ import { resolveLightingMood } from './lighting-mood'
 export function Lighting({
   lowQuality = false,
   mood = null,
+  shadowExtent = 5.5,
 }: {
   lowQuality?: boolean
   mood?: LightingMoodOption | null
+  /** Half-size of the key light's shadow frustum; must cover the floor. */
+  shadowExtent?: number
 }) {
   const m = resolveLightingMood(mood)
 
@@ -48,10 +51,10 @@ export function Lighting({
         color={m.keyLightColor}
         castShadow
         shadow-mapSize={[1024, 1024]}
-        shadow-camera-left={-5.5}
-        shadow-camera-right={5.5}
-        shadow-camera-top={5.5}
-        shadow-camera-bottom={-5.5}
+        shadow-camera-left={-shadowExtent}
+        shadow-camera-right={shadowExtent}
+        shadow-camera-top={shadowExtent}
+        shadow-camera-bottom={-shadowExtent}
         shadow-camera-near={0.5}
         shadow-camera-far={20}
         shadow-bias={-0.0005}

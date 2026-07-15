@@ -1,9 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import type { FurnitureItem } from '@/domain/furniture'
+import { DEFAULT_ROOM_SIZE, getRoomLayoutBounds } from './room-metrics'
 import {
   getWallClearances,
   resolvePositionFromWallClearances,
 } from './wall-clearance'
+
+const bounds = getRoomLayoutBounds(DEFAULT_ROOM_SIZE)
 
 function createItem(overrides: Partial<FurnitureItem> = {}): FurnitureItem {
   return {
@@ -28,7 +31,7 @@ describe('wall-clearance', () => {
   it('measures wall clearance from the footprint edge rather than the item center', () => {
     const item = createItem()
 
-    expect(getWallClearances(item)).toEqual({
+    expect(getWallClearances(item, bounds)).toEqual({
       left: 1.9,
       back: 2.525,
     })
@@ -40,7 +43,7 @@ describe('wall-clearance', () => {
       rotationY: Math.PI / 2,
     })
 
-    const clearances = getWallClearances(item)
+    const clearances = getWallClearances(item, bounds)
 
     expect(clearances.left).toBeCloseTo(0)
     expect(clearances.back).toBeCloseTo(0)
@@ -49,7 +52,11 @@ describe('wall-clearance', () => {
   it('resolves a typed left-wall clearance to the correct center position', () => {
     const item = createItem()
 
-    const nextPosition = resolvePositionFromWallClearances(item, { left: 1.2 })
+    const nextPosition = resolvePositionFromWallClearances(
+      item,
+      { left: 1.2 },
+      bounds,
+    )
 
     expect(nextPosition[0]).toBeCloseTo(-0.7)
     expect(nextPosition[1]).toBe(0)
@@ -59,12 +66,17 @@ describe('wall-clearance', () => {
   it('preserves rotation-aware footprint clearance when resolving the back wall distance', () => {
     const item = createItem({ rotationY: Math.PI / 2 })
 
-    const nextPosition = resolvePositionFromWallClearances(item, { back: 0.25 })
+    const nextPosition = resolvePositionFromWallClearances(
+      item,
+      { back: 0.25 },
+      bounds,
+    )
     const clearances = getWallClearances(
       createItem({
         position: nextPosition,
         rotationY: Math.PI / 2,
       }),
+      bounds,
     )
 
     expect(clearances.left).toBeCloseTo(2.525)
