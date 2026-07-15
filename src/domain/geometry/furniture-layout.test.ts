@@ -356,4 +356,21 @@ describe('clampItemsToLayoutBounds', () => {
     expect(result.movedCount).toBe(1)
     expect(result.items[0].position).toEqual([0, 0, 0])
   })
+
+  it('keeps identity for an oversized footprint that is already centered', () => {
+    // Still flagged out of bounds, but no closer position exists; a repeat
+    // pull must not report movement or produce fresh objects.
+    const items = [
+      {
+        ...baseItems[0],
+        footprintSize: { width: 8, depth: 1 },
+        position: [0, 0, 0] as [number, number, number],
+      },
+    ]
+
+    const result = clampItemsToLayoutBounds(items, roomBounds)
+
+    expect(result.movedCount).toBe(0)
+    expect(result.items).toBe(items)
+  })
 })

@@ -163,11 +163,23 @@ export function clampItemsToLayoutBounds<T extends FurnitureLayoutItem>(
       return item
     }
 
+    const nextPosition = pullPositionInsideBounds(item, bounds)
+
+    // An oversized footprint stays flagged after centering; keep the item's
+    // identity so repeated pulls don't stack no-op history commits.
+    if (
+      nextPosition[0] === item.position[0] &&
+      nextPosition[1] === item.position[1] &&
+      nextPosition[2] === item.position[2]
+    ) {
+      return item
+    }
+
     movedCount += 1
 
     return {
       ...item,
-      position: pullPositionInsideBounds(item, bounds),
+      position: nextPosition,
     }
   })
 
