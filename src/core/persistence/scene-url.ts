@@ -1,14 +1,11 @@
 import type { FurnitureCatalogEntry } from '@/domain/catalog'
 import type { FurnitureInstance, FurnitureItem } from '@/domain/furniture'
+import type { RoomSize } from '@/domain/geometry/room-metrics'
 import {
-  isDefaultRoomSize,
-  type RoomSize,
-} from '@/domain/geometry/room-metrics'
-import {
+  hasValidOptionalRoomSize,
   isValidFurnitureInstance,
-  isValidRoomSizePayload,
-  roundRoomSize,
   roundTo3,
+  toPersistedRoomSize,
 } from './furniture-serialization'
 
 export const SCENE_URL_PARAM = 'scene'
@@ -83,7 +80,7 @@ function isValidScenePayloadV1(value: unknown): value is SceneUrlPayloadV1 {
     }
   }
 
-  if ('roomSize' in v && !isValidRoomSizePayload(v.roomSize)) {
+  if (!hasValidOptionalRoomSize(v)) {
     return false
   }
 
@@ -140,9 +137,10 @@ export function serializeSceneToUrl(
     payload.lightingMoodId = options.lightingMoodId
   }
 
-  // Omitted at the default size so links to unresized rooms stay unchanged.
-  if (options?.roomSize && !isDefaultRoomSize(options.roomSize)) {
-    payload.roomSize = roundRoomSize(options.roomSize)
+  const persistedRoomSize = toPersistedRoomSize(options?.roomSize)
+
+  if (persistedRoomSize) {
+    payload.roomSize = persistedRoomSize
   }
 
   const jsonString = JSON.stringify(payload)

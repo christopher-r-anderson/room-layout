@@ -1,18 +1,15 @@
 import type { FurnitureInstance } from '@/domain/furniture'
-import {
-  isDefaultRoomSize,
-  type RoomSize,
-} from '@/domain/geometry/room-metrics'
+import type { RoomSize } from '@/domain/geometry/room-metrics'
 import {
   loadJsonWithDefault,
   removeKey,
   saveJson,
 } from '@/shared/lib/ui/storage'
 import {
+  hasValidOptionalRoomSize,
   isValidFurnitureInstance,
-  isValidRoomSizePayload,
-  roundRoomSize,
   roundTo3,
+  toPersistedRoomSize,
 } from './furniture-serialization'
 
 const SCENE_DRAFT_STORAGE_KEY = 'scene-draft'
@@ -67,7 +64,7 @@ function isValidSceneDraftPayload(
     }
   }
 
-  if ('roomSize' in v && !isValidRoomSizePayload(v.roomSize)) {
+  if (!hasValidOptionalRoomSize(v)) {
     return false
   }
 
@@ -113,9 +110,10 @@ export function saveSceneDraft(
     payload.lightingMoodId = options.lightingMoodId
   }
 
-  // Omitted at the default size so unresized-room drafts stay unchanged.
-  if (options?.roomSize && !isDefaultRoomSize(options.roomSize)) {
-    payload.roomSize = roundRoomSize(options.roomSize)
+  const persistedRoomSize = toPersistedRoomSize(options?.roomSize)
+
+  if (persistedRoomSize) {
+    payload.roomSize = persistedRoomSize
   }
 
   saveJson(SCENE_DRAFT_STORAGE_KEY, payload)

@@ -1,5 +1,8 @@
 import type { FurnitureInstance } from '@/domain/furniture'
-import type { RoomSize } from '@/domain/geometry/room-metrics'
+import {
+  isDefaultRoomSize,
+  type RoomSize,
+} from '@/domain/geometry/room-metrics'
 
 /**
  * Rounds a number to 3 decimal places using toFixed() for robust floating-point handling.
@@ -44,7 +47,7 @@ export function isValidFurnitureInstance(
  * Range limits are load-time policy (the restore normalize clamps), not a
  * schema concern.
  */
-export function isValidRoomSizePayload(value: unknown): value is RoomSize {
+function isValidRoomSizePayload(value: unknown): value is RoomSize {
   if (typeof value !== 'object' || value === null) return false
   const v = value as Record<string, unknown>
 
@@ -64,4 +67,21 @@ export function roundRoomSize(size: RoomSize): RoomSize {
     depth: roundTo3(size.depth),
     height: roundTo3(size.height),
   }
+}
+
+/** Valid when absent; a present room size must be structurally sound. */
+export function hasValidOptionalRoomSize(
+  value: Record<string, unknown>,
+): boolean {
+  return !('roomSize' in value) || isValidRoomSizePayload(value.roomSize)
+}
+
+/**
+ * The room size as persisted: rounded, and omitted (undefined) at the
+ * default so unresized payloads stay byte-identical.
+ */
+export function toPersistedRoomSize(
+  size: RoomSize | undefined,
+): RoomSize | undefined {
+  return !size || isDefaultRoomSize(size) ? undefined : roundRoomSize(size)
 }

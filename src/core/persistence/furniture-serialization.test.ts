@@ -1,9 +1,10 @@
 import {
   roundTo3,
   roundRoomSize,
+  hasValidOptionalRoomSize,
   isFiniteNumber,
   isValidFurnitureInstance,
-  isValidRoomSizePayload,
+  toPersistedRoomSize,
 } from './furniture-serialization'
 import { describe, it, expect } from 'vitest'
 
@@ -112,19 +113,27 @@ describe('furniture-serialization', () => {
     })
   })
 
-  describe('isValidRoomSizePayload', () => {
-    it('returns true for finite positive dimensions', () => {
-      expect(isValidRoomSizePayload({ width: 4, depth: 5.5, height: 3 })).toBe(
-        true,
-      )
+  describe('hasValidOptionalRoomSize', () => {
+    it('accepts an absent room size', () => {
+      expect(hasValidOptionalRoomSize({ items: [] })).toBe(true)
+    })
+
+    it('accepts a present room size with finite positive dimensions', () => {
+      expect(
+        hasValidOptionalRoomSize({
+          roomSize: { width: 4, depth: 5.5, height: 3 },
+        }),
+      ).toBe(true)
       // Out-of-limits values are still structurally valid: range is
       // load-time policy, applied by the restore normalize.
       expect(
-        isValidRoomSizePayload({ width: 100, depth: 0.1, height: 50 }),
+        hasValidOptionalRoomSize({
+          roomSize: { width: 100, depth: 0.1, height: 50 },
+        }),
       ).toBe(true)
     })
 
-    it('returns false for missing, non-numeric, non-finite, or non-positive dimensions', () => {
+    it('rejects a present room size that is malformed', () => {
       const invalid = [
         null,
         'room',
@@ -136,9 +145,24 @@ describe('furniture-serialization', () => {
         { width: -4, depth: 5, height: 3 },
       ]
 
-      invalid.forEach((value) => {
-        expect(isValidRoomSizePayload(value)).toBe(false)
+      invalid.forEach((roomSize) => {
+        expect(hasValidOptionalRoomSize({ roomSize })).toBe(false)
       })
+    })
+  })
+
+  describe('toPersistedRoomSize', () => {
+    it('returns undefined for an absent or default size', () => {
+      expect(toPersistedRoomSize(undefined)).toBeUndefined()
+      expect(
+        toPersistedRoomSize({ width: 6, depth: 6, height: 2.5 }),
+      ).toBeUndefined()
+    })
+
+    it('rounds a non-default size to 3 decimals', () => {
+      expect(
+        toPersistedRoomSize({ width: 4.0004, depth: 5, height: 3 }),
+      ).toEqual({ width: 4, depth: 5, height: 3 })
     })
   })
 
