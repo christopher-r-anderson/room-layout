@@ -1,14 +1,14 @@
 import {
   roundTo3,
   roundRoomSize,
-  hasValidOptionalRoomSize,
+  hasValidScenePayloadFields,
   isFiniteNumber,
   isValidFurnitureInstance,
-  toPersistedRoomSize,
-} from './furniture-serialization'
+  toScenePayloadFields,
+} from './scene-payload'
 import { describe, it, expect } from 'vitest'
 
-describe('furniture-serialization', () => {
+describe('scene-payload', () => {
   describe('roundTo3', () => {
     it('rounds numbers to 3 decimal places', () => {
       expect(roundTo3(1.23456)).toBe(1.235)
@@ -113,21 +113,23 @@ describe('furniture-serialization', () => {
     })
   })
 
-  describe('hasValidOptionalRoomSize', () => {
+  describe('hasValidScenePayloadFields', () => {
     it('accepts an absent room size', () => {
-      expect(hasValidOptionalRoomSize({ items: [] })).toBe(true)
+      expect(hasValidScenePayloadFields({ items: [] })).toBe(true)
     })
 
     it('accepts a present room size with finite positive dimensions', () => {
       expect(
-        hasValidOptionalRoomSize({
+        hasValidScenePayloadFields({
+          items: [],
           roomSize: { width: 4, depth: 5.5, height: 3 },
         }),
       ).toBe(true)
       // Out-of-limits values are still structurally valid: range is
       // load-time policy, applied by the restore normalize.
       expect(
-        hasValidOptionalRoomSize({
+        hasValidScenePayloadFields({
+          items: [],
           roomSize: { width: 100, depth: 0.1, height: 50 },
         }),
       ).toBe(true)
@@ -146,22 +148,26 @@ describe('furniture-serialization', () => {
       ]
 
       invalid.forEach((roomSize) => {
-        expect(hasValidOptionalRoomSize({ roomSize })).toBe(false)
+        expect(hasValidScenePayloadFields({ items: [], roomSize })).toBe(false)
       })
     })
   })
 
-  describe('toPersistedRoomSize', () => {
-    it('returns undefined for an absent or default size', () => {
-      expect(toPersistedRoomSize(undefined)).toBeUndefined()
+  describe('toScenePayloadFields', () => {
+    it('omits an absent or default room size', () => {
+      expect(toScenePayloadFields([]).roomSize).toBeUndefined()
       expect(
-        toPersistedRoomSize({ width: 6, depth: 6, height: 2.5 }),
+        toScenePayloadFields([], {
+          roomSize: { width: 6, depth: 6, height: 2.5 },
+        }).roomSize,
       ).toBeUndefined()
     })
 
-    it('rounds a non-default size to 3 decimals', () => {
+    it('rounds a non-default room size to 3 decimals', () => {
       expect(
-        toPersistedRoomSize({ width: 4.0004, depth: 5, height: 3 }),
+        toScenePayloadFields([], {
+          roomSize: { width: 4.0004, depth: 5, height: 3 },
+        }).roomSize,
       ).toEqual({ width: 4, depth: 5, height: 3 })
     })
   })

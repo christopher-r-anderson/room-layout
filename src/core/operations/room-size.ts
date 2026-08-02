@@ -11,7 +11,7 @@ import {
   type RoomSize,
 } from '@/domain/geometry/room-metrics'
 import { commitHistoryPresent } from '@/shared/lib/ui/editor-history'
-import { roundRoomSize } from '@/core/persistence/furniture-serialization'
+import { roundRoomSize } from '@/core/persistence/scene-payload'
 import {
   getRoomSize,
   sceneDocumentActions,
