@@ -47,6 +47,9 @@ export function resolveFinishContext(): FinishContext {
   }
 }
 
+/** A restorable state after normalization: the room size always resolved. */
+type NormalizedRestorableState = RestorableState & { roomSize: RoomSize }
+
 /**
  * Coerces each finish id to itself when known, else the environment default,
  * and the room size into its limits (or the default when absent).
@@ -54,7 +57,7 @@ export function resolveFinishContext(): FinishContext {
 export function normalizeRestorableState(
   state: RestorableState,
   context: FinishContext,
-): RestorableState & { roomSize: RoomSize } {
+): NormalizedRestorableState {
   return {
     ...state,
     floorFinishId: context.floorFinishIds.includes(state.floorFinishId ?? '')
