@@ -16,7 +16,7 @@ import {
 } from '@/core/stores/scene-document-store'
 import { restoreInitialLayout } from './history-mutations'
 import { saveSceneDraft } from '@/core/persistence/scene-draft'
-import { roundRoomSize } from '@/core/persistence/furniture-serialization'
+import { roundRoomSize } from '@/core/persistence/scene-payload'
 import type { RestorableState } from './restore-flow'
 
 /** The catalog and finish vocabulary a restorable state is resolved against. */

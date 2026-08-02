@@ -1,33 +1,18 @@
 import type { FurnitureCatalogEntry } from '@/domain/catalog'
 import type { FurnitureInstance, FurnitureItem } from '@/domain/furniture'
-import type { RoomSize } from '@/domain/geometry/room-metrics'
 import {
-  hasValidOptionalRoomSize,
-  isValidFurnitureInstance,
-  roundTo3,
-  toPersistedRoomSize,
-} from './furniture-serialization'
+  hasValidScenePayloadFields,
+  pickScenePayloadFields,
+  toScenePayloadFields,
+  type ScenePayloadFields,
+  type ScenePayloadOptions,
+} from './scene-payload'
 
 export const SCENE_URL_PARAM = 'scene'
 export const SCENE_URL_MAX_ENCODED_LENGTH = 4000
 const SCENE_URL_VERSION = 1
 
-// ---------------------------------------------------------------------------
-// V1 payload shape
-// ---------------------------------------------------------------------------
-
-interface SceneUrlPayloadV1 {
-  v: 1
-  items: FurnitureInstance[]
-  floorFinishId?: string
-  wallFinishId?: string
-  lightingMoodId?: string
-  roomSize?: RoomSize
-}
-
-// ---------------------------------------------------------------------------
-// Parse result
-// ---------------------------------------------------------------------------
+type SceneUrlPayloadV1 = ScenePayloadFields & { v: 1 }
 
 type ParseSceneUrlOutcome =
   | 'no-param'
@@ -37,59 +22,15 @@ type ParseSceneUrlOutcome =
   | 'invalid-schema'
 
 export type ParseSceneUrlResult =
-  | {
-      ok: true
-      items: FurnitureInstance[]
-      floorFinishId?: string
-      wallFinishId?: string
-      lightingMoodId?: string
-      roomSize?: RoomSize
-    }
+  | ({ ok: true } & ScenePayloadFields)
   | { ok: false; reason: ParseSceneUrlOutcome }
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
 
 function isValidScenePayloadV1(value: unknown): value is SceneUrlPayloadV1 {
   if (typeof value !== 'object' || value === null) return false
   const v = value as Record<string, unknown>
-  if (v.v !== SCENE_URL_VERSION) return false
-  if (!Array.isArray(v.items)) return false
-  if (!v.items.every(isValidFurnitureInstance)) return false
-  // Duplicate IDs would collide in the scene object map and corrupt lookups.
-  // Safe: every item passed isValidFurnitureInstance which checks id is string.
-  const ids = v.items.map((item) => item.id)
-  if (new Set(ids).size !== ids.length) return false
 
-  if ('floorFinishId' in v) {
-    if (typeof v.floorFinishId !== 'string' || v.floorFinishId.length === 0) {
-      return false
-    }
-  }
-
-  if ('wallFinishId' in v) {
-    if (typeof v.wallFinishId !== 'string' || v.wallFinishId.length === 0) {
-      return false
-    }
-  }
-
-  if ('lightingMoodId' in v) {
-    if (typeof v.lightingMoodId !== 'string' || v.lightingMoodId.length === 0) {
-      return false
-    }
-  }
-
-  if (!hasValidOptionalRoomSize(v)) {
-    return false
-  }
-
-  return true
+  return v.v === SCENE_URL_VERSION && hasValidScenePayloadFields(v)
 }
-
-// ---------------------------------------------------------------------------
-// Serializer
-// ---------------------------------------------------------------------------
 
 /**
  * Serializes the current scene items into the shared URL, replacing any
@@ -100,47 +41,11 @@ function isValidScenePayloadV1(value: unknown): value is SceneUrlPayloadV1 {
 export function serializeSceneToUrl(
   items: FurnitureItem[],
   href: string,
-  options?: {
-    floorFinishId?: string
-    wallFinishId?: string
-    lightingMoodId?: string
-    roomSize?: RoomSize
-  },
+  options?: ScenePayloadOptions,
 ): string | null {
-  const sortedItems: FurnitureInstance[] = [...items]
-    .sort((a, b) => a.id.localeCompare(b.id))
-    .map((item) => ({
-      id: item.id,
-      catalogId: item.catalogId,
-      position: [
-        roundTo3(item.position[0]),
-        roundTo3(item.position[1]),
-        roundTo3(item.position[2]),
-      ] as [number, number, number],
-      rotationY: roundTo3(item.rotationY),
-    }))
-
   const payload: SceneUrlPayloadV1 = {
     v: SCENE_URL_VERSION,
-    items: sortedItems,
-  }
-
-  if (options?.floorFinishId) {
-    payload.floorFinishId = options.floorFinishId
-  }
-
-  if (options?.wallFinishId) {
-    payload.wallFinishId = options.wallFinishId
-  }
-
-  if (options?.lightingMoodId) {
-    payload.lightingMoodId = options.lightingMoodId
-  }
-
-  const persistedRoomSize = toPersistedRoomSize(options?.roomSize)
-
-  if (persistedRoomSize) {
-    payload.roomSize = persistedRoomSize
+    ...toScenePayloadFields(items, options),
   }
 
   const jsonString = JSON.stringify(payload)
@@ -168,13 +73,9 @@ export function removeSceneParamFromUrl(href: string): string {
   return url.toString()
 }
 
-// ---------------------------------------------------------------------------
-// Parser
-// ---------------------------------------------------------------------------
-
 /**
  * Parses and structurally validates the `scene` query parameter from the
- * given URL string. Does NOT validate catalog references — the caller must
+ * given URL string. Does NOT validate catalog references - the caller must
  * check those separately once the catalog is loaded.
  */
 export function parseSceneUrl(href: string): ParseSceneUrlResult {
@@ -213,19 +114,8 @@ export function parseSceneUrl(href: string): ParseSceneUrlResult {
     return { ok: false, reason: 'invalid-schema' }
   }
 
-  return {
-    ok: true,
-    items: payload.items,
-    floorFinishId: payload.floorFinishId,
-    wallFinishId: payload.wallFinishId,
-    lightingMoodId: payload.lightingMoodId,
-    roomSize: payload.roomSize,
-  }
+  return { ok: true, ...pickScenePayloadFields(payload) }
 }
-
-// ---------------------------------------------------------------------------
-// Catalog reference validation
-// ---------------------------------------------------------------------------
 
 /**
  * Returns true if every item's catalogId is present in the loaded catalog.

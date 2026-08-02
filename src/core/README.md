@@ -21,8 +21,9 @@ Layout
   stores and scene commands for behavior that spans features; standing
   reconcilers are built with `createReconciler` and started from
   `startEditorReconcilers`.
-- `persistence/` - the scene state <-> storage/URL codecs (`scene-draft`,
-  `scene-url`, `furniture-serialization`). Orchestration flows over them
+- `persistence/` - the scene state <-> storage/URL codecs: `scene-payload`
+  holds the shared payload fields, normalization, and validation; `scene-draft`
+  and `scene-url` add their envelopes. Orchestration flows over them
   (`restore-flow`, `scene-reset`, `referenced-collections`) live in
   `operations/`.
 - `commands/` - the `EditorCommand` vocabulary and its dispatch binding.
