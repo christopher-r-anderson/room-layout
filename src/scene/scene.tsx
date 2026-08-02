@@ -169,18 +169,17 @@ export function Scene({
 
   useCameraKeyMotion({ cameraControlsRef, cameraKeyStateRef })
 
-  // Recenter on the corner preset when the room size changes after mount, so
-  // the camera keeps framing the whole room. The initial size (including a
-  // restore that landed before the canvas mounted) is framed by the Canvas's
-  // starting camera, not a preset jump.
-  const framedRoomSizeRef = useRef(roomSize)
-  useEffect(() => {
+  // Frame the room on the corner preset: instantly on mount (the starting
+  // view), animated when the room size changes.
+  const framedRoomSizeRef = useRef<typeof roomSize | null>(null)
+  useLayoutEffect(() => {
     if (framedRoomSizeRef.current === roomSize) {
       return
     }
 
+    const transition = framedRoomSizeRef.current !== null
     framedRoomSizeRef.current = roomSize
-    handleSetCameraPreset('corner')
+    handleSetCameraPreset('corner', transition)
   }, [roomSize, handleSetCameraPreset])
 
   const getSnapshot = useSceneSnapshot({
