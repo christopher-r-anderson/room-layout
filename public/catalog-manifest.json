@@ -26,7 +26,10 @@
       "collectionId": "leather-collection",
       "nodeName": "couch",
       "uiBoundsNodeName": "couch_ui-bounds",
-      "footprintSize": { "width": 2.2, "depth": 0.95 },
+      "footprintSize": {
+        "width": 2.2,
+        "depth": 0.95
+      },
       "previewPath": "catalog-previews/leather-couch.webp"
     },
     {
@@ -36,7 +39,10 @@
       "collectionId": "leather-collection",
       "nodeName": "armchair",
       "uiBoundsNodeName": "armchair_ui-bounds",
-      "footprintSize": { "width": 1.15, "depth": 0.95 },
+      "footprintSize": {
+        "width": 1.15,
+        "depth": 0.95
+      },
       "previewPath": "catalog-previews/leather-armchair.webp"
     },
     {
@@ -46,7 +52,10 @@
       "collectionId": "end-table",
       "nodeName": "end-table",
       "uiBoundsNodeName": "end-table_ui-bounds",
-      "footprintSize": { "width": 0.48, "depth": 0.48 },
+      "footprintSize": {
+        "width": 0.48,
+        "depth": 0.48
+      },
       "previewPath": "catalog-previews/end-table.webp"
     },
     {
@@ -55,7 +64,10 @@
       "kind": "coffee-table",
       "collectionId": "coffee-table",
       "nodeName": "coffee-table",
-      "footprintSize": { "width": 1.38, "depth": 0.855 },
+      "footprintSize": {
+        "width": 1.38,
+        "depth": 0.855
+      },
       "previewPath": "catalog-previews/coffee-table.webp"
     },
     {
@@ -64,7 +76,10 @@
       "kind": "coffee-table",
       "collectionId": "coffee-table-living-room",
       "nodeName": "Mesita",
-      "footprintSize": { "width": 1.91, "depth": 1.03 },
+      "footprintSize": {
+        "width": 1.91,
+        "depth": 1.03
+      },
       "previewPath": "catalog-previews/living-room-coffee-table.webp"
     }
   ],
@@ -76,7 +91,10 @@
         "previewPath": "environment/previews/wood-floor.webp",
         "diffusePath": "environment/textures/wood-floor_diff_2k.ktx2",
         "normalPath": "environment/textures/wood-floor_nor_gl_1k.ktx2",
-        "tileSizeMeters": { "width": 1.7, "depth": 1.7 }
+        "tileSizeMeters": {
+          "width": 1.7,
+          "depth": 1.7
+        }
       },
       {
         "id": "laminate-floor",
@@ -84,7 +102,10 @@
         "previewPath": "environment/previews/laminate-floor.webp",
         "diffusePath": "environment/textures/laminate-floor_diff_2k.ktx2",
         "normalPath": "environment/textures/laminate-floor_nor_gl_1k.ktx2",
-        "tileSizeMeters": { "width": 1.7, "depth": 1.7 }
+        "tileSizeMeters": {
+          "width": 1.7,
+          "depth": 1.7
+        }
       },
       {
         "id": "granite-tile",
@@ -92,7 +113,10 @@
         "previewPath": "environment/previews/granite-tile.webp",
         "diffusePath": "environment/textures/granite-tile_diff_2k.ktx2",
         "normalPath": "environment/textures/granite-tile_nor_gl_1k.ktx2",
-        "tileSizeMeters": { "width": 2, "depth": 2 }
+        "tileSizeMeters": {
+          "width": 2,
+          "depth": 2
+        }
       },
       {
         "id": "concrete-floor",
@@ -100,81 +124,112 @@
         "previewPath": "environment/previews/concrete-floor.webp",
         "diffusePath": "environment/textures/concrete-floor_diff_2k.ktx2",
         "normalPath": "environment/textures/concrete-floor_nor_gl_1k.ktx2",
-        "tileSizeMeters": { "width": 4, "depth": 4 }
+        "tileSizeMeters": {
+          "width": 4,
+          "depth": 4
+        }
       }
     ],
     "wallFinishes": [
-      { "id": "light-gray", "label": "Light Gray", "color": "#f5f5f5" },
-      { "id": "warm-white", "label": "Warm White", "color": "#faf8f3" },
-      { "id": "soft-beige", "label": "Soft Beige", "color": "#f0e6d2" },
-      { "id": "pale-blue", "label": "Pale Blue", "color": "#e8f0f7" },
-      { "id": "slate-blue", "label": "Slate Blue", "color": "#7a8fa6" },
-      { "id": "sage-green", "label": "Sage Green", "color": "#8a9e85" },
-      { "id": "dusty-mauve", "label": "Dusty Mauve", "color": "#a8909a" }
+      {
+        "id": "light-gray",
+        "label": "Light Gray",
+        "color": "#f5f5f5"
+      },
+      {
+        "id": "warm-white",
+        "label": "Warm White",
+        "color": "#faf8f3"
+      },
+      {
+        "id": "soft-beige",
+        "label": "Soft Beige",
+        "color": "#f0e6d2"
+      },
+      {
+        "id": "pale-blue",
+        "label": "Pale Blue",
+        "color": "#e8f0f7"
+      },
+      {
+        "id": "slate-blue",
+        "label": "Slate Blue",
+        "color": "#7a8fa6"
+      },
+      {
+        "id": "sage-green",
+        "label": "Sage Green",
+        "color": "#8a9e85"
+      },
+      {
+        "id": "dusty-mauve",
+        "label": "Dusty Mauve",
+        "color": "#a8909a"
+      }
     ],
     "lightingMoods": [
       {
         "id": "daylight",
         "label": "Daylight",
         "exposure": 1.05,
-        "ambientIntensity": 0.35,
+        "ambientIntensity": 0.18,
         "hemisphereSkyColor": "#f1f6ff",
         "hemisphereGroundColor": "#aeb9c9",
-        "hemisphereIntensity": 0.55,
-        "keyLightColor": "#fff4e6",
-        "keyLightIntensity": 1.0,
+        "hemisphereIntensity": 0.35,
+        "keyLightColor": "#fdf9f3",
+        "keyLightIntensity": 1,
         "fillLightColor": "#d5e4ff",
         "fillLightIntensity": 0.28,
         "environmentColor": "#dce6f3",
-        "environmentIntensity": 0.72,
+        "environmentIntensity": 0.4,
         "backgroundIntensity": 0.95
       },
       {
         "id": "cool-white",
         "label": "Cool White",
         "exposure": 1.1,
-        "ambientIntensity": 0.4,
+        "ambientIntensity": 0.2,
         "hemisphereSkyColor": "#eef4ff",
         "hemisphereGroundColor": "#b6c2d2",
-        "hemisphereIntensity": 0.6,
+        "hemisphereIntensity": 0.38,
         "keyLightColor": "#eaf1ff",
         "keyLightIntensity": 1.1,
         "fillLightColor": "#dbe7ff",
         "fillLightIntensity": 0.32,
         "environmentColor": "#dde8f7",
-        "environmentIntensity": 0.78,
+        "environmentIntensity": 0.44,
         "backgroundIntensity": 1.0
       },
       {
         "id": "warm-white",
         "label": "Warm White",
         "exposure": 0.95,
-        "ambientIntensity": 0.32,
+        "ambientIntensity": 0.16,
         "hemisphereSkyColor": "#fff3e2",
         "hemisphereGroundColor": "#c7b29a",
-        "hemisphereIntensity": 0.5,
+        "hemisphereIntensity": 0.32,
         "keyLightColor": "#ffe9c7",
         "keyLightIntensity": 1.0,
         "fillLightColor": "#ffd9b0",
         "fillLightIntensity": 0.26,
         "environmentColor": "#f0e3d2",
-        "environmentIntensity": 0.7,
+        "environmentIntensity": 0.39,
         "backgroundIntensity": 0.92
       },
       {
         "id": "soft-lamplight",
         "label": "Soft Lamplight",
         "exposure": 0.85,
-        "ambientIntensity": 0.22,
+        "ambientIntensity": 0.11,
         "hemisphereSkyColor": "#ffe6c4",
         "hemisphereGroundColor": "#b59a78",
-        "hemisphereIntensity": 0.38,
+        "hemisphereIntensity": 0.24,
         "keyLightColor": "#ffdca0",
         "keyLightIntensity": 0.8,
         "fillLightColor": "#ffcf95",
         "fillLightIntensity": 0.2,
         "environmentColor": "#e9d3b8",
-        "environmentIntensity": 0.55,
+        "environmentIntensity": 0.31,
         "backgroundIntensity": 0.78
       }
     ],
