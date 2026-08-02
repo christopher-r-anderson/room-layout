@@ -1,8 +1,6 @@
-import { useState } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { NeutralToneMapping, SRGBColorSpace } from 'three'
-import { getInitialCameraPosition, Scene } from '@/scene/scene'
-import { getRoomSize } from '@/core/stores/scene-document-store'
+import { Scene } from '@/scene/scene'
 import { notifyAssetError } from '@/core/operations/startup-coordinator'
 import { previewFromScene } from '@/core/operations/preview-actions'
 import { useStartupCycle } from '@/core/stores/editor-lifecycle-store'
@@ -32,18 +30,10 @@ export default function SceneCanvas({ onPointerMissed }: SceneCanvasProps) {
     selectedLightingMoodOption,
   } = useActiveFinishIds()
   const { renderQuality, shadowMode, exposure } = resolveRenderQuality()
-  // Captured once at mount: later size changes recenter through the camera
-  // presets instead of fighting CameraControls over this prop.
-  const [initialCameraPosition] = useState(() =>
-    getInitialCameraPosition(getRoomSize()),
-  )
 
   return (
     <Canvas
-      camera={{
-        position: initialCameraPosition,
-        fov: 50,
-      }}
+      camera={{ fov: 50 }}
       frameloop="demand"
       onCreated={({ gl }) => {
         gl.outputColorSpace = SRGBColorSpace

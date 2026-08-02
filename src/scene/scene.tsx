@@ -9,10 +9,7 @@ import type {
   WallFinishOption,
 } from '@/domain/environment-materials'
 import { CameraControls } from './internal/camera/camera-controls'
-import {
-  getCameraMaxDistance,
-  getCameraPresetViews,
-} from './internal/camera/camera-presets'
+import { getCameraMaxDistance } from './internal/camera/camera-presets'
 import { InteractiveFurniture } from './internal/furniture/interactive-furniture'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import type { CameraControlsImpl } from '@react-three/drei'
@@ -37,7 +34,6 @@ import {
   FURNITURE_EDGE_SNAP_THRESHOLD_METERS,
   FURNITURE_SNAP_SIZE_METERS,
   getRoomLayoutBounds,
-  type RoomSize,
 } from '@/domain/geometry/room-metrics'
 import { useToolbarGeometryProjection } from './internal/selection/use-toolbar-geometry-projection'
 import { perfCounters } from '@/shared/debug/perf-counters'
@@ -56,16 +52,6 @@ import {
 } from '@/core/scene-services'
 import { useLoadedCollectionScenes } from './internal/furniture/collection-scene-registry'
 import { createCollectionSceneLoader } from './internal/furniture/collection-scene-loader'
-
-// The Canvas's starting camera view: the corner preset, so the opening view
-// is one the presets can return to. Lives here because scene.tsx is app's
-// single scene entry point.
-// eslint-disable-next-line react-refresh/only-export-components
-export function getInitialCameraPosition(
-  size: RoomSize,
-): [number, number, number] {
-  return getCameraPresetViews(size).corner.position
-}
 
 export function Scene({
   renderQuality = 'default',
@@ -183,16 +169,17 @@ export function Scene({
 
   useCameraKeyMotion({ cameraControlsRef, cameraKeyStateRef })
 
-  // Recenter on the corner preset when the room size changes after mount, so
-  // the camera keeps framing the whole room.
-  const framedRoomSizeRef = useRef(roomSize)
-  useEffect(() => {
+  // Frame the room on the corner preset: instantly on mount (the starting
+  // view), animated when the room size changes.
+  const framedRoomSizeRef = useRef<typeof roomSize | null>(null)
+  useLayoutEffect(() => {
     if (framedRoomSizeRef.current === roomSize) {
       return
     }
 
+    const transition = framedRoomSizeRef.current !== null
     framedRoomSizeRef.current = roomSize
-    handleSetCameraPreset('corner')
+    handleSetCameraPreset('corner', transition)
   }, [roomSize, handleSetCameraPreset])
 
   const getSnapshot = useSceneSnapshot({

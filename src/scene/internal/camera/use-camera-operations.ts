@@ -24,14 +24,14 @@ export function useCameraOperations({
   invalidate,
 }: UseCameraOperationsOptions) {
   const setCameraPreset = useCallback(
-    (preset: CameraPreset) => {
+    (preset: CameraPreset, transition = true) => {
       // Resolved at call time so the registered scene service never frames a
       // stale room size.
       const view = getCameraPresetViews(getRoomSize())[preset]
       void cameraControlsRef.current?.setLookAt(
         ...view.position,
         ...view.target,
-        true,
+        transition,
       )
     },
     [cameraControlsRef],

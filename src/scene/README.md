@@ -9,8 +9,7 @@ Structure
 - `scene.tsx` - composition + render only. It wires the GLTF sources and
   selection state into a set of concern hooks, registers their handlers as the
   imperative service surface, and renders the room/furniture/effects tree. It
-  does not hold operation logic. It also exports the preset-derived starting
-  camera position app's Canvas mounts with.
+  does not hold operation logic.
 - `internal/` - scene-private implementation, grouped by concern:
   - `furniture/` - the interactive mesh and the collection parse
     service/registry (document mutations live in `core/operations`).
