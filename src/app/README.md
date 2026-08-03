@@ -8,7 +8,7 @@ Purpose
 
 Contains
 
-- `App.tsx`: bootstrap and render - perf gate, startup bootstrap + the core
+- `App.tsx`: bootstrap and render - perf gate, startup bootstrap + the startup
   readiness observer, dialog registry bootstrap, reconcilers, and the test bridge,
   composing the provider tree.
 - `chrome/`: app-shell composition (editor body/overlay, top header, announcer)

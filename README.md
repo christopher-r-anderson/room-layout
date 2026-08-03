@@ -17,7 +17,7 @@ Pick furniture from a visual catalog, arrange items in real time, adjust room su
 - **Zero-shift loading handoff**: The pre-paint HTML skeleton and the React loader mirror each other, so the spinner holds its position across the JavaScript handoff
 - **Network + asset resilience**: Stall-aware streaming downloads, permanent-vs-transient failure classification (broken items marked unavailable in the catalog), and a retry path for everything up to a stale deploy's missing chunk
 
-## ⚡ Quick Start
+## Quick Start
 
 ```bash
 pnpm install
@@ -26,7 +26,7 @@ pnpm dev
 
 Open the app at the local URL shown by Vite.
 
-## 🖦 Using the Editor
+## Using the Editor
 
 For a user-facing walkthrough, see [docs/guide/user-guide.md](docs/guide/user-guide.md).
 
@@ -41,7 +41,7 @@ For a user-facing walkthrough, see [docs/guide/user-guide.md](docs/guide/user-gu
 Shortcut details are documented in
 [docs/reference/editor-shortcuts-reference.md](docs/reference/editor-shortcuts-reference.md).
 
-## 🧑‍💻 Development
+## Development
 
 ```bash
 pnpm dev          # start dev server
@@ -75,7 +75,7 @@ pnpm test:e2e:headed  # run browser integration tests in headed mode
 pnpm test:e2e:ui      # open the Playwright UI runner
 ```
 
-## 🤖 Testing
+## Testing
 
 Use lane-specific tests based on the change scope:
 
@@ -85,7 +85,7 @@ Use lane-specific tests based on the change scope:
 Detailed testing workflow guidance lives in `docs/architecture/testing.md`.
 It also includes first-time Playwright setup and test artifact locations.
 
-## ✨ Accessibility
+## Accessibility
 
 Accessibility is an explicit goal for this project, especially for no-mouse editor workflows.
 
@@ -98,7 +98,7 @@ Accessibility is an explicit goal for this project, especially for no-mouse edit
 The Playwright config starts a local Vite server automatically, so browser
 tests do not require a separate manual `pnpm dev` session.
 
-## 🌐 Deployment
+## Deployment
 
 This repository deploys automatically to GitHub Pages via GitHub Actions.
 
@@ -123,13 +123,13 @@ Current deployment URL:
 
 <https://christopher-r-anderson.github.io/room-layout/>
 
-## 📝 Documentation
+## Documentation
 
 In addition to this README, project-specific guides are available:
 
 ### Architecture
 
-- [Architecture](docs/architecture/architecture.md): Layer map, placement rules, current exceptions, and planned boundary improvements.
+- [Architecture](docs/architecture/architecture.md): Layer map, layer intent, placement rules, and planned boundary improvements.
 - [Core](docs/architecture/core.md): The core layer - store inventory, operations, commands, and persistence.
 - [Scene and Core](docs/architecture/scene-and-core.md): The data-model/engine seam - who owns furniture data vs. the rules that change it.
 - [Dialogs and Overlays](docs/architecture/dialogs-and-overlays.md): The active-surface dialog/overlay model, blocking semantics, mutual exclusion, and focus return.
@@ -166,7 +166,7 @@ Local architecture notes are also available in:
 - `src/scene/README.md`
 - `src/test/README.md`
 
-## 📚 Catalog
+## Catalog
 
 The editor is catalog-driven through `public/catalog-manifest.json`.
 
@@ -183,11 +183,11 @@ Share action or mobile More menu to invoke native share or clipboard fallback.
 For payload schema, constraints, and restore behavior details, see
 `docs/guide/url-scene-sharing.md`.
 
-## 🛋️ Assets
+## Assets
 
 See `docs/reference/assets-attribution.md` for full third-party attribution details.
 
-## 📄 License
+## License
 
 This project source code is licensed under the MIT License. See [LICENSE](./LICENSE).
 

@@ -27,6 +27,10 @@ Layout
   (`restore-flow`, `scene-reset`, `referenced-collections`) live in
   `operations/`.
 - `commands/` - the `EditorCommand` vocabulary and its dispatch binding.
+- `layout/` - editor layout contexts: the `EditorRectId` vocabulary with its
+  registration/measurement contexts and provider (the generic registry
+  mechanism is `shared/layout`'s `useRectRegistry`), plus
+  `useSurfaceFocusClaim`, the surface side of focused-surface tracking.
 - Root - the public, cross-layer surface: the engine port (`scene-commands`,
   `scene-services`, `scene.types`) and `dialog-contract`.
 
