@@ -13,8 +13,9 @@ interface UseSceneSnapshotOptions {
 type GetSnapshot = () => ReturnType<typeof createSceneSnapshot>
 
 /**
- * The snapshot reads the latest furniture/objects synchronously via refs so
- * callers observe committed state even before passive effects re-run.
+ * The returned getter is referentially stable, so it is safe in dependency
+ * arrays. The snapshot reads the latest furniture/objects synchronously via
+ * refs, so callers observe committed state even before passive effects re-run.
  */
 export function useSceneSnapshot({
   camera,

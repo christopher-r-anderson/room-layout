@@ -1,8 +1,10 @@
 import type { ReactElement } from 'react'
 import ReactThreeTestRenderer from '@react-three/test-renderer'
 
-// Camera defaults avoid undefined projection values in jsdom tests; the stub
-// renderer comes from @react-three/test-renderer (no WebGL needed).
+/**
+ * Camera defaults avoid undefined projection values in jsdom tests; the stub
+ * renderer comes from @react-three/test-renderer (no WebGL needed).
+ */
 export async function createR3FTestScene(
   element: ReactElement,
   options?: Parameters<typeof ReactThreeTestRenderer.create>[1],
