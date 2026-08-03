@@ -17,11 +17,10 @@ import { Button } from './button'
 import { ariaDisabledButtonClasses } from './button-variants'
 import { KbdShortcutDisplay } from './keyboard-shortcut-display'
 
-// Both render the same shell: our Button enrolled as a Base UI Toolbar.Button
-// (roving focus; focusable + aria-disabled while disabled) in a tooltip, so
-// they must live inside a Toolbar.Root. Every toolbar item is one of these
-// two or a bare `<Toolbar.Button render={...}>`; outside a toolbar, use
-// Button directly.
+// Both components render the same shell: our Button enrolled as a Base UI
+// Toolbar.Button (roving focus; focusable + aria-disabled while disabled) in
+// a tooltip. Every toolbar item is one of these two or a bare
+// `<Toolbar.Button render={...}>`; outside a toolbar, use Button directly.
 
 interface ToolbarButtonShellProps {
   buttonRef?: Ref<HTMLButtonElement>
@@ -96,7 +95,7 @@ function ToolbarButtonShell({
 /**
  * A toolbar action that does something now: rotate, undo, start over. The
  * tooltip carries the label, keyboard shortcut, and the reason the action is
- * unavailable while disabled.
+ * unavailable while disabled. Must render inside a Toolbar.Root.
  */
 export function ToolbarCommandButton({
   buttonRef,
@@ -176,7 +175,7 @@ export function ToolbarCommandButton({
  * A toolbar button that opens or toggles another surface: a dialog, drawer, or
  * inline panel. Carries the popup ARIA wiring; the tooltip carries a
  * description. `popupType` sets aria-haspopup - omit it for inline surfaces
- * (e.g. the desktop room sidebar).
+ * (e.g. the desktop room sidebar). Must render inside a Toolbar.Root.
  */
 export function ToolbarPopupButton({
   buttonRef,

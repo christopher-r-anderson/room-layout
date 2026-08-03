@@ -6,7 +6,10 @@ import { clearSceneDraft } from '@/core/persistence/scene-draft'
 import { sceneCommands } from '@/core/scene-commands'
 import { restoreInitialLayout } from '@/core/operations/history-mutations'
 
-/** Feedback (announce/toast) is owned by the caller. */
+/**
+ * Also clears the persisted draft; feedback (announce/toast) is owned by the
+ * caller.
+ */
 export function resetSceneToDefaults() {
   const { environmentConfig } = useAssetsStore.getState()
 

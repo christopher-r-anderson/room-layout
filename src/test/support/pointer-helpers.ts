@@ -1,5 +1,3 @@
-// RTTR cannot populate event.ray or real pointer capture; use Playwright for those.
-
 import type { R3FTestScene } from './r3f-renderer'
 
 type R3FEventTarget = Parameters<R3FTestScene['fireEvent']>[0]
@@ -11,7 +9,10 @@ interface PointerEventData {
   buttons?: number
 }
 
-/** Dispatches a pointer event with basic coordinate and pointerId data to an RTTR test instance. */
+/**
+ * Handler sequencing only: RTTR cannot populate event.ray or real pointer
+ * capture, so drag math, collision, and geometry need Playwright.
+ */
 export async function firePointerEvent(
   renderer: R3FTestScene,
   target: R3FEventTarget,

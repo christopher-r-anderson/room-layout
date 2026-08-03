@@ -21,6 +21,7 @@ export interface UseAddFurniture {
   isSubmitting: boolean
   /** True only past PENDING_DELAY_MS. */
   showPending: boolean
+  /** Localized download percent of the selected collection; null when unknown. */
   percentLabel: string | null
 }
 

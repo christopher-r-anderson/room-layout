@@ -62,7 +62,9 @@ export interface SelectionOutlineEffectProps {
 /**
  * The composer is an imperative GPU resource held in refs; because the Canvas
  * runs frameloop="demand", this takes over rendering with a priority-1
- * useFrame and re-renders on change via the shared invalidate.
+ * useFrame and re-renders on change via the shared invalidate. Outlining is
+ * screen-space: selection/preview changes must stay free of per-object
+ * geometry work (the idle-churn e2e gate depends on it).
  */
 export function SelectionOutlineEffect({
   selection,

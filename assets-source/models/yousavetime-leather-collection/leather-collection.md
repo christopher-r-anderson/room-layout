@@ -2,7 +2,7 @@
 
 - **Source:** <https://sketchfab.com/3d-models/leather-couch-c2ac7a44144e4b80ab51f21b59c827f8>
 - **Author:** [YouSaveTime](https://sketchfab.com/YouSaveTime)
-- **License:** CC Attribution 4.0 — see [`LICENSE-CC-BY-4.0.txt`](../LICENSE-CC-BY-4.0.txt)
+- **License:** CC Attribution 4.0 - see [`LICENSE-CC-BY-4.0.txt`](../LICENSE-CC-BY-4.0.txt)
 
 ## Provenance
 

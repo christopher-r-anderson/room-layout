@@ -95,6 +95,10 @@ export function setSelectionTransform(input: {
   return result
 }
 
+/**
+ * Returns false only when refused mid-drag; true otherwise, including when
+ * nothing is selected.
+ */
 export function rotateSelection(deltaRadians: number): boolean {
   if (useSceneSessionStore.getState().isDragging) {
     return false
