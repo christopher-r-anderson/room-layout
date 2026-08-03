@@ -1,9 +1,10 @@
 import { Plane, Ray, Vector3 } from 'three'
 
 const FLOOR_NORMAL = new Vector3(0, 1, 0)
-// Module scratch, so neither exported function is reentrant. A result backed
-// by a shared target (getDraggedFurniturePosition passes the intersection
-// scratch) is only valid until the next call; the default target allocates.
+// Module scratch: getFloorIntersection and getDraggedFurniturePosition are
+// not reentrant. A result backed by a shared target (getDraggedFurniturePosition
+// passes the intersection scratch) is only valid until the next call; the
+// default target allocates.
 const floorPlaneScratch = new Plane(FLOOR_NORMAL, 0)
 const floorIntersectionScratch = new Vector3()
 
