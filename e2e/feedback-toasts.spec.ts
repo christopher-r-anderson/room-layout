@@ -117,7 +117,6 @@ test('toasts stack and dismiss independently', async ({ page }) => {
 
   await dismissToast(page, toastRoots(page).first())
 
-  // The other toast is untouched.
   await expect(toastRoots(page)).toHaveCount(1)
   await expect(toastRoots(page).first()).toContainText(ADD_FAILURE_TEXT)
 })
@@ -127,7 +126,6 @@ test('stack cap hides over-limit toasts', async ({ page }) => {
   await page.goto('/')
   await waitForEditorReady(page)
 
-  // Four persistent errors from four distinct collections.
   const itemsFromDistinctCollections = [
     'Leather Couch',
     'End Table',

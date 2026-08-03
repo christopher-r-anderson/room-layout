@@ -94,7 +94,6 @@ describe('HistoryTools', () => {
     const undoButton = screen.getByRole('button', { name: 'Undo' })
     const undoLabel = within(undoButton).getByText('Undo')
 
-    // Shown to sighted users rather than collapsed to screen-reader-only.
     expect(undoLabel.className).not.toContain('sr-only')
   })
 })

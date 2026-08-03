@@ -1,17 +1,8 @@
-/**
- * Shared React Three Test Renderer setup for consistent test patterns.
- * Wraps @react-three/test-renderer with project defaults.
- */
-
 import type { ReactElement } from 'react'
 import ReactThreeTestRenderer from '@react-three/test-renderer'
 
-/**
- * Create a test renderer instance with project defaults.
- *
- * - Camera defaults avoid undefined projection values in jsdom tests.
- * - Stub renderer is provided by @react-three/test-renderer (no WebGL needed).
- */
+// Camera defaults avoid undefined projection values in jsdom tests; the stub
+// renderer comes from @react-three/test-renderer (no WebGL needed).
 export async function createR3FTestScene(
   element: ReactElement,
   options?: Parameters<typeof ReactThreeTestRenderer.create>[1],

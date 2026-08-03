@@ -318,7 +318,6 @@ describe('useSceneDrag', () => {
     expect(result.current.dragState).not.toBeNull()
     expect(useSceneSessionStore.getState().isDragging).toBe(true)
 
-    // Simulate a keyboard delete landing while the pointer is still down.
     act(() => {
       sceneDocumentActions.setHistory(createHistoryState<FurnitureItem[]>([]))
     })

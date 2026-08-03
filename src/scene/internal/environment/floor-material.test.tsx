@@ -93,7 +93,6 @@ describe('FloorMaterial', () => {
     expect(initialMaterial.map).toBe(textureA.diffuse)
     expect(initialMaterial.normalMap).toBe(textureA.normal)
 
-    // Switch to new option while its textures are still loading
     await act(async () => {
       await renderer.update(
         <mesh>
@@ -106,14 +105,12 @@ describe('FloorMaterial', () => {
       )
     })
 
-    // Material should still show texture A while B is loading (visual continuity)
     const transitioningMaterial = renderer.scene.findAll(
       (node) => node.type === 'MeshStandardMaterial',
     )[0].instance as unknown as MeshStandardMaterial
     expect(transitioningMaterial.map).toBe(textureA.diffuse)
     expect(transitioningMaterial.normalMap).toBe(textureA.normal)
 
-    // Resolve the pending load and verify material updates to new texture
     await act(async () => {
       optionBLoad.resolve(textureB)
       await optionBLoad.promise
@@ -252,7 +249,6 @@ describe('FloorMaterial', () => {
     )[0].instance as unknown as MeshStandardMaterial
     expect(initialMaterial.map?.repeat.x).toBe(6) // optionA: 6/1 = 6
 
-    // Switch to optionB while its textures are still loading
     await act(async () => {
       await renderer.update(
         <mesh>
@@ -273,7 +269,6 @@ describe('FloorMaterial', () => {
     expect(transitioningMaterial.map).toBe(textureA.diffuse)
     expect(transitioningMaterial.map?.repeat.x).toBe(6)
 
-    // Once new textures load, repeat updates to match the new option
     await act(async () => {
       optionBLoad.resolve(textureB)
       await optionBLoad.promise

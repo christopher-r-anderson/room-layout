@@ -68,7 +68,6 @@ describe('usePinnedPlacement', () => {
       { initialProps: { placement: floatingAt(10, 10), pinned: false } },
     )
 
-    // Pin engages, capturing the current position.
     rerender({ placement: floatingAt(10, 10), pinned: true })
     expect(result.current).toEqual(floatingAt(10, 10))
 
@@ -108,7 +107,6 @@ describe('usePinnedPlacement', () => {
       },
     )
     rerender({ placement: floatingAt(40, 60), resetKey: 'item-1' })
-    // Same object, still pinned: held.
     expect(result.current).toEqual(floatingAt(10, 10))
 
     // New selection: the stale pinned position must not bleed onto it.

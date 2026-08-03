@@ -29,7 +29,6 @@ describe('ToolbarCommandButton', () => {
     const button = screen.getByRole('button', { name: 'Add furniture' })
     const label = within(button).getByText('Add')
 
-    // Shown to sighted users (not collapsed to screen-reader-only).
     expect(label.className).not.toContain('sr-only')
   })
 

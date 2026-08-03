@@ -35,7 +35,6 @@ function renderAnnouncer() {
 it('mounts both channels empty with the live-region attributes', () => {
   const { root, polite, assertive } = renderAnnouncer()
 
-  // Visually hidden but present for AT.
   expect(root.classList.contains('sr-only')).toBe(true)
 
   expect(polite.getAttribute('aria-live')).toBe('polite')

@@ -19,7 +19,7 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.restoreAllMocks()
-  // The registry is a module-level singleton — unregister between tests.
+  // The registry is a module-level singleton - unregister between tests.
   for (const key of KEYS) {
     topHeaderFocusRegistry.register(key)(null)
   }

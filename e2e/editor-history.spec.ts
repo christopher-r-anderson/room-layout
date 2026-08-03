@@ -24,14 +24,12 @@ test('undo and redo route through the toolbar and keyboard to the shared history
   expect(rotatedState.items[0].rotationY).not.toBe(initialRotationY)
   const rotatedRotationY = rotatedState.items[0].rotationY
 
-  // Undo the rotation via keyboard, then the add via the toolbar button.
   await page.keyboard.press('Control+Z')
   await waitForFirstItemRotationY(page, initialRotationY, 6)
 
   await page.getByRole('button', { name: 'Undo' }).click()
   await waitForItemCount(page, 0)
 
-  // Redo re-applies both operations via the toolbar.
   await page.getByRole('button', { name: 'Redo' }).click()
   const afterRedoAdd = await waitForItemCount(page, 1)
   expect(afterRedoAdd.items[0].rotationY).toBe(initialRotationY)

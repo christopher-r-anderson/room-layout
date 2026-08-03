@@ -1,17 +1,4 @@
-/**
- * Browser tests for the URL scene restore, share/copy URL, and draft storage features.
- *
- * Covers:
- *  - Successful restore from a valid `?scene=` param
- *  - Invalid payload raises an error toast and leaves scene empty
- *  - One-shot guard: restore only fires once across asset retry
- *  - Share button falls back to clipboard copy and announces success
- *  - Selection is cleared after restore
- *  - Full round-trip: copy URL in app → navigate to it → scene restored
- *  - Draft auto-save to localStorage on furniture changes
- *  - Draft persistence across page reloads
- *  - Error scenarios: clipboard failures, invalid scenes
- */
+/** Browser tests for URL scene restore, share/copy URL, and draft storage. */
 import { expect, test, type Page } from '@playwright/test'
 import type { FurnitureInstance } from '../src/domain/furniture'
 import {
@@ -27,10 +14,6 @@ import {
 } from './support/editor-harness'
 import { expectNoToasts, readToastTexts, waitForToast } from './support/toasts'
 
-// ---------------------------------------------------------------------------
-// Type definitions
-// ---------------------------------------------------------------------------
-
 interface SceneDraftPayload {
   version: 1
   items: {
@@ -45,11 +28,6 @@ interface SceneDraftPayload {
   roomSize?: { width: number; depth: number; height: number }
 }
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-/** Build a minimal valid ?scene= route for testing restore. */
 function makeSceneRoute(
   items: FurnitureInstance[],
   options?: {
@@ -74,7 +52,6 @@ function makeSceneRoute(
   return `/?${params.toString()}`
 }
 
-/** Safely read and parse draft from localStorage. */
 async function readDraftFromStorage(
   page: Page,
 ): Promise<SceneDraftPayload | null> {
@@ -125,10 +102,6 @@ const VALID_ITEM = {
   position: [0, 0, 0] as [number, number, number],
   rotationY: 0,
 }
-
-// ---------------------------------------------------------------------------
-// Restore tests
-// ---------------------------------------------------------------------------
 
 test('restores furniture from a valid ?scene= param on startup', async ({
   page,
@@ -344,12 +317,10 @@ test('one-shot guard: restore only fires once across asset-error retry', async (
 
   await page.goto(makeSceneRoute([VALID_ITEM]))
 
-  // Wait for the error state
   await expect(page.getByText('The room editor could not start')).toBeVisible({
     timeout: 30_000,
   })
 
-  // Allow assets to succeed on retry
   assetFailure.allowRequests()
   await page.getByRole('button', { name: 'Retry Loading' }).click()
 
@@ -359,10 +330,6 @@ test('one-shot guard: restore only fires once across asset-error retry', async (
   expect(state.restoreAttemptCount).toBe(1)
   expect(state.itemCount).toBe(1)
 })
-
-// ---------------------------------------------------------------------------
-// Share/copy URL tests
-// ---------------------------------------------------------------------------
 
 test('Share button is visible in the toolbar', async ({ page }) => {
   await openEditor(page)
@@ -443,15 +410,10 @@ test('invalid shared link falls back to local draft when available', async ({
   expect(state.wallFinishId).toBe('sage-green')
 })
 
-// ---------------------------------------------------------------------------
-// Round-trip bridge test
-// ---------------------------------------------------------------------------
-
 test('copy-URL-then-load round-trip: app serializer output is accepted by restore', async ({
   page,
   context,
 }) => {
-  // Grant clipboard permissions before any interaction
   await context.grantPermissions(['clipboard-read', 'clipboard-write'])
   await forceClipboardShareFallback(page)
 
@@ -459,7 +421,6 @@ test('copy-URL-then-load round-trip: app serializer output is accepted by restor
 
   const roomSurface = await ensureRoomSurfaceOpen(page)
 
-  // Change room options so round-trip includes non-default finishes.
   await roomSurface.locator('label').filter({ hasText: 'Sage Green' }).click()
 
   await roomSurface.getByRole('tab', { name: 'Floor' }).click()
@@ -482,7 +443,6 @@ test('copy-URL-then-load round-trip: app serializer output is accepted by restor
   await page.locator('button[aria-controls="room-surface"]').click()
   await expect(roomSurface).toBeHidden()
 
-  // Add one item via the real UI so the app owns the scene state
   await addFurniture(page, 'Leather Armchair')
 
   // Use the app's own Share button with clipboard fallback - this exercises the real serializer
@@ -492,7 +452,6 @@ test('copy-URL-then-load round-trip: app serializer output is accepted by restor
   await copyBtn.click()
   await waitForPoliteAnnouncement(page, 'Scene URL copied to clipboard.')
 
-  // Read the URL the app wrote to the clipboard
   const copiedUrl = await page.evaluate(() => navigator.clipboard.readText())
   expect(copiedUrl).toContain('scene=')
 
@@ -520,10 +479,6 @@ test('copy-URL-then-load round-trip: app serializer output is accepted by restor
   expect(restored.lightingMoodId).toBe('soft-lamplight')
 })
 
-// ---------------------------------------------------------------------------
-// Draft auto-save and determinism tests
-// ---------------------------------------------------------------------------
-
 test('auto-saves furniture to localStorage draft when furniture is added', async ({
   page,
 }) => {
@@ -533,10 +488,8 @@ test('auto-saves furniture to localStorage draft when furniture is added', async
   const draftBefore = await readDraftFromStorage(page)
   expect(draftBefore).toBeNull()
 
-  // Add furniture
   await addFurniture(page, 'Leather Armchair')
 
-  // Verify draft was updated with the new furniture
   const draftAfter = await readDraftFromStorage(page)
 
   expect(draftAfter).not.toBeNull()
@@ -548,22 +501,17 @@ test('auto-saves furniture to localStorage draft when furniture is added', async
 test('draft persists across page reload', async ({ page }) => {
   await openEditor(page)
 
-  // Add furniture
   await addFurniture(page, 'Leather Armchair')
 
-  // Read the initial state
   const stateBefore = await readSceneState(page)
   expect(stateBefore.itemCount).toBe(1)
 
-  // Reload the page
   await page.reload()
   const stateAfter = await waitForEditorReady(page)
 
-  // Verify draft was restored from localStorage (item persists after reload)
   expect(stateAfter.itemCount).toBe(1)
   expect(stateAfter.items[0].catalogId).toBe('armchair-1')
-  // Note: restoreOutcome is 'skipped' because there's no ?scene= param,
-  // but the scene is still populated from the saved draft
+  // restoreOutcome is 'skipped' without a ?scene= param; the draft still populates the scene.
 })
 
 test('start over clears the saved draft so reload stays fresh', async ({
@@ -605,10 +553,6 @@ test('start over clears the saved draft so reload stays fresh', async ({
   await expectNoToasts(page)
 })
 
-// ---------------------------------------------------------------------------
-// Error scenario tests
-// ---------------------------------------------------------------------------
-
 test('handles clipboard API failure gracefully when permission denied', async ({
   page,
 }) => {
@@ -632,9 +576,7 @@ test('handles clipboard API failure gracefully when permission denied', async ({
 test('handles draft with valid catalog reference but non-finite position gracefully', async ({
   page,
 }) => {
-  // Create a draft payload with valid catalogId but missing required position field.
-  // This will pass validateCatalogReferences (only checks catalogIds) but fail when
-  // restoreInitialLayout tries to use the position. This tests the edge case recovery.
+  // Passes validateCatalogReferences (catalogIds only) but fails position validation on restore.
   const corruptedDraft = {
     version: 1,
     items: [
@@ -650,9 +592,7 @@ test('handles draft with valid catalog reference but non-finite position gracefu
 
   await page.goto('/')
 
-  // Pre-populate localStorage with a corrupted draft.
-  // Note: JSON.stringify converts NaN to null, which when read back will fail
-  // position validation in restoreInitialLayout.
+  // JSON.stringify converts NaN to null, which fails position validation when read back.
   await page.evaluate(
     ({ storageKey, draft }) => {
       const sanitized = JSON.parse(JSON.stringify(draft)) as SceneDraftPayload
@@ -661,26 +601,18 @@ test('handles draft with valid catalog reference but non-finite position gracefu
     { storageKey: SCENE_DRAFT_STORAGE_KEY, draft: corruptedDraft },
   )
 
-  // Reload to trigger startup with the corrupted draft
   await page.reload()
   const state = await waitForEditorReady(page)
 
-  // App should gracefully degrade: empty scene, no items loaded, skipped outcome
   expect(state.itemCount).toBe(0)
   expect(state.restoreOutcome).toBe('skipped')
-
-  // The test passes as long as the app doesn't crash during startup with a corrupted draft.
-  // This verifies the try/catch protection added for draft restore fallback paths works.
 })
 
 test('empty draft restores silently without showing success toast on reload', async ({
   page,
 }) => {
-  // Verify that restoring an empty draft (normal startup state) does NOT show a success toast.
-  // This prevents noisy notifications on ordinary app opens/reloads.
-
+  // Silent empty-draft restore prevents noisy notifications on ordinary app opens.
   await openEditor(page)
-  // Do nothing - scene is empty
   const stateInitial = await readSceneState(page)
   expect(stateInitial.itemCount).toBe(0)
 
@@ -688,11 +620,9 @@ test('empty draft restores silently without showing success toast on reload', as
   // post-reload silence check.
   await expectNoToasts(page)
 
-  // Reload the page - this will trigger draft restoration from localStorage
   await page.reload()
   const stateAfter = await waitForEditorReady(page)
 
-  // Verify scene is still empty
   expect(stateAfter.itemCount).toBe(0)
   expect(stateAfter.restoreOutcome).toBe('skipped')
 

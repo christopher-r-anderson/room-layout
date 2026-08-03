@@ -10,10 +10,6 @@ import {
   validateCatalogReferences,
 } from './scene-url'
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
 interface ScenePayload {
   v: number
   floorFinishId?: string
@@ -68,10 +64,6 @@ function makeCatalogEntry(id: string): FurnitureCatalogEntry {
     previewPath: '/previews/chair.png',
   }
 }
-
-// ---------------------------------------------------------------------------
-// serializeSceneToUrl
-// ---------------------------------------------------------------------------
 
 describe('serializeSceneToUrl', () => {
   it('encodes items into the scene param', () => {
@@ -185,7 +177,6 @@ describe('serializeSceneToUrl', () => {
   })
 
   it('returns null when the encoded payload exceeds SCENE_URL_MAX_ENCODED_LENGTH', () => {
-    // Build a payload that exceeds 4000 encoded chars by using many items
     const longPrefix = 'x'.repeat(40)
     const items = Array.from({ length: 60 }, (_, i) =>
       makeFurnitureItem({
@@ -205,10 +196,6 @@ describe('serializeSceneToUrl', () => {
   })
 })
 
-// ---------------------------------------------------------------------------
-// removeSceneParamFromUrl
-// ---------------------------------------------------------------------------
-
 describe('removeSceneParamFromUrl', () => {
   it('removes all scene params while preserving other params and hash', () => {
     const url = removeSceneParamFromUrl(
@@ -227,10 +214,6 @@ describe('removeSceneParamFromUrl', () => {
     ).toBe('https://example.com/?other=123#section')
   })
 })
-
-// ---------------------------------------------------------------------------
-// parseSceneUrl
-// ---------------------------------------------------------------------------
 
 describe('parseSceneUrl', () => {
   it('returns no-param when scene param is absent', () => {
@@ -479,10 +462,6 @@ describe('parseSceneUrl', () => {
     }
   })
 })
-
-// ---------------------------------------------------------------------------
-// validateCatalogReferences
-// ---------------------------------------------------------------------------
 
 describe('validateCatalogReferences', () => {
   it('returns true when all catalog IDs are present', () => {
