@@ -66,6 +66,7 @@ function useMeasuredElementRect(
 
   const subscribe = useCallback(
     (onStoreChange: () => void) => {
+      // Primes rectSnapshotRef so the equality check has a baseline.
       getSnapshot()
 
       if (!element) {
@@ -79,6 +80,8 @@ function useMeasuredElementRect(
         }
       }
 
+      // Forces one post-layout re-read: the rect measured during render
+      // predates layout, and no observer fires for the initial size.
       queueMicrotask(() => {
         notify()
       })

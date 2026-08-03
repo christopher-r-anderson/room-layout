@@ -27,6 +27,9 @@ export function confirmDeleteSelection(
     : -1
   const deletedName = pendingDeleteFurniture?.name ?? null
 
+  // Close before deleting and focusing: the pending-focus reconciler clears
+  // directives minted while a blocking overlay is up, and editor-body defers
+  // the scene focus a frame to land after the dialog's own restore.
   dialogActions.closeActiveDialog()
 
   const origin = pendingDeleteOrigin

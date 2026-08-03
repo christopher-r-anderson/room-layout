@@ -33,8 +33,8 @@ describe('sortSpatially', () => {
     expect(sortSpatially(items)).toEqual(['left', 'right'])
   })
 
-  it('treats items within rowTolerance as the same row', () => {
-    // Default rowTolerance = 48; dy = 30 -> same row -> sort by x
+  it('treats items within rowTolerancePx as the same row', () => {
+    // Default rowTolerancePx = 48; dy = 30 -> same row -> sort by x
     const items = [
       { id: 'right', pointerTarget: { x: 200, y: 110 } },
       { id: 'left', pointerTarget: { x: 50, y: 80 } },
@@ -42,7 +42,7 @@ describe('sortSpatially', () => {
     expect(sortSpatially(items)).toEqual(['left', 'right'])
   })
 
-  it('treats items beyond rowTolerance as separate rows', () => {
+  it('treats items beyond rowTolerancePx as separate rows', () => {
     // dy = 100 > 48 -> different rows -> sort by y
     const items = [
       { id: 'higher-x', pointerTarget: { x: 50, y: 200 } },
@@ -51,7 +51,7 @@ describe('sortSpatially', () => {
     expect(sortSpatially(items)).toEqual(['lower-x', 'higher-x'])
   })
 
-  it('respects custom rowTolerance', () => {
+  it('respects custom rowTolerancePx', () => {
     // dy = 60 > custom tolerance 30 -> different rows
     const items = [
       { id: 'right-below', pointerTarget: { x: 200, y: 160 } },

@@ -14,6 +14,9 @@ export interface FloorTextures {
   normal: Texture
 }
 
+// Process-lifetime cache: every consumer of a finish shares the same Texture
+// objects (so one finish can only be tiled one way at a time) and none may be
+// disposed. A failed load evicts its entry so a retry actually retries.
 const textureCache = new Map<string, Promise<FloorTextures>>()
 const textureLoader = new TextureLoader()
 

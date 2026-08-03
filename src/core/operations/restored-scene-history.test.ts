@@ -16,6 +16,7 @@ const { mockBuildFurnitureItemsFromInstances } = vi.hoisted(() => ({
 
 vi.mock('./furniture-operations', () => ({
   buildFurnitureItemsFromInstances: mockBuildFurnitureItemsFromInstances,
+  FURNITURE_INSTANCE_ID_PREFIX: 'furniture-instance-',
 }))
 
 const EMPTY_CATALOG: FurnitureCatalogEntry[] = []

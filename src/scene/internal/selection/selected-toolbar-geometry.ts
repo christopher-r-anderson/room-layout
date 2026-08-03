@@ -4,6 +4,8 @@ import { getMeshes } from '@/scene/internal/three/get-meshes'
 import { getVisualObjectBounds } from '@/scene/internal/three/get-visual-object-bounds'
 import { isUiBoundsObject } from '@/scene/internal/three/ui-bounds'
 
+// Module scratch (not reentrant); collectUiBoundsPoints clones each point it
+// keeps because of this.
 const PROJECTED_POINT = new Vector3()
 const WORLD_POINT = new Vector3()
 
@@ -22,6 +24,7 @@ function projectWorldPoint(
     return { ok: false as const, reason: 'non-finite-projection' as const }
   }
 
+  // Outside the NDC depth range: behind the camera or past the far plane.
   if (PROJECTED_POINT.z < -1 || PROJECTED_POINT.z > 1) {
     return { ok: false as const, reason: 'behind-camera' as const }
   }

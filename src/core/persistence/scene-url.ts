@@ -9,6 +9,9 @@ import {
 } from './scene-payload'
 
 export const SCENE_URL_PARAM = 'scene'
+// Conservative ceiling for the encoded param: common real-world URL limits
+// (~2k legacy browsers, ~8k server request lines) with headroom for the rest
+// of the href.
 export const SCENE_URL_MAX_ENCODED_LENGTH = 4000
 const SCENE_URL_VERSION = 1
 

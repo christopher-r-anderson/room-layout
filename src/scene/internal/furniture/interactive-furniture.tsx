@@ -23,6 +23,9 @@ export interface InteractiveFurnitureProps {
   onPreviewEnd: () => void
 }
 
+// r3f replaces event.target with its own capture shim (not a DOM node);
+// setPointerCapture registers this group in r3f's capturedMap, which is what
+// keeps onPointerMove firing after the ray leaves the mesh mid-drag.
 interface PointerCaptureTarget extends EventTarget {
   setPointerCapture: (pointerId: number) => void
   releasePointerCapture: (pointerId: number) => void

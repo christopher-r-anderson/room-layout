@@ -5,11 +5,18 @@ import type {
   FurnitureCatalogEntry,
   FurnitureCollection,
 } from '@/domain/catalog'
-import { buildFurnitureItemsFromInstances } from './furniture-operations'
+import {
+  buildFurnitureItemsFromInstances,
+  FURNITURE_INSTANCE_ID_PREFIX,
+} from './furniture-operations'
+
+const INSTANCE_ID_PATTERN = new RegExp(
+  `^${FURNITURE_INSTANCE_ID_PREFIX}(\\d+)$`,
+)
 
 export function getMaxRestoredInstanceSuffix(instances: FurnitureInstance[]) {
   return instances.reduce((max, item) => {
-    const match = /^furniture-instance-(\d+)$/.exec(item.id)
+    const match = INSTANCE_ID_PATTERN.exec(item.id)
     const suffix = match ? parseInt(match[1], 10) : 0
     return Math.max(max, suffix)
   }, 0)

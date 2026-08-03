@@ -368,6 +368,11 @@ export async function selectOutlinerItemByKeyboard(
   return button
 }
 
+/**
+ * pointerTarget is canvas-relative CSS px (scene-snapshot): canvas.click()
+ * takes it directly, while page.mouse (dragSelectedFurniture) must add the
+ * canvas origin.
+ */
 export async function selectFurnitureById(
   page: Page,
   itemId: string,
@@ -449,6 +454,11 @@ export async function updateSelectedItemField(
   return readSceneState(page)
 }
 
+/**
+ * Requires the item to already be selected: the scene ignores pointermove on
+ * unselected items. page.mouse is viewport-absolute, so the canvas origin is
+ * added to the canvas-relative pointerTarget.
+ */
 export async function dragSelectedFurniture(
   page: Page,
   delta: {
@@ -484,6 +494,7 @@ export async function dragSelectedFurniture(
     await page.mouse.down()
     await page.mouse.move(startX + delta.x, startY + delta.y, { steps: 8 })
     await page.mouse.up()
+    // Parks the pointer off the model so hover/preview state clears.
     await page.mouse.move(1, 1)
 
     return readSceneState(page)

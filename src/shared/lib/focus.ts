@@ -28,6 +28,15 @@ const FOCUSABLE_CONTROL_SELECTOR =
 const ANY_CONTROL_SELECTOR =
   'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]'
 
+/**
+ * True when a click was synthesized from Enter/Space on the control rather
+ * than a pointer press: `detail` is the click count, and keyboard activation
+ * reports 0. The focus policy branches on this modality signal.
+ */
+export function isKeyboardActivatedClick(event: { detail: number }): boolean {
+  return event.detail === 0
+}
+
 /** Focuses the first focusable control under root; false when none exists. */
 export function focusFirstControl(root: ParentNode | null): boolean {
   const control =

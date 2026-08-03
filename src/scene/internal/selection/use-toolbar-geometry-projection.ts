@@ -7,6 +7,8 @@ import { IS_E2E_BUILD } from '@/shared/env/e2e'
 import { computeSelectedToolbarGeometry } from './selected-toolbar-geometry'
 import type { SelectedToolbarGeometry } from '@/core/scene.types'
 
+// Compared against the last EMITTED geometry (not the last computed), so
+// sub-deadband drift cannot accumulate silently.
 const TOOLBAR_GEOMETRY_DEADBAND_PX = 0.5
 const TOOLBAR_GEOMETRY_FRAME_INTERVAL_SECONDS = 1 / 24
 

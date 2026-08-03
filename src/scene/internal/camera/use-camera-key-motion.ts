@@ -70,6 +70,8 @@ export function useCameraKeyMotion({
       void controls.dolly(dollyDistance, false)
     }
 
+    // frameloop="demand" keep-alive; the size === 0 early return above lets
+    // the loop settle once keys are released.
     state.invalidate()
   })
 }

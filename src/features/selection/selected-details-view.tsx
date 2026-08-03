@@ -58,6 +58,9 @@ function formatMeters(value: number) {
 }
 
 function formatDegrees(valueRadians: number) {
+  // Inverts rotationY (counterclockwise radians) to the inspector's clockwise
+  // degrees; clockwiseDegreesToRotationY in selected-item-detail-actions
+  // inverts back on commit.
   const degrees = normalizeDegrees((valueRadians * 180) / Math.PI)
   const clockwiseDegrees = Number((360 - degrees).toFixed(1))
   const normalizedClockwiseDegrees = normalizeDegrees(clockwiseDegrees)

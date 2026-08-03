@@ -1,3 +1,4 @@
+import { isKeyboardActivatedClick } from '@/shared/lib/focus'
 import {
   useCallback,
   useEffect,
@@ -236,7 +237,7 @@ export function Outliner({
                           onClick={(e) => {
                             selectById(
                               item.id,
-                              e.detail === 0
+                              isKeyboardActivatedClick(e)
                                 ? 'panel-keyboard'
                                 : 'panel-pointer',
                             )

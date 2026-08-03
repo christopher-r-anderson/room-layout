@@ -1,6 +1,8 @@
 import { Plane, Ray, Vector3 } from 'three'
 
 const FLOOR_NORMAL = new Vector3(0, 1, 0)
+// Module scratch: the Vector3 a caller gets back is only valid until the next
+// call, and neither exported function is reentrant.
 const floorPlaneScratch = new Plane(FLOOR_NORMAL, 0)
 const floorIntersectionScratch = new Vector3()
 
@@ -30,6 +32,7 @@ export function getFloorIntersection(
   planeY = 0,
   target = new Vector3(),
 ) {
+  // three's Plane constant is the negated signed distance along the normal.
   floorPlaneScratch.set(FLOOR_NORMAL, -planeY)
   return ray.intersectPlane(floorPlaneScratch, target)
 }
