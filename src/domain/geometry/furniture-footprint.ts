@@ -65,6 +65,8 @@ function getHalfExtents(size: FootprintSize) {
   }
 }
 
+// three's Y-axis rotation (right-handed, Y up), so footprints stay aligned
+// with the rendered model: x' = x*cos + z*sin, z' = -x*sin + z*cos.
 function rotatePoint(
   point: FootprintPoint,
   angleRadians: number,
@@ -73,8 +75,8 @@ function rotatePoint(
   const sin = Math.sin(angleRadians)
 
   return {
-    x: point.x * cos - point.z * sin,
-    z: point.x * sin + point.z * cos,
+    x: point.x * cos + point.z * sin,
+    z: -point.x * sin + point.z * cos,
   }
 }
 
