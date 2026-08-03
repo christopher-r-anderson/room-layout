@@ -26,9 +26,11 @@ export type AddFurnitureResult =
   | { ok: true; id: string }
   | { ok: false; reason: 'unknown-catalog' | 'no-space' }
 
-// getMaxRestoredInstanceSuffix (restored-scene-history) parses ids of this
-// shape to re-seed the counter after a restore; a new add must never mint an
-// id that collides with a restored one.
+/**
+ * getMaxRestoredInstanceSuffix (restored-scene-history) parses ids of this
+ * shape to re-seed the counter after a restore; a new add must never mint an
+ * id that collides with a restored one.
+ */
 export const FURNITURE_INSTANCE_ID_PREFIX = 'furniture-instance-'
 
 export function createFurnitureInstanceId(sequenceNumber: number) {

@@ -80,8 +80,8 @@ export function removeKey(key: string): void {
 }
 
 /**
- * Returns the raw stored string, NOT JSON-parsed - never pair with saveJson,
- * which would store the value quoted and make it unreadable here.
+ * Returns the raw stored string, NOT JSON-parsed - do not pair with saveJson,
+ * whose value would come back as JSON text (`"en"` with quotes, not `en`).
  */
 export function loadStringPreference(key: string): string | null {
   return readLocalStorageValue(key)

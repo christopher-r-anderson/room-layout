@@ -24,7 +24,8 @@ function projectWorldPoint(
     return { ok: false as const, reason: 'non-finite-projection' as const }
   }
 
-  // Outside the NDC depth range: behind the camera or past the far plane.
+  // Outside the NDC depth range: behind the camera, inside the near plane,
+  // or past the far plane.
   if (PROJECTED_POINT.z < -1 || PROJECTED_POINT.z > 1) {
     return { ok: false as const, reason: 'behind-camera' as const }
   }

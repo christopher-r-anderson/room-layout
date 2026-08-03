@@ -29,9 +29,10 @@ const ANY_CONTROL_SELECTOR =
   'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]'
 
 /**
- * True when a click was synthesized from Enter/Space on the control rather
- * than a pointer press: `detail` is the click count, and keyboard activation
- * reports 0. The focus policy branches on this modality signal.
+ * True for a zero-detail click - one not produced by a pointer press:
+ * `detail` is the click count, so Enter/Space activation and programmatic
+ * element.click() report 0. The focus policy treats zero-detail as keyboard
+ * modality.
  */
 export function isKeyboardActivatedClick(event: { detail: number }): boolean {
   return event.detail === 0
