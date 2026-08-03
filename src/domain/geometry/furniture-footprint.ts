@@ -147,6 +147,8 @@ function createEdgeSnapScratch(): EdgeSnapScratch {
   }
 }
 
+// Four of everything = the SAT axis count (two edge normals per rectangle).
+// Module scratch: getEdgeSnapDelta is not reentrant.
 const edgeSnapScratch = createEdgeSnapScratch()
 
 function getProjectionRange(points: FootprintPoint[], axis: FootprintPoint) {
@@ -179,23 +181,14 @@ function rangesOverlap(
   return a.max > b.min + epsilon && b.max > a.min + epsilon
 }
 
+// Assumes corners[1] and corners[3] are adjacent to corners[0]
+// (getFootprintCorners' winding); a non-adjacent corner in either slot would
+// make a SAT axis a diagonal.
 function getRectAxes(corners: FootprintPoint[]) {
   return [
     normalize(subtractPoint(corners[1], corners[0])),
     normalize(subtractPoint(corners[3], corners[0])),
   ]
-}
-
-function getRangeGap(a: ProjectionRange, b: ProjectionRange) {
-  if (a.max < b.min) {
-    return b.min - a.max
-  }
-
-  if (b.max < a.min) {
-    return a.min - b.max
-  }
-
-  return 0
 }
 
 function rangesTouchOrOverlap(
@@ -349,8 +342,7 @@ export function getEdgeSnapDelta(
         )
 
         if (
-          !rangesTouchOrOverlap(translatedRange, stationaryRange, threshold) &&
-          getRangeGap(translatedRange, stationaryRange) > threshold
+          !rangesTouchOrOverlap(translatedRange, stationaryRange, threshold)
         ) {
           alignsOnAllAxes = false
           break

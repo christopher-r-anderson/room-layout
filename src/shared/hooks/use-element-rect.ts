@@ -66,6 +66,7 @@ function useMeasuredElementRect(
 
   const subscribe = useCallback(
     (onStoreChange: () => void) => {
+      // Primes rectSnapshotRef so the equality check has a baseline.
       getSnapshot()
 
       if (!element) {
@@ -79,6 +80,9 @@ function useMeasuredElementRect(
         }
       }
 
+      // One immediate notification after subscribing: the store's initial
+      // snapshot can predate this subscription, and the observers' own first
+      // deliveries arrive later (ResizeObserver) or never (viewport listeners).
       queueMicrotask(() => {
         notify()
       })

@@ -79,6 +79,10 @@ export function removeKey(key: string): void {
   removeLocalStorageValue(key)
 }
 
+/**
+ * Returns the raw stored string, NOT JSON-parsed - do not pair with saveJson,
+ * whose value would come back as JSON text (`"en"` with quotes, not `en`).
+ */
 export function loadStringPreference(key: string): string | null {
   return readLocalStorageValue(key)
 }

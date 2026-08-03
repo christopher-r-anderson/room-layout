@@ -12,7 +12,10 @@ import type {
 } from './selected-item.types'
 import { formatSelectedItemDetailsBlockedMessage } from './selected-item-detail-messages'
 
-function normalizeDegreesRadians(valueDegrees: number) {
+// The inspector shows clockwise degrees (floorplan convention); the model
+// stores rotationY as three's counterclockwise radians. formatDegrees in
+// selected-details-view inverts back for display.
+function clockwiseDegreesToRotationY(valueDegrees: number) {
   const normalizedDegrees = ((valueDegrees % 360) + 360) % 360
   const counterclockwiseDegrees = (360 - normalizedDegrees) % 360
   return (counterclockwiseDegrees * Math.PI) / 180
@@ -50,7 +53,7 @@ export function updateSelectedItemDetails(
         : undefined
   const nextRotationY =
     input.field === 'rotationDegrees'
-      ? normalizeDegreesRadians(input.value)
+      ? clockwiseDegreesToRotationY(input.value)
       : undefined
 
   const result = setSelectionTransform({

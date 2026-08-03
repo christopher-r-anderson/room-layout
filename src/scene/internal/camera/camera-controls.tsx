@@ -7,11 +7,11 @@ import type { RefObject } from 'react'
 export function CameraControls({
   enabled = true,
   controlsRef,
-  maxDistance = 12,
+  maxDistance,
 }: {
   enabled?: boolean
   controlsRef?: RefObject<CameraControlsImpl | null>
-  maxDistance?: number
+  maxDistance: number
 }) {
   return (
     <DreiCameraControls
@@ -20,6 +20,8 @@ export function CameraControls({
       enabled={enabled}
       minDistance={2}
       maxDistance={maxDistance}
+      // Keeps the orbit above the target's horizontal plane; the margin
+      // stops it from degenerating at the horizon.
       maxPolarAngle={Math.PI / 2 - 0.05}
     />
   )

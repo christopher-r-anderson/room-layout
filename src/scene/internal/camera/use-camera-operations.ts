@@ -39,6 +39,8 @@ export function useCameraOperations({
       cameraKeyStateRef.current = keyState
 
       if (keyState.size > 0) {
+        // frameloop="demand" kickstart: the loop is idle on key-down until
+        // something invalidates; use-camera-key-motion keeps it alive.
         invalidate()
       }
     },

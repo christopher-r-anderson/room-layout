@@ -165,7 +165,9 @@ export function Scene({
   useCameraKeyMotion({ cameraControlsRef, cameraKeyStateRef })
 
   // Frame the room on the corner preset: instantly on mount (the starting
-  // view), animated when the room size changes.
+  // view), animated when the room size changes. Identity compare - it relies
+  // on setRoomSize bailing out on unchanged dimensions, so a no-op write
+  // never re-frames the camera.
   const framedRoomSizeRef = useRef<typeof roomSize | null>(null)
   useLayoutEffect(() => {
     if (framedRoomSizeRef.current === roomSize) {

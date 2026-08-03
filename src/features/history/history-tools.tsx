@@ -1,3 +1,4 @@
+import { isKeyboardActivatedClick } from '@/shared/lib/focus'
 import { Toolbar } from '@base-ui/react/toolbar'
 import { useLingui } from '@lingui/react/macro'
 import { IconArrowBackUp, IconArrowForwardUp } from '@tabler/icons-react'
@@ -36,7 +37,7 @@ export function HistoryTools({
         onClick={(event) => {
           dispatch({
             kind: 'undo',
-            modality: event.detail === 0 ? 'keyboard' : 'pointer',
+            modality: isKeyboardActivatedClick(event) ? 'keyboard' : 'pointer',
           })
         }}
         disabled={undoDisabled}
@@ -52,7 +53,7 @@ export function HistoryTools({
         onClick={(event) => {
           dispatch({
             kind: 'redo',
-            modality: event.detail === 0 ? 'keyboard' : 'pointer',
+            modality: isKeyboardActivatedClick(event) ? 'keyboard' : 'pointer',
           })
         }}
         disabled={redoDisabled}

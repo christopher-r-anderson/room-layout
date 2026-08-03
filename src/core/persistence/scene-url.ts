@@ -9,6 +9,10 @@ import {
 } from './scene-payload'
 
 export const SCENE_URL_PARAM = 'scene'
+/**
+ * Targets the ~8k request-line limits common to servers and CDNs, with
+ * headroom for the rest of the href; ~2k legacy clients are out of scope.
+ */
 export const SCENE_URL_MAX_ENCODED_LENGTH = 4000
 const SCENE_URL_VERSION = 1
 

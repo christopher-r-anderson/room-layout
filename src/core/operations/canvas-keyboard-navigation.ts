@@ -11,7 +11,7 @@ export type BrowseDirection = 'next' | 'prev' | 'first' | 'last'
  */
 export function sortSpatially(
   items: readonly SortableItem[],
-  rowTolerance = 48,
+  rowTolerancePx = 48,
 ): string[] {
   const visible = items.filter(
     (
@@ -39,7 +39,10 @@ export function sortSpatially(
   for (const item of sortedByTopEdge) {
     const row = rows.at(-1)
 
-    if (row && item.pointerTarget.y - row[0].pointerTarget.y <= rowTolerance) {
+    if (
+      row &&
+      item.pointerTarget.y - row[0].pointerTarget.y <= rowTolerancePx
+    ) {
       row.push(item)
       continue
     }
