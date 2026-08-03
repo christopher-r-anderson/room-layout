@@ -53,10 +53,20 @@ appropriate within the same module area.
 
 ## Style
 
-- Comments are sparing: only constraints the code cannot express.
+- Comments are sparing: only constraints the code cannot express, in one or
+  two lines - never paragraphs.
+- The test for any comment: would it be written when writing this code from
+  scratch? Content that surfaced during a change earns its place only when it
+  is a genuine trip-hazard for a fresh reader.
+- A warranted comment on an exported symbol or interface member uses
+  `/** */` (editors surface it at call sites); everything else uses `//`.
+  Being exported is never by itself a reason to comment.
+- Plain wording: no filler openers ("Here,", "Safely,") and no rhetorical
+  emphasis patterns ("not just X, but Y").
 - Docs, comments, and commit text state current reality only - no journey
   notes, legacy references, or status markers.
-- Use ASCII `-` and `->` for dashes and arrows in comments, docs, and commits.
+- Use ASCII `-` and `->` for dashes and arrows in comments, docs, and commits;
+  no em dashes or unicode arrows (a `-` or `;` covers the em dash's job).
 - When a change alters behavior or structure, update the overlapping docs
   (`docs/`, `src/*/README.md`, `README.md`) in the same change.
 
