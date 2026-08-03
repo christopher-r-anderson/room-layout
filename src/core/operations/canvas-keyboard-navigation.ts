@@ -6,9 +6,8 @@ export interface SortableItem {
 export type BrowseDirection = 'next' | 'prev' | 'first' | 'last'
 
 /**
- * Sorts furniture items by their screen-space position.
- * Items are ordered top-to-bottom, then left-to-right within each row.
- * Items without screen coordinates are excluded from the result.
+ * Top-to-bottom, then left-to-right within each row; items without screen
+ * coordinates are excluded.
  */
 export function sortSpatially(
   items: readonly SortableItem[],

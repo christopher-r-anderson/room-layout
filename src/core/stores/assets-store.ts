@@ -36,9 +36,11 @@ export function buildSourcePathByCatalogId(
   return byCatalogId
 }
 
-// App-facing mirror of the startup-loaded catalog manifest. Startup owns the
-// load; this store lets features read the resolved catalog/collections/finishes
-// through narrow hooks instead of receiving them threaded through app chrome.
+/**
+ * App-facing mirror of the startup-loaded catalog manifest. Startup owns the
+ * load; features read the resolved catalog/collections/finishes through
+ * narrow hooks.
+ */
 export const useAssetsStore = create<AssetsStoreState>()(() => ({
   catalog: [],
   collections: [],
@@ -67,8 +69,10 @@ export function resetAssetsStore() {
   assetsActions.reset()
 }
 
-// Imperative lookup for action code (the add flow); the hook below is the React
-// equivalent.
+/**
+ * Imperative lookup for action code (the add flow); the hook below is the React
+ * equivalent.
+ */
 export function getSourcePathForCatalogId(catalogId: string): string | null {
   return useAssetsStore.getState().sourcePathByCatalogId.get(catalogId) ?? null
 }

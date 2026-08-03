@@ -1,8 +1,10 @@
 import { cva } from 'class-variance-authority'
 
-// Styling for Base UI's focusable-disabled buttons: the `disabled:` variants
-// below only match the native attribute, so aria-disabled needs its own
-// treatment wherever focusableWhenDisabled keeps a button interactive.
+/**
+ * Styling for Base UI's focusable-disabled buttons: the `disabled:` variants
+ * below only match the native attribute, so aria-disabled needs its own
+ * treatment wherever focusableWhenDisabled keeps a button interactive.
+ */
 export const ariaDisabledButtonClasses =
   'aria-disabled:active:translate-y-0 aria-disabled:cursor-not-allowed aria-disabled:opacity-50'
 

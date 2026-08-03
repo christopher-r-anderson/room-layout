@@ -47,7 +47,7 @@ export function resolveFinishContext(): FinishContext {
   }
 }
 
-/** A restorable state after normalization: the room size always resolved. */
+// A restorable state after normalization: the room size always resolved.
 type NormalizedRestorableState = RestorableState & { roomSize: RoomSize }
 
 /**
@@ -75,10 +75,7 @@ export function normalizeRestorableState(
   }
 }
 
-/**
- * Applies a restorable state to the document: layout, known finish ids, and
- * the persisted draft, all from the same normalized snapshot.
- */
+/** Layout, finish ids, and the draft all apply from one normalized snapshot. */
 export function applyRestorableState(
   state: RestorableState,
   context: FinishContext,

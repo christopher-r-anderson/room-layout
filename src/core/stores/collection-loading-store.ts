@@ -13,9 +13,11 @@ import {
 // (operations/collection-loader) reports outcomes back here. See
 // docs/architecture/startup-and-asset-loading.md.
 
-// Why a collection's load failed. 'unavailable' is permanent (a missing, broken,
-// or unparseable asset) and is never retried; 'connection' is transient (network
-// error or stall) and a re-request retries it.
+/**
+ * Why a collection's load failed. 'unavailable' is permanent (a missing, broken,
+ * or unparseable asset) and is never retried; 'connection' is transient (network
+ * error or stall) and a re-request retries it.
+ */
 export type CollectionLoadFailureKind = 'unavailable' | 'connection'
 
 function classifyCollectionLoadError(
@@ -34,7 +36,7 @@ function classifyCollectionLoadError(
   return 'unavailable'
 }
 
-// The store's progress entries are exactly what streamFetch reports.
+/** The store's progress entries are exactly what streamFetch reports. */
 export type CollectionDownloadProgress = StreamFetchProgress
 
 interface CollectionLoadingState {
@@ -72,9 +74,11 @@ function createInitialCollectionLoadingState(): CollectionLoadingState {
   }
 }
 
-// Exported for the non-React load pipeline (operations/collection-loader), which
-// subscribes for its reconciler and settles ensureCollectionLoaded off store
-// changes. React consumers use the selector hooks below.
+/**
+ * Exported for the non-React load pipeline (operations/collection-loader), which
+ * subscribes for its reconciler and settles ensureCollectionLoaded off store
+ * changes. React consumers use the selector hooks below.
+ */
 export const useCollectionLoadingStore = create<CollectionLoadingState>()(
   subscribeWithSelector(() => createInitialCollectionLoadingState()),
 )
@@ -118,12 +122,9 @@ export const collectionLoadingActions = {
       return { failed }
     })
   },
-  // Request an on-demand collection (or re-request a failed one). Always writes a
-  // fresh `wanted` set so the load reconciler is notified even for a re-request.
-  // Only a transient `connection` failure is cleared for the retry: an
-  // `unavailable` mark is permanent for the session (re-requesting a missing or
-  // broken asset cannot help, and clearing it would flicker its catalog tile
-  // back to selectable); only an explicit startup retry resets it.
+  // Always writes a fresh `wanted` set so the load reconciler fires even on a
+  // re-request. Only a transient `connection` failure clears for the retry;
+  // `unavailable` is permanent for the session (only a startup retry resets it).
   requestCollection: (path: string) => {
     useCollectionLoadingStore.setState((state) => {
       const wanted = new Set(state.wanted)
@@ -168,22 +169,28 @@ export function getCollectionFailureKind(
   return useCollectionLoadingStore.getState().failed.get(path) ?? null
 }
 
-// Reactive map of failed collections to why they failed, for the catalog to mark
-// unavailable (permanent) items.
+/**
+ * Reactive map of failed collections to why they failed, for the catalog to mark
+ * unavailable (permanent) items.
+ */
 export function useFailedCollections(): Map<string, CollectionLoadFailureKind> {
   return useCollectionLoadingStore((state) => state.failed)
 }
 
-// Reactive set of loaded collection paths, for the startup readiness observer to
-// tell when the gated collections have all parsed.
+/**
+ * Reactive set of loaded collection paths, for the startup readiness observer to
+ * tell when the gated collections have all parsed.
+ */
 export function useLoadedCollections(): Set<string> {
   return useCollectionLoadingStore((state) => state.loaded)
 }
 
 const NO_GATED_PATHS: string[] = []
 
-// The gated set, or [] while bootstrap has not resolved it yet. Use
-// useGatedCollectionsResolved to distinguish "resolved to empty" from "unknown".
+/**
+ * The gated set, or [] while bootstrap has not resolved it yet. Use
+ * useGatedCollectionsResolved to distinguish "resolved to empty" from "unknown".
+ */
 export function useGatedCollectionPaths(): string[] {
   return (
     useCollectionLoadingStore(useShallow((state) => state.gated)) ??
@@ -191,15 +198,19 @@ export function useGatedCollectionPaths(): string[] {
   )
 }
 
-// Whether bootstrap has resolved the gated set for the current load cycle. The
-// readiness observer gates on this rather than on a proxy such as manifest
-// contents, so an unresolved (or reset-by-retry) gate can never read as ready.
+/**
+ * Whether bootstrap has resolved the gated set for the current load cycle. The
+ * readiness observer gates on this rather than on a proxy such as manifest
+ * contents, so an unresolved (or reset-by-retry) gate can never read as ready.
+ */
 export function useGatedCollectionsResolved(): boolean {
   return useCollectionLoadingStore((state) => state.gated !== null)
 }
 
-// The download percent for one collection, or null when its size is unknown or it
-// is not loading (so the Add button falls back to an indeterminate spinner).
+/**
+ * The download percent for one collection, or null when its size is unknown or it
+ * is not loading (so the Add button falls back to an indeterminate spinner).
+ */
 export function useCollectionLoadPercent(path: string | null): number | null {
   return useCollectionLoadingStore((state) => {
     if (!path) {
@@ -220,11 +231,11 @@ export interface GatedLoadProgress {
   percent: number
 }
 
-// Aggregate download progress across the gated collections, for the startup
-// loader. Computed at read time from the per-collection progress. The percent
-// only aggregates collections with a known Content-Length (unknown sizes would
-// skew the denominator); a parsed collection always counts as byte-complete, so
-// a missing Content-Length cannot pin the loader in its downloading stage.
+/**
+ * The percent aggregates only collections with a known Content-Length
+ * (unknown sizes would skew the denominator); a parsed collection counts as
+ * byte-complete, so a missing Content-Length cannot pin the loader.
+ */
 export function useGatedLoadProgress(): GatedLoadProgress {
   return useCollectionLoadingStore(
     useShallow((state) => {

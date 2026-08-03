@@ -16,9 +16,10 @@ export interface WallFinishOption {
   color: number
 }
 
-// A lighting mood retunes the existing room light rig (it adds no new lights).
-// Colors are stored as numbers (parsed from #RRGGBB), matching WallFinishOption.color.
-// Intensities are non-negative; exposure drives the renderer toneMappingExposure.
+/**
+ * A lighting mood retunes the existing room light rig (it adds no new lights);
+ * exposure drives the renderer toneMappingExposure.
+ */
 export interface LightingMoodOption {
   id: string
   label: string

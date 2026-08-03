@@ -5,10 +5,12 @@ import { formatPercent } from '@/shared/i18n/formatters'
 import { APP_NAME } from '@/shared/messages/app-identity'
 import { Progress } from '@/shared/ui/progress'
 
-// Minimal startup loader. Its column (spinner, brand, bar, status row) mirrors the
-// index.html pre-paint skeleton element-for-element, with the same opaque
-// theme-matched treatment, so the hand-off when React replaces the skeleton does
-// not shift or flash.
+/**
+ * Minimal startup loader. Its column (spinner, brand, bar, status row) mirrors the
+ * index.html pre-paint skeleton element-for-element, with the same opaque
+ * theme-matched treatment, so the hand-off when React replaces the skeleton does
+ * not shift or flash.
+ */
 export function InitializationProgress() {
   const { t } = useLingui()
   const visible = useStartupLoadingActive()

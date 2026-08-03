@@ -4,9 +4,11 @@ export interface StreamFetchProgress {
   totalBytes: number
 }
 
-// Thrown for a non-ok HTTP response (the asset is missing/broken). Distinct from
-// a network error or a stall abort so callers can treat it as a *permanent*
-// failure (retrying will not help) rather than a transient connection problem.
+/**
+ * Thrown for a non-ok HTTP response (the asset is missing/broken). Distinct from
+ * a network error or a stall abort so callers can treat it as a *permanent*
+ * failure (retrying will not help) rather than a transient connection problem.
+ */
 export class AssetHttpError extends Error {
   readonly status: number
 
@@ -22,9 +24,11 @@ export class AssetHttpError extends Error {
 // still is.
 const DEFAULT_STALL_TIMEOUT_MS = 15_000
 
-// Fetches a URL as an ArrayBuffer, streaming the body so progress is reported and
-// a stalled transfer aborts (rejecting) instead of hanging indefinitely. Used by
-// every collection download through the shared byte source.
+/**
+ * Fetches a URL as an ArrayBuffer, streaming the body so progress is reported and
+ * a stalled transfer aborts (rejecting) instead of hanging indefinitely. Used by
+ * every collection download through the shared byte source.
+ */
 export async function streamFetch(
   url: string,
   {

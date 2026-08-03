@@ -30,10 +30,8 @@ interface InvalidRestoreCase {
   description: MessageDescriptor
 }
 
-// Copy tables for the invalid-link fallback branches. Descriptors resolve in
-// the report helpers at fire-time, so only the branch actually taken is
-// translated. Titles name the specific failure (invalid vs unknown furniture);
-// the shared description states the consequence.
+// Titles name the specific failure (invalid vs unknown furniture); the shared
+// description states the consequence.
 const STARTING_WITH_EMPTY_ROOM = msg`Starting with an empty room.`
 
 const LINK_AND_DRAFT_NOT_RESTORED: InvalidRestoreCase = {
@@ -121,7 +119,7 @@ function restoreFromInvalidLinkWithDraftFallback(
   )
 }
 
-// A local draft only participates in restore when its references are valid.
+/** A local draft only participates in restore when its references are valid. */
 export function validateDraftState(
   draft: SceneDraftState | null,
   catalog: FurnitureCatalogEntry[],
@@ -134,11 +132,13 @@ export type PrimaryRestoreState =
   | { source: 'draft'; state: SceneDraftState }
   | { source: 'none'; state: null }
 
-// The single statement of restore precedence: a valid shared link wins, else a
-// valid local draft, else nothing. The restore flow attempts this source first
-// (its runtime fallbacks for apply failures stay below), and bootstrap derives
-// the startup gate from the same selection - one rule, so the gate cannot
-// silently diverge from what restore will attempt.
+/**
+ * The single statement of restore precedence: a valid shared link wins, else a
+ * valid local draft, else nothing. The restore flow attempts this source first
+ * (its runtime fallbacks for apply failures stay below), and bootstrap derives
+ * the startup gate from the same selection - one rule, so the gate cannot
+ * silently diverge from what restore will attempt.
+ */
 export function selectPrimaryRestoreState({
   parseResult,
   validDraftState,

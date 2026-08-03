@@ -90,20 +90,20 @@ function resolveLocale(): SupportedLocale {
   )
 }
 
-// Loads (if needed), activates, and reflects a locale on <html>. The `?lang=`
-// override is intentionally transient and not persisted; a stored preference is
-// honored on read but would only ever be written by an explicit in-app choice
-// (no such switcher exists yet).
+// The `?lang=` override is transient by design and never persisted; a stored
+// preference is written only by an explicit in-app choice.
 async function switchLocale(locale: string): Promise<void> {
   await loadLocale(locale)
   i18n.activate(locale)
   applyDocumentLocale(locale)
 }
 
-// Called once at startup, before React renders. English is already active from
-// module load, so the default path returns nothing and renders synchronously. A
-// non-default locale returns a promise the entry gates the first render on, so
-// its catalog is active before any text or startup side effect resolves.
+/**
+ * Called once at startup, before React renders. English is already active from
+ * module load, so the default path returns nothing and renders synchronously. A
+ * non-default locale returns a promise the entry gates the first render on, so
+ * its catalog is active before any text or startup side effect resolves.
+ */
 export function initI18n(): Promise<void> | undefined {
   const locale: string = resolveLocale()
   applyDocumentLocale(DEFAULT_LOCALE)

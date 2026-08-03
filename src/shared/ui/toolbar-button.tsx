@@ -17,14 +17,11 @@ import { Button } from './button'
 import { ariaDisabledButtonClasses } from './button-variants'
 import { KbdShortcutDisplay } from './keyboard-shortcut-display'
 
-/**
- * Toolbar items. Both components render the same shell: our Button enrolled as
- * a Base UI Toolbar.Button (roving focus; focusable + aria-disabled while
- * disabled) wrapped in a tooltip, so they must live inside a Toolbar.Root.
- * Inside a toolbar, every item is one of these two - or a bare
- * `<Toolbar.Button render={...}>` enrolling an already-composed shared button;
- * the nesting is never hand-built. Outside a toolbar, use Button directly.
- */
+// Both render the same shell: our Button enrolled as a Base UI Toolbar.Button
+// (roving focus; focusable + aria-disabled while disabled) in a tooltip, so
+// they must live inside a Toolbar.Root. Every toolbar item is one of these
+// two or a bare `<Toolbar.Button render={...}>`; outside a toolbar, use
+// Button directly.
 
 interface ToolbarButtonShellProps {
   buttonRef?: Ref<HTMLButtonElement>

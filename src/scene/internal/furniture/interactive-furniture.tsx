@@ -71,8 +71,7 @@ export function InteractiveFurniture({
 }: InteractiveFurnitureProps & { enableShadows?: boolean }) {
   const groupRef = useRef<Group>(null)
   const [model] = useState<Object3D>(() => {
-    // Model/shadow flags are intentionally derived once at mount. The quality mode
-    // is configured at app startup and not expected to toggle during a running session.
+    // Derived once at mount: the quality mode never changes within a session.
     const node = getClonedNode(sourceScene, nodeName)
     node.position.set(0, 0, 0)
 

@@ -20,8 +20,10 @@ function getEyeLevelViewDistance(size: RoomSize, axis: number, span: number) {
   return Math.max(1.5 * Math.max(axis, 0.75 * span), 2.2 * (size.height - 1))
 }
 
-// Derived from the room size; the ratios reproduce the views tuned for the
-// default 6x6 room (corner [6,6,6], front [0,2,9], side [9,2,0], top y=10).
+/**
+ * Derived from the room size; the ratios reproduce the views tuned for the
+ * default 6x6 room (corner [6,6,6], front [0,2,9], side [9,2,0], top y=10).
+ */
 export function getCameraPresetViews(
   size: RoomSize,
 ): Record<CameraPreset, PresetView> {
@@ -33,12 +35,10 @@ export function getCameraPresetViews(
       target: [0, 0, 0],
     },
     front: {
-      // Eye-height, centered, looking at the front face of the room.
       position: [0, 2, getEyeLevelViewDistance(size, size.depth, size.width)],
       target: [0, 1, 0],
     },
     side: {
-      // Eye-height, centered, looking at the right side face of the room.
       position: [getEyeLevelViewDistance(size, size.width, size.depth), 2, 0],
       target: [0, 1, 0],
     },
@@ -50,8 +50,10 @@ export function getCameraPresetViews(
   }
 }
 
-// Far enough to reach every preset (2x the framing dimension matches the 12
-// tuned for the 6x6 room), capped for the largest rooms.
+/**
+ * Far enough to reach every preset (2x the framing dimension matches the 12
+ * tuned for the 6x6 room), capped for the largest rooms.
+ */
 export function getCameraMaxDistance(size: RoomSize): number {
   return Math.min(40, Math.max(8, 2 * getRoomFramingDimension(size)))
 }

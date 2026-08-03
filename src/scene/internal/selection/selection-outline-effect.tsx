@@ -19,7 +19,6 @@ interface OutlineColors {
   strength: number
 }
 
-// Matched to the prior @react-three/postprocessing configuration.
 const SELECTION_OUTLINE: OutlineColors = {
   visible: 0xf59e0b,
   hidden: 0xb45309,
@@ -52,21 +51,19 @@ function makeOutlinePass(
 }
 
 export interface SelectionOutlineEffectProps {
-  /** Meshes of the selected item; outlined in the selection color. */
   selection: Object3D[]
-  /** Meshes of the previewed (hovered/focused) item; outlined in the preview color. */
+  /** Meshes of the hovered or keyboard-focused item. */
   preview: Object3D[]
-  /** Meshes of items outside the room walls; outlined in the warning color. */
+  /** Meshes of items outside the room walls. */
   outOfBounds: Object3D[]
   lowQuality: boolean
 }
 
-// Screen-space selection/preview outline built on three.js's own OutlinePass,
-// replacing @react-three/postprocessing (~92 KB gzip). Same combined-silhouette
-// edges with visible/hidden-edge see-through, and no per-object outline mesh (so
-// no hover-time geometry work). The composer is an imperative GPU resource held
-// in refs; because the Canvas runs frameloop="demand", we take over rendering
-// with a priority-1 useFrame and re-render on change via the shared invalidate.
+/**
+ * The composer is an imperative GPU resource held in refs; because the Canvas
+ * runs frameloop="demand", this takes over rendering with a priority-1
+ * useFrame and re-renders on change via the shared invalidate.
+ */
 export function SelectionOutlineEffect({
   selection,
   preview,
@@ -86,8 +83,8 @@ export function SelectionOutlineEffect({
 
   useEffect(() => {
     const resolution = new Vector2(size.width, size.height)
-    // Multisampled HDR target so whole-scene edges stay anti-aliased (the prior
-    // pipeline used multisampling: 4); disabled in the low-quality e2e build.
+    // Multisampled HDR target so whole-scene edges stay anti-aliased;
+    // disabled in the low-quality e2e build.
     const renderTarget = new WebGLRenderTarget(size.width, size.height, {
       type: HalfFloatType,
       samples: lowQuality ? 0 : 4,

@@ -5,7 +5,7 @@ const MOVEMENT_ANNOUNCEMENT_DELAY_MS = 180
 const SUCCESS_TIMEOUT_MS = 5_000
 const WARNING_TIMEOUT_MS = 8_000
 
-/** A user-facing notice; `title` leads, `description` adds consequence/detail. */
+// A user-facing notice; `title` leads, `description` adds consequence/detail.
 interface FeedbackMessage {
   title: string
   description?: string

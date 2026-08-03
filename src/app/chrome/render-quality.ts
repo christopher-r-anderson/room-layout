@@ -4,9 +4,11 @@ export interface RenderQualitySettings {
   exposure: number
 }
 
-// Resolves the render-quality settings SceneCanvas applies: scene detail tier,
-// shadow mode, and tone-mapping exposure. The e2e override forces deterministic
-// low quality so visual tests stay stable.
+/**
+ * Resolves the render-quality settings SceneCanvas applies: scene detail tier,
+ * shadow mode, and tone-mapping exposure. The e2e override forces deterministic
+ * low quality so visual tests stay stable.
+ */
 export function resolveRenderQuality(): RenderQualitySettings {
   const e2eLowQuality = import.meta.env.VITE_E2E_RENDER_QUALITY === 'low'
 

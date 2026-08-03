@@ -8,8 +8,10 @@ interface UseCameraKeyMotionOptions {
   cameraKeyStateRef: RefObject<CameraKeyState>
 }
 
-// Applies continuous camera motion from held-key state each frame: WASD orbit,
-// Shift+WASD pan, and +/- dolly. Speeds are tuned for the 6x6 meter room scale.
+/**
+ * Applies continuous camera motion from held-key state each frame: WASD orbit,
+ * Shift+WASD pan, and +/- dolly. Speeds are tuned for the 6x6 meter room scale.
+ */
 export function useCameraKeyMotion({
   cameraControlsRef,
   cameraKeyStateRef,
@@ -27,15 +29,12 @@ export function useCameraKeyMotion({
 
     const deltaTime = Math.min(delta, 0.05) // Cap delta to prevent large jumps after frame stalls
 
-    // Camera motion constants tuned for the 6x6 meter room scale.
     const ROTATION_SPEED = 1.5 // radians per second
-    const TRUCK_SPEED = 3.0 // units per second (pan/strafe)
-    const DOLLY_SPEED = 3.0 // units per second (zoom forward/backward)
+    const TRUCK_SPEED = 3.0 // units per second
+    const DOLLY_SPEED = 3.0 // units per second
 
     const hasShift = keyState.has('shift')
 
-    // Camera controls: WASD for orbit, Shift+WASD for pan
-    // Orbit (no shift)
     if (keyState.has('keyW') && !hasShift) {
       void controls.rotate(0, -ROTATION_SPEED * deltaTime, false)
     }
@@ -49,7 +48,6 @@ export function useCameraKeyMotion({
       void controls.rotate(ROTATION_SPEED * deltaTime, 0, false)
     }
 
-    // Pan (Shift+WASD)
     if (keyState.has('keyW') && hasShift) {
       void controls.truck(0, -TRUCK_SPEED * deltaTime, false)
     }
@@ -63,7 +61,6 @@ export function useCameraKeyMotion({
       void controls.truck(TRUCK_SPEED * deltaTime, 0, false)
     }
 
-    // Zoom/dolly camera with = and - keys
     const hasEqual = keyState.has('equal')
     const hasMinus = keyState.has('minus')
     if (hasEqual || hasMinus) {

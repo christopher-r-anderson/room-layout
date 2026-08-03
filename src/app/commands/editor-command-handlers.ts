@@ -27,10 +27,8 @@ import {
   selectCanvasPreviewed,
 } from '@/core/operations/canvas-keyboard-actions'
 
-/**
- * The concrete editor command map: every kind wires straight to a core
- * operation or feature action. No command semantics are invented here.
- */
+// The concrete editor command map: every kind wires straight to a core
+// operation or feature action. No command semantics are invented here.
 const EDITOR_COMMAND_HANDLERS: EditorCommandHandlers = {
   'focus-inspector': focusInspector,
   'focus-room-view': focusScene,

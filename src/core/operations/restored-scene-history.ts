@@ -15,9 +15,11 @@ export function getMaxRestoredInstanceSuffix(instances: FurnitureInstance[]) {
   }, 0)
 }
 
-// Rebuilds a fresh undo/redo history (and the next instance-id seed) from
-// restored furniture instances. Used by the startup restore flow to seed the
-// scene without a prior undo timeline.
+/**
+ * Rebuilds a fresh undo/redo history (and the next instance-id seed) from
+ * restored furniture instances. Used by the startup restore flow to seed the
+ * scene without a prior undo timeline.
+ */
 export function buildRestoredSceneHistory(options: {
   instances: FurnitureInstance[]
   catalog: FurnitureCatalogEntry[]

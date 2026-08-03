@@ -7,13 +7,12 @@ import { parseSceneUrl } from '@/core/persistence/scene-url'
 import type { SceneDraftState } from '@/core/persistence/scene-draft'
 import { selectPrimaryRestoreState, validateDraftState } from './restore-flow'
 
-// Resolves the gated set at bootstrap: which collections the scene about to be
-// restored may reference. Uses the restore flow's own source selection
-// (selectPrimaryRestoreState), so the gate cannot diverge from what restore will
-// attempt - but is read-only: it must not consume the URL param or apply
-// anything; the real restore does that once at readiness. When the link is
-// primary, a valid draft stays gated too: the restore flow falls back to it if
-// applying the link throws, and that fallback must find its collections loaded.
+/**
+ * Shares the restore flow's own source selection so the gate cannot diverge
+ * from what restore will attempt, but stays read-only: it must not consume the
+ * URL param. A valid draft stays gated even when the link is primary - the
+ * fallback taken when applying the link throws must find its collections loaded.
+ */
 export function resolveReferencedCollectionPaths({
   href,
   draft,

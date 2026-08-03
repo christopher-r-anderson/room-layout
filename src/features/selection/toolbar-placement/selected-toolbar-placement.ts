@@ -6,7 +6,7 @@
 //   3. reject candidates that leave the screen, overlap a panel, or detach from
 //      the object; score the survivors on continuity, spacing, and a diagonal
 //      side bias; apply hysteresis so the choice is stable across frames.
-//   4. if nothing attaches cleanly, never hide — fall back to a clamped anchor
+//   4. if nothing attaches cleanly, never hide - fall back to a clamped anchor
 //      that may overlap the object but stays on screen and clear of the panels.
 import {
   avoidsExclusions,
@@ -100,8 +100,8 @@ const OBJECT_CLEARANCE_SUPPORT_BAND = 24 // Object clearance penalty saturates a
 // well beside its long edge. We detect that case with PCA on the projected
 // points: the covariance matrix's eigenvalues give the footprint's dominant
 // axis length vs width (elongation), and the axis angle gives how diagonal it
-// is. Strong preference needs BOTH — diagonal orientation and a long/narrow
-// shape — so axis-aligned or chunky objects keep their normal top preference.
+// is. Strong preference needs BOTH - diagonal orientation and a long/narrow
+// shape - so axis-aligned or chunky objects keep their normal top preference.
 function getDiagonalSidePreference(points: ScreenPoint[]) {
   if (points.length < 2) {
     return 0
@@ -145,7 +145,6 @@ function getDiagonalSidePreference(points: ScreenPoint[]) {
   const axisAngle = 0.5 * Math.atan2(xy * 2, xx - yy)
   const diagonalness = Math.abs(Math.sin(axisAngle * 2))
 
-  // Strong bias needs both diagonal orientation and a long/narrow projected footprint.
   return diagonalness * (0.35 + elongation * 0.65)
 }
 
@@ -449,7 +448,7 @@ const FALLBACK_CANDIDATE_ID_BY_SIDE = {
 // When no candidate attaches cleanly, the toolbar still shows rather than
 // hiding: anchor it near the object on a simple side, keep it on screen, and
 // prefer whichever side overlaps the UI panels least. Overlapping the object
-// itself is acceptable here — the user can orbit or deselect.
+// itself is acceptable here - the user can orbit or deselect.
 function computeClampedFallback(
   bounds: PointBounds,
   containerRect: DOMRectReadOnly,

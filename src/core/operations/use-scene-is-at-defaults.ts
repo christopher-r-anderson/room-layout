@@ -54,10 +54,8 @@ function computeSceneIsAtDefaults(
 }
 
 /**
- * Whether the scene matches the loaded environment's defaults (no furniture, no
- * finish changes). Drives start-over availability. Derives from the scene-assets
- * environment + the scene-state read model so consumers self-source it instead of
- * receiving a threaded `startOverDisabled`/`sceneIsAtDefaults` prop.
+ * Whether the scene matches the loaded environment's defaults (no furniture,
+ * no finish changes). Drives start-over availability.
  */
 export function useSceneIsAtDefaults(): boolean {
   const environmentConfig = useEnvironmentConfig()
@@ -77,8 +75,10 @@ export function useSceneIsAtDefaults(): boolean {
   )
 }
 
-// Non-reactive read for coordinators and dialog guards (e.g. the start-over
-// `canOpen` gate) that need the current value outside React.
+/**
+ * Non-reactive read for coordinators and dialog guards (e.g. the start-over
+ * `canOpen` gate) that need the current value outside React.
+ */
 export function getSceneIsAtDefaults(): boolean {
   const { environmentConfig } = useAssetsStore.getState()
   const { history, floorFinishId, wallFinishId, lightingMoodId, roomSize } =

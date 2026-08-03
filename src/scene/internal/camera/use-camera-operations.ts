@@ -14,9 +14,6 @@ interface UseCameraOperationsOptions {
   invalidate: () => void
 }
 
-// Camera service handlers: jump to a named preset, record held-key state for
-// continuous motion, and frame the selected object. Extracted from the Scene
-// component to give camera control one home.
 export function useCameraOperations({
   cameraControlsRef,
   cameraKeyStateRef,

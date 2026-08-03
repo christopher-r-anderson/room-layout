@@ -13,16 +13,13 @@ function resourceBasePath(path: string): string {
   return lastSlash >= 0 ? path.slice(0, lastSlash + 1) : ''
 }
 
-// The scene's half of collection loading: parse GLB bytes, validate that every
-// catalog entry of the collection can resolve its manifest-referenced nodes, and
-// register the resulting scene root. Created once per Scene mount (configuring
-// KTX2 needs the live renderer) and exposed to core through scene services -
-// core drives the whole load (fetch -> this -> mark loaded) imperatively, so the
-// pipeline never depends on React render timing. Validation runs before
-// registration and registration before core marks the collection loaded, so a
-// broken asset is classified as a load failure (unavailable) instead of blowing
-// up later in the add flow, and consumers may read the registry on the strength
-// of the core flag.
+/**
+ * Core drives the whole load (fetch -> this -> mark loaded) imperatively, so
+ * the pipeline never depends on React render timing. Validation runs before
+ * registration and registration before the loaded mark, so a broken asset
+ * fails its load instead of blowing up later, and consumers may read the
+ * registry on the strength of the core flag.
+ */
 export function createCollectionSceneLoader({
   renderer,
   catalog,

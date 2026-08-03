@@ -8,14 +8,10 @@ import { APP_NAME } from '@/shared/messages/app-identity'
 import { LANG_QUERY_PARAM } from '@/shared/i18n/locales'
 
 /**
- * Serializes the current scene to a shareable URL and offers it via the native
- * share sheet, falling back to the clipboard. Reads the scene and active finishes
- * from the stores, so it runs as a plain action — the keyboard `share` command
- * fires it and forgets; the share button awaits the result for its label.
- *
- * Returns `'shared'`/`'copied'` on success, or `null` when the user cancels or
- * the scene is too large; user-facing feedback is emitted here (the share
- * button's own label is the visual success surface).
+ * Offers the serialized scene via the native share sheet, falling back to the
+ * clipboard. Returns null when the user cancels or the scene is too large;
+ * error feedback is emitted here, while success shows as the share button's
+ * own label.
  */
 export async function shareScene(): Promise<'shared' | 'copied' | null> {
   const { history, roomSize } = useSceneDocumentStore.getState()

@@ -15,9 +15,11 @@ export type RegisterEditorRect = (
   id: EditorRectId,
 ) => (element: HTMLElement | null) => void
 
-// Split into two contexts so the stable registration handle and the changing
-// measured rects do not share a value identity. Components that only register
-// elements read the registry and never re-render when the rects update.
+/**
+ * Split into two contexts so the stable registration handle and the changing
+ * measured rects do not share a value identity. Components that only register
+ * elements read the registry and never re-render when the rects update.
+ */
 export const EditorRectRegistryContext =
   createContext<RegisterEditorRect | null>(null)
 export const EditorRectsContext = createContext<EditorRectMap | null>(null)

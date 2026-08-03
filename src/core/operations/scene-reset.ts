@@ -6,12 +6,7 @@ import { clearSceneDraft } from '@/core/persistence/scene-draft'
 import { sceneCommands } from '@/core/scene-commands'
 import { restoreInitialLayout } from '@/core/operations/history-mutations'
 
-/**
- * Resets the editor to the loaded environment's defaults: clears the layout,
- * preview, and persisted draft, restores default finishes and camera, and
- * suppresses the announce for the selection clear. Pure cross-cutting
- * coordination; feedback (announce/toast) is owned by the caller.
- */
+/** Feedback (announce/toast) is owned by the caller. */
 export function resetSceneToDefaults() {
   const { environmentConfig } = useAssetsStore.getState()
 

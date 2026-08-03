@@ -1,5 +1,7 @@
-// Generic axis-aligned rectangle math: containment, intersection, distance, and
-// corners. No toolbar or domain knowledge beyond the shared viewport padding.
+/**
+ * Generic axis-aligned rectangle math: containment, intersection, distance, and
+ * corners. No toolbar or domain knowledge beyond the shared viewport padding.
+ */
 export const VIEWPORT_PADDING = 12 // Minimum gap from the room-view edges.
 
 export interface Rect {

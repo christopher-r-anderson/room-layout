@@ -21,9 +21,11 @@ function numberFormat(options: Intl.NumberFormatOptions): Intl.NumberFormat {
   return formatter
 }
 
-// A plain decimal with no unit, trailing zeros trimmed (Intl drops them when
-// minimumFractionDigits is 0). Used for editable numeric fields whose unit lives
-// in the label, e.g. "Rotation (deg)".
+/**
+ * A plain decimal with no unit, trailing zeros trimmed (Intl drops them when
+ * minimumFractionDigits is 0). Used for editable numeric fields whose unit lives
+ * in the label, e.g. "Rotation (deg)".
+ */
 export function formatDecimal(
   value: number,
   maximumFractionDigits: number,
@@ -31,7 +33,7 @@ export function formatDecimal(
   return numberFormat({ maximumFractionDigits }).format(value)
 }
 
-// Long-form distance for screen-reader announcements, e.g. "1.2 meters".
+/** Long-form distance for screen-reader announcements, e.g. "1.2 meters". */
 export function formatDistanceMeters(value: number): string {
   return numberFormat({
     style: 'unit',
@@ -41,7 +43,7 @@ export function formatDistanceMeters(value: number): string {
   }).format(value)
 }
 
-// A fraction in [0, 1] rendered as a locale-aware percentage, e.g. "42%".
+/** A fraction in [0, 1] rendered as a locale-aware percentage, e.g. "42%". */
 export function formatPercent(fraction: number): string {
   return numberFormat({ style: 'percent', maximumFractionDigits: 0 }).format(
     fraction,

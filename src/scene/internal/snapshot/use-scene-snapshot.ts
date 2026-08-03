@@ -12,9 +12,10 @@ interface UseSceneSnapshotOptions {
 
 type GetSnapshot = () => ReturnType<typeof createSceneSnapshot>
 
-// Returns a stable getter for the current scene snapshot. The snapshot reads the
-// latest furniture/objects synchronously via refs so callers (e.g. the URL/draft
-// serializers) observe committed state even before passive effects re-run.
+/**
+ * The snapshot reads the latest furniture/objects synchronously via refs so
+ * callers observe committed state even before passive effects re-run.
+ */
 export function useSceneSnapshot({
   camera,
   canvasSize,

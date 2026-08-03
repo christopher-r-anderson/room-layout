@@ -5,16 +5,17 @@ import { useSelectedId } from '@/core/stores/selection-store'
 
 interface SceneSelectionState {
   objectRefs: RefObject<Map<string, Object3D>>
-  /** Reactive mirror of the registry, for render state derived from it. */
+  // Reactive mirror of objectRefs, for render state derived from it.
   registeredObjects: Map<string, Object3D>
   registerObject: (id: string, object: Object3D | null) => void
   selectedId: string | null
   selection: ReturnType<typeof getMeshes>
 }
 
-// Selection render state: the Object3D registry the projections/outline read,
-// and the outline mesh set for the current selection. The pointer itself lives
-// in the core selection store; input maps to it through the core actions.
+/**
+ * The pointer itself lives in the core selection store; input maps to it
+ * through the core actions.
+ */
 export function useSceneSelection(): SceneSelectionState {
   const objectRefs = useRef(new Map<string, Object3D>())
   const selectedId = useSelectedId()

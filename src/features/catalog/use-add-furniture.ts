@@ -12,18 +12,19 @@ import {
 const PENDING_DELAY_MS = 300
 
 export interface UseAddFurniture {
-  // Fire the add: awaits the model if needed, closes the drawer on success.
+  /** Awaits the model if needed, closes the drawer on success. */
   submit: () => void
-  // Disables the button immediately (prevents a double-add).
+  /** True immediately, guarding against a double-add. */
   isSubmitting: boolean
-  // Shows the pending spinner/label (delayed past PENDING_DELAY_MS).
+  /** True only past PENDING_DELAY_MS. */
   showPending: boolean
-  // Localized download percent of the selected collection, or null when unknown.
   percentLabel: string | null
 }
 
-// Encapsulates the Add drawer's submission flow: prefetch-on-select, the async add
-// with a delayed pending indicator, and the selected collection's download percent.
+/**
+ * Encapsulates the Add drawer's submission flow: prefetch-on-select, the async add
+ * with a delayed pending indicator, and the selected collection's download percent.
+ */
 export function useAddFurniture({
   catalogIdToAdd,
   selectedSourcePath,

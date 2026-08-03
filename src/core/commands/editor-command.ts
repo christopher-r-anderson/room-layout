@@ -34,7 +34,7 @@ export type EditorCommand =
 /**
  * One handler per command kind, each receiving its exact command variant. The
  * mapped type is keyed by `kind`, so adding a command to the union forces a
- * matching handler here — no parallel interface or dispatch switch to maintain.
+ * matching handler here - no parallel interface or dispatch switch to maintain.
  */
 export type EditorCommandHandlers = {
   [Kind in EditorCommand['kind']]: (

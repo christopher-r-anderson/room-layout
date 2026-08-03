@@ -1,14 +1,13 @@
 import { useState } from 'react'
 import type { SelectedItemPlacement } from './selected-item-placement.types'
 
-// While the toolbar is pinned, hold its last floating placement so its on-screen
-// position stops tracking the object's re-projected geometry. The instant the
-// pin releases, the live placement flows through again and the float site's CSS
-// transition glides the toolbar to its current spot. Only floating placements
-// hold: the held placement must be floating (so the pin can't engage before the
-// first floating frame — cold start, or just after a selection change), and a
-// live hidden placement always wins (the toolbar is gone, so never keep showing
-// a stale pinned position).
+/**
+ * While pinned, hold the last floating placement so the toolbar stops tracking
+ * the object's re-projected geometry; on release the live placement flows
+ * through again. Both placements must be floating: the pin can't engage before
+ * the first floating frame, and a live hidden placement always wins (never
+ * keep showing a stale pinned position).
+ */
 export function resolveHeldPlacement(
   heldPlacement: SelectedItemPlacement,
   livePlacement: SelectedItemPlacement,
@@ -31,14 +30,14 @@ interface PinnedPlacementHold {
   placement: SelectedItemPlacement
 }
 
-// React wrapper around resolveHeldPlacement, using the adjust-state-during-render
-// pattern to store the previous value:
-// https://react.dev/reference/react/useState#storing-information-from-previous-renders
-// The held placement is captured from the live one only as the pin engages, so
-// the frozen-while-pinned path never calls setState — camera motion under a
-// pinned toolbar costs no extra render. `resetKey` force-releases the hold when
-// the placement context changes (a new selection or geometry source) so a pinned
-// position can't bleed onto a different object.
+/**
+ * The adjust-state-during-render pattern
+ * (https://react.dev/reference/react/useState#storing-information-from-previous-renders):
+ * the held placement is captured only as the pin engages, so the
+ * frozen-while-pinned path never calls setState - camera motion under a pinned
+ * toolbar costs no extra render. `resetKey` force-releases the hold so a
+ * pinned position can't bleed onto a different object.
+ */
 export function usePinnedPlacement(
   livePlacement: SelectedItemPlacement,
   pinned: boolean,

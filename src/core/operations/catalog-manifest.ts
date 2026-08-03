@@ -200,7 +200,6 @@ function normalizeRelativeAssetPath(value: unknown): string | null {
     return null
   }
 
-  // Canonicalize to a consistent URL path representation.
   return rawSegments.map((segment) => encodeURIComponent(segment)).join('/')
 }
 

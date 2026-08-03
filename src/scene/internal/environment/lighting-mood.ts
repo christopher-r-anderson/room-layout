@@ -1,8 +1,10 @@
 import type { LightingMoodOption } from '@/domain/environment-materials'
 
-// The fallback mood reproduces the room's neutral "Daylight" rig. It backstops
-// the first frames before the manifest-driven config resolves, and the brief
-// window where a stored mood id is unknown, so the scene always has a full rig.
+/**
+ * Backstops the first frames before the manifest-driven config resolves and
+ * any window where a stored mood id is unknown, so the scene always has a
+ * full rig.
+ */
 export const DEFAULT_LIGHTING_MOOD: LightingMoodOption = {
   id: 'daylight',
   label: 'Daylight',
@@ -20,7 +22,6 @@ export const DEFAULT_LIGHTING_MOOD: LightingMoodOption = {
   backgroundIntensity: 0.95,
 }
 
-/** The resolved mood, or the default rig when no mood is available yet. */
 export function resolveLightingMood(
   mood: LightingMoodOption | null | undefined,
 ): LightingMoodOption {

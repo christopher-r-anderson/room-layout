@@ -103,14 +103,18 @@ export function previewFromCanvasKeyboard(id: string | null) {
   clearPreview()
 }
 
-// Background clicks should clear preview immediately rather than waiting for the
-// scene-leave hysteresis used to smooth pointer churn.
+/**
+ * Background clicks should clear preview immediately rather than waiting for the
+ * scene-leave hysteresis used to smooth pointer churn.
+ */
 export function clearPreviewOnCanvasMiss() {
   resetAndClearPreview()
 }
 
-// Drives the state-hygiene reset when preview must not persist (dragging, a
-// blocking overlay is open, or interactions are disabled).
+/**
+ * Drives the state-hygiene reset when preview must not persist (dragging, a
+ * blocking overlay is open, or interactions are disabled).
+ */
 export function forceClearPreview() {
   resetAndClearPreview()
 }

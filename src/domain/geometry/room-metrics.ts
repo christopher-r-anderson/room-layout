@@ -22,7 +22,7 @@ export const FLOOR_PLANE_Y = 0
 export const FURNITURE_SNAP_SIZE_METERS = 0.5
 export const FURNITURE_EDGE_SNAP_THRESHOLD_METERS = 0.12
 
-// The room is centered on the world origin: walls sit at +/- half extents.
+/** The room is centered on the world origin: walls sit at +/- half extents. */
 export function getRoomLayoutBounds(
   size: Pick<RoomSize, 'width' | 'depth'>,
 ): LayoutBounds {

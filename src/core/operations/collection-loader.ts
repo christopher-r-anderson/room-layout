@@ -34,9 +34,11 @@ function currentStartupCycle(): number {
   return useEditorLifecycleStore.getState().startupCycle
 }
 
-// Load one collection end-to-end. Idempotent per cycle: already loaded, marked
-// failed, or in flight for the current cycle is a no-op, and a not-ready scene
-// defers to the reconciler (which re-kicks once the scene mounts).
+/**
+ * Load one collection end-to-end. Idempotent per cycle: already loaded, marked
+ * failed, or in flight for the current cycle is a no-op, and a not-ready scene
+ * defers to the reconciler (which re-kicks once the scene mounts).
+ */
 export async function loadCollection(path: string): Promise<void> {
   if (
     isCollectionLoaded(path) ||
@@ -191,10 +193,9 @@ export function ensureCollectionLoaded(path: string): Promise<void> {
         } else if (failed) {
           finish(rejectFailed)
         } else if (!wanted) {
-          // Only a full reset (the retry teardown) removes a requested path
-          // from `wanted`; the in-flight load discards its result on the cycle
-          // guard, so nothing would ever settle this promise - reject instead
-          // of leaking the subscription and hanging the caller.
+          // Only the retry teardown removes a requested path from `wanted`,
+          // and the in-flight load discards its result on the cycle guard -
+          // reject instead of leaking the subscription and hanging the caller.
           finish(() => {
             reject(new Error(`furniture collection load was reset: ${path}`))
           })

@@ -79,10 +79,12 @@ function runRestoreOnce() {
   })
 }
 
-// Assets are ready. Runs the restore flow (shared link -> draft -> defaults)
-// once per startup cycle, guarded by the attempt count so a Scene remount does
-// not re-run it. A retry resets the count (requestRetry): the error path wiped
-// the document, so the fresh cycle must restore the draft again.
+/**
+ * Assets are ready. Runs the restore flow (shared link -> draft -> defaults)
+ * once per startup cycle, guarded by the attempt count so a Scene remount does
+ * not re-run it. A retry resets the count (requestRetry): the error path wiped
+ * the document, so the fresh cycle must restore the draft again.
+ */
 export function completeAssetLoad() {
   if (useEditorLifecycleStore.getState().restoreAttemptCount === 0) {
     editorLifecycleActions.incrementRestoreAttempt()
@@ -102,20 +104,19 @@ function reportStartupError(kind: StartupErrorKind, error: Error) {
   resetStartupShell()
 }
 
-// A furniture/scene asset failed while loading or rendering.
 export function notifyAssetError(error: Error) {
   reportStartupError('asset-load', error)
 }
 
-// One of the app's own lazy chunks (engine, chrome) failed to fetch. Kept as a
-// distinct kind because its recovery differs: the retry reloads the page (see
-// startup-chunk-retry) rather than re-requesting assets in place.
+/**
+ * One of the app's own lazy chunks (engine, chrome) failed to fetch. Kept as a
+ * distinct kind because its recovery differs: the retry reloads the page (see
+ * startup-chunk-retry) rather than re-requesting assets in place.
+ */
 export function notifyChunkLoadError(error: Error) {
   reportStartupError('app-chunk', error)
 }
 
-// Retry startup: drop the buffered asset bytes so it re-downloads, start a
-// fresh cycle (which remounts the Scene), and re-run the bootstrap fetch.
 export function requestAssetRetry() {
   dialogActions.closeActiveDialog()
   resetStartupShell()

@@ -6,9 +6,8 @@ import {
 import { useSelectedId, useSelectionStore } from '@/core/stores/selection-store'
 
 /**
- * The selected item, joined from the selection session (the pointer) and the
- * document (the items). Cross-store derived state, so it lives here as a value
- * module rather than in either store.
+ * Cross-store derived state (selection + document), so it lives here rather
+ * than in either store.
  */
 export function useSelectedFurniture(): FurnitureItem | null {
   const selectedId = useSelectedId()
