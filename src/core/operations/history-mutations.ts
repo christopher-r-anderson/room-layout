@@ -11,8 +11,6 @@ import { getCollectionNodeDefaults } from '@/core/stores/collection-scene-regist
 import { redoSceneHistory, undoSceneHistory } from './scene-history-state'
 import { buildRestoredSceneHistory } from './restored-scene-history'
 
-// Undo/redo/restore document mutations.
-
 export function undo(): boolean {
   const { history } = useSceneDocumentStore.getState()
   const { isDragging } = useSceneSessionStore.getState()

@@ -33,8 +33,8 @@ function boxContainsPoint(
 
 // A short hold keeps the orbit nudge small so the selected item stays on screen
 // and the toolbar stays in floating mode. This test does not assert exact
-// placement stickiness — keyboard-release latency means the nudge magnitude
-// can't be bounded precisely under load — so the hysteresis decision is covered
+// placement stickiness - keyboard-release latency means the nudge magnitude
+// can't be bounded precisely under load - so the hysteresis decision is covered
 // in the placement unit tests instead; here we assert the toolbar stays validly
 // placed across the camera change.
 const NUDGE_HOLD_MS = 150

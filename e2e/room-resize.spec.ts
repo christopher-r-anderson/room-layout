@@ -128,7 +128,6 @@ test('shrinking never moves furniture; the fix action pulls it inside undoably',
     .toBeLessThan(1.5)
   await expect(fixButton).toBeHidden()
 
-  // One undo restores the pre-fix position (and re-flags the item).
   await page.getByRole('button', { name: 'Undo' }).click()
 
   await expect

@@ -14,9 +14,11 @@ import { roomSurfaceDialogDefinition } from '@/features/room-surface/room-surfac
 import { deleteDialogDefinition } from '@/features/selection/delete-dialog-definition'
 import { startOverDialogDefinition } from '@/features/startup/start-over-dialog-definition'
 
-// The dialogs registered in the store at startup. Each dialog's id lives on its
-// own definition (and its exported id constant); this is only the membership
-// list, so consumers reference ids via those constants, not through here.
+/**
+ * The dialogs registered in the store at startup. Each dialog's id lives on its
+ * own definition (and its exported id constant); this is only the membership
+ * list, so consumers reference ids via those constants, not through here.
+ */
 export const DIALOG_DEFINITIONS: DialogDefinition[] = [
   catalogDialogDefinition,
   deleteDialogDefinition,
@@ -27,9 +29,11 @@ export const DIALOG_DEFINITIONS: DialogDefinition[] = [
   startOverDialogDefinition,
 ]
 
-// The external state the dialog guards read. Every signal comes from a core
-// store or operation; app owns this wiring because it decides which signals
-// feed dialog readiness, while the store only declares the contract.
+/**
+ * The external state the dialog guards read. Every signal comes from a core
+ * store or operation; app owns this wiring because it decides which signals
+ * feed dialog readiness, while the store only declares the contract.
+ */
 export const dialogRuntimeContext: DialogRuntimeContext = {
   isDialogsEnabled: () => isEditorInteractive(),
   getSelectedFurniture: getSelectedFurniture,

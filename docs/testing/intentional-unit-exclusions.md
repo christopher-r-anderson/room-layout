@@ -24,7 +24,7 @@ what e2e already does). The cited e2e coverage is verified spec-by-spec.
 | `features/keyboard/use-keyboard-shortcuts.ts`                 | `editor-hotkeys`, `editor-accessibility-flows` (dispatch + modal suppression)                                                                    |
 | `features/startup/use-startup-bootstrap.ts` (thin mount hook) | `startup-loading`, `startup-load-error`, `url-restore` (the fetch pipeline itself is unit-tested in `core/operations/startup-bootstrap.test.ts`) |
 
-## Presentational / config / trivial — no test needed
+## Presentational / config / trivial - no test needed
 
 - Canvas composition: `scene/scene.tsx`, `app/App.tsx`, `main.tsx`,
   `app/chrome/editor-body.tsx`, `app/chrome/top-header/top-header-dialogs.tsx`.
@@ -45,7 +45,7 @@ what e2e already does). The cited e2e coverage is verified spec-by-spec.
   (`surface`, `caption`, `kbd`, `description-list`, the `*-variants` modules).
   These components are project-owned (see
   [ui-components.md](../architecture/ui-components.md)), but their interaction
-  behavior (open/close, focus, dismissal) is Base UI's — tested upstream — and
+  behavior (open/close, focus, dismissal) is Base UI's - tested upstream - and
   the project layer is composition and class strings, exercised throughout the
   e2e lane (dialog/drawer/toolbar flows, `editor-a11y-audits`). Unit tests here
   would re-test the library or pin class names. Components that **add a project
@@ -58,30 +58,30 @@ what e2e already does). The cited e2e coverage is verified spec-by-spec.
 Each is covered more cheaply elsewhere or is too low-value for the e2e cost.
 Recorded so the choice is explicit, not an oversight.
 
-- **Room finish and lighting mood applied in isolation** — only asserted via the
-  `url-restore` serialization round-trip, not a standalone "change finish/mood →
+- **Room finish and lighting mood applied in isolation** - only asserted via the
+  `url-restore` serialization round-trip, not a standalone "change finish/mood ->
   scene reflects it" e2e. The finish reducers are unit-tested; lighting-mood
   resolution lives in the pure, unit-tested
   `scene/internal/environment/lighting-mood.ts` (keeping `lighting.tsx`
   presentational); the floor-loading `aria-busy` state is in `room-controls` unit
   tests. Low marginal value.
-- **Genuine no-space error presence** — `add-furniture` asserts the error never
+- **Genuine no-space error presence** - `add-furniture` asserts the error never
   fires on valid adds; it does not drive the room to true saturation to assert the
   error appears. Placement-search is unit-tested. Low value, brittle to set up.
-- **Outliner collapse persistence across reload** — the collapse toggle + focus is
+- **Outliner collapse persistence across reload** - the collapse toggle + focus is
   e2e-tested; the storage round-trip across a reload is not. Trivial persistence.
-- **Mobile docked-toolbar placement** — desktop floating placement is thoroughly
+- **Mobile docked-toolbar placement** - desktop floating placement is thoroughly
   e2e-tested (`selected-toolbar-placement`); the mobile docked variant is a simpler
   CSS dock, asserted only via `data-selected-toolbar-mode`.
-- **Native share path in e2e** — `url-restore` exercises the clipboard fallback;
+- **Native share path in e2e** - `url-restore` exercises the clipboard fallback;
   the `navigator.share` path is unit-tested (`share-scene.test`) and impractical in
   headless CI.
 - **"No item selected" focus-redirect branches** of `focusInspector`/`focusToolbar`
-  (announce + redirect to outliner) — the selected branches are e2e-covered; these
+  (announce + redirect to outliner) - the selected branches are e2e-covered; these
   empty-selection branches are not. Minor.
 
 ## Out of scope (standing)
 
 Chasing a coverage number; re-testing Base UI primitive behavior through
 `shared/ui` wrappers (the library tests that; project-added contracts there
-**are** in scope — see above); testing pure-constant modules.
+**are** in scope - see above); testing pure-constant modules.

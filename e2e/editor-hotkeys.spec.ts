@@ -77,7 +77,7 @@ async function pressKeyAndWaitForCameraMove(
 
 // Bounded hold, polled outcome. The fixed hold keeps the movement magnitude
 // bounded (no hold-until-condition), while polling the assertion tolerates a
-// demand-frameloop frame that ticks late under parallel load — so a one-shot
+// demand-frameloop frame that ticks late under parallel load - so a one-shot
 // read can't see "no movement yet" and flake.
 async function holdKeyAndExpectCameraMove(
   page: Page,
@@ -110,7 +110,7 @@ async function tabTo(page: Page, target: Locator, maxTabs = 30) {
       await expect(target).toBeFocused({ timeout: 50 })
       return
     } catch {
-      // Keep tabbing until the requested control receives focus.
+      // not focused yet
     }
 
     await page.keyboard.press('Tab')
@@ -344,7 +344,6 @@ test('camera motion with = and - keys zooms camera', async ({ page }) => {
 
   const zoomedCameraPosition = afterZoomIn.cameraPosition
 
-  // Zoom back out; the camera must move again.
   await holdKeyAndExpectCameraMove(page, 'Minus', zoomedCameraPosition)
 })
 
@@ -417,18 +416,14 @@ test('arrow keys move selected object and do not move the camera', async ({
   const initialPosition = addedState.items[0].position
   const initialCameraPosition = addedState.cameraPosition
 
-  // Select the furniture using canvas interaction
   await selectFurnitureById(page, furnitureId)
-  // Ensure room view has focus before pressing arrow keys
   await focusRoomView(page)
 
-  // Move the furniture left using arrow keys
   for (let i = 0; i < 3; i++) {
     await page.keyboard.press('ArrowLeft')
   }
 
   const afterMove = await readSceneState(page)
-  // Furniture should have moved (position x should be less than initial)
   expect(afterMove.items[0].position[0]).toBeLessThan(initialPosition[0])
   // Camera should remain stable while arrows are used for object movement
   expect(afterMove.cameraPosition).toEqual(initialCameraPosition)
@@ -439,7 +434,6 @@ test('WASD is suppressed in modal dialogs but enabled in the editor', async ({
 }) => {
   await openEditor(page)
 
-  // Try WASD in a dialog text input (should pass through)
   const infoButton = page.getByRole('button', {
     name: 'Open project and asset info',
   })
@@ -460,7 +454,6 @@ test('WASD is suppressed in modal dialogs but enabled in the editor', async ({
   await page.keyboard.press('Escape')
   await expect(infoDialog).toBeHidden()
 
-  // Test WASD in open editor (should work)
   const afterAdd = await addFurniture(page, 'Leather Couch')
   const cameraPositionAfterDialog = afterAdd.cameraPosition
 
@@ -501,7 +494,6 @@ test('canvas browse: arrow keys cycle preview when nothing is selected, Enter se
 }) => {
   await openEditor(page)
 
-  // Add two items so there is something to browse through
   await addFurniture(page, 'Leather Couch')
   const state2 = await addFurniture(page, 'End Table')
   expect(state2.itemCount).toBe(2)
@@ -515,7 +507,6 @@ test('canvas browse: arrow keys cycle preview when nothing is selected, Enter se
   const deselectedState = await readSceneState(page)
   expect(deselectedState.selectedId).toBeNull()
 
-  // Nothing selected, room view focused — ArrowRight should preview the first item
   await page.keyboard.press('ArrowRight')
 
   const afterFirstRight = await readSceneState(page)
@@ -523,23 +514,19 @@ test('canvas browse: arrow keys cycle preview when nothing is selected, Enter se
   expect(afterFirstRight.previewedId).not.toBeNull()
   const firstPreviewId = afterFirstRight.previewedId
 
-  // A second ArrowRight should advance to the next item (or wrap)
   await page.keyboard.press('ArrowRight')
   const afterSecondRight = await readSceneState(page)
   expect(afterSecondRight.selectedId).toBeNull()
   expect(afterSecondRight.previewedId).not.toBeNull()
-  // The preview should have cycled to a valid item
   const secondPreviewId = afterSecondRight.previewedId
   expect(itemIds).toContain(firstPreviewId)
   expect(itemIds).toContain(secondPreviewId)
 
-  // Home should go to the first item in spatial order
   await page.keyboard.press('Home')
   const afterHome = await readSceneState(page)
   expect(afterHome.selectedId).toBeNull()
   expect(afterHome.previewedId).not.toBeNull()
 
-  // Enter should select the currently previewed item
   await page.keyboard.press('Enter')
   const afterEnter = await readSceneState(page)
   expect(afterEnter.selectedId).toBe(afterHome.previewedId)
@@ -557,12 +544,10 @@ test('canvas browse: announces item name and then selection with the selected it
   await focusRoomView(page)
   await page.keyboard.press('Escape')
 
-  // First ArrowRight should preview the item and announce its name
   await page.keyboard.press('ArrowRight')
   const itemName = state.items[0].name
   await waitForPoliteAnnouncement(page, itemName)
 
-  // Enter should select and announce with the jump-to-actions hint
   await page.keyboard.press('Enter')
   await waitForPoliteAnnouncement(
     page,

@@ -5,11 +5,7 @@ import { EditorCommandsProvider } from './editor-commands-provider'
 import { SelectionPlacementEngineProvider } from './selection-placement-engine-provider'
 import { ShellLayoutServicesProvider } from './shell-layout-services-provider'
 
-/**
- * The editor's single provider-composition root: it builds the command
- * dispatch (via EditorCommandsProvider) so App is left as bootstrap and
- * render.
- */
+/** The editor's single provider-composition root; App stays bootstrap-and-render. */
 export function EditorProviders({ children }: { children: ReactNode }) {
   return (
     // Hover tooltips wait briefly so cursor passes over the toolbars don't pop

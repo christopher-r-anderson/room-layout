@@ -5,7 +5,7 @@ import type {
 } from '@/core/operations/focus-policy'
 
 // Where keyboard focus currently rests (written by each surface's own
-// focus/blur handlers — current location only, never a focus history) and the
+// focus/blur handlers - current location only, never a focus history) and the
 // pending resolved focus directive awaiting realization by its surface.
 // Session-scoped: never serialized, never part of the undo timeline.
 interface FocusStoreState {

@@ -51,7 +51,6 @@ export function FloorMaterial({
 
     let cancelled = false
 
-    // Only report loading if we don't already have textures for this option cached
     const isAlreadyLoaded = texturesByOption?.optionId === option.id
     if (isAlreadyLoaded) {
       onLoadingChange?.(false)
@@ -108,8 +107,8 @@ export function FloorMaterial({
     texturesByOption?.optionId,
   ])
 
-  // Use previously loaded textures if any exist, even while new ones are loading.
-  // This maintains visual continuity during transitions.
+  // Previously loaded textures stay up while new ones load, for visual
+  // continuity during transitions.
   if (!option || !texturesByOption) {
     return <meshStandardMaterial color="#e5e5e5" roughness={0.75} />
   }
@@ -128,11 +127,9 @@ export function FloorMaterial({
 
   return (
     <meshStandardMaterial
-      // Keep this keyed by the currently displayed texture set.
-      // R3F/Three can keep stale shader defines when a standard material is first
-      // created without maps and then receives maps later, which shows up as a
-      // black floor regression. Remounting only when displayed textures change
-      // preserves visual continuity during loading and forces a clean material init.
+      // Three can keep stale shader defines when a material created without
+      // maps receives maps later (a black-floor regression); remounting per
+      // displayed texture set forces a clean material init.
       key={texturesByOption.optionId}
       map={diffuse}
       normalMap={normal}

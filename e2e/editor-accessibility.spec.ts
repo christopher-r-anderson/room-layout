@@ -32,7 +32,7 @@ test('supports outliner selection and selected item details without the canvas',
 
   await updateSelectedItemField(page, 'Distance from left wall (m)', '1.4')
 
-  // The field edit applies through the panel→command→scene pipeline without the
+  // The field edit applies through the panel->command->scene pipeline without the
   // canvas; the exact resolved coordinate is owned by the wall-clearance /
   // detail-action unit tests.
   await expect

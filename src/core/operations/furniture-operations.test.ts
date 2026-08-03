@@ -93,8 +93,7 @@ function defaultAddOptions(
     snapSize: number
   }>,
 ) {
-  // Mirrors the node transform the old Object3D fixture encoded: the couch node
-  // sits at the origin with no rotation.
+  // The couch node sits at the origin with no rotation.
   const nodeDefaultsByPath = new Map([
     [
       SOURCE_PATH,
@@ -397,7 +396,7 @@ describe('resolveMoveSelectionInHistory', () => {
       createFurnitureItem('item-1', { position: [4, 0, 0] }),
     ])
 
-    // Pushing past the +X wall clamps back to the same spot → blocked-bounds.
+    // Pushing past the +X wall clamps back to the same spot -> blocked-bounds.
     expect(
       resolveMoveSelectionInHistory({
         ...baseArgs,
@@ -407,7 +406,7 @@ describe('resolveMoveSelectionInHistory', () => {
       }).result,
     ).toEqual({ ok: false, reason: 'blocked-bounds' })
 
-    // A zero delta never moved anything → no-op.
+    // A zero delta never moved anything -> no-op.
     expect(
       resolveMoveSelectionInHistory({
         ...baseArgs,

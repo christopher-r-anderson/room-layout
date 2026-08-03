@@ -29,7 +29,7 @@ import { AppToaster } from '@/shared/ui/toast'
 import { appToastManager } from '@/core/stores/feedback-store'
 
 // The 3D engine (three/r3f/drei) lives in this lazily-imported chunk so it
-// downloads in parallel with — and never blocks — the initial shell paint.
+// downloads in parallel with - and never blocks - the initial shell paint.
 const SceneCanvas = lazy(withStartupChunkRetry(() => import('./scene-canvas')))
 
 // The editor chrome is code-split into its own chunk and mounts only once the
@@ -152,12 +152,9 @@ export function EditorBody({ testOverlaysHidden }: EditorBodyProps) {
 
   const chromeMounted = editorInteractionsEnabled && !testOverlaysHidden
 
-  // The shell column owns the chrome flow: the header and the panels inside
-  // <main> are flex siblings, so a header that wraps (narrow viewports, longer
-  // locales) pushes the panel column down naturally. The canvas and startup
-  // overlays are position:fixed, so they stay viewport-filling from inside
-  // <main>. <main> itself must stay unpositioned: the floating selected-item
-  // toolbar resolves its absolute position against this fixed column.
+  // <main> must stay unpositioned: the floating selected-item toolbar resolves
+  // its absolute position against this fixed column. Header and panels are
+  // flex siblings, so a wrapping header pushes the panel column down naturally.
   return (
     <div className="pointer-events-none fixed inset-2 flex flex-col gap-2">
       {/* z-10: the header precedes the z-0 canvas in DOM paint order. */}

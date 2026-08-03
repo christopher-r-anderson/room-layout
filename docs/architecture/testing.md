@@ -104,7 +104,7 @@ Run the a11y lanes when semantics, focus management, or announcements change:
 - `e2e/feedback-a11y-audits.spec.ts` - the same scans over feedback states:
   toasts visible (including over an open drawer), startup loading and error
   overlays, field errors, the F6-focused notifications region.
-- `e2e/feedback-routing.spec.ts` - pins the event-class → surface routing
+- `e2e/feedback-routing.spec.ts` - pins the event-class -> surface routing
   (unit twin: `core/stores/feedback-store.test.ts`; guidance:
   [feedback.md](feedback.md)).
 - `e2e/feedback-toasts.spec.ts` - toast lifecycle: persistence, auto-dismiss,

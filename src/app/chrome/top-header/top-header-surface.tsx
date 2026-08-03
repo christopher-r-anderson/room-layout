@@ -4,7 +4,7 @@ import { Surface } from '@/shared/ui/surface'
 
 /**
  * The header's content row: a comfortable overlay Surface that lays its children
- * out as a wrapping control row. Purely presentational — callers set role/aria
+ * out as a wrapping control row. Purely presentational - callers set role/aria
  * where the semantics belong (e.g. as a Toolbar.Root via `render`).
  */
 export function TopHeaderSurface({

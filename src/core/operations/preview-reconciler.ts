@@ -14,12 +14,10 @@ import {
 } from '@/core/operations/preview-actions'
 import { createReconciler } from '@/core/operations/reconciler'
 
-/**
- * Clears preview state when it must not persist — dragging, a blocking overlay
- * open, or interactions disabled. The visible preview is already suppressed by
- * `usePreviewedId`'s read gating; this clears the raw id and active source so
- * nothing stale flashes back when the gate lifts.
- */
+// Clears preview state when it must not persist - dragging, a blocking overlay
+// open, or interactions disabled. The visible preview is already suppressed by
+// `usePreviewedId`'s read gating; this clears the raw id and active source so
+// nothing stale flashes back when the gate lifts.
 function reconcilePreview() {
   const isDragging = useSceneSessionStore.getState().isDragging
 

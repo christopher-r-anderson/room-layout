@@ -75,12 +75,10 @@ export const editorLifecycleActions = {
     })
   },
   requestRetry: () => {
-    // Start a fresh startup cycle: the bump remounts the Scene and
-    // invalidates in-flight collection loads. Restore tracking resets with
-    // the cycle: the error path wiped the document, so the restore flow must
-    // re-run at ready to bring the draft back (leaving it to unlock empty
-    // would also make draft persistence clear the saved draft as an
-    // at-defaults scene).
+    // The cycle bump remounts the Scene and invalidates in-flight collection
+    // loads. Restore tracking resets with it: the error path wiped the
+    // document, so restore must re-run at ready or the draft would be lost
+    // (and then cleared as an at-defaults scene).
     useEditorLifecycleStore.setState((state) => ({
       startupPhase: 'loading',
       assetError: null,
@@ -131,8 +129,10 @@ export function resetEditorLifecycleStore() {
   editorLifecycleActions.reset()
 }
 
-// Imperative (non-React) editor-interactive predicate, so the readiness rule lives
-// in one place. React equivalent: useEditorInteractionsEnabled.
+/**
+ * Imperative (non-React) editor-interactive predicate, so the readiness rule lives
+ * in one place. React equivalent: useEditorInteractionsEnabled.
+ */
 export function isEditorInteractive() {
   return useEditorLifecycleStore.getState().startupPhase === 'ready'
 }

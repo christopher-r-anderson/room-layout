@@ -23,14 +23,12 @@ describe('scene-payload', () => {
     })
 
     it('handles numbers on rounding boundaries affected by precision', () => {
-      // Values that might have trailing precision errors
       expect(roundTo3(0.1234999999999999)).toBe(0.123)
       expect(roundTo3(0.1235000000000001)).toBe(0.124)
       expect(roundTo3(1.9995)).toBe(2)
     })
 
     it('handles negative numbers with precision issues', () => {
-      // Negative numbers with binary representation quirks
       expect(roundTo3(-0.1 - 0.2)).toBe(-0.3)
       expect(roundTo3(-1.2349999999999)).toBe(-1.235)
       expect(roundTo3(-1.9995)).toBe(-2)

@@ -78,7 +78,7 @@ export function rotateSelection(direction: -1 | 1) {
 
   // Pin the toolbar's position briefly after every rotation (whichever input
   // triggered it) so repeated rotate presses don't walk it out from under the
-  // cursor as the object re-projects — but only when something is selected, so a
+  // cursor as the object re-projects - but only when something is selected, so a
   // no-op rotate can't arm the grace and pin the next toolbar that appears.
   if (rotatingFurniture !== null) {
     toolbarInteractionActions.reportRotation()

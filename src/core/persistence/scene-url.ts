@@ -59,10 +59,7 @@ export function serializeSceneToUrl(
   return url.toString()
 }
 
-/**
- * Returns the provided URL without any `scene` query params, preserving all
- * other query params and the hash.
- */
+/** Strips every `scene` param; other query params and the hash survive. */
 export function removeSceneParamFromUrl(href: string): string {
   const url = new URL(href)
 
@@ -98,7 +95,6 @@ export function parseSceneUrl(href: string): ParseSceneUrlResult {
 
   const jsonString = allValues[0]
 
-  // Check encoded length against the wire-format limit.
   if (encodeURIComponent(jsonString).length > SCENE_URL_MAX_ENCODED_LENGTH) {
     return { ok: false, reason: 'over-limit' }
   }
@@ -117,10 +113,7 @@ export function parseSceneUrl(href: string): ParseSceneUrlResult {
   return { ok: true, ...pickScenePayloadFields(payload) }
 }
 
-/**
- * Returns true if every item's catalogId is present in the loaded catalog.
- * Call this after `parseSceneUrl` succeeds and the catalog is available.
- */
+/** Call after `parseSceneUrl` succeeds, once the catalog is loaded. */
 export function validateCatalogReferences(
   items: FurnitureInstance[],
   catalog: FurnitureCatalogEntry[],

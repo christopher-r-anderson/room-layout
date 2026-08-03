@@ -11,13 +11,9 @@ import {
 } from '@/core/stores/editor-lifecycle-store'
 
 /**
- * Pure gating for the previewed id: the raw previewed id is shown only when the
- * editor is interactive, nothing is dragging, no blocking overlay is open, and
- * the id still refers to a live item.
- *
- * The drag/overlay/interactive suppressors are mirrored in preview-reconciler,
- * which clears the raw id so nothing stale reappears when a gate lifts. Keep the
- * two condition sets in sync (the live-item check here is display-only).
+ * The suppressors here are mirrored in preview-reconciler, which clears the raw
+ * id so nothing stale reappears when a gate lifts; keep the two condition sets
+ * in sync (the live-item check here is display-only).
  */
 export function derivePreviewedId(
   previewedIdRaw: string | null,

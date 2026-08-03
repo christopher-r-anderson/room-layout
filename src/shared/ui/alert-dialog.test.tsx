@@ -21,7 +21,6 @@ describe('AlertDialogContent', () => {
 
     const content = screen.getByRole('alertdialog', { name: 'Delete item' })
 
-    // The size prop reaches the DOM for the CSS size variants to key off.
     expect(content).toHaveAttribute('data-size', 'sm')
     // The mobile side gutter is always applied so content never hits the edges.
     expect(content.className).toContain('w-[calc(100%-2rem)]')

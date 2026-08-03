@@ -1,8 +1,10 @@
 import { create } from 'zustand'
 
-// A catalog node's authored default transform, extracted from the parsed GLB at
-// registration so furniture mutations can seed new items without touching the
-// scene graph.
+/**
+ * A catalog node's authored default transform, extracted from the parsed GLB at
+ * registration so furniture mutations can seed new items without touching the
+ * scene graph.
+ */
 export interface CollectionNodeDefaults {
   position: [number, number, number]
   rotationY: number
@@ -58,8 +60,10 @@ export function getCollectionNodeDefaults(): Map<
   return useCollectionSceneRegistryStore.getState().nodeDefaultsByPath
 }
 
-// Drops every parsed scene. Called on the retry teardown (before the startup cycle
-// remounts) so a fresh cycle re-parses from the re-downloaded bytes.
+/**
+ * Drops every parsed scene. Called on the retry teardown (before the startup cycle
+ * remounts) so a fresh cycle re-parses from the re-downloaded bytes.
+ */
 export function resetCollectionSceneRegistry() {
   useCollectionSceneRegistryStore.setState(
     useCollectionSceneRegistryStore.getInitialState(),

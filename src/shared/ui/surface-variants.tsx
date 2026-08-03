@@ -2,7 +2,7 @@ import { cva } from 'class-variance-authority'
 
 /**
  * The frosted overlay skin: translucent, blurred chrome that floats over the 3D
- * scene. Shared by `Surface` (bare chrome — toolbars) and `Card`'s overlay
+ * scene. Shared by `Surface` (bare chrome - toolbars) and `Card`'s overlay
  * variant (structured panels) so the two never drift apart.
  */
 export const overlaySurfaceClass =

@@ -1,13 +1,10 @@
 import { create } from 'zustand'
 
-// Tracks whether the user is actively engaging the selected-item toolbar so the
-// placement engine can pin the toolbar's screen position instead of letting it
-// chase the object's projected geometry. The toolbar is "engaged" while the
-// pointer is over it, focus is within it, or a rotation happened within the
-// grace window — the last covers tapping a rotate button repeatedly with pauses,
-// where each press re-projects the object and would otherwise walk the toolbar
-// out from under the cursor. Kept apart from the geometry store (its sibling
-// one-writer/one-reader pipe) because the two share nothing but the toolbar.
+// While the toolbar is engaged (pointer over, focus within, or a rotation
+// inside the grace window) the placement engine pins its screen position
+// instead of chasing the object's projected geometry. The grace window covers
+// repeated rotate taps, where each press re-projects the object and would walk
+// the toolbar out from under the cursor.
 const ROTATION_PIN_GRACE_MS = 600
 
 interface ToolbarInteractionStoreState {
@@ -50,7 +47,6 @@ export const toolbarInteractionActions = {
     }, ROTATION_PIN_GRACE_MS)
     useToolbarInteractionStore.setState({ rotationGraceActive: true })
   },
-  // Clears every engagement flag and cancels the pending grace timer in one call.
   reset: () => {
     clearRotationGraceTimer()
     useToolbarInteractionStore.setState(

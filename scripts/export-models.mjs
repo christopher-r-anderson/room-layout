@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url'
 // to a //<name>.tmp.glb, then compress the textures to KTX2 and write the result
 // to public/models/<name>.glb. The intermediate .tmp.glb is removed.
 //
-// Compression recipe (tunable): ETC1S on all textures — ~7x smaller with no
+// Compression recipe (tunable): ETC1S on all textures - ~7x smaller with no
 // resolution loss, and lossless geometry (no Meshopt; these meshes are tiny). To
 // revisit quality later, split normal/data slots to `uastc` (higher quality,
 // larger) via --slots, add a `gltf-transform resize` pass, or tune ETC1S

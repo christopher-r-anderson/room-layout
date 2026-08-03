@@ -8,16 +8,13 @@ import {
 } from './support/editor-harness'
 import { expectNoA11yViolations } from './support/axe'
 
-// Loading the editor under the `en-XA` pseudo-locale exercises the i18n pipeline:
-// per-locale catalog code-splitting and dynamic activation, that every visible
-// string and accessible name routes through Lingui (an unwrapped one shows as
-// plain ASCII English), and that the layout survives the length expansion.
-
-// The pseudo-locale replaces ASCII letters with accented Latin-Extended forms.
+// The en-XA pseudo-locale replaces ASCII letters with accented Latin-Extended
+// forms, so an unwrapped string reads as plain ASCII English. Loading under it
+// exercises per-locale catalog splitting, dynamic activation, and length
+// expansion. Manifest-provided labels render in their manifest language and
+// are exempt from the aria-label sweep.
 const ACCENTED_LATIN = /[À-ɏ]/
 
-// Exact pseudo-translations resolved from the committed catalog, so the spec
-// locates controls by accessible name without hardcoding generated text.
 let pseudoCatalog: Record<string, string> = {}
 
 test.beforeAll(async () => {
@@ -44,10 +41,6 @@ function pseudo(source: string): string {
   return translation
 }
 
-// Manifest-provided labels (furniture names, environment finish labels) come
-// from the catalog manifest, not the Lingui catalogs, and render in their
-// manifest language under every locale (a documented boundary), so accessible
-// names that are exactly a manifest label are exempt below.
 const MANIFEST_PROVIDED_LABELS = (() => {
   const manifest = JSON.parse(
     readFileSync(path.resolve('public/catalog-manifest.json'), 'utf8'),
@@ -64,8 +57,6 @@ const MANIFEST_PROVIDED_LABELS = (() => {
   return new Set(labels)
 })()
 
-// Every aria-label that carries words must be pseudo-localized. Labels are the
-// strings no visual review sees, so this sweep is the regression net for them.
 async function expectAriaLabelsLocalized(page: Page) {
   const labels = await page.evaluate(() =>
     Array.from(document.querySelectorAll('[aria-label]'), (element) =>
@@ -120,7 +111,7 @@ test.describe('pseudo-locale', () => {
     await expectNoA11yViolations(page, 'en-XA pseudo-locale: editor')
 
     // The catalog drawer: exercises drawer copy plus the per-entry footprint
-    // labels, and the aria sweep now covers the manifest-name exemption.
+    // labels, and the aria sweep covers the manifest-name exemption.
     await addFurnitureButton.click()
     const catalogDrawer = page.getByRole('dialog', {
       name: pseudo('Add furniture'),

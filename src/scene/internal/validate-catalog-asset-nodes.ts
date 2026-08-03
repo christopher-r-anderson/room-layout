@@ -1,10 +1,10 @@
 import type { Object3D } from 'three'
 import type { FurnitureCatalogEntry } from '@/domain/catalog'
 
-// Asserts one parsed collection scene satisfies the manifest's node contract:
-// every entry's root node exists, and its optional ui-bounds node is a proper
-// descendant of that root. Run by the collection loader before the scene is
-// registered, so a violating asset fails its load instead of blowing up later.
+/**
+ * Run by the collection loader before the scene is registered, so a violating
+ * asset fails its load instead of blowing up later.
+ */
 export function validateCatalogAssetNodes({
   entries,
   sourceScene,

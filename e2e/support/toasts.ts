@@ -30,7 +30,6 @@ export async function waitForToast(
   return toast
 }
 
-/** Asserts the viewport holds no toasts. */
 export async function expectNoToasts(page: Page): Promise<void> {
   await expect(toastRoots(page)).toHaveCount(0)
 }
@@ -44,18 +43,10 @@ export async function readToastTexts(page: Page): Promise<string[]> {
 }
 
 /**
- * Dismisses one toast through the keyboard path and waits for it to leave the
- * stack. Two Base UI mechanics shape this helper:
- *
- * - High-priority (error) toast roots are `aria-hidden` while the viewport is
- *   unfocused (their SR path is Base UI's hidden `role="alert"` mirror), so
- *   the Close button inside them is not role-queryable until the viewport is
- *   focused - press F6 (Base UI's global listener) first. No modal may hold
- *   focus when this runs: a drawer's focus trap wins over F6.
- * - Only keyboard activation of the Close button returns focus to the element
- *   that was focused before F6 entered the viewport; a pointer click drops
- *   focus to `document.body`. Dismissing via `press('Enter')` keeps the
- *   helper's focus outcome deterministic for callers that assert it.
+ * Dismisses one toast via F6 + Enter on Close and waits for it to leave the
+ * stack. No modal may hold focus when this runs: a focus trap wins over F6.
+ * Keyboard activation keeps the focus outcome deterministic: it returns focus
+ * to the pre-F6 element, where a pointer click drops it to `document.body`.
  */
 export async function dismissToast(page: Page, toast: Locator): Promise<void> {
   const viewport = toastViewport(page)

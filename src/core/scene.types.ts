@@ -14,8 +14,10 @@ interface SceneSnapshotItem {
   } | null
 }
 
-// Plain-data view of the mounted scene (camera + projected item targets),
-// produced by the engine for canvas keyboard navigation and the e2e bridge.
+/**
+ * Plain-data view of the mounted scene (camera + projected item targets),
+ * produced by the engine for canvas keyboard navigation and the e2e bridge.
+ */
 export interface SceneSnapshot {
   cameraPosition: [number, number, number]
   items: SceneSnapshotItem[]

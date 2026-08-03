@@ -1,5 +1,5 @@
 # Headless GLB export: runs each collection's configured exporter (Collection
-# Exporters, Blender 4.2+), reusing the settings baked into the .blend — including
+# Exporters, Blender 4.2+), reusing the settings baked into the .blend - including
 # the copyright metadata. Invoked as: blender --background <file>.blend --python export.py
 import bpy
 import addon_utils

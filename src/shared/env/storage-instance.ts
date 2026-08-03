@@ -3,8 +3,10 @@
 // preferences. It must resolve synchronously: the locale preference is read
 // from storage before first render (docs/architecture/configuration.md).
 
-// Returns the instance segment, or '' when none applies (root-path deploys and
-// dev servers), which keeps their keys unsegmented.
+/**
+ * Returns the instance segment, or '' when none applies (root-path deploys and
+ * dev servers), which keeps their keys unsegmented.
+ */
 export function deriveStorageInstance(input: {
   explicit: string | undefined
   basePath: string

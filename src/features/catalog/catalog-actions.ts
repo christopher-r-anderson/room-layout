@@ -21,9 +21,11 @@ import {
   getActiveCatalogId,
 } from './catalog-selection-store'
 
-// Prefetch-on-intent: start loading a catalog item's model when it is selected,
-// so a subsequent Add is usually instant. Fire-and-forget - the actual Add
-// surfaces any load failure - and idempotent with the Add's own ensure call.
+/**
+ * Prefetch-on-intent: start loading a catalog item's model when it is selected,
+ * so a subsequent Add is usually instant. Fire-and-forget - the actual Add
+ * surfaces any load failure - and idempotent with the Add's own ensure call.
+ */
 export function prefetchCatalogItem(catalogId: string): void {
   const sourcePath = getSourcePathForCatalogId(catalogId)
   if (!sourcePath) {
@@ -34,10 +36,12 @@ export function prefetchCatalogItem(catalogId: string): void {
   })
 }
 
-// Under environment-first loading a catalog item's model may not be loaded when
-// the user adds it, so this ensures the collection is loaded before dispatching
-// the add. It is idempotent and resolves immediately for already-loaded
-// collections; the model is already downloading in the background for the rest.
+/**
+ * Under environment-first loading a catalog item's model may not be loaded when
+ * the user adds it, so this ensures the collection is loaded before dispatching
+ * the add. It is idempotent and resolves immediately for already-loaded
+ * collections; the model is already downloading in the background for the rest.
+ */
 export async function addFurniture(): Promise<boolean> {
   const catalogIdToAdd = getActiveCatalogId()
 
@@ -93,11 +97,9 @@ export async function addFurniture(): Promise<boolean> {
 }
 
 export function setCatalogDrawerOpen(open: boolean) {
-  // Add Furniture is an action form, not a data-entry form: every open starts
-  // from a blank selection. The first catalog entry is not a default, and an
-  // item added (or merely considered) last time is not more likely to be wanted
-  // next. Resetting on open - rather than close - keeps that invariant however
-  // the drawer last closed: add, cancel, or outside dismissal.
+  // Every open starts from a blank selection (no default: see
+  // catalog-selection-store). Resetting on open rather than close holds
+  // however the drawer last closed: add, cancel, or outside dismissal.
   if (open) {
     catalogSelectionActions.reset()
   }

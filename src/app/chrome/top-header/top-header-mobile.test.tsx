@@ -39,7 +39,7 @@ beforeEach(() => {
   resetDialogStore()
 })
 
-// The header now reads dialog state from the store, so tests that need the More
+// The header reads dialog state from the store, so tests that need the More
 // actions drawer open register the definitions and open it directly.
 function openMoreActionsDialog() {
   dialogActions.registerDialogDefinitions(DIALOG_DEFINITIONS)

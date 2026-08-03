@@ -9,9 +9,6 @@ beforeEach(() => {
 })
 
 it('returns a referentially stable value across re-renders', () => {
-  // Consumers compose claimRef into ref callbacks that depend on this value;
-  // an identity change would detach/reattach the ref every render and fire
-  // claimRef(null), wrongly releasing a held claim.
   const { result, rerender } = renderHook(() => useSurfaceFocusClaim('scene'))
   const first = result.current
 

@@ -3,8 +3,10 @@ import type { PerfCounterSnapshot } from '../../src/shared/debug/perf-counters'
 
 const FURNITURE_ASSET_ROUTE = /\/models\/.+\.glb(?:\?.*)?$/
 export const EDITOR_READY_TIMEOUT_MS = 30_000
-// The e2e build pins the storage instance segment to `e2e`
-// (VITE_STORAGE_INSTANCE in playwright.config.ts).
+/**
+ * The e2e build pins the storage instance segment to `e2e`
+ * (VITE_STORAGE_INSTANCE in playwright.config.ts).
+ */
 export const SCENE_DRAFT_STORAGE_KEY = 'room-layout:<e2e>:scene-draft'
 // Pointer picking flows through browser input dispatch + R3F/Three render timing.
 // On CI this can settle a few frames later than local runs due to external runtime
@@ -200,9 +202,11 @@ export async function waitForEditorReady(page: Page) {
   return sceneState
 }
 
-// Readiness for specs that load a non-English locale: waitForEditorReady keys
-// off the English "Add Furniture" button name, so poll the test API's
-// readiness flag instead of any rendered text.
+/**
+ * Readiness for specs that load a non-English locale: waitForEditorReady keys
+ * off the English "Add Furniture" button name, so poll the test API's
+ * readiness flag instead of any rendered text.
+ */
 export async function waitForEditorReadyAnyLocale(page: Page) {
   await expect
     .poll(async () => (await readSceneState(page)).assetsReady, {
@@ -223,9 +227,11 @@ export async function openEditor(page: Page) {
   return waitForEditorReady(page)
 }
 
-// A restore item whose collection is gated on startup, so delaying or failing
-// furniture asset requests actually holds/errors the startup loader (an empty
-// scene gates on no collections and unlocks before any furniture request).
+/**
+ * A restore item whose collection is gated on startup, so delaying or failing
+ * furniture asset requests actually holds/errors the startup loader (an empty
+ * scene gates on no collections and unlocks before any furniture request).
+ */
 export const GATED_RESTORE_ITEM = {
   id: 'furniture-instance-1',
   catalogId: 'armchair-1',
@@ -233,7 +239,7 @@ export const GATED_RESTORE_ITEM = {
   rotationY: 0,
 }
 
-// Builds a minimal ?scene= route so startup gates on the referenced collections.
+/** Builds a minimal ?scene= route so startup gates on the referenced collections. */
 export function makeSceneRoute(items: unknown[]): string {
   const params = new URLSearchParams()
   params.set('scene', JSON.stringify({ v: 1, items }))
@@ -490,11 +496,13 @@ export async function dragSelectedFurniture(
   return run()
 }
 
-// A fixed, bounded key hold. Holding a key "until a polled condition is
-// observed" makes the resulting magnitude unbounded under parallel load (see
-// docs/architecture/testing.md determinism rules); a fixed hold keeps it
-// deterministic. Callers assert the durable invariant (camera moved / did not
-// move), not an exact magnitude.
+/**
+ * A fixed, bounded key hold. Holding a key "until a polled condition is
+ * observed" makes the resulting magnitude unbounded under parallel load (see
+ * docs/architecture/testing.md determinism rules); a fixed hold keeps it
+ * deterministic. Callers assert the durable invariant (camera moved / did not
+ * move), not an exact magnitude.
+ */
 export async function holdKey(page: Page, key: string, durationMs = 150) {
   await page.keyboard.down(key)
 

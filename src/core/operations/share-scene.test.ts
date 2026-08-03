@@ -59,7 +59,7 @@ describe('shareScene', () => {
       configurable: true,
       value: { writeText: clipboardWriteText },
     })
-    // Default: no native share — exercised explicitly per test where needed.
+    // Default: no native share - exercised explicitly per test where needed.
     defineNavigator('share', undefined)
     defineNavigator('canShare', undefined)
   })
@@ -129,7 +129,7 @@ describe('shareScene', () => {
 
     expect(result).toBeNull()
     expect(clipboardWriteText).not.toHaveBeenCalled()
-    // A user cancel is not an error — no toast, no announcement.
+    // A user cancel is not an error - no toast, no announcement.
     expect(addToast()).not.toHaveBeenCalled()
     expect(assertiveText()).toBe('')
   })

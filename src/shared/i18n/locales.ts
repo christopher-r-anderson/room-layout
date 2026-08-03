@@ -1,6 +1,5 @@
-// Supported locales and their static metadata. Adding a locale is: extend
-// SUPPORTED_LOCALES, add a direction entry, and drop a compiled `<locale>.po`
-// catalog beside `en.po`. English is the source locale and ships statically.
+// English is the source locale and ships statically; the add-a-locale recipe
+// lives with the catalog loaders in setup.ts.
 
 export const DEFAULT_LOCALE = 'en'
 
@@ -16,14 +15,17 @@ const LOCALE_DIRECTION: Record<SupportedLocale, 'ltr' | 'rtl'> = {
   'en-XA': 'ltr',
 }
 
-// Optional URL override (`?lang=`). An override for QA/E2E and a future embed
-// hook - never the canonical signal, so it stays out of shared scene URLs.
+/**
+ * Optional URL override (`?lang=`). An override for QA/E2E and a future embed
+ * hook - never the canonical signal, so it stays out of shared scene URLs.
+ */
 export const LANG_QUERY_PARAM = 'lang'
 
-// Where an explicit locale choice would be remembered across visits, read via
-// the shared storage wrapper (which prefixes and instance-scopes it). Nothing
-// writes this yet - reading it is the forward contract for an in-app locale
-// switcher (see docs/architecture/i18n.md#locale-selection).
+/**
+ * Read via the shared storage wrapper; nothing writes it yet - the read is
+ * the forward contract for an in-app switcher
+ * (docs/architecture/i18n.md#locale-selection).
+ */
 export const LOCALE_STORAGE_KEY = 'locale'
 
 export function isSupportedLocale(value: string): value is SupportedLocale {

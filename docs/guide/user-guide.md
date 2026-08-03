@@ -30,7 +30,7 @@ If an item cannot be placed in a location because it would go out of bounds or o
 
 Open `Room` to change the wall finish, the floor finish, the lighting mood, or the room's size.
 
-The `Lighting` tab offers presets named after common home lighting — `Daylight`, `Cool White`, `Warm White`, and `Soft Lamplight` — so you can preview your furniture under lighting that resembles your own room.
+The `Lighting` tab offers presets named after common home lighting - `Daylight`, `Cool White`, `Warm White`, and `Soft Lamplight` - so you can preview your furniture under lighting that resembles your own room.
 
 The `Size` tab sets the room's width, depth, and wall height in meters, so the layout matches your real space. Resizing never moves your furniture: anything left outside the new walls is highlighted in the scene, and the tab offers `Move items inside` to pull everything back in (undoable in one step).
 

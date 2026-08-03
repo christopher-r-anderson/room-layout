@@ -76,9 +76,11 @@ export function announceSelectionChange(options: {
   }
 }
 
-// The canvas-pointer path (click or drag start on an item). Called by the
-// scene's input mapping; the pointer event implies a mounted scene, so no
-// readiness guard.
+/**
+ * The canvas-pointer path (click or drag start on an item). Called by the
+ * scene's input mapping; the pointer event implies a mounted scene, so no
+ * readiness guard.
+ */
 export function selectByCanvasPointer(id: string) {
   const previousSelectedId = useSelectionStore.getState().selectedId
   const result = selectDocumentById(id)

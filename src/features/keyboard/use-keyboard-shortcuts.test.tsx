@@ -1044,9 +1044,7 @@ describe('useKeyboardShortcuts', () => {
 
     fireEvent(window, event)
 
-    // Should prevent default even though a blocking overlay is open (always-on-match behavior)
     expect(event.defaultPrevented).toBe(true)
-    // Should NOT execute the action because the blocking overlay gate blocks execution
     expect(dispatch).not.toHaveBeenCalled()
   })
 
@@ -1062,7 +1060,6 @@ describe('useKeyboardShortcuts', () => {
       />,
     )
 
-    // When selection exists and can execute: should prevent default
     const moveEvent = new KeyboardEvent('keydown', {
       bubbles: true,
       cancelable: true,
@@ -1089,7 +1086,6 @@ describe('useKeyboardShortcuts', () => {
       />,
     )
 
-    // When no selection: move-up cannot execute, falls through to canvas-browse-prev
     const upEvent = new KeyboardEvent('keydown', {
       bubbles: true,
       cancelable: true,
@@ -1101,7 +1097,6 @@ describe('useKeyboardShortcuts', () => {
     expect(dispatchedCommands(dispatch)).toEqual([
       { kind: 'canvas-browse', direction: 'prev' },
     ])
-    // canvas-browse-prev suppresses the default action
     expect(upEvent.defaultPrevented).toBe(true)
   })
 

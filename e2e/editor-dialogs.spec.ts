@@ -202,7 +202,7 @@ test('desktop camera presets clear the open Room sidebar with a gap', async ({
     throw new Error('expected room sidebar and camera tools bounding boxes')
   }
 
-  // The tools sit fully left of the panel with breathing room — the leftward
+  // The tools sit fully left of the panel with breathing room - the leftward
   // shift clears the panel's full width plus a gap, not butted against it.
   const gap = roomBox.x - (cameraBox.x + cameraBox.width)
   expect(gap).toBeGreaterThan(4)

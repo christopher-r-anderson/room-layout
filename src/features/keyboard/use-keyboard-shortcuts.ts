@@ -161,7 +161,6 @@ export function useKeyboardShortcuts({
       const suppressionMode = shortcut.suppressionMode ?? 'on-execute'
       const canExecute = canExecuteShortcut(shortcut, context)
 
-      // always-on-match: suppress and stop on first match regardless of execute
       if (suppressionMode === 'always-on-match') {
         event.preventDefault()
         if (canExecute) {
@@ -170,7 +169,6 @@ export function useKeyboardShortcuts({
         return
       }
 
-      // on-execute: suppress and stop only if the action will actually run
       if (canExecute) {
         event.preventDefault()
         dispatch(shortcut.command)

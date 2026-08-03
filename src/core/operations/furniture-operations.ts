@@ -122,11 +122,6 @@ function createFurnitureItem(
   }
 }
 
-/**
- * Reconstructs full FurnitureItem objects from serialized FurnitureInstance
- * records (id, catalogId, position, rotationY) using the loaded catalog and
- * source scenes. Used by restoreInitialLayout to seed the scene from URL data.
- */
 export function buildFurnitureItemsFromInstances(
   instances: FurnitureInstance[],
   catalog: FurnitureCatalogEntry[],

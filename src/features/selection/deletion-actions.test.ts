@@ -107,9 +107,9 @@ describe('deletion-actions', () => {
     })
   })
 
-  // Pins the historic mobile leak through the full action path (origin
-  // handoff across the dialog on the mobile layout); the policy cell itself
-  // lives in focus-policy.test.
+  // Pins the mobile leak through the full action path (origin handoff across
+  // the dialog on the mobile layout); the policy cell itself lives in
+  // focus-policy.test.
   it('repairs focus to the scene when opened from the item actions on mobile', () => {
     stubLayout('mobile')
     vi.spyOn(sceneCommands, 'isSceneReady').mockReturnValue(true)

@@ -14,11 +14,13 @@ export interface SceneCanvasProps {
   onPointerMissed: () => void
 }
 
-// The code-split boundary for the 3D engine (three + r3f + drei + postprocessing):
-// lazily imported by editor-body, with nothing here imported statically from the
-// shell. Collection loading is driven from core - its reconciler kicks in once
-// the Scene mounts and registers its parse service. See
-// docs/architecture/startup-and-asset-loading.md.
+/**
+ * The code-split boundary for the 3D engine (three + r3f + drei + postprocessing):
+ * lazily imported by editor-body, with nothing here imported statically from the
+ * shell. Collection loading is driven from core - its reconciler kicks in once
+ * the Scene mounts and registers its parse service. See
+ * docs/architecture/startup-and-asset-loading.md.
+ */
 export default function SceneCanvas({ onPointerMissed }: SceneCanvasProps) {
   const startupCycle = useStartupCycle()
   const catalog = useCatalogEntries()

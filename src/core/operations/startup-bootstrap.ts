@@ -62,11 +62,10 @@ function classifyManifestError(
 let activeRun: AbortController | null = null
 
 /**
- * Fetches the catalog manifest into the assets store, resolves the gated set,
- * and starts the asset-load cycle. Invoked explicitly - at app mount and by
- * requestAssetRetry - rather than keyed on store state. Latest wins: starting
- * a run aborts the one in flight, and a superseded or cancelled run writes
- * nothing (only a timeout abort surfaces as an error).
+ * Invoked explicitly - at app mount and by requestAssetRetry - rather than
+ * keyed on store state. Latest wins: a new run aborts the one in flight, and
+ * a superseded or cancelled run writes nothing (only a timeout abort surfaces
+ * as an error).
  */
 export function runStartupBootstrap(): void {
   activeRun?.abort()

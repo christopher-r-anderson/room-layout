@@ -44,8 +44,8 @@ export function isSceneStateAtDefaults(
   state: SceneComparableState,
   defaults: SceneComparableState,
 ) {
-  // A missing room size means the state predates resizable rooms - the
-  // default size, exactly like a missing finish id falls to its default.
+  // Persisted states may omit the room size; a missing one compares as the
+  // default.
   const stateRoomSize = state.roomSize ?? DEFAULT_ROOM_SIZE
   const defaultRoomSize = defaults.roomSize ?? DEFAULT_ROOM_SIZE
 

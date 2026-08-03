@@ -19,16 +19,18 @@ export interface FocusGestureOrigin {
   surface: FocusOriginSurface
 }
 
-// Semantic focus intents. Surface intents come from explicit pane commands
-// where the user named the surface; selected-item intents come from state
-// changes ("focus whatever now matters") and leave the surface choice to the
-// resolver.
+/**
+ * Semantic focus intents. Surface intents come from explicit pane commands
+ * where the user named the surface; selected-item intents come from state
+ * changes ("focus whatever now matters") and leave the surface choice to the
+ * resolver.
+ */
 export type FocusIntent =
   | { kind: 'surface'; surface: FocusableSurface }
   | { kind: 'selected-item'; operation: 'delete'; neighborIndex: number }
   | { kind: 'selected-item'; operation: 'history'; targetItemId: string | null }
 
-/** Landing inside the item collection; realization and fallbacks belong to the surface. */
+// Landing inside the item collection; realization and fallbacks belong to the surface.
 type ItemCollectionTarget =
   | { kind: 'auto' } // the selected item, else the first item, else the container
   | { kind: 'index'; index: number }

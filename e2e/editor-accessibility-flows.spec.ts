@@ -146,7 +146,6 @@ test('outliner keyboard focus preview does not emit live announcements', async (
     durationMs: 250,
   })
 
-  // Focus an unselected item in the outliner to trigger preview semantics.
   await page.getByRole('button', { name: /^Leather Couch/i }).focus()
 
   await expect
@@ -164,7 +163,6 @@ test('keyboard shortcuts help is reachable and dismissible by keyboard, and is e
 }) => {
   await openEditor(page)
 
-  // Reach the trigger via Tab and activate it with Enter.
   const helpTrigger = page.getByRole('button', { name: 'Keyboard shortcuts' })
   const inertHelpTrigger = page.locator(
     'button[aria-label="Keyboard shortcuts"]',
@@ -176,19 +174,17 @@ test('keyboard shortcuts help is reachable and dismissible by keyboard, and is e
   await page.keyboard.press('Enter')
   await expect(shortcutsDialog).toBeVisible()
 
-  // Escape dismisses and returns focus to the trigger.
   await page.keyboard.press('Escape')
   await expect(shortcutsDialog).toBeHidden()
   await expect(helpTrigger).toBeFocused()
 
   // While the catalog drawer is open the help trigger must not be reachable
-  // via Tab — the blocking modal traps focus, so it cannot receive focus.
+  // via Tab - the blocking modal traps focus, so it cannot receive focus.
   await page.getByRole('button', { name: 'Add Furniture' }).click()
   const drawerDialog = page.getByRole('dialog', { name: 'Add furniture' })
   await expect(drawerDialog).toBeVisible()
 
-  // Cycle through every focusable element inside the open drawer; the help
-  // trigger must never receive focus.
+  // Cycle through every focusable element inside the open drawer.
   for (let i = 0; i < 10; i++) {
     await page.keyboard.press('Tab')
     await expect(inertHelpTrigger).not.toBeFocused()
@@ -209,18 +205,14 @@ test('outliner collapse toggle is keyboard operable and manages focus correctly'
   })
   const couchButton = page.getByRole('button', { name: /^Leather Couch/i })
 
-  // Outliner starts expanded — the item list is visible.
   await expect(couchButton).toBeVisible()
 
-  // Focus the toggle and collapse via keyboard.
   await toggleButton.focus()
   await page.keyboard.press('Enter')
   await expect(couchButton).toBeHidden()
 
-  // After collapsing, focus stays on the toggle button (not hidden content).
   await expect(toggleButton).toBeFocused()
 
-  // Re-expand via keyboard; item list reappears.
   await page.keyboard.press('Enter')
   await expect(couchButton).toBeVisible()
 })

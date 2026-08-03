@@ -160,7 +160,7 @@ remains selectable.
 
 ### Lighting Mood Object
 
-A lighting mood retunes the existing room light rig — it adds no new lights. The
+A lighting mood retunes the existing room light rig - it adds no new lights. The
 mood values map directly onto the lights in
 `src/scene/internal/environment/lighting.tsx`. Color fields are `#RRGGBB` hex
 strings; intensity fields are non-negative numbers; `exposure` drives the
@@ -228,8 +228,8 @@ below is the human-readable summary.
 - `uiBoundsNodeName` affects toolbar bounds selection only; it is not an
   authored point anchor and it does not bypass overlap checks.
 - How model-load failures surface depends on whether the collection gates
-  startup (restored-scene assets → error overlay) or is an on-demand catalog add
-  (→ in-drawer message), and whether the failure is permanent or transient. The
+  startup (restored-scene assets -> error overlay) or is an on-demand catalog add
+  (-> in-drawer message), and whether the failure is permanent or transient. The
   full model is in
   [startup-and-asset-loading.md](../architecture/startup-and-asset-loading.md).
 

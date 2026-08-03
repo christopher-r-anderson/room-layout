@@ -3,7 +3,7 @@ import { gzipSync } from 'node:zlib'
 import path from 'node:path'
 
 // Per-chunk gzipped-size budgets (KB). These are regression gates set at current
-// sizes plus modest headroom, NOT aspirational targets — lower them whenever the
+// sizes plus modest headroom, NOT aspirational targets - lower them whenever the
 // bundle shrinks. The shell is the critical first-paint chunk; the engine chunk
 // (three/r3f/drei/postprocessing) is lazy-loaded behind it and downloads in
 // parallel, so it carries a looser budget.

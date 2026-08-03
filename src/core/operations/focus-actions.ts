@@ -60,7 +60,7 @@ function readOriginSurface(): FocusOriginSurface {
 /**
  * The one focus-intent entry point: resolves the semantic intent against the
  * gesture origin and current layout, then either stores the directive for its
- * (mounted, by construction) surface to realize, or drops it — announcing
+ * (mounted, by construction) surface to realize, or drops it - announcing
  * either way when the policy says so. Call after the producing mutation.
  */
 export function requestFocus(
@@ -92,9 +92,11 @@ export function requestFocus(
   }
 }
 
-// The pane focus commands (Shift+R/O/I/T): plain surface intents, plus the
-// scene command's preview side effect. The resolver owns the no-selection
-// fallbacks and their announcements.
+/**
+ * The pane focus commands (Shift+R/O/I/T): plain surface intents, plus the
+ * scene command's preview side effect. The resolver owns the no-selection
+ * fallbacks and their announcements.
+ */
 export function focusScene() {
   requestFocus({ kind: 'surface', surface: 'scene' })
 

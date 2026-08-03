@@ -34,7 +34,7 @@ describe('sortSpatially', () => {
   })
 
   it('treats items within rowTolerance as the same row', () => {
-    // Default rowTolerance = 48; dy = 30 → same row → sort by x
+    // Default rowTolerance = 48; dy = 30 -> same row -> sort by x
     const items = [
       { id: 'right', pointerTarget: { x: 200, y: 110 } },
       { id: 'left', pointerTarget: { x: 50, y: 80 } },
@@ -43,7 +43,7 @@ describe('sortSpatially', () => {
   })
 
   it('treats items beyond rowTolerance as separate rows', () => {
-    // dy = 100 > 48 → different rows → sort by y
+    // dy = 100 > 48 -> different rows -> sort by y
     const items = [
       { id: 'higher-x', pointerTarget: { x: 50, y: 200 } },
       { id: 'lower-x', pointerTarget: { x: 200, y: 100 } },
@@ -52,7 +52,7 @@ describe('sortSpatially', () => {
   })
 
   it('respects custom rowTolerance', () => {
-    // dy = 60 > custom tolerance 30 → different rows
+    // dy = 60 > custom tolerance 30 -> different rows
     const items = [
       { id: 'right-below', pointerTarget: { x: 200, y: 160 } },
       { id: 'left-above', pointerTarget: { x: 50, y: 100 } },
@@ -61,7 +61,6 @@ describe('sortSpatially', () => {
   })
 
   it('handles grid-like layout correctly', () => {
-    // 2x2 grid: top-left, top-right, bottom-left, bottom-right
     const items = [
       { id: 'bottom-right', pointerTarget: { x: 200, y: 200 } },
       { id: 'top-right', pointerTarget: { x: 200, y: 50 } },

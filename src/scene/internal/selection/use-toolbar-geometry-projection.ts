@@ -78,10 +78,11 @@ interface UseToolbarGeometryProjectionOptions {
   canvasSize: { width: number; height: number }
 }
 
-// Projects the selected object's bounds to screen space and publishes the
-// toolbar geometry. Emits on selection/camera/size change (effect) and ~24x/sec
-// during continuous camera motion (frame), de-duplicated by a pixel deadband so
-// sub-pixel jitter does not churn the toolbar placement.
+/**
+ * Emits on selection/camera/size change (effect) and ~24x/sec during
+ * continuous camera motion (frame), de-duplicated by a pixel deadband so
+ * sub-pixel jitter does not churn the toolbar placement.
+ */
 export function useToolbarGeometryProjection({
   selectedId,
   objectRefs,

@@ -17,7 +17,7 @@ const productionBasePath = process.env.VITE_BASE_PATH ?? defaultPagesBasePath
 // Inject a modulepreload hint for the lazily-imported engine chunk so it
 // downloads in parallel with the shell rather than waiting for React to mount and
 // trigger the dynamic import. Module-map dedup means the later import() reuses the
-// preloaded module — no double download. The chunk name is hashed, so the hint is
+// preloaded module - no double download. The chunk name is hashed, so the hint is
 // resolved from the emitted bundle at build time.
 function preloadEngineChunk(): Plugin {
   let base = '/'
@@ -100,7 +100,7 @@ export default defineConfig({
     },
   },
   test: {
-    // .claude holds agent worktrees (full repo copies) and session state — never
+    // .claude holds agent worktrees (full repo copies) and session state - never
     // glob test files out of it.
     exclude: [...configDefaults.exclude, 'e2e/**', '.claude/**'],
     setupFiles: ['./src/test/vitest.setup.ts'],

@@ -95,8 +95,10 @@ export function setSelectionTransform(input: {
   return result
 }
 
-/** Returns false when blocked mid-drag (a commit would push the transient
- * drag position into the undo timeline); true otherwise. */
+/**
+ * Returns false only when refused mid-drag; true otherwise, including when
+ * nothing is selected.
+ */
 export function rotateSelection(deltaRadians: number): boolean {
   if (useSceneSessionStore.getState().isDragging) {
     return false

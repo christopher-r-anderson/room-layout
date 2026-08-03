@@ -77,11 +77,9 @@ export function Scene({
     perfCounters.incrSceneRender()
   }
   const camera = useThree((state) => state.camera)
-  // Subscribe to width/height primitives so r3f's per-frame state updates
-  // don't churn a fresh `size` object reference and re-fire dependent effects.
-  // Without this, the selected-toolbar geometry useEffect re-runs every frame
-  // during camera rotation, producing a re-render → effect → emit cascade
-  // that visibly jitters the floating toolbar.
+  // Subscribe to width/height primitives: r3f's per-frame state updates churn
+  // a fresh `size` object reference, which would re-fire dependent effects
+  // every frame during camera rotation and visibly jitter the floating toolbar.
   const canvasWidth = useThree((state) => state.size.width)
   const canvasHeight = useThree((state) => state.size.height)
   const canvasSize = useMemo(
@@ -93,16 +91,13 @@ export function Scene({
   // Accessor for fresh r3f state when we need to imperatively touch the renderer
   // (e.g. tone-mapping exposure) without subscribing to or mutating a hook value.
   const getThreeState = useThree((state) => state.get)
-  // Parse, validate, and register for collection GLBs, exposed to core through
-  // the services below; created per renderer because the KTX2 transcoder config
-  // needs it.
+  // Created per renderer because the KTX2 transcoder config needs it.
   const loadCollectionScene = useMemo(
     () => createCollectionSceneLoader({ renderer: gl, catalog, collections }),
     [gl, catalog, collections],
   )
-  // Parsed collection scenes, registered by the loader as they resolve. Partial and
-  // growing, so the room renders before any furniture; each item appears once its
-  // collection is present.
+  // Partial and growing, so the room renders before any furniture; each item
+  // appears once its collection is present.
   const sourceScenesByPath = useLoadedCollectionScenes()
 
   const cameraControlsRef = useRef<CameraControlsImpl | null>(null)
@@ -189,12 +184,10 @@ export function Scene({
     objectRefs,
   })
 
-  // The handlers close over fresh component state, so keep them in a ref synced
-  // each render and register stable wrappers that read the latest at call time.
-  // Registration then lasts exactly one
-  // mount and drives the lifecycle store's sceneReady flag: a passive effect so
-  // readiness never fires before the canvas has painted, and handler churn
-  // never re-registers.
+  // The handlers close over fresh component state, so a ref synced each render
+  // backs stable registered wrappers. Registration lasts exactly one mount and
+  // drives sceneReady; a passive effect so readiness never fires before the
+  // canvas has painted.
   const servicesRef = useRef({
     focusSelected: handleFocusSelected,
     getSnapshot,

@@ -23,10 +23,11 @@ function extractNodeDefaults(
   return defaults
 }
 
-// Typed scene-layer face of core's opaque parsed-collection registry: the
-// engine is the only writer and the only consumer that knows the values are
-// Object3D roots. Node default transforms are extracted here so core-side
-// mutations can seed items from plain data.
+/**
+ * The scene layer alone knows the registry values are Object3D roots; node
+ * default transforms are extracted here so core-side mutations can seed items
+ * from plain data.
+ */
 export function registerCollectionScene(path: string, scene: Object3D) {
   registerParsedCollectionScene(path, scene, extractNodeDefaults(scene))
 }

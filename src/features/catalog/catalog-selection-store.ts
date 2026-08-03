@@ -49,8 +49,10 @@ function resolveActiveCatalogId(
   return ''
 }
 
-// Active id used by both the drawer (selected radio) and the add action: the
-// stored selection when still valid, otherwise empty (nothing selected).
+/**
+ * Active id used by both the drawer (selected radio) and the add action: the
+ * stored selection when still valid, otherwise empty (nothing selected).
+ */
 export function getActiveCatalogId(): string {
   return resolveActiveCatalogId(
     useCatalogSelectionStore.getState().selectedCatalogId,

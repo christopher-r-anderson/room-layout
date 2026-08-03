@@ -1,7 +1,9 @@
 import type { Vector3Tuple } from 'three'
 
-// Adding a new kind requires updating both this union and the
-// KNOWN_FURNITURE_KINDS allowlist in src/core/operations/catalog-manifest.ts.
+/**
+ * Adding a new kind requires updating both this union and the
+ * KNOWN_FURNITURE_KINDS allowlist in src/core/operations/catalog-manifest.ts.
+ */
 export type FurnitureKind = 'armchair' | 'couch' | 'coffee-table' | 'end-table'
 
 export interface FootprintSize {
