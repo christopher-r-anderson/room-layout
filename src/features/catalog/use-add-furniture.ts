@@ -12,7 +12,10 @@ import {
 const PENDING_DELAY_MS = 300
 
 export interface UseAddFurniture {
-  /** Awaits the model if needed, closes the drawer on success. */
+  /**
+   * Fire-and-forget; loads the model if needed and closes the drawer on
+   * success.
+   */
   submit: () => void
   /** True immediately, guarding against a double-add. */
   isSubmitting: boolean

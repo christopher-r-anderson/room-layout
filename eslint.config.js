@@ -108,7 +108,7 @@ export default defineConfig([
   // attributes (the ones screen readers and tooltips surface, which no visual
   // review catches) so new UI strings go through Lingui macros. Other attributes
   // are not checked, to avoid noise; tests are exempt. shared/ui is covered
-  // too — it is project-owned, so freshly scaffolded components localize their
+  // too - it is project-owned, so freshly scaffolded components localize their
   // literals as part of install. `msg`/`t`/<Trans> usages are not literals and
   // pass.
   {
@@ -130,7 +130,7 @@ export default defineConfig([
 
   // Vitest test-quality guardrails. Scoped to unit/component tests (Playwright
   // specs under e2e/ are not vitest). Catches stray .only, assertion-less tests,
-  // duplicate titles, and malformed expect() — patterns lint can't otherwise see.
+  // duplicate titles, and malformed expect() - patterns lint can't otherwise see.
   {
     files: ['src/**/*.test.{ts,tsx}'],
     plugins: { vitest },
@@ -156,7 +156,7 @@ export default defineConfig([
     },
   },
 
-  // Domain leaf: the pure model vocabulary. The lowest layer — every other layer
+  // Domain leaf: the pure model vocabulary. The lowest layer - every other layer
   // may import it; it imports nothing internal.
   {
     files: ['src/domain/**/*.{ts,tsx}'],
@@ -336,7 +336,7 @@ export default defineConfig([
 
   // Shared is the reusable kit/infra tier: fully decoupled from the runtime
   // layers and from the model (architecture.md: shared carries no model
-  // knowledge). One uniform block — no shared subdirectory gets a looser rule
+  // knowledge). One uniform block - no shared subdirectory gets a looser rule
   // (shared/lib gets a stricter one below).
   {
     files: ['src/shared/**/*.{ts,tsx}'],

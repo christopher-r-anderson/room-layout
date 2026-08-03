@@ -44,8 +44,9 @@ export async function readToastTexts(page: Page): Promise<string[]> {
 
 /**
  * Dismisses one toast via F6 + Enter on Close and waits for it to leave the
- * stack. Keyboard activation keeps the focus outcome deterministic: it returns
- * focus to the pre-F6 element, where a pointer click drops it to `document.body`.
+ * stack. No modal may hold focus when this runs: a focus trap wins over F6.
+ * Keyboard activation keeps the focus outcome deterministic: it returns focus
+ * to the pre-F6 element, where a pointer click drops it to `document.body`.
  */
 export async function dismissToast(page: Page, toast: Locator): Promise<void> {
   const viewport = toastViewport(page)

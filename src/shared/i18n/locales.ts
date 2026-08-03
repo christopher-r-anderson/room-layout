@@ -22,8 +22,9 @@ const LOCALE_DIRECTION: Record<SupportedLocale, 'ltr' | 'rtl'> = {
 export const LANG_QUERY_PARAM = 'lang'
 
 /**
- * Read via the shared storage wrapper; written only by an explicit in-app
- * locale choice (docs/architecture/i18n.md#locale-selection).
+ * Read via the shared storage wrapper; nothing writes it yet - the read is
+ * the forward contract for an in-app switcher
+ * (docs/architecture/i18n.md#locale-selection).
  */
 export const LOCALE_STORAGE_KEY = 'locale'
 

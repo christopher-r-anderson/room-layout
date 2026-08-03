@@ -90,8 +90,8 @@ function resolveLocale(): SupportedLocale {
   )
 }
 
-// The `?lang=` override is transient by design and never persisted; a stored
-// preference is written only by an explicit in-app choice.
+// The `?lang=` override is transient by design and never persisted; nothing
+// writes the stored preference yet (reading it is the forward contract).
 async function switchLocale(locale: string): Promise<void> {
   await loadLocale(locale)
   i18n.activate(locale)

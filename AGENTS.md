@@ -53,8 +53,9 @@ appropriate within the same module area.
 
 ## Style
 
-- Comments are sparing: only constraints the code cannot express, in one or
-  two lines - never paragraphs.
+- Comments are sparing: only constraints the code cannot express, kept as
+  short as the constraint allows - a line or two in the common case, never
+  prose paragraphs.
 - The test for any comment: would it be written when writing this code from
   scratch? Content that surfaced during a change earns its place only when it
   is a genuine trip-hazard for a fresh reader.

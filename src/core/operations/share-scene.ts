@@ -9,9 +9,9 @@ import { LANG_QUERY_PARAM } from '@/shared/i18n/locales'
 
 /**
  * Offers the serialized scene via the native share sheet, falling back to the
- * clipboard. Returns null when the user cancels or the scene is too large;
- * error feedback is emitted here, while success shows as the share button's
- * own label.
+ * clipboard. Returns null when the user cancels or the scene is too large.
+ * All user-facing feedback is emitted here - success announces politely, with
+ * the share button's own label as the visual surface.
  */
 export async function shareScene(): Promise<'shared' | 'copied' | null> {
   const { history, roomSize } = useSceneDocumentStore.getState()

@@ -52,10 +52,10 @@ Current compression profile:
 
 Each model source lives under `assets-source/models/<author>-<name>/`:
 
-- `<name>.blend` — the editable source. Its Collection Exporter (Blender 4.2+)
+- `<name>.blend` - the editable source. Its Collection Exporter (Blender 4.2+)
   bakes glTF output to `//<name>.tmp.glb` (carrying copyright metadata).
-- `<name>.src.glb` — the original third-party download, archived for reference.
-- `<name>.md` — provenance and modification notes.
+- `<name>.src.glb` - the original third-party download, archived for reference.
+- `<name>.md` - provenance and modification notes.
 - shared `assets-source/models/LICENSE-CC-BY-4.0.txt`, linked from each `.md`.
 
 Build the runtime models with:
@@ -69,26 +69,26 @@ ships in `public/`.
 
 Requirements:
 
-- Blender 4.2+ — found via `$BLENDER`, then `blender` on PATH, then the
+- Blender 4.2+ - found via `$BLENDER`, then `blender` on PATH, then the
   `org.blender.Blender` flatpak.
 - `gltf-transform` (`@gltf-transform/cli`)
 - KTX-Software `toktx` (for KTX2 texture encoding)
 
-Compression recipe (structure-preserving — no flatten/join, so the catalog's
+Compression recipe (structure-preserving - no flatten/join, so the catalog's
 `nodeName`s survive):
 
-- textures: ETC1S (KTX2), all slots, full resolution — typically ~7× smaller, and
+- textures: ETC1S (KTX2), all slots, full resolution - typically ~7× smaller, and
   a large GPU-memory win. Tunable (per-slot UASTC, a resize pass, ETC1S quality)
   at the top of `scripts/export-models.mjs`.
-- geometry: left uncompressed — these meshes are tiny, so Meshopt's lossy
+- geometry: left uncompressed - these meshes are tiny, so Meshopt's lossy
   quantization would risk minor degradation for ~no gain.
 
 At runtime the furniture loader and the floor textures share one KTX2 loader
-(`scene/internal/three/ktx2-loader.ts`) — a single Basis-transcoder worker pool.
+(`scene/internal/three/ktx2-loader.ts`) - a single Basis-transcoder worker pool.
 `KTX2Loader` resolves the transcoder from three's own bundled copy (via
 `import.meta.url`), which the bundler emits as hashed assets. There is **no
-manual transcoder-hosting step** — no `setTranscoderPath`, no copying transcoder
-files into `public/` — which older three versions (and most KTX2 write-ups)
+manual transcoder-hosting step** - no `setTranscoderPath`, no copying transcoder
+files into `public/` - which older three versions (and most KTX2 write-ups)
 require; the emitted `basis_transcoder` js/wasm pair is budget-gated like any
 other chunk. The Blender helpers (export / introspect / relink) live in
 `scripts/blender/`.
@@ -108,8 +108,8 @@ Export is manual. Two cases need deliberate handling when regenerating previews:
   appear in a preview render.
 
 Recommended approach (source-side, leaving the runtime GLB unchanged): give each
-model blend a parent collection that carries the exporter — keeping every item and
-its UI-bounds mesh in the exported GLB — with the renderable furniture split into
+model blend a parent collection that carries the exporter - keeping every item and
+its UI-bounds mesh in the exported GLB - with the renderable furniture split into
 per-catalog-item sub-collections and the UI-bounds meshes in their own
 sub-collection. `thumbnails.blend` then links only the renderable sub-collections,
 which both isolates each item and excludes the UI-bounds meshes, with no per-render
