@@ -26,6 +26,22 @@ describe('furniture-footprint', () => {
     ])
   })
 
+  it('rotates corners in the same sense as a three.js Y rotation', () => {
+    const angle = Math.PI / 6
+    const corners = getFootprintCorners({
+      ...baseFootprint,
+      rotationY: angle,
+    })
+
+    // Local corner (1, 0.5) under three's R_y(angle).
+    expect(corners[2].x).toBeCloseTo(
+      1 * Math.cos(angle) + 0.5 * Math.sin(angle),
+    )
+    expect(corners[2].z).toBeCloseTo(
+      -1 * Math.sin(angle) + 0.5 * Math.cos(angle),
+    )
+  })
+
   it('returns rotated bounds around the center', () => {
     const bounds = getFootprintBounds({
       ...baseFootprint,
@@ -91,9 +107,10 @@ describe('furniture-footprint', () => {
 
   it('snaps along oriented edge normals for rotated footprints', () => {
     const rotationY = Math.PI / 4
+    // The rotated width edge under three's R_y: local +X maps to (cos, -sin).
     const edgeAxis = {
       x: Math.cos(rotationY),
-      z: Math.sin(rotationY),
+      z: -Math.sin(rotationY),
     }
 
     const target = {
