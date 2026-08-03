@@ -20,8 +20,8 @@ export function CameraControls({
       enabled={enabled}
       minDistance={2}
       maxDistance={maxDistance}
-      // Keeps the camera above the floor plane; the margin stops the orbit
-      // from degenerating at the horizon.
+      // Keeps the orbit above the target's horizontal plane; the margin
+      // stops it from degenerating at the horizon.
       maxPolarAngle={Math.PI / 2 - 0.05}
     />
   )

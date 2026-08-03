@@ -80,8 +80,9 @@ function useMeasuredElementRect(
         }
       }
 
-      // Forces one post-layout re-read: the rect measured during render
-      // predates layout, and no observer fires for the initial size.
+      // One immediate notification after subscribing: the store's initial
+      // snapshot can predate this subscription, and the observers' own first
+      // deliveries arrive later (ResizeObserver) or never (viewport listeners).
       queueMicrotask(() => {
         notify()
       })

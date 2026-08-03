@@ -6,11 +6,10 @@ export function SelectedItemInteractionProvider({
 }: {
   children: ReactNode
 }) {
-  // One-shot latch shared by the details field and the toolbar's delete
-  // button. The button arms it on pointerdown - which fires before the
-  // field's blur - so an in-progress edit is not committed to an item that is
-  // about to be deleted. The dispatch path consumes it in a finally so a
-  // refused delete cannot leave it armed for the next unrelated blur.
+  // One-shot latch: the delete button arms it on pointerdown (which fires
+  // before the details field's blur) so the blur skips committing an edit to
+  // an item about to be deleted; the dispatch path consumes it in a finally
+  // so a refused delete cannot leave it armed.
   const suppressNextBlurCommitRef = useRef(false)
 
   const value = useMemo(

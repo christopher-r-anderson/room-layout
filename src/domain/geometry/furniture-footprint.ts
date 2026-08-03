@@ -181,9 +181,9 @@ function rangesOverlap(
   return a.max > b.min + epsilon && b.max > a.min + epsilon
 }
 
-// Assumes getFootprintCorners' winding: corners[1]-[0] is the width edge and
-// corners[3]-[0] the depth edge; any other order would make the SAT axes the
-// rectangle's diagonals.
+// Assumes corners[1] and corners[3] are adjacent to corners[0]
+// (getFootprintCorners' winding); a non-adjacent corner in either slot would
+// make a SAT axis a diagonal.
 function getRectAxes(corners: FootprintPoint[]) {
   return [
     normalize(subtractPoint(corners[1], corners[0])),
