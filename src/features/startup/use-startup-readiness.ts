@@ -15,7 +15,7 @@ import {
 } from '@/core/stores/editor-lifecycle-store'
 
 /**
- * Resolves the startup outcome in core (not in the Scene): gated on the scene
+ * Resolves the startup outcome from core state (not in the Scene): gated on the scene
  * services being live so the overlay never lifts before first paint, any gated
  * collection failing is a startup error, and all gated collections parsed
  * completes it. Firing flips the phase off 'loading', which is the fire-once guard

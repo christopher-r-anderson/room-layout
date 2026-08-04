@@ -17,6 +17,8 @@ Two concepts have their own docs:
 - `operations/` - cross-cutting operations over the stores.
 - `persistence/` - the scene state <-> storage/URL codecs.
 - `commands/` - the `EditorCommand` vocabulary and its dispatch binding.
+- `layout/` - the `EditorRectId` rect vocabulary with its registration and
+  measurement contexts, plus the `useSurfaceFocusClaim` surface handles.
 - Root - the public, cross-layer contracts: the engine port surface
   (`scene-commands`, `scene-services`, `scene.types`) and `dialog-contract`.
 
