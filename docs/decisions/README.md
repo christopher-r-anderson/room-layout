@@ -1,8 +1,8 @@
 # Decision records
 
 Dated records of decisions that shaped the project: the context each was made
-in, the alternatives weighed, and what each costs. A record reads as of its
-date; current behavior lives in the architecture docs.
+in, the alternatives weighed, and the consequences of the selected decision.
+Current behavior lives in the architecture docs.
 
 - [The selected toolbar has one placement model per form factor](01-toolbar-placement.md) - 2026-06-25
 - [Runtime validation is hand-rolled; no schema library](02-validation.md) - 2026-06-26

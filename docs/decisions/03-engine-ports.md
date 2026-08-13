@@ -4,16 +4,15 @@ Status: accepted, 2026-07-06
 
 ## Context
 
-The scene-services registry - the lookup everything uses to reach the 3D engine
-
-- lived in the scene layer itself rather than in core, so everything routed
-  through the scene, including core changing data that core owned. That placement
-  was leftover from prototyping, where features attached to the component doing
-  the rendering, and it left the scene in charge of logic that had nothing to do
-  with rendering: twelve document mutations across furniture placement, history,
-  and selection, all running on rules that were already pure functions in the
-  domain layer, applied to a document store that was already what the scene
-  rendered from.
+The scene-services registry - the lookup everything uses to reach the 3D
+engine - lived in the scene layer itself rather than in core, so everything
+routed through the scene, including core changing data that core owned. That
+placement was leftover from prototyping, where features attached to the
+component doing the rendering, and it left the scene in charge of logic that
+had nothing to do with rendering: twelve document mutations across furniture
+placement, history, and selection, all running on rules that were already pure
+functions in the domain layer, applied to a document store that was already
+what the scene rendered from.
 
 That misplacement kept generating work. Selection state was written on both
 sides of the boundary through a `selectedSource` field, async reconcilers synced
@@ -45,7 +44,7 @@ them. Three moves carried it.
 
 The layer rules are ESLint rules with no exception list: core and features can't
 import the scene, and app holds the single lazy mount that puts it on screen.
-Breaking a rule fails the build, and the rule messages state the policy.
+Breaking a rule fails lint, and the rule messages state the policy.
 
 The work shipped as five staged PRs - the ports, the mutations, the selection
 store, a cleanup stage that moved the model into domain and dissolved the

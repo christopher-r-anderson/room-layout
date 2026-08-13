@@ -36,7 +36,11 @@ placement's own outcome. On both form factors the toolbar is always present.
 
 On desktop the toolbar floats. When no clean position survives, it takes a
 clamped best-effort position instead: it may overlap the selected object, it
-clamps out of the panels, and it never leaves the screen. The scenes with no
+stays out of the panels whenever some position allows that - a fully crowded
+screen gets the least-overlapping spot - and it never leaves the screen.
+Placement works on the object's projected points, so in the frames before the
+scene has produced any, the toolbar stays hidden rather than guessing at a
+position. The scenes with no
 clean position are the ones where the selection fills the screen, and there the
 choice is overlap or absence - a clamped toolbar keeps the actions next to the
 item, which is what floating is for. Clamping also works where the dock could
@@ -70,10 +74,10 @@ The original fallback. On its own it can't ship at all: the dock's layout space
 re-triggers the placement that decided to show it, and the layout locks up -
 stabilizing it means reserving the space, covered next. The deeper problems
 don't depend on how often it fires. Switching to the dock moves the toolbar
-between two visual orders - floating by the item versus lined up with the panels
-
-- so the tab sequence either reorders dynamically or disagrees with what's on
-  screen, and a person has to re-find a control that just moved across the screen.
+between two visual orders - floating by the item versus lined up with the
+panels - so the tab sequence either reorders dynamically or disagrees with
+what's on screen, and a person has to re-find a control that just moved across
+the screen.
 
 ### Always reserve space for the dock
 

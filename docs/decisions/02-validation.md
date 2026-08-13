@@ -19,18 +19,18 @@ skipping one is the choice that needs a rationale.
 
 Each surface validates with hand-written code that lives next to its one
 consumer, and each validator's shape follows from its required failure posture.
-The manifest validator (`core/operations/catalog-manifest.ts`) throws messages
-labeled with the offending entry, aimed at the developer editing the file. The
-share URL and draft codecs (`core/persistence`) are required to fall back
-silently on a bad payload, which is why they validate through boolean type
-guards (`(value) => value is T`), and preference storage accepts an optional
-validator predicate of the same shape.
+The manifest validator (`src/core/operations/catalog-manifest.ts`) throws
+messages labeled with the offending entry, aimed at the developer editing the
+file. The share URL and draft codecs (`src/core/persistence`) are required to
+fall back silently on a bad payload, which is why they validate through
+boolean type guards (`(value) => value is T`), and preference storage accepts
+an optional validator predicate of the same shape.
 
 Taken together, validation here needs five things:
 
 - primitive checks (a string, a finite number, an array)
-- entry-labeled failure messages for a developer (`catalog[3] ("couch-1"): "id"
-must be a non-empty string`)
+- entry-labeled failure messages for a developer
+  (`catalog[3] ("couch-1"): "id" must be a non-empty string`)
 - transforms during validation (hex color strings to numbers)
 - cross-entry checks (unique ids, default references that must name an existing
   entry, safe asset paths)
