@@ -42,15 +42,17 @@ flowchart LR
   ANN --> SR
 ```
 
-Reliable announcement needs an always-present live region, so each class uses
-the nearest one it has. Toasts
-(`shared/ui/toast.tsx`) are visual + SR in one surface - Base UI's
-always-mounted viewport announces them itself (priority high = assertive), so
-toast entries never also call the announcer. The Announcer
-(`app/chrome/announcer.tsx`) is the SR-only polite/assertive pair
-everything else shares. Startup overlays self-announce on insertion; inline
-field errors render their visible text conditionally, so their announcement
-borrows the always-mounted assertive channel.
+An announcement is reliable only when its live region is guaranteed to catch
+the message - a region that mounts after the message misses it. Each surface
+meets that differently. Toasts (`shared/ui/toast.tsx`) are visual + SR in one
+surface: Base UI's toast viewport is always mounted and carries its own live
+regions (priority high = assertive), so toast entries never also call the
+announcer. The Announcer (`app/chrome/announcer.tsx`) is the always-mounted
+SR-only polite/assertive pair the announcement-only classes share. Startup
+overlays announce through `role="status"`/`role="alert"` insertion semantics.
+Inline field errors render their visible text conditionally - a region that
+mounts with its message - so `formError` announces through the Announcer's
+assertive channel while the visible error stays with the field.
 
 When using a surface directly:
 

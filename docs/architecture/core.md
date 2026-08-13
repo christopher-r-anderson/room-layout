@@ -69,9 +69,9 @@ generic bound hook from a feature is an ESLint error - its
 Each store has a small set of sanctioned writers; anything else mutates through
 an operation. The selection pointer has one write path - `applySelection` in
 `operations/selection-mutations` - that every mutation moving the selection
-goes through. The store modules in `core/stores/` are the inventory; the
-concept docs above carry the models for focus, dialogs, feedback,
-startup/collections, and toolbar placement.
+goes through. For the full store list, read `core/stores/`; the concept docs
+above carry the models for focus, dialogs, feedback, startup/collections, and
+toolbar placement.
 
 ## Operations
 
@@ -87,12 +87,12 @@ guard and cleanup fan-in) and started together from `startEditorReconcilers`
 at app startup: pending focus, preview hygiene, collection loading, and draft
 persistence.
 
-The modules in `core/operations/` are the inventory. The broad groups:
-user-facing actions (history, movement, selection, preview, view, canvas
-keyboard) that layer readiness guards and screen-reader announcements over the
-pure document mutations, which validate via `@/domain/geometry` and write the
-store; the startup pipeline and restore flows; cross-store derived reads as
-value modules; and draft persistence.
+The modules in `core/operations/` can be broadly grouped as: user-facing
+actions (history, movement, selection, preview, view, canvas keyboard) that
+layer readiness guards and screen-reader announcements over the pure document
+mutations, which validate via `@/domain/geometry` and write the store; the
+startup pipeline and restore flows; cross-store derived reads as value
+modules; and draft persistence.
 
 Feature-internal orchestration (e.g. `features/selection/deletion-actions`,
 `features/catalog/catalog-actions`) stays in the owning feature and imports core

@@ -9,36 +9,53 @@ complete manifest.
 ## Shape
 
 The top level carries `version` (the number `1`), `collections`, `catalog`,
-and `environment` (floor finishes, wall finishes, lighting moods, and their
-defaults).
+and `environment` (the three finish/mood lists below and their defaults).
 
-- **Collections** pair an `id` with a `modelPath` to a GLTF file; catalog
-  entries reference them by id.
-- **Catalog entries** describe the furniture: `id`, display `name`, `kind`
-  (one of `armchair`, `couch`, `coffee-table`, `end-table`), `collectionId`,
-  the GLTF `nodeName` to clone, an optional `uiBoundsNodeName` (the preferred
-  bounds source for selected-item toolbar placement), `footprintSize`
-  width/depth in meters for collision, and a `previewPath` image.
-- **Floor finishes** carry a `label`, an optional `previewPath`, `diffusePath`
-  and `normalPath` textures, and required `tileSizeMeters` physical coverage;
-  the runtime texture repeat is room size divided by tile size per axis. For
-  web delivery, prefer KTX2 textures (ETC1S diffuse, UASTC normals). A finish
-  without `previewPath` renders as a neutral placeholder tile in the Room
-  panel and stays selectable.
-- **Wall finishes** carry a `label` and a `color`, which also drives the Room
-  panel swatch.
-- **Lighting moods** retune the existing room light rig - they add no new
-  lights. The fields map directly onto the lights in
-  `src/scene/internal/environment/lighting.tsx`: `exposure` drives the
-  renderer tone-mapping exposure, and the color/intensity pairs feed the
-  ambient, hemisphere, key, fill, environment, and background contributions.
-  The Room panel swatch is derived from `keyLightColor` and
-  `environmentColor`; the panel and the 3D scene read the active mood from one
-  shared resolver, so a stored mood id that no longer exists falls back to the
-  default mood (parallel to floor/wall finishes).
-- **Defaults** (`defaultFloorFinishId`, `defaultWallFinishId`,
-  `defaultLightingMoodId`) are optional and fall back to each list's first
-  entry.
+### Collections
+
+A collection pairs an `id` with a `modelPath` to a GLTF file. Catalog entries
+reference collections by id.
+
+### Catalog entries
+
+A catalog entry describes one furniture item: `id`, display `name`, and
+`kind` (one of `armchair`, `couch`, `coffee-table`, `end-table`). It names
+the collection it loads from (`collectionId`) and the GLTF node to clone
+(`nodeName`); an optional `uiBoundsNodeName` names a descendant node used as
+the preferred bounds source for selected-item toolbar placement.
+`footprintSize` gives the width/depth in meters used for collision, and
+`previewPath` points at the catalog preview image.
+
+### Floor finishes
+
+A floor finish carries a `label`, an optional `previewPath`, and the
+`diffusePath` and `normalPath` textures. `tileSizeMeters` states the physical
+coverage of the texture; the runtime repeat is room size divided by tile size
+per axis. For web delivery, prefer KTX2 textures (ETC1S diffuse, UASTC
+normals). A finish without `previewPath` renders as a neutral placeholder
+tile in the Room panel and stays selectable.
+
+### Wall finishes
+
+A wall finish carries a `label` and a `color`. The color also drives the Room
+panel swatch.
+
+### Lighting moods
+
+A lighting mood retunes the existing room light rig - it adds no new lights.
+The fields map directly onto the lights in
+`src/scene/internal/environment/lighting.tsx`: `exposure` drives the renderer
+tone-mapping exposure, and the color/intensity pairs feed the ambient,
+hemisphere, key, fill, environment, and background contributions. The Room
+panel swatch is derived from `keyLightColor` and `environmentColor`. The
+panel and the 3D scene read the active mood from one shared resolver, so a
+stored mood id that no longer exists falls back to the default mood (parallel
+to floor/wall finishes).
+
+### Defaults
+
+`defaultFloorFinishId`, `defaultWallFinishId`, and `defaultLightingMoodId`
+are optional and fall back to each list's first entry.
 
 ## Validation Rules
 
