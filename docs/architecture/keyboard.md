@@ -50,9 +50,9 @@ This dual-purpose dispatch works via shortcut loop fallthrough:
 
 Home, End (browse to first/last), Enter, and Space (select the previewed item) are likewise no-selection shortcuts.
 
-The `ShortcutDefinition` and `KeyCombo` shapes (the gating flags, match
-alternatives, and `suppressionMode`) are defined in
-`use-keyboard-shortcuts.ts`; the type is the reference.
+The `ShortcutDefinition` shape (the gating flags, match alternatives, and
+`suppressionMode`) is defined in `use-keyboard-shortcuts.ts`, and `KeyCombo`
+in `keyboard-shortcut-matcher.ts`; the types are the reference.
 
 ### Modifier Semantics
 

@@ -13,7 +13,7 @@ Current source order:
 - `object-origin`: last-resort projected point; one point is not enough to build a reliable avoidance shape, so it always takes the clamped fallback placement
 - unavailable: no selected object, object not ready, or projection failure
 
-`uiBoundsNodeName` provides a preferred toolbar bounds source; the chosen candidate still passes the same overlap checks.
+`uiBoundsNodeName` provides a preferred toolbar bounds source; its geometry goes through the same gates, scoring, and fallback as any other source.
 
 When geometry is available, the scene also publishes:
 

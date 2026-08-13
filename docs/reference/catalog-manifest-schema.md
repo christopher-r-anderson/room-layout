@@ -76,9 +76,11 @@ Enforced at load by `src/core/operations/catalog-manifest.ts`:
 - Wall and lighting mood colors must use `#RRGGBB` hex format.
 - Wall finishes must not define `previewPath`; wall swatches are derived from
   `color`.
-- If `uiBoundsNodeName` is present, it must be a non-empty string and must
-  resolve to a descendant node inside the catalog entry's `nodeName` subtree
-  at runtime.
+- If `uiBoundsNodeName` is present, it must be a non-empty string. Resolving
+  it to a descendant of the entry's `nodeName` subtree is checked at model
+  load by the scene's asset-node validation
+  (`src/scene/internal/validate-catalog-asset-nodes.ts`; see Runtime
+  Behavior).
 
 ## Runtime Behavior
 

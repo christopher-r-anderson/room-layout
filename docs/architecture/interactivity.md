@@ -97,6 +97,6 @@ to own it:
 ```
 
 `inert` covers pointer events, focus, and the accessibility tree - but not
-window-level keyboard listeners. Those are gated separately: `useKeyboardShortcuts`
-and `useCameraKeyState` take a readiness-tied `enabled` flag, an interaction
-guard the inert seam cannot replace.
+window-level keyboard listeners. Those are gated separately:
+`useKeyboardShortcuts` and `useCameraKeyState` take a readiness-tied `enabled`
+flag.

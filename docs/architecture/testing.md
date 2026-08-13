@@ -53,7 +53,7 @@ leaves that set.
 
 ## Browser Test Guidance
 
-Use the Manual Verification flows above as the workflow map when planning
+Use the Manual Verification flows below as the workflow map when planning
 browser tests or reviewing coverage.
 
 For scene-only Playwright tests where overlay UI is incidental, use the shared
@@ -144,8 +144,9 @@ core flows:
   returns to the opening control (native restore for blocking dialogs;
   explicit registry return for the Room surface, the mobile More drawer, and
   the dialogs opened from it).
-- Startup and sharing: controls stay blocked while assets load, the error
-  state offers a usable retry, `Share` produces a restorable URL, restore is
+- Startup and sharing: controls stay blocked while startup-gated assets load
+  (on-demand catalog loads leave the editor interactive), the error state
+  offers a usable retry, `Share` produces a restorable URL, restore is
   one-shot, and invalid payloads recover the draft or fail to an empty scene.
 
 `Furniture in room` is the primary text alternative to canvas interaction.
