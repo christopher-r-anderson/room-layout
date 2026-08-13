@@ -183,8 +183,8 @@ operations rather than sibling features.
 
 `core/commands` defines the typed `EditorCommand` union and the dispatch binding:
 `EditorCommandHandlers` (a handler-per-`kind` mapped type), `runEditorCommand` (a
-map lookup, not a switch), and the dispatch context (`useCommandDispatch`). Adding a command is two type-enforced edits - a union
-member and a handler key.
+map lookup, not a switch), and the dispatch context (`useCommandDispatch`).
+Adding a command is two type-enforced edits - a union member and a handler key.
 
 A command is a **declarative editor intent triggerable by the keyboard table or a
 toolbar button**. Its implementation lives with its owning concern - a core

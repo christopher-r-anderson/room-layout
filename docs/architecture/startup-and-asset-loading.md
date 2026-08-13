@@ -130,9 +130,10 @@ flowchart LR
   validate (every catalog entry of the collection must resolve its
   manifest-referenced nodes), and register (`sceneCommands.loadCollectionScene`,
   backed by `scene/internal/furniture/collection-scene-loader.ts`), then mark
-  the outcome in the loading store. A standing reconciler kicks pending loads whenever their
-  inputs change (scene becomes ready, gate resolves, an item appears, an
-  on-demand request arrives), so the chain never depends on React render timing. Loads are
+  the outcome in the loading store. A standing reconciler kicks pending loads
+  whenever their inputs change (scene becomes ready, gate resolves, an item
+  appears, an on-demand request arrives), so the chain never depends on React
+  render timing. Loads are
   keyed to the startup cycle; a stale cycle's result is discarded rather than
   written into a fresh one.
 - **Readiness** (`features/startup/use-startup-readiness.ts`, run from `App`): once

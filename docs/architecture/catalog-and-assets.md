@@ -91,8 +91,8 @@ At runtime the furniture loader and the floor textures share one KTX2 loader
 manual transcoder-hosting step** - no `setTranscoderPath`, no copying transcoder
 files into `public/` - which older three versions (and most KTX2 write-ups)
 require; the emitted `basis_transcoder` js chunk is budget-gated like any other
-chunk (the paired `.wasm` is not JS and sits outside the budget check). The Blender helpers (export / introspect / relink) live in
-`scripts/blender/`.
+chunk (the paired `.wasm` is not JS and sits outside the budget check). The
+Blender helpers (export / introspect / relink) live in `scripts/blender/`.
 
 ## Catalog Preview Thumbnails
 
