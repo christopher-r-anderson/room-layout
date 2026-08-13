@@ -152,9 +152,11 @@ export function EditorBody({ testOverlaysHidden }: EditorBodyProps) {
 
   const chromeMounted = editorInteractionsEnabled && !testOverlaysHidden
 
-  // <main> must stay unpositioned: the floating selected-item toolbar resolves
-  // its absolute position against this fixed column. Header and panels are
-  // flex siblings, so a wrapping header pushes the panel column down naturally.
+  // This column and <main> must not become fixed-position containing blocks
+  // (no transform, filter, backdrop-filter, perspective, will-change, or
+  // contain): the floating selected-item toolbar inside them is position:fixed
+  // in viewport space and would be re-based. Header and panels are flex
+  // siblings, so a wrapping header pushes the panel column down naturally.
   return (
     <div className="pointer-events-none fixed inset-2 flex flex-col gap-2">
       {/* z-10: the header precedes the z-0 canvas in DOM paint order. */}

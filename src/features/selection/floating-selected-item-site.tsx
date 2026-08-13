@@ -58,11 +58,16 @@ export function FloatingSelectedItemSite() {
     // Positioning wrapper only: the toolbar inside carries the accessible name.
     <div
       ref={actionsSizeRef}
-      // `top-0 left-0` is the origin for the JS-computed translate3d below; those
+      // The placement engine emits viewport pixels, so `fixed top-0 left-0`
+      // anchors the JS-computed translate3d below at the viewport origin; the
       // pixel offsets are physical, so the anchor stays physical, not logical.
-      className="absolute top-0 left-0 pointer-events-auto transition-[transform,opacity] duration-150 ease-out"
+      className="fixed top-0 left-0 pointer-events-auto transition-[transform,opacity] duration-150 ease-out"
       data-selected-toolbar-candidate={placement.candidateId}
       data-selected-toolbar-mode="floating"
+      // The engine's decided viewport coordinates, published so the e2e guard
+      // can assert the rendered box lands on them however they are applied.
+      data-selected-toolbar-left={placement.left}
+      data-selected-toolbar-top={placement.top}
       style={{
         transform: `translate3d(${String(placement.left)}px, ${String(placement.top)}px, 0)`,
       }}

@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test'
+import { expect, test, type Locator, type Page } from '@playwright/test'
 import {
   focusRoomView,
   openEditor,
@@ -54,6 +54,25 @@ async function getToolbarBox(page: Page) {
   return { toolbar, box }
 }
 
+// The placement engine works in viewport pixels and the site publishes its
+// decided coordinates as data attributes; the rendered box must converge to
+// them (polled: the site glides through a 150ms transform transition). A
+// containing block other than the viewport shifts every placement by its
+// offset and fails this.
+async function expectToolbarAtDecidedPlacement(toolbar: Locator) {
+  await expect
+    .poll(() =>
+      toolbar.evaluate((element) => {
+        const rect = element.getBoundingClientRect()
+        return Math.max(
+          Math.abs(rect.x - Number(element.dataset.selectedToolbarLeft)),
+          Math.abs(rect.y - Number(element.dataset.selectedToolbarTop)),
+        )
+      }),
+    )
+    .toBeLessThan(0.5)
+}
+
 async function getSelectedPointerTargetViewportPoint(page: Page) {
   const state = await readSceneState(page)
   const selectedItem = state.items.find((item) => item.id === state.selectedId)
@@ -100,11 +119,12 @@ test('desktop floating toolbar stays off visible chrome and the pointer target a
     throw new Error('Top header bounding box was not available')
   }
 
-  const { box: initialToolbarBox } = await getToolbarBox(page)
+  const { toolbar, box: initialToolbarBox } = await getToolbarBox(page)
   const initialPointerPoint = await getSelectedPointerTargetViewportPoint(page)
 
   expect(boxesIntersect(initialToolbarBox, headerBox)).toBe(false)
   expect(boxContainsPoint(initialToolbarBox, initialPointerPoint)).toBe(false)
+  await expectToolbarAtDecidedPlacement(toolbar)
 
   await focusRoomView(page)
   const preNudgeCameraPosition = (await readSceneState(page)).cameraPosition
@@ -125,9 +145,11 @@ test('desktop floating toolbar stays off visible chrome and the pointer target a
 
   // getToolbarBox also asserts the toolbar is still in floating mode. The toolbar
   // must remain clear of the header and never sit on top of the pointer target.
-  const { box: nudgedToolbarBox } = await getToolbarBox(page)
+  const { toolbar: nudgedToolbar, box: nudgedToolbarBox } =
+    await getToolbarBox(page)
   const nudgedPointerPoint = await getSelectedPointerTargetViewportPoint(page)
 
   expect(boxesIntersect(nudgedToolbarBox, headerBox)).toBe(false)
   expect(boxContainsPoint(nudgedToolbarBox, nudgedPointerPoint)).toBe(false)
+  await expectToolbarAtDecidedPlacement(nudgedToolbar)
 })
