@@ -36,8 +36,8 @@ placement's own outcome. On both form factors the toolbar is always present.
 
 On desktop the toolbar floats. When no clean position survives, it takes a
 clamped best-effort position instead: it may overlap the selected object, it
-stays out of the panels whenever some position allows that - a fully crowded
-screen gets the least-overlapping spot - and it never leaves the screen.
+avoids the panels when its candidate positions allow that - a fully crowded
+screen gets the least-overlapping of them - and it never leaves the screen.
 Placement works on the object's projected points, so in the frames before the
 scene has produced any, the toolbar stays hidden rather than guessing at a
 position. The scenes with no

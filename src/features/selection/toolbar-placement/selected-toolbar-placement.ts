@@ -7,8 +7,8 @@
 //      the object; score the survivors on continuity, spacing, and a diagonal
 //      side bias; apply hysteresis so the choice is stable across frames.
 //   4. if nothing attaches cleanly, never hide - fall back to a clamped anchor
-//      that may overlap the object, stays on screen, and overlaps panels as
-//      little as the screen allows.
+//      that may overlap the object, stays on screen, and takes whichever of
+//      its four sides overlaps the panels least.
 import {
   avoidsExclusions,
   clamp,
