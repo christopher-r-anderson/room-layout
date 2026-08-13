@@ -130,6 +130,7 @@ In addition to this README, project-specific guides are available:
 ### Architecture
 
 - [Architecture](docs/architecture/architecture.md): Layer map, layer intent, placement rules, and planned boundary improvements.
+- [Decision Records](docs/decisions/README.md): Dated records of major decisions - their context, the alternatives weighed, and their consequences.
 - [Core](docs/architecture/core.md): The core layer - store inventory, operations, commands, and persistence.
 - [Scene and Core](docs/architecture/scene-and-core.md): The data-model/engine seam - who owns furniture data vs. the rules that change it.
 - [Dialogs and Overlays](docs/architecture/dialogs-and-overlays.md): The active-surface dialog/overlay model, blocking semantics, mutual exclusion, and focus return.

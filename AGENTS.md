@@ -65,7 +65,9 @@ appropriate within the same module area.
 - Plain wording: no filler openers ("Here,", "Safely,") and no rhetorical
   emphasis patterns ("not just X, but Y").
 - Docs, comments, and commit text state current reality only - no journey
-  notes, legacy references, or status markers.
+  notes, legacy references, or status markers. `docs/decisions/` is the one
+  exception: decision records are dated and carry rationale, alternatives,
+  and history; they read as of their date, not as current reality.
 - Use ASCII `-` and `->` for dashes and arrows in comments, docs, and commits;
   no em dashes or unicode arrows (a `-` or `;` covers the em dash's job).
 - When a change alters behavior or structure, update the overlapping docs
@@ -75,6 +77,7 @@ appropriate within the same module area.
 
 - `docs/architecture/` - canonical per-subsystem docs (architecture, core,
   scene, focus, feedback, keyboard, i18n, startup, testing, ...)
+- `docs/decisions/` - dated decision records (see the Style exception above)
 - `src/*/README.md` - layer-local intent, one per layer
 - `docs/guide/` - end-user guides; `docs/reference/` - schema, shortcut, and
   attribution references
