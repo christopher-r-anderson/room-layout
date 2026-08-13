@@ -100,11 +100,28 @@ test('desktop floating toolbar stays off visible chrome and the pointer target a
     throw new Error('Top header bounding box was not available')
   }
 
-  const { box: initialToolbarBox } = await getToolbarBox(page)
+  const { toolbar, box: initialToolbarBox } = await getToolbarBox(page)
   const initialPointerPoint = await getSelectedPointerTargetViewportPoint(page)
 
   expect(boxesIntersect(initialToolbarBox, headerBox)).toBe(false)
   expect(boxContainsPoint(initialToolbarBox, initialPointerPoint)).toBe(false)
+
+  // The placement engine emits viewport pixels, so the rendered box must land
+  // exactly on the translate3d target - a containing block that is not the
+  // viewport would shift every placement by its offset.
+  const transformTarget = await toolbar.evaluate((element) => {
+    const match = /^translate3d\((-?[\d.]+)px, (-?[\d.]+)px/.exec(
+      element.style.transform,
+    )
+    if (!match) {
+      throw new Error(
+        `Toolbar transform was not a translate3d: ${element.style.transform}`,
+      )
+    }
+    return { x: Number(match[1]), y: Number(match[2]) }
+  })
+  expect(initialToolbarBox.x).toBeCloseTo(transformTarget.x, 0)
+  expect(initialToolbarBox.y).toBeCloseTo(transformTarget.y, 0)
 
   await focusRoomView(page)
   const preNudgeCameraPosition = (await readSceneState(page)).cameraPosition
