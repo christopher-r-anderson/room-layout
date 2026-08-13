@@ -152,9 +152,10 @@ export function EditorBody({ testOverlaysHidden }: EditorBodyProps) {
 
   const chromeMounted = editorInteractionsEnabled && !testOverlaysHidden
 
-  // No element in this subtree may carry a transform/filter: the floating
-  // selected-item toolbar is position:fixed in viewport space, and a
-  // transformed ancestor would re-base it. Header and panels are flex
+  // This column and <main> must not become fixed-position containing blocks
+  // (no transform, filter, backdrop-filter, perspective, will-change, or
+  // contain): the floating selected-item toolbar inside them is position:fixed
+  // in viewport space and would be re-based. Header and panels are flex
   // siblings, so a wrapping header pushes the panel column down naturally.
   return (
     <div className="pointer-events-none fixed inset-2 flex flex-col gap-2">

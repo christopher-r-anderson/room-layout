@@ -64,6 +64,10 @@ export function FloatingSelectedItemSite() {
       className="fixed top-0 left-0 pointer-events-auto transition-[transform,opacity] duration-150 ease-out"
       data-selected-toolbar-candidate={placement.candidateId}
       data-selected-toolbar-mode="floating"
+      // The engine's decided viewport coordinates, published so the e2e guard
+      // can assert the rendered box lands on them however they are applied.
+      data-selected-toolbar-left={placement.left}
+      data-selected-toolbar-top={placement.top}
       style={{
         transform: `translate3d(${String(placement.left)}px, ${String(placement.top)}px, 0)`,
       }}
