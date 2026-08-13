@@ -33,8 +33,9 @@ Editor state is scoped by lifetime, and store names say which scope they hold:
   the undo timeline. The scene session (`scene-session-store`) and the
   selection session (`selection-store`) are the session stores, reset wholesale
   on retry. The startup/asset stores are session-scoped machinery with their
-  own retry semantics - a retry deliberately preserves e.g.
-  `restoreAttemptCount`, which guards the one-time restore.
+  own retry semantics - a retry resets restore tracking (the error path wiped
+  the document, so restore re-runs at ready) and preserves `sceneReady`, which
+  mirrors the scene-services registration.
 - **Ephemeral** values that nothing renders from stay out of stores entirely -
   module-level cells (the preview hysteresis timer, the pending delete origin) or
   refs.
@@ -182,9 +183,8 @@ operations rather than sibling features.
 
 `core/commands` defines the typed `EditorCommand` union and the dispatch binding:
 `EditorCommandHandlers` (a handler-per-`kind` mapped type), `runEditorCommand` (a
-map lookup, not a switch), and the ref-backed dispatch context
-(`useCommandDispatch`). Adding a command is two type-enforced edits - a union
-member and a handler key.
+map lookup, not a switch), and the dispatch context (`useCommandDispatch`).
+Adding a command is two type-enforced edits - a union member and a handler key.
 
 A command is a **declarative editor intent triggerable by the keyboard table or a
 toolbar button**. Its implementation lives with its owning concern - a core

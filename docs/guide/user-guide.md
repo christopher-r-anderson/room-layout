@@ -63,7 +63,7 @@ For the full shortcut list, see [editor-shortcuts-reference.md](../reference/edi
 
 ## Share a Layout
 
-Use `Share` on desktop or the mobile `More` menu to generate a link for the current room state.
+Use `Share` on desktop or the mobile `More actions` menu to generate a link for the current room state.
 
 That link restores the current arrangement when it is opened again.
 

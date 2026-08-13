@@ -34,11 +34,13 @@ representative of a real GPU.
   on the running app (real GPU) when investigating, and rely on production RUM
   (web-vitals INP, custom marks) for fleet-wide regressions. _(RUM is a future
   workstream.)_
-- **Bundle size** -> per-chunk gzip budgets enforced in CI (`pnpm bundle-budget`,
-  run in preflight after the build) via `scripts/check-bundle-budget.mjs`: a tight
-  budget on the first-paint shell chunk and a looser one on the lazy engine chunk
-  (three/r3f/drei). These are regression gates set at current size plus headroom,
-  not targets - lower them when the bundle shrinks.
+- **Bundle size** -> per-chunk gzip budgets enforced by `pnpm bundle-budget`
+  (a preflight step after the build; not run by the CI workflows) via
+  `scripts/check-bundle-budget.mjs`: a tight budget on the first-paint shell
+  chunk, a looser one on the lazy engine chunk (three/r3f/drei), and entries
+  for the smaller split chunks; an unbudgeted chunk fails the check. These are
+  regression gates set at current size plus headroom, not targets - lower them
+  when the bundle shrinks.
 
 ## Coverage
 
@@ -126,7 +128,7 @@ verification for any other high-impact accessibility change.
 ## Artifacts
 
 - HTML report: `playwright-report/`
-- Raw traces/screenshots/videos: `test-results/`
+- Raw traces/screenshots/videos: `test-results/playwright/`
 
 See also:
 

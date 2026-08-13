@@ -9,10 +9,12 @@ the declarative React UI share furniture state.
 - **`core` owns the document and its mutations.** `scene-document-store.history`
   holds the authoritative `FurnitureItem[]` - positions, rotations, ids. That is
   what the undo/redo timeline operates on and what gets serialized to the share
-  URL and the local draft. Every mutation (add, move, rotate, transform, delete,
-  undo/redo, restore, select) is a core operation
+  URL and the local draft. Mutations (add, move, rotate, transform, delete,
+  undo/redo, restore, select) are core operations
   (`core/operations/furniture-mutations`, `history-mutations`,
-  `selection-mutations`) that validates against the rules and writes the store.
+  `selection-mutations`) that validate against the rules and write the store;
+  the drag is the one scene-composed case, pairing core's pure resolvers with
+  the store's history action (see Drag below).
 - **`domain` owns the rules.** Collision, bounds, edge-snap, spawn placement,
   and the room-size model (defaults, limits, size -> bounds derivation) are
   pure geometry in `@/domain/geometry`, called synchronously by the core
@@ -33,9 +35,9 @@ UI intent ──► core operation (validates via @/domain/geometry rules)
               scene renders the document (Object3D transforms are a projection)
 ```
 
-- **Mutations are core-internal.** A keyboard move never leaves core: the
-  operation reads the store, runs the pure resolution, writes the store. The
-  scene re-renders from the result.
+- **Mutations are core-internal.** A keyboard move stays in core: the operation
+  checks scene readiness through the port, reads the store, runs the pure
+  resolution, writes the store. The scene re-renders from the result.
 - **Input maps down to the same path.** A pointer drag uses the viewport for
   exactly one thing - turning the pointer ray into a floor position - then runs
   the same domain rules and writes the same store (see Drag below).
@@ -60,13 +62,13 @@ render. Object3D transforms are never read back as a source of truth.
 
 ## Who owns what
 
-| Concern                                       | Authority                                 |
-| --------------------------------------------- | ----------------------------------------- |
-| Committed furniture data (undo, serialize)    | `core` (`scene-document-store.history`)   |
-| Validity rules (collision, bounds, placement) | `domain` (`@/domain/geometry`)            |
-| Document mutations (incl. during drag)        | `core` operations (drag feeds them input) |
-| Rendering / camera / screen projection        | `scene`                                   |
-| Selection/preview/finish UI state             | `core` stores                             |
+| Concern                                       | Authority                                                   |
+| --------------------------------------------- | ----------------------------------------------------------- |
+| Committed furniture data (undo, serialize)    | `core` (`scene-document-store.history`)                     |
+| Validity rules (collision, bounds, placement) | `domain` (`@/domain/geometry`)                              |
+| Document mutations (incl. during drag)        | `core` mutation modules (the drag composes them scene-side) |
+| Rendering / camera / screen projection        | `scene`                                                     |
+| Selection/preview/finish UI state             | `core` stores                                               |
 
 ## Invariants / guardrails
 
@@ -75,10 +77,11 @@ render. Object3D transforms are never read back as a source of truth.
   rules when writing furniture state.
 - Scene writes state only through the sanctioned channels: the drag
   live-present path writes the document, canvas-pointer selection calls the
-  core selection action, the gesture writes the session drag flag and
-  floor-loading indicator, the projection raf loop writes toolbar geometry,
-  the mount lifecycle registers the scene services (which raises `sceneReady`),
-  and the parse service registers parsed collections. Each is named in core.md's store inventory; anything
+  core selection action, the gesture writes the session drag flag, the room's
+  texture-load callback writes the floor-loading indicator, the throttled
+  projection loop writes toolbar geometry, the mount lifecycle registers the
+  scene services (which raises `sceneReady`), and the parse service registers
+  parsed collections. Each is named in core.md's store inventory; anything
   else is a core operation.
 - The engine port (`SceneServices`) is deliberately small. Widening it is a
   deliberate act: a new method means core is delegating another decision to the

@@ -25,8 +25,9 @@ The one-active-surface invariant is what gives mutual exclusion for free (below)
 Three parties, kept separate so feature definitions stay free of app-shell
 imports:
 
-- **`dialog-store` (core)** owns only the generic active-surface state, the
-  open/close operations, and the dialog-open selectors.
+- **`dialog-store` (core)** owns the generic active-surface state, the
+  open/close operations, the dialog-open selectors, and the registration slots
+  the definitions and runtime context are installed into.
 - **Features** own each dialog's `DialogDefinition` - its `kind`, `canOpen`
   guard, and payload derivation - in the owning feature folder.
 - **App** bootstraps: `src/app/dialogs/bootstrap-dialog-registry.ts` holds the
@@ -87,11 +88,13 @@ surface that opened a dialog owns restoring focus:
 
 - Blocking dialogs rely on Base UI restoring focus to their opener on close.
 - The top header restores focus explicitly through a module-level registry
-  (`src/app/chrome/top-header/top-header-focus.ts`) where native restore is
-  unreliable: the non-modal room surface, and the mobile More drawer whose items
-  unmount on close.
-- Confirming Start Over disables the Start Over button, so the header walks to the
-  next enabled control rather than restoring focus to a disabled target.
+  (`src/app/chrome/top-header/top-header-focus.ts`) where native restore cannot
+  work: the non-modal room surface, the mobile More drawer whose items unmount
+  on close, and - on mobile - the dialogs opened from that drawer (keyboard
+  shortcuts, project info, Start Over), which return to the More button.
+- Confirming Start Over on desktop restores focus to its trigger as usual: the
+  button stays focusable while disabled (`aria-disabled`), so the restore
+  target never vanishes.
 
 ## Boundaries
 

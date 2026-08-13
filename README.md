@@ -35,8 +35,8 @@ For a user-facing walkthrough, see [docs/guide/user-guide.md](docs/guide/user-gu
 - Move and rotate selected items with direct manipulation, selected-item
   controls, or keyboard shortcuts.
 - Open `Room` to change floor and wall finishes without leaving the editor.
-- Use `Share` on desktop or the mobile `More` menu to generate a shareable room
-  URL.
+- Use `Share` on desktop or the mobile `More actions` menu to generate a
+  shareable room URL.
 
 Shortcut details are documented in
 [docs/reference/editor-shortcuts-reference.md](docs/reference/editor-shortcuts-reference.md).
@@ -129,16 +129,22 @@ In addition to this README, project-specific guides are available:
 
 ### Architecture
 
-- [Architecture](docs/architecture/architecture.md): Layer map, layer intent, placement rules, and planned boundary improvements.
+- [Architecture](docs/architecture/architecture.md): Layer map, layer intent, and placement rules.
 - [Decision Records](docs/decisions/README.md): Dated records of major decisions - their context, the alternatives weighed, and their consequences.
 - [Core](docs/architecture/core.md): The core layer - store inventory, operations, commands, and persistence.
 - [Scene and Core](docs/architecture/scene-and-core.md): The data-model/engine seam - who owns furniture data vs. the rules that change it.
+- [Startup and Asset Loading](docs/architecture/startup-and-asset-loading.md): Startup phases, the bundle split, and the collection load pipeline.
 - [Dialogs and Overlays](docs/architecture/dialogs-and-overlays.md): The active-surface dialog/overlay model, blocking semantics, mutual exclusion, and focus return.
+- [Focus Routing](docs/architecture/focus.md): How keyboard focus moves between the editor's surfaces.
+- [Interactivity](docs/architecture/interactivity.md): Toolbar composites, disabled-state expression, and the inert seam.
+- [Feedback](docs/architecture/feedback.md): Routing user feedback to toasts and screen-reader announcements.
+- [Configuration](docs/architecture/configuration.md): Configuration tiers and the storage instance key.
 - [Internationalization](docs/architecture/i18n.md): Lingui + `Intl` localization, per-locale catalog splitting, string authoring, and adding a locale.
 
 ### Contributor Workflows
 
 - [Testing Guide](docs/architecture/testing.md): Contributor test lane selection and browser test workflow guidance.
+- [Intentional Unit-Test Exclusions](docs/testing/intentional-unit-exclusions.md): The standing record of code deliberately not unit-tested, with where it is covered instead.
 - [Catalog and Assets](docs/architecture/catalog-and-assets.md): Manifest editing, validation, texture and model pipelines, and asset contract notes.
 - [Catalog Manifest Schema](docs/reference/catalog-manifest-schema.md): Full catalog manifest field reference and validation constraints.
 - [UI Components Policy](docs/architecture/ui-components.md): shadcn ownership model and the logical CSS property convention.
@@ -155,7 +161,7 @@ In addition to this README, project-specific guides are available:
 
 ### Automation
 
-- [AGENTS.md](AGENTS.md): Agent guide (`CLAUDE.md` is a symlink to it).
+- [AGENTS.md](AGENTS.md): Agent guide (`CLAUDE.md` imports it).
 
 Local architecture notes are also available in:
 

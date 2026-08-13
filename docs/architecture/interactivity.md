@@ -13,9 +13,10 @@ the group is one Tab stop and arrow keys move between its items.
 
 These surfaces are toolbars:
 
-- the **top header** - one `Toolbar.Root` spanning both rows; each
-  `TopHeaderSurface` is a visual cluster, and `HistoryTools` renders a
-  `Toolbar.Group` inside it. Roving covers the whole header.
+- the **top header** - one `Toolbar.Root` per layout: desktop spans both rows,
+  with each `TopHeaderSurface` a visual cluster and `HistoryTools` a
+  `Toolbar.Group` inside it; mobile is a single row. Roving covers the whole
+  header.
 - **camera** controls (`camera-tools.tsx`).
 - the **selected-item** actions (`selected-item-tools.tsx`).
 
@@ -45,18 +46,21 @@ tooltip/toolbar/button nesting is never hand-built at a call site. Outside a
   `focusableWhenDisabled` (styled via `ariaDisabledButtonClasses`) with a
   visible reason line under the row, wired as its `aria-describedby`. A drawer
   has no hover-tooltip channel on touch, so the reason is shown inline instead.
-- **Form controls** - the catalog **Add Item** button uses the native `disabled`
-  attribute (nothing selected to add). The catalog radios and selected-details
-  inputs carry no disabled handling.
+- **Form controls** - the catalog uses the native `disabled` attribute: the
+  **Add Item** button (nothing picked, the picked collection unavailable, or an
+  add already in flight) and the radios (collection unavailable, or an add
+  already in flight). The selected-details inputs carry no disabled handling.
 - For a disabled item whose absence is obvious from a neighbour, the escape hatch
   is Base UI's `focusableWhenDisabled={false}` on the underlying `Toolbar.Button`
   (would need forwarding through `ToolbarCommandButton`); nothing needs it today.
 
-Disabled state only ever encodes an intrinsic capability gap - no history to undo,
-no selection to act on, a scene already at defaults, nothing picked to add. It
-never encodes "the editor isn't ready yet": startup readiness is a background
-concern handled by deferring the chrome and the canvas inert seam (next section),
-so no control carries a loading-disabled state.
+Disabled state encodes a capability gap - no history to undo, no selection to
+act on, a scene already at defaults, nothing picked to add - or a briefly
+unavailable action: a share or add already in flight, and the outliner rows
+while a blocking overlay is open. It never encodes "the editor isn't ready
+yet": startup readiness is a background concern handled by deferring the chrome
+and the canvas inert seam (next section), so no control carries a
+loading-disabled state.
 
 ## Background neutralization
 
@@ -82,11 +86,11 @@ to own it:
 ```text
 <div>                                  <- shell column: header and panels share one flow
   <header>                             <- banner landmark, first in tab order
-    {editorReady && <EditorHeader>}    <- TopHeader toolbar, mounted only when ready
+    {chromeMounted && <EditorHeader>}  <- TopHeader toolbar, mounted only when ready
   <main>
     <section "Interactive 3D room editor" inert={startupOverlayActive}>  <- canvas, the only seam
       <SceneCanvas>
-    {editorReady && <EditorPanels>}    <- RoomSidebar · CameraTools · Outliner ·
+    {chromeMounted && <EditorPanels>}  <- RoomSidebar · CameraTools · Outliner ·
                                           panels · toolbars, mounted only when ready
     <InitializationProgress> / <InitializationError>   <- shell-level loading UI
       dialogs / drawers render in portals

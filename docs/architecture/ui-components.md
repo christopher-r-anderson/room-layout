@@ -14,8 +14,8 @@ normal repository code.
 ## Adding a New Component
 
 When the project needs a component that the shadcn registry provides, install
-it as scaffolding (`pnpm dlx shadcn@latest add <component>`), then adapt it to
-repository conventions before use:
+it as scaffolding (`pnpm shadcn add <component>`, using the pinned `shadcn`
+dependency), then adapt it to repository conventions before use:
 
 - logical CSS utilities (see below); `components.json` sets `"rtl": true` so
   new scaffolds mostly arrive in this form
@@ -54,11 +54,13 @@ Inline-axis spacing and alignment use logical Tailwind utilities (`ms`/`me`,
 Physical utilities stay where placement is physical or ergonomic rather than
 reading-order: scene transform anchors, the right-pinned camera/room cluster,
 dialog centering, the tooltip arrow geometry, and third-party direction APIs
-(vaul). Each such case is marked inline.
+(vaul).
 
-`src/logical-css-properties.test.ts` guards the convention by failing on physical
-inline-axis utilities that have a logical equivalent. Mark a deliberate physical
-case with a `logical-css-allow` comment on or above the line.
+`src/logical-css-properties.test.ts` guards the convention by failing on
+physical inline-axis utilities that have a logical equivalent; positional
+utilities (left/right offsets) are outside its scope. Mark a deliberate
+physical case the guard would flag with a `logical-css-allow` comment on or
+above the line.
 
 When an RTL locale is added, these deliberate physical cases are the ones to
 re-verify - they do not follow `dir` and may need `:dir()` handling. See

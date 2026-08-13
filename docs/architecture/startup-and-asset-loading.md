@@ -39,8 +39,10 @@ What the user sees, in order:
    cached by then). A startup failure replaces this step with the error
    overlay and its retry.
 
-The chunks, whose gzip sizes are regression-gated by
-`scripts/check-bundle-budget.mjs`:
+The three load-story chunks, whose gzip sizes are regression-gated by
+`scripts/check-bundle-budget.mjs` (which also budgets the smaller split
+chunks - locales, the shared room-size chunk, the Basis transcoder - and
+fails on any unbudgeted chunk):
 
 | Chunk                                | Contents                                                                                    |
 | ------------------------------------ | ------------------------------------------------------------------------------------------- |
@@ -124,13 +126,14 @@ flowchart LR
   cap, so slow connections are not failed) that reports byte progress and throws
   `AssetHttpError` on a non-ok response.
 - **Load pipeline** (`core/operations/collection-loader.ts`): core drives each
-  load end-to-end - fetch the bytes, have the scene parse, validate (every
-  catalog entry of the collection must resolve its manifest-referenced nodes),
-  and register them (`sceneCommands.loadCollectionScene`, backed by
-  `scene/internal/furniture/collection-scene-loader.ts`), then mark the outcome
-  in the loading store. A standing reconciler kicks pending loads whenever their
-  inputs change (scene becomes ready, gate resolves, an item appears, an
-  on-demand request arrives), so the chain never depends on React render timing. Loads are
+  load end-to-end - fetch the bytes, then hand them to the scene to parse,
+  validate (every catalog entry of the collection must resolve its
+  manifest-referenced nodes), and register (`sceneCommands.loadCollectionScene`,
+  backed by `scene/internal/furniture/collection-scene-loader.ts`), then mark
+  the outcome in the loading store. A standing reconciler kicks pending loads
+  whenever their inputs change (scene becomes ready, gate resolves, an item
+  appears, an on-demand request arrives), so the chain never depends on React
+  render timing. Loads are
   keyed to the startup cycle; a stale cycle's result is discarded rather than
   written into a fresh one.
 - **Readiness** (`features/startup/use-startup-readiness.ts`, run from `App`): once

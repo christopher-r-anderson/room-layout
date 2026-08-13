@@ -9,7 +9,7 @@ Contains
 
 - Capability folders such as `catalog`, `selection`, `keyboard`, and `startup`.
 - Feature-local views, hooks, and helpers.
-- Feature-owned dialog definition modules that declare per-feature guards, payloads, and default semantic return-focus access points.
+- Feature-owned dialog definition modules that declare per-feature guards (`canOpen`) and payload derivation.
 
 Should not contain
 
