@@ -69,5 +69,3 @@ For implementation details and architecture, see [Keyboard Shortcuts](../archite
 - Typed selected-item details commit on Enter or blur and cancel the local draft on Escape.
 - The Placement panel shows wall clearance from the furniture footprint edge to the left and back walls, rather than signed offsets from room center or distances to the furniture pivot.
 - The Placement panel shows rotation as clockwise-positive degrees from `0` to `359`, even though the scene engine keeps its internal counterclockwise radian convention.
-- The current selected-item actions/details are stepping stones toward future contextual controls; even if those surfaces float visually later, they should remain after the 3D room view in logical tab order.
-- Some browser-native combos are intentionally intercepted when the app can safely do so.

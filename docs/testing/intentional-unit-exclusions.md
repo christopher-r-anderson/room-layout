@@ -4,7 +4,7 @@ The standing record of code deliberately **not** unit-tested, with where it is
 covered instead.
 
 Its job: stop a `0%` unit-coverage reading from looking like a gap, and stop us
-re-litigating the same files. Coverage % is a prompt, not a goal.
+re-litigating the same files.
 
 A line belongs here only if one of these holds: it is covered by e2e (cited), it
 is presentational/config/trivial glue, or it is an accepted gap (cited rationale).

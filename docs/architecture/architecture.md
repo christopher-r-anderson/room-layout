@@ -1,8 +1,7 @@
 # Architecture
 
-This document defines target architecture and placement rules for runtime code.
-
-Architecture boundaries are enforced by ESLint. This document is the policy. `eslint.config.js` is the executable contract.
+This document defines the architecture and placement rules for runtime code;
+`eslint.config.js` enforces the boundaries.
 
 ## Architecture Map
 
@@ -30,14 +29,14 @@ flowchart TD
   runtime --> foundations
 ```
 
-Every source dependency converges on `core`; nothing depends on `scene` beyond
-app's single lazy mount, and nothing depends on a sibling feature. The
-foundations are import targets only.
+The runtime layers' source dependencies converge on `core`; nothing depends on
+`scene` beyond app's single lazy mount, and nothing depends on a sibling
+feature. The foundations are import targets only.
 
 Notes:
 
 - `app` is the composition root and may read across layers.
-- **The scene arrow points at core, not the other way.** `core` owns the engine
+- The scene arrow points at core. `core` owns the engine
   port surface (`core/scene-commands`, `core/scene-services`, `core/scene.types`);
   `scene` is the renderer adapter that implements it, registering its viewport
   services on mount and reading/writing core stores directly. At runtime the
@@ -63,9 +62,6 @@ Notes:
 - `src/scene`: the renderer adapter - scene rendering, input mapping, three helpers, and scene internals.
 - `src/domain`: the furniture/room model vocabulary and pure logic over it (catalog, geometry/placement, scene model). The lowest leaf; imports nothing internal.
 - `src/test`: test-only infrastructure.
-
-Keep this document concise and move layer-local detail to the matching
-`src/*/README.md` files.
 
 For local context inside each area, see:
 
@@ -96,20 +92,6 @@ and carries further mechanical bans this document does not restate
 10. Do not import `src/test` from runtime code.
 11. Keep dialog definition ownership in features (or shell-only app chrome when shell-specific), with app responsible for registry bootstrap composition and core responsible for generic dialog orchestration only.
 12. Put the model vocabulary and pure logic over it (types, catalog, geometry/placement, the scene model) in `src/domain`. Never reach up into `scene` for model types; `domain` is the shared, dependency-free home every layer imports downward.
-
-> The cross-feature ban (rule 4) is the strict end of a deliberate dial, not a
-> law. If a feature ever grows a real public API that a sibling should build on,
-> the intended relaxation is per-feature public `index.ts` entrypoints (allow
-> importing a sibling's entrypoint, not its internals). It's set strict because a
-> ban is cheap to loosen later and costly to impose once sideways imports spread.
-
-## Future Improvements
-
-1. Module public entrypoints
-   - Introduce `index.ts` entrypoints for cross-layer modules that are imported externally.
-   - Keep purely local modules private.
-2. Feature internal structure
-   - Add internal subfolders only where feature size and churn justify it.
 
 ## Related Docs
 

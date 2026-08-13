@@ -42,17 +42,19 @@ flowchart LR
   ANN --> SR
 ```
 
-One rule connects them: reliable announcement needs an always-present live
-region, so each class uses the nearest one it has. Toasts
-(`shared/ui/toast.tsx`) are visual + SR in one surface - Base UI's
-always-mounted viewport announces them itself (priority high = assertive), so
-toast entries never also call the announcer. The Announcer
-(`app/chrome/announcer.tsx`) is the SR-only polite/assertive pair
-everything else shares. Startup overlays self-announce on insertion; inline
-field errors render their visible text conditionally, so their announcement
-borrows the always-mounted assertive channel.
+An announcement is reliable only when its live region is guaranteed to catch
+the message - a region that mounts after the message misses it. Each surface
+meets that differently. Toasts (`shared/ui/toast.tsx`) are visual + SR in one
+surface: Base UI's toast viewport is always mounted and carries its own live
+regions (priority high = assertive), so toast entries never also call the
+announcer. The Announcer (`app/chrome/announcer.tsx`) is the always-mounted
+SR-only polite/assertive pair the announcement-only classes share. Startup
+overlays announce through `role="status"`/`role="alert"` insertion semantics.
+Inline field errors render their visible text conditionally - a region that
+mounts with its message - so `formError` announces through the Announcer's
+assertive channel while the visible error stays with the field.
 
-Two behaviors worth knowing before reaching for a surface directly:
+When using a surface directly:
 
 - Modal aria-hiding spares only literal `[aria-live]` elements. A surface
   that must stay reachable under an open dialog/drawer carries the attribute
@@ -63,11 +65,12 @@ Two behaviors worth knowing before reaching for a surface directly:
 
 ## Testing
 
-`core/stores/feedback-store.test.ts` pins the routing and announcer
-mechanics; `e2e/feedback-routing.spec.ts` pins routing in the browser (fired
-and silent surfaces both); `e2e/feedback-toasts.spec.ts` covers toast
-lifecycle; `e2e/feedback-a11y-audits.spec.ts` runs axe over the feedback
-states.
+- `core/stores/feedback-store.test.ts` pins the routing and announcer
+  mechanics.
+- `e2e/feedback-routing.spec.ts` pins routing in the browser (fired and
+  silent surfaces both).
+- `e2e/feedback-toasts.spec.ts` covers toast lifecycle.
+- `e2e/feedback-a11y-audits.spec.ts` runs axe over the feedback states.
 
 ### Manual assistive-technology pass
 
@@ -89,8 +92,8 @@ change:
 6. Type `1.2x` into a placement field and press Enter: the error announces,
    focus stays in the field, the error text is reachable through the field's
    description. Then fix the value and browse the live regions with the
-   virtual cursor: the announcer keeps the last message's text (a transcript,
-   not a state mirror) - judge whether the stale text confuses; if so, the
+   virtual cursor: the announcer keeps the last message's text (a
+   transcript) - judge whether the stale text confuses; if so, the
    fix is a clear-after-announce timer in the feedback store.
 7. Undo, then Start over: one announcement each; the success toast
    auto-dismisses without a second announcement.

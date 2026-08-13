@@ -1,8 +1,7 @@
 # Scene and Core
 
-This is the most load-bearing seam in the codebase and the easiest to
-misunderstand. It governs how the imperative Three.js/React-Three-Fiber scene and
-the declarative React UI share furniture state.
+This seam governs how the imperative Three.js/React-Three-Fiber scene and the
+declarative React UI share furniture state.
 
 ## The split
 
@@ -28,10 +27,10 @@ the declarative React UI share furniture state.
 ## The channels
 
 ```text
-UI intent ──► core operation (validates via @/domain/geometry rules)
-                       │
-          scene-document-store  ──►  React selectors  ──►  UI re-renders
-                       │
+UI intent -> core operation (validates via @/domain/geometry rules)
+                       |
+          scene-document-store  ->  React selectors  ->  UI re-renders
+                       |
               scene renders the document (Object3D transforms are a projection)
 ```
 
@@ -55,7 +54,7 @@ UI intent ──► core operation (validates via @/domain/geometry rules)
 
 The drag gesture is scene-owned (it needs the pointer ray each move), but the
 document stays authoritative throughout: each move writes the validated position
-into the history's live present (coalesced, no undo entry per move), and the
+into the history's live present (merged, no undo entry per move), and the
 drop finalizes one undo step. The session store's `isDragging` flag is written
 synchronously with the gesture, so core mutations that guard on it never race a
 render. Object3D transforms are never read back as a source of truth.
@@ -81,14 +80,11 @@ render. Object3D transforms are never read back as a source of truth.
   texture-load callback writes the floor-loading indicator, the throttled
   projection loop writes toolbar geometry, the mount lifecycle registers the
   scene services (which raises `sceneReady`), and the parse service registers
-  parsed collections. Each is named in core.md's store inventory; anything
-  else is a core operation.
-- The engine port (`SceneServices`) is deliberately small. Widening it is a
-  deliberate act: a new method means core is delegating another decision to the
-  renderer adapter.
+  parsed collections. Anything else goes through a core operation.
+- The engine port (`SceneServices`) is deliberately small: a new method means
+  core is delegating another decision to the renderer adapter.
 - On restore/retry, the scene is rebuilt from the `core` data model
-  (`restoreInitialLayout`) - the document is the system of record; the scene is
-  pixels.
+  (`restoreInitialLayout`); the document is the system of record.
 
 ## Pointers
 

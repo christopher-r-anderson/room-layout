@@ -1,19 +1,6 @@
 # Selected Toolbar Placement
 
-This document is an overview of how the selected-item action toolbar chooses its geometry source and how it chooses a final screen position. The main code paths are:
-
-- `src/scene/internal/selection/selected-toolbar-geometry.ts`
-- `src/core/scene.types.ts`
-- `src/features/selection/use-compute-selected-item-placement.ts`
-- `src/features/selection/use-pinned-placement.ts`
-- `src/features/selection/use-report-toolbar-engagement.ts`
-- `src/core/stores/toolbar-interaction-store.ts`
-- `src/features/selection/floating-selected-item-site.tsx`
-- `src/app/chrome/editor-overlay.tsx` (mobile docks the same toolbar above the details panel)
-- `src/features/selection/selected-item-tools.tsx`
-- `src/features/selection/selected-details-view.tsx`
-- `src/shared/hooks/use-element-rect.ts`
-- `src/features/selection/toolbar-placement/selected-toolbar-placement.ts`
+How the selected-item action toolbar chooses its geometry source and its final screen position. The pipeline runs from the scene's geometry projection (`src/scene/internal/selection/selected-toolbar-geometry.ts`) through the placement engine (`src/features/selection/toolbar-placement/`) to the floating site (`src/features/selection/floating-selected-item-site.tsx`).
 
 ## Bounds Selection
 
@@ -26,7 +13,7 @@ Current source order:
 - `object-origin`: last-resort projected point; one point is not enough to build a reliable avoidance shape, so it always takes the clamped fallback placement
 - unavailable: no selected object, object not ready, or projection failure
 
-`uiBoundsNodeName` provides a preferred toolbar bounds source. It is not an authored point anchor, and it does not bypass overlap checks.
+`uiBoundsNodeName` provides a preferred toolbar bounds source; its geometry goes through the same gates, scoring, and fallback as any other source.
 
 When geometry is available, the scene also publishes:
 
@@ -107,4 +94,3 @@ flowchart TD
 - The symmetric no-obstacle path should still land on `top-center`.
 - Partial `render-bounds` projection is treated conservatively using `sourcePointCount` and `projectedPointCount`.
 - `uiBoundsNodeName` lets assets provide a better projected toolbar shape, but the final placement remains a 2D layout decision.
-- Future authored point anchors would be a separate layer on top of this system, not a replacement for bounds selection or overlap rejection.

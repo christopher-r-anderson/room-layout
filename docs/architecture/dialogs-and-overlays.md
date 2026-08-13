@@ -1,8 +1,7 @@
 # Dialogs and Overlays
 
 Top-level overlays - drawers, confirmations, the room panel - are all driven by
-one generic `dialog-store` active-surface model. Dialogs _are_ the primary
-overlays, so this is one concept with one home. This doc is the model and its
+one generic `dialog-store` active-surface model. This doc is the model and its
 invariants; for the store API and field shapes, read
 `src/core/stores/dialog-store.ts` and `src/core/dialog-contract.ts`.
 
@@ -13,12 +12,14 @@ invariants; for the store API and field shapes, read
 - `activeSurface = null`, or
 - one surface `{ id, kind, payload }`.
 
+One surface at a time is also the mutual-exclusion rule: opening any
+top-level overlay closes whatever else is open, so opening a blocking overlay
+while the room panel is open closes the room first.
+
 `kind` drives blocking policy - there are no per-dialog boolean flags:
 
 - `blocking` contributes to `useIsBlockingOverlayOpen()`.
 - `non-blocking` stays open without asserting blocking-overlay behavior.
-
-The one-active-surface invariant is what gives mutual exclusion for free (below).
 
 ## Ownership
 
@@ -59,14 +60,9 @@ interaction. Desktop opens it as a right sidebar; mobile opens a non-modal drawe
 controls remain available, and keyboard shortcuts keep working subject to the
 usual room-view focus rules.
 
-## Mutual exclusion and breakpoint persistence
-
-- **Mutual exclusion.** The room surface is mutually exclusive with every other
-  top-level overlay: opening a blocking overlay while the room is open closes the
-  room first. This is the one-active-surface invariant, not bespoke logic.
-- **Breakpoint persistence.** The room stays open across desktop/mobile layout
-  transitions - the sidebar swaps to the mobile sheet and back - and its
-  return-focus target stays the Room trigger across the swap.
+The room panel also persists across desktop/mobile layout transitions - the
+sidebar swaps to the mobile sheet and back - and its return-focus target stays
+the Room trigger across the swap.
 
 ## Gating
 

@@ -11,7 +11,7 @@ The app uses two keyboard systems:
 - **Discrete shortcuts (press-triggered):** Defined in `src/features/keyboard/use-keyboard-shortcuts.ts`.
 - **Held camera motion (state-driven):** Captured in `src/features/keyboard/use-camera-key-state.ts`, consumed per frame in `src/scene/internal/camera/use-camera-key-motion.ts`.
 
-Shortcut metadata now lives in `src/features/keyboard/keyboard-shortcuts.definitions.ts`, and both the dispatcher and help dialog derive from that shared source so labels and execution rules stay in sync.
+Shortcut metadata lives in `src/features/keyboard/keyboard-shortcuts.definitions.ts`, and both the dispatcher and help dialog derive from that shared source so labels and execution rules stay in sync.
 
 The split exists because press actions and continuous camera motion have different timing and suppression needs.
 
@@ -35,10 +35,6 @@ Focus location is tracked by `focus-store` (`focusedSurface`, written by each su
 
 Shortcuts without the flag (Undo, Redo, Start Over, the pane-focus shortcuts) remain active regardless of room-view focus.
 
-The selected-item Placement panel uses consumer-facing wall clearances from the furniture footprint edge to the left and back walls instead of signed center-origin offsets. The scene domain stores positions around the room-centered origin, so panel formatting and typed-value parsing intentionally convert between those two representations.
-
-The selected-item Placement panel also uses a consumer-facing clockwise-positive degree display (`0..359`). The scene domain stores rotation in its existing counterclockwise radian convention, so panel formatting and typed-value parsing intentionally convert between those two representations.
-
 ### Canvas Browse and Dual-Purpose Arrow Keys
 
 Arrow keys serve two roles depending on selection state:
@@ -54,25 +50,9 @@ This dual-purpose dispatch works via shortcut loop fallthrough:
 
 Home, End (browse to first/last), Enter, and Space (select the previewed item) are likewise no-selection shortcuts.
 
-### ShortcutDefinition Fields
-
-- **id:** Identifier for the shortcut definition.
-- **match:** Single `KeyCombo` or array of `KeyCombo` alternatives.
-- **requiresRoomViewFocus:** (optional) Blocks matching when the room view lacks DOM focus.
-- **requiresSelection:** (optional) Blocks execution when `hasSelection` is false.
-- **requiresNoSelection:** (optional) Blocks execution when `hasSelection` is true.
-- **requiresStartOverCapability:** (optional) Blocks execution when `canStartOver` is false.
-- **suppressionMode:** (optional) `'always-on-match' | 'on-execute'` (default `'on-execute'`).
-
-### KeyCombo Fields
-
-- **key:** (optional) Key name, case-insensitive.
-- **code:** (optional) Physical key code, case-insensitive.
-- **ctrlOrMeta:** (optional) Ctrl/Cmd state must match.
-- **shift:** (optional) Shift state must match.
-- **alt:** (optional) Alt state must match.
-
-At least one of `key` or `code` must be present.
+The `ShortcutDefinition` shape (the gating flags, match alternatives, and
+`suppressionMode`) is defined in `use-keyboard-shortcuts.ts`, and `KeyCombo`
+in `keyboard-shortcut-matcher.ts`; the types are the reference.
 
 ### Modifier Semantics
 
@@ -83,24 +63,9 @@ Unspecified modifiers are treated as `false`.
 
 If multiple modifier variants should work, define each explicitly.
 
-For layout-robust shortcuts (for example number-row presets and punctuation keys), prefer adding `code` alternatives so the same physical key works across keyboard layouts.
+For layout-independent shortcuts (for example number-row presets and punctuation keys), prefer adding `code` alternatives so the same physical key works across keyboard layouts.
 
 Camera preset shortcuts intentionally keep strict modifier matching. To support common layouts where number-row digits require Shift (for example AZERTY), explicitly define shifted `code` variants (for example `{ code: 'Digit1', shift: true }`) rather than relaxing modifier matching globally.
-
-### Context and Gating
-
-`ShortcutContext` includes:
-
-- `targetIsEditingTarget`
-- `targetIsInDialog`
-- `isBlockingOverlayOpen`
-- `hasSelection`
-- `canStartOver`
-
-Gate shortcuts with the built-in flags:
-
-- Use `requiresSelection` / `requiresNoSelection` for selection-gated actions.
-- Use `requiresRoomViewFocus` for shortcuts scoped to the focused room view.
 
 ### Blocking Overlay and Dialog Rules
 
@@ -124,29 +89,18 @@ Flow:
 3. Scene reads state in `useFrame` and applies `rotate`/`truck`/`dolly` deltas.
 
 Unlike discrete shortcuts, this path does not use `suppressionMode`.
-
-### Normalization
-
-`use-camera-key-state.ts` normalizes both `event.code` and `event.key`:
-
-- `W/A/S/D`: key codes and letter variants.
-- `Shift`: left/right shift codes.
-- Zoom-in: `Equal`, `=`, `+`, `NumpadAdd`.
-- Zoom-out: `Minus`, `-`, `_`, `NumpadSubtract`.
+`use-camera-key-state.ts` normalizes `event.code`/`event.key` variants into
+the key-state set; the key maps and per-frame motion constants live in the
+code.
 
 ### Held-Key Gating and Safety
 
-- `keydown` is ignored in editing targets and dialogs.
+- Listeners attach only while the editor is enabled, no blocking overlay is
+  open, and the room view has focus; detaching resets held state.
+- Editing targets and zoom-modifier chords (Ctrl/Cmd + `=`/`-`) are ignored,
+  so typing and browser zoom are unaffected.
 - `keyup` updates state so release events clear correctly.
 - State is reset on window blur and hook cleanup to avoid stuck keys.
-
-### Frame Behavior
-
-- `W/A/S/D` without Shift: orbit.
-- `Shift+W/A/S/D`: pan.
-- `=` / `-`: zoom.
-- If both zoom directions are held, `=` wins.
-- Frame delta is capped at `0.05` seconds to avoid large jumps after frame stalls.
 
 ## UI Integration Notes
 
