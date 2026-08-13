@@ -90,13 +90,13 @@ to own it:
   <main>
     <section "Interactive 3D room editor" inert={startupOverlayActive}>  <- canvas, the only seam
       <SceneCanvas>
-    {chromeMounted && <EditorPanels>}  <- RoomSidebar · CameraTools · Outliner ·
-                                          panels · toolbars, mounted only when ready
+    {chromeMounted && <EditorPanels>}  <- RoomSidebar / CameraTools / Outliner /
+                                          panels / toolbars, mounted only when ready
     <InitializationProgress> / <InitializationError>   <- shell-level loading UI
       dialogs / drawers render in portals
 ```
 
 `inert` covers pointer events, focus, and the accessibility tree - but not
 window-level keyboard listeners. Those are gated separately: `useKeyboardShortcuts`
-and `useCameraKeyState` take a readiness-tied `enabled` flag, the one interaction
+and `useCameraKeyState` take a readiness-tied `enabled` flag, an interaction
 guard the inert seam cannot replace.

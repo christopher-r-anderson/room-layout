@@ -1,8 +1,7 @@
 # Dialogs and Overlays
 
 Top-level overlays - drawers, confirmations, the room panel - are all driven by
-one generic `dialog-store` active-surface model. Dialogs _are_ the primary
-overlays, so this is one concept with one home. This doc is the model and its
+one generic `dialog-store` active-surface model. This doc is the model and its
 invariants; for the store API and field shapes, read
 `src/core/stores/dialog-store.ts` and `src/core/dialog-contract.ts`.
 
@@ -18,7 +17,7 @@ invariants; for the store API and field shapes, read
 - `blocking` contributes to `useIsBlockingOverlayOpen()`.
 - `non-blocking` stays open without asserting blocking-overlay behavior.
 
-The one-active-surface invariant is what gives mutual exclusion for free (below).
+The one-active-surface invariant gives mutual exclusion (below).
 
 ## Ownership
 
@@ -63,7 +62,7 @@ usual room-view focus rules.
 
 - **Mutual exclusion.** The room surface is mutually exclusive with every other
   top-level overlay: opening a blocking overlay while the room is open closes the
-  room first. This is the one-active-surface invariant, not bespoke logic.
+  room first. This falls out of the one-active-surface invariant.
 - **Breakpoint persistence.** The room stays open across desktop/mobile layout
   transitions - the sidebar swaps to the mobile sheet and back - and its
   return-focus target stays the Room trigger across the swap.

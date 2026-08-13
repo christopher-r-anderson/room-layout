@@ -78,7 +78,7 @@ Requirements:
 Compression recipe (structure-preserving - no flatten/join, so the catalog's
 `nodeName`s survive):
 
-- textures: ETC1S (KTX2), all slots, full resolution - typically ~7× smaller, and
+- textures: ETC1S (KTX2), all slots, full resolution - typically ~7x smaller, and
   a large GPU-memory win. Tunable (per-slot UASTC, a resize pass, ETC1S quality)
   at the top of `scripts/export-models.mjs`.
 - geometry: left uncompressed - these meshes are tiny, so Meshopt's lossy

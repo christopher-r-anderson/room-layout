@@ -5,10 +5,8 @@ CSS property convention.
 
 ## Ownership Model
 
-Components under `src/shared/ui/` are project-owned after installation. They
-are not treated as immutable vendor code.
-
-Use shadcn install flows as scaffolding, then maintain resulting components as
+Components under `src/shared/ui/` are project-owned after installation: use
+shadcn install flows as scaffolding, then maintain the resulting components as
 normal repository code.
 
 ## Adding a New Component
@@ -29,7 +27,7 @@ from the shadcn registry.
 
 Ownership extends to testing: `shared/ui` follows the repository's value rule
 (test for value, never for a coverage number - see
-[testing.md](testing.md#coverage)), not a blanket exclusion.
+[testing.md](testing.md#coverage)).
 
 - Thin wrappers over Base UI primitives are not unit-tested. Their interaction
   behavior (open/close, focus, dismissal) is the library's, tested upstream;

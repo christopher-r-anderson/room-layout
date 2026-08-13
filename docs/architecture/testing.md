@@ -30,10 +30,8 @@ representative of a real GPU.
   the camera at rest, no work happens - zero toolbar-store writes and zero App/Scene
   re-renders. These counts are structurally zero regardless of frame rate, so the
   gate is reliable in CI and catches a render loop anywhere in the tree.
-- **Real frame-time / interaction latency** -> not a CI gate. Profile interactively
-  on the running app (real GPU) when investigating, and rely on production RUM
-  (web-vitals INP, custom marks) for fleet-wide regressions. _(RUM is a future
-  workstream.)_
+- **Real frame-time / interaction latency** -> not a CI gate. Profile
+  interactively on the running app (real GPU) when investigating.
 - **Bundle size** -> per-chunk gzip budgets enforced by `pnpm bundle-budget`
   (a preflight step after the build; not run by the CI workflows) via
   `scripts/check-bundle-budget.mjs`: a tight budget on the first-paint shell
@@ -44,9 +42,10 @@ representative of a real GPU.
 
 ## Coverage
 
-Coverage percentage is a prompt, not a goal. Some code is intentionally not
-unit-tested: thin hook glue covered by e2e, presentational/config modules, and a
-short list of accepted gaps. These are recorded - with their verified e2e
+A low coverage number is a place to look, never by itself a reason to add a
+test. Some code is intentionally not unit-tested: thin hook glue covered by
+e2e, presentational/config modules, and a short list of accepted gaps. These
+are recorded - with their verified e2e
 cross-references - in
 [../testing/intentional-unit-exclusions.md](../testing/intentional-unit-exclusions.md)
 so a `0%` reading is not mistaken for a hole. Update it when a module joins or
@@ -54,8 +53,8 @@ leaves that set.
 
 ## Browser Test Guidance
 
-Use [editor-workflow.md](editor-workflow.md)
-as the manual workflow map when planning browser tests or reviewing coverage.
+Use the Manual Verification flows above as the workflow map when planning
+browser tests or reviewing coverage.
 
 For scene-only Playwright tests where overlay UI is incidental, use the shared
 overlay-hidden harness helpers in `e2e/support/editor-harness.ts` to avoid
@@ -117,13 +116,41 @@ Run the a11y lanes when semantics, focus management, or announcements change:
 `eslint-plugin-jsx-a11y` is deliberately not part of the lint gate: a spike of
 its recommended config produced only false positives against deliberate,
 commented patterns (the explicit `role="list"` Safari fix, escape-to-close key
-handling on the room panel, the focusable room-view region, modal autofocus) -
-noise, not a regression fence. The axe e2e lane is the automated a11y gate.
+handling on the room panel, the focusable room-view region, modal autofocus).
+The axe e2e lane is the automated a11y gate.
 
 Automated checks are required but not sufficient. For feedback-surface changes
 run the manual assistive-technology script in
 [feedback.md](feedback.md#manual-assistive-technology-pass); plan manual AT
 verification for any other high-impact accessibility change.
+
+## Manual Verification
+
+For manual passes (validating behavior changes, reproducing reports), walk the
+core flows:
+
+- Add an item, select it in the scene and from `Furniture in room`, and
+  confirm the selection stays aligned across canvas, panel, and toolbar.
+- Move (drag and arrow keys), rotate, and delete; movement stays in bounds and
+  avoids collisions.
+- Room panel: finishes, lighting mood, and the `Size` tab (typed dimensions
+  commit on Enter/blur and cancel on Escape; shrinking never moves furniture -
+  out-of-bounds items get a warning outline and a one-step undoable
+  `Move items inside`); the editor stays interactive while the panel is open.
+- Keyboard-first: camera motion and presets, focus-selected (`F`), the
+  pane-focus shortcuts, and undo/redo/start-over; room-view shortcuts stay
+  scoped to room-view focus.
+- Dialogs: surfaces open and close predictably, `Escape` closes, and focus
+  returns to the opening control (native restore for blocking dialogs;
+  explicit registry return for the Room surface, the mobile More drawer, and
+  the dialogs opened from it).
+- Startup and sharing: controls stay blocked while assets load, the error
+  state offers a usable retry, `Share` produces a restorable URL, restore is
+  one-shot, and invalid payloads recover the draft or fail to an empty scene.
+
+`Furniture in room` is the primary text alternative to canvas interaction.
+Check focus and shortcut behavior together when editing overlay or dialog
+flows.
 
 ## Artifacts
 
@@ -133,6 +160,5 @@ verification for any other high-impact accessibility change.
 See also:
 
 - [../../README.md](../../README.md)
-- [editor-workflow.md](editor-workflow.md)
 - [dialogs-and-overlays.md](dialogs-and-overlays.md)
 - [../testing/intentional-unit-exclusions.md](../testing/intentional-unit-exclusions.md)

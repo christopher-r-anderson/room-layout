@@ -1,11 +1,11 @@
 # Startup and Asset Loading
 
 How the app goes from a cold load to an interactive editor, and how furniture
-collections stream in. The organizing principle is **environment-first**: the
-room, lighting, and camera are interactive within seconds, and furniture models
-load independently rather than blocking first paint.
+collections stream in. The room loads first: the room, lighting, and camera
+are interactive within seconds, and furniture models load independently
+rather than blocking first paint.
 
-Two load stories run in parallel and meet at startup readiness:
+Two load paths run in parallel and meet at startup readiness:
 
 - **The app load** - the page and its code chunks, and which UI owns the screen
   at each stage.
@@ -50,9 +50,9 @@ fails on any unbudgeted chunk):
 | engine (`scene-canvas-*.js`, lazy)   | three / r3f / drei / postprocessing; the canvas, room, and collection parse service         |
 | chrome (`editor-overlay-*.js`, lazy) | editor panels, toolbars, icon deps                                                          |
 
-One consequence worth calling out: **the collection byte source is deliberately
-engine-free** (`core/operations/collection-bytes.ts` deals only in
-`ArrayBuffer`s, no three import). Because it ships in the shell, a restored
+**The collection byte source is deliberately engine-free**
+(`core/operations/collection-bytes.ts` deals only in `ArrayBuffer`s, no three
+import). Because it ships in the shell, a restored
 scene's furniture bytes download _in parallel_ with the larger engine chunk
 instead of waiting for it.
 
@@ -77,7 +77,7 @@ Two supporting signals:
   `registerSceneServices`/`clearSceneServices` (`core/scene-services.ts`) flip it
   as the `Scene` registers on mount and clears on unmount (the startup-shell
   reset also clears it), so the flag and the imperative
-  `sceneCommands.isSceneReady()` answer from the same oracle. Readiness gates on
+  `sceneCommands.isSceneReady()` read the same registration. Readiness gates on
   it so the overlay never lifts before the canvas has mounted (an empty scene
   has no furniture to wait on, so without this the overlay could clear before
   first paint).
@@ -103,19 +103,18 @@ flowchart LR
   pipeline --> parse
 ```
 
-- **Bootstrap** (`core/operations/startup-bootstrap.ts`, invoked at app mount
-  by the thin `features/startup/use-startup-bootstrap.ts` hook and directly by
-  `requestAssetRetry`; latest wins, a superseded or cancelled run writes
-  nothing): fetches and validates
-  the catalog manifest into `assets-store`, resolves the **gated set** - the
-  collections the restored URL/draft may reference
-  (`core/operations/referenced-collections.ts`, read-only over the restore
-  flow's own `selectPrimaryRestoreState`, so gate and restore share one
-  precedence rule; a valid draft stays gated alongside a valid link because it
-  remains the apply-failure fallback) - into the loading store, and warms the
-  byte source for it. The gated set is `null` until resolved (and again
-  after a retry resets it), so readiness can never complete against a stale or
-  unknown gate.
+- **Bootstrap** (`core/operations/startup-bootstrap.ts`): fetches and
+  validates the catalog manifest into `assets-store`, resolves the **gated
+  set** into the loading store, and warms the byte source for it. It is
+  invoked at app mount by the thin `features/startup/use-startup-bootstrap.ts`
+  hook and directly by `requestAssetRetry`; latest wins, and a superseded or
+  cancelled run writes nothing. The gated set is the collections the restored
+  URL/draft may reference (`core/operations/referenced-collections.ts`,
+  read-only over the restore flow's own `selectPrimaryRestoreState`, so gate
+  and restore share one precedence rule; a valid draft stays gated alongside a
+  valid link because it remains the apply-failure fallback). The gated set is
+  `null` until resolved (and again after a retry resets it), so readiness can
+  never complete against a stale or unknown gate.
 - **Byte source** (`core/operations/collection-bytes.ts`): one fetch per
   collection per cycle, shared by every consumer - bootstrap warms the gated set,
   on-demand paths start on first request. Buffers are released once parsed (the
