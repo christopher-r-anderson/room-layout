@@ -27,13 +27,13 @@ Shortcuts never match while focus is in an editing target (input/textarea/select
 
 ### Room-View Focus Scoping
 
-Room-view-scoped shortcuts require the 3D room view to have DOM focus before they can execute. That includes object movement, rotation, deletion, clear-selection (`Escape`), canvas browse, and camera preset keys. This gating is controlled by `requiresRoomViewFocus` in `useKeyboardShortcuts`, so selected-item detail inputs stay isolated from room-view shortcuts while typing.
+Room-view-scoped shortcuts require the 3D room view to have DOM focus before they can execute. That includes object movement, rotation, deletion, clear-selection (`Escape`), canvas browse, camera preset keys, and camera focus (`F`); held camera motion (orbit/pan/zoom keys) is scoped the same way. This gating is controlled by `requiresRoomViewFocus` in `useKeyboardShortcuts`, so selected-item detail inputs stay isolated from room-view shortcuts while typing.
 
 The 3D room view is a focusable room-view wrapper element with `tabIndex={0}` and visible focus styling. Clicking the canvas or pressing Tab to it acquires focus.
 
 Focus location is tracked by `focus-store` (`focusedSurface`, written by each surface's focus/blur handlers) and read at keydown time, so shortcut gating is always current without prop threading.
 
-Global shortcuts (Undo, Redo, Start Over) remain active regardless of room-view focus.
+Shortcuts without the flag (Undo, Redo, Start Over, the pane-focus shortcuts) remain active regardless of room-view focus.
 
 The selected-item Placement panel uses consumer-facing wall clearances from the furniture footprint edge to the left and back walls instead of signed center-origin offsets. The scene domain stores positions around the room-centered origin, so panel formatting and typed-value parsing intentionally convert between those two representations.
 
@@ -52,7 +52,7 @@ This dual-purpose dispatch works via shortcut loop fallthrough:
 - When no selection exists, the move shortcut matches but cannot execute - it falls through.
 - `canvas-browse-*` shortcuts are defined after `move-*` shortcuts and only fire when `hasSelection` is false.
 
-Home, End, Enter, and Space are canvas-browse-only (no selection) shortcuts.
+Home, End (browse to first/last), Enter, and Space (select the previewed item) are likewise no-selection shortcuts.
 
 ### ShortcutDefinition Fields
 
@@ -152,6 +152,6 @@ Unlike discrete shortcuts, this path does not use `suppressionMode`.
 
 `ToolbarCommandButton` can attach keyboard metadata to controls using `shortcuts` (ARIA keyshortcuts format), and the shared UI renders consistent key hints via `KbdShortcutDisplay`.
 
-Non-shortcut toolbar actions such as `Add Furniture` and `Room` remain normal focusable buttons in the header toolbar, the first tab stop on the page. They are intentionally discovered through tab order rather than global key bindings.
+Non-shortcut toolbar actions such as `Add Furniture` and `Room` remain buttons in the header toolbar - the first tab stop on the page, a roving composite reached with Tab and walked with arrow keys. They are intentionally discovered there rather than given global key bindings.
 
 Selected-item detail inputs commit their local draft on `Enter` or blur, and `Escape` restores the last committed value. Those fields rely on the shared editing-target checks so room-view shortcuts do not fire while focus is inside a detail input.

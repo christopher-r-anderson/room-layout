@@ -21,7 +21,6 @@ what e2e already does). The cited e2e coverage is verified spec-by-spec.
 | `scene/internal/camera/use-camera-operations.ts`              | `editor-hotkeys` (presets, WASD/pan/zoom, **focus-selected `F`**), `selected-toolbar-placement`                                                  |
 | `scene/internal/selection/use-toolbar-geometry-projection.ts` | `selected-toolbar-placement` (active projection), `selected-toolbar-idle` (idle no-op short-circuit)                                             |
 | `app/commands/editor-command-handlers.ts`                     | exercised across the above; `focus-selected` and `focus-item-actions` routing now pressed in e2e                                                 |
-| `features/keyboard/use-keyboard-shortcuts.ts`                 | `editor-hotkeys`, `editor-accessibility-flows` (dispatch + modal suppression)                                                                    |
 | `features/startup/use-startup-bootstrap.ts` (thin mount hook) | `startup-loading`, `startup-load-error`, `url-restore` (the fetch pipeline itself is unit-tested in `core/operations/startup-bootstrap.test.ts`) |
 
 ## Presentational / config / trivial - no test needed
@@ -34,7 +33,7 @@ what e2e already does). The cited e2e coverage is verified spec-by-spec.
   the confirmation-dialog components, `catalog-drawer.tsx`, `room-sidebar.tsx`.
   (`app/chrome/announcer.tsx` is unit-tested: its always-mounted live-region DOM
   contract is load-bearing for screen readers.)
-- Config / registration: `*-dialog-definition.ts`, `camera-presets.ts`.
+- Config / registration: `*-dialog-definition.ts`.
 - Pure wiring: `core/operations/editor-reconcilers.ts` (composes four
   already-tested reconcilers).
 - Debug / test infra: `shared/debug/perf-counters.ts`,
@@ -72,13 +71,10 @@ Recorded so the choice is explicit, not an oversight.
   e2e-tested; the storage round-trip across a reload is not. Trivial persistence.
 - **Mobile docked-toolbar placement** - desktop floating placement is thoroughly
   e2e-tested (`selected-toolbar-placement`); the mobile docked variant is a simpler
-  CSS dock, asserted only via `data-selected-toolbar-mode`.
+  CSS dock with no direct assertion.
 - **Native share path in e2e** - `url-restore` exercises the clipboard fallback;
   the `navigator.share` path is unit-tested (`share-scene.test`) and impractical in
   headless CI.
-- **"No item selected" focus-redirect branches** of `focusInspector`/`focusToolbar`
-  (announce + redirect to outliner) - the selected branches are e2e-covered; these
-  empty-selection branches are not. Minor.
 
 ## Out of scope (standing)
 

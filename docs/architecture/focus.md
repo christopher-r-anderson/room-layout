@@ -57,8 +57,9 @@ focused one, with no resolver involvement.
 - Keyboard gestures reveal the change within the origin surface; undo/redo
   never jump surfaces.
 - Dropping a focus move never drops the operation's live-region announcement.
-- On mobile, intents that only the desktop outliner could realize drop (with
-  an announcement); repairs land on the scene, the always-mounted surface.
+- On mobile, surface intents that only the desktop outliner could realize
+  drop with an announcement; history intents that would have landed there
+  drop silently. Repairs land on the scene, the always-mounted surface.
 
 ## Lifecycle invariants
 

@@ -78,6 +78,7 @@ appropriate within the same module area.
 - `docs/architecture/` - canonical per-subsystem docs (architecture, core,
   scene, focus, feedback, keyboard, i18n, startup, testing, ...)
 - `docs/decisions/` - dated decision records (see the Style exception above)
+- `docs/testing/` - the intentional unit-test exclusions ledger
 - `src/*/README.md` - layer-local intent, one per layer
 - `docs/guide/` - end-user guides; `docs/reference/` - schema, shortcut, and
   attribution references

@@ -16,16 +16,16 @@ For implementation details and architecture, see [Keyboard Shortcuts](../archite
 
 ## Camera
 
-| Action      | Shortcut      | Mode  |
-| ----------- | ------------- | ----- |
-| Orbit       | W / A / S / D | Hold  |
-| Pan         | Shift+W/A/S/D | Hold  |
-| Zoom        | = / -         | Hold  |
-| Focus       | F             | Press |
-| Corner view | 1             | Press |
-| Front view  | 2             | Press |
-| Side view   | 3             | Press |
-| Top view    | 4             | Press |
+| Action              | Shortcut      | Mode  |
+| ------------------- | ------------- | ----- |
+| Orbit               | W / A / S / D | Hold  |
+| Pan                 | Shift+W/A/S/D | Hold  |
+| Zoom                | = / -         | Hold  |
+| Focus selected item | F             | Press |
+| Corner view         | 1             | Press |
+| Front view          | 2             | Press |
+| Side view           | 3             | Press |
+| Top view            | 4             | Press |
 
 ## Canvas Browse (no selection)
 
@@ -36,6 +36,7 @@ For implementation details and architecture, see [Keyboard Shortcuts](../archite
 | Preview first item | Home             | Press |
 | Preview last item  | End              | Press |
 | Select previewed   | Enter / Space    | Press |
+| Clear preview      | Escape           | Press |
 
 ## Selected Item
 
@@ -43,7 +44,7 @@ For implementation details and architecture, see [Keyboard Shortcuts](../archite
 | ------------------ | ---------------------- | ----- |
 | Move               | Arrow keys             | Press |
 | Move (large)       | Shift+Arrow            | Press |
-| Move (fine)        | Alt+Arrow              | Press |
+| Move (fine)        | Alt+Arrow / Opt+Arrow  | Press |
 | Rotate             | , (comma) / . (period) | Press |
 | Remove item        | Delete / Backspace     | Press |
 | Clear selection    | Escape                 | Press |
@@ -63,8 +64,8 @@ For implementation details and architecture, see [Keyboard Shortcuts](../archite
 - Camera motion shortcuts are continuous while held.
 - Most room-view shortcuts only work while the 3D room view has DOM focus.
 - Add Furniture and Room are toolbar actions without dedicated keyboard shortcuts; reach them through the normal tab order.
-- On common alternate keyboard layouts where number-row digits require Shift, camera presets also work with Shift+1/2/3/4 on the same physical number-row keys.
-- Selected-item actions require an active selection.
+- On common alternate keyboard layouts where number-row digits require Shift, camera presets also work with Shift+1/2/3/4 on the same physical number-row keys; numpad digits work too.
+- Selected-item actions, and the camera's Focus selected item, require an active selection.
 - Typed selected-item details commit on Enter or blur and cancel the local draft on Escape.
 - The Placement panel shows wall clearance from the furniture footprint edge to the left and back walls, rather than signed offsets from room center or distances to the furniture pivot.
 - The Placement panel shows rotation as clockwise-positive degrees from `0` to `359`, even though the scene engine keeps its internal counterclockwise radian convention.

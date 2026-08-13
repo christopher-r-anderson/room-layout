@@ -27,7 +27,7 @@ Should not contain
 
 Dialog architecture notes
 
-- App triggers the dialog bootstrap once - composing `DialogRuntimeContext` and registering dialog definitions - before dialog consumers render.
+- App triggers the dialog bootstrap once on mount - composing `DialogRuntimeContext` and registering dialog definitions - before any dialog can open.
 - App may coordinate multi-domain dialog behavior, but feature-specific guards and payload derivation stay with owning features.
 
 See also

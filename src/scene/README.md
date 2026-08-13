@@ -6,10 +6,13 @@ Purpose
 
 Structure
 
-- `scene.tsx` - composition + render only. It wires the GLTF sources and
+- `scene.tsx` - the layer's composition surface. It wires the GLTF sources and
   selection state into a set of concern hooks, registers their handlers as the
   imperative service surface, and renders the room/furniture/effects tree. It
-  does not hold operation logic.
+  also holds the scene-side effects that keep the renderer and the document in
+  step: the drag's live-present document write, camera re-framing on room-size
+  change, renderer exposure, and preview gating. Catalog and finish options
+  arrive as props from the app shell; other core state is read from stores.
 - `internal/` - scene-private implementation, grouped by concern:
   - `furniture/` - the interactive mesh and the collection parse
     service/registry (document mutations live in `core/operations`).
@@ -26,9 +29,9 @@ Structure
 Pattern
 
 - Viewport services live in concern hooks (`use-camera-operations`,
-  `use-scene-snapshot`); `Scene` composes them and registers the handlers into
-  core's port registry (`@/core/scene-services`). Document mutations are core operations; pure
-  placement/geometry math lives in `@/domain`.
+  `use-scene-snapshot`) plus the collection parse loader `Scene` builds inline;
+  `Scene` composes them and registers the handlers into core's port registry
+  (`@/core/scene-services`). Pure placement/geometry math lives in `@/domain`.
 
 Should not contain
 

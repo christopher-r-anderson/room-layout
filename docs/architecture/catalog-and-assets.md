@@ -25,7 +25,8 @@ Runtime (served from `public/`):
 Sources (in `assets-source/`, built into the runtime files by the scripts below):
 
 - model sources: `assets-source/models/<author>-<name>/`
-- texture sources: `assets-source/environment/textures/<author>-<name>/`
+- texture sources: `assets-source/environment/textures/<source>-<author>-<name>/`
+  (the exporter matches the full folder name against its lookup table)
 
 All asset scripts are Node ESM (`scripts/*.mjs`) for cross-OS portability; the
 external tools they invoke (Blender, `gltf-transform`, `toktx`, ImageMagick) still
@@ -39,7 +40,7 @@ Export floor textures with:
 
 Requirements:
 
-- KTX-Software `toktx` (v4.4.2+ recommended)
+- KTX-Software `toktx` (v4.0+)
 - ImageMagick (`convert` or `magick`)
 
 Current compression profile:
@@ -89,8 +90,8 @@ At runtime the furniture loader and the floor textures share one KTX2 loader
 `import.meta.url`), which the bundler emits as hashed assets. There is **no
 manual transcoder-hosting step** - no `setTranscoderPath`, no copying transcoder
 files into `public/` - which older three versions (and most KTX2 write-ups)
-require; the emitted `basis_transcoder` js/wasm pair is budget-gated like any
-other chunk. The Blender helpers (export / introspect / relink) live in
+require; the emitted `basis_transcoder` js chunk is budget-gated like any other
+chunk (the paired `.wasm` is not JS and sits outside the budget check). The Blender helpers (export / introspect / relink) live in
 `scripts/blender/`.
 
 ## Catalog Preview Thumbnails

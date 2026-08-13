@@ -48,9 +48,9 @@ Notes:
 - `domain` is the lowest leaf: the furniture/room model types plus pure logic over
   them (catalog lookup, geometry/placement, the scene model). It imports nothing
   internal.
-- All of `shared` is uniformly decoupled: it must not import app, features,
-  core, scene, or domain (one lint block, no per-subfolder exceptions). The two
-  foundations do not import each other.
+- All of `shared` is decoupled: it must not import app, features, core, scene,
+  or domain, and `shared/lib` additionally must stay React-free (its own
+  stricter lint block). The two foundations do not import each other.
 - `src/test` is test-only support, omitted from the map: runtime code must not
   import it.
 
@@ -78,13 +78,19 @@ For local context inside each area, see:
 
 ## Placement Rules
 
+The numbered rules are the placement policy; `eslint.config.js` enforces them
+and carries further mechanical bans this document does not restate
+(parent-relative imports, zustand entrypoint paths, core importing
+`shared/ui`, features importing a store's generic bound hook).
+
 1. If code is consumed by both `app` and `features`, it cannot live in `app`.
 2. Put feature-internal orchestration in the owning feature folder. If logic coordinates multiple features, it lives in `core/operations`.
 3. Put cross-feature state (`core/stores`) **and** cross-cutting operations (`core/operations`) in `core`, not feature-local modules.
 4. Features must not import other features. `@/features/*` imports from within a feature are hard-banned in `eslint.config.js`. De-thread instead by reading a store, dispatching an `EditorCommand`, or importing a `core` operation.
 5. Keep `app` composition-only: shell wiring, providers, and registry bootstrap. App does not own cross-cutting runtime operations - those live in `core/operations`.
 6. Keep all of `shared` dependency-free from app/features/core/scene/domain runtime code.
-7. Keep `shared/layout` lower-level than `app/chrome`.
+7. Keep `shared/layout` lower-level than `app/chrome` (convention; not
+   lint-enforced).
 8. Keep scene internals in `scene/internal` (including `scene/internal/three` render helpers); nothing outside scene may import them.
 9. Never import `@/scene` outside app's lazy mount of `@/scene/scene`. Drive the engine through `@/core/scene-commands`; widen the `SceneServices` port deliberately when core needs a new viewport capability.
 10. Do not import `src/test` from runtime code.

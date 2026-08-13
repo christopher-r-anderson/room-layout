@@ -45,7 +45,8 @@ Dialog-store responsibilities
 Should not contain
 
 - UI components.
-- Imports from `src/app` or `src/features`.
+- Imports from `src/app`, `src/features`, or `@/scene` (core owns the engine
+  ports; it must not import the scene adapter).
 
 Guideline
 
