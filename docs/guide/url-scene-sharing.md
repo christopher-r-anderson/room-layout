@@ -46,8 +46,9 @@ warning; without one, the scene starts empty and an error message is shown.
 ## User Entry Points
 
 Use desktop Share action or mobile More actions menu Share action. The app
-uses native share where available and clipboard fallback otherwise. Share URLs
-carry only the `scene` parameter; a `?lang=` override is not propagated.
+uses native share where available and clipboard fallback otherwise. The share
+URL replaces any existing `scene` param and preserves other query params and
+the hash; only a `?lang=` override is stripped.
 
 ## Related Docs
 

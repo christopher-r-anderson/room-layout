@@ -48,8 +48,8 @@ tooltip/toolbar/button nesting is never hand-built at a call site. Outside a
   has no hover-tooltip channel on touch, so the reason is shown inline instead.
 - **Form controls** - the catalog uses the native `disabled` attribute: the
   **Add Item** button (nothing picked, the picked collection unavailable, or an
-  add already in flight) and the radios for unavailable collections. The
-  selected-details inputs carry no disabled handling.
+  add already in flight) and the radios (collection unavailable, or an add
+  already in flight). The selected-details inputs carry no disabled handling.
 - For a disabled item whose absence is obvious from a neighbour, the escape hatch
   is Base UI's `focusableWhenDisabled={false}` on the underlying `Toolbar.Button`
   (would need forwarding through `ToolbarCommandButton`); nothing needs it today.
