@@ -29,9 +29,10 @@ Structure
 Pattern
 
 - Viewport services live in concern hooks (`use-camera-operations`,
-  `use-scene-snapshot`) plus the collection parse loader `Scene` builds inline;
-  `Scene` composes them and registers the handlers into core's port registry
-  (`@/core/scene-services`). Pure placement/geometry math lives in `@/domain`.
+  `use-scene-snapshot`) and the collection parse loader that `Scene` builds
+  inline; `Scene` composes them and registers the handlers into core's port
+  registry (`@/core/scene-services`). Pure placement/geometry math lives in
+  `@/domain`.
 
 Should not contain
 
