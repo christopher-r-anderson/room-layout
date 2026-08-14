@@ -7,8 +7,8 @@ See how catalog furniture fits your space: an interactive 3D furniture arrangeme
 ![Selecting an armchair, dragging it across the floor, and rotating it from the floating toolbar, which tracks the selection throughout](docs/media/motion.gif)
 
 <p>
-  <img src="docs/media/resize-stranded.png" width="640" alt="The Room panel's Size tab after shrinking the room width: two items stranded outside the walls carry warning outlines, and the panel reports the situation with a Move items inside button">
-  <img src="docs/media/mobile-docked.png" width="185" alt="The mobile layout with a couch selected: the selected-item toolbar docks above the placement details panel">
+  <img src="docs/media/resize-stranded.webp" width="640" alt="The Room panel's Size tab after shrinking the room width: two items stranded outside the walls carry warning outlines, and the panel reports the situation with a Move items inside button">
+  <img src="docs/media/mobile-docked.webp" width="185" alt="The mobile layout with a couch selected: the selected-item toolbar docks above the placement details panel">
 </p>
 
 Left: shrinking the room never moves furniture - stranded items get warning
