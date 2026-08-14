@@ -1,6 +1,6 @@
 # 3D Room Layout Editor
 
-Try a layout before you move the real furniture: an interactive 3D furniture arrangement and room configuration tool built with React and Three.js.
+See how catalog furniture fits your space: an interactive 3D furniture arrangement and room configuration tool built with React and Three.js.
 
 <https://christopher-r-anderson.github.io/room-layout/>
 
