@@ -84,8 +84,9 @@ export function EditorPanels() {
         )}
 
         <div className="flex flex-col gap-2 pointer-events-auto md:col-start-2 md:justify-self-end">
+          {/* End-docked for thumb reach, matching the camera presets. */}
           {!isDesktop && hasSelection ? (
-            <SelectedItemToolbar className="w-fit" />
+            <SelectedItemToolbar className="w-fit self-end" />
           ) : null}
           {hasSelection ? (
             <SelectedDetailsPanel ref={registerRect('selected-details')} />

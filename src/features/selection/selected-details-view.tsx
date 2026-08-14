@@ -378,7 +378,7 @@ export function SelectedDetailsView({
           </CardTitle>
         </CardHeader>
         <CardContent data-selected-item-details-root>
-          <div className="flex gap-2 w-max m-auto">
+          <div className="flex gap-2 w-max">
             <div className="min-w-0 rounded-md border border-border/60 bg-muted/20 p-2">
               <p className="text-[11px]/4 font-medium text-muted-foreground">
                 <Trans>Position (m)</Trans>
