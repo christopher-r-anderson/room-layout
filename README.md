@@ -1,8 +1,21 @@
 # 3D Room Layout Editor
 
-An interactive 3D furniture arrangement and room configuration tool built with React and Three.js.
+See how catalog furniture fits your space: an interactive 3D furniture arrangement and room configuration tool built with React and Three.js.
 
 <https://christopher-r-anderson.github.io/room-layout/>
+
+![Selecting an armchair, dragging it across the floor, and rotating it from the floating toolbar, which tracks the selection throughout](docs/media/motion.gif)
+
+<p>
+  <img src="docs/media/resize-stranded.webp" width="640" alt="The Room panel's Size tab in the dark theme after shrinking the room width: two items stranded outside the walls carry warning outlines, and the panel reports the situation with a Move items inside button">
+  <img src="docs/media/mobile-docked.webp" width="185" alt="The mobile layout in a slate-walled, granite-floored room with a couch selected: the selected-item toolbar docks above the placement details panel">
+</p>
+
+Left: shrinking the room never moves furniture - stranded items get warning
+outlines and an explicit, undoable "Move items inside" fix (shown in the dark
+theme, which follows the system preference). Right: different wall and floor
+finishes in the phone layout, where the toolbar docks above the details panel
+instead of floating.
 
 Pick furniture from a visual catalog, arrange items in real time, adjust room surfaces without leaving the layout, and share your setup via URL.
 
@@ -13,7 +26,7 @@ Pick furniture from a visual catalog, arrange items in real time, adjust room su
 - **Keyboard-first workflows**: Canvas interaction, item selection via outliner, and details editing all work without drag
 - **Accessible dialog contracts**: Focus management, Escape behavior, and role semantics across overlays and confirmations
 - **Non-modal room editing**: Adjust wall and floor finishes while viewing the result in context, no mode-switching overhead
-- **Floating selected-item toolbar**: Controls position near the selected object with scored candidates and deterministic fallback tiers
+- **Selected-item toolbar**: Floats beside the selected object on desktop, taking a clamped best-effort position when no clean spot survives; docks above the details panel on phones
 - **Zero-shift loading handoff**: The pre-paint HTML skeleton and the React loader mirror each other, so the spinner holds its position across the JavaScript handoff
 - **Download and asset failure handling**: Stall-aware streaming downloads, permanent-vs-transient failure classification (broken items marked unavailable in the catalog), and a retry path for everything up to a stale deploy's missing chunk
 
@@ -137,7 +150,7 @@ In addition to this README, project-specific guides are available:
 - [Assets Attribution](docs/reference/assets-attribution.md): third-party asset source and license attribution.
 - [Editor Shortcuts Reference](docs/reference/editor-shortcuts-reference.md): End-user shortcut map for camera, object, and scene actions.
 - [Keyboard Shortcuts (Engineering)](docs/architecture/keyboard.md): Input architecture, matching/suppression/execution rules, and held-key camera behavior.
-- [Selected Toolbar Placement](docs/architecture/selected-toolbar-placement.md): Bounds source order, viewport-space placement, floating candidate scoring, and docked fallback behavior.
+- [Selected Toolbar Placement](docs/architecture/selected-toolbar-placement.md): Bounds source order, viewport-space placement, floating candidate scoring, and clamped fallback behavior.
 
 ### Automation
 
