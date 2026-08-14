@@ -4,9 +4,16 @@ See how catalog furniture fits your space: an interactive 3D furniture arrangeme
 
 <https://christopher-r-anderson.github.io/room-layout/>
 
-![A furnished 3D room with a leather couch selected: the floating toolbar sits beside the selection, the placement panel shows its position, and the item list mirrors the scene](docs/media/hero.png)
-
 ![Selecting an armchair, dragging it across the floor, and rotating it from the floating toolbar, which tracks the selection throughout](docs/media/motion.gif)
+
+<p>
+  <img src="docs/media/resize-stranded.png" width="640" alt="The Room panel's Size tab after shrinking the room width: two items stranded outside the walls carry warning outlines, and the panel reports the situation with a Move items inside button">
+  <img src="docs/media/mobile-docked.png" width="185" alt="The mobile layout with a couch selected: the selected-item toolbar docks above the placement details panel">
+</p>
+
+Left: shrinking the room never moves furniture - stranded items get warning
+outlines and an explicit, undoable "Move items inside" fix. Right: on phones
+the selected-item toolbar docks above the details panel instead of floating.
 
 Pick furniture from a visual catalog, arrange items in real time, adjust room surfaces without leaving the layout, and share your setup via URL.
 
