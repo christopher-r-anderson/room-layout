@@ -67,6 +67,6 @@ For more detail about how scene sharing works, see [url-scene-sharing.md](url-sc
 
 ## Accessibility Notes
 
-The editor supports keyboard-first use across the main layout flows.
+The editor provides first-class keyboard support across the main layout flows.
 
 If working directly in the 3D view is not the best fit, the `Furniture in room` panel provides the main text alternative for selecting and managing items.
