@@ -1,6 +1,6 @@
-/* Mirrors the package's latin + latin-ext faces; its own css only ships all
-   seven script subsets. latin-ext covers en-XA accents; re-add subsets per
-   locale if real translations arrive. */
+/* Mirrors the package's latin + latin-ext faces (its css bundles all seven
+   subsets); latin-ext covers en-XA accents. knip cannot see url() usage, so
+   the package sits in ignoreDependencies. */
 @font-face {
   font-family: 'Inter Variable';
   font-style: normal;
