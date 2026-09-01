@@ -1,11 +1,6 @@
-/*
- * Latin and latin-ext faces of Inter Variable, declared locally instead of
- * importing @fontsource-variable/inter/index.css: the package has no
- * per-subset css entrypoints, and its index declares all seven script
- * subsets, shipping five unused woff2 files to dist. Rules mirror the
- * package's index.css; latin-ext covers the en-XA pseudo-locale's accented
- * Latin. If real translations arrive, re-add subsets per locale.
- */
+/* Mirrors the package's latin + latin-ext faces; its own css only ships all
+   seven script subsets. latin-ext covers en-XA accents; re-add subsets per
+   locale if real translations arrive. */
 @font-face {
   font-family: 'Inter Variable';
   font-style: normal;
