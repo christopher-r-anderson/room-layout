@@ -32,6 +32,9 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
+      - name: Knip
+        run: pnpm knip
+
       - name: i18n catalog check
         run: pnpm run i18n:check
 
