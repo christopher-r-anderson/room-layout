@@ -43,7 +43,7 @@ reference](docs/reference/editor-shortcuts-reference.md).
 
 ### Requirements
 
-- Node.js 22.19 or newer
+- Node.js 24 (24.15 or newer) or 26+
 - pnpm 11
 
 ### Setup
