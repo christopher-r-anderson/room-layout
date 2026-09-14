@@ -1,86 +1,56 @@
 # Room Layout - Agent Guide
 
-Browser-based 3D room-layout editor: React 19 + TypeScript, three.js via
-react-three-fiber, zustand stores, Tailwind CSS 4, Base UI + shadcn-derived
-components, Lingui i18n, Vite, pnpm.
+Room Layout is a browser-based 3D room planner with a separate asset-processing
+workspace. Application guidance lives in `apps/room-layout/AGENTS.md`.
 
-## Commands
+## Commands and verification
 
-- `pnpm dev` - start the dev server
-- `pnpm lint` / `pnpm typecheck` / `pnpm test:run` - default validation set
-- `pnpm test:e2e` - Playwright lane (Chromium); first run needs
-  `pnpm test:e2e:install`
-- `pnpm fix` - apply lint and format fixes; run before finalizing edits
-- `pnpm preflight` - the full gate (see `package.json` for the steps); run
-  before finalizing a substantial change
+- Install a fresh checkout with `pnpm install --frozen-lockfile`.
+- `pnpm dev` starts the planner; root app commands forward to `room-layout`.
+- `pnpm lint`, `pnpm typecheck`, and `pnpm test:run` are the default checks.
+- `pnpm preflight` is the full gate; run it before finalizing substantial changes.
+- `pnpm models:export` and `pnpm textures:export` invoke the asset tool. App builds
+  consume prepared assets and do not require export tools.
+- Run lint/format fixes only on touched files or an intentional affected set.
+  `pnpm fix` is a broad write-mode command, not a routine prerequisite. Full
+  read-only checks remain required; avoid unrelated formatting changes.
 
-Fresh clones and worktrees need `pnpm install` first.
+## Workflow
 
-## Architecture
+Inspect substantial work, create or update a focused ticket when authorized,
+agree on scope, then implement. Keep the ticket body current. Routine choices
+and fixes within agreed scope need no renewed approval; return for discussion
+when findings materially change behavior, compatibility, or scope.
 
-`docs/architecture/architecture.md` is the placement-policy source of truth;
-`eslint.config.js` is the executable boundary contract. Layers under `src/`:
+Link the ticket from the PR and describe the implemented result, deviations,
+and actual validation. Update overlapping current docs with code. Use an ADR
+only for consequential decisions with credible alternatives and lasting rationale.
 
-- `app` - composition root: chrome, dialogs, command wiring
-- `features` - user-facing capabilities; features never import each other
-- `core` - headless editor engine: stores, operations, commands, persistence
-- `scene` - 3D rendering; internals stay inside `scene/internal`
-- `domain` - pure model: catalog, furniture, geometry; imports no other layer
-- `shared` - reusable UI/lib/hooks with no editor knowledge
-- `src/test` - test-only helpers; runtime code never imports them
+Commit, push, merge, deploy, tag, or rewrite history only with applicable explicit
+authorization. Branch-push permission does not authorize deployment.
 
-Use the `@/` alias for imports unless a local relative import is more
-appropriate within the same module area.
+## Assets and compatibility
 
-## Testing
+Preserve editable sources, original downloads, authors, source URLs, licenses,
+modifications, and dependencies. Retain third-party terms and explicitly license
+new contributions before publication. Use original design briefs; do not recreate
+named products or use retailer imagery as source assets.
 
-- Browser-facing behavior changes: add `pnpm test:e2e` to the default set.
-- Frame-time-sensitive changes: the idle-churn gate
-  (`e2e/selected-toolbar-idle.spec.ts`) is the CI fence; profile on a real GPU
-  for actual frame time.
-- Lane selection, determinism rules, and a11y lanes:
-  `docs/architecture/testing.md`.
+Treat saved layouts and shared URLs as user data. Preserve supported catalog IDs
+and formats or agree on explicit migration/break handling. Application versions
+and saved/catalog formats are separate contracts.
 
-## Commits
+## Writing and commits
 
-- Conventional commits: `type(scope): subject`, subject <=50 chars (hard limit
-  72), reference issues/PRs as `#<number>` when relevant.
-- Body is a succinct lowercase bullet list describing the final state - no
-  prose.
-- Never add `Co-Authored-By` or other trailers.
-- Never force-push, amend pushed commits, or rewrite history unless explicitly
-  asked; fix problems in new commits.
+- Lead with what the software does. Use concise practical prose, short paragraphs,
+  and useful tables. Ordinary docs describe current behavior; ADRs and changelogs
+  intentionally retain history.
+- Comments explain constraints code cannot express and stay as short as useful.
+  Use `/** */` for warranted exported-symbol comments and `//` elsewhere.
+- Use ASCII `-` and `->` in comments, docs, and commit text.
+- Use conventional imperative commit subjects, preferably at most 50 characters
+  (72 hard limit), referencing issues as `#<number>` when relevant. Optional bodies
+  use succinct lowercase bullets wrapped at 72 columns. No bylines or trailers.
 
-## Style
-
-- Comments are sparing: only constraints the code cannot express, kept as
-  short as the constraint allows - a line or two in the common case, never
-  prose paragraphs.
-- The test for any comment: would it be written when writing this code from
-  scratch? Content that surfaced during a change earns its place only when it
-  is a genuine trip-hazard for a fresh reader.
-- A warranted comment on an exported symbol or interface member uses
-  `/** */` (editors surface it at call sites); everything else uses `//`.
-  Being exported is never by itself a reason to comment.
-- Plain wording: no filler openers ("Here,", "Safely,") and no rhetorical
-  emphasis patterns ("not just X, but Y").
-- Docs, comments, and commit text state current reality only - no journey
-  notes, legacy references, or status markers. `docs/decisions/` is the one
-  exception: decision records are dated and carry rationale, alternatives,
-  and history; they read as of their date, not as current reality.
-- Use ASCII `-` and `->` for dashes and arrows in comments, docs, and commits;
-  no em dashes or unicode arrows (a `-` or `;` covers the em dash's job).
-- When a change alters behavior or structure, update the overlapping docs
-  (`docs/`, `src/*/README.md`, `README.md`) in the same change.
-
-## Docs Map
-
-- `docs/architecture/` - canonical per-subsystem docs (architecture, core,
-  scene, focus, feedback, keyboard, i18n, startup, testing, ...)
-- `docs/decisions/` - dated decision records (see the Style exception above)
-- `docs/testing/` - the intentional unit-test exclusions ledger
-- `src/*/README.md` - layer-local intent, one per layer
-- `docs/guide/` - end-user guides; `docs/reference/` - schema, shortcut, and
-  attribution references
-- UI components are shadcn-bootstrapped but repo-owned:
-  `docs/architecture/ui-components.md`
+Keep shared guidance here and workspace-specific guidance with its owner. Do not
+copy rules between files. `CLAUDE.md` imports the canonical AGENTS guidance.
