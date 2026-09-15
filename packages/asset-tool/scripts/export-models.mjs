@@ -12,11 +12,17 @@ import { fileURLToPath } from 'node:url'
 // resolution loss, and lossless geometry (no Meshopt; these meshes are tiny). To
 // revisit quality later, split normal/data slots to `uastc` (higher quality,
 // larger) via --slots, add a `gltf-transform resize` pass, or tune ETC1S
-// --quality. See docs/architecture/catalog-and-assets.md.
+// --quality. See docs/exporting.md.
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
-const MODELS_SRC = path.join(ROOT, 'assets-source/models')
-const OUT_DIR = path.join(ROOT, 'public/models')
+const SOURCE_ROOT = process.env.ASSET_SOURCE_DIR
+  ? path.resolve(process.env.ASSET_SOURCE_DIR)
+  : path.join(ROOT, 'assets-source')
+const PUBLIC_ROOT = process.env.ASSET_OUTPUT_DIR
+  ? path.resolve(process.env.ASSET_OUTPUT_DIR)
+  : path.resolve(ROOT, '../../apps/room-layout/public')
+const MODELS_SRC = path.join(SOURCE_ROOT, 'models')
+const OUT_DIR = path.join(PUBLIC_ROOT, 'models')
 const EXPORT_PY = path.join(ROOT, 'scripts/blender/export.py')
 
 function works(command, args) {

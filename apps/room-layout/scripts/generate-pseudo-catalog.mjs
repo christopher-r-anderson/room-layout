@@ -15,7 +15,10 @@ import { formatter } from '@lingui/format-po'
 // Output is deterministic (no dates, no line numbers) so `i18n:check` can gate
 // drift; the Vite plugin compiles the resulting `.po` on import.
 
-const LOCALES_DIR = path.resolve('src/shared/i18n/locales')
+const LOCALES_DIR = path.resolve(
+  import.meta.dirname,
+  '../src/shared/i18n/locales',
+)
 const SOURCE = path.join(LOCALES_DIR, 'en.po')
 const TARGET = path.join(LOCALES_DIR, 'en-XA.po')
 

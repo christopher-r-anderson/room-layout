@@ -1,0 +1,15 @@
+{
+  "name": "@room-layout/asset-tool",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "models:export": "node scripts/export-models.mjs",
+    "textures:export": "node scripts/export-textures.mjs",
+    "lint": "eslint .",
+    "knip": "cd ../.. && pnpm exec knip --workspace packages/asset-tool"
+  },
+  "devDependencies": {
+    "eslint": "^10.3.0"
+  }
+}

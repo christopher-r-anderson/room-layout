@@ -153,6 +153,16 @@ core flows:
 Check focus and shortcut behavior together when editing overlay or dialog
 flows.
 
+## Workspace discovery
+
+Vitest discovers `src/**/*.{test,spec}.{ts,tsx}` in the planner workspace;
+Playwright discovers `e2e/`. The asset workspace has no test runner or placeholder tests. Root checks dispatch to the
+owning workspace, while root lint/format/Knip also cover shared tooling.
+
+`e2e/fixtures/layout-v1.json` contains fixed shared-URL and draft data validated
+against the pre-move 0.1.0 implementation. Keep its bytes stable; compatibility
+tests must not derive expectations from the serializer being tested.
+
 ## Artifacts
 
 - HTML report: `playwright-report/`

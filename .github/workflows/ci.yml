@@ -61,7 +61,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Install Playwright browser
-        run: pnpm exec playwright install --with-deps chromium
+        run: pnpm --filter room-layout exec playwright install --with-deps chromium
 
       - name: Run browser integration tests
         run: pnpm test:e2e
@@ -72,7 +72,7 @@ jobs:
         with:
           name: browser-e2e-artifacts
           path: |
-            playwright-report
-            test-results/playwright
+            apps/room-layout/playwright-report
+            apps/room-layout/test-results/playwright
           if-no-files-found: ignore
           retention-days: 7

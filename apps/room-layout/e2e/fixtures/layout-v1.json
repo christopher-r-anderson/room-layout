@@ -1,0 +1,47 @@
+{
+  "baseline": "room-layout-v0.1.0",
+  "route": "/room-layout/?scene=%7B%22v%22%3A1%2C%22items%22%3A%5B%7B%22id%22%3A%22checkpoint-1%22%2C%22catalogId%22%3A%22couch-1%22%2C%22position%22%3A%5B-3%2C0%2C-3%5D%2C%22rotationY%22%3A0%7D%2C%7B%22id%22%3A%22checkpoint-2%22%2C%22catalogId%22%3A%22armchair-1%22%2C%22position%22%3A%5B0%2C0%2C-3%5D%2C%22rotationY%22%3A0.5%7D%2C%7B%22id%22%3A%22checkpoint-3%22%2C%22catalogId%22%3A%22end-table-1%22%2C%22position%22%3A%5B3%2C0%2C-3%5D%2C%22rotationY%22%3A1%7D%2C%7B%22id%22%3A%22checkpoint-4%22%2C%22catalogId%22%3A%22coffee-table-1%22%2C%22position%22%3A%5B-3%2C0%2C2%5D%2C%22rotationY%22%3A0.25%7D%2C%7B%22id%22%3A%22checkpoint-5%22%2C%22catalogId%22%3A%22coffee-table-living-room-1%22%2C%22position%22%3A%5B2%2C0%2C2%5D%2C%22rotationY%22%3A0.75%7D%5D%2C%22floorFinishId%22%3A%22granite-tile%22%2C%22wallFinishId%22%3A%22sage-green%22%2C%22lightingMoodId%22%3A%22soft-lamplight%22%2C%22roomSize%22%3A%7B%22width%22%3A12%2C%22depth%22%3A12%2C%22height%22%3A3%7D%7D",
+  "draft": {
+    "version": 1,
+    "items": [
+      {
+        "id": "checkpoint-1",
+        "catalogId": "couch-1",
+        "position": [-3, 0, -3],
+        "rotationY": 0
+      },
+      {
+        "id": "checkpoint-2",
+        "catalogId": "armchair-1",
+        "position": [0, 0, -3],
+        "rotationY": 0.5
+      },
+      {
+        "id": "checkpoint-3",
+        "catalogId": "end-table-1",
+        "position": [3, 0, -3],
+        "rotationY": 1
+      },
+      {
+        "id": "checkpoint-4",
+        "catalogId": "coffee-table-1",
+        "position": [-3, 0, 2],
+        "rotationY": 0.25
+      },
+      {
+        "id": "checkpoint-5",
+        "catalogId": "coffee-table-living-room-1",
+        "position": [2, 0, 2],
+        "rotationY": 0.75
+      }
+    ],
+    "floorFinishId": "granite-tile",
+    "wallFinishId": "sage-green",
+    "lightingMoodId": "soft-lamplight",
+    "roomSize": {
+      "width": 12,
+      "depth": 12,
+      "height": 3
+    }
+  }
+}

@@ -7,6 +7,24 @@ settings:
 importers:
 
   .:
+    devDependencies:
+      '@eslint/js':
+        specifier: ^10.0.1
+        version: 10.0.1(eslint@10.3.0(jiti@2.7.0)(supports-color@7.2.0))
+      eslint:
+        specifier: ^10.3.0
+        version: 10.3.0(jiti@2.7.0)(supports-color@7.2.0)
+      globals:
+        specifier: ^17.6.0
+        version: 17.6.0
+      knip:
+        specifier: ^6.16.1
+        version: 6.16.1
+      prettier:
+        specifier: ^3.8.3
+        version: 3.8.3
+
+  apps/room-layout:
     dependencies:
       '@base-ui/react':
         specifier: ^1.4.1
@@ -147,9 +165,6 @@ importers:
       jsdom:
         specifier: ^30.0.1
         version: 30.0.1(@noble/hashes@1.8.0)
-      knip:
-        specifier: ^6.16.1
-        version: 6.16.1
       prettier:
         specifier: ^3.8.3
         version: 3.8.3
@@ -168,6 +183,12 @@ importers:
       vitest:
         specifier: ^4.1.6
         version: 4.1.6(@types/node@24.13.3)(@vitest/coverage-v8@4.1.6)(jsdom@30.0.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@24.13.3)(typescript@6.0.3))(vite@8.0.13(@types/node@24.13.3)(jiti@2.7.0)(yaml@2.9.0))
+
+  packages/asset-tool:
+    devDependencies:
+      eslint:
+        specifier: ^10.3.0
+        version: 10.3.0(jiti@2.7.0)(supports-color@7.2.0)
 
 packages:
 

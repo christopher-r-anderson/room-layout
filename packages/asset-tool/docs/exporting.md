@@ -1,36 +1,7 @@
-# Catalog and Assets
+# Asset processing
 
-This guide covers contributor maintenance of the runtime catalog and related
-asset pipeline details.
-
-## Catalog Manifest
-
-The runtime catalog source of truth is `public/catalog-manifest.json`.
-
-To add or update furniture/environment options:
-
-1. Update manifest collections and entries.
-2. Add referenced assets under `public/`.
-3. Validate node names, IDs, and relative paths.
-
-## Asset Locations
-
-Runtime (served from `public/`):
-
-- models: `public/models/`
-- catalog previews: `public/catalog-previews/`
-- environment previews: `public/environment/previews/`
-- environment textures: `public/environment/textures/`
-
-Sources (in `assets-source/`, built into the runtime files by the scripts below):
-
-- model sources: `assets-source/models/<author>-<name>/`
-- texture sources: `assets-source/environment/textures/<source>-<author>-<name>/`
-  (the exporter matches the full folder name against its lookup table)
-
-All asset scripts are Node ESM (`scripts/*.mjs`) for cross-OS portability; the
-external tools they invoke (Blender, `gltf-transform`, `toktx`, ImageMagick) still
-install per-OS.
+The asset tool exports furniture models and floor textures for the
+planner. It does not run during application builds.
 
 ## Floor Texture Pipeline
 
@@ -64,9 +35,9 @@ Build the runtime models with:
 - `pnpm models:export`
 
 It runs each blend's collection exporter headlessly (reusing the in-file export
-settings), compresses the textures to KTX2, and writes `public/models/<name>.glb`.
+settings), compresses the textures to KTX2, and writes `apps/room-layout/public/models/<name>.glb` at repository root.
 The intermediate `<name>.tmp.glb` (gitignored) is removed, so nothing uncompressed
-ships in `public/`.
+ships in the planner's `public/`.
 
 Requirements:
 
@@ -84,15 +55,9 @@ Compression recipe (structure-preserving - no flatten/join, so the catalog's
 - geometry: left uncompressed - these meshes are tiny, so Meshopt's lossy
   quantization would risk minor degradation for ~no gain.
 
-At runtime the furniture loader and the floor textures share one KTX2 loader
-(`scene/internal/three/ktx2-loader.ts`) - a single Basis-transcoder worker pool.
-`KTX2Loader` resolves the transcoder from three's own bundled copy (via
-`import.meta.url`), which the bundler emits as hashed assets. There is **no
-manual transcoder-hosting step** - no `setTranscoderPath`, no copying transcoder
-files into `public/` - which older three versions (and most KTX2 write-ups)
-require; the emitted `basis_transcoder` js chunk is budget-gated like any other
-chunk (the paired `.wasm` is not JS and sits outside the budget check). The
-Blender helpers (export / introspect / relink) live in `scripts/blender/`.
+The Blender helpers (export / introspect / relink) live in `scripts/blender/`.
+Runtime loading and transcoder delivery belong to the planner's
+[catalog guide](../../../apps/room-layout/docs/architecture/catalog-and-assets.md).
 
 ## Catalog Preview Thumbnails
 
@@ -117,21 +82,42 @@ which both isolates each item and excludes the UI-bounds meshes, with no per-ren
 visibility overrides. As a one-off, a library override in `thumbnails.blend` can
 `hide_render` the UI-bounds meshes or other items without restructuring the source.
 
-## Validation and Runtime Contract
+## Paths and staging
 
-The manifest field schema, validation rules, and runtime/startup behavior (what
-happens on fetch failure, missing `uiBoundsNodeName`, etc.) are the single source
-of truth in [catalog-manifest-schema.md](../reference/catalog-manifest-schema.md).
-Two authoring-pipeline checks that are not field-schema rules:
+Sources live in `assets-source/` in this workspace; preserve the tree so Blender's
+relative library links remain valid. Default output is the planner's `public/`.
+Commands resolve their defaults from the script location, independent of the
+calling directory. `ASSET_SOURCE_DIR` and `ASSET_OUTPUT_DIR` accept explicit source
+and output roots; use absolute paths for the same behavior from root and filters.
+Model intermediates are written beside the source `.blend`, so copy the complete
+source tree when verifying exports without touching original sources.
 
-- `nodeName` values must match the actual GLTF node names in the GLB.
-- Floor texture paths (`diffusePath`, `normalPath`) should point to `.ktx2`
-  outputs from the texture pipeline above.
+The operator must choose a staging location that both the host tools and Blender
+can access. Create the copied source tree before running these commands, then
+replace the example paths with absolute paths to that copy and its output:
 
-## Related Docs
+```bash
+ASSET_SOURCE_DIR=/absolute/path/to/asset-check/sources ASSET_OUTPUT_DIR=/absolute/path/to/asset-check/output pnpm models:export
+ASSET_SOURCE_DIR=/absolute/path/to/asset-check/sources ASSET_OUTPUT_DIR=/absolute/path/to/asset-check/output pnpm textures:export
+```
 
-- `README.md`
-- `docs/reference/catalog-manifest-schema.md`
-- `docs/architecture/startup-and-asset-loading.md` (how the assets built here load at runtime)
-- `docs/architecture/selected-toolbar-placement.md`
-- `docs/guide/url-scene-sharing.md`
+Flatpak Blender may see a different filesystem from the host. Host `/tmp` is not
+included in the `host` filesystem permission by default; access must be explicitly
+granted. See [Flatpak filesystem permissions](https://docs.flatpak.org/en/latest/sandbox-permissions.html#reserved-paths).
+If the selected paths are inaccessible, stop and correct access before retrying.
+The scripts do not select a fallback directory or change permissions.
+
+At repository root these commands forward to this workspace. Direct equivalents
+are `pnpm --filter @room-layout/asset-tool models:export` and `textures:export`.
+External executables must be available on PATH (or via `BLENDER`). Verify expected
+output files as well as exit status: the scripts skip some failed inputs.
+
+The thumbnail scene currently has a missing `LeatherCouchCollection` link. Preview
+rendering is manual and separate from model/texture export.
+
+## Source and runtime contracts
+
+Preserve author/source/license/modification records beside source assets and keep
+third-party licenses intact. Runtime credit data and catalog IDs belong to the
+planner; see its [catalog guide](../../../apps/room-layout/docs/architecture/catalog-and-assets.md)
+and [attribution](../../../apps/room-layout/docs/reference/assets-attribution.md).

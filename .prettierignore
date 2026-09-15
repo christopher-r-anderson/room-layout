@@ -1,10 +1,12 @@
 pnpm-lock.yaml
-node_modules/
-dist/
-
-assets-source/
-public/models/
-
-# Agent worktrees (full repo copies), session state, and vendored skills.
+**/node_modules/
+**/dist/
+**/assets-source/
+**/public/models/
+**/playwright-report/
+**/test-results/
+**/coverage/
 .claude/
 .agents/
+.bench/
+.worktrees/
