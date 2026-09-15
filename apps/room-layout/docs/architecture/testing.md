@@ -72,6 +72,9 @@ For dialog architecture changes, include coverage for:
 - blocking vs non-blocking behavior contracts
 - responsive focus-return continuity across header layout transitions
 
+The shared `addFurniture` helper waits for the drawer close-focus handoff to the
+room view before returning. A hidden drawer alone does not mean focus has settled.
+
 If pointer behavior is not the feature being tested, prefer keyboard
 focus/activation paths to keep tests less brittle.
 
