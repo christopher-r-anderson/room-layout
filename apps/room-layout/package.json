@@ -1,7 +1,7 @@
 {
   "name": "room-layout",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "license": "MIT",
   "type": "module",
   "scripts": {
@@ -19,7 +19,7 @@
     "format": "prettier . --check",
     "format:write": "prettier . --write",
     "test": "vitest",
-    "test:run": "vitest --run",
+    "test:run": "vitest --run && node --test scripts/*.test.ts",
     "coverage": "vitest --run --coverage",
     "test:e2e:install": "playwright install chromium",
     "test:e2e": "playwright test --project=chromium",

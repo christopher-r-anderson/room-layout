@@ -39,7 +39,8 @@ and does not run asset exports.
 
 Shared contributor guidance is in [AGENTS.md](AGENTS.md). Planner docs live with
 the app; export docs live with the asset tool. See the [changelog](CHANGELOG.md)
-for named milestones.
+for named milestones and the [release workflow](docs/releases.md) for build
+identity, verification, and rollback.
 
 Source code uses the [MIT License](LICENSE). Third-party furniture and textures
 retain their own licenses; see [asset attribution](apps/room-layout/docs/reference/assets-attribution.md).

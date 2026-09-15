@@ -4,7 +4,8 @@ This guide covers contributor-facing test workflow decisions.
 
 ## Test Lanes
 
-- `pnpm test:run`: unit and integration checks (default lane for most code changes)
+- `pnpm test:run`: Vitest unit/integration checks plus Node build-identity tests
+  in `scripts/*.test.ts` (default lane for most code changes)
 - `pnpm test:e2e`: browser-accurate editor workflow coverage (Chromium)
 
 ## Choosing a Lane
@@ -159,7 +160,8 @@ flows.
 ## Workspace discovery
 
 Vitest discovers `src/**/*.{test,spec}.{ts,tsx}` in the planner workspace;
-Playwright discovers `e2e/`. The asset workspace has no test runner or placeholder tests. Root checks dispatch to the
+Playwright discovers `e2e/`. Node runs build-identity tests separately. The asset
+workspace has no test runner or placeholder tests. Root checks dispatch to the
 owning workspace, while root lint/format/Knip also cover shared tooling.
 
 `e2e/fixtures/layout-v1.json` contains fixed shared-URL and draft data validated

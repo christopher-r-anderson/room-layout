@@ -10,6 +10,7 @@ import { lingui, linguiTransformerBabelPreset } from '@lingui/vite-plugin'
 import { analyzer, unstableRolldownAdapter } from 'vite-bundle-analyzer'
 import { fileURLToPath, URL } from 'node:url'
 import type { Plugin } from 'vite'
+import { readBuildInfo } from './scripts/build-info'
 
 // Knip loads this config from the repository root.
 const linguiConfig = {
@@ -75,6 +76,18 @@ export default defineConfig({
     lingui(linguiConfig),
     babel({ presets: [linguiTransformerBabelPreset({}, linguiConfig)] }),
     preloadEngineChunk(),
+    {
+      name: 'build-info',
+      apply: 'build',
+      generateBundle() {
+        this.emitFile({
+          type: 'asset',
+          fileName: 'build-info.json',
+          source:
+            JSON.stringify(readBuildInfo(import.meta.dirname), null, 2) + '\n',
+        })
+      },
+    },
     ...(analyzeBundle
       ? [
           unstableRolldownAdapter(

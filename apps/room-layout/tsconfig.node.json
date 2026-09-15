@@ -24,6 +24,7 @@
     "vite.config.ts",
     "lingui.config.ts",
     "playwright.config.ts",
-    "e2e/**/*.ts"
+    "e2e/**/*.ts",
+    "scripts/**/*.ts"
   ]
 }
