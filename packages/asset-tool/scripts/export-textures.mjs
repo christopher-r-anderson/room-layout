@@ -1,7 +1,8 @@
 import { execFileSync } from 'node:child_process'
-import { mkdirSync, readdirSync, rmSync, statSync } from 'node:fs'
+import { readdirSync, renameSync, statSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { requireOutput, sourceFolders, withStaging } from './export-utils.mjs'
 
 // Export floor textures from assets-source/ to public/environment/.
 // - Diffuse (albedo): ETC1S, 2K, sRGB, 8-bit forced
@@ -61,18 +62,26 @@ if (!magick) {
   fail('ImageMagick not found. Please install it.')
 }
 
-const run = (command, args) => execFileSync(command, args, { stdio: 'ignore' })
+function run(command, output, args) {
+  execFileSync(command, args, { stdio: 'inherit' })
+  requireOutput(output)
+}
 const kb = (file) => `${String(Math.round(statSync(file).size / 1024))} KB`
 
-mkdirSync(OUTPUT_DIR, { recursive: true })
-mkdirSync(PREVIEW_DIR, { recursive: true })
+const folders = sourceFolders(SOURCE_DIR, [OUTPUT_DIR, PREVIEW_DIR])
 
 console.log('🚀 Starting Texture Export...')
 console.log('------------------------------------------------')
 
-const folders = readdirSync(SOURCE_DIR, { withFileTypes: true }).filter(
-  (entry) => entry.isDirectory(),
-)
+let failures = 0
+for (const name of Object.keys(TEXTURE_MAP)) {
+  if (!folders.some((folder) => folder.name === name)) {
+    failures++
+    console.error(
+      `❌ Missing required texture directory: ${path.join(SOURCE_DIR, name)}`,
+    )
+  }
+}
 
 for (const folder of folders) {
   const outputName = TEXTURE_MAP[folder.name]
@@ -82,102 +91,130 @@ for (const folder of folders) {
   }
 
   const dir = path.join(SOURCE_DIR, folder.name)
-  const files = readdirSync(dir)
-  const diffusePng = files.find((file) => file.endsWith('_diff_2k.png'))
-  const normalPng = files.find((file) => file.endsWith('_nor_gl_2k.png'))
-  if (!diffusePng || !normalPng) {
-    console.error(`❌ Missing files in ${folder.name}. Skipping.`)
-    continue
+  try {
+    const files = readdirSync(dir)
+    const diffusePng = files.find((file) => file.endsWith('_diff_2k.png'))
+    const normalPng = files.find((file) => file.endsWith('_nor_gl_2k.png'))
+    if (!diffusePng || !normalPng) {
+      const missing = [
+        !diffusePng && '*_diff_2k.png',
+        !normalPng && '*_nor_gl_2k.png',
+      ].filter(Boolean)
+      throw new Error(`Missing required input in ${dir}: ${missing.join(', ')}`)
+    }
+    const diffuse = path.join(dir, diffusePng)
+    const normal = path.join(dir, normalPng)
+
+    withStaging(OUTPUT_DIR, (stage) => {
+      const diffuseKtx2 = path.join(stage, `${outputName}_diff_2k.ktx2`)
+      const normalKtx2 = path.join(stage, `${outputName}_nor_gl_1k.ktx2`)
+      const previewWebp = path.join(stage, `${outputName}.webp`)
+      const diffTmp = path.join(stage, `.${outputName}_diff_8bit.tmp.png`)
+      const normTmp = path.join(stage, `.${outputName}_norm_8bit_1k.tmp.png`)
+      const previewTileTmp = path.join(
+        stage,
+        `.${outputName}_preview_tile.tmp.png`,
+      )
+
+      console.log(`📦 Processing: ${outputName}`)
+
+      // 1. Diffuse: force 8-bit, then ETC1S (web download size).
+      run(magick, diffTmp, [diffuse, '-depth', '8', diffTmp])
+      run('toktx', diffuseKtx2, [
+        '--t2',
+        '--encode',
+        'etc1s',
+        '--clevel',
+        '5',
+        '--qlevel',
+        '128',
+        '--genmipmap',
+        '--assign_oetf',
+        'srgb',
+        '--assign_primaries',
+        'srgb',
+        diffuseKtx2,
+        diffTmp,
+      ])
+
+      // 2. Normal: downscale to 1K + 8-bit, then UASTC + Zstd (normal-map fidelity).
+      run(magick, normTmp, [
+        normal,
+        '-resize',
+        '1024x1024',
+        '-depth',
+        '8',
+        normTmp,
+      ])
+      run('toktx', normalKtx2, [
+        '--t2',
+        '--encode',
+        'uastc',
+        '--uastc_quality',
+        '2',
+        '--uastc_rdo_l',
+        '1.0',
+        '--zcmp',
+        '18',
+        '--genmipmap',
+        '--normal_mode',
+        '--assign_oetf',
+        'linear',
+        '--assign_primaries',
+        'none',
+        normalKtx2,
+        normTmp,
+      ])
+
+      // 3. Preview: tile a downscaled diffuse into an oversampled 4:3 frame, scaled
+      // down so it reads as a material swatch rather than a single crop.
+      run(magick, previewTileTmp, [
+        diffuse,
+        '-resize',
+        PREVIEW_TILE_SCALE,
+        '-depth',
+        '8',
+        previewTileTmp,
+      ])
+      run(magick, previewWebp, [
+        '-size',
+        `${String(CANVAS_W)}x${String(CANVAS_H)}`,
+        `tile:${previewTileTmp}`,
+        '-filter',
+        'Lanczos',
+        '-resize',
+        `${String(PREVIEW_WIDTH)}x${String(PREVIEW_HEIGHT)}!`,
+        '-strip',
+        '-quality',
+        String(PREVIEW_QUALITY),
+        '-define',
+        'webp:method=6',
+        previewWebp,
+      ])
+
+      // Check every final output before reporting success or removing intermediates.
+      const sizes = `diffuse ${kb(diffuseKtx2)}, normal ${kb(normalKtx2)}, preview ${kb(previewWebp)}`
+      // Publish only after all producers for this texture have succeeded.
+      renameSync(diffuseKtx2, path.join(OUTPUT_DIR, path.basename(diffuseKtx2)))
+      renameSync(normalKtx2, path.join(OUTPUT_DIR, path.basename(normalKtx2)))
+      renameSync(
+        previewWebp,
+        path.join(PREVIEW_DIR, path.basename(previewWebp)),
+      )
+      console.log(`  ✅ ${outputName}: ${sizes}`)
+    })
+  } catch (error) {
+    failures++
+    console.error(`❌ ${dir}: ${error.message}`)
   }
-  const diffuse = path.join(dir, diffusePng)
-  const normal = path.join(dir, normalPng)
-
-  const diffuseKtx2 = path.join(OUTPUT_DIR, `${outputName}_diff_2k.ktx2`)
-  const normalKtx2 = path.join(OUTPUT_DIR, `${outputName}_nor_gl_1k.ktx2`)
-  const previewWebp = path.join(PREVIEW_DIR, `${outputName}.webp`)
-  const diffTmp = path.join(OUTPUT_DIR, `.${outputName}_diff_8bit.tmp.png`)
-  const normTmp = path.join(OUTPUT_DIR, `.${outputName}_norm_8bit_1k.tmp.png`)
-  const previewTileTmp = path.join(
-    PREVIEW_DIR,
-    `.${outputName}_preview_tile.tmp.png`,
-  )
-
-  console.log(`📦 Processing: ${outputName}`)
-
-  // 1. Diffuse: force 8-bit, then ETC1S (web download size).
-  run(magick, [diffuse, '-depth', '8', diffTmp])
-  run('toktx', [
-    '--t2',
-    '--encode',
-    'etc1s',
-    '--clevel',
-    '5',
-    '--qlevel',
-    '128',
-    '--genmipmap',
-    '--assign_oetf',
-    'srgb',
-    '--assign_primaries',
-    'srgb',
-    diffuseKtx2,
-    diffTmp,
-  ])
-
-  // 2. Normal: downscale to 1K + 8-bit, then UASTC + Zstd (normal-map fidelity).
-  run(magick, [normal, '-resize', '1024x1024', '-depth', '8', normTmp])
-  run('toktx', [
-    '--t2',
-    '--encode',
-    'uastc',
-    '--uastc_quality',
-    '2',
-    '--uastc_rdo_l',
-    '1.0',
-    '--zcmp',
-    '18',
-    '--genmipmap',
-    '--normal_mode',
-    '--assign_oetf',
-    'linear',
-    '--assign_primaries',
-    'none',
-    normalKtx2,
-    normTmp,
-  ])
-
-  // 3. Preview: tile a downscaled diffuse into an oversampled 4:3 frame, scaled
-  // down so it reads as a material swatch rather than a single crop.
-  run(magick, [
-    diffuse,
-    '-resize',
-    PREVIEW_TILE_SCALE,
-    '-depth',
-    '8',
-    previewTileTmp,
-  ])
-  run(magick, [
-    '-size',
-    `${String(CANVAS_W)}x${String(CANVAS_H)}`,
-    `tile:${previewTileTmp}`,
-    '-filter',
-    'Lanczos',
-    '-resize',
-    `${String(PREVIEW_WIDTH)}x${String(PREVIEW_HEIGHT)}!`,
-    '-strip',
-    '-quality',
-    String(PREVIEW_QUALITY),
-    '-define',
-    'webp:method=6',
-    previewWebp,
-  ])
-
-  rmSync(diffTmp)
-  rmSync(normTmp)
-  rmSync(previewTileTmp)
-  console.log(
-    `  ✅ ${outputName}: diffuse ${kb(diffuseKtx2)}, normal ${kb(normalKtx2)}, preview ${kb(previewWebp)}`,
-  )
 }
 
 console.log('------------------------------------------------')
-console.log(`✨ Export Complete! Files in: ${OUTPUT_DIR} and ${PREVIEW_DIR}`)
+if (failures > 0) {
+  console.error(
+    `Export finished with ${failures} failure(s). Output: ${OUTPUT_DIR} and ${PREVIEW_DIR}`,
+  )
+  process.exitCode = 1
+} else {
+  console.log(`✨ Export Complete! Files in: ${OUTPUT_DIR} and ${PREVIEW_DIR}`)
+}

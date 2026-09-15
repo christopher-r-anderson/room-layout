@@ -1,7 +1,8 @@
 import { execFileSync } from 'node:child_process'
-import { mkdirSync, readdirSync, rmSync, statSync } from 'node:fs'
+import { readdirSync, renameSync, rmSync, statSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { requireOutput, sourceFolders, withStaging } from './export-utils.mjs'
 
 // Compress furniture models for the runtime: for each model .blend under
 // assets-source/models/<folder>/, run its configured Blender collection exporter
@@ -71,61 +72,93 @@ function kb(bytes) {
   return `${String(Math.round(bytes / 1024))} KB`
 }
 
-mkdirSync(OUT_DIR, { recursive: true })
+const folders = sourceFolders(MODELS_SRC, [OUT_DIR])
 
 console.log('🚀 Compressing furniture models...')
 console.log('------------------------------------------------')
 
-const folders = readdirSync(MODELS_SRC, { withFileTypes: true }).filter(
-  (entry) => entry.isDirectory(),
-)
+let failures = 0
+const destinations = new Map()
 
 for (const folder of folders) {
-  const dir = path.join(MODELS_SRC, folder.name)
-  const blend = readdirSync(dir).find((file) => file.endsWith('.blend'))
-  if (!blend) {
-    continue
-  }
-
   try {
+    const dir = path.join(MODELS_SRC, folder.name)
+    const blend = readdirSync(dir).find((file) => file.endsWith('.blend'))
+    if (!blend) {
+      console.log(`Skipping ${dir}: no .blend source.`)
+      continue
+    }
+
+    // Retained intermediates must not count as output from this invocation.
+    for (const file of readdirSync(dir).filter((file) =>
+      file.endsWith('.tmp.glb'),
+    )) {
+      rmSync(path.join(dir, file))
+    }
+
     execFileSync(
       blender[0],
       [
         ...blender.slice(1),
         '--background',
         path.join(dir, blend),
+        '--python-exit-code',
+        '1',
         '--python',
         EXPORT_PY,
       ],
-      { stdio: 'ignore' },
+      { stdio: 'inherit' },
     )
-  } catch {
-    console.error(`  ❌ ${folder.name}: Blender export failed.`)
-    continue
-  }
 
-  const exports = readdirSync(dir).filter((file) => file.endsWith('.tmp.glb'))
-  if (exports.length === 0) {
-    console.error(
-      `  ❌ ${folder.name}: no .tmp.glb produced (check the blend's collection exporter).`,
-    )
-    continue
-  }
+    const exports = readdirSync(dir).filter((file) => file.endsWith('.tmp.glb'))
+    if (exports.length === 0) {
+      throw new Error(
+        `No .tmp.glb produced in ${dir} (check the blend's collection exporter).`,
+      )
+    }
 
-  for (const tmp of exports) {
-    const tmpPath = path.join(dir, tmp)
-    const name = tmp.replace(/\.tmp\.glb$/, '')
-    const outPath = path.join(OUT_DIR, `${name}.glb`)
-    const before = statSync(tmpPath).size
-    execFileSync('gltf-transform', ['etc1s', tmpPath, outPath], {
-      stdio: 'ignore',
-    })
-    rmSync(tmpPath)
-    console.log(
-      `  📦 ${folder.name} -> models/${name}.glb   ${kb(before)} -> ${kb(statSync(outPath).size)}`,
-    )
+    for (const tmp of exports) {
+      const tmpPath = path.join(dir, tmp)
+      const name = tmp.replace(/\.tmp\.glb$/, '')
+      const outPath = path.join(OUT_DIR, `${name}.glb`)
+      try {
+        const before = statSync(tmpPath).size
+        if (destinations.has(outPath)) {
+          throw new Error(
+            `Duplicate output ${outPath}: ${destinations.get(outPath)} and ${tmpPath}`,
+          )
+        }
+        destinations.set(outPath, tmpPath)
+        const after = withStaging(OUT_DIR, (stage) => {
+          const staged = path.join(stage, `${name}.glb`)
+          execFileSync('gltf-transform', ['etc1s', tmpPath, staged], {
+            stdio: 'inherit',
+          })
+          const size = requireOutput(staged)
+          renameSync(staged, outPath)
+          return size
+        })
+        rmSync(tmpPath)
+        console.log(
+          `  📦 ${folder.name} -> models/${name}.glb   ${kb(before)} -> ${kb(after)}`,
+        )
+      } catch (error) {
+        failures++
+        console.error(`❌ ${tmpPath} -> ${outPath}: ${error.message}`)
+      }
+    }
+  } catch (error) {
+    failures++
+    console.error(`❌ ${path.join(MODELS_SRC, folder.name)}: ${error.message}`)
   }
 }
 
 console.log('------------------------------------------------')
-console.log(`✨ Done. Compressed models in: ${OUT_DIR}`)
+if (failures > 0) {
+  console.error(
+    `Export finished with ${failures} failure(s). Output: ${OUT_DIR}`,
+  )
+  process.exitCode = 1
+} else {
+  console.log(`✨ Done. Compressed models in: ${OUT_DIR}`)
+}

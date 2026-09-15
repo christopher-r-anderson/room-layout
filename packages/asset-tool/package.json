@@ -7,6 +7,7 @@
     "models:export": "node scripts/export-models.mjs",
     "textures:export": "node scripts/export-textures.mjs",
     "lint": "eslint .",
+    "test:run": "node --test scripts/*.test.mjs",
     "knip": "cd ../.. && pnpm exec knip --workspace packages/asset-tool"
   },
   "devDependencies": {

@@ -34,8 +34,8 @@ Build the runtime models with:
 
 - `pnpm models:export`
 
-It runs each blend's collection exporter headlessly (reusing the in-file export
-settings), compresses the textures to KTX2, and writes `apps/room-layout/public/models/<name>.glb` at repository root.
+It runs every local collection's configured exporters headlessly (reusing the
+in-file export settings), compresses the textures to KTX2, and writes `apps/room-layout/public/models/<name>.glb` at repository root.
 The intermediate `<name>.tmp.glb` (gitignored) is removed, so nothing uncompressed
 ships in the planner's `public/`.
 
@@ -110,7 +110,33 @@ The scripts do not select a fallback directory or change permissions.
 At repository root these commands forward to this workspace. Direct equivalents
 are `pnpm --filter @room-layout/asset-tool models:export` and `textures:export`.
 External executables must be available on PATH (or via `BLENDER`). Verify expected
-output files as well as exit status: the scripts skip some failed inputs.
+output files as well as exit status. Both exporters return nonzero if an input
+fails, a required input/output is missing, or a tool fails. Tool diagnostics and
+the affected paths are printed; subsequent inputs continue where possible. Failed
+runs preserve previous prepared files when a producer fails. Outputs are generated
+in fresh temporary directories under the supplied output root and checked before
+publication. For each texture, all three outputs must pass before publication
+begins. Each file is replaced by rename; publishing multiple files is not a single
+filesystem transaction. Temporary directories are removed on success and failure.
+Blender's prior `.tmp.glb` intermediates are removed before export, and its helper
+checks every configured exporter's result and expected output, independent of the
+active collection. Configured paths must name `.tmp.glb` files beside the blend.
+Duplicate model destinations fail instead of overwriting an earlier model.
+
+Texture batches require all directories in the configured texture map, including
+under a source override. Symlinked source directories are followed. Successful
+batches return zero. Unknown texture folders and model folders without a `.blend`
+source are reported as intentional skips.
+
+Run `pnpm --filter @room-layout/asset-tool test:run` for failure-path regression
+tests. They use disposable source/output trees and POSIX shell stub tools, without
+reading or regenerating committed assets. The root `pnpm test:run` includes them.
+The Blender helper also has disposable integration tests, run explicitly with an
+accessible Blender executable from this workspace:
+
+```bash
+blender --background --factory-startup --python-exit-code 1 --python scripts/blender/test_export.py
+```
 
 The thumbnail scene currently has a missing `LeatherCouchCollection` link. Preview
 rendering is manual and separate from model/texture export.
