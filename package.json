@@ -16,7 +16,7 @@
     "i18n:extract": "pnpm --filter room-layout i18n:extract",
     "i18n:check": "pnpm --filter room-layout i18n:check",
     "test": "pnpm --filter room-layout test",
-    "test:run": "pnpm --filter room-layout test:run",
+    "test:run": "pnpm --filter room-layout test:run && pnpm --filter @room-layout/asset-tool test:run",
     "coverage": "pnpm --filter room-layout coverage",
     "test:e2e:install": "pnpm --filter room-layout test:e2e:install",
     "test:e2e": "pnpm --filter room-layout test:e2e",
