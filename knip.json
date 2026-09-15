@@ -2,6 +2,15 @@
   "$schema": "https://unpkg.com/knip@6/schema.json",
   "tags": ["-lintignore"],
   "ignoreBinaries": ["gltf-transform"],
-  "ignoreDependencies": ["@fontsource-variable/inter"],
-  "ignore": ["lingui.config.ts", "src/shared/i18n/po.d.ts"]
+  "workspaces": {
+    ".": {},
+    "apps/room-layout": {
+      "ignoreDependencies": ["@fontsource-variable/inter"],
+      "ignore": ["src/shared/i18n/po.d.ts"]
+    },
+    "packages/asset-tool": {
+      "entry": ["scripts/*.mjs"],
+      "project": ["scripts/**/*.mjs"]
+    }
+  }
 }

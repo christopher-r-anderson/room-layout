@@ -4,7 +4,8 @@ This guide covers contributor-facing test workflow decisions.
 
 ## Test Lanes
 
-- `pnpm test:run`: unit and integration checks (default lane for most code changes)
+- `pnpm test:run`: Vitest unit/integration checks plus Node build-identity tests
+  in `scripts/*.test.ts` (default lane for most code changes)
 - `pnpm test:e2e`: browser-accurate editor workflow coverage (Chromium)
 
 ## Choosing a Lane
@@ -71,6 +72,9 @@ For dialog architecture changes, include coverage for:
 - one-active-surface mutual exclusion
 - blocking vs non-blocking behavior contracts
 - responsive focus-return continuity across header layout transitions
+
+The shared `addFurniture` helper waits for the drawer close-focus handoff to the
+room view before returning. A hidden drawer alone does not mean focus has settled.
 
 If pointer behavior is not the feature being tested, prefer keyboard
 focus/activation paths to keep tests less brittle.
@@ -152,6 +156,17 @@ core flows:
 `Furniture in room` is the primary text alternative to canvas interaction.
 Check focus and shortcut behavior together when editing overlay or dialog
 flows.
+
+## Workspace discovery
+
+Vitest discovers `src/**/*.{test,spec}.{ts,tsx}` in the planner workspace;
+Playwright discovers `e2e/`. Node runs build-identity tests separately. The asset
+workspace has no test runner or placeholder tests. Root checks dispatch to the
+owning workspace, while root lint/format/Knip also cover shared tooling.
+
+`e2e/fixtures/layout-v1.json` contains fixed shared-URL and draft data validated
+against the pre-move 0.1.0 implementation. Keep its bytes stable; compatibility
+tests must not derive expectations from the serializer being tested.
 
 ## Artifacts
 

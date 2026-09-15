@@ -32,7 +32,7 @@ const BUDGETS = [
   },
 ]
 
-const ASSETS_DIR = path.resolve('dist/assets')
+const ASSETS_DIR = path.resolve(import.meta.dirname, '../dist/assets')
 
 function gzipKB(file) {
   return Math.round(gzipSync(readFileSync(file)).length / 1024)

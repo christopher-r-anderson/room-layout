@@ -347,6 +347,10 @@ export async function addFurniture(page: Page, name = 'Leather Couch') {
   await expect(pickerSheet.getByRole('radio', { name })).toBeChecked()
   await pickerSheet.getByRole('button', { name: 'Add Item' }).click()
   await expect(pickerSheet).toBeHidden()
+  // Drawer visibility settles before its close-focus handoff.
+  await expect(
+    page.getByRole('region', { name: 'Interactive 3D room editor' }),
+  ).toBeFocused()
 
   const nextState = await readSceneState(page)
 

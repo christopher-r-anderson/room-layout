@@ -10,6 +10,12 @@ import { lingui, linguiTransformerBabelPreset } from '@lingui/vite-plugin'
 import { analyzer, unstableRolldownAdapter } from 'vite-bundle-analyzer'
 import { fileURLToPath, URL } from 'node:url'
 import type { Plugin } from 'vite'
+import { readBuildInfo } from './scripts/build-info'
+
+// Knip loads this config from the repository root.
+const linguiConfig = {
+  configPath: fileURLToPath(new URL('./lingui.config.ts', import.meta.url)),
+}
 
 const defaultPagesBasePath = '/room-layout/'
 const productionBasePath = process.env.VITE_BASE_PATH ?? defaultPagesBasePath
@@ -67,9 +73,21 @@ export default defineConfig({
     // @vitejs/plugin-react v6 (Vite 8) transforms JSX with Oxc, not Babel, so
     // Lingui's compile-time macros need their own Babel pass. `lingui()` also
     // turns `.po` catalog imports into compiled messages (no runtime ICU parser).
-    lingui(),
-    babel({ presets: [linguiTransformerBabelPreset()] }),
+    lingui(linguiConfig),
+    babel({ presets: [linguiTransformerBabelPreset({}, linguiConfig)] }),
     preloadEngineChunk(),
+    {
+      name: 'build-info',
+      apply: 'build',
+      generateBundle() {
+        this.emitFile({
+          type: 'asset',
+          fileName: 'build-info.json',
+          source:
+            JSON.stringify(readBuildInfo(import.meta.dirname), null, 2) + '\n',
+        })
+      },
+    },
     ...(analyzeBundle
       ? [
           unstableRolldownAdapter(
@@ -100,6 +118,7 @@ export default defineConfig({
     },
   },
   test: {
+    include: ['src/**/*.{test,spec}.{ts,tsx}'],
     // .claude holds agent worktrees (full repo copies) and session state - never
     // glob test files out of it.
     exclude: [...configDefaults.exclude, 'e2e/**', '.claude/**'],

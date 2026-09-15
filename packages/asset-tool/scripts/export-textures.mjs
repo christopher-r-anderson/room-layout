@@ -9,9 +9,15 @@ import { fileURLToPath } from 'node:url'
 // - Previews: tiled diffuse WebP renders at 640x480 for the catalog UI
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
-const SOURCE_DIR = path.join(ROOT, 'assets-source/environment/textures')
-const OUTPUT_DIR = path.join(ROOT, 'public/environment/textures')
-const PREVIEW_DIR = path.join(ROOT, 'public/environment/previews')
+const SOURCE_ROOT = process.env.ASSET_SOURCE_DIR
+  ? path.resolve(process.env.ASSET_SOURCE_DIR)
+  : path.join(ROOT, 'assets-source')
+const PUBLIC_ROOT = process.env.ASSET_OUTPUT_DIR
+  ? path.resolve(process.env.ASSET_OUTPUT_DIR)
+  : path.resolve(ROOT, '../../apps/room-layout/public')
+const SOURCE_DIR = path.join(SOURCE_ROOT, 'environment/textures')
+const OUTPUT_DIR = path.join(PUBLIC_ROOT, 'environment/textures')
+const PREVIEW_DIR = path.join(PUBLIC_ROOT, 'environment/previews')
 
 const PREVIEW_WIDTH = 640
 const PREVIEW_HEIGHT = 480
